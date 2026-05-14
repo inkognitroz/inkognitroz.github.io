@@ -29,6 +29,12 @@
         "description": "Static-first GitHub Pages hub for portfolio + pipeline",
         "link": "./index.html",
         "tags": ["github-pages", "platform"]
+      },
+      {
+        "title": "Football Evolution Matrix",
+        "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",
+        "link": "./apps/football-evolution-matrix/",
+        "tags": ["football", "analytics", "matrix", "app"]
       }
     ],
     "templates": [
@@ -37,6 +43,12 @@
         "description": "Reusable marketing page structure for future products",
         "link": "#",
         "tags": ["template", "launch"]
+      },
+      {
+        "title": "Historical Performance Matrix Template",
+        "description": "A reusable template for comparing development across periods, categories and indicators.",
+        "link": "./apps/football-evolution-matrix/",
+        "tags": ["template", "matrix", "research"]
       }
     ],
     "tools": [
@@ -45,6 +57,12 @@
         "description": "Turn rough prompts into implementation-ready development briefs",
         "link": "#",
         "tags": ["ai", "productivity"]
+      },
+      {
+        "title": "Football Evolution Matrix",
+        "description": "Compare football development across time periods, indicators and data quality levels.",
+        "link": "./apps/football-evolution-matrix/",
+        "tags": ["sports", "analysis", "editable"]
       }
     ],
     "dashboards": [
