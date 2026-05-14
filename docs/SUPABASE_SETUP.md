@@ -8,8 +8,7 @@ Use Supabase when moving from static hub to product backends:
 
 For the SaaS Fabric public hub (v1), no backend is required.
 
-Security rules:
+Supabase-specific security rule:
 - Never place Supabase `service_role` keys in frontend code.
-- Never place GitHub tokens in frontend code.
-- Never place Stripe secret keys in frontend code.
-- Use GitHub Secrets, Vercel env vars, Netlify env vars, or secure server-side code.
+
+For broader secret management rules (GitHub tokens, Stripe secret keys, env storage), follow `docs/SECURITY.md`.
