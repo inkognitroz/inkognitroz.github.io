@@ -131,7 +131,12 @@
   const importXlsxButton = document.querySelector("#import-xlsx");
 
   function getEditorContent() {
-    return parseEditorJson(editor);
+    try {
+      return parseEditorJson(editor);
+    } catch (error) {
+      alert("Invalid JSON. Please fix syntax in the editor before continuing.");
+      return null;
+    }
   }
 
   function setEditorContent(content) {
@@ -139,6 +144,7 @@
   }
 
   function getSectionCards(content) {
+    if (!content) return [];
     return content.sections?.[sectionSelect.value] || [];
   }
 
@@ -172,6 +178,7 @@
   }
 
   function saveCurrentCard(content) {
+    content.sections = content.sections || {};
     const cards = getSectionCards(content);
     let index = Number(cardSelect.value);
     if (Number.isNaN(index) || index < 0 || index >= cards.length) {
@@ -212,27 +219,38 @@
   });
 
   formatButton.addEventListener("click", () => {
-    formatJson(editor);
+    try {
+      formatJson(editor);
+    } catch (error) {
+      alert("Invalid JSON. Please fix syntax before formatting.");
+    }
   });
 
   previewButton.addEventListener("click", () => {
     const content = getEditorContent();
+    if (!content) return;
     renderAdminPreview(content);
   });
 
   downloadButton.addEventListener("click", () => {
-    const content = formatJson(editor);
-    downloadFile(JSON.stringify(content, null, 2), "content.json");
+    try {
+      const content = formatJson(editor);
+      downloadFile(JSON.stringify(content, null, 2), "content.json");
+    } catch (error) {
+      alert("Invalid JSON. Please fix syntax before export.");
+    }
   });
 
   sectionSelect.addEventListener("change", () => {
     const content = getEditorContent();
+    if (!content) return;
     refreshCardSelect(content);
     renderAdminPreview(content);
   });
 
   cardSelect.addEventListener("change", () => {
     const content = getEditorContent();
+    if (!content) return;
     syncCardFields(content);
   });
 
@@ -245,7 +263,9 @@
   });
 
   saveCardButton.addEventListener("click", () => {
-    const content = saveCurrentCard(getEditorContent());
+    const currentContent = getEditorContent();
+    if (!currentContent) return;
+    const content = saveCurrentCard(currentContent);
     setEditorContent(content);
     refreshCardSelect(content);
     renderAdminPreview(content);
@@ -253,6 +273,7 @@
 
   deleteCardButton.addEventListener("click", () => {
     const content = getEditorContent();
+    if (!content) return;
     const cards = getSectionCards(content);
     const index = Number(cardSelect.value);
     if (index >= 0 && cards[index]) {
@@ -273,6 +294,8 @@
     const csvText = await csvFile.text();
     const rows = parseCsv(csvText);
     const content = getEditorContent();
+    if (!content) return;
+    content.sections = content.sections || {};
     content.sections[sectionSelect.value] = [...getSectionCards(content), ...rows];
     setEditorContent(content);
     refreshCardSelect(content);
