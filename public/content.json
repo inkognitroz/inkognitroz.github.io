@@ -1,16 +1,16 @@
 {
   "site": {
     "title": "SaaS Fabric",
-    "subtitle": "Build apps and websites, organize ideas, and prepare monetization in one simple hub.",
+    "subtitle": "A simple hub to build apps and websites, organize SaaS ideas, and prepare monetization.",
     "heroTitle": "SaaS Fabric by Inkognitroz",
-    "heroDescription": "SaaS Fabric is a simple place to move from idea to launch: build apps and websites, organize SaaS ideas, and prepare monetization step by step.",
+    "heroDescription": "Start in three steps: 1) Build apps and websites, 2) Organize SaaS ideas, and 3) Prepare monetization.",
     "promptWorkflow": "Store prompts in Prompt Inbox, then paste into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to request pull requests. Review manually and merge safely."
   },
   "sections": {
     "appFactory": [
       {
         "title": "Build apps and websites",
-        "description": "Turn your ideas into simple apps and websites with a clear, repeatable workflow.",
+        "description": "Turn ideas into simple apps and websites with clear, repeatable steps.",
         "link": "./index.html",
         "tags": ["build", "apps", "websites"]
       }
@@ -18,7 +18,7 @@
     "saasIdeas": [
       {
         "title": "Organize SaaS ideas",
-        "description": "Keep product ideas in one place so you can prioritize, plan, and ship with confidence.",
+        "description": "Capture, sort, and prioritize ideas in one place so nothing gets lost.",
         "link": "#",
         "tags": ["ideas", "planning", "saas"]
       }
@@ -74,7 +74,7 @@
     "monetization": [
       {
         "title": "Prepare monetization",
-        "description": "Get your product ready for revenue with practical pricing and launch preparation.",
+        "description": "Prepare pricing and launch plans so your product is ready to earn revenue.",
         "link": "#",
         "tags": ["pricing", "revenue", "launch"]
       }
