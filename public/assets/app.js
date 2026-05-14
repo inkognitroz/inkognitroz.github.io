@@ -29,7 +29,7 @@
   }
 
   async function loadContent() {
-    const response = await fetch("./content.json", { cache: "no-store" });
+    const response = await fetch("./content.json", { cache: "default" });
     if (!response.ok) {
       throw new Error("Could not load content.json");
     }
@@ -265,7 +265,7 @@
   });
 
   importCsvButton.addEventListener("click", async () => {
-    const [csvFile] = csvInput.files || [];
+    const csvFile = csvInput.files?.[0];
     if (!csvFile) {
       alert("Please choose a CSV file first.");
       return;
@@ -280,7 +280,7 @@
   });
 
   importXlsxButton.addEventListener("click", () => {
-    const [xlsxFile] = xlsxInput.files || [];
+    const xlsxFile = xlsxInput.files?.[0];
     const name = xlsxFile ? `"${xlsxFile.name}"` : "your XLSX file";
     alert(`XLSX import placeholder: convert ${name} to CSV, then import with the CSV button. Future version can add a browser XLSX parser.`);
   });
