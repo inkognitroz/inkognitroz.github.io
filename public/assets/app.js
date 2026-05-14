@@ -174,7 +174,7 @@
   function saveCurrentCard(content) {
     const cards = getSectionCards(content);
     let index = Number(cardSelect.value);
-    if (Number.isNaN(index) || index < 0 || !cards[index]) {
+    if (Number.isNaN(index) || index < 0 || index >= cards.length) {
       cards.push({});
       index = cards.length - 1;
       cardSelect.value = String(index);
@@ -265,12 +265,12 @@
   });
 
   importCsvButton.addEventListener("click", async () => {
-    const [file] = csvInput.files || [];
-    if (!file) {
+    const [csvFile] = csvInput.files || [];
+    if (!csvFile) {
       alert("Please choose a CSV file first.");
       return;
     }
-    const csvText = await file.text();
+    const csvText = await csvFile.text();
     const rows = parseCsv(csvText);
     const content = getEditorContent();
     content.sections[sectionSelect.value] = [...getSectionCards(content), ...rows];
@@ -280,8 +280,8 @@
   });
 
   importXlsxButton.addEventListener("click", () => {
-    const [file] = xlsxInput.files || [];
-    const name = file ? `"${file.name}"` : "your XLSX file";
+    const [xlsxFile] = xlsxInput.files || [];
+    const name = xlsxFile ? `"${xlsxFile.name}"` : "your XLSX file";
     alert(`XLSX import placeholder: convert ${name} to CSV, then import with the CSV button. Future version can add a browser XLSX parser.`);
   });
 
