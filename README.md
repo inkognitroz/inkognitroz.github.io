@@ -32,6 +32,6 @@ Home, App Factory, SaaS Ideas, Projects, Templates, Tools, Dashboards, Uploads /
 Read `docs/SECURITY.md` before adding any integrations.
 Never commit API keys or frontend secrets.
 
-## Live checklist
+## Post-merge checklist
 After every merge, run the live checklist.
 See `docs/LIVE_TEST_CHECKLIST.md`.
