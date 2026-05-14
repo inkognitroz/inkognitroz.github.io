@@ -159,13 +159,13 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
+      .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
 
   function toCsv(section) {
     const lines = [section.columns, ...section.rows].map((row) => row.map((cell) => {
-      const value = String(cell ?? "").replace(/\"/g, '""');
+      const value = String(cell ?? "").replace(/"/g, '""');
       return `"${value}"`;
     }).join(","));
     return lines.join("\n");
