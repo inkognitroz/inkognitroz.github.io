@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Football Evolution Matrix</title>
+  <link rel="stylesheet" href="../../assets/styles.css" />
+  <link rel="stylesheet" href="./football-styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Fotballutvikling – redigerbar matrise</h1>
+      <p>Sammenlign utvikling i fysikk, teknikk, taktikk, mentalitet og datakvalitet over tid.</p>
+      <nav>
+        <a href="../../index.html">Tilbake til SaaS Fabric</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container app-main">
+    <section class="card controls-panel">
+      <p class="warning" role="alert">Endringer lagres lokalt i nettleseren. Eksporter JSON for backup eller publisering.</p>
+      <div class="actions-row">
+        <button id="save-local" type="button">Lagre lokalt</button>
+        <button id="export-json" type="button">Eksporter JSON</button>
+        <button id="import-json" type="button">Importer JSON</button>
+        <button id="export-csv" type="button">Eksporter CSV</button>
+        <button id="add-row" type="button">Legg til rad</button>
+        <button id="add-column" type="button">Legg til kolonne</button>
+        <button id="print" type="button">Skriv ut</button>
+      </div>
+      <input id="import-file" type="file" accept="application/json,.json" hidden />
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card">
+      <div id="tab-buttons" class="tab-buttons" role="tablist" aria-label="Seksjoner"></div>
+      <div id="table-section" class="table-section"></div>
+    </section>
+  </main>
+
+  <script src="./football-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+.app-main {
+  padding-top: 1.5rem;
+}
+
+.controls-panel {
+  margin-bottom: 1rem;
+}
+
+.warning {
+  margin: 0 0 .75rem;
+  padding: .65rem .75rem;
+  border: 1px solid #8c6f2b;
+  border-radius: 10px;
+  background: #2a230f;
+  color: #f8e5ae;
+}
+
+.status {
+  margin: .6rem 0 0;
+  color: var(--muted);
+  min-height: 1.2rem;
+}
+
+.tab-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+
+.tab-buttons button {
+  background: #101a3d;
+}
+
+.tab-buttons button.active {
+  border-color: var(--accent);
+  background: #22356f;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #2a3768;
+  border-radius: 10px;
+}
+
+.matrix-table {
+  width: max(100%, 980px);
+  border-collapse: collapse;
+  background: #0e1735;
+}
+
+.matrix-table th,
+.matrix-table td {
+  border: 1px solid #2a3768;
+  padding: .5rem;
+  min-width: 120px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.matrix-table th {
+  position: sticky;
+  top: 0;
+  background: #172651;
+  z-index: 2;
+}
+
+.matrix-table [contenteditable="true"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: #1d2f65;
+}
+
+.section-title {
+  margin: 0 0 .6rem;
+}
+
+.section-description {
+  margin-top: 0;
+}
+
+@media print {
+  .site-header,
+  .controls-panel,
+  .tab-buttons {
+    display: none;
+  }
+
+  .matrix-table {
+    width: 100%;
+  }
+}
