@@ -45,9 +45,9 @@
     const heroTitleEl = root.querySelector("#hero-title");
     const heroDescEl = root.querySelector("#hero-description");
 
-    if (titleEl) titleEl.textContent = site.title || "Inkognitroz Hub";
-    if (subtitleEl) subtitleEl.textContent = site.subtitle || "Personal app factory and publishing hub";
-    if (heroTitleEl) heroTitleEl.textContent = site.heroTitle || "Build, publish, repeat.";
+    if (titleEl) titleEl.textContent = site.title || "SaaS Fabric";
+    if (subtitleEl) subtitleEl.textContent = site.subtitle || "Build, publish and monetize apps, tools and SaaS products.";
+    if (heroTitleEl) heroTitleEl.textContent = site.heroTitle || "SaaS Fabric by Inkognitroz";
     if (heroDescEl) heroDescEl.textContent = site.heroDescription || "";
 
     root.querySelectorAll("[data-section]").forEach((el) => {
@@ -314,15 +314,17 @@
     editor.value = JSON.stringify({
       site: {},
       sections: {
-        projects: [],
+        appFactory: [],
         saasIdeas: [],
+        projects: [],
+        templates: [],
         tools: [],
-        notes: [],
-        resources: [],
+        dashboards: [],
         uploads: [],
-        roadmap: [],
         promptInbox: [],
-        monetizationIdeas: []
+        monetization: [],
+        roadmap: [],
+        about: []
       }
     }, null, 2);
   }

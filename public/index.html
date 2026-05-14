@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inkognitroz Hub</title>
+  <title>SaaS Fabric by Inkognitroz</title>
   <link rel="stylesheet" href="./assets/styles.css" />
 </head>
 <body data-page="home">
   <header class="site-header">
     <div class="container">
-      <h1 id="site-title">Inkognitroz Hub</h1>
-      <p id="site-subtitle">Personal app factory and publishing hub</p>
+      <h1 id="site-title">SaaS Fabric</h1>
+      <p id="site-subtitle">Build, publish and monetize apps, tools and SaaS products.</p>
       <nav>
         <a href="#home">Home</a>
+        <a href="#app-factory">App Factory</a>
+        <a href="#saas-ideas">SaaS Ideas</a>
         <a href="#projects">Projects</a>
-        <a href="#saas-ideas">SaaS ideas</a>
+        <a href="#templates">Templates</a>
         <a href="#tools">Tools</a>
-        <a href="#notes">Notes</a>
-        <a href="#resources">Resources</a>
-        <a href="#files-uploads">Files / uploads</a>
+        <a href="#dashboards">Dashboards</a>
+        <a href="#uploads-files">Uploads / Files</a>
+        <a href="#prompt-inbox">Prompt Inbox</a>
+        <a href="#monetization">Monetization</a>
         <a href="#roadmap">Roadmap</a>
-        <a href="#prompt-inbox">Prompt inbox</a>
-        <a href="#monetization-ideas">Monetization ideas</a>
+        <a href="#about">About</a>
         <a class="admin-link" href="./admin.html">Admin</a>
       </nav>
     </div>
@@ -29,8 +31,18 @@
 
   <main class="container" id="home">
     <section class="hero card">
-      <h2 id="hero-title">Build, publish, repeat.</h2>
+      <h2 id="hero-title">SaaS Fabric by Inkognitroz</h2>
       <p id="hero-description"></p>
+    </section>
+
+    <section id="app-factory">
+      <h2>App Factory</h2>
+      <div class="grid" data-section="appFactory"></div>
+    </section>
+
+    <section id="saas-ideas">
+      <h2>SaaS Ideas</h2>
+      <div class="grid" data-section="saasIdeas"></div>
     </section>
 
     <section id="projects">
@@ -38,9 +50,9 @@
       <div class="grid" data-section="projects"></div>
     </section>
 
-    <section id="saas-ideas">
-      <h2>SaaS ideas</h2>
-      <div class="grid" data-section="saasIdeas"></div>
+    <section id="templates">
+      <h2>Templates</h2>
+      <div class="grid" data-section="templates"></div>
     </section>
 
     <section id="tools">
@@ -48,19 +60,25 @@
       <div class="grid" data-section="tools"></div>
     </section>
 
-    <section id="notes">
-      <h2>Notes</h2>
-      <div class="grid" data-section="notes"></div>
+    <section id="dashboards">
+      <h2>Dashboards</h2>
+      <div class="grid" data-section="dashboards"></div>
     </section>
 
-    <section id="resources">
-      <h2>Resources</h2>
-      <div class="grid" data-section="resources"></div>
-    </section>
-
-    <section id="files-uploads">
-      <h2>Files / uploads</h2>
+    <section id="uploads-files">
+      <h2>Uploads / Files</h2>
       <div class="grid" data-section="uploads"></div>
+    </section>
+
+    <section id="prompt-inbox">
+      <h2>Prompt Inbox</h2>
+      <p class="section-description">Store prompts and tasks here, then paste them into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate PR-ready updates.</p>
+      <div class="grid" data-section="promptInbox"></div>
+    </section>
+
+    <section id="monetization">
+      <h2>Monetization</h2>
+      <div class="grid" data-section="monetization"></div>
     </section>
 
     <section id="roadmap">
@@ -68,21 +86,15 @@
       <div class="grid" data-section="roadmap"></div>
     </section>
 
-    <section id="prompt-inbox">
-      <h2>Prompt inbox</h2>
-      <p class="section-description">Store prompts and tasks here, then paste them into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate PR-ready updates.</p>
-      <div class="grid" data-section="promptInbox"></div>
-    </section>
-
-    <section id="monetization-ideas">
-      <h2>Monetization ideas</h2>
-      <div class="grid" data-section="monetizationIdeas"></div>
+    <section id="about">
+      <h2>About</h2>
+      <div class="grid" data-section="about"></div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="container">
-      <p>Version 1. Static-first, GitHub Pages compatible, content-driven by <code>public/content.json</code>.</p>
+      <p>Version 1. Static-first, safe, GitHub Pages compatible, and powered by <code>public/content.json</code>.</p>
     </div>
   </footer>
 
