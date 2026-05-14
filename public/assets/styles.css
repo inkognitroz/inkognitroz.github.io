@@ -303,6 +303,12 @@ button.danger {
   display: none;
 }
 
+.theme-error {
+  color: var(--danger);
+  font-size: .82rem;
+  margin: .5rem 0 0;
+}
+
 .theme-active-indicator {
   display: inline-block;
   width: .5rem;

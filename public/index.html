@@ -10,9 +10,14 @@
     (function () {
       try {
         var t = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
-        if (t && typeof t === "object") {
+        if (t && typeof t === "object" && !Array.isArray(t)) {
           var r = document.documentElement;
-          Object.keys(t).forEach(function (k) { r.style.setProperty(k, t[k]); });
+          Object.keys(t).forEach(function (k) {
+            /* Only apply CSS custom properties (--*) to avoid unexpected side-effects */
+            if (typeof k === "string" && k.indexOf("--") === 0) {
+              r.style.setProperty(k, t[k]);
+            }
+          });
         }
       } catch (_) {}
     })();

@@ -241,6 +241,7 @@
       '<button id="theme-export">Export</button>' +
       '<label class="theme-import-label">Import <input type="file" id="theme-import" accept=".json" /></label>' +
       "</div>" +
+      '<p id="theme-error" class="theme-error" aria-live="polite" hidden></p>' +
       "</div>";
 
     return panel;
@@ -256,6 +257,14 @@
   }
 
   /* ── Initialise ── */
+
+  function showError(panel, msg) {
+    var el = panel.querySelector("#theme-error");
+    if (!el) return;
+    el.textContent = msg;
+    el.hidden = false;
+    setTimeout(function () { el.hidden = true; }, 5000);
+  }
 
   function init() {
     /* Floating toggle button */
@@ -340,19 +349,21 @@
         try {
           parsed = JSON.parse(text);
         } catch (_) {
-          alert("Could not load theme file: invalid JSON format.");
+          showError(panel, "Import failed: invalid JSON format.");
           return;
         }
         var vars;
         try {
           vars = sanitiseThemeImport(parsed);
         } catch (err) {
-          alert("Could not load theme file: " + err.message);
+          showError(panel, "Import failed: " + err.message);
           return;
         }
         applyTheme(vars);
         syncPickers(panel, vars);
         saveTheme(vars);
+      }).catch(function () {
+        showError(panel, "Import failed: could not read the file.");
       });
       /* Reset input so the same file can be re-imported */
       e.target.value = "";
