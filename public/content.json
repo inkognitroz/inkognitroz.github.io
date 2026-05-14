@@ -1,26 +1,26 @@
 {
   "site": {
     "title": "SaaS Fabric",
-    "subtitle": "Build, publish and monetize apps, tools and SaaS products.",
+    "subtitle": "Build apps and websites, organize ideas, and prepare monetization in one simple hub.",
     "heroTitle": "SaaS Fabric by Inkognitroz",
-    "heroDescription": "A practical v1 platform to create, organize, publish and prepare monetization across apps, websites, SaaS products, dashboards, templates, Excel/CSV-based tools, AI-assisted apps, client portals and internal tools.",
+    "heroDescription": "SaaS Fabric is a simple place to move from idea to launch: build apps and websites, organize SaaS ideas, and prepare monetization step by step.",
     "promptWorkflow": "Store prompts in Prompt Inbox, then paste into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to request pull requests. Review manually and merge safely."
   },
   "sections": {
     "appFactory": [
       {
-        "title": "Factory pipeline",
-        "description": "Idea -> content card -> issue -> AI-assisted PR -> deploy",
+        "title": "Build apps and websites",
+        "description": "Turn your ideas into simple apps and websites with a clear, repeatable workflow.",
         "link": "./index.html",
-        "tags": ["workflow", "v1", "platform"]
+        "tags": ["build", "apps", "websites"]
       }
     ],
     "saasIdeas": [
       {
-        "title": "Ops panel for service teams",
-        "description": "Role-based workspace for jobs, notes, billing and status updates",
+        "title": "Organize SaaS ideas",
+        "description": "Keep product ideas in one place so you can prioritize, plan, and ship with confidence.",
         "link": "#",
-        "tags": ["saas", "b2b"]
+        "tags": ["ideas", "planning", "saas"]
       }
     ],
     "projects": [
@@ -73,10 +73,10 @@
     ],
     "monetization": [
       {
-        "title": "Starter subscriptions",
-        "description": "Launch low-cost subscriptions for niche SaaS tools and dashboards",
+        "title": "Prepare monetization",
+        "description": "Get your product ready for revenue with practical pricing and launch preparation.",
         "link": "#",
-        "tags": ["revenue", "subscriptions"]
+        "tags": ["pricing", "revenue", "launch"]
       }
     ],
     "roadmap": [
