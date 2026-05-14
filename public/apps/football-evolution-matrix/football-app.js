@@ -168,7 +168,7 @@
       const value = String(cell ?? "").replace(/"/g, '""');
       return `"${value}"`;
     }).join(","));
-    return lines.join("\n");
+    return "\uFEFF" + lines.join("\n");
   }
 
   function syncSectionFromTable() {
@@ -176,10 +176,10 @@
     if (!table) return;
 
     const headers = Array.from(table.querySelectorAll("thead th"))
-      .map((cell) => cell.textContent.trim());
+      .map((cell) => cell.textContent);
 
     const rows = Array.from(table.querySelectorAll("tbody tr"))
-      .map((row) => Array.from(row.querySelectorAll("td")).map((cell) => cell.textContent.trim()));
+      .map((row) => Array.from(row.querySelectorAll("td")).map((cell) => cell.textContent));
 
     appState.data[appState.activeSection] = { columns: headers, rows };
   }
@@ -252,10 +252,18 @@
     try {
       const rawText = await file.text();
       const parsed = JSON.parse(rawText);
-      if (!parsed || typeof parsed !== "object") {
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
         throw new Error("Ugyldig filformat");
       }
-      appState.data = parsed;
+      const merged = deepClone(defaultData);
+      for (const { key } of sectionOrder) {
+        const section = parsed[key];
+        if (section && typeof section === "object" &&
+            Array.isArray(section.columns) && Array.isArray(section.rows)) {
+          merged[key] = section;
+        }
+      }
+      appState.data = merged;
       renderTabs();
       renderTable();
       saveLocal();
