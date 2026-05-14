@@ -1,0 +1,83 @@
+{
+  "site": {
+    "title": "Inkognitroz Hub",
+    "subtitle": "Personal app factory and publishing hub",
+    "heroTitle": "Build, publish, repeat.",
+    "heroDescription": "This is version 1 of a simple, stable, GitHub Pages-compatible website powered by one editable content file.",
+    "promptWorkflow": "Use Prompt inbox items as reusable tasks. Paste prompts into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate pull requests for site updates."
+  },
+  "sections": {
+    "projects": [
+      {
+        "title": "Hub v1 launch",
+        "description": "Static content-driven publishing hub",
+        "link": "./index.html",
+        "tags": ["launch", "hub", "github-pages"]
+      }
+    ],
+    "saasIdeas": [
+      {
+        "title": "Micro CRM for creators",
+        "description": "Simple lead + pipeline tracker with AI drafting",
+        "link": "#",
+        "tags": ["saas", "crm"]
+      }
+    ],
+    "tools": [
+      {
+        "title": "Prompt cleaner",
+        "description": "Refine raw prompts into structured instructions",
+        "link": "#",
+        "tags": ["ai", "productivity"]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Shipping rule",
+        "description": "Publish small useful versions quickly",
+        "link": "#",
+        "tags": ["strategy"]
+      }
+    ],
+    "resources": [
+      {
+        "title": "GitHub Pages docs",
+        "description": "Official docs for static deployment",
+        "link": "https://docs.github.com/pages",
+        "tags": ["docs"]
+      }
+    ],
+    "uploads": [
+      {
+        "title": "Upload placeholder",
+        "description": "Track files added under /public for direct linking",
+        "link": "#",
+        "tags": ["files"]
+      }
+    ],
+    "roadmap": [
+      {
+        "title": "v1.1",
+        "description": "Add richer card types and filtering",
+        "link": "#",
+        "tags": ["roadmap"]
+      }
+    ],
+    "promptInbox": [
+      {
+        "title": "Add a new project card",
+        "description": "Create a PR that adds one card to sections.projects in public/content.json with title, description, tags, and link.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md",
+        "tags": ["prompt", "copilot"]
+      }
+    ],
+    "monetizationIdeas": [
+      {
+        "title": "Template packs",
+        "description": "Sell reusable landing page and dashboard templates",
+        "link": "#",
+        "tags": ["revenue", "digital-products"]
+      }
+    ]
+  }
+}

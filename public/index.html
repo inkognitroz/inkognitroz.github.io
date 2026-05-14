@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inkognitroz Hub</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body data-page="home">
+  <header class="site-header">
+    <div class="container">
+      <h1 id="site-title">Inkognitroz Hub</h1>
+      <p id="site-subtitle">Personal app factory and publishing hub</p>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#projects">Projects</a>
+        <a href="#saas-ideas">SaaS ideas</a>
+        <a href="#tools">Tools</a>
+        <a href="#notes">Notes</a>
+        <a href="#resources">Resources</a>
+        <a href="#files-uploads">Files / uploads</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#prompt-inbox">Prompt inbox</a>
+        <a href="#monetization-ideas">Monetization ideas</a>
+        <a class="admin-link" href="./admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="home">
+    <section class="hero card">
+      <h2 id="hero-title">Build, publish, repeat.</h2>
+      <p id="hero-description"></p>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="grid" data-section="projects"></div>
+    </section>
+
+    <section id="saas-ideas">
+      <h2>SaaS ideas</h2>
+      <div class="grid" data-section="saasIdeas"></div>
+    </section>
+
+    <section id="tools">
+      <h2>Tools</h2>
+      <div class="grid" data-section="tools"></div>
+    </section>
+
+    <section id="notes">
+      <h2>Notes</h2>
+      <div class="grid" data-section="notes"></div>
+    </section>
+
+    <section id="resources">
+      <h2>Resources</h2>
+      <div class="grid" data-section="resources"></div>
+    </section>
+
+    <section id="files-uploads">
+      <h2>Files / uploads</h2>
+      <div class="grid" data-section="uploads"></div>
+    </section>
+
+    <section id="roadmap">
+      <h2>Roadmap</h2>
+      <div class="grid" data-section="roadmap"></div>
+    </section>
+
+    <section id="prompt-inbox">
+      <h2>Prompt inbox</h2>
+      <p class="section-description">Store prompts and tasks here, then paste them into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate PR-ready updates.</p>
+      <div class="grid" data-section="promptInbox"></div>
+    </section>
+
+    <section id="monetization-ideas">
+      <h2>Monetization ideas</h2>
+      <div class="grid" data-section="monetizationIdeas"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Version 1. Static-first, GitHub Pages compatible, content-driven by <code>public/content.json</code>.</p>
+    </div>
+  </footer>
+
+  <script src="./assets/app.js"></script>
+</body>
+</html>
