@@ -1,0 +1,14 @@
+# Supabase setup (future SaaS Fabric apps)
+
+Use Supabase when moving from static hub to product backends:
+- PostgreSQL database
+- Authentication
+- Storage
+- Row Level Security (RLS)
+
+For the SaaS Fabric public hub (v1), no backend is required.
+
+Supabase-specific security rule:
+- Never place Supabase `service_role` keys in frontend code.
+
+For broader secret management rules (GitHub tokens, Stripe secret keys, env storage), follow `docs/SECURITY.md`.

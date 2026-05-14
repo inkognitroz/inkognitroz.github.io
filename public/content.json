@@ -1,0 +1,99 @@
+{
+  "site": {
+    "title": "SaaS Fabric",
+    "subtitle": "Build, publish and monetize apps, tools and SaaS products.",
+    "heroTitle": "SaaS Fabric by Inkognitroz",
+    "heroDescription": "A practical v1 platform to create, organize, publish and prepare monetization across apps, websites, SaaS products, dashboards, templates, Excel/CSV-based tools, AI-assisted apps, client portals and internal tools.",
+    "promptWorkflow": "Store prompts in Prompt Inbox, then paste into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to request pull requests. Review manually and merge safely."
+  },
+  "sections": {
+    "appFactory": [
+      {
+        "title": "Factory pipeline",
+        "description": "Idea -> content card -> issue -> AI-assisted PR -> deploy",
+        "link": "./index.html",
+        "tags": ["workflow", "v1", "platform"]
+      }
+    ],
+    "saasIdeas": [
+      {
+        "title": "Ops panel for service teams",
+        "description": "Role-based workspace for jobs, notes, billing and status updates",
+        "link": "#",
+        "tags": ["saas", "b2b"]
+      }
+    ],
+    "projects": [
+      {
+        "title": "SaaS Fabric public hub",
+        "description": "Static-first GitHub Pages hub for portfolio + pipeline",
+        "link": "./index.html",
+        "tags": ["github-pages", "platform"]
+      }
+    ],
+    "templates": [
+      {
+        "title": "Landing page starter",
+        "description": "Reusable marketing page structure for future products",
+        "link": "#",
+        "tags": ["template", "launch"]
+      }
+    ],
+    "tools": [
+      {
+        "title": "Prompt-to-brief converter",
+        "description": "Turn rough prompts into implementation-ready development briefs",
+        "link": "#",
+        "tags": ["ai", "productivity"]
+      }
+    ],
+    "dashboards": [
+      {
+        "title": "Portfolio KPI board",
+        "description": "Track launches, traffic, MRR goals and conversion experiments",
+        "link": "#",
+        "tags": ["dashboard", "metrics"]
+      }
+    ],
+    "uploads": [
+      {
+        "title": "CSV/XLSX assets",
+        "description": "Store links to uploads and datasets used by tools and apps",
+        "link": "#",
+        "tags": ["uploads", "files"]
+      }
+    ],
+    "promptInbox": [
+      {
+        "title": "Add a new template card",
+        "description": "Create a PR updating sections.templates in public/content.json with one new template including title, description, tags and link.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md",
+        "tags": ["prompt", "issues"]
+      }
+    ],
+    "monetization": [
+      {
+        "title": "Starter subscriptions",
+        "description": "Launch low-cost subscriptions for niche SaaS tools and dashboards",
+        "link": "#",
+        "tags": ["revenue", "subscriptions"]
+      }
+    ],
+    "roadmap": [
+      {
+        "title": "v1.1 multi-product workflows",
+        "description": "Add richer content filtering and app lifecycle tracking",
+        "link": "#",
+        "tags": ["roadmap", "product"]
+      }
+    ],
+    "about": [
+      {
+        "title": "About SaaS Fabric",
+        "description": "SaaS Fabric is the foundation for a future multi-user SaaS platform managed through practical, non-technical workflows.",
+        "link": "#",
+        "tags": ["about", "platform"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SaaS Fabric Admin</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body data-page="admin">
+  <header class="site-header">
+    <div class="container">
+      <h1>SaaS Fabric Admin</h1>
+      <p>Edit content locally in your browser. No backend required in v1.</p>
+      <nav>
+        <a href="./index.html">Back to site</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container admin-layout">
+    <section class="card">
+      <h2>1) Load + edit JSON</h2>
+      <p>Load current content, edit values, and keep everything in one <code>content.json</code> file.</p>
+      <div class="actions-row">
+        <button id="load-content" type="button">Load content.json</button>
+        <button id="format-json" type="button">Format JSON</button>
+        <button id="preview-json" type="button">Preview</button>
+        <button id="download-json" type="button">Export content.json</button>
+      </div>
+      <textarea id="json-editor" rows="18" spellcheck="false"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>2) Card manager (add/edit/remove)</h2>
+      <div class="admin-grid">
+        <label>Section
+          <select id="section-select">
+            <option value="appFactory">App Factory</option>
+            <option value="saasIdeas">SaaS Ideas</option>
+            <option value="projects">Projects</option>
+            <option value="templates">Templates</option>
+            <option value="tools">Tools</option>
+            <option value="dashboards">Dashboards</option>
+            <option value="uploads">Uploads / Files</option>
+            <option value="promptInbox">Prompt Inbox</option>
+            <option value="monetization">Monetization</option>
+            <option value="roadmap">Roadmap</option>
+            <option value="about">About</option>
+          </select>
+        </label>
+        <label>Card
+          <select id="card-select"></select>
+        </label>
+      </div>
+      <div class="admin-grid">
+        <label>Title <input id="card-title" type="text" /></label>
+        <label>Link <input id="card-link" type="url" placeholder="https://" /></label>
+      </div>
+      <label>Description / Prompt / Task
+        <textarea id="card-description" rows="5"></textarea>
+      </label>
+      <label>Tags (comma-separated)
+        <input id="card-tags" type="text" />
+      </label>
+      <div class="actions-row">
+        <button id="new-card" type="button">New card</button>
+        <button id="save-card" type="button">Save card</button>
+        <button id="delete-card" type="button" class="danger">Delete card</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3) Import CSV / XLSX</h2>
+      <p>CSV import runs in-browser and appends cards into the selected section. Expected headers: <code>title,description,link,tags</code>.</p>
+      <label>CSV file<input id="csv-input" type="file" accept=".csv,text/csv" /></label>
+      <button id="import-csv" type="button">Import CSV to selected section</button>
+      <p>XLSX placeholder: convert to CSV first, or parse with a browser XLSX library in a future version.</p>
+      <label>XLSX file<input id="xlsx-input" type="file" accept=".xlsx,.xls" /></label>
+      <button id="import-xlsx" type="button">Show XLSX import guidance</button>
+    </section>
+
+    <section class="card">
+      <h2>4) Live preview (safe, local only)</h2>
+      <p>This preview never auto-commits to GitHub. Use exported <code>content.json</code> in a PR.</p>
+      <div id="admin-preview"></div>
+    </section>
+  </main>
+
+  <script src="./assets/app.js"></script>
+</body>
+</html>
