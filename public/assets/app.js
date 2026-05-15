@@ -6,6 +6,7 @@
   const ADMIN_BACKUPS_KEY = "saas-fabric-admin-backups";
   const ADMIN_DRAFT_KEY = "saas-fabric-admin-draft";
   const MAX_BACKUPS = 12;
+  let backupIdCounter = 0;
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -145,7 +146,7 @@
   function parseCsv(text) {
     const rows = parseCsvRows(text);
     if (!rows.length) return [];
-    const headers = rows[0].map((header) => header.trim().replace(/^\uFEFF/, "").toLowerCase());
+    const headers = rows[0].map((header) => header.trim().toLowerCase());
     if (!headers.includes("title")) {
       throw new Error("CSV must include a title header.");
     }
@@ -366,7 +367,8 @@
 
   function saveBackupSnapshot(content, label) {
     const backups = readBackups();
-    const fallbackId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    backupIdCounter += 1;
+    const fallbackId = `backup-${Date.now()}-${backupIdCounter}`;
     backups.unshift({
       id: globalThis.crypto?.randomUUID?.() || fallbackId,
       label,
