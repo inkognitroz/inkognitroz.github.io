@@ -149,14 +149,23 @@
     var box = panel.querySelector("#theme-contrast");
     var warn = panel.querySelector("#theme-warning");
     var failed = [];
+    var unknown = [];
     box.innerHTML = checks.map(function (c) {
       var ratio = contrast(vars[c[1]], vars[c[2]]);
-      var pass = !ratio || ratio >= 4.5;
-      if (!pass) failed.push(c[0]);
-      return '<span class="theme-contrast-chip ' + (pass ? "pass" : "fail") + '">' + esc(c[0]) + ': ' + (ratio ? ratio.toFixed(1) + ":1" : "n/a") + "</span>";
+      var isUnknown = ratio === null;
+      var pass = !isUnknown && ratio >= 4.5;
+      if (isUnknown) unknown.push(c[0]);
+      else if (!pass) failed.push(c[0]);
+      return '<span class="theme-contrast-chip ' + (isUnknown ? "unknown" : (pass ? "pass" : "fail")) + '">' + esc(c[0]) + ': ' + (isUnknown ? "n/a" : ratio.toFixed(1) + ":1") + "</span>";
     }).join("");
-    warn.hidden = failed.length === 0;
-    warn.textContent = failed.length ? "Contrast warning: improve " + failed.join(", ") + " for readable UI." : "";
+    warn.hidden = failed.length === 0 && unknown.length === 0;
+    warn.textContent = failed.length || unknown.length
+      ? "Contrast warning: "
+        + (failed.length ? "improve " + failed.join(", ") + " for readable UI" : "")
+        + (failed.length && unknown.length ? "; " : "")
+        + (unknown.length ? "unable to verify " + unknown.join(", ") + " due to unsupported color format" : "")
+        + "."
+      : "";
   }
 
   function subset(vars) { return ["--bg", "--bg-top", "--surface", "--card-bg", "--text", "--muted", "--accent", "--accent-2"].map(function (k) { return k + ":" + vars[k]; }).join("|"); }
