@@ -17,8 +17,71 @@
     ],
     "promptWorkflow": "Store prompts in Prompt Inbox, then paste into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to request pull requests. Review manually and merge safely."
   },
+  "roadmapBoard": {
+    "columns": [
+      { "key": "idea", "label": "Idea" },
+      { "key": "planned", "label": "Planned" },
+      { "key": "in-progress", "label": "In progress" },
+      { "key": "ready-for-review", "label": "Ready for review" },
+      { "key": "launched", "label": "Launched" }
+    ],
+    "items": [
+      {
+        "title": "Supabase architecture blueprint",
+        "description": "Define v2 architecture boundaries and data model options while keeping v1 fully static.",
+        "status": "idea",
+        "priority": "high",
+        "owner": "Inkognitroz",
+        "nextAction": "Draft architecture notes and constraints for issue review.",
+        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=feature-request.md"
+      },
+      {
+        "title": "Admin v2 content workflows",
+        "description": "Improve admin UX with clearer flow for JSON editing, validation and roadmap upkeep.",
+        "status": "planned",
+        "priority": "critical",
+        "owner": "Inkognitroz",
+        "nextAction": "Open scoped issue for editor UX upgrades and acceptance tests.",
+        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=feature-request.md"
+      },
+      {
+        "title": "Football Evolution Matrix v2",
+        "description": "Add improved matrix interactions and cleaner comparison workflow for analysts.",
+        "status": "in-progress",
+        "priority": "medium",
+        "owner": "Inkognitroz",
+        "nextAction": "Complete interaction polish and prepare PR for product review.",
+        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=new-app.md"
+      },
+      {
+        "title": "Platform design pass",
+        "description": "Refine spacing, typography and visual hierarchy across key sections.",
+        "status": "ready-for-review",
+        "priority": "high",
+        "owner": "Inkognitroz",
+        "nextAction": "Collect feedback on visual pass and finalize follow-up tweaks.",
+        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/pulls"
+      },
+      {
+        "title": "Prompt Inbox workflow launch",
+        "description": "Ship initial prompt-to-issue workflow guidance and live examples.",
+        "status": "launched",
+        "priority": "low",
+        "owner": "Inkognitroz",
+        "nextAction": "Track usage and gather next iteration requests.",
+        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md"
+      }
+    ]
+  },
   "sections": {
     "appFactory": [
+      {
+        "title": "App Template Generator",
+        "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
+        "link": "./apps/app-template-generator/",
+        "badge": "Live",
+        "tags": ["generator", "template", "planning", "static"]
+      },
       {
         "title": "Football Evolution Matrix",
         "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",

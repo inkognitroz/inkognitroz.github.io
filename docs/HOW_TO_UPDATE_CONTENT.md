@@ -1,9 +1,10 @@
 # How to update content
 
 - Edit `/public/content.json` directly, or use `/public/admin.html` in your browser.
-- Keep data under `site` and `sections` keys.
+- Keep data under `site`, `sections`, and optional `roadmapBoard` keys.
 - Each card supports: `title`, `description`, `link`, `tags`, and optional `status`.
 - Use `status: "draft"` for work that should stay hidden from the public homepage. Use `status: "published"` when it is ready to go live.
+- Roadmap board data is loaded from `roadmapBoard` in `content.json`. Each board item supports: `title`, `description`, `status`, `priority`, `owner`, `nextAction`, and `relatedLink`.
 - Validate before export. The admin page now blocks export if JSON syntax or the content model is invalid.
 
 ## Safe publishing paths
