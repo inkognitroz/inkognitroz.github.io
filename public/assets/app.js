@@ -53,7 +53,7 @@
     if (titleEl) titleEl.textContent = site.title || "SaaS Fabric";
     if (subtitleEl) subtitleEl.textContent = site.subtitle || "Build, publish and monetize apps, tools and SaaS products.";
     if (heroLabelEl && site.heroLabel) heroLabelEl.textContent = site.heroLabel;
-    if (heroTitleEl) heroTitleEl.innerHTML = site.heroTitle || "Build, Launch &amp; Monetize<br>Your SaaS Products";
+    if (heroTitleEl) heroTitleEl.textContent = site.heroTitle || "Build, Launch & Monetize Your SaaS Products";
     if (heroDescEl) heroDescEl.textContent = site.heroDescription || "";
 
     if (heroCtas && Array.isArray(site.heroCtas) && site.heroCtas.length) {
