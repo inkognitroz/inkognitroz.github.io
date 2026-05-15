@@ -193,6 +193,29 @@ a:hover { color: color-mix(in srgb, var(--accent) 82%, var(--text)); }
 
 .card-item p { color: var(--muted); margin: .3rem 0 .7rem; }
 .card-item a { color: var(--accent); font-weight: 650; }
+.card-meta {
+  display: flex;
+  gap: .4rem;
+  margin-bottom: .45rem;
+}
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: .12rem .5rem;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  border: 1px solid var(--border-soft);
+}
+.status-chip.published {
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+  border-color: color-mix(in srgb, var(--success) 55%, var(--border-soft));
+}
+.status-chip.draft {
+  background: color-mix(in srgb, var(--warning) 16%, transparent);
+  border-color: color-mix(in srgb, var(--warning) 55%, var(--border-soft));
+}
 .tags {
   display: flex;
   gap: .4rem;
@@ -266,6 +289,44 @@ button.danger {
   flex-wrap: wrap;
   gap: .5rem;
   margin-bottom: .7rem;
+}
+
+.admin-note,
+.validation-summary {
+  color: var(--muted);
+  margin: .65rem 0 0;
+}
+
+.validation-summary.valid {
+  color: var(--success);
+}
+
+.validation-summary.invalid {
+  color: var(--warning);
+}
+
+.validation-results {
+  margin: .6rem 0 0;
+  padding-left: 1.15rem;
+  color: var(--warning);
+}
+
+.notice {
+  margin-top: .75rem;
+  padding: .7rem .8rem;
+  border-radius: var(--button-radius);
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--surface-elevated) 84%, transparent);
+}
+
+.notice.success {
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border-soft));
+  color: color-mix(in srgb, var(--success) 78%, var(--text));
+}
+
+.notice.error {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border-soft));
+  color: color-mix(in srgb, var(--danger) 78%, var(--text));
 }
 
 .admin-grid {
