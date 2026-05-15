@@ -6,11 +6,10 @@
   <title>SaaS Fabric Admin</title>
   <link rel="stylesheet" href="./assets/styles.css" />
   <script>
+    /* Restore saved theme before first paint to prevent flash */
     (function () {
       try {
-        var raw = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
-        var t = raw && raw.vars && typeof raw.vars === "object" ? raw.vars : raw;
-        var styles = raw && raw.styles && typeof raw.styles === "object" ? raw.styles : null;
+        var t = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
         if (t && typeof t === "object" && !Array.isArray(t)) {
           var r = document.documentElement;
           Object.keys(t).forEach(function (k) {
@@ -18,13 +17,6 @@
               r.style.setProperty(k, t[k]);
             }
           });
-          if (styles) {
-            ["bgStyle", "buttonStyle", "cardStyle", "navStyle", "heroStyle"].forEach(function (key) {
-              if (typeof styles[key] === "string") {
-                r.dataset[key] = styles[key];
-              }
-            });
-          }
         }
       } catch (_) {}
     })();
