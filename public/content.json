@@ -1,82 +1,116 @@
 {
   "site": {
     "title": "SaaS Fabric",
-    "subtitle": "A simple hub to build apps and websites, organize SaaS ideas, and prepare monetization.",
-    "heroTitle": "SaaS Fabric by Inkognitroz",
-    "heroDescription": "Start in three steps: 1) Build apps and websites, 2) Organize SaaS ideas, and 3) Prepare monetization.",
+    "subtitle": "Static-first app factory by Inkognitroz.",
+    "heroLabel": "App factory & SaaS platform",
+    "heroTitle": "Build, Launch & Monetize Your SaaS Products",
+    "heroDescription": "SaaS Fabric is an open-source, static-first platform for building mini-apps, capturing ideas, tracking your roadmap and preparing to monetize — all without a backend.",
+    "heroCtas": [
+      { "text": "Explore Apps", "href": "#app-factory", "style": "primary" },
+      { "text": "View Roadmap", "href": "#roadmap", "style": "secondary" }
+    ],
+    "trustBadges": [
+      "✓ 100% Static",
+      "✓ Open Source",
+      "✓ GitHub Pages",
+      "✓ No Backend"
+    ],
     "promptWorkflow": "Store prompts in Prompt Inbox, then paste into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to request pull requests. Review manually and merge safely."
   },
   "sections": {
     "appFactory": [
       {
-        "title": "Build apps and websites",
-        "description": "Turn ideas into simple apps and websites with clear, repeatable steps.",
+        "title": "Football Evolution Matrix",
+        "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",
+        "link": "./apps/football-evolution-matrix/",
+        "badge": "Live",
+        "tags": ["football", "analytics", "matrix"]
+      },
+      {
+        "title": "SaaS Fabric Hub",
+        "description": "This site — a static app factory and portfolio hub built on GitHub Pages, powered by content.json.",
         "link": "./index.html",
-        "tags": ["build", "apps", "websites"]
+        "badge": "Live",
+        "tags": ["platform", "github-pages", "static"]
       }
     ],
     "saasIdeas": [
       {
-        "title": "Organize SaaS ideas",
-        "description": "Capture, sort, and prioritize ideas in one place so nothing gets lost.",
+        "title": "Prompt-to-brief SaaS",
+        "description": "A tool that turns rough prompts into structured implementation briefs, ready for Copilot or Codex.",
         "link": "#",
-        "tags": ["ideas", "planning", "saas"]
+        "badge": "Soon",
+        "tags": ["ai", "productivity", "saas"]
+      },
+      {
+        "title": "Portfolio KPI tracker",
+        "description": "Track launches, traffic, MRR goals and conversion experiments across your product portfolio.",
+        "link": "#",
+        "badge": "Soon",
+        "tags": ["dashboard", "metrics", "saas"]
       }
     ],
     "projects": [
       {
         "title": "SaaS Fabric public hub",
-        "description": "Static-first GitHub Pages hub for portfolio + pipeline",
+        "description": "Static-first GitHub Pages hub for portfolio and pipeline management.",
         "link": "./index.html",
+        "badge": "Live",
         "tags": ["github-pages", "platform"]
       },
       {
         "title": "Football Evolution Matrix",
         "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",
         "link": "./apps/football-evolution-matrix/",
+        "badge": "Live",
         "tags": ["football", "analytics", "matrix", "app"]
       }
     ],
     "templates": [
       {
         "title": "Landing page starter",
-        "description": "Reusable marketing page structure for future products",
+        "description": "Reusable marketing page structure for future products. Includes hero, features, CTA and footer.",
         "link": "#",
-        "tags": ["template", "launch"]
+        "badge": "WIP",
+        "tags": ["template", "launch", "marketing"]
       },
       {
-        "title": "Historical Performance Matrix Template",
+        "title": "Historical Performance Matrix",
         "description": "A reusable template for comparing development across periods, categories and indicators.",
         "link": "./apps/football-evolution-matrix/",
+        "badge": "Live",
         "tags": ["template", "matrix", "research"]
       }
     ],
     "tools": [
       {
         "title": "Prompt-to-brief converter",
-        "description": "Turn rough prompts into implementation-ready development briefs",
+        "description": "Turn rough prompts into implementation-ready development briefs for AI coding assistants.",
         "link": "#",
+        "badge": "Soon",
         "tags": ["ai", "productivity"]
       },
       {
         "title": "Football Evolution Matrix",
         "description": "Compare football development across time periods, indicators and data quality levels.",
         "link": "./apps/football-evolution-matrix/",
+        "badge": "Live",
         "tags": ["sports", "analysis", "editable"]
       }
     ],
     "dashboards": [
       {
         "title": "Portfolio KPI board",
-        "description": "Track launches, traffic, MRR goals and conversion experiments",
+        "description": "Track launches, traffic, MRR goals and conversion experiments across your product portfolio.",
         "link": "#",
+        "badge": "Soon",
         "tags": ["dashboard", "metrics"]
       }
     ],
     "uploads": [
       {
         "title": "CSV/XLSX assets",
-        "description": "Store links to uploads and datasets used by tools and apps",
+        "description": "Store links to uploads and datasets used by tools and apps.",
         "link": "#",
         "tags": ["uploads", "files"]
       }
@@ -109,26 +143,49 @@
     ],
     "monetization": [
       {
-        "title": "Prepare monetization",
-        "description": "Prepare pricing and launch plans so your product is ready to earn revenue.",
+        "title": "Freemium model",
+        "description": "Offer core tools free, gate advanced features and data exports behind a paid tier.",
         "link": "#",
-        "tags": ["pricing", "revenue", "launch"]
+        "badge": "Soon",
+        "tags": ["pricing", "freemium", "strategy"]
+      },
+      {
+        "title": "One-time purchases",
+        "description": "Sell standalone tools and templates as one-time digital products with no recurring cost.",
+        "link": "#",
+        "badge": "Soon",
+        "tags": ["pricing", "one-time", "tools"]
       }
     ],
     "roadmap": [
       {
-        "title": "v1.1 multi-product workflows",
-        "description": "Add richer content filtering and app lifecycle tracking",
+        "title": "v1.1 — Multi-product workflows",
+        "description": "Richer content filtering, app lifecycle tracking, and improved admin interface.",
         "link": "#",
-        "tags": ["roadmap", "product"]
+        "badge": "WIP",
+        "tags": ["roadmap", "v1.1", "product"]
+      },
+      {
+        "title": "v1.2 — Monetization path",
+        "description": "Pricing page, product badge system, and basic conversion tracking.",
+        "link": "#",
+        "badge": "Soon",
+        "tags": ["roadmap", "v1.2", "monetization"]
+      },
+      {
+        "title": "v2.0 — Multi-user platform",
+        "description": "Accounts, team workspaces, and a hosted SaaS version of the platform.",
+        "link": "#",
+        "badge": "Soon",
+        "tags": ["roadmap", "v2", "platform"]
       }
     ],
     "about": [
       {
         "title": "About SaaS Fabric",
-        "description": "SaaS Fabric is the foundation for a future multi-user SaaS platform managed through practical, non-technical workflows.",
-        "link": "#",
-        "tags": ["about", "platform"]
+        "description": "SaaS Fabric is a static-first, open-source app factory built by Inkognitroz. The goal is a practical, non-technical workflow for building and launching SaaS products without infrastructure overhead.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io",
+        "tags": ["about", "platform", "open-source"]
       }
     ]
   }
