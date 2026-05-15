@@ -27,6 +27,13 @@
         "tags": ["football", "analytics", "matrix"]
       },
       {
+        "title": "App Template Generator",
+        "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
+        "link": "./apps/app-template-generator/",
+        "badge": "Live",
+        "tags": ["generator", "template", "planning", "static"]
+      },
+      {
         "title": "SaaS Fabric Hub",
         "description": "This site — a static app factory and portfolio hub built on GitHub Pages, powered by content.json.",
         "link": "./index.html",
@@ -64,6 +71,13 @@
         "link": "./apps/football-evolution-matrix/",
         "badge": "Live",
         "tags": ["football", "analytics", "matrix", "app"]
+      },
+      {
+        "title": "App Template Generator",
+        "description": "Static planning app for turning new SaaS ideas into copy-ready implementation briefs and PR prompts.",
+        "link": "./apps/app-template-generator/",
+        "badge": "Live",
+        "tags": ["planning", "generator", "app"]
       }
     ],
     "templates": [
@@ -75,6 +89,13 @@
         "tags": ["template", "launch", "marketing"]
       },
       {
+        "title": "App brief generator template",
+        "description": "Generate issue text, folder structure, starter content.json card and launch checklist for a new SaaS Fabric app.",
+        "link": "./apps/app-template-generator/",
+        "badge": "Live",
+        "tags": ["template", "planning", "issue"]
+      },
+      {
         "title": "Historical Performance Matrix",
         "description": "A reusable template for comparing development across periods, categories and indicators.",
         "link": "./apps/football-evolution-matrix/",
@@ -83,6 +104,13 @@
       }
     ],
     "tools": [
+      {
+        "title": "App Template Generator",
+        "description": "Turn an app idea into GitHub issue text, folder structure, content card and launch checklist.",
+        "link": "./apps/app-template-generator/",
+        "badge": "Live",
+        "tags": ["generator", "planning", "workflow"]
+      },
       {
         "title": "Prompt-to-brief converter",
         "description": "Turn rough prompts into implementation-ready development briefs for AI coding assistants.",
