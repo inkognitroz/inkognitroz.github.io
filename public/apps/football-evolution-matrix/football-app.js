@@ -54,7 +54,7 @@
         ["B", "god", "Kildesikkerhet"],
         ["C", "moderat", "Kildesikkerhet"],
         ["D", "lav/historisk", "Kildesikkerhet"],
-        ["P", "prognose", "Kildesikkerhet"]
+        ["P", "prognose", "Kildesikkerhet"],
       ]
     },
     matrise: {
@@ -359,6 +359,14 @@
 </html>`;
   }
 
+  function sanitizeFilename(value) {
+    const sanitized = String(value || "football-evolution-matrix")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return sanitized || "football-evolution-matrix";
+  }
+
   function syncSectionFromTable() {
     const table = tableSection.querySelector("table");
     if (!table) return;
@@ -523,7 +531,7 @@
       const parsed = JSON.parse(rawText);
       const validated = validateImportedPayload(parsed);
 
-      const shouldImport = window.confirm("Import erstatter dagens datasett. Vil du fortsette?");
+      const shouldImport = window.confirm("Import erstatter dagens datasett. Forrige versjon lagres som backup. Vil du fortsette?");
       if (!shouldImport) {
         setStatus("Import avbrutt.", "info");
         return;
@@ -555,8 +563,7 @@
   document.getElementById("export-bundle").addEventListener("click", () => {
     syncSectionFromTable();
     syncMetadataFromForm(true);
-    const safeTitle = (appState.payload.metadata.title || "football-evolution-matrix").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    const fileBase = safeTitle || "football-evolution-matrix";
+    const fileBase = sanitizeFilename(appState.payload.metadata.title);
     downloadFile(JSON.stringify(appState.payload, null, 2), `${fileBase}.json`, "application/json");
     downloadFile(toBundleCsv(), `${fileBase}-bundle.csv`, "text/csv;charset=utf-8");
     downloadFile(toPrintableHtml(), `${fileBase}-print.html`, "text/html;charset=utf-8");
@@ -594,7 +601,7 @@
       return;
     }
 
-    const shouldApply = window.confirm("Valgt mal erstatter dagens datasett. Vil du fortsette?");
+    const shouldApply = window.confirm("Valgt mal erstatter dagens datasett. Forrige versjon lagres som backup. Vil du fortsette?");
     if (!shouldApply) {
       setStatus("Malvalg avbrutt.", "info");
       return;
@@ -609,7 +616,7 @@
 
   document.getElementById("reset-data").addEventListener("click", () => {
     syncSectionFromTable();
-    const shouldReset = window.confirm("Nullstill datasettet til standard v2? Dette kan angres med backup-knappen.");
+    const shouldReset = window.confirm("Nullstill datasettet til standard v2? Dette kan angres med «Gjenopprett backup»-knappen.");
     if (!shouldReset) {
       setStatus("Nullstilling avbrutt.", "info");
       return;
