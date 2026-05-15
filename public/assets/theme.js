@@ -64,6 +64,10 @@
     group("Components", [["--border", "Strong border"], ["--border-soft", "Soft border"], ["--button-bg", "Button background"], ["--button-text", "Button text"], ["--button-hover-bg", "Button hover"], ["--input-bg", "Input background"], ["--hero-text", "Hero text"]]),
     group("Hero gradient", [["--hero-start", "Hero start"], ["--hero-end", "Hero end"]])
   ];
+  var COLOR_PICKER_KEYS = COLOR_GROUPS.reduce(function (keys, group) {
+    group.fields.forEach(function (field) { keys[field.key] = true; });
+    return keys;
+  }, {});
 
   var FONT_OPTIONS = [
     ["Inter / system", "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"],
@@ -188,6 +192,9 @@
       } else if (rangeField) {
         var n = parseFloat(value);
         if (!Number.isNaN(n) && n >= rangeField.min && n <= rangeField.max) out[key] = n + rangeField.suffix;
+      } else if (COLOR_PICKER_KEYS[key]) {
+        var normalised = hex(value);
+        if (normalised) out[key] = normalised;
       } else if (/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(\s*,\s*[\d.]+)?\s*\))$/.test(value)) {
         out[key] = value;
       }
