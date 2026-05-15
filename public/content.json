@@ -87,6 +87,24 @@
         "description": "Create a PR updating sections.templates in public/content.json with one new template including title, description, tags and link.",
         "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md",
         "tags": ["prompt", "issues"]
+      },
+      {
+        "title": "Open PR: Align content issue template with live sections",
+        "description": "Update .github/ISSUE_TEMPLATE/content-update.md so section checkboxes match current sections in public/content.json.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md",
+        "tags": ["code-review", "priority-high", "templates"]
+      },
+      {
+        "title": "Open PR: Harden CSV import parsing",
+        "description": "Replace naive comma split logic in public/assets/app.js parseCsv so quoted commas and escaped values import safely.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=bug-report.md",
+        "tags": ["code-review", "priority-high", "admin"]
+      },
+      {
+        "title": "Open PR: Add pre-deploy validation workflow",
+        "description": "Add a fast PR workflow to validate public/content.json and prevent invalid static content from reaching production.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=new-app.md",
+        "tags": ["code-review", "priority-medium", "ci"]
       }
     ],
     "monetization": [
