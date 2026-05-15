@@ -1,0 +1,60 @@
+name: Static quality gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate static site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        run: |
+          set -euo pipefail
+          find . -name '*.json' -not -path './.git/*' -print0 | while IFS= read -r -d '' file; do
+            echo "Validating $file"
+            python -m json.tool "$file" > /dev/null
+          done
+
+      - name: JavaScript syntax check
+        run: |
+          set -euo pipefail
+          find public -name '*.js' -print0 | while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+
+      - name: Check for forbidden frontend secrets
+        run: |
+          set -euo pipefail
+          ! grep -RInE 'ghp_[A-Za-z0-9_]+|sk_live_[A-Za-z0-9_]+|sk_test_[A-Za-z0-9_]+|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+' public || \
+            (echo 'Forbidden token-like string found in public frontend files.' && exit 1)
+          ! grep -RInE 'SUPABASE_SERVICE_ROLE\s*=|STRIPE_SECRET\s*=|OPENAI_API_KEY\s*=|ANTHROPIC_API_KEY\s*=' public docs README.md START_HERE.md AGENTS.md CLAUDE.md || \
+            (echo 'Forbidden secret assignment found. Use placeholders and server-side environment variables only.' && exit 1)
+
+      - name: Check required public entrypoints
+        run: |
+          set -euo pipefail
+          test -f public/index.html
+          test -f public/admin.html
+          test -f public/content.json
+          test -f public/assets/app.js
+          test -f public/assets/styles.css
+          test -f public/apps/football-evolution-matrix/index.html
+          test -f public/apps/football-evolution-matrix/football-app.js
+          test -f public/apps/football-evolution-matrix/football-styles.css
+
+      - name: Smoke-check route references
+        run: |
+          set -euo pipefail
+          grep -RIn './apps/football-evolution-matrix/' public/content.json
+          grep -RIn './assets/theme.js' public/index.html
