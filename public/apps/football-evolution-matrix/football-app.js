@@ -556,9 +556,10 @@
     syncSectionFromTable();
     syncMetadataFromForm(true);
     const safeTitle = (appState.payload.metadata.title || "football-evolution-matrix").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    downloadFile(JSON.stringify(appState.payload, null, 2), `${safeTitle || "football-evolution-matrix"}.json`, "application/json");
-    downloadFile(toBundleCsv(), `${safeTitle || "football-evolution-matrix"}-bundle.csv`, "text/csv;charset=utf-8");
-    downloadFile(toPrintableHtml(), `${safeTitle || "football-evolution-matrix"}-print.html`, "text/html;charset=utf-8");
+    const fileBase = safeTitle || "football-evolution-matrix";
+    downloadFile(JSON.stringify(appState.payload, null, 2), `${fileBase}.json`, "application/json");
+    downloadFile(toBundleCsv(), `${fileBase}-bundle.csv`, "text/csv;charset=utf-8");
+    downloadFile(toPrintableHtml(), `${fileBase}-print.html`, "text/html;charset=utf-8");
     setStatus("Eksportpakke klar: JSON, CSV-bundle og utskriftsvennlig HTML.", "success");
   });
 
