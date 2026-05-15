@@ -366,7 +366,7 @@
 
   function saveBackupSnapshot(content, label) {
     const backups = readBackups();
-    const fallbackId = `${Date.now()}-${(globalThis.performance?.now?.() || 0).toFixed(3)}`;
+    const fallbackId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     backups.unshift({
       id: globalThis.crypto?.randomUUID?.() || fallbackId,
       label,
@@ -672,7 +672,7 @@
   importXlsxButton.addEventListener("click", () => {
     const xlsxFile = xlsxInput.files?.[0];
     const name = xlsxFile ? `"${xlsxFile.name}"` : "your XLSX file";
-    setNotice("success", `XLSX import is still a safe placeholder: convert ${name} to CSV, then import it here. A future backend or browser parser can handle XLSX directly.`);
+    setNotice("success", `XLSX import remains a safe placeholder: convert ${name} to CSV, then import it here. A future backend or browser parser can handle XLSX directly.`);
   });
 
   refreshBackupSelect();
