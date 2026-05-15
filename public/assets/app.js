@@ -13,10 +13,11 @@
   function cardTemplate(item) {
     const title = escapeHtml(item.title || "Untitled");
     const description = escapeHtml(item.description || "");
-    const link = item.link && item.link !== "#" ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">Open</a>` : "";
+    const link = item.link && item.link !== "#" ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">Open →</a>` : "";
     const tags = Array.isArray(item.tags) ? item.tags : [];
     const tagsHtml = tags.length ? `<div class="tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>` : "";
-    return `<article class="card-item"><h3>${title}</h3><p>${description}</p>${link}${tagsHtml}</article>`;
+    const badge = item.badge ? `<span class="card-badge badge-${escapeHtml(item.badge.toLowerCase().replace(/\s+/g, "-"))}">${escapeHtml(item.badge)}</span>` : "";
+    return `<article class="card-item"><div class="card-item-header"><h3>${title}</h3>${badge}</div><p>${description}</p>${link}${tagsHtml}</article>`;
   }
 
   function renderIntoContainer(container, items) {
@@ -42,13 +43,33 @@
 
     const titleEl = root.querySelector("#site-title");
     const subtitleEl = root.querySelector("#site-subtitle");
+    const heroLabelEl = root.querySelector("#hero-label");
     const heroTitleEl = root.querySelector("#hero-title");
     const heroDescEl = root.querySelector("#hero-description");
+    const heroCtas = root.querySelector("#hero-ctas");
+    const trustBar = root.querySelector("#trust-bar");
+    const footerSubtitle = root.querySelector("#footer-subtitle");
 
     if (titleEl) titleEl.textContent = site.title || "SaaS Fabric";
     if (subtitleEl) subtitleEl.textContent = site.subtitle || "Build, publish and monetize apps, tools and SaaS products.";
-    if (heroTitleEl) heroTitleEl.textContent = site.heroTitle || "SaaS Fabric by Inkognitroz";
+    if (heroLabelEl && site.heroLabel) heroLabelEl.textContent = site.heroLabel;
+    if (heroTitleEl) heroTitleEl.innerHTML = site.heroTitle || "Build, Launch &amp; Monetize<br>Your SaaS Products";
     if (heroDescEl) heroDescEl.textContent = site.heroDescription || "";
+
+    if (heroCtas && Array.isArray(site.heroCtas) && site.heroCtas.length) {
+      heroCtas.innerHTML = site.heroCtas.map((cta) => {
+        const cls = cta.style === "secondary" ? "btn btn-secondary" : "btn btn-primary";
+        return `<a href="${escapeHtml(cta.href || "#")}" class="${cls}">${escapeHtml(cta.text || "")}</a>`;
+      }).join("");
+    }
+
+    if (trustBar && Array.isArray(site.trustBadges) && site.trustBadges.length) {
+      trustBar.innerHTML = site.trustBadges.map((badge) =>
+        `<span class="trust-badge">${escapeHtml(badge)}</span>`
+      ).join("");
+    }
+
+    if (footerSubtitle && site.subtitle) footerSubtitle.textContent = site.subtitle;
 
     root.querySelectorAll("[data-section]").forEach((el) => {
       const sectionKey = el.dataset.section;

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SaaS Fabric by Inkognitroz</title>
+  <meta name="description" content="Build, launch and monetize SaaS products. A static-first open-source app factory — no backend required." />
   <link rel="stylesheet" href="./assets/styles.css" />
   <script>
     /* Restore saved theme before first paint to prevent flash */
@@ -34,20 +35,14 @@
 </head>
 <body data-page="home">
   <header class="site-header">
-    <div class="container">
-      <h1 id="site-title">SaaS Fabric</h1>
-      <p id="site-subtitle">Build, publish and monetize apps, tools and SaaS products.</p>
-      <nav>
-        <a href="#home">Home</a>
-        <a href="#app-factory">App Factory</a>
-        <a href="#saas-ideas">SaaS Ideas</a>
-        <a href="#projects">Projects</a>
-        <a href="#templates">Templates</a>
-        <a href="#tools">Tools</a>
-        <a href="#dashboards">Dashboards</a>
-        <a href="#uploads">Uploads / Files</a>
-        <a href="#prompt-inbox">Prompt Inbox</a>
-        <a href="#monetization">Monetization</a>
+    <div class="container header-inner">
+      <div class="header-brand">
+        <h1 id="site-title">SaaS Fabric</h1>
+        <p id="site-subtitle">Build, publish and monetize apps, tools and SaaS products.</p>
+      </div>
+      <nav aria-label="Primary navigation">
+        <a href="#app-factory">Apps</a>
+        <a href="#how-it-works">How it works</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#about">About</a>
         <a class="admin-link" href="./admin.html">Admin</a>
@@ -55,72 +50,153 @@
     </div>
   </header>
 
-  <main class="container" id="home">
-    <section class="hero card">
-      <h2 id="hero-title">SaaS Fabric by Inkognitroz</h2>
-      <p id="hero-description"></p>
+  <main id="home">
+
+    <!-- ── Hero ── -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-content">
+        <p class="hero-label" id="hero-label">App factory &amp; SaaS platform</p>
+        <h2 id="hero-title">Build, Launch &amp; Monetize<br>Your SaaS Products</h2>
+        <p id="hero-description">SaaS Fabric is an open-source, static-first platform for building mini-apps, capturing ideas, tracking your roadmap and preparing to monetize — all without a backend.</p>
+        <div class="hero-ctas" id="hero-ctas">
+          <a href="#app-factory" class="btn btn-primary">Explore Apps</a>
+          <a href="#roadmap" class="btn btn-secondary">View Roadmap</a>
+        </div>
+        <div class="trust-bar" id="trust-bar" aria-label="Product guarantees">
+          <span class="trust-badge">✓ 100% Static</span>
+          <span class="trust-badge">✓ Open Source</span>
+          <span class="trust-badge">✓ GitHub Pages</span>
+          <span class="trust-badge">✓ No Backend</span>
+        </div>
+      </div>
     </section>
 
-    <section id="app-factory">
+    <!-- ── How It Works ── -->
+    <section id="how-it-works" class="container section-spaced">
+      <p class="section-label">Simple workflow</p>
+      <h2>How it works</h2>
+      <div class="steps-grid" id="steps-grid">
+        <div class="step">
+          <span class="step-number">1</span>
+          <h3>Build</h3>
+          <p>Turn ideas into small, focused apps and websites with clear, repeatable steps — no backend required.</p>
+        </div>
+        <div class="step">
+          <span class="step-number">2</span>
+          <h3>Organise</h3>
+          <p>Capture SaaS ideas and projects in one place. Prioritise what to build next and never lose a good idea.</p>
+        </div>
+        <div class="step">
+          <span class="step-number">3</span>
+          <h3>Monetize</h3>
+          <p>Prepare pricing, launch plans and conversion experiments so your product is ready to earn revenue.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Apps ── -->
+    <section id="app-factory" class="container section-spaced">
+      <p class="section-label">Live products</p>
       <h2>App Factory</h2>
       <div class="grid" data-section="appFactory"></div>
     </section>
 
-    <section id="saas-ideas">
-      <h2>SaaS Ideas</h2>
-      <div class="grid" data-section="saasIdeas"></div>
-    </section>
-
-    <section id="projects">
+    <!-- ── Projects ── -->
+    <section id="projects" class="container section-spaced">
+      <p class="section-label">Portfolio</p>
       <h2>Projects</h2>
       <div class="grid" data-section="projects"></div>
     </section>
 
-    <section id="templates">
-      <h2>Templates</h2>
-      <div class="grid" data-section="templates"></div>
-    </section>
-
-    <section id="tools">
+    <!-- ── Tools ── -->
+    <section id="tools" class="container section-spaced">
+      <p class="section-label">Utilities</p>
       <h2>Tools</h2>
       <div class="grid" data-section="tools"></div>
     </section>
 
-    <section id="dashboards">
+    <!-- ── SaaS Ideas ── -->
+    <section id="saas-ideas" class="container section-spaced">
+      <p class="section-label">Ideas pipeline</p>
+      <h2>SaaS Ideas</h2>
+      <div class="grid" data-section="saasIdeas"></div>
+    </section>
+
+    <!-- ── Templates ── -->
+    <section id="templates" class="container section-spaced">
+      <p class="section-label">Reusable starting points</p>
+      <h2>Templates</h2>
+      <div class="grid" data-section="templates"></div>
+    </section>
+
+    <!-- ── Monetization ── -->
+    <section id="monetization" class="container section-spaced">
+      <p class="section-label">Revenue path</p>
+      <h2>Monetization</h2>
+      <div class="grid" data-section="monetization"></div>
+    </section>
+
+    <!-- ── Roadmap ── -->
+    <section id="roadmap" class="container section-spaced">
+      <p class="section-label">What's coming</p>
+      <h2>Roadmap</h2>
+      <div class="grid" data-section="roadmap"></div>
+    </section>
+
+    <!-- ── Dashboards ── -->
+    <section id="dashboards" class="container section-spaced">
+      <p class="section-label">Metrics</p>
       <h2>Dashboards</h2>
       <div class="grid" data-section="dashboards"></div>
     </section>
 
-    <section id="uploads">
-      <h2>Uploads / Files</h2>
-      <div class="grid" data-section="uploads"></div>
-    </section>
-
-    <section id="prompt-inbox">
+    <!-- ── Prompt Inbox ── -->
+    <section id="prompt-inbox" class="container section-spaced">
+      <p class="section-label">AI-assisted workflow</p>
       <h2>Prompt Inbox</h2>
       <p class="section-description">Store prompts and tasks here, then paste them into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate PR-ready updates.</p>
       <div class="grid" data-section="promptInbox"></div>
     </section>
 
-    <section id="monetization">
-      <h2>Monetization</h2>
-      <div class="grid" data-section="monetization"></div>
+    <!-- ── Uploads ── -->
+    <section id="uploads" class="container section-spaced">
+      <p class="section-label">Assets</p>
+      <h2>Uploads / Files</h2>
+      <div class="grid" data-section="uploads"></div>
     </section>
 
-    <section id="roadmap">
-      <h2>Roadmap</h2>
-      <div class="grid" data-section="roadmap"></div>
-    </section>
-
-    <section id="about">
+    <!-- ── About ── -->
+    <section id="about" class="container section-spaced">
+      <p class="section-label">Background</p>
       <h2>About</h2>
       <div class="grid" data-section="about"></div>
     </section>
+
   </main>
 
   <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>SaaS Fabric</strong>
+        <p id="footer-subtitle">Static-first app factory by Inkognitroz.</p>
+      </div>
+      <nav class="footer-links" aria-label="Product links">
+        <p class="footer-group-label">Product</p>
+        <a href="#app-factory">Apps</a>
+        <a href="#saas-ideas">Ideas</a>
+        <a href="#templates">Templates</a>
+        <a href="#monetization">Monetization</a>
+      </nav>
+      <nav class="footer-links" aria-label="Meta links">
+        <p class="footer-group-label">Platform</p>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#about">About</a>
+        <a href="./admin.html">Admin</a>
+        <a href="https://github.com/inkognitroz/inkognitroz.github.io" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </nav>
+    </div>
     <div class="container">
-      <p>Version 1. Static-first, safe, GitHub Pages compatible, and powered by <code>public/content.json</code>.</p>
+      <p class="footer-legal">Version 1 · Static-first · GitHub Pages compatible · Powered by <code>public/content.json</code></p>
     </div>
   </footer>
 
