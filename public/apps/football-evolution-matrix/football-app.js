@@ -1,5 +1,6 @@
 (function () {
-  const STORAGE_KEY = "football-evolution-matrix-v1";
+  const STORAGE_KEY = "football-evolution-matrix-v2";
+  const LEGACY_STORAGE_KEY = "football-evolution-matrix-v1";
 
   const sectionOrder = [
     { key: "oversikt", label: "Oversikt" },
@@ -10,7 +11,15 @@
     { key: "kilder", label: "Kilder" }
   ];
 
-  const defaultData = {
+  const defaultMetadata = {
+    title: "Football Evolution Matrix",
+    owner: "",
+    version: "v2.0",
+    updatedAt: "",
+    notes: ""
+  };
+
+  const defaultSections = {
     oversikt: {
       columns: ["Felt", "Verdi", "Kommentar"],
       rows: [
@@ -45,7 +54,7 @@
         ["B", "god", "Kildesikkerhet"],
         ["C", "moderat", "Kildesikkerhet"],
         ["D", "lav/historisk", "Kildesikkerhet"],
-        ["P", "prognose", "Kildesikkerhet"],
+        ["P", "prognose", "Kildesikkerhet"]
       ]
     },
     matrise: {
@@ -110,38 +119,159 @@
     }
   };
 
+  const templatePresets = {
+    "player-development": {
+      metadata: {
+        title: "Spillerutvikling Matrix",
+        owner: "Akademi",
+        version: "v2.0"
+      },
+      oversiktRows: [
+        ["Formål", "Følge spillerutvikling per fase", "Brukes i ukentlig oppfølging"],
+        ["Dekning", "Teknikk, fysisk profil, taktisk forståelse, mentalitet", "Akademi og A-lag"],
+        ["Skala", "1-10 + vurderingstekst", "Kombiner med video"],
+        ["Datakoder", "DATA, EST, PROG", "Se Datadefinisjoner"]
+      ]
+    },
+    "match-analysis": {
+      metadata: {
+        title: "Kampanalyse Matrix",
+        owner: "Analyseavdeling",
+        version: "v2.0"
+      },
+      oversiktRows: [
+        ["Formål", "Evaluere kampytelse mot plan", "Før/etter kamp"],
+        ["Dekning", "Press, struktur, overgangsspill, sjansekvalitet", "Knytter mot video"],
+        ["Skala", "1-10 per kampperiode", "Kan sammenlignes over tid"],
+        ["Datakoder", "DATA, EST", "Rådata + manuell koding"]
+      ]
+    },
+    scouting: {
+      metadata: {
+        title: "Scouting Matrix",
+        owner: "Rekruttering",
+        version: "v2.0"
+      },
+      oversiktRows: [
+        ["Formål", "Sammenligne kandidater med samme rammeverk", "Brukes i shortlisting"],
+        ["Dekning", "Rollekrav, potensial, risiko, datastøtte", "Kombiner med live-rapporter"],
+        ["Skala", "1-10 + risikokode", "Lik skala på tvers av ligaer"],
+        ["Datakoder", "DATA, EST, UKJ, PROG", "Dokumenter kildene"]
+      ]
+    },
+    "historical-comparison": {
+      metadata: {
+        title: "Historisk Sammenligning Matrix",
+        owner: "Historieprosjekt",
+        version: "v2.0"
+      },
+      oversiktRows: [
+        ["Formål", "Sammenligne epoker på samme indikatorer", "Gir kontekst i diskusjoner"],
+        ["Dekning", "Spillestil, fysikk, teknologi, datakvalitet", "Vis utviklingstrender"],
+        ["Skala", "1-10 normalisert", "Behold samme tolkning"],
+        ["Datakoder", "DATA, EST, UKJ, N/A, PROG", "Transparens i usikkerhet"]
+      ]
+    }
+  };
+
+  const requiredColumns = sectionOrder.reduce((acc, section) => {
+    acc[section.key] = deepClone(defaultSections[section.key].columns);
+    return acc;
+  }, {});
+
   const appState = {
     activeSection: "oversikt",
-    data: loadData()
+    payload: loadPayload(),
+    lastBackup: null
   };
 
   const tabButtons = document.getElementById("tab-buttons");
   const tableSection = document.getElementById("table-section");
   const statusEl = document.getElementById("status");
+  const importFile = document.getElementById("import-file");
+  const templateSelect = document.getElementById("template-select");
+  const restoreBackupBtn = document.getElementById("restore-backup");
 
   function deepClone(value) {
     return JSON.parse(JSON.stringify(value));
   }
 
-  function loadData() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return deepClone(defaultData);
+  function normalizePayload(parsed) {
+    const metadata = { ...defaultMetadata, ...(parsed.metadata || {}) };
+    const sectionsSource = parsed.sections && typeof parsed.sections === "object"
+      ? parsed.sections
+      : parsed;
+
+    const sections = deepClone(defaultSections);
+    for (const { key } of sectionOrder) {
+      const section = sectionsSource[key];
+      if (section && typeof section === "object" && Array.isArray(section.columns) && Array.isArray(section.rows)) {
+        sections[key] = {
+          columns: section.columns.map((column) => String(column ?? "")),
+          rows: section.rows.map((row) => Array.isArray(row) ? row.map((cell) => String(cell ?? "")) : [])
+        };
+      }
+    }
+
+    return {
+      metadata,
+      sections
+    };
+  }
+
+  function loadPayload() {
+    const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!saved) {
+      return normalizePayload({ metadata: deepClone(defaultMetadata), sections: deepClone(defaultSections) });
+    }
 
     try {
-      const parsed = JSON.parse(saved);
-      return parsed && typeof parsed === "object" ? parsed : deepClone(defaultData);
+      return normalizePayload(JSON.parse(saved));
     } catch (error) {
-      return deepClone(defaultData);
+      return normalizePayload({ metadata: deepClone(defaultMetadata), sections: deepClone(defaultSections) });
     }
   }
 
-  function setStatus(message) {
-    statusEl.textContent = message;
+  function nowIsoDate() {
+    return new Date().toISOString().slice(0, 10);
   }
 
-  function saveLocal() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
-    setStatus("Lokal lagring oppdatert.");
+  function setStatus(message, tone) {
+    statusEl.textContent = message;
+    statusEl.className = "status";
+    if (tone) {
+      statusEl.classList.add(`status--${tone}`);
+    }
+  }
+
+  function touchUpdatedAt() {
+    appState.payload.metadata.updatedAt = nowIsoDate();
+    document.getElementById("meta-updated").value = appState.payload.metadata.updatedAt;
+  }
+
+  function syncMetadataFromForm(markTouched) {
+    appState.payload.metadata.title = document.getElementById("meta-title").value.trim();
+    appState.payload.metadata.owner = document.getElementById("meta-owner").value.trim();
+    appState.payload.metadata.version = document.getElementById("meta-version").value.trim();
+    appState.payload.metadata.notes = document.getElementById("meta-notes").value.trim();
+    if (markTouched) {
+      touchUpdatedAt();
+    }
+  }
+
+  function renderMetadata() {
+    document.getElementById("meta-title").value = appState.payload.metadata.title || "";
+    document.getElementById("meta-owner").value = appState.payload.metadata.owner || "";
+    document.getElementById("meta-version").value = appState.payload.metadata.version || "";
+    document.getElementById("meta-updated").value = appState.payload.metadata.updatedAt || "";
+    document.getElementById("meta-notes").value = appState.payload.metadata.notes || "";
+  }
+
+  function saveLocal(message) {
+    syncSectionFromTable();
+    syncMetadataFromForm(true);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.payload));
+    setStatus(message || "Lokal lagring oppdatert.", "success");
   }
 
   function downloadFile(content, filename, mimeType) {
@@ -163,25 +293,144 @@
       .replace(/'/g, "&#39;");
   }
 
+  function csvRow(cells) {
+    return cells.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",");
+  }
+
   function toCsv(section) {
-    const lines = [section.columns, ...section.rows].map((row) => row.map((cell) => {
-      const value = String(cell ?? "").replace(/"/g, '""');
-      return `"${value}"`;
-    }).join(","));
+    const lines = [section.columns, ...section.rows].map(csvRow);
     return "\uFEFF" + lines.join("\n");
+  }
+
+  function toBundleCsv() {
+    const lines = [];
+    for (const sectionRef of sectionOrder) {
+      const section = appState.payload.sections[sectionRef.key];
+      lines.push(csvRow([`Seksjon: ${sectionRef.label}`]));
+      lines.push(csvRow(section.columns));
+      for (const row of section.rows) {
+        lines.push(csvRow(row));
+      }
+      lines.push("");
+    }
+    return "\uFEFF" + lines.join("\n");
+  }
+
+  function toPrintableHtml() {
+    const metadata = appState.payload.metadata;
+    const sectionsHtml = sectionOrder.map((sectionRef) => {
+      const section = appState.payload.sections[sectionRef.key];
+      const header = section.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("");
+      const rows = section.rows.map((row) => `<tr>${section.columns.map((_, index) => `<td>${escapeHtml(row[index] || "")}</td>`).join("")}</tr>`).join("");
+      return `
+        <section>
+          <h2>${escapeHtml(sectionRef.label)}</h2>
+          <table>
+            <thead><tr>${header}</tr></thead>
+            <tbody>${rows || `<tr><td colspan="${section.columns.length || 1}">Ingen rader.</td></tr>`}</tbody>
+          </table>
+        </section>
+      `;
+    }).join("\n");
+
+    return `<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <title>${escapeHtml(metadata.title || "Football Evolution Matrix")}</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #111; margin: 20px; }
+    h1 { margin: 0 0 10px; }
+    p { margin: 0 0 6px; }
+    section { margin-top: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #888; text-align: left; padding: 6px; vertical-align: top; }
+    thead th { background: #efefef; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(metadata.title || "Football Evolution Matrix")}</h1>
+  <p><strong>Eier:</strong> ${escapeHtml(metadata.owner || "-")}</p>
+  <p><strong>Versjon:</strong> ${escapeHtml(metadata.version || "-")}</p>
+  <p><strong>Sist oppdatert:</strong> ${escapeHtml(metadata.updatedAt || "-")}</p>
+  <p><strong>Notater:</strong> ${escapeHtml(metadata.notes || "-")}</p>
+  ${sectionsHtml}
+</body>
+</html>`;
   }
 
   function syncSectionFromTable() {
     const table = tableSection.querySelector("table");
     if (!table) return;
 
-    const headers = Array.from(table.querySelectorAll("thead th"))
-      .map((cell) => cell.textContent);
-
-    const rows = Array.from(table.querySelectorAll("tbody tr"))
+    const headers = Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent);
+    const rows = Array.from(table.querySelectorAll("tbody tr[data-row='true']"))
       .map((row) => Array.from(row.querySelectorAll("td")).map((cell) => cell.textContent));
 
-    appState.data[appState.activeSection] = { columns: headers, rows };
+    appState.payload.sections[appState.activeSection] = { columns: headers, rows };
+  }
+
+  function createTemplatePayload(templateKey) {
+    const template = templatePresets[templateKey];
+    if (!template) return null;
+    const payload = normalizePayload({ metadata: deepClone(defaultMetadata), sections: deepClone(defaultSections) });
+    payload.metadata = {
+      ...payload.metadata,
+      ...template.metadata,
+      updatedAt: nowIsoDate()
+    };
+    payload.sections.oversikt.rows = deepClone(template.oversiktRows);
+    return payload;
+  }
+
+  function stashBackup(reasonText) {
+    appState.lastBackup = deepClone(appState.payload);
+    restoreBackupBtn.disabled = false;
+    restoreBackupBtn.dataset.reason = reasonText;
+  }
+
+  function validateImportedPayload(parsed) {
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Ugyldig filformat.");
+    }
+
+    const allowedKeys = new Set(["metadata", "sections", ...sectionOrder.map((section) => section.key)]);
+    for (const key of Object.keys(parsed)) {
+      if (!allowedKeys.has(key)) {
+        throw new Error(`Ukjent toppnivå-felt: ${key}`);
+      }
+    }
+
+    const source = parsed.sections && typeof parsed.sections === "object" ? parsed.sections : parsed;
+    for (const { key, label } of sectionOrder) {
+      const section = source[key];
+      if (!section || typeof section !== "object" || Array.isArray(section)) {
+        throw new Error(`Mangler seksjon: ${label}`);
+      }
+      if (!Array.isArray(section.columns) || section.columns.length === 0) {
+        throw new Error(`Seksjon ${label} må ha kolonner.`);
+      }
+      if (!Array.isArray(section.rows)) {
+        throw new Error(`Seksjon ${label} må ha rader.`);
+      }
+
+      const required = requiredColumns[key];
+      const missingColumns = required.filter((column) => !section.columns.includes(column));
+      if (missingColumns.length > 0) {
+        throw new Error(`Seksjon ${label} mangler kolonner: ${missingColumns.join(", ")}`);
+      }
+
+      section.rows.forEach((row, index) => {
+        if (!Array.isArray(row)) {
+          throw new Error(`Seksjon ${label}, rad ${index + 1} er ikke en radliste.`);
+        }
+        if (row.length !== section.columns.length) {
+          throw new Error(`Seksjon ${label}, rad ${index + 1} har ${row.length} felt. Forventet ${section.columns.length}.`);
+        }
+      });
+    }
+
+    return normalizePayload(parsed);
   }
 
   function renderTabs() {
@@ -191,29 +440,42 @@
   }
 
   function renderTable() {
-    const section = appState.data[appState.activeSection] || { columns: [], rows: [] };
+    const section = appState.payload.sections[appState.activeSection] || { columns: [], rows: [] };
     const sectionMeta = sectionOrder.find((item) => item.key === appState.activeSection);
+    const hasColumns = section.columns.length > 0;
 
     const headerHtml = section.columns
       .map((column) => `<th contenteditable="true" spellcheck="false">${escapeHtml(column)}</th>`)
       .join("");
 
     const rowHtml = section.rows
-      .map((row) => `
-        <tr>${section.columns.map((_, index) => `<td contenteditable="true" spellcheck="false">${escapeHtml(row[index] || "")}</td>`).join("")}</tr>
-      `)
+      .map((row) => (
+        `<tr data-row="true">${section.columns.map((_, index) => `<td contenteditable="true" spellcheck="false">${escapeHtml(row[index] || "")}</td>`).join("")}</tr>`
+      ))
       .join("");
+
+    const emptyState = !hasColumns
+      ? `<tr><td colspan="1" class="empty-state">Ingen kolonner ennå. Bruk «Legg til kolonne» for å starte.</td></tr>`
+      : !section.rows.length
+        ? `<tr><td colspan="${section.columns.length}" class="empty-state">Ingen rader i denne seksjonen ennå. Bruk «Legg til rad».</td></tr>`
+        : "";
 
     tableSection.innerHTML = `
       <h2 class="section-title">${sectionMeta ? sectionMeta.label : "Seksjon"}</h2>
-      <p class="section-description">Klikk i cellene for å redigere innholdet direkte.</p>
+      <p class="section-description">Klikk i cellene for å redigere innholdet direkte. Aktiv seksjon har ${section.columns.length} kolonner og ${section.rows.length} rader.</p>
       <div class="table-wrap">
         <table class="matrix-table">
-          <thead><tr>${headerHtml}</tr></thead>
-          <tbody>${rowHtml}</tbody>
+          <thead><tr>${headerHtml || "<th contenteditable='true' spellcheck='false'>Ny kolonne</th>"}</tr></thead>
+          <tbody>${rowHtml || emptyState}</tbody>
         </table>
       </div>
     `;
+  }
+
+  function rerenderAll() {
+    renderMetadata();
+    renderTabs();
+    renderTable();
   }
 
   tabButtons.addEventListener("click", (event) => {
@@ -229,18 +491,24 @@
     syncSectionFromTable();
   });
 
+  ["meta-title", "meta-owner", "meta-version", "meta-notes"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", () => {
+      syncMetadataFromForm(false);
+      setStatus("Metadata oppdatert. Husk å lagre lokalt.", "info");
+    });
+  });
+
   document.getElementById("save-local").addEventListener("click", () => {
-    syncSectionFromTable();
     saveLocal();
   });
 
   document.getElementById("export-json").addEventListener("click", () => {
     syncSectionFromTable();
-    downloadFile(JSON.stringify(appState.data, null, 2), "football-evolution-matrix.json", "application/json");
-    setStatus("JSON eksportert.");
+    syncMetadataFromForm(true);
+    downloadFile(JSON.stringify(appState.payload, null, 2), "football-evolution-matrix.json", "application/json");
+    setStatus("JSON eksportert.", "success");
   });
 
-  const importFile = document.getElementById("import-file");
   document.getElementById("import-json").addEventListener("click", () => {
     importFile.click();
   });
@@ -250,26 +518,26 @@
     if (!file) return;
 
     try {
+      syncSectionFromTable();
       const rawText = await file.text();
       const parsed = JSON.parse(rawText);
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        throw new Error("Ugyldig filformat");
+      const validated = validateImportedPayload(parsed);
+
+      const shouldImport = window.confirm("Import erstatter dagens datasett. Vil du fortsette?");
+      if (!shouldImport) {
+        setStatus("Import avbrutt.", "info");
+        return;
       }
-      const merged = deepClone(defaultData);
-      for (const { key } of sectionOrder) {
-        const section = parsed[key];
-        if (section && typeof section === "object" &&
-            Array.isArray(section.columns) && Array.isArray(section.rows)) {
-          merged[key] = section;
-        }
+
+      stashBackup("import");
+      appState.payload = validated;
+      if (!appState.payload.metadata.updatedAt) {
+        touchUpdatedAt();
       }
-      appState.data = merged;
-      renderTabs();
-      renderTable();
-      saveLocal();
-      setStatus("JSON importert.");
+      rerenderAll();
+      saveLocal("JSON importert og lagret lokalt. Du kan gjenopprette forrige datasett.");
     } catch (error) {
-      setStatus("Kunne ikke importere JSON.");
+      setStatus(`Kunne ikke importere JSON: ${error.message}`, "error");
     } finally {
       importFile.value = "";
     }
@@ -277,25 +545,35 @@
 
   document.getElementById("export-csv").addEventListener("click", () => {
     syncSectionFromTable();
-    const section = appState.data[appState.activeSection];
+    const section = appState.payload.sections[appState.activeSection];
     if (!section) return;
     const csv = toCsv(section);
     downloadFile(csv, `football-evolution-${appState.activeSection}.csv`, "text/csv;charset=utf-8");
-    setStatus("CSV eksportert for aktiv seksjon.");
+    setStatus("CSV eksportert for aktiv seksjon.", "success");
+  });
+
+  document.getElementById("export-bundle").addEventListener("click", () => {
+    syncSectionFromTable();
+    syncMetadataFromForm(true);
+    const safeTitle = (appState.payload.metadata.title || "football-evolution-matrix").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    downloadFile(JSON.stringify(appState.payload, null, 2), `${safeTitle || "football-evolution-matrix"}.json`, "application/json");
+    downloadFile(toBundleCsv(), `${safeTitle || "football-evolution-matrix"}-bundle.csv`, "text/csv;charset=utf-8");
+    downloadFile(toPrintableHtml(), `${safeTitle || "football-evolution-matrix"}-print.html`, "text/html;charset=utf-8");
+    setStatus("Eksportpakke klar: JSON, CSV-bundle og utskriftsvennlig HTML.", "success");
   });
 
   document.getElementById("add-row").addEventListener("click", () => {
     syncSectionFromTable();
-    const section = appState.data[appState.activeSection];
+    const section = appState.payload.sections[appState.activeSection];
     const row = section.columns.map((_, index) => (index === 0 ? "Ny rad" : ""));
     section.rows.push(row);
     renderTable();
-    setStatus("Ny rad lagt til.");
+    setStatus("Ny rad lagt til.", "success");
   });
 
   document.getElementById("add-column").addEventListener("click", () => {
     syncSectionFromTable();
-    const section = appState.data[appState.activeSection];
+    const section = appState.payload.sections[appState.activeSection];
     section.columns.push("Ny kolonne");
     section.rows = section.rows.map((row) => {
       const nextRow = row.slice();
@@ -303,14 +581,69 @@
       return nextRow;
     });
     renderTable();
-    setStatus("Ny kolonne lagt til.");
+    setStatus("Ny kolonne lagt til.", "success");
+  });
+
+  document.getElementById("apply-template").addEventListener("click", () => {
+    syncSectionFromTable();
+    const templateKey = templateSelect.value;
+    const templatePayload = createTemplatePayload(templateKey);
+    if (!templatePayload) {
+      setStatus("Kunne ikke finne valgt mal.", "error");
+      return;
+    }
+
+    const shouldApply = window.confirm("Valgt mal erstatter dagens datasett. Vil du fortsette?");
+    if (!shouldApply) {
+      setStatus("Malvalg avbrutt.", "info");
+      return;
+    }
+
+    stashBackup("template");
+    appState.payload = templatePayload;
+    appState.activeSection = "oversikt";
+    rerenderAll();
+    saveLocal("Mal brukt og lagret lokalt. Du kan gjenopprette forrige datasett.");
+  });
+
+  document.getElementById("reset-data").addEventListener("click", () => {
+    syncSectionFromTable();
+    const shouldReset = window.confirm("Nullstill datasettet til standard v2? Dette kan angres med backup-knappen.");
+    if (!shouldReset) {
+      setStatus("Nullstilling avbrutt.", "info");
+      return;
+    }
+
+    stashBackup("reset");
+    appState.payload = normalizePayload({ metadata: deepClone(defaultMetadata), sections: deepClone(defaultSections) });
+    touchUpdatedAt();
+    appState.activeSection = "oversikt";
+    rerenderAll();
+    saveLocal("Datasett nullstilt og lagret lokalt.");
+  });
+
+  restoreBackupBtn.addEventListener("click", () => {
+    if (!appState.lastBackup) {
+      setStatus("Ingen backup tilgjengelig.", "info");
+      return;
+    }
+
+    appState.payload = deepClone(appState.lastBackup);
+    appState.lastBackup = null;
+    restoreBackupBtn.disabled = true;
+    appState.activeSection = "oversikt";
+    rerenderAll();
+    saveLocal("Forrige datasett gjenopprettet.");
   });
 
   document.getElementById("print").addEventListener("click", () => {
     syncSectionFromTable();
+    syncMetadataFromForm(false);
     window.print();
   });
 
-  renderTabs();
-  renderTable();
+  if (!appState.payload.metadata.updatedAt) {
+    touchUpdatedAt();
+  }
+  rerenderAll();
 })();

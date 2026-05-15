@@ -36,12 +36,45 @@
 
   <main class="container app-main">
     <section class="card controls-panel">
+      <div class="onboarding">
+        <h2>Kom i gang på 30 sekunder</h2>
+        <ol>
+          <li>Velg en mal eller behold standarddatasettet.</li>
+          <li>Fyll inn metadata (tittel, eier, versjon, notater).</li>
+          <li>Rediger tabellene og lagre lokalt før eksport.</li>
+        </ol>
+      </div>
       <p class="warning" role="alert">Endringer lagres lokalt i nettleseren. Eksporter JSON for backup eller publisering.</p>
+      <div class="metadata-grid">
+        <label for="meta-title">Tittel</label>
+        <input id="meta-title" type="text" placeholder="Football Evolution Matrix v2" />
+        <label for="meta-owner">Eier</label>
+        <input id="meta-owner" type="text" placeholder="Lag eller person" />
+        <label for="meta-version">Versjon</label>
+        <input id="meta-version" type="text" placeholder="v2.0" />
+        <label for="meta-updated">Sist oppdatert</label>
+        <input id="meta-updated" type="text" readonly />
+        <label for="meta-notes">Notater</label>
+        <textarea id="meta-notes" rows="3" placeholder="Kort sammendrag av datasettet"></textarea>
+      </div>
+      <div class="actions-row">
+        <label for="template-select" class="sr-only">Datasettmal</label>
+        <select id="template-select">
+          <option value="player-development">Spillerutvikling</option>
+          <option value="match-analysis">Kampanalyse</option>
+          <option value="scouting">Scouting</option>
+          <option value="historical-comparison">Historisk sammenligning</option>
+        </select>
+        <button id="apply-template" type="button">Bruk mal</button>
+        <button id="restore-backup" type="button" disabled>Gjenopprett backup</button>
+        <button id="reset-data" type="button">Nullstill datasett</button>
+      </div>
       <div class="actions-row">
         <button id="save-local" type="button">Lagre lokalt</button>
         <button id="export-json" type="button">Eksporter JSON</button>
         <button id="import-json" type="button">Importer JSON</button>
         <button id="export-csv" type="button">Eksporter CSV</button>
+        <button id="export-bundle" type="button">Eksporter pakke</button>
         <button id="add-row" type="button">Legg til rad</button>
         <button id="add-column" type="button">Legg til kolonne</button>
         <button id="print" type="button">Skriv ut</button>
