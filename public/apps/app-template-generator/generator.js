@@ -143,7 +143,6 @@
       await navigator.clipboard.writeText(value);
       return;
     }
-
     const fallback = document.createElement("textarea");
     fallback.value = value;
     fallback.setAttribute("readonly", "readonly");
@@ -151,8 +150,11 @@
     fallback.style.left = "-9999px";
     document.body.appendChild(fallback);
     fallback.select();
-    document.execCommand("copy");
+    const didCopy = document.execCommand("copy");
     document.body.removeChild(fallback);
+    if (!didCopy) {
+      throw new Error("Copy command failed.");
+    }
   }
 
   form.addEventListener("submit", function (event) {
