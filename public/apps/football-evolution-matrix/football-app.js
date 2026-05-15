@@ -2,6 +2,7 @@
   const STORAGE_KEY = "football-evolution-matrix-v2";
   const LEGACY_STORAGE_KEY = "football-evolution-matrix-v1";
   // Migration strategy: v2 first loads v2 payload; if missing, it reads v1 data and normalizes into v2 shape.
+  // Legacy v1 localStorage key is kept to avoid destructive cleanup in shared browsers.
 
   const sectionOrder = [
     { key: "oversikt", label: "Oversikt" },
@@ -233,7 +234,7 @@
     }
   }
 
-  function getTodayIsoDate() {
+  function getCurrentIsoDate() {
     return new Date().toISOString().slice(0, 10);
   }
 
@@ -246,7 +247,7 @@
   }
 
   function touchUpdatedAt() {
-    appState.payload.metadata.updatedAt = getTodayIsoDate();
+    appState.payload.metadata.updatedAt = getCurrentIsoDate();
     document.getElementById("meta-updated").value = appState.payload.metadata.updatedAt;
   }
 
@@ -310,7 +311,7 @@
       lines.push(formatCsvRow([`Seksjon: ${sectionRef.label}`]));
       lines.push(formatCsvRow(section.columns));
       for (const row of section.rows) {
-        lines.push(csvRow(row));
+        lines.push(formatCsvRow(row));
       }
       lines.push("");
     }
@@ -386,7 +387,7 @@
     payload.metadata = {
       ...payload.metadata,
       ...template.metadata,
-      updatedAt: getTodayIsoDate()
+      updatedAt: getCurrentIsoDate()
     };
     payload.sections.oversikt.rows = deepClone(template.oversiktRows);
     return payload;
