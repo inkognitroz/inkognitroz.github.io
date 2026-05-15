@@ -140,7 +140,18 @@
     <section id="roadmap" class="container section-spaced">
       <p class="section-label">What's coming</p>
       <h2>Roadmap</h2>
-      <div class="grid" data-section="roadmap"></div>
+      <p class="section-description">Filter by status or priority to focus on what needs action next.</p>
+      <div class="roadmap-controls" aria-label="Roadmap filters">
+        <label for="roadmap-status-filter">Status</label>
+        <select id="roadmap-status-filter">
+          <option value="all">All statuses</option>
+        </select>
+        <label for="roadmap-priority-filter">Priority</label>
+        <select id="roadmap-priority-filter">
+          <option value="all">All priorities</option>
+        </select>
+      </div>
+      <div id="roadmap-board" class="roadmap-board" aria-live="polite"></div>
     </section>
 
     <!-- ── Dashboards ── -->

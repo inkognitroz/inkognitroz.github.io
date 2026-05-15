@@ -49,6 +49,84 @@
     container.innerHTML = visibleItems.map((item) => cardTemplate(item, options)).join("");
   }
 
+  function normalizeRoadmapKey(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+  }
+
+  function formatRoadmapLabel(value) {
+    return String(value || "")
+      .split("-")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  function renderRoadmapBoard(content, root = document) {
+    const boardRoot = root.querySelector("#roadmap-board");
+    const statusFilter = root.querySelector("#roadmap-status-filter");
+    const priorityFilter = root.querySelector("#roadmap-priority-filter");
+    if (!boardRoot || !statusFilter || !priorityFilter) return;
+
+    const board = content.roadmapBoard || {};
+    const items = Array.isArray(board.items) ? board.items : [];
+    const columnDefaults = ["idea", "planned", "in-progress", "ready-for-review", "launched"];
+    const columns = Array.isArray(board.columns) && board.columns.length
+      ? board.columns.map((column) => {
+        const key = normalizeRoadmapKey(typeof column === "string" ? column : column?.key);
+        return {
+          key: key || "idea",
+          label: escapeHtml(typeof column === "string" ? formatRoadmapLabel(key) : (column?.label || formatRoadmapLabel(key || "idea")))
+        };
+      })
+      : columnDefaults.map((key) => ({ key, label: escapeHtml(formatRoadmapLabel(key)) }));
+
+    const priorities = [...new Set(items.map((item) => normalizeRoadmapKey(item?.priority)).filter(Boolean))];
+    const selectedStatus = statusFilter.value || "all";
+    const selectedPriority = priorityFilter.value || "all";
+
+    statusFilter.innerHTML = [
+      '<option value="all">All statuses</option>',
+      ...columns.map((column) => `<option value="${escapeHtml(column.key)}"${selectedStatus === column.key ? " selected" : ""}>${column.label}</option>`)
+    ].join("");
+    priorityFilter.innerHTML = [
+      '<option value="all">All priorities</option>',
+      ...priorities.map((priority) => `<option value="${escapeHtml(priority)}"${selectedPriority === priority ? " selected" : ""}>${escapeHtml(formatRoadmapLabel(priority))}</option>`)
+    ].join("");
+
+    const filtered = items.filter((item) => {
+      const itemStatus = normalizeRoadmapKey(item?.status || "idea");
+      const itemPriority = normalizeRoadmapKey(item?.priority || "");
+      const statusMatch = selectedStatus === "all" || itemStatus === selectedStatus;
+      const priorityMatch = selectedPriority === "all" || itemPriority === selectedPriority;
+      return statusMatch && priorityMatch;
+    });
+
+    boardRoot.innerHTML = columns.map((column) => {
+      const columnItems = filtered.filter((item) => normalizeRoadmapKey(item?.status || "idea") === column.key);
+      const cardsHtml = columnItems.length
+        ? columnItems.map((item) => {
+          const title = escapeHtml(item.title || "Untitled");
+          const description = escapeHtml(item.description || "");
+          const priority = escapeHtml(formatRoadmapLabel(normalizeRoadmapKey(item.priority || "medium")));
+          const owner = escapeHtml(item.owner || "Unassigned");
+          const nextAction = escapeHtml(item.nextAction || "No next action set.");
+          const related = item.relatedLink && item.relatedLink !== "#"
+            ? `<a href="${escapeHtml(item.relatedLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.relatedLabel || "Related issue/PR")} ↗</a>`
+            : "";
+          return `<article class="roadmap-card"><h3>${title}</h3><p>${description}</p><div class="roadmap-meta"><span class="roadmap-chip priority-${normalizeRoadmapKey(item.priority || "medium")}">${priority}</span><span class="roadmap-owner">${owner}</span></div><p class="roadmap-next-action"><strong>Next:</strong> ${nextAction}</p>${related}</article>`;
+        }).join("")
+        : '<p class="roadmap-empty">No matching items.</p>';
+      return `<section class="roadmap-column"><h3>${column.label}</h3><div class="roadmap-column-items">${cardsHtml}</div></section>`;
+    }).join("");
+
+    statusFilter.onchange = () => renderRoadmapBoard(content, root);
+    priorityFilter.onchange = () => renderRoadmapBoard(content, root);
+  }
+
   async function loadContent() {
     const response = await fetch("./content.json", { cache: "default" });
     if (!response.ok) {
@@ -95,6 +173,7 @@
       const sectionKey = el.dataset.section;
       renderIntoContainer(el, sections[sectionKey]);
     });
+    renderRoadmapBoard(content, root);
   }
 
   function parseEditorJson(editor) {
