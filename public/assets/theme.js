@@ -351,6 +351,7 @@
   var LAYOUT_FIELDS = [
     { key: "--content-width", label: "Content width (px)", type: "range", min: 900, max: 1280, step: 10, unit: "px" },
     { key: "--radius", label: "Card radius (px)", type: "range", min: 8, max: 28, step: 1, unit: "px" },
+    { key: "--button-radius", label: "Button radius (px)", type: "range", min: 8, max: 24, step: 1, unit: "px" },
     { key: "--spacing-density", label: "Spacing density", type: "range", min: 0.85, max: 1.25, step: 0.01 },
     { key: "--section-spacing", label: "Section spacing (rem)", type: "range", min: 1.25, max: 3.5, step: 0.05, unit: "rem" }
   ];
@@ -404,20 +405,14 @@
     }
   ];
 
-  var STYLE_KEY_MAP = {
-    bgStyle: "bgStyle",
-    buttonStyle: "buttonStyle",
-    cardStyle: "cardStyle",
-    navStyle: "navStyle",
-    heroStyle: "heroStyle"
-  };
-
   var COLOR_KEYS = COLOR_GROUPS.reduce(function (list, group) {
     group.fields.forEach(function (field) { list.push(field.key); });
     return list;
   }, []);
+  var FONT_VALUES = Object.keys(FONT_CHOICES).map(function (k) { return FONT_CHOICES[k]; });
+  var RANGE_SCHEMA_FIELDS = LAYOUT_FIELDS.concat(TYPOGRAPHY_FIELDS);
 
-  function normaliseHex(value) {
+  function normalizeHex(value) {
     var str = String(value || "").trim();
     if (/^#[0-9a-fA-F]{6}$/.test(str)) return str.toLowerCase();
     var m = str.match(/^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/);
@@ -425,9 +420,9 @@
     return "";
   }
 
-  function parseColour(value) {
+  function parseColor(value) {
     var str = String(value || "").trim();
-    var hex = normaliseHex(str);
+    var hex = normalizeHex(str);
     if (hex) {
       return {
         r: parseInt(hex.slice(1, 3), 16),
@@ -453,8 +448,8 @@
   }
 
   function contrastRatio(a, b) {
-    var c1 = parseColour(a);
-    var c2 = parseColour(b);
+    var c1 = parseColor(a);
+    var c2 = parseColor(b);
     if (!c1 || !c2) return null;
     var l1 = luminance(c1);
     var l2 = luminance(c2);
@@ -467,7 +462,8 @@
     var checks = [
       { fg: "--text", bg: "--bg", label: "Main text" },
       { fg: "--muted", bg: "--surface", label: "Muted text" },
-      { fg: "--button-text", bg: "--button-bg", label: "Button text" }
+      { fg: "--button-text", bg: "--button-bg", label: "Button text" },
+      { fg: "--accent", bg: "--bg", label: "Link/accent text" }
     ];
     return checks
       .map(function (check) {
@@ -485,12 +481,11 @@
       root.style.setProperty(key, state.vars[key]);
     });
     Object.keys(state.styles).forEach(function (key) {
-      var attr = STYLE_KEY_MAP[key];
-      if (attr) root.dataset[attr] = state.styles[key];
+      root.dataset[key] = state.styles[key];
     });
   }
 
-  function serialiseState(state) {
+  function serializeState(state) {
     return {
       version: 2,
       vars: Object.assign({}, state.vars),
@@ -500,7 +495,7 @@
 
   function saveTheme(state) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(serialiseState(state)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState(state)));
     } catch (_) {}
   }
 
@@ -606,7 +601,7 @@
   function buildColourGroups(state) {
     return COLOR_GROUPS.map(function (group) {
       var rows = group.fields.map(function (field) {
-        var value = normaliseHex(state.vars[field.key]) || normaliseHex(DEFAULT_VARS[field.key]);
+        var value = normalizeHex(state.vars[field.key]) || normalizeHex(DEFAULT_VARS[field.key]);
         return (
           '<label class="theme-row" for="' + escapeHtml(field.key) + '">' +
           '<span>' + escapeHtml(field.label) + '</span>' +
@@ -622,7 +617,7 @@
     var panel = document.createElement("aside");
     panel.id = "theme-panel";
     panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", "Theme customisation panel");
+    panel.setAttribute("aria-label", "Theme customization panel");
     panel.hidden = true;
 
     var typography = TYPOGRAPHY_FIELDS.map(function (field) {
@@ -644,7 +639,7 @@
 
     panel.innerHTML =
       '<div class="theme-panel-header">' +
-      '<h2>Theme customiser</h2>' +
+      '<h2>Theme customizer</h2>' +
       '<button id="theme-panel-close" type="button" aria-label="Close theme panel">✕</button>' +
       "</div>" +
       '<div class="theme-panel-body">' +
@@ -678,14 +673,14 @@
       var input = panel.querySelector('[data-var="' + key + '"]');
       if (!input) return;
       var unit = "";
-      var field = LAYOUT_FIELDS.concat(TYPOGRAPHY_FIELDS).find(function (item) { return item.key === key; });
+      var field = RANGE_SCHEMA_FIELDS.find(function (item) { return item.key === key; });
       if (field && field.unit) unit = field.unit;
       output.textContent = input.value + unit;
     });
   }
 
   function exportTheme(state) {
-    var json = JSON.stringify(serialiseState(state), null, 2);
+    var json = JSON.stringify(serializeState(state), null, 2);
     var blob = new Blob([json], { type: "application/json" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
@@ -695,7 +690,7 @@
     URL.revokeObjectURL(url);
   }
 
-  function isColourLiteral(value) {
+  function isColorLiteral(value) {
     return /^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(\s*,\s*[\d.]+)?\s*\))$/.test(String(value).trim());
   }
 
@@ -706,17 +701,17 @@
     return n;
   }
 
-  function sanitiseThemeImport(raw) {
+  function sanitizeThemeImport(raw) {
     if (!isObject(raw)) throw new Error("Theme file must be a JSON object.");
     var imported = toState(raw);
 
     COLOR_KEYS.forEach(function (key) {
-      if (!isColourLiteral(imported.vars[key])) {
+      if (!isColorLiteral(imported.vars[key])) {
         imported.vars[key] = DEFAULT_VARS[key];
       }
     });
 
-    imported.vars["--font-family"] = Object.keys(FONT_CHOICES).map(function (k) { return FONT_CHOICES[k]; }).includes(imported.vars["--font-family"])
+    imported.vars["--font-family"] = FONT_VALUES.includes(imported.vars["--font-family"])
       ? imported.vars["--font-family"]
       : DEFAULT_VARS["--font-family"];
 
@@ -767,7 +762,9 @@
   function bindStyleRecipes(panel, state) {
     function applyButtonStyle(value) {
       if (value === "solid") {
-        state.vars["--button-text"] = normaliseHex(state.vars["--button-text"]) || "#ffffff";
+        if (!isColorLiteral(state.vars["--button-text"])) {
+          state.vars["--button-text"] = "#ffffff";
+        }
       }
       if (value === "outline") {
         state.vars["--button-bg"] = state.vars["--surface"];
@@ -784,10 +781,6 @@
       if (value === "glass") state.vars["--hero-end"] = state.vars["--surface-elevated"];
     }
 
-    function applyBackgroundStyle(value) {
-      if (value === "solid") state.vars["--hero-end"] = state.vars["--hero-start"];
-    }
-
     panel.querySelectorAll("select[data-var]").forEach(function (select) {
       select.addEventListener("change", function () {
         var key = select.getAttribute("data-var");
@@ -798,7 +791,6 @@
           if (key === "buttonStyle") applyButtonStyle(select.value);
           if (key === "cardStyle") applyCardStyle(select.value);
           if (key === "heroStyle") applyHeroStyle(select.value);
-          if (key === "bgStyle") applyBackgroundStyle(select.value);
         }
         applyThemeState(state);
         saveTheme(state);
@@ -826,7 +818,7 @@
     var toggleBtn = document.createElement("button");
     toggleBtn.id = "theme-toggle";
     toggleBtn.type = "button";
-    toggleBtn.setAttribute("aria-label", "Open theme customisation");
+    toggleBtn.setAttribute("aria-label", "Open theme customization");
     toggleBtn.setAttribute("aria-expanded", "false");
     toggleBtn.setAttribute("title", "Customise theme");
     toggleBtn.textContent = "🎨";
@@ -861,7 +853,7 @@
       panel.querySelectorAll("input[type=\"range\"][data-var]").forEach(function (input) {
         input.addEventListener("input", function () {
           var key = input.dataset.var;
-          var field = LAYOUT_FIELDS.concat(TYPOGRAPHY_FIELDS).find(function (item) { return item.key === key; });
+          var field = RANGE_SCHEMA_FIELDS.find(function (item) { return item.key === key; });
           if (!field) return;
           state.vars[key] = field.unit ? input.value + field.unit : input.value;
           applyThemeState(state);
@@ -907,7 +899,7 @@
             return;
           }
           try {
-            state = sanitiseThemeImport(parsed);
+            state = sanitizeThemeImport(parsed);
             applyThemeState(state);
             saveTheme(state);
             renderPanel(true);

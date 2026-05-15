@@ -263,7 +263,7 @@ button.danger {
   .site-header { position: static; }
 }
 
-/* ── Theme Customiser ── */
+/* ── Theme Customizer ── */
 #theme-toggle {
   position: fixed;
   right: 1rem;
@@ -323,7 +323,7 @@ button.danger {
 .theme-panel-hint {
   color: var(--muted);
   margin: 0 0 .9rem;
-  font-size: .85rem;
+  font-size: .8rem;
 }
 
 .theme-block { margin-bottom: 1rem; }
@@ -380,11 +380,12 @@ button.danger {
 }
 
 .theme-row {
+  --theme-row-spacing: .45rem;
   display: grid;
   align-items: center;
-  gap: .45rem;
+  gap: var(--theme-row-spacing);
   grid-template-columns: minmax(0, 1fr) auto;
-  margin-bottom: .45rem;
+  margin-bottom: var(--theme-row-spacing);
   font-size: .85rem;
 }
 
