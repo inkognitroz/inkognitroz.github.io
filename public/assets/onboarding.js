@@ -44,7 +44,163 @@
       .replaceAll("'", "&#39;");
   }
 
+  function injectStyles() {
+    if (document.getElementById("onboarding-styles")) return;
+    const style = document.createElement("style");
+    style.id = "onboarding-styles";
+    style.textContent = `
+      #onboarding-toggle {
+        position: fixed;
+        right: max(1.5rem, env(safe-area-inset-right));
+        bottom: calc(5.1rem + env(safe-area-inset-bottom));
+        width: 2.55rem;
+        height: 2.55rem;
+        border-radius: 999px;
+        z-index: 101;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 850;
+        font-size: 1rem;
+        background: var(--surface-elevated);
+        color: var(--accent);
+        border: 1px solid var(--border-soft);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      }
+
+      #onboarding-toggle:hover,
+      #onboarding-toggle:focus-visible {
+        border-color: var(--accent);
+        background: var(--button-hover-bg);
+      }
+
+      .onboarding-panel {
+        position: fixed;
+        right: max(1.5rem, env(safe-area-inset-right));
+        bottom: calc(8.35rem + env(safe-area-inset-bottom));
+        width: min(440px, calc(100vw - 2rem));
+        max-height: min(76vh, 720px);
+        overflow: auto;
+        z-index: 101;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: var(--card-radius);
+        box-shadow: 0 24px 72px rgba(0, 0, 0, 0.55);
+        padding: 1rem;
+      }
+
+      .onboarding-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .8rem;
+        border-bottom: 1px solid var(--border-soft);
+        padding-bottom: .75rem;
+        margin-bottom: .75rem;
+      }
+
+      .onboarding-header h2 {
+        margin: 0;
+        font-size: calc(1.35rem * var(--heading-scale));
+      }
+
+      .onboarding-kicker {
+        margin: 0 0 .25rem;
+        color: var(--accent);
+        font-size: .72rem;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      #onboarding-close {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 999px;
+        flex: 0 0 auto;
+      }
+
+      .onboarding-subtitle {
+        color: var(--muted);
+        margin: 0 0 .9rem;
+      }
+
+      .onboarding-steps {
+        display: grid;
+        gap: .75rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .onboarding-steps li {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: .75rem;
+        align-items: flex-start;
+        padding: .75rem;
+        border: 1px solid var(--border-soft);
+        border-radius: calc(var(--card-radius) - 4px);
+        background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+      }
+
+      .onboarding-step-number {
+        width: 1.7rem;
+        height: 1.7rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent) 18%, transparent);
+        border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+        color: var(--accent);
+        font-size: .78rem;
+        font-weight: 850;
+      }
+
+      .onboarding-steps h3 {
+        margin: 0 0 .2rem;
+        font-size: 1rem;
+      }
+
+      .onboarding-steps p {
+        color: var(--muted);
+        margin: 0;
+        font-size: .9rem;
+      }
+
+      .onboarding-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        margin-top: 1rem;
+      }
+
+      .onboarding-actions .btn {
+        border: 1px solid var(--border-soft);
+      }
+
+      @media (max-width: 560px) {
+        #onboarding-toggle {
+          right: max(1rem, env(safe-area-inset-right));
+          bottom: calc(4.7rem + env(safe-area-inset-bottom));
+        }
+
+        .onboarding-panel {
+          inset: auto .65rem calc(7.75rem + env(safe-area-inset-bottom)) .65rem;
+          width: auto;
+          max-height: min(74vh, 640px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function build() {
+    injectStyles();
+
     const trigger = document.createElement("button");
     trigger.id = "onboarding-toggle";
     trigger.type = "button";
