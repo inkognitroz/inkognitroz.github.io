@@ -193,8 +193,8 @@
         var n = parseFloat(value);
         if (!Number.isNaN(n) && n >= rangeField.min && n <= rangeField.max) out[key] = n + rangeField.suffix;
       } else if (COLOR_PICKER_KEYS[key]) {
-        var normalised = hex(value);
-        if (normalised) out[key] = normalised;
+        var normalized = hex(value);
+        if (normalized) out[key] = normalized;
       } else if (/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(\s*,\s*[\d.]+)?\s*\))$/.test(value)) {
         out[key] = value;
       }
