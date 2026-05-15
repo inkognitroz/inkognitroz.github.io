@@ -1,0 +1,92 @@
+{
+  "columns": [
+    { "key": "idea", "label": "Idea" },
+    { "key": "planned", "label": "Planned" },
+    { "key": "in-progress", "label": "In progress" },
+    { "key": "review", "label": "Ready for review" },
+    { "key": "launched", "label": "Launched" }
+  ],
+  "items": [
+    {
+      "title": "Guided onboarding wizard",
+      "description": "Context-aware first-time guidance for homepage, Admin and Football Evolution Matrix.",
+      "status": "launched",
+      "priority": "high",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Smoke-test on live site after deploy.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/pull/32"
+    },
+    {
+      "title": "Roadmap board",
+      "description": "Visible product board with status, priority, owner, next action and issue/PR links.",
+      "status": "review",
+      "priority": "high",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Review and merge this roadmap PR.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/28"
+    },
+    {
+      "title": "App template generator",
+      "description": "Generate app briefs, GitHub issue prompts, starter content cards and launch checklists.",
+      "status": "planned",
+      "priority": "high",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Build static generator after roadmap board.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/29"
+    },
+    {
+      "title": "Export bundle",
+      "description": "Export content, app data, CSV, metadata and instructions as a complete backup package.",
+      "status": "planned",
+      "priority": "medium",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Decide browser-only bundle format before ZIP support.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/31"
+    },
+    {
+      "title": "Privacy-friendly analytics",
+      "description": "Local-only usage insight first, with optional future privacy-friendly hosted analytics.",
+      "status": "planned",
+      "priority": "medium",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Define what should be counted locally.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/30"
+    },
+    {
+      "title": "Admin v2",
+      "description": "Move from local JSON editor to safer content-management workflow.",
+      "status": "in-progress",
+      "priority": "high",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Add richer validation, publishing documentation and import UX.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/19"
+    },
+    {
+      "title": "Supabase architecture",
+      "description": "Define schema, RLS and hosting path before runtime integration.",
+      "status": "planned",
+      "priority": "high",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Create architecture document before adding Supabase runtime code.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/20"
+    },
+    {
+      "title": "Football Evolution Matrix v2",
+      "description": "Polish product UX, templates, backup, metadata and export flows.",
+      "status": "in-progress",
+      "priority": "high",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Improve app polish after roadmap/app generator.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/21"
+    },
+    {
+      "title": "Commercial design pass",
+      "description": "Make SaaS Fabric feel like a credible commercial product.",
+      "status": "launched",
+      "priority": "medium",
+      "owner": "Halvord / AI agent",
+      "nextAction": "Continue iterative polish after new feature sections are stable.",
+      "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/22"
+    }
+  ]
+}
