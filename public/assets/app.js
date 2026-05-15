@@ -367,7 +367,7 @@
   function saveBackupSnapshot(content, label) {
     const backups = readBackups();
     backups.unshift({
-      id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${backups.length + 1}`,
       label,
       createdAt: new Date().toISOString(),
       content: cloneValue(content)
@@ -548,7 +548,7 @@
 
   restoreBrowserDraftButton.addEventListener("click", () => {
     const draft = readEditorDraft();
-    if (!draft) {
+    if (draft.length === 0) {
       setNotice("error", "No browser draft is saved yet.");
       return;
     }
