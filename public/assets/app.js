@@ -366,8 +366,9 @@
 
   function saveBackupSnapshot(content, label) {
     const backups = readBackups();
+    const fallbackId = `${Date.now()}-${(globalThis.performance?.now?.() || 0).toFixed(3)}`;
     backups.unshift({
-      id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${backups.length + 1}`,
+      id: globalThis.crypto?.randomUUID?.() || fallbackId,
       label,
       createdAt: new Date().toISOString(),
       content: cloneValue(content)
@@ -438,7 +439,6 @@
   function saveCurrentCard(content) {
     content.sections = content.sections || {};
     const cards = getSectionCards(content);
-    content.sections[sectionSelect.value] = cards;
     let index = Number(cardSelect.value);
     if (Number.isNaN(index) || index < 0 || index >= cards.length) {
       cards.push({});
@@ -451,6 +451,7 @@
       tags: cardTags.value.split(",").map((tag) => tag.trim()).filter(Boolean),
       status: normalizeStatus(cardStatus.value || "draft")
     };
+    content.sections[sectionSelect.value] = cards;
     return { content, index };
   }
 
