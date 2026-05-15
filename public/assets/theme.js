@@ -183,6 +183,7 @@
   function sanitise(obj) {
     if (typeof obj !== "object" || obj === null || Array.isArray(obj)) throw new Error("Theme file must be a JSON object.");
     var out = {};
+    var invalidColorPickerKeys = [];
     Object.keys(DEFAULTS).forEach(function (key) {
       if (!Object.prototype.hasOwnProperty.call(obj, key)) return;
       var value = String(obj[key]).trim();
@@ -195,10 +196,12 @@
       } else if (COLOR_PICKER_KEYS[key]) {
         var normalized = hex(value);
         if (normalized) out[key] = normalized;
+        else invalidColorPickerKeys.push(key);
       } else if (/^(#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(\s*,\s*[\d.]+)?\s*\))$/.test(value)) {
         out[key] = value;
       }
     });
+    if (invalidColorPickerKeys.length) throw new Error("These colors must use #RRGGBB or #RGB: " + invalidColorPickerKeys.join(", "));
     if (!Object.keys(out).length) throw new Error("No recognised theme properties found.");
     return complete(out);
   }
