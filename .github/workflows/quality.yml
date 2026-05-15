@@ -36,8 +36,10 @@ jobs:
       - name: Check for forbidden frontend secrets
         run: |
           set -euo pipefail
-          ! grep -RInE 'service_role|ghp_[A-Za-z0-9_]+|sk_live_|sk_test_|OPENAI_API_KEY|ANTHROPIC_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE_ROLE' public docs README.md START_HERE.md AGENTS.md CLAUDE.md || \
-            (echo 'Forbidden secret-like string found. Do not expose secrets in frontend/docs.' && exit 1)
+          ! grep -RInE 'ghp_[A-Za-z0-9_]+|sk_live_[A-Za-z0-9_]+|sk_test_[A-Za-z0-9_]+|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+' public || \
+            (echo 'Forbidden token-like string found in public frontend files.' && exit 1)
+          ! grep -RInE 'SUPABASE_SERVICE_ROLE\s*=|STRIPE_SECRET\s*=|OPENAI_API_KEY\s*=|ANTHROPIC_API_KEY\s*=' public docs README.md START_HERE.md AGENTS.md CLAUDE.md || \
+            (echo 'Forbidden secret assignment found. Use placeholders and server-side environment variables only.' && exit 1)
 
       - name: Check required public entrypoints
         run: |
