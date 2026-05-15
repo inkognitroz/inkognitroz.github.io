@@ -8,6 +8,9 @@ Use Supabase when moving from static hub to product backends:
 
 For the SaaS Fabric public hub (v1), no backend is required.
 
+Architecture decision, schema, RLS, hosting tradeoffs, and migration path:
+- `docs/SUPABASE_ARCHITECTURE.md`
+
 Supabase-specific security rule:
 - Never place Supabase `service_role` keys in frontend code.
 
