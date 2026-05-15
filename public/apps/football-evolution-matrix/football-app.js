@@ -1,6 +1,7 @@
 (function () {
   const STORAGE_KEY = "football-evolution-matrix-v2";
   const LEGACY_STORAGE_KEY = "football-evolution-matrix-v1";
+  // Migration strategy: v2 first loads v2 payload; if missing, it reads v1 data and normalizes into v2 shape.
 
   const sectionOrder = [
     { key: "oversikt", label: "Oversikt" },
@@ -232,7 +233,7 @@
     }
   }
 
-  function nowIsoDate() {
+  function getTodayIsoDate() {
     return new Date().toISOString().slice(0, 10);
   }
 
@@ -245,7 +246,7 @@
   }
 
   function touchUpdatedAt() {
-    appState.payload.metadata.updatedAt = nowIsoDate();
+    appState.payload.metadata.updatedAt = getTodayIsoDate();
     document.getElementById("meta-updated").value = appState.payload.metadata.updatedAt;
   }
 
@@ -293,12 +294,12 @@
       .replace(/'/g, "&#39;");
   }
 
-  function csvRow(cells) {
+  function formatCsvRow(cells) {
     return cells.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",");
   }
 
   function toCsv(section) {
-    const lines = [section.columns, ...section.rows].map(csvRow);
+    const lines = [section.columns, ...section.rows].map(formatCsvRow);
     return "\uFEFF" + lines.join("\n");
   }
 
@@ -306,8 +307,8 @@
     const lines = [];
     for (const sectionRef of sectionOrder) {
       const section = appState.payload.sections[sectionRef.key];
-      lines.push(csvRow([`Seksjon: ${sectionRef.label}`]));
-      lines.push(csvRow(section.columns));
+      lines.push(formatCsvRow([`Seksjon: ${sectionRef.label}`]));
+      lines.push(formatCsvRow(section.columns));
       for (const row of section.rows) {
         lines.push(csvRow(row));
       }
@@ -385,16 +386,15 @@
     payload.metadata = {
       ...payload.metadata,
       ...template.metadata,
-      updatedAt: nowIsoDate()
+      updatedAt: getTodayIsoDate()
     };
     payload.sections.oversikt.rows = deepClone(template.oversiktRows);
     return payload;
   }
 
-  function stashBackup(reasonText) {
+  function stashBackup() {
     appState.lastBackup = deepClone(appState.payload);
     restoreBackupBtn.disabled = false;
-    restoreBackupBtn.dataset.reason = reasonText;
   }
 
   function validateImportedPayload(parsed) {
@@ -537,7 +537,7 @@
         return;
       }
 
-      stashBackup("import");
+      stashBackup();
       appState.payload = validated;
       if (!appState.payload.metadata.updatedAt) {
         touchUpdatedAt();
@@ -607,7 +607,7 @@
       return;
     }
 
-    stashBackup("template");
+    stashBackup();
     appState.payload = templatePayload;
     appState.activeSection = "oversikt";
     rerenderAll();
@@ -622,7 +622,7 @@
       return;
     }
 
-    stashBackup("reset");
+    stashBackup();
     appState.payload = normalizePayload({ metadata: deepClone(defaultMetadata), sections: deepClone(defaultSections) });
     touchUpdatedAt();
     appState.activeSection = "oversikt";
@@ -650,6 +650,7 @@
     window.print();
   });
 
+  // Ensure both fresh installs and normalized v1 payloads have an initial timestamp.
   if (!appState.payload.metadata.updatedAt) {
     touchUpdatedAt();
   }

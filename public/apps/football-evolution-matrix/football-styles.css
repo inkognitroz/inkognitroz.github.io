@@ -56,15 +56,15 @@
 }
 
 .status--success {
-  color: #7ee4ac;
+  color: var(--accent);
 }
 
 .status--error {
-  color: #ff9f9f;
+  color: #f4c2c2;
 }
 
 .status--info {
-  color: #9ac1ff;
+  color: var(--text);
 }
 
 .actions-row {
