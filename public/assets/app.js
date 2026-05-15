@@ -5,6 +5,7 @@
   const STATUS_VALUES = new Set(["draft", "published"]);
   const ADMIN_BACKUPS_KEY = "saas-fabric-admin-backups";
   const ADMIN_DRAFT_KEY = "saas-fabric-admin-draft";
+  const EXPORT_BUNDLE_VERSION = "1.0.0";
   const MAX_BACKUPS = 12;
   let backupIdCounter = 0;
 
@@ -47,6 +48,84 @@
       return;
     }
     container.innerHTML = visibleItems.map((item) => cardTemplate(item, options)).join("");
+  }
+
+  function normalizeRoadmapKey(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+  }
+
+  function formatRoadmapLabel(value) {
+    return String(value || "")
+      .split("-")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  function renderRoadmapBoard(content, root = document) {
+    const boardRoot = root.querySelector("#roadmap-board");
+    const statusFilter = root.querySelector("#roadmap-status-filter");
+    const priorityFilter = root.querySelector("#roadmap-priority-filter");
+    if (!boardRoot || !statusFilter || !priorityFilter) return;
+
+    const board = content.roadmapBoard || {};
+    const items = Array.isArray(board.items) ? board.items : [];
+    const columnDefaults = ["idea", "planned", "in-progress", "ready-for-review", "launched"];
+    const columns = Array.isArray(board.columns) && board.columns.length
+      ? board.columns.map((column) => {
+        const key = normalizeRoadmapKey(typeof column === "string" ? column : column?.key);
+        return {
+          key: key || "idea",
+          label: escapeHtml(typeof column === "string" ? formatRoadmapLabel(key) : (column?.label || formatRoadmapLabel(key || "idea")))
+        };
+      })
+      : columnDefaults.map((key) => ({ key, label: escapeHtml(formatRoadmapLabel(key)) }));
+
+    const priorities = [...new Set(items.map((item) => normalizeRoadmapKey(item?.priority)).filter(Boolean))];
+    const selectedStatus = statusFilter.value || "all";
+    const selectedPriority = priorityFilter.value || "all";
+
+    statusFilter.innerHTML = [
+      '<option value="all">All statuses</option>',
+      ...columns.map((column) => `<option value="${escapeHtml(column.key)}"${selectedStatus === column.key ? " selected" : ""}>${column.label}</option>`)
+    ].join("");
+    priorityFilter.innerHTML = [
+      '<option value="all">All priorities</option>',
+      ...priorities.map((priority) => `<option value="${escapeHtml(priority)}"${selectedPriority === priority ? " selected" : ""}>${escapeHtml(formatRoadmapLabel(priority))}</option>`)
+    ].join("");
+
+    const filtered = items.filter((item) => {
+      const itemStatus = normalizeRoadmapKey(item?.status || "idea");
+      const itemPriority = normalizeRoadmapKey(item?.priority || "");
+      const statusMatch = selectedStatus === "all" || itemStatus === selectedStatus;
+      const priorityMatch = selectedPriority === "all" || itemPriority === selectedPriority;
+      return statusMatch && priorityMatch;
+    });
+
+    boardRoot.innerHTML = columns.map((column) => {
+      const columnItems = filtered.filter((item) => normalizeRoadmapKey(item?.status || "idea") === column.key);
+      const cardsHtml = columnItems.length
+        ? columnItems.map((item) => {
+          const title = escapeHtml(item.title || "Untitled");
+          const description = escapeHtml(item.description || "");
+          const priority = escapeHtml(formatRoadmapLabel(normalizeRoadmapKey(item.priority || "medium")));
+          const owner = escapeHtml(item.owner || "Unassigned");
+          const nextAction = escapeHtml(item.nextAction || "No next action set.");
+          const related = item.relatedLink && item.relatedLink !== "#"
+            ? `<a href="${escapeHtml(item.relatedLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.relatedLabel || "Related issue/PR")} ↗</a>`
+            : "";
+          return `<article class="roadmap-card"><h3>${title}</h3><p>${description}</p><div class="roadmap-meta"><span class="roadmap-chip priority-${normalizeRoadmapKey(item.priority || "medium")}">${priority}</span><span class="roadmap-owner">${owner}</span></div><p class="roadmap-next-action"><strong>Next:</strong> ${nextAction}</p>${related}</article>`;
+        }).join("")
+        : '<p class="roadmap-empty">No matching items.</p>';
+      return `<section class="roadmap-column"><h3>${column.label}</h3><div class="roadmap-column-items">${cardsHtml}</div></section>`;
+    }).join("");
+
+    statusFilter.onchange = () => renderRoadmapBoard(content, root);
+    priorityFilter.onchange = () => renderRoadmapBoard(content, root);
   }
 
   async function loadContent() {
@@ -95,6 +174,7 @@
       const sectionKey = el.dataset.section;
       renderIntoContainer(el, sections[sectionKey]);
     });
+    renderRoadmapBoard(content, root);
   }
 
   function parseEditorJson(editor) {
@@ -192,14 +272,120 @@
     });
   }
 
-  function downloadFile(content, filename) {
-    const blob = new Blob([content], { type: "application/json" });
+  function downloadFile(content, filename, type = "application/json;charset=utf-8") {
+    const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function escapeCsvValue(value) {
+    const text = String(value ?? "");
+    if (/["\n\r,]/.test(text)) {
+      return `"${text.replaceAll('"', '""')}"`;
+    }
+    return text;
+  }
+
+  function cardsToCsv(cards) {
+    const headers = ["title", "description", "link", "tags", "status"];
+    const rows = [headers.join(",")];
+    (Array.isArray(cards) ? cards : []).forEach((card) => {
+      rows.push([
+        escapeCsvValue(card?.title || ""),
+        escapeCsvValue(card?.description || ""),
+        escapeCsvValue(card?.link || "#"),
+        escapeCsvValue(Array.isArray(card?.tags) ? card.tags.join("|") : ""),
+        escapeCsvValue(normalizeStatus(card?.status || "published"))
+      ].join(","));
+    });
+    return rows.join("\n");
+  }
+
+  function toSafePathName(value) {
+    const sanitized = String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return sanitized || "section";
+  }
+
+  function buildBundleReadme(metadata) {
+    return [
+      "SaaS Fabric export bundle",
+      "",
+      `Generated: ${metadata.generatedAt}`,
+      `Bundle version: ${metadata.bundleVersion}`,
+      `Selected section: ${metadata.selectedSection}`,
+      "",
+      "How to use this export:",
+      "1. Restore content.json by copying content.json into /public/content.json.",
+      "2. Review apps/<selected-section>.json for selected app/section backup.",
+      "3. Review csv/*.csv for card data exports.",
+      "4. Open metadata.json for export details and compatibility info.",
+      "",
+      "Notes:",
+      "- This v1 export is browser-generated and backend-free.",
+      "- UTF-8 text is preserved, including Norwegian characters: æ, ø, å.",
+      "- Future path: optional server-side ZIP export endpoint with signed downloads."
+    ].join("\n");
+  }
+
+  function createExportBundle(content, selectedSectionKey) {
+    const sections = content.sections && typeof content.sections === "object" ? content.sections : {};
+    const selectedCards = Array.isArray(sections[selectedSectionKey]) ? sections[selectedSectionKey] : [];
+    const generatedAt = new Date().toISOString();
+    const metadata = {
+      bundleVersion: EXPORT_BUNDLE_VERSION,
+      generatedAt,
+      selectedSection: selectedSectionKey,
+      sectionCount: Object.keys(sections).length,
+      format: "structured-json-bundle",
+      futureZipPath: "Add a server-side ZIP export endpoint for authenticated or signed downloads."
+    };
+
+    const files = [
+      {
+        path: "content.json",
+        type: "application/json",
+        content: JSON.stringify(content, null, 2)
+      },
+      {
+        path: `apps/${toSafePathName(selectedSectionKey)}.json`,
+        type: "application/json",
+        content: JSON.stringify(selectedCards, null, 2)
+      }
+    ];
+
+    Object.keys(sections).forEach((sectionKey) => {
+      files.push({
+        path: `csv/${toSafePathName(sectionKey)}.csv`,
+        type: "text/csv",
+        content: cardsToCsv(sections[sectionKey])
+      });
+    });
+
+    files.push({
+      path: "README.txt",
+      type: "text/plain",
+      content: buildBundleReadme(metadata)
+    });
+    files.push({
+      path: "metadata.json",
+      type: "application/json",
+      content: JSON.stringify(metadata, null, 2)
+    });
+
+    return {
+      type: "saas-fabric-export-bundle",
+      version: EXPORT_BUNDLE_VERSION,
+      generatedAt,
+      files
+    };
   }
 
   if (PAGE === "home") {
@@ -225,6 +411,7 @@
   const validateButton = document.querySelector("#validate-json");
   const previewButton = document.querySelector("#preview-json");
   const downloadButton = document.querySelector("#download-json");
+  const downloadBundleButton = document.querySelector("#download-bundle");
   const previewRoot = document.querySelector("#admin-preview");
   const adminMessage = document.querySelector("#admin-message");
   const validationSummary = document.querySelector("#validation-summary");
@@ -519,6 +706,24 @@
     setNotice("success", "Exported validated content.json. Next step: commit it in a PR.");
   }
 
+  function exportValidatedBundle() {
+    const content = formatJson(editor);
+    const errors = validateEditorContent(content);
+    if (errors.length) {
+      setNotice("error", "Bundle export blocked until validation passes.");
+      return;
+    }
+    const bundle = createExportBundle(content, sectionSelect.value);
+    const fileDate = bundle.generatedAt.replace(/[:.]/g, "-");
+    downloadFile(
+      JSON.stringify(bundle, null, 2),
+      `saas-fabric-export-bundle-${fileDate}.json`,
+      "application/json;charset=utf-8"
+    );
+    saveBackupSnapshot(content, "Exported backup bundle");
+    setNotice("success", "Exported backup bundle with content.json, selected section JSON, CSV files, README, and metadata.");
+  }
+
   loadButton.addEventListener("click", async () => {
     try {
       const content = await loadInitialContent();
@@ -563,6 +768,14 @@
       exportValidatedContent();
     } catch (error) {
       setNotice("error", "Invalid JSON. Please fix syntax before export.");
+    }
+  });
+
+  downloadBundleButton.addEventListener("click", () => {
+    try {
+      exportValidatedBundle();
+    } catch (error) {
+      setNotice("error", "Invalid JSON. Please fix syntax before bundle export.");
     }
   });
 

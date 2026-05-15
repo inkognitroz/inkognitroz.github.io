@@ -16,11 +16,15 @@
         if (t && typeof t === "object" && !Array.isArray(t)) {
           var r = document.documentElement;
           Object.keys(t).forEach(function (k) {
-            if (typeof k === "string" && k.indexOf("--") === 0) r.style.setProperty(k, t[k]);
+            if (typeof k === "string" && k.indexOf("--") === 0) {
+              r.style.setProperty(k, t[k]);
+            }
           });
           if (styles) {
             ["bgStyle", "buttonStyle", "cardStyle", "navStyle", "heroStyle"].forEach(function (key) {
-              if (typeof styles[key] === "string") r.dataset[key] = styles[key];
+              if (typeof styles[key] === "string") {
+                r.dataset[key] = styles[key];
+              }
             });
           }
         }

@@ -40,7 +40,17 @@
     const hostingTarget = withFallback(data.get("hostingTarget"), "GitHub Pages (/public)");
     const firstPrPrompt = withFallback(data.get("firstPrPrompt"), "Add implementation prompt");
 
-    return { appName, slug, targetUser, problemSolved, coreFeatures, dataModel, monetizationIdea, hostingTarget, firstPrPrompt };
+    return {
+      appName,
+      slug,
+      targetUser,
+      problemSolved,
+      coreFeatures,
+      dataModel,
+      monetizationIdea,
+      hostingTarget,
+      firstPrPrompt
+    };
   }
 
   function buildIssue(d) {
@@ -140,8 +150,11 @@
     fallback.style.left = "-9999px";
     document.body.appendChild(fallback);
     fallback.select();
-    document.execCommand("copy");
+    const didCopy = document.execCommand("copy");
     document.body.removeChild(fallback);
+    if (!didCopy) {
+      throw new Error("Copy command failed.");
+    }
   }
 
   form.addEventListener("submit", function (event) {
@@ -155,6 +168,7 @@
       const targetId = button.getAttribute("data-copy-target");
       const target = document.getElementById(targetId);
       if (!target) return;
+
       try {
         await copyText(target.value);
         copyStatus.textContent = "Copied to clipboard.";

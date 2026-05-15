@@ -13,13 +13,26 @@ SaaS Fabric is positioned as a platform for creating, organizing, publishing and
 
 ## Quick start
 1. Edit `/public/content.json`.
-2. Optional: open `/public/admin.html` locally for card editing, draft/publish status, validation, browser backups, CSV import, and JSON export.
+2. Optional: open `/public/admin.html` locally for card editing, draft/publish status, validation, browser backups, CSV import, JSON export, and structured backup bundle export.
 3. Publish safely by exporting `content.json` and committing it in a PR.
 4. GitHub Actions deploys `/public` to `https://inkognitroz.github.io/`.
 
 ## Safe publishing
-- **Current path:** use `/public/admin.html`, export `/public/content.json`, and publish through a normal PR review + merge flow.
-- **Future path:** add a backend or serverless publishing endpoint that uses a GitHub App or another server-side secret. Never place GitHub tokens or other secrets in frontend code.
+- **Current path:** use `/public/admin.html`, export `/public/content.json` or a structured backup bundle, and publish through a normal PR review + merge flow.
+- **Future path:** add a backend or serverless publishing/export endpoint (for example server-side ZIP bundles) that uses a GitHub App or another server-side secret. Never place GitHub tokens or other secrets in frontend code.
+
+## Privacy-friendly usage analytics (v1)
+- v1 includes a **local-only dashboard** on the homepage (`#dashboards`) that tracks section views and card link clicks **in browser storage only**.
+- No tracking cookies are used.
+- No personal data is collected or sent to a server.
+- Users can reset local analytics with **Reset local analytics** in the dashboard.
+
+### Future hosted analytics path
+- Keep v1 local-only by default.
+- If hosted analytics is added later (for example Plausible or Umami), keep it opt-in and privacy-friendly:
+  - do not collect personal identifiers
+  - avoid cookies when possible
+  - document exactly what events are sent and why
 
 ## Main sections
 Home, App Factory, SaaS Ideas, Projects, Templates, Tools, Dashboards, Uploads / Files, Prompt Inbox, Monetization, Roadmap, About.

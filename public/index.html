@@ -140,14 +140,42 @@
     <section id="roadmap" class="container section-spaced">
       <p class="section-label">What's coming</p>
       <h2>Roadmap</h2>
-      <p class="section-description">Track what is planned, in progress, ready for review and already launched.</p>
-      <div class="grid" data-section="roadmap"></div>
+      <p class="section-description">Track what is planned, in progress, ready for review and launched. Filter by status or priority to focus on what needs action next.</p>
+      <div class="roadmap-controls" aria-label="Roadmap filters">
+        <label for="roadmap-status-filter">Status</label>
+        <select id="roadmap-status-filter">
+          <option value="all">All statuses</option>
+        </select>
+        <label for="roadmap-priority-filter">Priority</label>
+        <select id="roadmap-priority-filter">
+          <option value="all">All priorities</option>
+        </select>
+      </div>
+      <div id="roadmap-board" class="roadmap-board" aria-live="polite"></div>
     </section>
 
     <!-- ── Dashboards ── -->
     <section id="dashboards" class="container section-spaced">
       <p class="section-label">Metrics</p>
       <h2>Dashboards</h2>
+      <p class="section-description">Local-only usage insights stay on this device. No cookies, no personal tracking.</p>
+      <section class="card usage-analytics" id="usage-analytics" aria-labelledby="usage-analytics-title">
+        <div class="usage-analytics-header">
+          <h3 id="usage-analytics-title">Usage analytics (this device only)</h3>
+          <button type="button" class="btn btn-secondary usage-analytics-reset" id="usage-analytics-reset">Reset local analytics</button>
+        </div>
+        <p class="usage-analytics-note" id="usage-analytics-note">Tracking section views and app link clicks in your browser only.</p>
+        <div class="usage-analytics-grid">
+          <article>
+            <h4>Most viewed sections</h4>
+            <ul id="usage-analytics-sections"></ul>
+          </article>
+          <article>
+            <h4>Most opened apps</h4>
+            <ul id="usage-analytics-apps"></ul>
+          </article>
+        </div>
+      </section>
       <div class="grid" data-section="dashboards"></div>
     </section>
 
@@ -202,7 +230,7 @@
   </footer>
 
   <script src="./assets/app.js"></script>
-  <script src="./assets/roadmap.js"></script>
+  <script src="./assets/usage-analytics.js"></script>
   <script src="./assets/onboarding.js"></script>
   <script src="./assets/theme.js"></script>
 </body>
