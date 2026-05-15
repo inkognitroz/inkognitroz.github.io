@@ -5,6 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SaaS Fabric Admin</title>
   <link rel="stylesheet" href="./assets/styles.css" />
+  <script>
+    (function () {
+      try {
+        var raw = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
+        var t = raw && raw.vars && typeof raw.vars === "object" ? raw.vars : raw;
+        var styles = raw && raw.styles && typeof raw.styles === "object" ? raw.styles : null;
+        if (t && typeof t === "object" && !Array.isArray(t)) {
+          var r = document.documentElement;
+          Object.keys(t).forEach(function (k) {
+            if (typeof k === "string" && k.indexOf("--") === 0) {
+              r.style.setProperty(k, t[k]);
+            }
+          });
+          if (styles) {
+            ["bgStyle", "buttonStyle", "cardStyle", "navStyle", "heroStyle"].forEach(function (key) {
+              if (typeof styles[key] === "string") {
+                r.dataset[key] = styles[key];
+              }
+            });
+          }
+        }
+      } catch (_) {}
+    })();
+  </script>
 </head>
 <body data-page="admin">
   <header class="site-header">
@@ -87,5 +111,6 @@
   </main>
 
   <script src="./assets/app.js"></script>
+  <script src="./assets/theme.js"></script>
 </body>
 </html>
