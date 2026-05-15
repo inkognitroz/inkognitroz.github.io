@@ -296,6 +296,7 @@
   }
 
   function formatCsvRow(cells) {
+    // RFC 4180: escape embedded quotes by doubling them, then wrap each cell in quotes.
     return cells.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",");
   }
 
@@ -374,7 +375,7 @@
     if (!table) return;
 
     const headers = Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent);
-    const rows = Array.from(table.querySelectorAll("tbody tr[data-row='true']"))
+    const rows = Array.from(table.querySelectorAll("tbody tr.data-row"))
       .map((row) => Array.from(row.querySelectorAll("td")).map((cell) => cell.textContent));
 
     appState.payload.sections[appState.activeSection] = { columns: headers, rows };
@@ -459,7 +460,7 @@
 
     const rowHtml = section.rows
       .map((row) => (
-        `<tr data-row="true">${section.columns.map((_, index) => `<td contenteditable="true" spellcheck="false">${escapeHtml(row[index] || "")}</td>`).join("")}</tr>`
+        `<tr class="data-row">${section.columns.map((_, index) => `<td contenteditable="true" spellcheck="false">${escapeHtml(row[index] || "")}</td>`).join("")}</tr>`
       ))
       .join("");
 
