@@ -26,7 +26,7 @@
   <header class="site-header">
     <div class="container">
       <h1>SaaS Fabric Admin</h1>
-      <p>Edit content locally in your browser. No backend required in v1.</p>
+      <p>Edit content safely in your browser, keep drafts local, and publish via PR. No backend or frontend secrets required in v1.</p>
       <nav>
         <a href="./index.html">Back to site</a>
       </nav>
@@ -36,14 +36,19 @@
   <main class="container admin-layout">
     <section class="card">
       <h2>1) Load + edit JSON</h2>
-      <p>Load current content, edit values, and keep everything in one <code>content.json</code> file.</p>
+      <p>Load current content, edit values, validate the content model, and keep everything in one <code>content.json</code> file. Cards support <code>draft</code> and <code>published</code> status.</p>
       <div class="actions-row">
         <button id="load-content" type="button">Load content.json</button>
         <button id="format-json" type="button">Format JSON</button>
+        <button id="validate-json" type="button">Validate</button>
         <button id="preview-json" type="button">Preview</button>
         <button id="download-json" type="button">Export content.json</button>
       </div>
       <textarea id="json-editor" rows="18" spellcheck="false"></textarea>
+      <p class="admin-note">Export is blocked until JSON syntax and the content model both pass validation.</p>
+      <div id="admin-message" class="notice" hidden></div>
+      <p id="validation-summary" class="validation-summary">Run validation before export.</p>
+      <ul id="validation-results" class="validation-results" hidden></ul>
     </section>
 
     <section class="card">
@@ -71,6 +76,12 @@
       <div class="admin-grid">
         <label>Title <input id="card-title" type="text" /></label>
         <label>Link <input id="card-link" type="url" placeholder="https://" /></label>
+        <label>Status
+          <select id="card-status">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </label>
       </div>
       <label>Description / Prompt / Task
         <textarea id="card-description" rows="5"></textarea>
@@ -87,18 +98,47 @@
 
     <section class="card">
       <h2>3) Import CSV / XLSX</h2>
-      <p>CSV import runs in-browser and appends cards into the selected section. Expected headers: <code>title,description,link,tags</code>.</p>
+      <p>CSV import runs in-browser and appends cards into the selected section. Supported headers: <code>title,description,link,tags,status</code>. Quoted commas and BOM-marked CSV files are supported.</p>
       <label>CSV file<input id="csv-input" type="file" accept=".csv,text/csv" /></label>
       <button id="import-csv" type="button">Import CSV to selected section</button>
+      <p class="admin-note">Use <code>|</code> inside the <code>tags</code> column. If <code>status</code> is omitted, imported rows default to <code>draft</code>.</p>
       <p>XLSX placeholder: convert to CSV first, or parse with a browser XLSX library in a future version.</p>
       <label>XLSX file<input id="xlsx-input" type="file" accept=".xlsx,.xls" /></label>
       <button id="import-xlsx" type="button">Show XLSX import guidance</button>
     </section>
 
     <section class="card">
-      <h2>4) Live preview (safe, local only)</h2>
-      <p>This preview never auto-commits to GitHub. Use exported <code>content.json</code> in a PR.</p>
+      <h2>4) Browser backups + restore points</h2>
+      <p>The current editor text auto-saves in this browser. You can also create timestamped restore points before larger changes.</p>
+      <div class="actions-row">
+        <button id="restore-browser-draft" type="button">Restore browser draft</button>
+        <button id="clear-browser-draft" type="button">Clear browser draft</button>
+      </div>
+      <div class="admin-grid">
+        <label>Restore point
+          <select id="backup-select"></select>
+        </label>
+      </div>
+      <div class="actions-row">
+        <button id="save-backup" type="button">Create restore point</button>
+        <button id="restore-backup" type="button">Restore selected</button>
+        <button id="delete-backup" type="button" class="danger">Delete selected</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>5) Live preview (safe, local only)</h2>
+      <p>This preview never auto-commits to GitHub. Draft cards are labelled here and stay hidden from the public homepage until marked <code>published</code>.</p>
       <div id="admin-preview"></div>
+    </section>
+
+    <section class="card">
+      <h2>6) Safe publishing workflow</h2>
+      <ol>
+        <li><strong>Recommended now:</strong> export <code>content.json</code>, commit it in a PR, review it, and merge to <code>main</code>.</li>
+        <li><strong>Future option:</strong> publish through a backend or serverless function that uses a GitHub App or another server-side secret. Never place GitHub tokens or other secrets in frontend code.</li>
+      </ol>
+      <p class="admin-note">This admin page is intentionally local-first. It helps you prepare safe content updates without exposing secrets in the browser.</p>
     </section>
   </main>
 
