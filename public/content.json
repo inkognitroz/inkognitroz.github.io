@@ -20,6 +20,13 @@
   "sections": {
     "appFactory": [
       {
+        "title": "App Template Generator",
+        "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
+        "link": "./apps/app-template-generator/",
+        "badge": "Live",
+        "tags": ["generator", "template", "planning", "static"]
+      },
+      {
         "title": "Football Evolution Matrix",
         "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",
         "link": "./apps/football-evolution-matrix/",
