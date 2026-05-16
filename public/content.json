@@ -76,6 +76,13 @@
   "sections": {
     "appFactory": [
       {
+        "title": "Open Web GUI",
+        "description": "Chat with local or remote LLM models via Ollama directly in your browser. Configure an endpoint, pick a model, and start chatting — no backend required.",
+        "link": "./apps/open-web-gui/",
+        "badge": "Live",
+        "tags": ["ai", "ollama", "llm", "chat", "static"]
+      },
+      {
         "title": "App Template Generator",
         "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
         "link": "./apps/app-template-generator/",
