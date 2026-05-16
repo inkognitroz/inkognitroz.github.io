@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "description": "Static model registry for SaaS Fabric AI experiments. Do not store API keys here.",
+  "providers": [
+    {
+      "id": "ollama-local",
+      "label": "Ollama Local",
+      "type": "ollama",
+      "endpoint": "http://localhost:11434",
+      "auth": "none",
+      "enabled": true,
+      "models": [
+        { "id": "llama3.1", "label": "Llama 3.1", "use": "general" },
+        { "id": "mistral", "label": "Mistral", "use": "fast general chat" },
+        { "id": "codellama", "label": "CodeLlama", "use": "code assistance" }
+      ]
+    },
+    {
+      "id": "openai-compatible-router",
+      "label": "Future OpenAI-compatible Router",
+      "type": "openai-compatible",
+      "endpoint": "/api/ai/chat",
+      "auth": "server-side",
+      "enabled": false,
+      "models": []
+    }
+  ]
+}
