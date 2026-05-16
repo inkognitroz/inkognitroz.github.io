@@ -8,6 +8,10 @@
   const modelsEl=document.getElementById('backend-models');
   const keyRefEl=document.getElementById('backend-key-ref');
   const costEl=document.getElementById('backend-cost');
+  const latencyEl=document.getElementById('backend-latency');
+  const throughputEl=document.getElementById('backend-throughput');
+  const uptimeEl=document.getElementById('backend-uptime');
+  const healthEl=document.getElementById('backend-health');
   const newBtn=document.getElementById('new-backend');
   const saveBtn=document.getElementById('save-profile');
   const activeBtn=document.getElementById('set-active');
@@ -23,6 +27,8 @@
   const metricActive=document.getElementById('metric-active');
   const metricKeys=document.getElementById('metric-keys');
   const metricProviders=document.getElementById('metric-providers');
+  const metricReady=document.getElementById('metric-ready');
+  const metricMeasured=document.getElementById('metric-measured');
   const dashboardRows=document.getElementById('dashboard-rows');
   let selectedId=null;
 
@@ -37,6 +43,7 @@
   function writeActive(id){localStorage.setItem(ACTIVE_KEY,id);}
   function selectedProfile(){return readProfiles().find(p=>p.id===selectedId)||null;}
   function activeProfile(){const id=readActive();return readProfiles().find(p=>p.id===id)||null;}
+  function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
   function renderList(){
     const profiles=readProfiles();
@@ -44,7 +51,8 @@
     if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No backends yet. Add your first OCI/Open WebUI endpoint.</p>';return;}
     listEl.innerHTML=profiles.map(p=>{
       const active=p.id===activeId;
-      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'open-webui')} · ${escapeHtml(p.models||'models not listed')}</small></span>${active?'<em>Active</em>':''}</button>`;
+      const health=p.health||'unknown';
+      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'open-webui')} · ${escapeHtml(p.models||'models not listed')} · ${escapeHtml(health)}</small></span>${active?'<em>Active</em>':''}</button>`;
     }).join('');
     listEl.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>selectProfile(btn.dataset.id)));
   }
@@ -56,18 +64,26 @@
       nameEl.value='';urlEl.value='';providerEl.value='open-webui';modelsEl.value='';
       if(keyRefEl)keyRefEl.value='';
       if(costEl)costEl.value='';
+      if(latencyEl)latencyEl.value='';
+      if(throughputEl)throughputEl.value='';
+      if(uptimeEl)uptimeEl.value='';
+      if(healthEl)healthEl.value='unknown';
       launchLink.href='#';launchLink.classList.add('disabled');launchLink.setAttribute('aria-disabled','true');
     }else{
       nameEl.value=p.name||'';urlEl.value=p.url||'';providerEl.value=p.provider||'open-webui';modelsEl.value=p.models||'';
       if(keyRefEl)keyRefEl.value=p.keyRef||'';
       if(costEl)costEl.value=p.cost||'';
+      if(latencyEl)latencyEl.value=p.latency||'';
+      if(throughputEl)throughputEl.value=p.throughput||'';
+      if(uptimeEl)uptimeEl.value=p.uptime||'';
+      if(healthEl)healthEl.value=p.health||'unknown';
       const ok=validUrl(p.url);
       launchLink.href=ok?p.url:'#';launchLink.classList.toggle('disabled',!ok);launchLink.setAttribute('aria-disabled',String(!ok));
     }
     if(active&&validUrl(active.url)){
       activeBadge.textContent='Active: '+(active.name||'backend');
       activeTitle.textContent=active.name||'Mimir Chat';
-      activeDesc.textContent=(active.provider||'Open WebUI')+' · '+(active.models||'models selected in backend');
+      activeDesc.textContent=(active.provider||'Open WebUI')+' · '+(active.models||'models selected in backend')+' · '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
       activeBadge.textContent='No backend selected';activeTitle.textContent='Ready when your backend is selected';activeDesc.textContent='Add an OCI/Open WebUI backend above, set it active, then open chat.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
@@ -79,27 +95,32 @@
     const active=activeProfile();
     const providers=[...new Set(profiles.map(p=>p.provider||'open-webui'))];
     const keyCount=profiles.filter(p=>String(p.keyRef||'').trim()).length;
+    const readyCount=profiles.filter(p=>(p.health||'unknown')==='ready').length;
+    const measuredCount=profiles.filter(profileMeasured).length;
     if(metricProfiles)metricProfiles.textContent=String(profiles.length);
     if(metricActive)metricActive.textContent=active?(active.name||'Active'):'None';
     if(metricKeys)metricKeys.textContent=String(keyCount);
     if(metricProviders)metricProviders.textContent=String(providers.length);
+    if(metricReady)metricReady.textContent=String(readyCount);
+    if(metricMeasured)metricMeasured.textContent=String(measuredCount);
     if(!dashboardRows)return;
-    if(!profiles.length){dashboardRows.innerHTML='<tr><td colspan="6">No backend profiles yet.</td></tr>';return;}
+    if(!profiles.length){dashboardRows.innerHTML='<tr><td colspan="9">No backend profiles yet.</td></tr>';return;}
     const activeId=readActive();
     dashboardRows.innerHTML=profiles.map(p=>{
       const ok=validUrl(p.url);
       const state=p.id===activeId?'Active':(ok?'Ready':'Missing URL');
-      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'open-webui')}</td><td>${escapeHtml(p.models||'—')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'—')}</td><td>${escapeHtml(state)}</td></tr>`;
+      const health=p.health||'unknown';
+      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'open-webui')}</td><td>${escapeHtml(p.models||'—')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'—')}</td><td>${escapeHtml(p.latency||'—')}</td><td>${escapeHtml(p.throughput||'—')}</td><td><span class="health-chip health-${escapeHtml(health)}">${escapeHtml(health)}</span></td><td>${escapeHtml(state)}</td></tr>`;
     }).join('');
   }
 
   function render(){renderList();renderEditor();renderDashboard();}
   function selectProfile(id){selectedId=id;setStatus('');render();}
-  function createProfile(){const profiles=readProfiles();const profile={id:uid(),name:'New backend',url:'',provider:'open-webui',models:'',keyRef:'',cost:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('New backend profile created.');render();}
+  function createProfile(){const profiles=readProfiles();const profile={id:uid(),name:'New backend',url:'',provider:'open-webui',models:'',keyRef:'',cost:'',latency:'',throughput:'',uptime:'',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('New backend profile created.');render();}
   function saveProfile(){
     const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
     const profiles=readProfiles();let p=selectedProfile();if(!p){p={id:uid(),createdAt:new Date().toISOString()};profiles.push(p);selectedId=p.id;}
-    p.name=nameEl.value.trim()||'Unnamed backend';p.url=url;p.provider=providerEl.value;p.models=modelsEl.value.trim();p.keyRef=keyRefEl?keyRefEl.value.trim():'';p.cost=costEl?costEl.value.trim():'';p.updatedAt=new Date().toISOString();
+    p.name=nameEl.value.trim()||'Unnamed backend';p.url=url;p.provider=providerEl.value;p.models=modelsEl.value.trim();p.keyRef=keyRefEl?keyRefEl.value.trim():'';p.cost=costEl?costEl.value.trim():'';p.latency=latencyEl?latencyEl.value.trim():'';p.throughput=throughputEl?throughputEl.value.trim():'';p.uptime=uptimeEl?uptimeEl.value.trim():'';p.health=healthEl?healthEl.value:'unknown';p.updatedAt=new Date().toISOString();
     writeProfiles(profiles);setStatus('Profile saved locally.');render();
   }
   function setActive(){const p=selectedProfile();if(!p){setStatus('Select a backend first.');return;}if(!validUrl(p.url)){setStatus('Save a valid backend URL before setting active.');return;}writeActive(p.id);setStatus('Active backend set.');render();}
