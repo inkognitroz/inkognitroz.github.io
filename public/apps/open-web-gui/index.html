@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Web GUI · Ollama Connector · SaaS Fabric</title>
+  <meta name="description" content="Connect to a local or remote Ollama instance and chat with any LLM model directly from your browser — no backend required." />
+  <link rel="stylesheet" href="../../assets/styles.css" />
+  <link rel="stylesheet" href="./open-web-gui.css" />
+  <script>
+    (function () {
+      try {
+        var raw = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
+        var t = raw && raw.vars && typeof raw.vars === "object" ? raw.vars : raw;
+        var styles = raw && raw.styles && typeof raw.styles === "object" ? raw.styles : null;
+        if (t && typeof t === "object" && !Array.isArray(t)) {
+          var r = document.documentElement;
+          Object.keys(t).forEach(function (k) {
+            if (typeof k === "string" && k.indexOf("--") === 0) {
+              r.style.setProperty(k, t[k]);
+            }
+          });
+          if (styles) {
+            ["bgStyle", "buttonStyle", "cardStyle", "navStyle", "heroStyle"].forEach(function (key) {
+              if (typeof styles[key] === "string") {
+                r.dataset[key] = styles[key];
+              }
+            });
+          }
+        }
+      } catch (_) {}
+    })();
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Open Web GUI</h1>
+      <p>Chat with local or remote LLM models via <strong>Ollama</strong> — straight from your browser, no backend required.</p>
+      <nav>
+        <a href="../../index.html">Back to SaaS Fabric</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container app-main">
+
+    <!-- ── Connection config ── -->
+    <section class="card config-panel">
+      <h2>1) Connect to Ollama</h2>
+      <p class="section-description">
+        Point to a running <a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> instance.
+        For local use, Ollama must be started with CORS allowed
+        (<code>OLLAMA_ORIGINS=* ollama serve</code>).
+        Cloud / proxied endpoints work too.
+      </p>
+
+      <div class="config-grid">
+        <label for="ollama-url">
+          Ollama base URL
+          <input
+            id="ollama-url"
+            type="url"
+            placeholder="http://localhost:11434"
+            value="http://localhost:11434"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+
+        <label for="model-input">
+          Model name
+          <input
+            id="model-input"
+            type="text"
+            placeholder="e.g. llama3, mistral, gemma3"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+
+        <label for="api-key">
+          API key <span style="font-size:.8rem">(optional — for auth-gated proxies)</span>
+          <input
+            id="api-key"
+            type="password"
+            placeholder="sk-…"
+            autocomplete="off"
+          />
+        </label>
+      </div>
+
+      <div class="config-actions">
+        <button id="test-connection" type="button">Test connection</button>
+        <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+        <span id="status-text" class="status-text" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <!-- ── Available models ── -->
+    <section class="card model-list-panel">
+      <details id="model-details">
+        <summary>Available models — click to select</summary>
+        <div id="model-chips" class="model-chips">
+          <span style="color:var(--muted);font-size:.82rem">Test the connection first to list available models.</span>
+        </div>
+      </details>
+    </section>
+
+    <!-- ── Chat ── -->
+    <section class="card chat-panel">
+      <h2>2) Chat</h2>
+
+      <div id="chat-window" class="chat-window" role="log" aria-label="Chat messages" aria-live="polite">
+        <div id="chat-empty" class="chat-empty">
+          Configure a connection above, then type a message to start chatting.
+        </div>
+      </div>
+
+      <div class="composer">
+        <textarea
+          id="user-input"
+          rows="1"
+          placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+          aria-label="Chat input"
+        ></textarea>
+        <div class="composer-btns">
+          <button id="send-btn" class="btn-send" type="button">Send</button>
+          <button id="clear-btn" class="btn-clear" type="button">Clear</button>
+        </div>
+      </div>
+
+      <!-- system prompt -->
+      <div class="system-prompt-wrap">
+        <details>
+          <summary>System prompt (optional)</summary>
+          <textarea
+            id="system-prompt"
+            rows="3"
+            placeholder="e.g. You are a helpful assistant. Answer concisely."
+            aria-label="System prompt"
+          ></textarea>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── About ── -->
+    <aside class="about-note">
+      <strong>How it works:</strong> This widget calls the
+      <a href="https://github.com/ollama/ollama/blob/main/docs/api.md" target="_blank" rel="noopener">Ollama REST API</a>
+      (<code>/api/tags</code> and <code>/api/chat</code>) directly from your browser using the
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank" rel="noopener">Fetch API</a>
+      with streaming.
+      No data leaves your machine unless you point it to a remote URL.
+      Your config (URL, model name, system prompt) is saved in <code>localStorage</code> for convenience.
+    </aside>
+
+  </main>
+
+  <script src="./open-web-gui.js"></script>
+  <script src="../../assets/theme.js"></script>
+</body>
+</html>
