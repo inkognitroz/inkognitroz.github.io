@@ -9,52 +9,62 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
 </head>
 <body class="mimir-public-chat">
-  <header class="site-header mimir-chat-header">
-    <div class="container header-inner">
-      <div class="header-brand">
-        <h1>Mimir Chat</h1>
-        <p>Connect to your AI backends.</p>
-      </div>
-      <nav aria-label="Minimal navigation">
-        <a href="./admin.html">Admin</a>
-      </nav>
-    </div>
+  <header class="mimir-topbar">
+    <a class="mimir-brand" href="./index.html" aria-label="Mimir Chat home">
+      <span class="mimir-mark" aria-hidden="true">M</span>
+      <span>
+        <strong>Mimir Chat</strong>
+        <small>AI backend gateway</small>
+      </span>
+    </a>
+    <nav aria-label="Minimal navigation">
+      <a href="./admin.html">Admin</a>
+    </nav>
   </header>
 
-  <main class="container mimir-chat-shell" aria-labelledby="mimir-title">
-    <section class="mimir-chat-hero">
-      <p class="eyebrow">Mimir AI gateway</p>
-      <h2 id="mimir-title">Choose backend. Start chat.</h2>
-      <p>
-        Mimir is the public chat entry point. Add one or more Open WebUI/Ollama backends from OCI or other VMs,
-        select the active backend, and launch the chat service. Everything here is static; backend profiles are stored only in your browser.
-      </p>
+  <main class="mimir-shell" aria-labelledby="mimir-title">
+    <section class="mimir-hero-panel">
+      <div class="mimir-hero-copy">
+        <p class="eyebrow">Public chat service</p>
+        <h1 id="mimir-title">Talk to your AI infrastructure.</h1>
+        <p>
+          Connect Mimir to one or many Open WebUI / Ollama backends running on OCI or other VMs.
+          Select the active backend and launch chat without putting secrets in the public frontend.
+        </p>
+        <div class="mimir-hero-actions">
+          <a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Launch active chat</a>
+          <button id="new-backend" type="button" class="btn btn-secondary">Add backend</button>
+        </div>
+      </div>
+      <aside class="mimir-live-card" aria-label="Active backend">
+        <span id="active-badge" class="backend-badge">No active backend</span>
+        <h2 id="active-chat-title">Choose a connection</h2>
+        <p id="active-chat-description">Add an OCI/Open WebUI backend, set it active, then launch Mimir Chat.</p>
+      </aside>
     </section>
 
-    <section class="mimir-chat-layout">
-      <aside class="card backend-panel" aria-labelledby="backend-list-title">
+    <section class="mimir-console" aria-label="Mimir backend console">
+      <aside class="backend-panel" aria-labelledby="backend-list-title">
         <div class="panel-heading">
           <div>
-            <p class="eyebrow">Backends</p>
-            <h3 id="backend-list-title">Available connections</h3>
+            <p class="eyebrow">Connections</p>
+            <h2 id="backend-list-title">Backends</h2>
           </div>
-          <button id="new-backend" type="button">New</button>
         </div>
         <div id="backend-list" class="backend-list" aria-live="polite"></div>
       </aside>
 
-      <section class="card chat-config-panel" aria-labelledby="profile-editor-title">
+      <section class="chat-config-panel" aria-labelledby="profile-editor-title">
         <div class="panel-heading">
           <div>
-            <p class="eyebrow">Connection profile</p>
-            <h3 id="profile-editor-title">Configure selected backend</h3>
+            <p class="eyebrow">Profile</p>
+            <h2 id="profile-editor-title">Configure backend</h2>
           </div>
-          <span id="active-badge" class="backend-badge">No backend selected</span>
         </div>
 
         <div class="profile-grid">
           <label for="backend-name">Name
-            <input id="backend-name" type="text" placeholder="OCI Stockholm / Gemma test" autocomplete="off" />
+            <input id="backend-name" type="text" placeholder="OCI Stockholm / Llama test" autocomplete="off" />
           </label>
           <label for="backend-url">Open WebUI URL
             <input id="backend-url" type="url" placeholder="https://chat.example.com or http://203.0.113.10" autocomplete="off" spellcheck="false" />
@@ -68,41 +78,28 @@
             </select>
           </label>
           <label for="backend-models">Models / notes
-            <input id="backend-models" type="text" placeholder="e.g. gemma, llama, mistral, coder" autocomplete="off" />
+            <input id="backend-models" type="text" placeholder="e.g. Gemma, Llama, Mistral, Coder" autocomplete="off" />
           </label>
         </div>
 
         <div class="actions-row portal-actions">
           <button id="save-profile" type="button">Save profile</button>
           <button id="set-active" type="button">Set active</button>
-          <a id="launch-chat" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Launch chat</a>
+          <a id="launch-chat" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open selected</a>
           <button id="delete-profile" type="button" class="danger">Delete</button>
         </div>
         <p id="config-status" class="status" aria-live="polite"></p>
       </section>
     </section>
 
-    <section class="card active-chat-card" aria-labelledby="active-chat-title">
-      <div class="active-chat-copy">
-        <p class="eyebrow">Active chat</p>
-        <h3 id="active-chat-title">Ready when your backend is selected</h3>
-        <p id="active-chat-description">Add an OCI/Open WebUI backend above, set it active, then open chat.</p>
-      </div>
-      <div class="active-chat-actions">
-        <a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open Mimir Chat</a>
-        <a class="btn btn-secondary" href="./apps/open-web-gui/">Endpoint test</a>
-      </div>
-    </section>
-
-    <section class="public-boundary-note" aria-label="Public boundary">
-      <p>
-        Public page: chat launcher only. App factory, roadmap, admin tools and experiments are moved behind <a href="./admin.html">Admin</a> / <a href="./internal.html">Internal</a>.
-        No OCI credentials, model keys, private documents or API secrets belong in this static page.
-      </p>
+    <section class="mimir-footer-strip" aria-label="Public boundary">
+      <span>Static frontend</span>
+      <span>No frontend secrets</span>
+      <span>Multiple VM backends</span>
+      <span><a href="./internal.html">Internal tools</a></span>
     </section>
   </main>
 
   <script src="./apps/mimir-chat-portal/mimir-chat-portal.js"></script>
-  <script src="./assets/theme.js"></script>
 </body>
 </html>
