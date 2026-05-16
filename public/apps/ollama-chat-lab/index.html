@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ollama Chat Lab · SaaS Fabric</title>
+  <meta name="description" content="Local-first Ollama chat interface with model selector for SaaS Fabric." />
+  <link rel="stylesheet" href="../../assets/styles.css" />
+  <link rel="stylesheet" href="./ollama-chat-lab.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Ollama Chat Lab</h1>
+      <p>Local AI chat prototype with a model menu. Requires Ollama running locally.</p>
+      <nav><a href="../../index.html">Back to SaaS Fabric</a></nav>
+    </div>
+  </header>
+  <main class="container app-main">
+    <section class="card">
+      <h2>Local model chat</h2>
+      <p class="section-description">Start Ollama locally, then choose a model and send a prompt. Browser access may require Ollama CORS configuration.</p>
+      <div class="chat-controls">
+        <label>Ollama endpoint <input id="endpoint" value="http://localhost:11434" /></label>
+        <button id="load-models" type="button">Load models</button>
+        <label>Model <select id="model-select"><option value="">Load models first</option></select></label>
+      </div>
+      <label>System prompt <textarea id="system-prompt" rows="3">You are a precise SaaS Fabric assistant. Be practical, concise and implementation-focused.</textarea></label>
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <label>Message <textarea id="user-message" rows="4" placeholder="Ask the local model..."></textarea></label>
+      <div class="actions-row">
+        <button id="send" type="button">Send</button>
+        <button id="clear" type="button">Clear</button>
+      </div>
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="./ollama-chat-lab.js"></script>
+  <script src="../../assets/theme.js"></script>
+</body>
+</html>
