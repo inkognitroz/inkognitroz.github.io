@@ -86,6 +86,24 @@
           <label for="backend-cost">Cost / capacity note
             <input id="backend-cost" type="text" placeholder="e.g. Always Free A1, paid GPU, internal VM" autocomplete="off" />
           </label>
+          <label for="backend-latency">Latency target
+            <input id="backend-latency" type="text" placeholder="e.g. < 2s first token" autocomplete="off" />
+          </label>
+          <label for="backend-throughput">Throughput target
+            <input id="backend-throughput" type="text" placeholder="e.g. 20 tok/s" autocomplete="off" />
+          </label>
+          <label for="backend-uptime">Uptime target
+            <input id="backend-uptime" type="text" placeholder="e.g. 99%, dev only, best effort" autocomplete="off" />
+          </label>
+          <label for="backend-health">Health status
+            <select id="backend-health">
+              <option value="unknown">Unknown</option>
+              <option value="ready">Ready</option>
+              <option value="degraded">Degraded</option>
+              <option value="offline">Offline</option>
+              <option value="testing">Testing</option>
+            </select>
+          </label>
         </div>
 
         <div class="actions-row portal-actions">
@@ -111,11 +129,13 @@
         <article class="metric-card"><span>Active</span><strong id="metric-active">None</strong><small>Current chat target</small></article>
         <article class="metric-card"><span>Model keys</span><strong id="metric-keys">0</strong><small>Key references, not secrets</small></article>
         <article class="metric-card"><span>Provider mix</span><strong id="metric-providers">0</strong><small>Distinct backend types</small></article>
+        <article class="metric-card"><span>Ready</span><strong id="metric-ready">0</strong><small>Ready/healthy backends</small></article>
+        <article class="metric-card"><span>Measured</span><strong id="metric-measured">0</strong><small>Profiles with perf targets</small></article>
       </div>
       <div class="dashboard-table-wrap">
         <table class="dashboard-table">
-          <thead><tr><th>Backend</th><th>Provider</th><th>Models</th><th>Key ref</th><th>Capacity</th><th>Status</th></tr></thead>
-          <tbody id="dashboard-rows"><tr><td colspan="6">No backend profiles yet.</td></tr></tbody>
+          <thead><tr><th>Backend</th><th>Provider</th><th>Models</th><th>Key ref</th><th>Capacity</th><th>Latency</th><th>Throughput</th><th>Health</th><th>Status</th></tr></thead>
+          <tbody id="dashboard-rows"><tr><td colspan="9">No backend profiles yet.</td></tr></tbody>
         </table>
       </div>
       <p class="dashboard-note">Only references/labels are stored here. Real SaaS API keys and credentials must stay in protected backend/admin storage, not in public frontend code.</p>
