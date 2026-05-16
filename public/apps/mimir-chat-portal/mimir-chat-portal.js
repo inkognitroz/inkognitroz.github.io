@@ -1,36 +1,79 @@
 (function(){
-  const STORAGE_KEY='mimir-chat-portal-config';
-  const backendUrl=document.getElementById('backend-url');
-  const workspaceLabel=document.getElementById('workspace-label');
-  const saveBtn=document.getElementById('save-config');
-  const openBackend=document.getElementById('open-backend');
-  const clearBtn=document.getElementById('clear-config');
-  const configStatus=document.getElementById('config-status');
-  const handoffNote=document.getElementById('handoff-note');
-  const copyBtn=document.getElementById('copy-note');
-  const copyStatus=document.getElementById('copy-status');
-  const surfaceBackend=document.getElementById('surface-backend');
+  const STORAGE_KEY='mimir-chat-backend-profiles';
+  const ACTIVE_KEY='mimir-chat-active-backend';
+  const listEl=document.getElementById('backend-list');
+  const nameEl=document.getElementById('backend-name');
+  const urlEl=document.getElementById('backend-url');
+  const providerEl=document.getElementById('backend-provider');
+  const modelsEl=document.getElementById('backend-models');
+  const newBtn=document.getElementById('new-backend');
+  const saveBtn=document.getElementById('save-profile');
+  const activeBtn=document.getElementById('set-active');
+  const deleteBtn=document.getElementById('delete-profile');
+  const launchLink=document.getElementById('launch-chat');
+  const primaryLink=document.getElementById('primary-chat-link');
+  const statusEl=document.getElementById('config-status');
+  const activeBadge=document.getElementById('active-badge');
+  const activeTitle=document.getElementById('active-chat-title');
+  const activeDesc=document.getElementById('active-chat-description');
+  let selectedId=null;
+
+  function uid(){return crypto.randomUUID?crypto.randomUUID():'backend-'+Date.now();}
   function cleanUrl(value){return String(value||'').trim().replace(/\/$/,'');}
-  function setStatus(text){configStatus.textContent=text||'';}
   function validUrl(value){try{const url=new URL(value);return url.protocol==='http:'||url.protocol==='https:';}catch(e){return false;}}
-  function readConfig(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');}catch(e){return {};}}
-  function writeConfig(config){localStorage.setItem(STORAGE_KEY,JSON.stringify(config));}
-  function render(){
-    const url=cleanUrl(backendUrl.value);
-    const label=workspaceLabel.value.trim()||'Mimir / SaaS Fabric';
-    const ok=validUrl(url);
-    openBackend.href=ok?url:'#';
-    surfaceBackend.href=ok?url:'#';
-    openBackend.classList.toggle('disabled',!ok);
-    openBackend.setAttribute('aria-disabled',String(!ok));
-    surfaceBackend.classList.toggle('disabled',!ok);
-    handoffNote.value='Mimir backend handoff\n\nWorkspace: '+label+'\nOpen WebUI URL: '+(ok?url:'not configured')+'\n\nExpected backend: Open WebUI in front of Ollama on OCI. Frontend stores only this URL locally. Internal tools: /internal.html';
+  function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+  function setStatus(text){statusEl.textContent=text||'';}
+  function readProfiles(){try{const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(e){return [];}}
+  function writeProfiles(profiles){localStorage.setItem(STORAGE_KEY,JSON.stringify(profiles));}
+  function readActive(){return localStorage.getItem(ACTIVE_KEY)||'';}
+  function writeActive(id){localStorage.setItem(ACTIVE_KEY,id);}
+  function selectedProfile(){return readProfiles().find(p=>p.id===selectedId)||null;}
+  function activeProfile(){const id=readActive();return readProfiles().find(p=>p.id===id)||null;}
+
+  function renderList(){
+    const profiles=readProfiles();
+    const activeId=readActive();
+    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No backends yet. Add your first OCI/Open WebUI endpoint.</p>';return;}
+    listEl.innerHTML=profiles.map(p=>{
+      const active=p.id===activeId;
+      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'open-webui')} · ${escapeHtml(p.models||'models not listed')}</small></span>${active?'<em>Active</em>':''}</button>`;
+    }).join('');
+    listEl.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>selectProfile(btn.dataset.id)));
   }
-  function load(){const config=readConfig();if(config.backendUrl)backendUrl.value=config.backendUrl;if(config.workspaceLabel)workspaceLabel.value=config.workspaceLabel;render();}
-  saveBtn.addEventListener('click',()=>{const url=cleanUrl(backendUrl.value);if(!validUrl(url)){setStatus('Enter a valid http or https URL.');render();return;}writeConfig({backendUrl:url,workspaceLabel:workspaceLabel.value.trim()||'Mimir / SaaS Fabric',updatedAt:new Date().toISOString()});setStatus('Saved locally in this browser.');render();});
-  clearBtn.addEventListener('click',()=>{localStorage.removeItem(STORAGE_KEY);backendUrl.value='';setStatus('Cleared.');render();});
-  copyBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(handoffNote.value);copyStatus.textContent='Copied.';}catch(e){handoffNote.select();document.execCommand('copy');copyStatus.textContent='Copied.';}});
-  backendUrl.addEventListener('input',render);
-  workspaceLabel.addEventListener('input',render);
-  load();
+
+  function renderEditor(){
+    const p=selectedProfile();
+    const active=activeProfile();
+    if(!p){
+      nameEl.value='';urlEl.value='';providerEl.value='open-webui';modelsEl.value='';
+      launchLink.href='#';launchLink.classList.add('disabled');launchLink.setAttribute('aria-disabled','true');
+    }else{
+      nameEl.value=p.name||'';urlEl.value=p.url||'';providerEl.value=p.provider||'open-webui';modelsEl.value=p.models||'';
+      const ok=validUrl(p.url);
+      launchLink.href=ok?p.url:'#';launchLink.classList.toggle('disabled',!ok);launchLink.setAttribute('aria-disabled',String(!ok));
+    }
+    if(active&&validUrl(active.url)){
+      activeBadge.textContent='Active: '+(active.name||'backend');
+      activeTitle.textContent=active.name||'Mimir Chat';
+      activeDesc.textContent=(active.provider||'Open WebUI')+' · '+(active.models||'models selected in backend');
+      primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
+    }else{
+      activeBadge.textContent='No backend selected';activeTitle.textContent='Ready when your backend is selected';activeDesc.textContent='Add an OCI/Open WebUI backend above, set it active, then open chat.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
+    }
+  }
+
+  function render(){renderList();renderEditor();}
+  function selectProfile(id){selectedId=id;setStatus('');render();}
+  function createProfile(){const profiles=readProfiles();const profile={id:uid(),name:'New backend',url:'',provider:'open-webui',models:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('New backend profile created.');render();}
+  function saveProfile(){
+    const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
+    const profiles=readProfiles();let p=selectedProfile();if(!p){p={id:uid(),createdAt:new Date().toISOString()};profiles.push(p);selectedId=p.id;}
+    p.name=nameEl.value.trim()||'Unnamed backend';p.url=url;p.provider=providerEl.value;p.models=modelsEl.value.trim();p.updatedAt=new Date().toISOString();
+    writeProfiles(profiles);setStatus('Profile saved locally.');render();
+  }
+  function setActive(){const p=selectedProfile();if(!p){setStatus('Select a backend first.');return;}if(!validUrl(p.url)){setStatus('Save a valid backend URL before setting active.');return;}writeActive(p.id);setStatus('Active backend set.');render();}
+  function deleteProfile(){const p=selectedProfile();if(!p)return;const profiles=readProfiles().filter(x=>x.id!==p.id);writeProfiles(profiles);if(readActive()===p.id)localStorage.removeItem(ACTIVE_KEY);selectedId=profiles[0]?profiles[0].id:null;setStatus('Backend profile deleted.');render();}
+
+  newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
+  const profiles=readProfiles();selectedId=readActive()||(profiles[0]&&profiles[0].id)||null;render();
 })();
