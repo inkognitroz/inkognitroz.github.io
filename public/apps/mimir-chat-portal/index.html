@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mimir Chat Portal · SaaS Fabric</title>
+  <meta name="description" content="Static launchpad for the SaaS Fabric Mimir AI chat backend and local AI tools." />
+  <link rel="stylesheet" href="../../assets/styles.css" />
+  <link rel="stylesheet" href="./mimir-chat-portal.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Mimir Chat Portal</h1>
+      <p>Static-first control room for local AI, OCI Open WebUI, and SaaS Fabric chat workflows.</p>
+      <nav>
+        <a href="../../index.html">Back to SaaS Fabric</a>
+        <a href="../../apps/open-web-gui/">Open Web GUI</a>
+        <a href="../../apps/ollama-chat-lab/">Ollama Chat Lab</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container portal-main">
+    <section class="portal-hero card">
+      <div>
+        <p class="eyebrow">AI capability track</p>
+        <h2>One safe entry point for Mimir AI chat</h2>
+        <p>
+          Use this page to point SaaS Fabric at an Open WebUI backend, keep frontend secrets out of GitHub Pages,
+          and guide users toward the right AI surface: hosted chat, browser-to-Ollama testing, or portable session export.
+        </p>
+      </div>
+      <div class="hero-panel" aria-label="Capability status">
+        <span>Static page</span>
+        <strong>No frontend secrets</strong>
+        <span>Backend URL stored locally only</span>
+      </div>
+    </section>
+
+    <section class="grid-two">
+      <article class="card config-card">
+        <h2>1) Configure chat backend</h2>
+        <p class="section-description">
+          Paste the public Open WebUI URL after the OCI backend is deployed. The value is saved only in this browser's
+          <code>localStorage</code>. Do not paste API keys or private tokens here.
+        </p>
+
+        <label for="backend-url">Open WebUI URL</label>
+        <input id="backend-url" type="url" placeholder="https://chat.example.com or http://203.0.113.10" autocomplete="off" spellcheck="false" />
+
+        <label for="workspace-label">Workspace label</label>
+        <input id="workspace-label" type="text" value="Mimir / SaaS Fabric" autocomplete="off" />
+
+        <div class="actions-row portal-actions">
+          <button id="save-config" type="button">Save</button>
+          <a id="open-backend" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open chat</a>
+          <button id="clear-config" type="button">Clear</button>
+        </div>
+        <p id="config-status" class="status" aria-live="polite"></p>
+      </article>
+
+      <article class="card handoff-card">
+        <h2>2) Backend handoff note</h2>
+        <p class="section-description">Copy this into deployment notes, PRs, or runbooks after the backend is live.</p>
+        <textarea id="handoff-note" rows="11" readonly></textarea>
+        <div class="actions-row portal-actions">
+          <button id="copy-note" type="button">Copy note</button>
+        </div>
+        <p id="copy-status" class="status" aria-live="polite"></p>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>AI surfaces</h2>
+      <div class="surface-grid">
+        <article class="surface-card recommended">
+          <span class="surface-kicker">Recommended</span>
+          <h3>Open WebUI backend</h3>
+          <p>Best for persistent chat, users, model management, and a clean product-grade experience.</p>
+          <a href="#" id="surface-backend" target="_blank" rel="noopener noreferrer">Open configured backend →</a>
+        </article>
+        <article class="surface-card">
+          <span class="surface-kicker">Static testbench</span>
+          <h3>Open Web GUI</h3>
+          <p>Browser-to-Ollama streaming chat for quick endpoint and model testing without a SaaS backend.</p>
+          <a href="../../apps/open-web-gui/">Open Web GUI →</a>
+        </article>
+        <article class="surface-card">
+          <span class="surface-kicker">Portable sessions</span>
+          <h3>Ollama Chat Lab</h3>
+          <p>Local chat lab with session JSON export/import for repeatable experiments and prompt review.</p>
+          <a href="../../apps/ollama-chat-lab/">Open Ollama Chat Lab →</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="grid-two">
+      <article class="card">
+        <h2>Launch checklist</h2>
+        <ul class="checklist">
+          <li>Open WebUI is reachable on HTTPS or a trusted HTTP test URL.</li>
+          <li>Ollama listens privately on the server, not as a public internet API.</li>
+          <li>A default model such as <code>gemma3:4b</code> is pulled and visible inside Open WebUI.</li>
+          <li>Authentication is configured in Open WebUI before sharing the URL.</li>
+          <li>No API keys, OCI credentials, or bearer tokens are committed to this static site.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h2>Static/frontend boundaries</h2>
+        <p>
+          GitHub Pages can safely host links, guidance, public model metadata, and local browser configuration.
+          Secrets, provider API keys, private documents, and RAG indexing belong behind a backend or a protected service.
+        </p>
+        <p>
+          This portal deliberately does not proxy chat requests. It keeps the frontend static while making the backend target explicit.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script src="./mimir-chat-portal.js"></script>
+  <script src="../../assets/theme.js"></script>
+</body>
+</html>
