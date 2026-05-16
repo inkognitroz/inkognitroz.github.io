@@ -6,6 +6,8 @@
   const urlEl=document.getElementById('backend-url');
   const providerEl=document.getElementById('backend-provider');
   const modelsEl=document.getElementById('backend-models');
+  const keyRefEl=document.getElementById('backend-key-ref');
+  const costEl=document.getElementById('backend-cost');
   const newBtn=document.getElementById('new-backend');
   const saveBtn=document.getElementById('save-profile');
   const activeBtn=document.getElementById('set-active');
@@ -16,6 +18,12 @@
   const activeBadge=document.getElementById('active-badge');
   const activeTitle=document.getElementById('active-chat-title');
   const activeDesc=document.getElementById('active-chat-description');
+  const refreshDashboardBtn=document.getElementById('refresh-dashboard');
+  const metricProfiles=document.getElementById('metric-profiles');
+  const metricActive=document.getElementById('metric-active');
+  const metricKeys=document.getElementById('metric-keys');
+  const metricProviders=document.getElementById('metric-providers');
+  const dashboardRows=document.getElementById('dashboard-rows');
   let selectedId=null;
 
   function uid(){return crypto.randomUUID?crypto.randomUUID():'backend-'+Date.now();}
@@ -46,9 +54,13 @@
     const active=activeProfile();
     if(!p){
       nameEl.value='';urlEl.value='';providerEl.value='open-webui';modelsEl.value='';
+      if(keyRefEl)keyRefEl.value='';
+      if(costEl)costEl.value='';
       launchLink.href='#';launchLink.classList.add('disabled');launchLink.setAttribute('aria-disabled','true');
     }else{
       nameEl.value=p.name||'';urlEl.value=p.url||'';providerEl.value=p.provider||'open-webui';modelsEl.value=p.models||'';
+      if(keyRefEl)keyRefEl.value=p.keyRef||'';
+      if(costEl)costEl.value=p.cost||'';
       const ok=validUrl(p.url);
       launchLink.href=ok?p.url:'#';launchLink.classList.toggle('disabled',!ok);launchLink.setAttribute('aria-disabled',String(!ok));
     }
@@ -62,18 +74,38 @@
     }
   }
 
-  function render(){renderList();renderEditor();}
+  function renderDashboard(){
+    const profiles=readProfiles();
+    const active=activeProfile();
+    const providers=[...new Set(profiles.map(p=>p.provider||'open-webui'))];
+    const keyCount=profiles.filter(p=>String(p.keyRef||'').trim()).length;
+    if(metricProfiles)metricProfiles.textContent=String(profiles.length);
+    if(metricActive)metricActive.textContent=active?(active.name||'Active'):'None';
+    if(metricKeys)metricKeys.textContent=String(keyCount);
+    if(metricProviders)metricProviders.textContent=String(providers.length);
+    if(!dashboardRows)return;
+    if(!profiles.length){dashboardRows.innerHTML='<tr><td colspan="6">No backend profiles yet.</td></tr>';return;}
+    const activeId=readActive();
+    dashboardRows.innerHTML=profiles.map(p=>{
+      const ok=validUrl(p.url);
+      const state=p.id===activeId?'Active':(ok?'Ready':'Missing URL');
+      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'open-webui')}</td><td>${escapeHtml(p.models||'—')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'—')}</td><td>${escapeHtml(state)}</td></tr>`;
+    }).join('');
+  }
+
+  function render(){renderList();renderEditor();renderDashboard();}
   function selectProfile(id){selectedId=id;setStatus('');render();}
-  function createProfile(){const profiles=readProfiles();const profile={id:uid(),name:'New backend',url:'',provider:'open-webui',models:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('New backend profile created.');render();}
+  function createProfile(){const profiles=readProfiles();const profile={id:uid(),name:'New backend',url:'',provider:'open-webui',models:'',keyRef:'',cost:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('New backend profile created.');render();}
   function saveProfile(){
     const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
     const profiles=readProfiles();let p=selectedProfile();if(!p){p={id:uid(),createdAt:new Date().toISOString()};profiles.push(p);selectedId=p.id;}
-    p.name=nameEl.value.trim()||'Unnamed backend';p.url=url;p.provider=providerEl.value;p.models=modelsEl.value.trim();p.updatedAt=new Date().toISOString();
+    p.name=nameEl.value.trim()||'Unnamed backend';p.url=url;p.provider=providerEl.value;p.models=modelsEl.value.trim();p.keyRef=keyRefEl?keyRefEl.value.trim():'';p.cost=costEl?costEl.value.trim():'';p.updatedAt=new Date().toISOString();
     writeProfiles(profiles);setStatus('Profile saved locally.');render();
   }
   function setActive(){const p=selectedProfile();if(!p){setStatus('Select a backend first.');return;}if(!validUrl(p.url)){setStatus('Save a valid backend URL before setting active.');return;}writeActive(p.id);setStatus('Active backend set.');render();}
   function deleteProfile(){const p=selectedProfile();if(!p)return;const profiles=readProfiles().filter(x=>x.id!==p.id);writeProfiles(profiles);if(readActive()===p.id)localStorage.removeItem(ACTIVE_KEY);selectedId=profiles[0]?profiles[0].id:null;setStatus('Backend profile deleted.');render();}
 
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
+  if(refreshDashboardBtn)refreshDashboardBtn.addEventListener('click',()=>{renderDashboard();setStatus('Dashboard refreshed.');});
   const profiles=readProfiles();selectedId=readActive()||(profiles[0]&&profiles[0].id)||null;render();
 })();
