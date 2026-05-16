@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SaaS Fabric Internal Hub</title>
+  <meta name="description" content="Internal SaaS Fabric project hub and app factory." />
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body data-page="home">
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="header-brand">
+        <h1 id="site-title">SaaS Fabric</h1>
+        <p id="site-subtitle">Internal app factory and project hub.</p>
+      </div>
+      <nav aria-label="Internal navigation">
+        <a href="./index.html">Chat</a>
+        <a href="#app-factory">Apps</a>
+        <a href="#roadmap">Roadmap</a>
+        <a class="admin-link" href="./admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-content">
+        <p class="hero-label" id="hero-label">Internal workspace</p>
+        <h2 id="hero-title">SaaS Fabric Internal Hub</h2>
+        <p id="hero-description">Internal overview for apps, tools, templates, roadmap, prompt workflow and admin publishing.</p>
+        <div class="hero-ctas" id="hero-ctas">
+          <a href="./index.html" class="btn btn-primary">Open Chat Portal</a>
+          <a href="./admin.html" class="btn btn-secondary">Open Admin</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="app-factory" class="container section-spaced"><p class="section-label">Live products</p><h2>App Factory</h2><div class="grid" data-section="appFactory"></div></section>
+    <section id="projects" class="container section-spaced"><p class="section-label">Portfolio</p><h2>Projects</h2><div class="grid" data-section="projects"></div></section>
+    <section id="tools" class="container section-spaced"><p class="section-label">Utilities</p><h2>Tools</h2><div class="grid" data-section="tools"></div></section>
+    <section id="saas-ideas" class="container section-spaced"><p class="section-label">Ideas pipeline</p><h2>SaaS Ideas</h2><div class="grid" data-section="saasIdeas"></div></section>
+    <section id="templates" class="container section-spaced"><p class="section-label">Reusable starting points</p><h2>Templates</h2><div class="grid" data-section="templates"></div></section>
+    <section id="monetization" class="container section-spaced"><p class="section-label">Revenue path</p><h2>Monetization</h2><div class="grid" data-section="monetization"></div></section>
+
+    <section id="roadmap" class="container section-spaced">
+      <p class="section-label">What's coming</p>
+      <h2>Roadmap</h2>
+      <p class="section-description">Track what is planned, in progress, ready for review and launched.</p>
+      <div class="roadmap-controls" aria-label="Roadmap filters">
+        <label for="roadmap-status-filter">Status</label>
+        <select id="roadmap-status-filter"><option value="all">All statuses</option></select>
+        <label for="roadmap-priority-filter">Priority</label>
+        <select id="roadmap-priority-filter"><option value="all">All priorities</option></select>
+      </div>
+      <div id="roadmap-board" class="roadmap-board" aria-live="polite"></div>
+    </section>
+
+    <section id="dashboards" class="container section-spaced"><p class="section-label">Metrics</p><h2>Dashboards</h2><div class="grid" data-section="dashboards"></div></section>
+    <section id="prompt-inbox" class="container section-spaced"><p class="section-label">AI-assisted workflow</p><h2>Prompt Inbox</h2><p class="section-description">Store prompts and tasks here, then paste them into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate PR-ready updates.</p><div class="grid" data-section="promptInbox"></div></section>
+    <section id="uploads" class="container section-spaced"><p class="section-label">Assets</p><h2>Uploads / Files</h2><div class="grid" data-section="uploads"></div></section>
+    <section id="about" class="container section-spaced"><p class="section-label">Background</p><h2>About</h2><div class="grid" data-section="about"></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><p class="footer-legal">Internal hub · Powered by <code>public/content.json</code></p></div></footer>
+  <script src="./assets/app.js"></script>
+  <script src="./assets/onboarding.js"></script>
+  <script src="./assets/theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "description": "Public/static backend registry schema for Mimir AI. Do not store secrets here. Runtime/private endpoints should be added by the user in the portal and kept in localStorage or provided by a protected backend later.",
+  "backends": []
+}
