@@ -3,111 +3,102 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mimir Chat Portal</title>
-  <meta name="description" content="Mimir AI chat portal for OCI Open WebUI, Ollama and SaaS Fabric." />
+  <title>Mimir Chat</title>
+  <meta name="description" content="Mimir chat service for connecting to multiple Open WebUI/Ollama backends." />
   <link rel="stylesheet" href="./assets/styles.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
 </head>
-<body>
-  <header class="site-header">
+<body class="mimir-public-chat">
+  <header class="site-header mimir-chat-header">
     <div class="container header-inner">
       <div class="header-brand">
-        <h1>Mimir Chat Portal</h1>
-        <p>AI chat entry point for Open WebUI, Ollama and OCI backend connections.</p>
+        <h1>Mimir Chat</h1>
+        <p>Connect to your AI backends.</p>
       </div>
-      <nav aria-label="Primary navigation">
-        <a href="./apps/open-web-gui/">Open Web GUI</a>
-        <a href="./apps/ollama-chat-lab/">Ollama Lab</a>
-        <a href="./internal.html">Internal</a>
-        <a class="admin-link" href="./admin.html">Admin</a>
+      <nav aria-label="Minimal navigation">
+        <a href="./admin.html">Admin</a>
       </nav>
     </div>
   </header>
 
-  <main class="container portal-main">
-    <section class="portal-hero card">
-      <div>
-        <p class="eyebrow">Mimir / AI backend</p>
-        <h2>Chat through OCI, Open WebUI and Ollama</h2>
-        <p>
-          Main public page is now an AI chat portal. Configure the Open WebUI URL after the OCI backend is deployed, or use the static Open Web GUI for direct Ollama endpoint testing.
-        </p>
-        <div class="hero-ctas">
-          <a href="./apps/open-web-gui/" class="btn btn-primary">Open Web GUI</a>
-          <a href="./internal.html" class="btn btn-secondary">Internal SaaS Fabric</a>
-        </div>
-      </div>
-      <div class="hero-panel">
-        <span>Frontend</span>
-        <strong>Static GitHub Pages</strong>
-        <span>No OCI credentials or private keys in browser code</span>
-      </div>
+  <main class="container mimir-chat-shell" aria-labelledby="mimir-title">
+    <section class="mimir-chat-hero">
+      <p class="eyebrow">Mimir AI gateway</p>
+      <h2 id="mimir-title">Choose backend. Start chat.</h2>
+      <p>
+        Mimir is the public chat entry point. Add one or more Open WebUI/Ollama backends from OCI or other VMs,
+        select the active backend, and launch the chat service. Everything here is static; backend profiles are stored only in your browser.
+      </p>
     </section>
 
-    <section class="grid-two">
-      <article class="card config-card">
-        <h2>1) Configure Open WebUI backend</h2>
-        <p class="section-description">Paste the public Open WebUI URL from OCI after provisioning. It is stored only in this browser.</p>
-        <label for="backend-url">Open WebUI URL</label>
-        <input id="backend-url" type="url" placeholder="http://203.0.113.10 or https://chat.mmir.ai" autocomplete="off" spellcheck="false" />
-        <label for="workspace-label">Workspace label</label>
-        <input id="workspace-label" type="text" value="Mimir / SaaS Fabric" autocomplete="off" />
+    <section class="mimir-chat-layout">
+      <aside class="card backend-panel" aria-labelledby="backend-list-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Backends</p>
+            <h3 id="backend-list-title">Available connections</h3>
+          </div>
+          <button id="new-backend" type="button">New</button>
+        </div>
+        <div id="backend-list" class="backend-list" aria-live="polite"></div>
+      </aside>
+
+      <section class="card chat-config-panel" aria-labelledby="profile-editor-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Connection profile</p>
+            <h3 id="profile-editor-title">Configure selected backend</h3>
+          </div>
+          <span id="active-badge" class="backend-badge">No backend selected</span>
+        </div>
+
+        <div class="profile-grid">
+          <label for="backend-name">Name
+            <input id="backend-name" type="text" placeholder="OCI Stockholm / Gemma test" autocomplete="off" />
+          </label>
+          <label for="backend-url">Open WebUI URL
+            <input id="backend-url" type="url" placeholder="https://chat.example.com or http://203.0.113.10" autocomplete="off" spellcheck="false" />
+          </label>
+          <label for="backend-provider">Provider type
+            <select id="backend-provider">
+              <option value="open-webui">Open WebUI</option>
+              <option value="ollama-direct">Ollama direct test</option>
+              <option value="openai-compatible">OpenAI-compatible router</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label for="backend-models">Models / notes
+            <input id="backend-models" type="text" placeholder="e.g. gemma, llama, mistral, coder" autocomplete="off" />
+          </label>
+        </div>
+
         <div class="actions-row portal-actions">
-          <button id="save-config" type="button">Save</button>
-          <a id="open-backend" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open chat</a>
-          <button id="clear-config" type="button">Clear</button>
+          <button id="save-profile" type="button">Save profile</button>
+          <button id="set-active" type="button">Set active</button>
+          <a id="launch-chat" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Launch chat</a>
+          <button id="delete-profile" type="button" class="danger">Delete</button>
         </div>
         <p id="config-status" class="status" aria-live="polite"></p>
-      </article>
-
-      <article class="card handoff-card">
-        <h2>2) Handoff note</h2>
-        <p class="section-description">Copy for deployment notes or GitHub issues.</p>
-        <textarea id="handoff-note" rows="11" readonly></textarea>
-        <div class="actions-row portal-actions"><button id="copy-note" type="button">Copy note</button></div>
-        <p id="copy-status" class="status" aria-live="polite"></p>
-      </article>
+      </section>
     </section>
 
-    <section class="card">
-      <h2>AI surfaces</h2>
-      <div class="surface-grid">
-        <article class="surface-card recommended">
-          <span class="surface-kicker">Primary</span>
-          <h3>Open WebUI on OCI</h3>
-          <p>Use when the OCI VM is live. Best path for Gemma/Ollama chat and future hosted model management.</p>
-          <a href="#" id="surface-backend" target="_blank" rel="noopener noreferrer">Open configured backend →</a>
-        </article>
-        <article class="surface-card">
-          <span class="surface-kicker">Static endpoint tester</span>
-          <h3>Open Web GUI</h3>
-          <p>Direct browser chat against Ollama-compatible endpoints.</p>
-          <a href="./apps/open-web-gui/">Open Web GUI →</a>
-        </article>
-        <article class="surface-card">
-          <span class="surface-kicker">Portable sessions</span>
-          <h3>Ollama Chat Lab</h3>
-          <p>Local AI lab with model selector and JSON session import/export.</p>
-          <a href="./apps/ollama-chat-lab/">Open Ollama Lab →</a>
-        </article>
+    <section class="card active-chat-card" aria-labelledby="active-chat-title">
+      <div class="active-chat-copy">
+        <p class="eyebrow">Active chat</p>
+        <h3 id="active-chat-title">Ready when your backend is selected</h3>
+        <p id="active-chat-description">Add an OCI/Open WebUI backend above, set it active, then open chat.</p>
+      </div>
+      <div class="active-chat-actions">
+        <a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open Mimir Chat</a>
+        <a class="btn btn-secondary" href="./apps/open-web-gui/">Endpoint test</a>
       </div>
     </section>
 
-    <section class="grid-two">
-      <article class="card">
-        <h2>OCI readiness checklist</h2>
-        <ul class="checklist">
-          <li>Open WebUI reachable via public IP or DNS.</li>
-          <li>Ollama runs behind Open WebUI, not as a public API.</li>
-          <li>Model such as <code>gemma3:4b</code> is pulled and available.</li>
-          <li>Open WebUI authentication is configured before sharing.</li>
-          <li>Move non-public tools to <code>/internal.html</code>.</li>
-        </ul>
-      </article>
-      <article class="card">
-        <h2>Public boundary</h2>
-        <p>This homepage is public. Keep only chat entry, non-sensitive status, and links here. OCI credentials, model keys, RAG documents and internal planning stay out of public frontend code.</p>
-      </article>
+    <section class="public-boundary-note" aria-label="Public boundary">
+      <p>
+        Public page: chat launcher only. App factory, roadmap, admin tools and experiments are moved behind <a href="./admin.html">Admin</a> / <a href="./internal.html">Internal</a>.
+        No OCI credentials, model keys, private documents or API secrets belong in this static page.
+      </p>
     </section>
   </main>
 
