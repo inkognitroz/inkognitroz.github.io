@@ -1,0 +1,12 @@
+{
+  "service": "MMIR AI Backend",
+  "status": "waiting_for_oci_capacity",
+  "provider": "Oracle Cloud Infrastructure",
+  "region": "eu-stockholm-1",
+  "shape": "VM.Standard.A1.Flex",
+  "target": "Ollama + Open WebUI + Gemma-compatible models",
+  "frontend": "https://mmir.ai",
+  "backend_health_url": null,
+  "message": "Infrastructure automation is ready. Waiting for OCI Ampere A1 capacity in Stockholm.",
+  "last_updated": "2026-05-17T00:00:00+02:00"
+}
