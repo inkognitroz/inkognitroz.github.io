@@ -14,7 +14,7 @@
       <span class="mimir-mark" aria-hidden="true">M</span>
       <span>
         <strong>Mimir Chat</strong>
-        <small>AI backend gateway</small>
+        <small>Light AI gateway</small>
       </span>
     </a>
     <nav aria-label="Minimal navigation">
@@ -26,10 +26,10 @@
     <section class="mimir-hero-panel">
       <div class="mimir-hero-copy">
         <p class="eyebrow">Public chat service</p>
-        <h1 id="mimir-title">Talk to your AI infrastructure.</h1>
+        <h1 id="mimir-title">Chat with your own AI backends.</h1>
         <p>
-          Connect Mimir to one or many Open WebUI / Ollama backends running on OCI or other VMs.
-          Select the active backend and launch chat without putting secrets in the public frontend.
+          Add OCI, local Ollama, Open WebUI, Railway, Render, Fly.io or other LLM services as backend profiles.
+          Select one active connection and open chat. No secrets are stored in the public frontend.
         </p>
         <div class="mimir-hero-actions">
           <a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Launch active chat</a>
@@ -39,7 +39,7 @@
       <aside class="mimir-live-card" aria-label="Active backend">
         <span id="active-badge" class="backend-badge">No active backend</span>
         <h2 id="active-chat-title">Choose a connection</h2>
-        <p id="active-chat-description">Add an OCI/Open WebUI backend, set it active, then launch Mimir Chat.</p>
+        <p id="active-chat-description">Add a backend profile, set it active, then launch Mimir Chat.</p>
       </aside>
     </section>
 
@@ -64,7 +64,7 @@
 
         <div class="profile-grid">
           <label for="backend-name">Name
-            <input id="backend-name" type="text" placeholder="OCI Stockholm / Llama test" autocomplete="off" />
+            <input id="backend-name" type="text" placeholder="OCI Stockholm / local Ollama" autocomplete="off" />
           </label>
           <label for="backend-url">Open WebUI URL
             <input id="backend-url" type="url" placeholder="https://chat.example.com or http://203.0.113.10" autocomplete="off" spellcheck="false" />
