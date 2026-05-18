@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "description": "Starter model catalog for Mimir. This is static guidance only; verify model availability and pricing with the chosen provider before production use.",
+  "models": [
+    {
+      "id": "custom",
+      "label": "Custom / user supplied",
+      "category": "custom",
+      "access": "user-managed",
+      "best_for": "Any model the backend exposes",
+      "capacity_hint": "depends-on-backend",
+      "notes": "Use this when the model is selected inside Open WebUI, Ollama or a custom backend."
+    },
+    {
+      "id": "gemma-family",
+      "label": "Gemma family",
+      "category": "general",
+      "access": "free-or-provider-dependent",
+      "best_for": "General chat, lightweight reasoning, local tests",
+      "capacity_hint": "standard",
+      "notes": "Good first test family for local/Ollama-style backends. Exact tag is backend-specific."
+    },
+    {
+      "id": "llama-family",
+      "label": "Llama family",
+      "category": "general",
+      "access": "free-or-provider-dependent",
+      "best_for": "General chat, RAG, local and hosted workloads",
+      "capacity_hint": "standard-to-gpu-large",
+      "notes": "Capacity depends heavily on parameter size and quantization."
+    },
+    {
+      "id": "mistral-family",
+      "label": "Mistral family",
+      "category": "general",
+      "access": "free-or-paid",
+      "best_for": "Fast chat, practical assistants, European provider options",
+      "capacity_hint": "standard-to-gpu-small",
+      "notes": "Can be self-hosted or used through hosted providers depending on model."
+    },
+    {
+      "id": "qwen-family",
+      "label": "Qwen family",
+      "category": "general-code-multilingual",
+      "access": "free-or-provider-dependent",
+      "best_for": "Multilingual tasks, coding, general assistants",
+      "capacity_hint": "standard-to-gpu-large",
+      "notes": "Useful candidate for multilingual Mimir use cases."
+    },
+    {
+      "id": "phi-family",
+      "label": "Phi family",
+      "category": "small-local",
+      "access": "free-or-provider-dependent",
+      "best_for": "Small local tasks, fast prototyping, constrained VMs",
+      "capacity_hint": "low",
+      "notes": "Candidate for low-cost or low-capacity backends."
+    },
+    {
+      "id": "code-specialist",
+      "label": "Code specialist model",
+      "category": "code",
+      "access": "free-or-paid",
+      "best_for": "Programming, repo analysis, code generation",
+      "capacity_hint": "standard-to-gpu-large",
+      "notes": "Use a backend-specific code model tag or a hosted coding model."
+    },
+    {
+      "id": "paid-frontier-api",
+      "label": "Paid frontier API model",
+      "category": "premium-api",
+      "access": "paid",
+      "best_for": "Highest-quality reasoning, multimodal tasks, production assistants",
+      "capacity_hint": "provider-hosted",
+      "notes": "Must be accessed through a protected backend/router. Do not expose provider keys in GitHub Pages."
+    }
+  ],
+  "capacity_profiles": [
+    {
+      "id": "low",
+      "label": "Low",
+      "description": "Small local model, constrained VM, low cost, lower throughput."
+    },
+    {
+      "id": "standard",
+      "label": "Standard",
+      "description": "Default CPU or modest accelerated backend for general chat."
+    },
+    {
+      "id": "gpu-small",
+      "label": "GPU Small",
+      "description": "Small GPU or hosted accelerated instance for faster tokens and larger context."
+    },
+    {
+      "id": "gpu-large",
+      "label": "GPU Large",
+      "description": "Larger GPU capacity for heavier models, multiple users or high throughput."
+    },
+    {
+      "id": "provider-hosted",
+      "label": "Provider hosted",
+      "description": "SaaS/API model where provider handles GPU capacity. Keep API keys server-side."
+    },
+    {
+      "id": "auto",
+      "label": "Auto / future router",
+      "description": "Future Mimir router chooses backend and capacity policy automatically."
+    }
+  ]
+}
