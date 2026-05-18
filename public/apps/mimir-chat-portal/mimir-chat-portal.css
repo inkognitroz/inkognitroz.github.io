@@ -244,6 +244,25 @@ body.mimir-public-chat a{color:var(--mimir-accent-dark);}
 }
 .profile-grid input:focus,.profile-grid select:focus{border-color:var(--mimir-accent);}
 
+.model-catalog-hint{
+  margin:.1rem 0 1rem;
+  border:1px solid var(--mimir-line);
+  border-radius:18px;
+  background:#fff;
+  padding:.7rem .85rem;
+}
+.model-catalog-hint summary{
+  cursor:pointer;
+  color:var(--mimir-muted);
+  font-size:.88rem;
+  font-weight:650;
+}
+.model-catalog-hint p{
+  color:var(--mimir-muted);
+  font-size:.88rem;
+  margin:.55rem 0 0;
+}
+
 .backend-badge{
   align-self:flex-start;
   border:1px solid var(--mimir-line);
