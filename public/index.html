@@ -77,6 +77,16 @@
               <option value="custom">Custom</option>
             </select>
           </label>
+          <label for="backend-model-catalog">Suggested model
+            <select id="backend-model-catalog">
+              <option value="custom">Custom / user supplied</option>
+            </select>
+          </label>
+          <label for="backend-capacity-profile">Capacity intent
+            <select id="backend-capacity-profile">
+              <option value="backend-default">Backend default</option>
+            </select>
+          </label>
           <label for="backend-models">Models / notes
             <input id="backend-models" type="text" placeholder="e.g. Gemma, Llama, Mistral, Coder" autocomplete="off" />
           </label>
@@ -105,6 +115,11 @@
             </select>
           </label>
         </div>
+
+        <details class="model-catalog-hint">
+          <summary>Model catalog and capacity guidance</summary>
+          <p id="model-catalog-description">Choose a suggested model family or keep custom. This is guidance only; the actual model must exist on the selected backend.</p>
+        </details>
 
         <div class="actions-row portal-actions">
           <button id="save-profile" type="button">Save profile</button>
