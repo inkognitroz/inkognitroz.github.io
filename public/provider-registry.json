@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "description": "Static provider registry for the Mimir frontend. Live status must later come from api.mmir.ai / mimir-backend-template, not raw provider runtimes.",
+  "providers": [
+    {
+      "id": "github-fallback",
+      "label": "GitHub Fallback",
+      "status": "planned",
+      "role": "Lightweight fallback intelligence",
+      "capabilities": ["health", "status", "models", "chat-mock", "evals"],
+      "route": "api.mmir.ai -> mimir-backend-template -> mmir-github-llm",
+      "notes": "Planned lightweight mock/fallback provider for demos, tests and resilience when hosted LLMs are unavailable."
+    },
+    {
+      "id": "oci-ollama",
+      "label": "OCI / Ollama",
+      "status": "capacity-wait",
+      "role": "OCI Sovereign AI Backend Infrastructure",
+      "capabilities": ["health", "status", "models", "chat", "metrics"],
+      "route": "api.mmir.ai -> mimir-backend-template -> iac-autoprov -> Ollama/Open WebUI",
+      "notes": "Provisioning track is prepared, but OCI Ampere A1 capacity may block compute launch."
+    },
+    {
+      "id": "aws-backend",
+      "label": "AWS Backend",
+      "status": "planned",
+      "role": "AWS Backend Infrastructure Track",
+      "capabilities": ["health", "status", "models", "chat"],
+      "route": "api.mmir.ai -> mimir-backend-template -> iac-autoprov-aws",
+      "notes": "Alternative provider track for Mimir-compatible backend capacity."
+    },
+    {
+      "id": "local-ollama",
+      "label": "Local Ollama",
+      "status": "available-self-managed",
+      "role": "Free self-managed local model runtime",
+      "capabilities": ["models", "chat", "local-test"],
+      "route": "local browser test or controlled connector when promoted",
+      "notes": "Useful for free local experiments. Raw Ollama 11434 must not be exposed publicly."
+    },
+    {
+      "id": "custom-backend",
+      "label": "Custom Backend",
+      "status": "available-self-managed",
+      "role": "User supplied Mimir-compatible endpoint",
+      "capabilities": ["health", "status", "models", "chat"],
+      "route": "api.mmir.ai or trusted custom connector URL",
+      "notes": "For users who bring their own compatible backend. Secrets stay server-side."
+    },
+    {
+      "id": "edge-node",
+      "label": "Edge / Jetson",
+      "status": "future",
+      "role": "Future edge and robotics node provider",
+      "capabilities": ["health", "status", "models", "telemetry"],
+      "route": "api.mmir.ai -> connector -> edge node",
+      "notes": "Future track for Jetson, ED-209/ED-309 and local device nodes."
+    }
+  ]
+}
