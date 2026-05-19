@@ -18,7 +18,8 @@
       </span>
     </a>
     <nav aria-label="Minimal navigation">
-      <a href="#backend-settings">Models</a>
+      <a href="#model-library">Models</a>
+      <a href="#backend-settings">Backends</a>
       <a href="./admin.html">Admin</a>
     </nav>
   </header>
@@ -46,10 +47,21 @@
       </form>
 
       <div class="quick-suggestions" aria-label="Quick actions">
-        <a href="#backend-settings">Configure models</a>
-        <a href="#backend-settings">View capacity</a>
+        <a href="#model-library">Browse models</a>
+        <a href="#backend-settings">Configure backend</a>
         <a href="./apps/open-web-gui/">Endpoint test</a>
       </div>
+    </section>
+
+    <section id="model-library" class="mimir-model-library" aria-labelledby="model-library-title">
+      <div class="library-heading">
+        <div>
+          <p class="eyebrow">Model library</p>
+          <h2 id="model-library-title">Open-source and hosted model options</h2>
+        </div>
+        <p>Pick a family, connect a backend that can run it, then scale capacity when needed.</p>
+      </div>
+      <div id="model-library-grid" class="model-library-grid" aria-live="polite"></div>
     </section>
 
     <details id="backend-settings" class="mimir-settings-drawer">
