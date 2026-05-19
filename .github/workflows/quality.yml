@@ -50,9 +50,11 @@ jobs:
           test -f public/content.json
           test -f public/ai-model-catalog.json
           test -f public/provider-registry.json
+          test -f public/model-role-presets.json
           test -f public/apps/mimir-chat-portal/mimir-chat-portal.js
           test -f public/apps/mimir-chat-portal/model-catalog-ui.js
           test -f public/apps/mimir-chat-portal/provider-status.js
+          test -f public/apps/mimir-chat-portal/role-presets.js
           test -f public/apps/open-web-gui/index.html
           test -f public/apps/ollama-chat-lab/index.html
           test -f public/apps/app-template-generator/index.html
@@ -64,8 +66,10 @@ jobs:
           grep -RIn 'id="mimir-prompt"' public/index.html
           grep -RIn 'id="provider-status"' public/index.html
           grep -RIn 'id="provider-status-grid"' public/index.html
+          grep -RIn 'id="role-preset-grid"' public/index.html
           grep -RIn 'id="backend-settings"' public/index.html
           grep -RIn 'id="model-library-grid"' public/index.html
           grep -RIn './apps/mimir-chat-portal/mimir-chat-portal.js' public/index.html
           grep -RIn './apps/mimir-chat-portal/model-catalog-ui.js' public/index.html
           grep -RIn './apps/mimir-chat-portal/provider-status.js' public/index.html
+          grep -RIn './apps/mimir-chat-portal/role-presets.js' public/index.html
