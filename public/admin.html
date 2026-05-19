@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SaaS Fabric Admin</title>
+  <title>Mimir Admin</title>
   <link rel="stylesheet" href="./assets/styles.css" />
   <script>
     /* Restore saved theme before first paint to prevent flash */
@@ -25,15 +25,29 @@
 <body data-page="admin">
   <header class="site-header">
     <div class="container">
-      <h1>SaaS Fabric Admin</h1>
-      <p>Edit content safely in your browser, keep drafts local, and publish via PR. No backend or frontend secrets required in v1.</p>
+      <h1>Mimir Admin</h1>
+      <p>Internal control surface for Mimir content, model catalog metadata, backend profiles and safe publishing workflows. No frontend secrets required.</p>
       <nav>
-        <a href="./index.html">Back to site</a>
+        <a href="./index.html">Mimir Chat</a>
+        <a href="./internal.html">Internal Tools</a>
       </nav>
     </div>
   </header>
 
   <main class="container admin-layout">
+    <section class="card">
+      <h2>Admin launchpad</h2>
+      <p>Use this page for internal maintenance. The public front page should stay clean and chat-first.</p>
+      <div class="grid">
+        <article class="card-item"><h3>Mimir Chat</h3><p>Public chat-first frontend with model library, backend profiles and capacity intent.</p><a href="./index.html">Open chat →</a></article>
+        <article class="card-item"><h3>Internal Tools</h3><p>Internal workbench for tools, prototypes, roadmap and legacy SaaS Fabric utilities.</p><a href="./internal.html">Open tools →</a></article>
+        <article class="card-item"><h3>Open Web GUI</h3><p>Direct endpoint tester for Ollama-compatible or connector-compatible backends.</p><a href="./apps/open-web-gui/">Open tester →</a></article>
+        <article class="card-item"><h3>Ollama Chat Lab</h3><p>Local AI lab with model selector and session import/export.</p><a href="./apps/ollama-chat-lab/">Open lab →</a></article>
+        <article class="card-item"><h3>App Template Generator</h3><p>Internal planning tool for new Mimir apps and backend connector ideas.</p><a href="./apps/app-template-generator/">Open generator →</a></article>
+        <article class="card-item"><h3>Football Evolution Matrix</h3><p>Separate football analysis app kept as an internal/side-project tool.</p><a href="./apps/football-evolution-matrix/">Open app →</a></article>
+      </div>
+    </section>
+
     <section class="card">
       <h2>1) Load + edit JSON</h2>
       <p>Load current content, edit values, validate the content model, and keep everything in one <code>content.json</code> file. Cards support <code>draft</code> and <code>published</code> status.</p>
@@ -57,15 +71,15 @@
       <div class="admin-grid">
         <label>Section
           <select id="section-select">
-            <option value="appFactory">App Factory</option>
-            <option value="saasIdeas">SaaS Ideas</option>
+            <option value="appFactory">App Factory / Tools</option>
+            <option value="saasIdeas">Ideas Backlog</option>
             <option value="projects">Projects</option>
             <option value="templates">Templates</option>
-            <option value="tools">Tools</option>
+            <option value="tools">Utilities</option>
             <option value="dashboards">Dashboards</option>
             <option value="uploads">Uploads / Files</option>
             <option value="promptInbox">Prompt Inbox</option>
-            <option value="monetization">Monetization</option>
+            <option value="monetization">Commercialization</option>
             <option value="roadmap">Roadmap</option>
             <option value="about">About</option>
           </select>
