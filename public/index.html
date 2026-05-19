@@ -21,7 +21,6 @@
       <a href="#model-library">Models</a>
       <a href="#provider-status">Providers</a>
       <a href="#backend-settings">Backends</a>
-      <a href="./admin.html">Admin</a>
     </nav>
   </header>
 
@@ -70,12 +69,7 @@
     <details id="provider-status" class="mimir-provider-drawer">
       <summary>Provider status</summary>
       <section class="mimir-dashboard" aria-labelledby="provider-status-title">
-        <div class="dashboard-heading">
-          <div>
-            <p class="eyebrow">Provider tracks</p>
-            <h2 id="provider-status-title">Backend provider availability</h2>
-          </div>
-        </div>
+        <div class="dashboard-heading"><div><p class="eyebrow">Provider tracks</p><h2 id="provider-status-title">Backend provider availability</h2></div></div>
         <p class="dashboard-note">Static provider registry for now. Live status should later come only through api.mmir.ai and mimir-backend-template.</p>
         <div id="provider-status-grid" class="provider-status-grid" aria-live="polite"></div>
       </section>
@@ -85,84 +79,28 @@
       <summary>Models, backends and capacity</summary>
       <div class="mimir-console" aria-label="Mimir backend console">
         <aside class="backend-panel" aria-labelledby="backend-list-title">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Connections</p>
-              <h2 id="backend-list-title">Backends</h2>
-            </div>
-          </div>
+          <div class="panel-heading"><div><p class="eyebrow">Connections</p><h2 id="backend-list-title">Backends</h2></div></div>
           <div id="backend-list" class="backend-list" aria-live="polite"></div>
         </aside>
 
         <section class="chat-config-panel" aria-labelledby="profile-editor-title">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Profile</p>
-              <h2 id="profile-editor-title">Configure backend</h2>
-            </div>
-          </div>
-
+          <div class="panel-heading"><div><p class="eyebrow">Profile</p><h2 id="profile-editor-title">Configure backend</h2></div></div>
           <div class="profile-grid">
-            <label for="backend-name">Name
-              <input id="backend-name" type="text" placeholder="OCI Stockholm / local Ollama" autocomplete="off" />
-            </label>
-            <label for="backend-url">Open WebUI URL
-              <input id="backend-url" type="url" placeholder="https://chat.example.com or http://203.0.113.10" autocomplete="off" spellcheck="false" />
-            </label>
-            <label for="backend-provider">Provider type
-              <select id="backend-provider">
-                <option value="open-webui">Open WebUI</option>
-                <option value="ollama-direct">Ollama direct test</option>
-                <option value="openai-compatible">OpenAI-compatible router</option>
-                <option value="custom">Custom</option>
-              </select>
-            </label>
-            <label for="backend-model-catalog">Suggested model
-              <select id="backend-model-catalog"><option value="custom">Custom / user supplied</option></select>
-            </label>
-            <label for="backend-capacity-profile">Capacity intent
-              <select id="backend-capacity-profile"><option value="backend-default">Backend default</option></select>
-            </label>
-            <label for="backend-models">Models / notes
-              <input id="backend-models" type="text" placeholder="e.g. Gemma, Llama, Mistral, Coder" autocomplete="off" />
-            </label>
-            <label for="backend-key-ref">SaaS model key reference
-              <input id="backend-key-ref" type="text" placeholder="e.g. OPENWEBUI_TEAM_KEY or LOCAL_ONLY" autocomplete="off" />
-            </label>
-            <label for="backend-cost">Cost / capacity note
-              <input id="backend-cost" type="text" placeholder="e.g. Always Free A1, paid GPU, internal VM" autocomplete="off" />
-            </label>
-            <label for="backend-latency">Latency target
-              <input id="backend-latency" type="text" placeholder="e.g. < 2s first token" autocomplete="off" />
-            </label>
-            <label for="backend-throughput">Throughput target
-              <input id="backend-throughput" type="text" placeholder="e.g. 20 tok/s" autocomplete="off" />
-            </label>
-            <label for="backend-uptime">Uptime target
-              <input id="backend-uptime" type="text" placeholder="e.g. 99%, dev only, best effort" autocomplete="off" />
-            </label>
-            <label for="backend-health">Health status
-              <select id="backend-health">
-                <option value="unknown">Unknown</option>
-                <option value="ready">Ready</option>
-                <option value="degraded">Degraded</option>
-                <option value="offline">Offline</option>
-                <option value="testing">Testing</option>
-              </select>
-            </label>
+            <label for="backend-name">Name<input id="backend-name" type="text" placeholder="OCI Stockholm / local Ollama" autocomplete="off" /></label>
+            <label for="backend-url">Controlled backend/API URL<input id="backend-url" type="url" placeholder="https://api.mmir.ai or trusted connector URL" autocomplete="off" spellcheck="false" /></label>
+            <label for="backend-provider">Provider type<select id="backend-provider"><option value="open-webui">Open WebUI</option><option value="ollama-direct">Ollama direct test</option><option value="openai-compatible">OpenAI-compatible router</option><option value="custom">Custom</option></select></label>
+            <label for="backend-model-catalog">Suggested model<select id="backend-model-catalog"><option value="custom">Custom / user supplied</option></select></label>
+            <label for="backend-capacity-profile">Capacity intent<select id="backend-capacity-profile"><option value="backend-default">Backend default</option></select></label>
+            <label for="backend-models">Models / notes<input id="backend-models" type="text" placeholder="e.g. Gemma, Llama, Mistral, Coder" autocomplete="off" /></label>
+            <label for="backend-key-ref">Key reference label<input id="backend-key-ref" type="text" placeholder="Server-side only. Never paste real API keys here." autocomplete="off" /></label>
+            <label for="backend-cost">Cost / capacity note<input id="backend-cost" type="text" placeholder="e.g. free local, starter VM, GPU profile" autocomplete="off" /></label>
+            <label for="backend-latency">Latency target<input id="backend-latency" type="text" placeholder="e.g. < 2s first token" autocomplete="off" /></label>
+            <label for="backend-throughput">Throughput target<input id="backend-throughput" type="text" placeholder="e.g. 20 tok/s" autocomplete="off" /></label>
+            <label for="backend-uptime">Uptime target<input id="backend-uptime" type="text" placeholder="e.g. 99%, dev only, best effort" autocomplete="off" /></label>
+            <label for="backend-health">Health status<select id="backend-health"><option value="unknown">Unknown</option><option value="ready">Ready</option><option value="degraded">Degraded</option><option value="offline">Offline</option><option value="testing">Testing</option></select></label>
           </div>
-
-          <details class="model-catalog-hint">
-            <summary>Open-source model catalog and capacity guidance</summary>
-            <p id="model-catalog-description">Choose a suggested model family or keep custom. The actual model must exist on the selected backend.</p>
-          </details>
-
-          <div class="actions-row portal-actions">
-            <button id="save-profile" type="button">Save profile</button>
-            <button id="set-active" type="button">Set active</button>
-            <a id="launch-chat" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open selected</a>
-            <button id="delete-profile" type="button" class="danger">Delete</button>
-          </div>
+          <details class="model-catalog-hint"><summary>Open-source model catalog and capacity guidance</summary><p id="model-catalog-description">Choose a suggested model family or keep custom. The actual model must exist on the selected backend.</p></details>
+          <div class="actions-row portal-actions"><button id="save-profile" type="button">Save profile</button><button id="set-active" type="button">Set active</button><a id="launch-chat" class="button-link disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open selected</a><button id="delete-profile" type="button" class="danger">Delete</button></div>
           <p id="config-status" class="status" aria-live="polite"></p>
         </section>
       </div>
@@ -171,32 +109,20 @@
     <details class="mimir-dashboard-drawer">
       <summary>Backend dashboard</summary>
       <section class="mimir-dashboard" aria-labelledby="dashboard-title">
-        <div class="dashboard-heading">
-          <div>
-            <p class="eyebrow">Performance overview</p>
-            <h2 id="dashboard-title">Backend dashboard</h2>
-          </div>
-          <button id="refresh-dashboard" type="button">Refresh</button>
-        </div>
+        <div class="dashboard-heading"><div><p class="eyebrow">Performance overview</p><h2 id="dashboard-title">Backend dashboard</h2></div><button id="refresh-dashboard" type="button">Refresh</button></div>
         <div class="dashboard-grid">
           <article class="metric-card"><span>Profiles</span><strong id="metric-profiles">0</strong><small>Total configured backends</small></article>
           <article class="metric-card"><span>Active</span><strong id="metric-active">None</strong><small>Current chat target</small></article>
-          <article class="metric-card"><span>Model keys</span><strong id="metric-keys">0</strong><small>Key references, not secrets</small></article>
+          <article class="metric-card"><span>Key refs</span><strong id="metric-keys">0</strong><small>Labels only, not secrets</small></article>
           <article class="metric-card"><span>Provider mix</span><strong id="metric-providers">0</strong><small>Distinct backend types</small></article>
           <article class="metric-card"><span>Ready</span><strong id="metric-ready">0</strong><small>Ready/healthy backends</small></article>
           <article class="metric-card"><span>Measured</span><strong id="metric-measured">0</strong><small>Profiles with perf targets</small></article>
         </div>
-        <div class="dashboard-table-wrap">
-          <table class="dashboard-table">
-            <thead><tr><th>Backend</th><th>Provider</th><th>Models</th><th>Key ref</th><th>Capacity</th><th>Latency</th><th>Throughput</th><th>Health</th><th>Status</th></tr></thead>
-            <tbody id="dashboard-rows"><tr><td colspan="9">No backend profiles yet.</td></tr></tbody>
-          </table>
-        </div>
-        <p class="dashboard-note">Real SaaS keys, OCI credentials and scaling permissions belong server-side. Frontend stores only labels and local profile metadata.</p>
+        <div class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>Backend</th><th>Provider</th><th>Models</th><th>Key ref</th><th>Capacity</th><th>Latency</th><th>Throughput</th><th>Health</th><th>Status</th></tr></thead><tbody id="dashboard-rows"><tr><td colspan="9">No backend profiles yet.</td></tr></tbody></table></div>
+        <p class="dashboard-note">Real SaaS keys, OCI credentials, payment data and scaling permissions belong server-side. Frontend stores only labels and local profile metadata.</p>
       </section>
     </details>
   </main>
-
   <script src="./apps/mimir-chat-portal/mimir-chat-portal.js"></script>
   <script src="./apps/mimir-chat-portal/model-catalog-ui.js"></script>
   <script src="./apps/mimir-chat-portal/provider-status.js"></script>
