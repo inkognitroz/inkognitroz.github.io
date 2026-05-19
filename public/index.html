@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MMIR.ai</title>
-  <meta name="description" content="MMIR.ai is a multi-model AI control plane for connecting, comparing and orchestrating safe AI backends." />
+  <meta name="description" content="MMIR.ai is a next-generation AI chat service supporting Multi-Model Integrated Reasoning across open-source, on-prem and SaaS models." />
   <link rel="stylesheet" href="./assets/styles.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
 </head>
@@ -27,9 +27,9 @@
   <main class="mimir-chat-main" aria-labelledby="mimir-title">
     <section class="mimir-chat-center">
       <div class="mimir-greeting">
-        <p class="eyebrow">Mímir's well for modern AI</p>
-        <h1 id="mimir-title">Chat with every model you trust.</h1>
-        <p id="active-chat-description">Start free with local or self-managed models. Add controlled backends later, compare multiple models side by side, give them roles, and route harder tasks to stronger compute when needed.</p>
+        <p class="eyebrow">Multi-Model Integrated Reasoning</p>
+        <h1 id="mimir-title">One chat UI for every AI model you trust.</h1>
+        <p id="active-chat-description">Connect open-source, on-prem and SaaS models in one secure chat interface. Add models, define roles and instructions, compare answers, synthesize the best result, and scale CPU, GPU and RAM through trusted backend infrastructure.</p>
       </div>
 
       <form class="mimir-composer" aria-label="MMIR chat composer" onsubmit="return false;">
@@ -59,7 +59,7 @@
       <summary>Model library</summary>
       <div class="library-heading">
         <div>
-          <p class="eyebrow">Available, planned and bring-your-own</p>
+          <p class="eyebrow">Open-source, on-prem and SaaS</p>
           <h2 id="model-library-title">Model options</h2>
         </div>
         <p>Available models light up as backends are connected. Planned or provider-backed models stay visible, but should be routed through a protected backend.</p>
@@ -70,11 +70,12 @@
     <details id="multi-model-workspace" class="mimir-provider-drawer">
       <summary>Multi-model workflow</summary>
       <section class="mimir-dashboard" aria-labelledby="workflow-title">
-        <div class="dashboard-heading"><div><p class="eyebrow">Compose a model team</p><h2 id="workflow-title">Roles, comparison and synthesis</h2></div></div>
+        <div class="dashboard-heading"><div><p class="eyebrow">Compose a model team</p><h2 id="workflow-title">Roles, comparison, synthesis and learning</h2></div></div>
         <div class="provider-status-grid">
           <article class="provider-card"><div class="provider-card-header"><h3>Add models</h3><span class="provider-status status-available-self-managed">v1</span></div><p>Connect free local models, self-managed endpoints or future provider-backed models through a controlled API layer.</p></article>
           <article class="provider-card"><div class="provider-card-header"><h3>Assign roles</h3><span class="provider-status status-planned">planned</span></div><p>Give each model a role such as architect, critic, coder, researcher or summarizer before sending the same task to several models.</p></article>
-          <article class="provider-card"><div class="provider-card-header"><h3>Compare answers</h3><span class="provider-status status-planned">planned</span></div><p>Ask four models, compare their responses, then select the best answer or synthesize a final answer from all of them.</p></article>
+          <article class="provider-card"><div class="provider-card-header"><h3>Compare answers</h3><span class="provider-status status-planned">planned</span></div><p>Ask multiple models, compare their responses, choose the strongest answer, or synthesize a final answer from all of them.</p></article>
+          <article class="provider-card"><div class="provider-card-header"><h3>Train your own</h3><span class="provider-status status-planned">future</span></div><p>Add data, track training progress, build a fit-for-purpose model and deploy it back into your model library when backend support exists.</p></article>
           <article class="provider-card"><div class="provider-card-header"><h3>Scale compute</h3><span class="provider-status status-planned">backend only</span></div><p>CPU, RAM and GPU scaling must be handled by protected backend/IaC workflows with cost controls, not from the public frontend.</p></article>
         </div>
       </section>
