@@ -1,10 +1,15 @@
 # Model router contract
 
 ## Goal
-Define the backend contract for routing chat requests to local, hosted and future enterprise AI models.
+Define the portable backend API and connector contract used behind stable ingress (`api.mmir.ai`) for local, hosted, and edge AI runtimes.
 
-## Endpoint
-`POST /api/ai/chat`
+`mimir-backend-template` is **not** an API Gateway. It remains the portable backend contract and provider connector layer.
+
+## Endpoints
+- `GET /health`
+- `GET /models`
+- `GET /status`
+- `POST /chat`
 
 ## Request
 ```json
@@ -38,13 +43,15 @@ Define the backend contract for routing chat requests to local, hosted and futur
 
 ## Security
 - Browser must never send provider secrets.
+- Frontend should call controlled API endpoints only.
 - Hosted providers must use server-side environment variables.
+- Raw Ollama `11434` must never be public.
 - Log prompts only when explicitly enabled.
 - Add tenant/workspace isolation before multi-user release.
 
 ## Future providers
-- Ollama
+- OCI/Ollama adapter
+- AWS adapter
 - OpenAI-compatible router
-- OpenRouter-compatible router
-- Azure OpenAI
-- Local RAG service
+- Jetson/edge adapter
+- Mock fallback

@@ -44,11 +44,12 @@
       <section class="card">
         <div class="eyebrow">MMIR Intelligence Platform</div>
         <h1>Open AI control plane for cloud and edge.</h1>
-        <p>MMIR is being built as a control surface for open-source AI services, local models, OCI backends, Jetson devices, robotics nodes and future ED-style agents.</p>
+        <p>MMIR.ai is a multi-cloud and edge-ready AI control plane. It connects a public frontend, a portable backend API, and provider-specific runtime tracks such as OCI Sovereign AI, AWS, and future Jetson/robotics nodes.</p>
         <div class="actions">
           <a class="button" href="/status.json">View raw status</a>
           <a class="button" href="https://github.com/inkognitroz/iac-autoprov">IaC AutoProv</a>
         </div>
+        <p><strong>Architecture split:</strong><br><code>mmir.ai / inkognitroz.github.io</code> (frontend/control plane) → <code>api.mmir.ai</code> (stable ingress) → <code>mimir-backend-template</code> (portable backend contract) → <code>iac-autoprov</code> / <code>iac-autoprov-aws</code> runtime tracks.</p>
         <div id="status" class="status">
           <strong><span class="dot"></span><span id="statusText">Checking backend status...</span></strong>
           <p id="statusMessage">Loading <code>/status.json</code>.</p>
@@ -66,9 +67,9 @@
           <p>Chat UI is staged. It will activate when the backend endpoint is online.</p>
         </div>
         <div class="chat-window" id="chatWindow">
-          <div class="bubble assistant">Backend provisioning is in progress. OCI A1 capacity and Terraform state are being stabilized before chat is enabled.</div>
+          <div class="bubble assistant">MMIR Sovereign AI Track is a sovereignty-oriented backend architecture on OCI Stockholm, designed for local open-source model runtime and infrastructure control. Provisioning is currently blocked by OCI A1 host capacity.</div>
           <div class="bubble user">What happens when backend is ready?</div>
-          <div class="bubble assistant">The frontend will call <code>https://api.mmir.ai/api/chat</code>, routed through Caddy and the Node proxy to Ollama.</div>
+          <div class="bubble assistant">The frontend calls controlled endpoints on <code>https://api.mmir.ai</code>; provider runtimes stay behind the API/connector layer and raw Ollama <code>11434</code> is never public.</div>
         </div>
         <div class="composer">
           <input placeholder="Chat will be enabled when backend is online" disabled />
