@@ -3,162 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mimir Admin</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Mimir Admin · Protected area planned</title>
   <link rel="stylesheet" href="./assets/styles.css" />
-  <script>
-    /* Restore saved theme before first paint to prevent flash */
-    (function () {
-      try {
-        var t = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
-        if (t && typeof t === "object" && !Array.isArray(t)) {
-          var r = document.documentElement;
-          Object.keys(t).forEach(function (k) {
-            if (typeof k === "string" && k.indexOf("--") === 0) {
-              r.style.setProperty(k, t[k]);
-            }
-          });
-        }
-      } catch (_) {}
-    })();
-  </script>
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
 </head>
-<body data-page="admin">
-  <header class="site-header">
-    <div class="container">
-      <h1>Mimir Admin</h1>
-      <p>Internal control surface for Mimir content, model catalog metadata, backend profiles and safe publishing workflows. No frontend secrets required.</p>
-      <nav>
-        <a href="./index.html">Mimir Chat</a>
-        <a href="./internal.html">Internal Tools</a>
-      </nav>
-    </div>
+<body class="mimir-public-chat mimir-chat-first">
+  <header class="mimir-topbar">
+    <a class="mimir-brand" href="./index.html" aria-label="Mimir Chat home">
+      <span class="mimir-mark" aria-hidden="true">M</span>
+      <span><strong>Mimir Admin</strong><small>Protected backend required</small></span>
+    </a>
+    <nav aria-label="Admin navigation">
+      <a href="./index.html">Chat</a>
+      <a href="./internal.html" rel="nofollow">Internal tools</a>
+    </nav>
   </header>
 
-  <main class="container admin-layout">
-    <section class="card">
-      <h2>Admin launchpad</h2>
-      <p>Use this page for internal maintenance. The public front page should stay clean and chat-first.</p>
-      <div class="grid">
-        <article class="card-item"><h3>Mimir Chat</h3><p>Public chat-first frontend with model library, backend profiles and capacity intent.</p><a href="./index.html">Open chat →</a></article>
-        <article class="card-item"><h3>Internal Tools</h3><p>Internal workbench for tools, prototypes, roadmap and legacy SaaS Fabric utilities.</p><a href="./internal.html">Open tools →</a></article>
-        <article class="card-item"><h3>Open Web GUI</h3><p>Direct endpoint tester for Ollama-compatible or connector-compatible backends.</p><a href="./apps/open-web-gui/">Open tester →</a></article>
-        <article class="card-item"><h3>Ollama Chat Lab</h3><p>Local AI lab with model selector and session import/export.</p><a href="./apps/ollama-chat-lab/">Open lab →</a></article>
-        <article class="card-item"><h3>App Template Generator</h3><p>Internal planning tool for new Mimir apps and backend connector ideas.</p><a href="./apps/app-template-generator/">Open generator →</a></article>
-        <article class="card-item"><h3>Football Evolution Matrix</h3><p>Separate football analysis app kept as an internal/side-project tool.</p><a href="./apps/football-evolution-matrix/">Open app →</a></article>
+  <main class="mimir-chat-main" aria-labelledby="admin-title">
+    <section class="mimir-chat-center">
+      <div class="mimir-greeting">
+        <p class="eyebrow">Zero Trust boundary</p>
+        <h1 id="admin-title">Admin requires sign-in later.</h1>
+        <p>
+          This static page is intentionally reduced. Real administration, provider keys, billing, model catalog updates,
+          capacity provisioning and user management must live behind a protected backend, not on GitHub Pages.
+        </p>
       </div>
-    </section>
 
-    <section class="card">
-      <h2>1) Load + edit JSON</h2>
-      <p>Load current content, edit values, validate the content model, and keep everything in one <code>content.json</code> file. Cards support <code>draft</code> and <code>published</code> status.</p>
-      <div class="actions-row">
-        <button id="load-content" type="button">Load content.json</button>
-        <button id="format-json" type="button">Format JSON</button>
-        <button id="validate-json" type="button">Validate</button>
-        <button id="preview-json" type="button">Preview</button>
-        <button id="download-json" type="button">Export content.json</button>
-        <button id="download-bundle" type="button">Export backup bundle</button>
-      </div>
-      <textarea id="json-editor" rows="18" spellcheck="false"></textarea>
-      <p class="admin-note">Export is blocked until JSON syntax and the content model both pass validation. Bundle export includes content, selected section JSON, CSV files, README, and metadata.</p>
-      <div id="admin-message" class="notice" hidden></div>
-      <p id="validation-summary" class="validation-summary">Run validation before export.</p>
-      <ul id="validation-results" class="validation-results" hidden></ul>
-    </section>
+      <section class="mimir-composer admin-boundary-card" aria-label="Admin boundary summary">
+        <div class="admin-boundary-grid">
+          <article>
+            <h2>Available now</h2>
+            <p>Use Mimir Chat, local profiles, endpoint testing and local/Ollama experiments without secrets in the frontend.</p>
+          </article>
+          <article>
+            <h2>Requires backend auth</h2>
+            <p>Account login, API keys, payment, provider credentials, provisioning and shared workspaces.</p>
+          </article>
+          <article>
+            <h2>Best practice</h2>
+            <p>Use external checkout and server-side secrets. Frontend should only show safe labels, status and options.</p>
+          </article>
+        </div>
+        <div class="composer-bar">
+          <div class="composer-context"><span>No admin actions exposed</span><span>·</span><span>No secrets stored</span></div>
+          <div class="composer-actions"><a class="btn btn-primary" href="./index.html">Open Mimir Chat</a><a class="btn btn-secondary" href="./internal.html">Internal tools</a></div>
+        </div>
+      </section>
 
-    <section class="card">
-      <h2>2) Card manager (add/edit/remove)</h2>
-      <div class="admin-grid">
-        <label>Section
-          <select id="section-select">
-            <option value="appFactory">App Factory / Tools</option>
-            <option value="saasIdeas">Ideas Backlog</option>
-            <option value="projects">Projects</option>
-            <option value="templates">Templates</option>
-            <option value="tools">Utilities</option>
-            <option value="dashboards">Dashboards</option>
-            <option value="uploads">Uploads / Files</option>
-            <option value="promptInbox">Prompt Inbox</option>
-            <option value="monetization">Commercialization</option>
-            <option value="roadmap">Roadmap</option>
-            <option value="about">About</option>
-          </select>
-        </label>
-        <label>Card
-          <select id="card-select"></select>
-        </label>
-      </div>
-      <div class="admin-grid">
-        <label>Title <input id="card-title" type="text" /></label>
-        <label>Link <input id="card-link" type="url" placeholder="https://" /></label>
-        <label>Status
-          <select id="card-status">
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </label>
-      </div>
-      <label>Description / Prompt / Task
-        <textarea id="card-description" rows="5"></textarea>
-      </label>
-      <label>Tags (comma-separated)
-        <input id="card-tags" type="text" />
-      </label>
-      <div class="actions-row">
-        <button id="new-card" type="button">New card</button>
-        <button id="save-card" type="button">Save card</button>
-        <button id="delete-card" type="button" class="danger">Delete card</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>3) Import CSV / XLSX</h2>
-      <p>CSV import runs in-browser and appends cards into the selected section. Supported headers: <code>title,description,link,tags,status</code>. Quoted commas and BOM-marked CSV files are supported.</p>
-      <label>CSV file<input id="csv-input" type="file" accept=".csv,text/csv" /></label>
-      <button id="import-csv" type="button">Import CSV to selected section</button>
-      <p class="admin-note">Use <code>|</code> inside the <code>tags</code> column. If <code>status</code> is omitted, imported rows default to <code>draft</code>.</p>
-      <p>XLSX placeholder: convert to CSV first, or parse with a browser XLSX library in a future version.</p>
-      <label>XLSX file<input id="xlsx-input" type="file" accept=".xlsx,.xls" /></label>
-      <button id="import-xlsx" type="button">Show XLSX import guidance</button>
-    </section>
-
-    <section class="card">
-      <h2>4) Browser backups + restore points</h2>
-      <p>The current editor text auto-saves in this browser. You can also create timestamped restore points before larger changes.</p>
-      <div class="actions-row">
-        <button id="restore-browser-draft" type="button">Restore browser draft</button>
-        <button id="clear-browser-draft" type="button">Clear browser draft</button>
-      </div>
-      <div class="admin-grid">
-        <label>Restore point
-          <select id="backup-select"></select>
-        </label>
-      </div>
-      <div class="actions-row">
-        <button id="save-backup" type="button">Create restore point</button>
-        <button id="restore-backup" type="button">Restore selected</button>
-        <button id="delete-backup" type="button" class="danger">Delete selected</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>5) Live preview (safe, local only)</h2>
-      <p>This preview never auto-commits to GitHub. Draft cards are labelled here and stay hidden from the public homepage until marked <code>published</code>.</p>
-      <div id="admin-preview"></div>
-    </section>
-
-    <section class="card">
-      <h2>6) Safe publishing workflow</h2>
-      <ol>
-        <li><strong>Recommended now:</strong> export <code>content.json</code>, commit it in a PR, review it, and merge to <code>main</code>.</li>
-        <li><strong>Future option:</strong> publish through a backend or serverless function that uses a GitHub App or another server-side secret. Never place GitHub tokens or other secrets in frontend code.</li>
-      </ol>
-      <p class="admin-note">This admin page is intentionally local-first. It helps you prepare safe content updates without exposing secrets in the browser.</p>
+      <details class="mimir-dashboard-drawer">
+        <summary>Future admin capabilities</summary>
+        <section class="mimir-dashboard">
+          <div class="provider-status-grid">
+            <article class="provider-card"><div class="provider-card-header"><h3>Model/provider keys</h3><span class="provider-status status-planned">backend only</span></div><p>Users may connect paid APIs later, but keys must be stored server-side or in a trusted vault, never in public frontend code.</p></article>
+            <article class="provider-card"><div class="provider-card-header"><h3>Billing and payment</h3><span class="provider-status status-planned">protected flow</span></div><p>Card handling should use an external payment provider checkout session and protected webhook backend.</p></article>
+            <article class="provider-card"><div class="provider-card-header"><h3>VM / GPU capacity</h3><span class="provider-status status-planned">IaC backend</span></div><p>Provisioning CPU, RAM or GPU resources must be triggered through authenticated backend workflows with cost limits and audit logs.</p></article>
+          </div>
+        </section>
+      </details>
     </section>
   </main>
-
-  <script src="./assets/app.js"></script>
-  <script src="./assets/onboarding.js"></script>
-  <script src="./assets/theme.js"></script>
 </body>
 </html>
