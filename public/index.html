@@ -18,8 +18,9 @@
       </span>
     </a>
     <nav aria-label="Minimal navigation">
+      <a href="#local-connector">Local</a>
+      <a href="#edge-compute-mesh">Mesh</a>
       <a href="#model-library">Models</a>
-      <a href="#provider-status">Providers</a>
       <a href="#backend-settings">Backends</a>
     </nav>
   </header>
@@ -41,27 +42,40 @@
       </form>
 
       <div class="quick-suggestions" aria-label="Quick actions">
-        <a href="#model-library">Browse models</a>
         <a href="#local-connector">Connect local LLM</a>
-        <a href="#provider-status">Provider status</a>
+        <a href="#edge-compute-mesh">Edge Compute Mesh</a>
+        <a href="#model-library">Browse models</a>
         <a href="#multi-model-workspace">Multi-model workflow</a>
         <a href="#backend-settings">Add backend</a>
       </div>
     </section>
 
+    <details id="local-connector" class="mimir-provider-drawer" open>
+      <summary>Connect local LLM</summary>
+      <section class="mimir-dashboard" aria-labelledby="local-connector-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Free local onboarding</p><h2 id="local-connector-title">Connect your own local models</h2></div></div>
+        <p class="dashboard-note">Backend will own the downloadable connector. The frontend explains the safe flow and stores only non-sensitive profile metadata.</p>
+        <div id="local-connector-grid" class="provider-status-grid" aria-live="polite"></div>
+      </section>
+    </details>
+
+    <details id="edge-compute-mesh" class="mimir-provider-drawer">
+      <summary>Edge Compute Mesh</summary>
+      <section class="mimir-dashboard" aria-labelledby="edge-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Distributed local compute pool</p><h2 id="edge-title">Turn trusted PCs, VMs and edge nodes into shared intelligence</h2></div></div>
+        <p class="dashboard-note">Future MMIR.ai provider track: users can connect approved local devices or VMs through a secure connector so available compute and models can be surfaced safely in the chat UI.</p>
+        <div class="provider-status-grid">
+          <article class="provider-card"><div class="provider-card-header"><h3>Connect nodes</h3><span class="provider-status status-planned">future</span></div><p>Register trusted local PCs, VMs, Jetson devices or private edge nodes through a controlled backend connector.</p></article>
+          <article class="provider-card"><div class="provider-card-header"><h3>Share capacity</h3><span class="provider-status status-planned">future</span></div><p>Expose safe model capacity, CPU, RAM and GPU availability to MMIR without exposing raw runtimes or secrets.</p></article>
+          <article class="provider-card"><div class="provider-card-header"><h3>Route intelligently</h3><span class="provider-status status-planned">future</span></div><p>Let MMIR route tasks to the best available local, edge, cloud or SaaS model based on policy, performance and trust level.</p></article>
+        </div>
+      </section>
+    </details>
+
     <details id="model-library" class="mimir-model-library">
       <summary>Model library</summary>
       <div class="library-heading"><div><p class="eyebrow">Open-source, on-prem and SaaS</p><h2 id="model-library-title">Model options</h2></div><p>Available models light up as backends are connected. Planned or provider-backed models stay visible, but should be routed through a protected backend.</p></div>
       <div id="model-library-grid" class="model-library-grid" aria-live="polite"></div>
-    </details>
-
-    <details id="local-connector" class="mimir-provider-drawer">
-      <summary>Connect local LLM</summary>
-      <section class="mimir-dashboard" aria-labelledby="local-connector-title">
-        <div class="dashboard-heading"><div><p class="eyebrow">Free local onboarding</p><h2 id="local-connector-title">Connect your own local models</h2></div></div>
-        <p class="dashboard-note">Backend will own the downloadable connector. The frontend only explains the safe flow and stores non-sensitive profile metadata.</p>
-        <div id="local-connector-grid" class="provider-status-grid" aria-live="polite"></div>
-      </section>
     </details>
 
     <details id="multi-model-workspace" class="mimir-provider-drawer">
@@ -113,16 +127,6 @@
           <p id="config-status" class="status" aria-live="polite"></p>
         </section>
       </div>
-    </details>
-
-    <details class="mimir-dashboard-drawer">
-      <summary>Backend dashboard</summary>
-      <section class="mimir-dashboard" aria-labelledby="dashboard-title">
-        <div class="dashboard-heading"><div><p class="eyebrow">Performance overview</p><h2 id="dashboard-title">Backend dashboard</h2></div><button id="refresh-dashboard" type="button">Refresh</button></div>
-        <div class="dashboard-grid"><article class="metric-card"><span>Profiles</span><strong id="metric-profiles">0</strong><small>Total configured backends</small></article><article class="metric-card"><span>Active</span><strong id="metric-active">None</strong><small>Current chat target</small></article><article class="metric-card"><span>Key refs</span><strong id="metric-keys">0</strong><small>Labels only, not secrets</small></article><article class="metric-card"><span>Provider mix</span><strong id="metric-providers">0</strong><small>Distinct backend types</small></article><article class="metric-card"><span>Ready</span><strong id="metric-ready">0</strong><small>Ready/healthy backends</small></article><article class="metric-card"><span>Measured</span><strong id="metric-measured">0</strong><small>Profiles with perf targets</small></article></div>
-        <div class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>Backend</th><th>Provider</th><th>Models</th><th>Key ref</th><th>Capacity</th><th>Latency</th><th>Throughput</th><th>Health</th><th>Status</th></tr></thead><tbody id="dashboard-rows"><tr><td colspan="9">No backend profiles yet.</td></tr></tbody></table></div>
-        <p class="dashboard-note">Real SaaS keys, OCI credentials, payment data and scaling permissions belong server-side. Frontend stores only labels and local profile metadata.</p>
-      </section>
     </details>
   </main>
   <script src="./apps/mimir-chat-portal/mimir-chat-portal.js"></script>
