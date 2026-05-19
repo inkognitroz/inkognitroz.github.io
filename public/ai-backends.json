@@ -1,5 +1,65 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Public/static backend registry schema for Mimir AI. Do not store secrets here. Runtime/private endpoints should be added by the user in the portal and kept in localStorage or provided by a protected backend later.",
-  "backends": []
+  "connector_docs": "docs/ai/BACKEND_CONNECTOR_PATTERN.md",
+  "registry_guide": "docs/ai/MIMIR_REGISTRY_GUIDE.md",
+  "connector_template": "docs/ai/connector-template/",
+  "backends": [
+    {
+      "id": "example-oci-open-webui",
+      "name": "OCI VM — Open WebUI (example)",
+      "url": "https://chat.example.com",
+      "provider": "open-webui",
+      "models": "Llama 3.1, Gemma 2, Mistral",
+      "keyRef": "LOCAL_ONLY",
+      "cost": "Always Free A1 shape",
+      "latency": "< 2s first token",
+      "throughput": "~30 tok/s",
+      "uptime": "best-effort",
+      "health": "unknown",
+      "notes": "Example OCI VM backend running Open WebUI over Ollama. Replace URL with your actual instance."
+    },
+    {
+      "id": "example-local-ollama",
+      "name": "Local Ollama (example)",
+      "url": "http://localhost:11434",
+      "provider": "ollama",
+      "models": "any locally pulled Ollama model",
+      "keyRef": "LOCAL_ONLY",
+      "cost": "free / local hardware",
+      "latency": "hardware dependent",
+      "throughput": "hardware dependent",
+      "uptime": "when machine is on",
+      "health": "unknown",
+      "notes": "Example local Ollama backend. Only accessible from the same machine or LAN. Not reachable from deployed GitHub Pages."
+    },
+    {
+      "id": "example-railway-proxy",
+      "name": "Railway API proxy (example)",
+      "url": "https://my-connector.up.railway.app",
+      "provider": "custom",
+      "models": "depends on backend provider configured in Railway",
+      "keyRef": "OPENAI_API_KEY",
+      "cost": "Railway free tier or pay-as-you-go",
+      "latency": "provider dependent",
+      "throughput": "provider dependent",
+      "uptime": "Railway SLA",
+      "health": "unknown",
+      "notes": "Example Railway-hosted connector proxy. Secrets are stored in Railway environment variables, not here. Replace URL with your deployed service. See docs/ai/connector-template/ for the template."
+    },
+    {
+      "id": "example-codespaces-dev",
+      "name": "Codespaces dev backend (example)",
+      "url": "https://MY_CODESPACE-3000.app.github.dev",
+      "provider": "codespaces",
+      "models": "any model the dev container can reach",
+      "keyRef": "CODESPACE_LOCAL",
+      "cost": "GitHub Codespaces free tier",
+      "latency": "dev/test — not for production",
+      "throughput": "dev/test — not for production",
+      "uptime": "only while Codespace is running",
+      "health": "unknown",
+      "notes": "Example GitHub Codespaces backend for development and testing only. Replace MY_CODESPACE with your actual Codespace name."
+    }
+  ]
 }

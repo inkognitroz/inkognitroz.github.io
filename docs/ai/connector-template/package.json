@@ -1,0 +1,16 @@
+{
+  "name": "mimir-connector",
+  "version": "1.0.0",
+  "description": "Mimir backend connector template — implement the connector contract and deploy on any Node.js host.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "license": "MIT"
+}
