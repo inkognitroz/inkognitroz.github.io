@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "description": "Static homepage value proposition content for MMIR.ai.",
+  "items": [
+    {
+      "id": "free-start",
+      "title": "Low-friction start",
+      "status": "free first",
+      "description": "Start with local or self-managed models, then add stronger backends when the need is clear."
+    },
+    {
+      "id": "bring-any-model",
+      "title": "Bring any model",
+      "status": "open",
+      "description": "Support open-source, on-prem, private-cloud and SaaS models through one controlled interface."
+    },
+    {
+      "id": "roles",
+      "title": "Role-based reasoning",
+      "status": "MMIR",
+      "description": "Assign roles to models, compare answers, and synthesize the best final response."
+    },
+    {
+      "id": "safe-control",
+      "title": "Safe control layer",
+      "status": "zero trust",
+      "description": "Keep sensitive configuration behind controlled backend services while the frontend stays clean."
+    }
+  ]
+}
