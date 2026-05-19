@@ -41,20 +41,26 @@ jobs:
           ! grep -RInE 'SUPABASE_SERVICE_ROLE\s*=|STRIPE_SECRET\s*=|OPENAI_API_KEY\s*=|ANTHROPIC_API_KEY\s*=' public docs README.md START_HERE.md AGENTS.md CLAUDE.md || \
             (echo 'Forbidden secret assignment found. Use placeholders and server-side environment variables only.' && exit 1)
 
-      - name: Check required public entrypoints
+      - name: Check required Mimir entrypoints
         run: |
           set -euo pipefail
           test -f public/index.html
           test -f public/admin.html
+          test -f public/internal.html
           test -f public/content.json
-          test -f public/assets/app.js
-          test -f public/assets/styles.css
+          test -f public/ai-model-catalog.json
+          test -f public/apps/mimir-chat-portal/mimir-chat-portal.js
+          test -f public/apps/mimir-chat-portal/model-catalog-ui.js
+          test -f public/apps/open-web-gui/index.html
+          test -f public/apps/ollama-chat-lab/index.html
+          test -f public/apps/app-template-generator/index.html
           test -f public/apps/football-evolution-matrix/index.html
-          test -f public/apps/football-evolution-matrix/football-app.js
-          test -f public/apps/football-evolution-matrix/football-styles.css
 
-      - name: Smoke-check route references
+      - name: Smoke-check Mimir route references
         run: |
           set -euo pipefail
-          grep -RIn './apps/football-evolution-matrix/' public/content.json
-          grep -RIn './assets/theme.js' public/index.html
+          grep -RIn 'id="mimir-prompt"' public/index.html
+          grep -RIn 'id="backend-settings"' public/index.html
+          grep -RIn 'id="model-library-grid"' public/index.html
+          grep -RIn './apps/mimir-chat-portal/mimir-chat-portal.js' public/index.html
+          grep -RIn './apps/mimir-chat-portal/model-catalog-ui.js' public/index.html
