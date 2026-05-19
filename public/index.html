@@ -19,6 +19,7 @@
     </a>
     <nav aria-label="Minimal navigation">
       <a href="#model-library">Models</a>
+      <a href="#provider-status">Providers</a>
       <a href="#backend-settings">Backends</a>
       <a href="./admin.html">Admin</a>
     </nav>
@@ -48,6 +49,7 @@
 
       <div class="quick-suggestions" aria-label="Quick actions">
         <a href="#model-library">Browse models</a>
+        <a href="#provider-status">Provider status</a>
         <a href="#backend-settings">Configure backend</a>
         <a href="./apps/open-web-gui/">Endpoint test</a>
       </div>
@@ -63,6 +65,20 @@
         <p>Pick a family, connect a backend that can run it, then scale capacity when needed.</p>
       </div>
       <div id="model-library-grid" class="model-library-grid" aria-live="polite"></div>
+    </details>
+
+    <details id="provider-status" class="mimir-provider-drawer">
+      <summary>Provider status</summary>
+      <section class="mimir-dashboard" aria-labelledby="provider-status-title">
+        <div class="dashboard-heading">
+          <div>
+            <p class="eyebrow">Provider tracks</p>
+            <h2 id="provider-status-title">Backend provider availability</h2>
+          </div>
+        </div>
+        <p class="dashboard-note">Static provider registry for now. Live status should later come only through api.mmir.ai and mimir-backend-template.</p>
+        <div id="provider-status-grid" class="provider-status-grid" aria-live="polite"></div>
+      </section>
     </details>
 
     <details id="backend-settings" class="mimir-settings-drawer">
@@ -183,5 +199,6 @@
 
   <script src="./apps/mimir-chat-portal/mimir-chat-portal.js"></script>
   <script src="./apps/mimir-chat-portal/model-catalog-ui.js"></script>
+  <script src="./apps/mimir-chat-portal/provider-status.js"></script>
 </body>
 </html>
