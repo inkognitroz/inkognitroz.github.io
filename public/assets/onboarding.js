@@ -16,7 +16,7 @@
       { title: "Tilpass design", text: "Åpne palett-knappen for å bytte tema, kontrast, typografi og layout uten å endre kode." }
     ]
   } : isAdmin ? {
-    title: "SaaS Fabric Admin",
+    title: "Mimir Admin",
     subtitle: "Trygg lokal innholdsredigering før publisering via pull request.",
     steps: [
       { title: "Last inn innhold", text: "Hent content.json, rediger kort og bruk validering før du eksporterer." },
@@ -25,11 +25,11 @@
       { title: "Publiser trygt", text: "Eksporter content.json og publiser via PR. Ikke legg GitHub-tokens eller andre secrets i frontend." }
     ]
   } : {
-    title: "SaaS Fabric",
-    subtitle: "En statisk app-fabrikk for ideer, mini-apper, templates, roadmap og kommersialisering.",
+    title: "Mimir Internal Tools",
+    subtitle: "Mimir er en statisk plattform for chat, interne verktøy, roadmap og app-utvikling.",
     steps: [
       { title: "Utforsk appene", text: "Start i App Factory, Projects og Tools for å åpne det som allerede er bygget." },
-      { title: "Fang nye ideer", text: "Bruk SaaS Ideas, Templates og Prompt Inbox for å gjøre ideer om til klare PR-oppgaver." },
+      { title: "Fang nye ideer", text: "Bruk Ideas Backlog, Templates og Prompt Inbox for å gjøre ideer om til klare PR-oppgaver." },
       { title: "Tilpass utseendet", text: "Bruk palett-widgeten for standardtemaer, farger, typografi, spacing og import/eksport av theme." },
       { title: "Publiser stegvis", text: "Hold v1 statisk og trygg. Bruk Admin og GitHub PR-er før Supabase, betaling og ekte backend legges til." }
     ]

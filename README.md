@@ -1,15 +1,15 @@
 # inkognitroz.github.io
 
-Public home of **SaaS Fabric by Inkognitroz**.
+Public home of **Mimir by Inkognitroz**.
 
 ## Brand
-- **Name:** SaaS Fabric
-- **Subtitle:** Build, publish and monetize apps, tools and SaaS products.
+- **Name:** Mimir
+- **Subtitle:** Mimir Chat, internal tools, AI backend management and app factory.
 
 ## What this is
 A simple, stable, GitHub Pages-compatible v1 platform built with HTML/CSS/JS. It renders dynamically from one file: `/public/content.json`.
 
-SaaS Fabric is positioned as a platform for creating, organizing, publishing and eventually monetizing many apps, websites, SaaS products, dashboards, tools, templates, Excel/CSV-based tools, AI-assisted apps, client portals and internal tools.
+Mimir is positioned as a platform for AI chat management, internal tooling, app development, dashboards, and AI-assisted workflows.
 
 ## Quick start
 1. Edit `/public/content.json`.
@@ -35,7 +35,7 @@ SaaS Fabric is positioned as a platform for creating, organizing, publishing and
   - document exactly what events are sent and why
 
 ## Main sections
-Home, App Factory, SaaS Ideas, Projects, Templates, Tools, Dashboards, Uploads / Files, Prompt Inbox, Monetization, Roadmap, About.
+Mimir Chat (public), Admin, Internal Tools, App Factory, Ideas Backlog, Projects, Templates, Utilities, Dashboards, Uploads / Files, Prompt Inbox, Commercialization, Roadmap, About.
 
 ## Structure
 - `public/index.html` - public platform hub

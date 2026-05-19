@@ -1,10 +1,10 @@
 {
   "site": {
-    "title": "SaaS Fabric",
-    "subtitle": "Static-first app factory by Inkognitroz.",
-    "heroLabel": "App factory & SaaS platform",
-    "heroTitle": "Build, Launch & Monetize Your SaaS Products",
-    "heroDescription": "SaaS Fabric is an open-source, static-first platform for building mini-apps, capturing ideas, tracking your roadmap and preparing to monetize — all without a backend.",
+    "title": "Mimir Internal Tools",
+    "subtitle": "Mimir platform — internal tools, AI chat management and app factory.",
+    "heroLabel": "Internal platform hub",
+    "heroTitle": "Mimir platform workbench",
+    "heroDescription": "Mimir is a static-first platform for AI chat management, internal tooling, app development and roadmap tracking — all without a backend.",
     "heroCtas": [
       { "text": "Explore Apps", "href": "#app-factory", "style": "primary" },
       { "text": "View Roadmap", "href": "#roadmap", "style": "secondary" }
@@ -104,8 +104,8 @@
         "tags": ["generator", "template", "planning", "static"]
       },
       {
-        "title": "SaaS Fabric Hub",
-        "description": "This site — a static app factory and portfolio hub built on GitHub Pages, powered by content.json.",
+        "title": "Mimir Hub",
+        "description": "This site — a static Mimir platform hub built on GitHub Pages, powered by content.json.",
         "link": "./index.html",
         "badge": "Live",
         "tags": ["platform", "github-pages", "static"]
@@ -129,7 +129,7 @@
     ],
     "projects": [
       {
-        "title": "SaaS Fabric public hub",
+        "title": "Mimir platform hub",
         "description": "Static-first GitHub Pages hub for portfolio and pipeline management.",
         "link": "./index.html",
         "badge": "Live",
@@ -160,7 +160,7 @@
       },
       {
         "title": "App brief generator template",
-        "description": "Generate issue text, folder structure, starter content.json card and launch checklist for a new SaaS Fabric app.",
+        "description": "Generate issue text, folder structure, starter content.json card and launch checklist for a new Mimir app.",
         "link": "./apps/app-template-generator/",
         "badge": "Live",
         "tags": ["template", "planning", "issue"]
@@ -280,8 +280,8 @@
     ],
     "about": [
       {
-        "title": "About SaaS Fabric",
-        "description": "SaaS Fabric is a static-first, open-source app factory built by Inkognitroz. The goal is a practical, non-technical workflow for building and launching SaaS products without infrastructure overhead.",
+        "title": "About Mimir",
+        "description": "Mimir is a static-first, open-source platform built by Inkognitroz for AI chat management, internal tooling and app development — without infrastructure overhead.",
         "link": "https://github.com/inkognitroz/inkognitroz.github.io",
         "tags": ["about", "platform", "open-source"]
       }

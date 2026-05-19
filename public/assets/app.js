@@ -149,8 +149,8 @@
     const trustBar = root.querySelector("#trust-bar");
     const footerSubtitle = root.querySelector("#footer-subtitle");
 
-    if (titleEl) titleEl.textContent = site.title || "SaaS Fabric";
-    if (subtitleEl) subtitleEl.textContent = site.subtitle || "Build, publish and monetize apps, tools and SaaS products.";
+    if (titleEl) titleEl.textContent = site.title || "Mimir Internal Tools";
+    if (subtitleEl) subtitleEl.textContent = site.subtitle || "Mimir platform — internal tools, AI chat management and app factory.";
     if (heroLabelEl && site.heroLabel) heroLabelEl.textContent = site.heroLabel;
     if (heroTitleEl) heroTitleEl.textContent = site.heroTitle || "Build, Launch & Monetize Your SaaS Products";
     if (heroDescEl) heroDescEl.textContent = site.heroDescription || "";
@@ -316,7 +316,7 @@
 
   function buildBundleReadme(metadata) {
     return [
-      "SaaS Fabric export bundle",
+      "Mimir export bundle",
       "",
       `Generated: ${metadata.generatedAt}`,
       `Bundle version: ${metadata.bundleVersion}`,
@@ -381,7 +381,7 @@
     });
 
     return {
-      type: "saas-fabric-export-bundle",
+      type: "mimir-export-bundle",
       version: EXPORT_BUNDLE_VERSION,
       generatedAt,
       files
@@ -717,7 +717,7 @@
     const fileDate = bundle.generatedAt.replace(/[:.]/g, "-");
     downloadFile(
       JSON.stringify(bundle, null, 2),
-      `saas-fabric-export-bundle-${fileDate}.json`,
+      `mimir-export-bundle-${fileDate}.json`,
       "application/json;charset=utf-8"
     );
     saveBackupSnapshot(content, "Exported backup bundle");
