@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "description": "Static Mimir capacity offer catalog. This file contains labels only. Availability, pricing and ordering must be handled by a protected backend and provider workflow later.",
+  "offers": [
+    {
+      "id": "free-local",
+      "name": "Free local / bring your own backend",
+      "price_label": "Free",
+      "best_for": "Local Ollama, personal testing, own VM, community models",
+      "included": ["Connect your own endpoint", "Use local profiles", "No Mimir-hosted compute"],
+      "capacity": "User managed",
+      "status": "available-now"
+    },
+    {
+      "id": "starter-vm",
+      "name": "Starter VM with LLM runtime",
+      "price_label": "TBD",
+      "best_for": "Small open models, demos, personal assistant prototypes",
+      "included": ["Preconfigured VM", "Ollama/Open WebUI-style runtime", "Small model families"],
+      "capacity": "CPU or small accelerated option",
+      "status": "planned"
+    },
+    {
+      "id": "gpu-small",
+      "name": "GPU Small",
+      "price_label": "TBD",
+      "best_for": "Faster tokens, medium models, team testing",
+      "included": ["GPU-capable backend", "Model runtime", "Health endpoint"],
+      "capacity": "Small GPU profile",
+      "status": "planned"
+    },
+    {
+      "id": "gpu-large",
+      "name": "GPU Large / Team",
+      "price_label": "TBD",
+      "best_for": "Larger models, multiple users, higher throughput",
+      "included": ["Dedicated GPU backend", "Model/runtime setup", "Dashboard integration"],
+      "capacity": "Large GPU profile",
+      "status": "planned"
+    }
+  ]
+}
