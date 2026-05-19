@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Static homepage value proposition content for MMIR.ai.",
   "items": [
     {
@@ -19,6 +19,12 @@
       "title": "Role-based reasoning",
       "status": "MMIR",
       "description": "Assign roles to models, compare answers, and synthesize the best final response."
+    },
+    {
+      "id": "edge-compute-mesh",
+      "title": "Edge Compute Mesh",
+      "status": "future",
+      "description": "Let many trusted local PCs, VMs and edge nodes contribute safe compute and make distributed intelligence available through MMIR.ai."
     },
     {
       "id": "safe-control",
