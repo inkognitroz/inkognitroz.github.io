@@ -78,6 +78,11 @@
           <article class="provider-card"><div class="provider-card-header"><h3>Train your own</h3><span class="provider-status status-planned">future</span></div><p>Add data, track training progress, build a fit-for-purpose model and deploy it back into your model library when backend support exists.</p></article>
           <article class="provider-card"><div class="provider-card-header"><h3>Scale compute</h3><span class="provider-status status-planned">backend only</span></div><p>CPU, RAM and GPU scaling must be handled by protected backend/IaC workflows with cost controls, not from the public frontend.</p></article>
         </div>
+        <details class="model-catalog-hint">
+          <summary>Role presets</summary>
+          <p class="dashboard-note">Use role presets to structure multi-model reasoning. They are instruction templates only; backend support is needed before roles can be executed across live models.</p>
+          <div id="role-preset-grid" class="provider-status-grid" aria-live="polite"></div>
+        </details>
       </section>
     </details>
 
@@ -141,5 +146,6 @@
   <script src="./apps/mimir-chat-portal/mimir-chat-portal.js"></script>
   <script src="./apps/mimir-chat-portal/model-catalog-ui.js"></script>
   <script src="./apps/mimir-chat-portal/provider-status.js"></script>
+  <script src="./apps/mimir-chat-portal/role-presets.js"></script>
 </body>
 </html>
