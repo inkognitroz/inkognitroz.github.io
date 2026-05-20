@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Static connect options for MMIR.ai. These are safe frontend options only; secrets and provisioning belong to protected backend services.",
+  "options": [
+    {
+      "id": "local-connector",
+      "title": "Connect local LLM",
+      "status": "free first",
+      "description": "Use a local connector to make models running on your PC or private VM available to MMIR.ai without exposing raw runtimes publicly.",
+      "target": "#local-connector"
+    },
+    {
+      "id": "bring-backend",
+      "title": "Add compatible backend",
+      "status": "self-managed",
+      "description": "Add a trusted MMIR-compatible backend URL for models, status and chat once your connector/API is ready.",
+      "target": "#backend-settings"
+    },
+    {
+      "id": "provider-api",
+      "title": "Use SaaS model/API",
+      "status": "backend required",
+      "description": "OpenAI, Claude, Gemini and similar provider APIs require a protected backend or vault. Do not paste real keys into the public frontend.",
+      "target": "#provider-status"
+    },
+    {
+      "id": "managed-capacity",
+      "title": "Request VM/GPU capacity",
+      "status": "planned",
+      "description": "Future managed capacity can provision CPU, RAM or GPU through protected backend/IaC workflows with cost controls.",
+      "target": "#edge-compute-mesh"
+    }
+  ]
+}
