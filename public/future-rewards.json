@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "description": "Future MMIR.ai contribution reward concept for the Intelligence Well. This is product positioning only, not a payment, wallet or issuance implementation.",
+  "status": "future-research",
+  "items": [
+    {
+      "id": "contribute-capacity",
+      "title": "Contribute capacity",
+      "status": "future",
+      "description": "Approved users may later contribute trusted local compute, RAM, GPU, LLMs or VM capacity to the Intelligence Well."
+    },
+    {
+      "id": "metered-contribution",
+      "title": "Measure contribution",
+      "status": "backend required",
+      "description": "Backend telemetry must measure uptime, capacity, successful work, quality and policy compliance before any reward logic exists."
+    },
+    {
+      "id": "usage-credits",
+      "title": "Earn utility credits",
+      "status": "future",
+      "description": "Contributors may later earn utility credits for approved contribution, usable toward compute, LLM time or higher service tiers."
+    },
+    {
+      "id": "safe-by-design",
+      "title": "Safe by design",
+      "status": "zero trust",
+      "description": "No wallets, payment credentials, issuance logic or claims about external value belong in the public frontend."
+    }
+  ]
+}
