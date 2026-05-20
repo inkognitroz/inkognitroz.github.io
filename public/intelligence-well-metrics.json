@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "description": "Placeholder metrics for the future MMIR.ai Intelligence Well / Edge Compute Mesh. Live values must later come from protected backend telemetry, not the public frontend.",
+  "status": "future-placeholder",
+  "metrics": [
+    {
+      "id": "nodes",
+      "label": "Trusted nodes",
+      "value": "0",
+      "unit": "connected",
+      "note": "Future count of approved PCs, VMs and edge nodes."
+    },
+    {
+      "id": "models",
+      "label": "Available LLMs",
+      "value": "0",
+      "unit": "live",
+      "note": "Future count of live models exposed through controlled connectors."
+    },
+    {
+      "id": "compute",
+      "label": "Compute",
+      "value": "0",
+      "unit": "CPU/GPU",
+      "note": "Future aggregate of available CPU, RAM and GPU capacity."
+    },
+    {
+      "id": "catalog",
+      "label": "Potential catalog",
+      "value": "Ollama + open + SaaS",
+      "unit": "model families",
+      "note": "Many model families may be catalogued; only connected backends are marked available."
+    }
+  ]
+}
