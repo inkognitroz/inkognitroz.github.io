@@ -19,7 +19,7 @@
     </a>
     <nav aria-label="Minimal navigation">
       <a href="#local-connector">Local</a>
-      <a href="#edge-compute-mesh">Mesh</a>
+      <a href="#edge-compute-mesh">Well</a>
       <a href="#model-library">Models</a>
       <a href="#backend-settings">Backends</a>
     </nav>
@@ -43,7 +43,7 @@
 
       <div class="quick-suggestions" aria-label="Quick actions">
         <a href="#local-connector">Connect local LLM</a>
-        <a href="#edge-compute-mesh">Edge Compute Mesh</a>
+        <a href="#edge-compute-mesh">Intelligence Well</a>
         <a href="#model-library">Browse models</a>
         <a href="#multi-model-workspace">Multi-model workflow</a>
         <a href="#backend-settings">Add backend</a>
@@ -59,15 +59,22 @@
       </section>
     </details>
 
-    <details id="edge-compute-mesh" class="mimir-provider-drawer">
-      <summary>Edge Compute Mesh</summary>
+    <details id="edge-compute-mesh" class="mimir-provider-drawer" open>
+      <summary>Intelligence Well / Edge Compute Mesh</summary>
       <section class="mimir-dashboard" aria-labelledby="edge-title">
-        <div class="dashboard-heading"><div><p class="eyebrow">Distributed local compute pool</p><h2 id="edge-title">Turn trusted PCs, VMs and edge nodes into shared intelligence</h2></div></div>
-        <p class="dashboard-note">Future MMIR.ai provider track: users can connect approved local devices or VMs through a secure connector so available compute and models can be surfaced safely in the chat UI.</p>
+        <div class="dashboard-heading"><div><p class="eyebrow">Distributed intelligence well</p><h2 id="edge-title">Trusted compute, RAM, GPUs and LLMs in one shared mesh</h2></div></div>
+        <p class="dashboard-note">Future MMIR.ai provider track: the mesh becomes the Intelligence Well — a trusted pool of local PCs, VMs, GPUs, RAM, local LLMs, on-prem models, tools and edge nodes surfaced safely in one chat UI.</p>
+        <div class="dashboard-grid">
+          <article class="metric-card"><span>Trusted nodes</span><strong>0</strong><small>Future PCs, VMs and edge nodes</small></article>
+          <article class="metric-card"><span>Live LLMs</span><strong>0</strong><small>Live models from connected backends</small></article>
+          <article class="metric-card"><span>Compute</span><strong>0</strong><small>CPU / RAM / GPU capacity</small></article>
+          <article class="metric-card"><span>Potential catalog</span><strong>Ollama+</strong><small>Ollama-compatible, open, on-prem and SaaS models</small></article>
+        </div>
         <div class="provider-status-grid">
           <article class="provider-card"><div class="provider-card-header"><h3>Connect nodes</h3><span class="provider-status status-planned">future</span></div><p>Register trusted local PCs, VMs, Jetson devices or private edge nodes through a controlled backend connector.</p></article>
           <article class="provider-card"><div class="provider-card-header"><h3>Share capacity</h3><span class="provider-status status-planned">future</span></div><p>Expose safe model capacity, CPU, RAM and GPU availability to MMIR without exposing raw runtimes or secrets.</p></article>
           <article class="provider-card"><div class="provider-card-header"><h3>Route intelligently</h3><span class="provider-status status-planned">future</span></div><p>Let MMIR route tasks to the best available local, edge, cloud or SaaS model based on policy, performance and trust level.</p></article>
+          <article class="provider-card"><div class="provider-card-header"><h3>Earn usage credits</h3><span class="provider-status status-planned">future</span></div><p>Contributors may later earn utility credits for approved compute or model capacity, subject to backend metering and legal review.</p></article>
         </div>
       </section>
     </details>
