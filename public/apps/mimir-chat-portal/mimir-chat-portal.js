@@ -48,7 +48,7 @@
   function renderList(){
     const profiles=readProfiles();
     const activeId=readActive();
-    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No backends yet. Add your first OCI/Open WebUI endpoint.</p>';return;}
+    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No backend profile yet. Click “Add model/backend”, add a trusted connector/API URL, save it, then set it active.</p>';return;}
     listEl.innerHTML=profiles.map(p=>{
       const active=p.id===activeId;
       const health=p.health||'unknown';
@@ -82,11 +82,11 @@
     }
     if(active&&validUrl(active.url)){
       activeBadge.textContent='Active: '+(active.name||'backend');
-      activeTitle.textContent=active.name||'Mimir Chat';
+      activeTitle.textContent=active.name||'MMIR.ai';
       activeDesc.textContent=(active.provider||'Open WebUI')+' · '+(active.models||'models selected in backend')+' · '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
-      activeBadge.textContent='No backend selected';activeTitle.textContent='Ready when your backend is selected';activeDesc.textContent='Add an OCI/Open WebUI backend above, set it active, then open chat.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
+      activeBadge.textContent='No backend selected';activeTitle.textContent='No active model/backend yet';activeDesc.textContent='Use “Add model/backend” to create a local connector, Open WebUI, OCI, SaaS-provider or custom backend profile. Save it, set it active, then open chat.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
     }
   }
 
