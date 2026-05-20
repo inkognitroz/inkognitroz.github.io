@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "description": "Static homepage value proposition content for MMIR.ai.",
   "items": [
     {
@@ -21,10 +21,22 @@
       "description": "Assign roles to models, compare answers, and synthesize the best final response."
     },
     {
-      "id": "edge-compute-mesh",
-      "title": "Edge Compute Mesh",
+      "id": "intelligence-well",
+      "title": "Intelligence Well",
       "status": "future",
-      "description": "Let many trusted local PCs, VMs and edge nodes contribute safe compute and make distributed intelligence available through MMIR.ai."
+      "description": "The Edge Compute Mesh becomes a shared Intelligence Well: trusted CPUs, RAM, GPUs, local LLMs, tools and model capacity made available through MMIR.ai."
+    },
+    {
+      "id": "well-metrics",
+      "title": "Well metrics",
+      "status": "planned",
+      "description": "Show how strong the well is: connected nodes, available CPUs, RAM, GPUs, models, live capacity, latency and contribution credits."
+    },
+    {
+      "id": "model-potential",
+      "title": "Broad model potential",
+      "status": "catalog",
+      "description": "MMIR.ai can catalog many model families from Ollama-compatible local runtimes, open-source ecosystems, on-prem deployments and SaaS providers, while only enabled backends are marked available."
     },
     {
       "id": "safe-control",
