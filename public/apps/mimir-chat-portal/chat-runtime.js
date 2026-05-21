@@ -141,6 +141,59 @@
     bubble.appendChild(actions);
   }
 
+  function appendTextBlock(target,text){
+    if(!text)return;
+    const blocks=String(text).split(/\n{2,}/);
+    for(const block of blocks){
+      if(!block)continue;
+      const p=document.createElement('p');
+      p.textContent=block;
+      target.appendChild(p);
+    }
+  }
+
+  function appendCodeBlock(target,code,language){
+    const wrapper=document.createElement('div');
+    wrapper.className='runtime-code-block';
+    const header=document.createElement('div');
+    header.className='runtime-code-header';
+    const label=document.createElement('span');
+    label.textContent=language||'code';
+    const copy=document.createElement('button');
+    copy.type='button';
+    copy.textContent='Copy code';
+    copy.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(code);setStatus('Code copied.','ready');}
+      catch(error){setStatus('Copy failed in this browser.','error');}
+    });
+    header.append(label,copy);
+    const pre=document.createElement('pre');
+    const codeEl=document.createElement('code');
+    codeEl.textContent=code;
+    pre.appendChild(codeEl);
+    wrapper.append(header,pre);
+    target.appendChild(wrapper);
+  }
+
+  function renderMessageContent(target,content,role){
+    target.innerHTML='';
+    const value=String(content||'');
+    if(role!=='assistant'||!value.includes('```')){
+      appendTextBlock(target,value);
+      return;
+    }
+
+    const fence=/```([^\n`]*)\n?([\s\S]*?)```/g;
+    let lastIndex=0;
+    let match;
+    while((match=fence.exec(value))!==null){
+      appendTextBlock(target,value.slice(lastIndex,match.index));
+      appendCodeBlock(target,match[2]||'',String(match[1]||'').trim());
+      lastIndex=fence.lastIndex;
+    }
+    appendTextBlock(target,value.slice(lastIndex));
+  }
+
   function renderMessage(message){
     if(!transcriptEl)return null;
     const bubble=document.createElement('article');
@@ -149,8 +202,9 @@
     const label=document.createElement('span');
     label.className='runtime-message-label';
     label.textContent=message.role==='user'?'You':'MMIR';
-    const body=document.createElement('p');
-    body.textContent=message.content;
+    const body=document.createElement('div');
+    body.className='runtime-message-body';
+    renderMessageContent(body,message.content,message.role);
     bubble.append(label,body);
     if(message.meta){const small=document.createElement('small');small.textContent=message.meta;bubble.appendChild(small);}
     renderMessageActions(bubble,message);
@@ -182,8 +236,8 @@
       saveMessages();
     }
     const bubble=transcriptEl?.querySelector('[data-message-id="'+CSS.escape(id)+'"]');
-    const body=bubble?.querySelector('p');
-    if(body)body.textContent=String(content||'');
+    const body=bubble?.querySelector('.runtime-message-body');
+    if(body&&message)renderMessageContent(body,message.content,message.role);
     let small=bubble?.querySelector('small');
     if(bubble&&meta!==undefined&&!small&&meta){small=document.createElement('small');bubble.appendChild(small);}
     if(small&&meta!==undefined)small.textContent=String(meta||'');
