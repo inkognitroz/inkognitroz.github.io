@@ -334,6 +334,102 @@
     }
   }
 
+  function chunkContent(payload){
+    return payload?.choices?.[0]?.delta?.content||payload?.choices?.[0]?.message?.content||payload?.content||'';
+  }
+
+  async function readSse(response,onText){
+    const reader=response.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+    let content='';
+
+    while(true){
+      const {value,done}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const events=buffer.split('\n\n');
+      buffer=events.pop()||'';
+      for(const event of events){
+        const dataLines=event.split('\n').filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trim());
+        for(const data of dataLines){
+          if(!data)continue;
+          if(data==='[DONE]')return content;
+          const parsed=JSON.parse(data);
+          const delta=chunkContent(parsed);
+          if(delta){
+            content+=delta;
+            onText(content);
+          }
+        }
+      }
+    }
+
+    return content;
+  }
+
+  async function streamPath(url,path,headers,payload,signal,onText){
+    const response=await fetch(joinUrl(url,path),{
+      method:'POST',
+      headers:{...headers,Accept:'text/event-stream'},
+      body:JSON.stringify({...payload,stream:true}),
+      signal
+    });
+
+    if(!response.ok){
+      let data=null;
+      try{data=await response.json();}catch(error){data=null;}
+      const err=new Error(data?.error?.message||('Request failed with '+response.status));
+      err.status=response.status;
+      err.payload=data;
+      throw err;
+    }
+
+    const contentType=response.headers.get('content-type')||'';
+    if(response.body&&contentType.includes('text/event-stream')){
+      return readSse(response,onText);
+    }
+
+    const data=await response.json();
+    const content=data?.choices?.[0]?.message?.content||data?.content||'';
+    if(content)onText(content);
+    return content;
+  }
+
+  async function streamChat(url,headers,payload,signal,onText){
+    let lastError=null;
+    for(const path of ['/chat/completions','/chat']){
+      try{return await streamPath(url,path,headers,payload,signal,onText);}
+      catch(error){
+        lastError=error;
+        if(error.status!==404)throw error;
+      }
+    }
+    throw lastError;
+  }
+
+  async function jsonChat(url,headers,payload,signal){
+    let data;
+    try{
+      data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers,body:JSON.stringify({...payload,stream:false}),timeoutMs:60000,signal});
+    }catch(error){
+      if(error.status!==404)throw error;
+      data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers,body:JSON.stringify({...payload,stream:false}),timeoutMs:60000,signal});
+    }
+    return data?.choices?.[0]?.message?.content||data?.content||'';
+  }
+
+  async function chatWithBackend(url,headers,payload,signal,onText){
+    try{
+      return await streamChat(url,headers,payload,signal,onText);
+    }catch(error){
+      if(![400,406,501].includes(error.status))throw error;
+      const content=await jsonChat(url,headers,payload,signal);
+      if(content)onText(content);
+      return content;
+    }
+  }
+
   async function pairIfNeeded(profile,url){
     if(!isLocal(profile))return '';
     const existing=sessionStorage.getItem(tokenKey(url));
@@ -409,15 +505,11 @@
     setStatus('Sending to backend...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
-      const payload={model:selectedModel,messages:payloadMessages,stream:false};
-      let data;
-      try{
-        data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000,signal:currentAbortController.signal});
-      }catch(error){
-        if(error.status!==404)throw error;
-        data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000,signal:currentAbortController.signal});
-      }
-      const content=data?.choices?.[0]?.message?.content||data?.content||'';
+      const payload={model:selectedModel,messages:payloadMessages};
+      const content=await chatWithBackend(url,authHeaders(token),payload,currentAbortController.signal,(partial)=>{
+        updateMessage(assistant.message.id,partial||'Thinking...',selectedModel);
+        setStatus('Streaming response...','loading');
+      });
       updateMessage(assistant.message.id,content||'Backend returned an empty response.',selectedModel);
       writeActiveProfilePatch({health:'ready'});
       setStatus('Response received.','ready');
