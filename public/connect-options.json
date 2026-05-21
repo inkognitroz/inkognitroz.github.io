@@ -18,17 +18,10 @@
     },
     {
       "id": "provider-api",
-      "title": "Use SaaS model/API",
-      "status": "backend required",
-      "description": "OpenAI, Claude, Gemini and similar provider APIs require a protected backend or vault. Do not paste real keys into the public frontend.",
-      "target": "#provider-status"
-    },
-    {
-      "id": "managed-capacity",
-      "title": "Request VM/GPU capacity",
+      "title": "Use managed provider route",
       "status": "planned",
-      "description": "Future managed capacity can provision CPU, RAM or GPU through protected backend/IaC workflows with cost controls.",
-      "target": "#edge-compute-mesh"
+      "description": "OpenAI, Claude, Gemini and similar providers require a protected backend or vault. Do not paste real keys into the public frontend.",
+      "target": "#provider-status"
     }
   ]
 }
