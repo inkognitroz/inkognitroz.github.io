@@ -1,0 +1,46 @@
+.workspace-switcher {
+  display: inline-flex;
+  align-items: end;
+  gap: 6px;
+}
+
+.workspace-switcher label {
+  display: grid;
+  gap: 3px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.workspace-switcher select {
+  min-height: 32px;
+  min-width: 132px;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  padding: 0 8px;
+}
+
+.workspace-switcher button {
+  width: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px !important;
+}
+
+.workspace-switcher select:focus-visible,
+.workspace-switcher button:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+@media (max-width: 560px) {
+  .workspace-switcher,
+  .workspace-switcher label,
+  .workspace-switcher select {
+    width: 100%;
+  }
+}
