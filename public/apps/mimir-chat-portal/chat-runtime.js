@@ -13,7 +13,10 @@
   let statusEl=null;
   let transcriptEl=null;
   let refreshBtn=null;
+  let stopBtn=null;
   let clearBtn=null;
+  let currentAbortController=null;
+  let stopRequested=false;
   let lastActiveId='';
   let busy=false;
   let messages=[];
@@ -26,6 +29,12 @@
   function joinUrl(base,path){return cleanUrl(base)+path;}
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
+
+  function setBusy(value){
+    busy=value;
+    if(stopBtn)stopBtn.disabled=!value;
+    if(refreshBtn)refreshBtn.disabled=value;
+  }
 
   function writeActiveProfilePatch(patch){
     try{
@@ -63,13 +72,15 @@
     try{localStorage.setItem(CHAT_KEY,JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));}catch(error){}
   }
 
-  function createMessage(role,content,meta){
+  function createMessage(role,content,meta,extra={}){
     return {
       id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
       role,
       content:String(content||''),
       meta:String(meta||''),
-      createdAt:new Date().toISOString()
+      createdAt:new Date().toISOString(),
+      retryPrompt:typeof extra.retryPrompt==='string'?extra.retryPrompt:'',
+      model:typeof extra.model==='string'?extra.model:''
     };
   }
 
@@ -91,6 +102,7 @@
         '<span id="runtime-state" data-state="idle">Select a backend to start.</span>'+
         '<label for="runtime-model">Model<select id="runtime-model" disabled><option value="">No live models</option></select></label>'+
         '<button id="runtime-refresh" type="button">Refresh</button>'+
+        '<button id="runtime-stop" type="button" disabled>Stop</button>'+
         '<button id="runtime-clear" type="button">Clear</button>'+
       '</div>'+
       '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite"></div>';
@@ -99,9 +111,34 @@
     statusEl=document.getElementById('runtime-state');
     transcriptEl=document.getElementById('runtime-transcript');
     refreshBtn=document.getElementById('runtime-refresh');
+    stopBtn=document.getElementById('runtime-stop');
     clearBtn=document.getElementById('runtime-clear');
     refreshBtn.addEventListener('click',()=>refreshState(true));
+    stopBtn.addEventListener('click',stopCurrentResponse);
     clearBtn.addEventListener('click',clearConversation);
+  }
+
+  function renderMessageActions(bubble,message){
+    bubble.querySelector('.runtime-message-actions')?.remove();
+    if(message.role!=='assistant'||!message.content||message.content==='Thinking...')return;
+    const actions=document.createElement('div');
+    actions.className='runtime-message-actions';
+    const copy=document.createElement('button');
+    copy.type='button';
+    copy.textContent='Copy';
+    copy.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(message.content);setStatus('Answer copied.','ready');}
+      catch(error){setStatus('Copy failed in this browser.','error');}
+    });
+    actions.appendChild(copy);
+    if(message.retryPrompt){
+      const retry=document.createElement('button');
+      retry.type='button';
+      retry.textContent='Retry';
+      retry.addEventListener('click',()=>retryMessage(message));
+      actions.appendChild(retry);
+    }
+    bubble.appendChild(actions);
   }
 
   function renderMessage(message){
@@ -116,6 +153,7 @@
     body.textContent=message.content;
     bubble.append(label,body);
     if(message.meta){const small=document.createElement('small');small.textContent=message.meta;bubble.appendChild(small);}
+    renderMessageActions(bubble,message);
     transcriptEl.appendChild(bubble);
     bubble.scrollIntoView({block:'nearest'});
     return body;
@@ -127,8 +165,8 @@
     for(const message of messages){renderMessage(message);}
   }
 
-  function appendMessage(role,content,meta){
-    const message=createMessage(role,content,meta);
+  function appendMessage(role,content,meta,extra){
+    const message=createMessage(role,content,meta,extra);
     messages.push(message);
     messages=messages.slice(-MAX_STORED_MESSAGES);
     saveMessages();
@@ -146,8 +184,10 @@
     const bubble=transcriptEl?.querySelector('[data-message-id="'+CSS.escape(id)+'"]');
     const body=bubble?.querySelector('p');
     if(body)body.textContent=String(content||'');
-    const small=bubble?.querySelector('small');
+    let small=bubble?.querySelector('small');
+    if(bubble&&meta!==undefined&&!small&&meta){small=document.createElement('small');bubble.appendChild(small);}
     if(small&&meta!==undefined)small.textContent=String(meta||'');
+    if(bubble&&message)renderMessageActions(bubble,message);
   }
 
   function clearConversation(){
@@ -156,6 +196,21 @@
     saveMessages();
     if(transcriptEl)transcriptEl.innerHTML='';
     setStatus('Conversation cleared locally.','idle');
+  }
+
+  function stopCurrentResponse(){
+    if(!currentAbortController)return;
+    stopRequested=true;
+    currentAbortController.abort();
+    setStatus('Stopping response...','loading');
+  }
+
+  function retryMessage(message){
+    if(busy)return;
+    if(!message.retryPrompt)return;
+    promptEl.value=message.retryPrompt;
+    promptEl.focus();
+    sendMessage();
   }
 
   function contextMessages(prompt){
@@ -198,9 +253,17 @@
 
   async function fetchJson(url,options={}){
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),options.timeoutMs||15000);
+    const timeoutMs=options.timeoutMs||15000;
+    const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+    const externalSignal=options.signal;
+    const abortFromExternal=()=>controller.abort();
+    if(externalSignal){
+      if(externalSignal.aborted)controller.abort();
+      else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
+    }
+    const {timeoutMs:ignoredTimeout,signal:ignoredSignal,...fetchOptions}=options;
     try{
-      const response=await fetch(url,{...options,signal:controller.signal});
+      const response=await fetch(url,{...fetchOptions,signal:controller.signal});
       let data=null;
       try{data=await response.json();}catch(error){data=null;}
       if(!response.ok){
@@ -213,6 +276,7 @@
       return data;
     }finally{
       clearTimeout(timeout);
+      if(externalSignal)externalSignal.removeEventListener('abort',abortFromExternal);
     }
   }
 
@@ -280,33 +344,37 @@
     if(!prompt){setStatus('Write a message first.','error');return;}
     if(!model){await refreshState(true);if(!modelSelect||modelSelect.disabled){setStatus('No live model is available from this backend.','error');return;}}
 
-    busy=true;
+    stopRequested=false;
+    currentAbortController=new AbortController();
+    setBusy(true);
     const selectedModel=modelSelect.value;
     const payloadMessages=contextMessages(prompt);
     appendMessage('user',prompt,profile.name||profile.provider||'backend');
     promptEl.value='';
-    const assistant=appendMessage('assistant','Thinking...',selectedModel);
+    const assistant=appendMessage('assistant','Thinking...',selectedModel,{retryPrompt:prompt,model:selectedModel});
     setStatus('Sending to backend...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
       const payload={model:selectedModel,messages:payloadMessages,stream:false};
       let data;
       try{
-        data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000});
+        data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000,signal:currentAbortController.signal});
       }catch(error){
         if(error.status!==404)throw error;
-        data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000});
+        data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000,signal:currentAbortController.signal});
       }
       const content=data?.choices?.[0]?.message?.content||data?.content||'';
       updateMessage(assistant.message.id,content||'Backend returned an empty response.',selectedModel);
       writeActiveProfilePatch({health:'ready'});
       setStatus('Response received.','ready');
     }catch(error){
-      updateMessage(assistant.message.id,friendlyError(error),'error');
-      writeActiveProfilePatch({health:error?.status===401?'testing':'degraded'});
-      setStatus(friendlyError(error),'error');
+      const message=stopRequested?'Response stopped.':friendlyError(error);
+      updateMessage(assistant.message.id,message,stopRequested?'stopped':'error');
+      writeActiveProfilePatch({health:stopRequested?'ready':(error?.status===401?'testing':'degraded')});
+      setStatus(message,stopRequested?'idle':'error');
     }finally{
-      busy=false;
+      currentAbortController=null;
+      setBusy(false);
     }
   }
 
