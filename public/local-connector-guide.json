@@ -1,12 +1,12 @@
 {
-  "version": 1,
-  "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through a safe local connector. The actual connector is owned by the backend track.",
+  "version": 2,
+  "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through a safe local connector. The actual connector is owned by mmir-local-node.",
   "steps": [
     {
       "id": "install",
       "title": "Install local connector",
       "status": "planned",
-      "description": "Download a small MMIR connector app or script from the backend project. It should run locally and expose only a controlled connector API, not raw model runtimes."
+      "description": "Download a small MMIR connector app or script from the local-node project. It should run locally and expose only a controlled connector API, not raw model runtimes."
     },
     {
       "id": "detect",
@@ -16,22 +16,22 @@
     },
     {
       "id": "connect",
-      "title": "Connect to MMIR.ai",
+      "title": "Pair with MMIR.ai",
       "status": "planned",
-      "description": "The frontend stores only a local connector URL and safe profile metadata. Secrets and provider credentials remain outside the public frontend."
+      "description": "The frontend should pair with the local connector before model/chat control. It stores only the local connector URL and safe profile metadata."
     },
     {
       "id": "chat",
       "title": "Chat safely",
       "status": "planned",
-      "description": "MMIR routes chat requests through the connector contract. Raw Ollama port 11434 should not be exposed publicly."
+      "description": "MMIR routes chat requests through /chat/completions. Raw Ollama port 11434 should not be exposed publicly."
     }
   ],
   "security": [
     "No secrets in GitHub Pages frontend",
     "No public raw Ollama port",
     "Local connector should require explicit local user action",
-    "Use controlled /health, /models, /status and /chat endpoints",
+    "Use controlled /health, /status, /models and /chat/completions endpoints",
     "Allow users to disconnect and delete local profiles"
   ]
 }
