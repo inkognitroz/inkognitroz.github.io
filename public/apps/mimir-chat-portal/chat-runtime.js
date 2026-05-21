@@ -2,6 +2,9 @@
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   const TOKEN_PREFIX='mimir-local-node-token:';
+  const CHAT_KEY='mimir-chat-current-session-v1';
+  const MAX_STORED_MESSAGES=80;
+  const MAX_CONTEXT_MESSAGES=24;
   const promptEl=document.getElementById('mimir-prompt');
   const formEl=document.querySelector('.mimir-composer');
   const primaryLink=document.getElementById('primary-chat-link');
@@ -10,8 +13,10 @@
   let statusEl=null;
   let transcriptEl=null;
   let refreshBtn=null;
+  let clearBtn=null;
   let lastActiveId='';
   let busy=false;
+  let messages=[];
 
   function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
   function activeId(){return localStorage.getItem(ACTIVE_KEY)||'';}
@@ -21,6 +26,39 @@
   function joinUrl(base,path){return cleanUrl(base)+path;}
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
+
+  function loadMessages(){
+    try{
+      const value=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+      if(!Array.isArray(value))return [];
+      return value.filter(message=>{
+        return (message?.role==='user'||message?.role==='assistant')&&typeof message.content==='string';
+      }).slice(-MAX_STORED_MESSAGES);
+    }catch(error){
+      return [];
+    }
+  }
+
+  function saveMessages(){
+    try{localStorage.setItem(CHAT_KEY,JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));}catch(error){}
+  }
+
+  function createMessage(role,content,meta){
+    return {
+      id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
+      role,
+      content:String(content||''),
+      meta:String(meta||''),
+      createdAt:new Date().toISOString()
+    };
+  }
+
+  function ensureSendControl(){
+    if(!primaryLink)return;
+    primaryLink.textContent='Send';
+    primaryLink.setAttribute('href','#mimir-chat-runtime');
+    primaryLink.removeAttribute('target');
+  }
 
   function installRuntimeUi(){
     if(!chatCenter||document.getElementById('mimir-chat-runtime'))return;
@@ -33,6 +71,7 @@
         '<span id="runtime-state" data-state="idle">Select a backend to start.</span>'+
         '<label for="runtime-model">Model<select id="runtime-model" disabled><option value="">No live models</option></select></label>'+
         '<button id="runtime-refresh" type="button">Refresh</button>'+
+        '<button id="runtime-clear" type="button">Clear</button>'+
       '</div>'+
       '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite"></div>';
     if(formEl&&formEl.nextSibling){chatCenter.insertBefore(runtime,formEl.nextSibling);}else{chatCenter.appendChild(runtime);}
@@ -40,23 +79,72 @@
     statusEl=document.getElementById('runtime-state');
     transcriptEl=document.getElementById('runtime-transcript');
     refreshBtn=document.getElementById('runtime-refresh');
+    clearBtn=document.getElementById('runtime-clear');
     refreshBtn.addEventListener('click',()=>refreshState(true));
+    clearBtn.addEventListener('click',clearConversation);
   }
 
-  function addMessage(role,content,meta){
+  function renderMessage(message){
     if(!transcriptEl)return null;
     const bubble=document.createElement('article');
-    bubble.className='runtime-message runtime-message-'+role;
+    bubble.className='runtime-message runtime-message-'+message.role;
+    bubble.dataset.messageId=message.id;
     const label=document.createElement('span');
     label.className='runtime-message-label';
-    label.textContent=role==='user'?'You':'MMIR';
+    label.textContent=message.role==='user'?'You':'MMIR';
     const body=document.createElement('p');
-    body.textContent=content;
+    body.textContent=message.content;
     bubble.append(label,body);
-    if(meta){const small=document.createElement('small');small.textContent=meta;bubble.appendChild(small);}
+    if(message.meta){const small=document.createElement('small');small.textContent=message.meta;bubble.appendChild(small);}
     transcriptEl.appendChild(bubble);
     bubble.scrollIntoView({block:'nearest'});
     return body;
+  }
+
+  function renderStoredMessages(){
+    if(!transcriptEl)return;
+    transcriptEl.innerHTML='';
+    for(const message of messages){renderMessage(message);}
+  }
+
+  function appendMessage(role,content,meta){
+    const message=createMessage(role,content,meta);
+    messages.push(message);
+    messages=messages.slice(-MAX_STORED_MESSAGES);
+    saveMessages();
+    const body=renderMessage(message);
+    return {message,body};
+  }
+
+  function updateMessage(id,content,meta){
+    const message=messages.find(item=>item.id===id);
+    if(message){
+      message.content=String(content||'');
+      if(meta!==undefined)message.meta=String(meta||'');
+      saveMessages();
+    }
+    const bubble=transcriptEl?.querySelector('[data-message-id="'+CSS.escape(id)+'"]');
+    const body=bubble?.querySelector('p');
+    if(body)body.textContent=String(content||'');
+    const small=bubble?.querySelector('small');
+    if(small&&meta!==undefined)small.textContent=String(meta||'');
+  }
+
+  function clearConversation(){
+    if(busy){setStatus('Wait for the current response before clearing.','loading');return;}
+    messages=[];
+    saveMessages();
+    if(transcriptEl)transcriptEl.innerHTML='';
+    setStatus('Conversation cleared locally.','idle');
+  }
+
+  function contextMessages(prompt){
+    const history=messages
+      .filter(message=>message.role==='user'||message.role==='assistant')
+      .filter(message=>message.content&&message.content!=='Thinking...')
+      .slice(-MAX_CONTEXT_MESSAGES)
+      .map(message=>({role:message.role,content:message.content}));
+    return history.concat([{role:'user',content:prompt}]);
   }
 
   function normalizeModels(payload){
@@ -135,6 +223,7 @@
   }
 
   async function refreshState(force){
+    ensureSendControl();
     const profile=activeProfile();
     const currentId=activeId();
     if(!force&&currentId===lastActiveId)return;
@@ -171,13 +260,14 @@
 
     busy=true;
     const selectedModel=modelSelect.value;
-    addMessage('user',prompt,profile.name||profile.provider||'backend');
+    const payloadMessages=contextMessages(prompt);
+    appendMessage('user',prompt,profile.name||profile.provider||'backend');
     promptEl.value='';
-    const assistantBody=addMessage('assistant','Thinking...',selectedModel);
+    const assistant=appendMessage('assistant','Thinking...',selectedModel);
     setStatus('Sending to backend...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
-      const payload={model:selectedModel,messages:[{role:'user',content:prompt}],stream:false};
+      const payload={model:selectedModel,messages:payloadMessages,stream:false};
       let data;
       try{
         data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000});
@@ -186,10 +276,10 @@
         data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers:authHeaders(token),body:JSON.stringify(payload),timeoutMs:60000});
       }
       const content=data?.choices?.[0]?.message?.content||data?.content||'';
-      assistantBody.textContent=content||'Backend returned an empty response.';
+      updateMessage(assistant.message.id,content||'Backend returned an empty response.',selectedModel);
       setStatus('Response received.','ready');
     }catch(error){
-      assistantBody.textContent=friendlyError(error);
+      updateMessage(assistant.message.id,friendlyError(error),'error');
       setStatus(friendlyError(error),'error');
     }finally{
       busy=false;
@@ -199,11 +289,10 @@
   function init(){
     if(!promptEl||!formEl)return;
     installRuntimeUi();
-    if(primaryLink){
-      primaryLink.textContent='Send';
-      primaryLink.removeAttribute('target');
-      primaryLink.addEventListener('click',(event)=>{event.preventDefault();sendMessage();});
-    }
+    ensureSendControl();
+    messages=loadMessages();
+    renderStoredMessages();
+    if(primaryLink){primaryLink.addEventListener('click',(event)=>{event.preventDefault();sendMessage();});}
     formEl.addEventListener('submit',(event)=>{event.preventDefault();sendMessage();});
     promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}});
     refreshState(true);
