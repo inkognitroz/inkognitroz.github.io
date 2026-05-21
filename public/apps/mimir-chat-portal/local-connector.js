@@ -3,12 +3,26 @@
   const main=document.querySelector('.mimir-chat-main');
 
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
-  function label(status){return String(status||'planned').replaceAll('-',' ');}
+  function normalizeStatus(value, feature){
+    const raw=String(value||'').toLowerCase().trim();
+    if(['live','beta','planned','premium-planned'].includes(raw))return raw;
+    if(raw.includes('premium')||raw.includes('provider')||raw.includes('backend required'))return 'premium-planned';
+    if(raw.includes('free first')||raw.includes('first pipeline'))return 'beta';
+    if(raw.includes('self-managed'))return 'beta';
+    if(feature&&['connect-model'].includes(feature.id))return 'beta';
+    return 'planned';
+  }
+  function label(status){return normalizeStatus(status).replaceAll('-',' ');}
+  function statusClass(status){return 'status-'+normalizeStatus(status).replace(/[^a-z0-9-]/g,'-');}
+  function featureStatus(feature){return normalizeStatus(feature.status||feature.badge,feature);}
 
   function render(steps){
     if(!grid)return;
     if(!Array.isArray(steps)||!steps.length){grid.innerHTML='<p class="empty-backends">Local connector guide is not available yet.</p>';return;}
-    grid.innerHTML=steps.map(step=>'<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(step.title||step.id)+'</h3><span class="provider-status status-planned">'+safe(label(step.status))+'</span></div><p>'+safe(step.description||'Connector step')+'</p></article>').join('');
+    grid.innerHTML=steps.map(step=>{
+      const status=normalizeStatus(step.status);
+      return '<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(step.title||step.id)+'</h3><span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></div><p>'+safe(step.description||'Connector step')+'</p></article>';
+    }).join('');
   }
 
   function renderConnectOptions(options){
@@ -17,7 +31,10 @@
     section.id='connect-options';
     section.className='mimir-provider-drawer';
     section.open=true;
-    const cards=(Array.isArray(options)?options:[]).map(option=>'<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(option.title||option.id)+'</h3><span class="provider-status status-planned">'+safe(label(option.status))+'</span></div><p>'+safe(option.description||'Connection option')+'</p><a class="button-link" href="'+safe(option.target||'#backend-settings')+'">Open</a></article>').join('');
+    const cards=(Array.isArray(options)?options:[]).map(option=>{
+      const status=normalizeStatus(option.status);
+      return '<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(option.title||option.id)+'</h3><span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></div><p>'+safe(option.description||'Connection option')+'</p><a class="button-link" href="'+safe(option.target||'#backend-settings')+'">Open</a></article>';
+    }).join('');
     section.innerHTML='<summary>+ Connect Model</summary><section class="mimir-dashboard" aria-labelledby="connect-options-title"><div class="dashboard-heading"><div><p class="eyebrow">First pipeline</p><h2 id="connect-options-title">Connect to local and cloud AI/LLM models</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
     const anchor=document.getElementById('local-connector');
     if(anchor)main.insertBefore(section,anchor); else main.appendChild(section);
@@ -30,9 +47,10 @@
     section.className='mimir-provider-drawer';
     const cards=(Array.isArray(features)?features:[]).map(feature=>{
       const bullets=Array.isArray(feature.bullets)?feature.bullets:[];
-      return '<details class="model-catalog-hint"><summary>+ '+safe(feature.title)+(feature.badge?' ('+safe(feature.badge)+')':'')+'</summary><p class="dashboard-note"><strong>'+safe(feature.headline||'')+'</strong></p><p class="dashboard-note">'+safe(feature.description||'')+'</p><div class="provider-capabilities">'+bullets.map(item=>'<span>'+safe(item)+'</span>').join('')+'</div></details>';
+      const status=featureStatus(feature);
+      return '<details class="model-catalog-hint"><summary>+ '+safe(feature.title)+' <span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></summary><p class="dashboard-note"><strong>'+safe(feature.headline||'')+'</strong></p><p class="dashboard-note">'+safe(feature.description||'')+'</p><div class="provider-capabilities">'+bullets.map(item=>'<span>'+safe(item)+'</span>').join('')+'</div></details>';
     }).join('');
-    section.innerHTML='<summary>+ All MMIR.ai Features</summary><section class="mimir-dashboard"><div class="dashboard-heading"><div><p class="eyebrow">Expand to learn more</p><h2>Everything is organized behind + sections</h2></div></div>'+cards+'</section>';
+    section.innerHTML='<summary>+ All MMIR.ai Features</summary><section class="mimir-dashboard"><div class="dashboard-heading"><div><p class="eyebrow">Live, beta, planned</p><h2>Feature roadmap with truthful status labels</h2></div></div>'+cards+'</section>';
     const anchor=document.getElementById('model-library');
     if(anchor)main.insertBefore(section,anchor); else main.appendChild(section);
   }
@@ -45,9 +63,9 @@
       renderConnectOptions(data.options||[]);
     }catch(error){
       renderConnectOptions([
-        {id:'local-connector',title:'Connect local LLM',status:'free first',description:'Connect a local PC or VM through the MMIR local connector.',target:'#local-connector'},
-        {id:'bring-backend',title:'Add compatible backend',status:'self-managed',description:'Add a trusted backend URL when the connector API is ready.',target:'#backend-settings'},
-        {id:'provider-api',title:'Use SaaS model/API',status:'backend required',description:'Provider keys must stay behind a protected backend.',target:'#provider-status'}
+        {id:'local-connector',title:'Connect local LLM',status:'beta',description:'Connect a local PC or VM through the MMIR local connector.',target:'#local-connector'},
+        {id:'bring-backend',title:'Add compatible backend',status:'beta',description:'Add a trusted backend URL when the connector API is ready.',target:'#backend-settings'},
+        {id:'provider-api',title:'Use SaaS model/API',status:'premium-planned',description:'Provider keys must stay behind a protected backend.',target:'#provider-status'}
       ]);
     }
   }
