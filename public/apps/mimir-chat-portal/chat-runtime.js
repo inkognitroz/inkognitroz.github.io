@@ -1,6 +1,7 @@
 (function(){
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
+  const ROLE_KEY='mimir-chat-active-role';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MAX_STORED_MESSAGES=80;
@@ -30,10 +31,29 @@
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
+  function activeRole(){
+    try{
+      const value=JSON.parse(localStorage.getItem(ROLE_KEY)||'null');
+      if(!value||typeof value!=='object')return null;
+      const instruction=String(value.instruction||'').trim();
+      if(!instruction)return null;
+      return {
+        id:String(value.id||'custom').trim()||'custom',
+        label:String(value.label||value.id||'Role').trim()||'Role',
+        instruction
+      };
+    }catch(error){
+      return null;
+    }
+  }
+
   function setBusy(value){
     busy=value;
     if(stopBtn)stopBtn.disabled=!value;
     if(refreshBtn)refreshBtn.disabled=value;
+    if(chatCenter)chatCenter.setAttribute('aria-busy',value?'true':'false');
+    if(transcriptEl)transcriptEl.setAttribute('aria-busy',value?'true':'false');
+    if(primaryLink)primaryLink.setAttribute('aria-disabled',value?'true':'false');
   }
 
   function writeActiveProfilePatch(patch){
@@ -80,7 +100,8 @@
       meta:String(meta||''),
       createdAt:new Date().toISOString(),
       retryPrompt:typeof extra.retryPrompt==='string'?extra.retryPrompt:'',
-      model:typeof extra.model==='string'?extra.model:''
+      model:typeof extra.model==='string'?extra.model:'',
+      rolePreset:typeof extra.rolePreset==='string'?extra.rolePreset:''
     };
   }
 
@@ -88,6 +109,8 @@
     if(!primaryLink)return;
     primaryLink.textContent='Send';
     primaryLink.setAttribute('href','#mimir-chat-runtime');
+    primaryLink.setAttribute('role','button');
+    primaryLink.setAttribute('aria-label','Send prompt to the active backend');
     primaryLink.removeAttribute('target');
   }
 
@@ -96,16 +119,17 @@
     const runtime=document.createElement('section');
     runtime.id='mimir-chat-runtime';
     runtime.className='mimir-chat-runtime';
+    runtime.setAttribute('role','region');
     runtime.setAttribute('aria-label','MMIR live chat');
     runtime.innerHTML=''+
       '<div class="runtime-toolbar">'+
-        '<span id="runtime-state" data-state="idle">Select a backend to start.</span>'+
+        '<span id="runtime-state" data-state="idle" role="status" aria-live="polite">Select a backend to start.</span>'+
         '<label for="runtime-model">Model<select id="runtime-model" disabled><option value="">No live models</option></select></label>'+
-        '<button id="runtime-refresh" type="button">Refresh</button>'+
-        '<button id="runtime-stop" type="button" disabled>Stop</button>'+
-        '<button id="runtime-clear" type="button">Clear</button>'+
+        '<button id="runtime-refresh" type="button" aria-label="Refresh backend models">Refresh</button>'+
+        '<button id="runtime-stop" type="button" aria-label="Stop current response" disabled>Stop</button>'+
+        '<button id="runtime-clear" type="button" aria-label="Clear local chat history">Clear</button>'+
       '</div>'+
-      '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite"></div>';
+      '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite" aria-relevant="additions text" aria-busy="false"></div>';
     if(formEl&&formEl.nextSibling){chatCenter.insertBefore(runtime,formEl.nextSibling);}else{chatCenter.appendChild(runtime);}
     modelSelect=document.getElementById('runtime-model');
     statusEl=document.getElementById('runtime-state');
@@ -113,6 +137,7 @@
     refreshBtn=document.getElementById('runtime-refresh');
     stopBtn=document.getElementById('runtime-stop');
     clearBtn=document.getElementById('runtime-clear');
+    if(modelSelect)modelSelect.setAttribute('aria-label','Active chat model');
     refreshBtn.addEventListener('click',()=>refreshState(true));
     stopBtn.addEventListener('click',stopCurrentResponse);
     clearBtn.addEventListener('click',clearConversation);
@@ -126,6 +151,7 @@
     const copy=document.createElement('button');
     copy.type='button';
     copy.textContent='Copy';
+    copy.setAttribute('aria-label','Copy assistant answer');
     copy.addEventListener('click',async()=>{
       try{await navigator.clipboard.writeText(message.content);setStatus('Answer copied.','ready');}
       catch(error){setStatus('Copy failed in this browser.','error');}
@@ -135,6 +161,7 @@
       const retry=document.createElement('button');
       retry.type='button';
       retry.textContent='Retry';
+      retry.setAttribute('aria-label','Retry this prompt');
       retry.addEventListener('click',()=>retryMessage(message));
       actions.appendChild(retry);
     }
@@ -162,6 +189,7 @@
     const copy=document.createElement('button');
     copy.type='button';
     copy.textContent='Copy code';
+    copy.setAttribute('aria-label','Copy code block');
     copy.addEventListener('click',async()=>{
       try{await navigator.clipboard.writeText(code);setStatus('Code copied.','ready');}
       catch(error){setStatus('Copy failed in this browser.','error');}
@@ -199,6 +227,7 @@
     const bubble=document.createElement('article');
     bubble.className='runtime-message runtime-message-'+message.role;
     bubble.dataset.messageId=message.id;
+    bubble.setAttribute('aria-label',(message.role==='user'?'User':'Assistant')+' message');
     const label=document.createElement('span');
     label.className='runtime-message-label';
     label.textContent=message.role==='user'?'You':'MMIR';
@@ -250,6 +279,7 @@
     saveMessages();
     if(transcriptEl)transcriptEl.innerHTML='';
     setStatus('Conversation cleared locally.','idle');
+    if(promptEl)promptEl.focus();
   }
 
   function stopCurrentResponse(){
@@ -260,7 +290,7 @@
   }
 
   function retryMessage(message){
-    if(busy)return;
+    if(busy||!promptEl)return;
     if(!message.retryPrompt)return;
     promptEl.value=message.retryPrompt;
     promptEl.focus();
@@ -273,7 +303,10 @@
       .filter(message=>message.content&&message.content!=='Thinking...')
       .slice(-MAX_CONTEXT_MESSAGES)
       .map(message=>({role:message.role,content:message.content}));
-    return history.concat([{role:'user',content:prompt}]);
+    const role=activeRole();
+    const next=history.concat([{role:'user',content:prompt}]);
+    if(!role)return next;
+    return [{role:'system',content:role.instruction}].concat(next);
   }
 
   function normalizeModels(payload){
@@ -287,6 +320,7 @@
 
   function renderModels(models){
     if(!modelSelect)return;
+    const previous=modelSelect.value;
     modelSelect.innerHTML='';
     if(!models.length){
       const option=document.createElement('option');
@@ -302,6 +336,7 @@
       option.textContent=model.label||model.id;
       modelSelect.appendChild(option);
     }
+    if(previous&&models.some(model=>model.id===previous))modelSelect.value=previous;
     modelSelect.disabled=false;
   }
 
@@ -355,7 +390,8 @@
         for(const data of dataLines){
           if(!data)continue;
           if(data==='[DONE]')return content;
-          const parsed=JSON.parse(data);
+          let parsed=null;
+          try{parsed=JSON.parse(data);}catch(error){continue;}
           const delta=chunkContent(parsed);
           if(delta){
             content+=delta;
@@ -489,28 +525,31 @@
     const profile=activeProfile();
     const url=cleanUrl(profile?.url);
     const prompt=String(promptEl?.value||'').trim();
-    const model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
+    let model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
     if(!profile||!url){setStatus('Activate a backend profile before sending.','error');return;}
     if(!prompt){setStatus('Write a message first.','error');return;}
-    if(!model){await refreshState(true);if(!modelSelect||modelSelect.disabled){setStatus('No live model is available from this backend.','error');return;}}
+    if(!model){await refreshState(true);model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';if(!model){setStatus('No live model is available from this backend.','error');return;}}
 
     stopRequested=false;
     currentAbortController=new AbortController();
     setBusy(true);
-    const selectedModel=modelSelect.value;
+    const selectedModel=model;
+    const role=activeRole();
+    const roleName=role?.label||'';
+    const messageMeta=[selectedModel,roleName].filter(Boolean).join(' - ');
     const payloadMessages=contextMessages(prompt);
     appendMessage('user',prompt,profile.name||profile.provider||'backend');
     promptEl.value='';
-    const assistant=appendMessage('assistant','Thinking...',selectedModel,{retryPrompt:prompt,model:selectedModel});
-    setStatus('Sending to backend...','loading');
+    const assistant=appendMessage('assistant','Thinking...',messageMeta,{retryPrompt:prompt,model:selectedModel,rolePreset:roleName});
+    setStatus(roleName?'Sending to '+roleName+' role...':'Sending to backend...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
       const payload={model:selectedModel,messages:payloadMessages};
       const content=await chatWithBackend(url,authHeaders(token),payload,currentAbortController.signal,(partial)=>{
-        updateMessage(assistant.message.id,partial||'Thinking...',selectedModel);
+        updateMessage(assistant.message.id,partial||'Thinking...',messageMeta);
         setStatus('Streaming response...','loading');
       });
-      updateMessage(assistant.message.id,content||'Backend returned an empty response.',selectedModel);
+      updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta);
       writeActiveProfilePatch({health:'ready'});
       setStatus('Response received.','ready');
     }catch(error){
@@ -533,6 +572,8 @@
     if(primaryLink){primaryLink.addEventListener('click',(event)=>{event.preventDefault();sendMessage();});}
     formEl.addEventListener('submit',(event)=>{event.preventDefault();sendMessage();});
     promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}});
+    window.addEventListener('mmir-active-role-changed',()=>{const role=activeRole();setStatus(role?'Role set: '+role.label+'.':'Role preset cleared.','idle');});
+    window.addEventListener('storage',()=>refreshState(true));
     refreshState(true);
     setInterval(()=>refreshState(false),3000);
     window.addEventListener('focus',()=>refreshState(true));
