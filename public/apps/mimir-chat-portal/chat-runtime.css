@@ -1,0 +1,100 @@
+.mimir-chat-runtime {
+  width: min(920px, 100%);
+  margin: 18px auto 0;
+  display: grid;
+  gap: 12px;
+}
+
+.runtime-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 8px;
+}
+
+.runtime-toolbar span {
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.runtime-toolbar span[data-state="ready"] { color: #047857; }
+.runtime-toolbar span[data-state="error"] { color: #b91c1c; }
+.runtime-toolbar span[data-state="loading"] { color: #1d4ed8; }
+
+.runtime-toolbar label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.runtime-toolbar select,
+.runtime-toolbar button {
+  min-height: 36px;
+  border: 1px solid rgba(100, 116, 139, 0.34);
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.runtime-toolbar button {
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.runtime-transcript {
+  display: grid;
+  gap: 10px;
+  max-height: 420px;
+  overflow: auto;
+  padding: 4px;
+}
+
+.runtime-message {
+  display: grid;
+  gap: 6px;
+  max-width: min(760px, 92%);
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.runtime-message-user {
+  justify-self: end;
+  background: #0f172a;
+  color: #fff;
+}
+
+.runtime-message-assistant {
+  justify-self: start;
+}
+
+.runtime-message-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.72;
+}
+
+.runtime-message p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.runtime-message small {
+  color: inherit;
+  opacity: 0.58;
+}
+
+@media (max-width: 720px) {
+  .runtime-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
