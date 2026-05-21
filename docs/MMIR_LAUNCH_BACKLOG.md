@@ -26,6 +26,7 @@ MMIR must always feel simple, personal, calm and powerful, even when the infrast
 
 ## Detailed Backlogs
 
+- Sequential delivery backlog, current source of truth: `docs/MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md`
 - Product strategy backlog: `docs/MMIR_PRODUCT_STRATEGY_BACKLOG.md`
 - Front page promise backlog: `docs/MMIR_FRONT_PAGE_PROMISE_BACKLOG.md`
 - Pages smoke checklist: `docs/PAGES_SMOKE_CHECKLIST.md`
@@ -107,4 +108,4 @@ Out of scope for this launch pass:
 
 ## Current Working Item
 
-Start with Phase 1 plus front page P0: product strategy `P1-001` through `P1-005`, strategy lines `S001` through `S006`, and front page promise lines `F001` through `F022`.
+Work from `docs/MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md` in order. Start with `D001` through `D008` to lock product promise, architecture, API contracts and security baseline, then build `D009` through `D018` as the first real local chat loop.
