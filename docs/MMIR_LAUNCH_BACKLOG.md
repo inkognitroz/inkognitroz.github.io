@@ -20,8 +20,13 @@ Commercial outcome:
 - Free local-first entry point.
 - Paid managed layer later: hosted router, team workspace, encrypted provider key vault, cloud connectors, usage analytics and support.
 
+## Product Feel
+
+MMIR must always feel simple, personal, calm and powerful, even when the infrastructure underneath becomes highly advanced.
+
 ## Detailed Backlogs
 
+- Product strategy backlog: `docs/MMIR_PRODUCT_STRATEGY_BACKLOG.md`
 - Front page promise backlog: `docs/MMIR_FRONT_PAGE_PROMISE_BACKLOG.md`
 - Pages smoke checklist: `docs/PAGES_SMOKE_CHECKLIST.md`
 
@@ -42,6 +47,13 @@ Out of scope for this launch pass:
 - `Yggdrasil`
 - `ED209`
 - old `Mimir`
+
+## Phase Order
+
+- Phase 1 - Core Product: universal chat UI, connect models, local node, multi-model switching, persistent chats.
+- Phase 2 - Product Feeling: beautiful UX, memory, workspaces, onboarding, mobile.
+- Phase 3 - Real Infrastructure: node orchestration, workflows, automation, AI routing.
+- Phase 4 - Platform: marketplace, enterprise, agents, ecosystem.
 
 ## P0 - Site Stability
 
@@ -95,4 +107,4 @@ Out of scope for this launch pass:
 
 ## Current Working Item
 
-Start with the front page promise backlog P0 path: F001-F022, then move through chat/connect/local-node before premium and future platform features.
+Start with Phase 1 plus front page P0: product strategy `P1-001` through `P1-005`, strategy lines `S001` through `S006`, and front page promise lines `F001` through `F022`.
