@@ -1,0 +1,140 @@
+# MMIR Sequential Delivery Backlog
+
+This is the ordered working backlog for MMIR. It consolidates the launch backlog, front-page promise backlog and product strategy backlog into a sequence that can be implemented step by step.
+
+Use these stable IDs when approving, removing or moving work, for example: `start D001-D020`, `remove D071`, or `move D064 to later`.
+
+## Product Feel Guardrails
+
+MMIR must always feel:
+
+- simple: one obvious next action, no architecture required to get first value
+- personal: the product reflects the user's own models, node, chats, projects and preferences
+- calm: advanced infrastructure is progressively disclosed and never noisy
+- powerful: expert capability exists under the surface when the user needs it
+
+Covers: `UX001-UX004`.
+
+## Architecture Rules
+
+1. Frontend is public and static-safe. It may store only non-sensitive metadata.
+2. Secrets, paid provider keys, billing, team state and managed routing belong server-side.
+3. Local mode must work without an account and without sending prompts to MMIR cloud.
+4. Managed/cloud mode must use auth, rate limits, audit logging and encrypted secrets.
+5. The primary API contract should be OpenAI-compatible where practical: `/chat/completions`, plus MMIR control endpoints `/health`, `/status`, `/models`, `/metrics` and later `/nodes`, `/workflows`, `/memory`.
+6. Every public feature must be one of: live, beta, planned, premium planned. No ambiguous promises.
+7. New complexity must not reach the first screen until it improves the user's first successful chat.
+
+## Delivery Phases
+
+- Phase 1: Core Product. Universal chat UI, connect models, local node, multi-model switching, persistent chats.
+- Phase 2: Product Feeling. Beautiful UX, memory, workspaces, onboarding, mobile.
+- Phase 3: Real Infrastructure. Node orchestration, workflows, automation, AI routing.
+- Phase 4: Platform. Marketplace, enterprise, agents, ecosystem.
+
+## Sequential Work Packages
+
+| Seq | Phase | Priority | Work package | Repos | Concrete work | Best practice | Done when | Covers |
+|---|---|---:|---|---|---|---|---|---|
+| D001 | Foundation | P0 | Make this file the source of truth | `inkognitroz.github.io` | Link this backlog from launch docs and use it as the ordered execution plan | Keep strategy docs as inputs, but execute from one ordered queue | `MMIR_LAUNCH_BACKLOG.md` points here as primary plan | all backlog sources |
+| D002 | Foundation | P0 | Stabilize Pages and domain deploy | `inkognitroz.github.io` | Keep `public/CNAME`, Pages workflow, smoke checklist and deploy docs aligned | Static app should deploy repeatably before product work | `Deploy GitHub Pages` is green and smoke checklist is current | `F022` |
+| D003 | Foundation | P0 | Public-copy truth pass | `inkognitroz.github.io` | Label features live/beta/planned/premium and remove fake-live claims | Never let marketing outrun implementation | Public UI clearly separates live from planned | `F155-F159` |
+| D004 | Foundation | P0 | Architecture boundary doc | `inkognitroz.github.io`, `mimir-backend-template`, `mmir-local-node` | Add `ARCHITECTURE.md` explaining frontend, local node, managed API, providers and secrets | Zero-trust diagrams before expanding implementation | Anyone can see what runs where and where secrets belong | `F005`, `F131-F138`, `S039`, `S059` |
+| D005 | Foundation | P0 | Canonical API contract | `mimir-backend-template`, `mmir-local-node`, `inkognitroz.github.io` | Define request/response schemas for `/health`, `/status`, `/models`, `/chat/completions`, `/metrics` | Contract-first; avoid divergent frontend/local/backend payloads | Shared API contract exists and all repos reference it | `F018`, `S018-S019` |
+| D006 | Foundation | P0 | Contract tests | `mimir-backend-template`, `mmir-local-node` | Add tests for health, status, model listing and chat payload validation | Tests should fail when contract drifts | CI validates the shared API shape | `F017-F018`, `S045` |
+| D007 | Foundation | P0 | API repo decision | `mimir-backend-template` | Use `mimir-backend-template` as the first `api.mmir.ai` implementation or rename later when repo creation is available | Do not block MVP on a new repo if existing private backend can serve the role | One backend repo is designated as the managed API source | `S040`, `F042` |
+| D008 | Foundation | P0 | Gateway/reverse-proxy plan | `mimir-backend-template`, `iac-autoprov` | Specify how `api.mmir.ai` will terminate TLS, enforce headers, rate limits and route providers | All public AI traffic enters one protected ingress | Gateway plan is documented before cloud exposure | `S040`, `F133-F135` |
+| D009 | Local Node | P0 | Harden local node defaults | `mmir-local-node` | Bind to `127.0.0.1`, replace permissive CORS, add size limits, timeouts and safe errors | Local node must be private by default | Local node is not reachable from LAN unless user opts in | `F015-F017`, `F045-F051`, `S015`, `S017` |
+| D010 | Local Node | P0 | Local pairing token | `mmir-local-node`, `inkognitroz.github.io` | Add pairing token or explicit local trust handshake for browser-to-node access | Website must not silently control a local runtime | Browser must pair before models/chat endpoints work | `F050-F051`, `S039` |
+| D011 | Local Node | P0 | Local model discovery | `mmir-local-node` | Normalize Ollama model list, runtime status and hardware hints | Model list should be real, not static guesswork | `/models` returns usable normalized model objects | `F014`, `F046`, `S002`, `S017` |
+| D012 | Local Node | P0 | Hardware and version endpoint | `mmir-local-node`, `inkognitroz.github.io` | Expose local node version, recommended starter model and hardware profile | Help users choose models without exposing sensitive hardware details | UI can warn about old node or incompatible model | `F052-F053`, `S002` |
+| D013 | Local Node | P0 | One-command installer MVP | `mmir-local-node` | Provide Mac/Linux script and Windows instructions first; later automate Ollama + starter model | Installer should produce node online + health check | User can install local connector and verify it | `F013`, `F139-F143`, `S001` |
+| D014 | Frontend Core | P0 | In-page chat transcript | `inkognitroz.github.io` | Replace prompt-only shell with actual user/assistant bubbles | First product loop must be visible in the same page | User sees their prompt and assistant reply in the page | `F001`, `F006`, `F023`, `P1-001` |
+| D015 | Frontend Core | P0 | Live backend profile state | `inkognitroz.github.io` | Make active backend drive health, models and chat; remove manual health as source of truth | UI state should reflect measured backend status | Active badge shows real connection state | `F007-F010`, `F041`, `F044` |
+| D016 | Frontend Core | P0 | Model selector from live data | `inkognitroz.github.io` | Populate model selector from active backend/local node `/models` | User should never guess model IDs before first success | Send is enabled only when a real model is selected | `F002`, `F020`, `F038`, `S002` |
+| D017 | Frontend Core | P0 | Send chat to active backend | `inkognitroz.github.io`, `mimir-backend-template`, `mmir-local-node` | Implement frontend call to `/chat/completions` or adapter fallback to `/chat` | One normalized client path for all providers | Prompt gets response from active local/backend target | `F001`, `F006`, `F040`, `S003` |
+| D018 | Frontend Core | P0 | Safe error states | `inkognitroz.github.io` | Add specific errors for offline node, CORS, invalid URL, no model, API error and timeout | Errors should tell users the next action | User never gets silent failure | `F021`, `F036` |
+| D019 | Frontend Core | P1 | Streaming and stop | `inkognitroz.github.io`, `mimir-backend-template`, `mmir-local-node` | Add SSE/stream parser and AbortController stop button | Follow Open WebUI pattern conceptually: streaming, abortable, resilient | Response streams and user can stop generation | `F025-F026` |
+| D020 | Frontend Core | P1 | Persistent local chats | `inkognitroz.github.io` | Store recent chat sessions locally with clear/delete controls | Local-first persistence before accounts | Refresh keeps current chat until cleared | `F028`, `F032`, `P1-005` |
+| D021 | Chat UX | P1 | Chat controls | `inkognitroz.github.io` | Add retry, copy answer, clear chat and response metadata | Chat should feel complete before adding advanced features | Basic chat controls work on each response | `F027-F033` |
+| D022 | Chat UX | P1 | Markdown and code rendering | `inkognitroz.github.io` | Add safe markdown rendering, code blocks and copy code | Sanitize output; never trust model HTML | Markdown renders without XSS risk | `F030-F031` |
+| D023 | Chat UX | P1 | Mobile and accessibility pass | `inkognitroz.github.io` | Fix responsive layout, keyboard flow, focus states, aria-live and labels | Accessibility and mobile are core product quality, not polish-only | Chat/connect works well on phone and keyboard | `F034-F035`, `S049`, `P2-005` |
+| D024 | Chat UX | P1 | First-run onboarding | `inkognitroz.github.io`, `mmir-local-node` | Guide user through install, connect, choose model, first prompt, success | Onboarding should reduce architecture into a calm sequence | First-run user can reach first success screen | `F012-F014`, `F139-F143`, `S001`, `P2-004` |
+| D025 | Model UX | P1 | Model catalog live/static split | `inkognitroz.github.io` | Separate available live models from catalog suggestions and disabled future/premium models | No static catalog item should look ready if backend cannot run it | UI marks live, unavailable, planned and premium models clearly | `F054-F068`, `F155-F158`, `S034` |
+| D026 | Model UX | P1 | License and commercial warnings | `inkognitroz.github.io` | Surface model license/commercial-use warning before production use | Model choice must not imply legal clearance | User sees license/check-required warnings | `F057-F068` |
+| D027 | Role UX | P1 | Role preset application | `inkognitroz.github.io` | Let user apply architect, security reviewer, coder, critic, researcher, synthesizer and strategy/analyst roles | Roles are visible prompt templates, not hidden magic | Selected role changes system instruction and response label | `F074-F083`, `S006` |
+| D028 | Multi-Model | P1 | Multi-model switching | `inkognitroz.github.io` | Switch active model/backend without recreating profile or leaving chat | Fast switching is Phase 1, comparison can follow | User can switch model in chat context | `F069-F070`, `P1-004` |
+| D029 | Multi-Model | P1 | Model comparison | `inkognitroz.github.io`, `mimir-backend-template` | Fan out one prompt to multiple selected models and show side-by-side answers | Limit concurrency and label every response | User can compare responses from multiple models | `F071-F072`, `S004` |
+| D030 | Multi-Model | P1 | Synthesis engine MVP | `inkognitroz.github.io`, `mimir-backend-template` | Feed selected comparison outputs to a synthesis model/role | Synthesis should be explicit and inspectable | User can generate one synthesized answer | `F073`, `F082`, `S005` |
+| D031 | API Router | P1 | Provider adapter interface | `mimir-backend-template` | Create provider adapter contract for mock, local-node, OpenAI-compatible, Open WebUI, custom | Backend owns provider differences | Adding provider does not rewrite frontend | `F090-F096`, `F144-F148`, `S016-S019`, `S059` |
+| D032 | API Router | P1 | OpenAI-compatible route | `mimir-backend-template` | Implement `/chat/completions` and model format close to OpenAI-compatible APIs | This maximizes compatibility with Open WebUI-like ecosystems | OpenAI-compatible clients can call MMIR API | `F042`, `S018` |
+| D033 | API Router | P1 | Open WebUI backend compatibility | `mimir-backend-template` | Add adapter for Open WebUI/OpenAI-compatible instances with server-side secrets | Verify/list/chat via backend, not public JS secrets | Open WebUI-compatible backend can be health checked and used | `F092`, `S016` |
+| D034 | API Router | P1 | Custom backend connectors | `mimir-backend-template` | Support arbitrary MMIR-compatible endpoint adapter | Custom connector must implement health/status/models/chat | Custom backend can be added through same contract | `F091`, `S019` |
+| D035 | API Router | P1 | Fallback demo provider | `mmir-github-llm`, `mimir-backend-template` | Normalize fallback provider behind same contract | Demo/fallback must be clearly labeled non-production | Fallback can answer deterministic demo requests | `F102`, `S020` |
+| D036 | Security/Ops | P1 | Auth and authorization foundation | `mimir-backend-template` | Add auth pattern for managed mode while preserving anonymous local mode | Local free path remains low-friction; managed path protected | Managed endpoints reject unauthorized calls | `S037-S038`, `F133` |
+| D037 | Security/Ops | P1 | Encrypted key vault design | `mimir-backend-template` | Design and then implement encrypted provider key storage | Provider keys never touch static frontend | Managed provider route can reference stored secret | `F039`, `F135-F136`, `F151`, `S042` |
+| D038 | Security/Ops | P1 | Rate limits and validation | `mimir-backend-template`, `mmir-local-node` | Add request validation, size limits, timeouts and per-user/IP/node limits | Protect both local and managed paths | Invalid/oversized calls are rejected safely | `F012`, `F133`, `S039-S040` |
+| D039 | Security/Ops | P1 | Audit and privacy-safe logs | `mimir-backend-template` | Log request IDs, actions, auth events and errors without prompt leakage by default | Observability should not become surveillance | Audit events exist and prompts are not logged by default | `S043`, `F157` |
+| D040 | Security/Ops | P1 | Observability and metrics | `mimir-backend-template`, `mmir-local-node` | Add latency, model, provider, health and error metrics | Metrics should diagnose without leaking secrets | Health/latency/error dashboard data is available | `F033`, `F098`, `S044` |
+| D041 | Security/Ops | P1 | CI/CD and secret scanning | all in-scope repos | Add or tighten CI for syntax, tests, contract, secrets and deployment | Every change should prove it did not break the core loop | CI catches syntax, contract and secret regressions | `F016`, `S045` |
+| D042 | Product Feeling | P2 | Beautiful calm UX pass | `inkognitroz.github.io` | Polish spacing, typography, states, progressive disclosure and visual hierarchy | Operational UI should be quiet and premium, not noisy marketing | First screen feels simple, personal, calm and powerful | `UX001-UX004`, `P2-001` |
+| D043 | Product Feeling | P2 | Workspaces | frontend + managed API | Add workspace/project context for chats, models and future knowledge | Workspaces are required before team/memory/RAG scale | User can group chats and settings by workspace | `F114`, `F152`, `S037`, `P2-003` |
+| D044 | Product Feeling | P2 | Memory v1 | frontend + managed API | Implement opt-in memory for preferences, projects and workflows | Memory must be inspectable, editable and deletable | User can view, edit, disable and delete memory | `F111-F117`, `S010`, `P2-002` |
+| D045 | Product Feeling | P2 | Prompt registry | frontend + managed API | Store, version and reuse prompts, role prompts and workflow configs | Prompts should be versioned before workflows grow | User can save and restore prompt versions | `S009`, `F112` |
+| D046 | Knowledge | P2 | RAG architecture | managed API | Define ingestion, chunking, embeddings, storage and retrieval path | RAG belongs server-side or local-controlled, not static frontend | RAG design covers data flow and privacy | `F103-F110`, `S011-S012` |
+| D047 | Knowledge | P2 | File upload and document ingestion | managed API + frontend | Add PDF/txt/md/docx upload path with extraction and indexing | Validate file size/type and isolate user data | Uploaded docs can be queried in chat | `F104-F105`, `S011` |
+| D048 | Knowledge | P2 | GitHub integration | managed API + connector | Connect repos, docs, issues, PRs and code context with permissions | Use least-privilege OAuth/app permissions | User can ask about repo context in MMIR | `F106`, `S013` |
+| D049 | Knowledge | P2 | Notion/docs integration | managed API + connector | Connect external knowledge sources with explicit consent | Sync should be scoped, auditable and revocable | External docs can be indexed and refreshed | `F107`, `S014` |
+| D050 | Infrastructure | P3 | Node identity and registry | managed API + `mmir-local-node` | Register local/remote nodes with identity, ownership, trust level and capabilities | No anonymous compute in managed mesh | Nodes can register and appear in dashboard | `F123-F127`, `S026-S027`, `P3-001` |
+| D051 | Infrastructure | P3 | Secure outbound tunnels | `mmir-local-node`, managed API | Add outbound-only connector tunnel option for remote management | Avoid exposing inbound local ports | Local node can connect to MMIR cloud without public port | `S041`, `F129` |
+| D052 | Infrastructure | P3 | Node health monitoring | managed API + frontend | Track node health, latency, availability, model inventory and runtime version | Fleet UI should reflect measured telemetry | Node dashboard shows current health and history | `F011`, `F098`, `S027` |
+| D053 | Infrastructure | P3 | CPU/RAM/GPU scheduler | managed API | Add resource-aware scheduling inputs and policy | Routing must respect capacity and trust | Scheduler considers CPU, RAM, GPU and workload class | `F126-F129`, `S028-S029` |
+| D054 | Infrastructure | P3 | OCI runtime integration | `iac-autoprov`, managed API | Stabilize OCI runtime deploy path after local MVP | Cloud runtime must not precede local trust loop | OCI runtime can be provisioned, secured and health checked | `S022`, `S046-S047` |
+| D055 | Infrastructure | P3 | AWS runtime integration | `iac-autoprov-aws`, managed API | Add AWS runtime template only after OCI/local path patterns are clear | Avoid duplicating fragile infra before core patterns settle | AWS runtime can be provisioned and health checked | `S023`, `S046-S047` |
+| D056 | Infrastructure | P3 | Self-healing runtime | infra repos + managed API | Add restart/failover/runbook automation for runtimes | Recovery actions must be logged and bounded | Failed runtime can restart or fail over under policy | `S048`, `F102` |
+| D057 | Routing | P3 | AI routing engine v1 | managed API | Route by model capability, trust level, latency, availability and user preference | Router must explain why a target was selected | Tasks route to eligible model according to policy | `F097-F102`, `S020`, `P3-004` |
+| D058 | Routing | P3 | Cost-aware routing | managed API | Add cost/usage metadata and user opt-in for paid routes | Never spend money without clear policy | Router avoids paid provider unless allowed | `F101`, `F149-F153` |
+| D059 | Routing | P3 | Dynamic compute scaling | managed API + infra | Route workloads across local nodes, VMs, GPUs and cloud runtimes | Scaling must obey trust and cost policy | Work can move to eligible capacity | `F090-F096`, `S021` |
+| D060 | Workflow | P3 | Workflow object model | managed API + frontend | Define workflow schema: inputs, steps, model calls, tools, outputs, audit | Start with linear workflows before visual canvas | Workflow can define steps and run once | `F084-F089`, `S008`, `P3-002` |
+| D061 | Workflow | P3 | Workflow builder MVP | frontend + managed API | Build simple step editor before graph canvas | Usable sequence first, visual graph later | User can create and run a reusable workflow | `F085-F089`, `S008` |
+| D062 | Workflow | P3 | Automation triggers | managed API | Add scheduled/event/manual triggers for workflows | Automation must be visible and revocable | Workflow can be scheduled or manually triggered | `S007`, `P3-003` |
+| D063 | Workflow | P3 | Multi-agent workflows | managed API + frontend | Add bounded agents with roles, tools, task state and audit | Agents must be constrained by workflow and policy | Agents can collaborate on workflow steps with logs | `S007`, `P4-003` |
+| D064 | Workflow | P3 | Visual workflow canvas | frontend | Build graph-based workflow editor after object model is stable | Canvas should reflect real schema, not become decorative | Visual graph edits the same workflow model | `S053`, `F085` |
+| D065 | Evaluation | P3 | Evaluation and benchmark framework | managed API | Add eval datasets, metrics, run results and model/workflow comparison | Every optimization needs measurable quality | Evals can compare model/workflow outputs | `S033`, `F122` |
+| D066 | Registry | P3 | Model and adapter registry | managed API + frontend | Track models, adapters, providers, capabilities, licenses and status | Registry should back UI catalog and router | Registry is source for model/provider metadata | `F054-F068`, `S034` |
+| D067 | Advanced AI | P4 | BitNet/local efficient model spike | `mmir-local-node` | Evaluate Microsoft BitNet/bitnet.cpp as local provider adapter | Research spike before product promise | Decision recorded: support, defer or drop | earlier BitNet request, local-first strategy |
+| D068 | Advanced AI | P4 | Fine-tuning and LoRA plan | managed API | Define supported providers, datasets, job lifecycle and evaluation | Training features need data governance and evals first | Fine-tuning plan is feasible and scoped | `F118-F122`, `S030` |
+| D069 | Advanced AI | P4 | Dataset management | managed API + frontend | Add dataset upload, validation, metadata, versions and permissions | Dataset lifecycle before training pipelines | Datasets can be versioned and validated | `S032` |
+| D070 | Advanced AI | P4 | Full training pipelines | managed API + infra | Add distributed training job model only after datasets/evals exist | Training must be observable, resumable and auditable | Training run produces tracked artifacts and evals | `S031` |
+| D071 | Experience | P2 | Desktop app plan/MVP | new or existing app repo later | Package local orchestration and connector management in native shell | Desktop should improve local trust and setup, not duplicate web UI too early | Desktop app path is defined and MVP can connect local node | `S050` |
+| D072 | Experience | P2 | Voice interface | frontend + managed/local API | Add speech-to-text and text-to-speech where enabled | Voice is opt-in and clear about provider/local path | User can speak prompt and hear response | `S051` |
+| D073 | Experience | P2 | Screen/video assistance | frontend/desktop + managed API | Add consent-based screen/image context support | Never capture screen without explicit user action | User can attach screenshot/screen context safely | `S052`, `F065` |
+| D074 | Platform | P4 | Marketplace and sharing model | managed API + frontend | Define publish/share/monetize for prompts, workflows, agents and models | Marketplace requires ownership, permissions and moderation | Marketplace object model exists | `F130`, `S035`, `P4-001` |
+| D075 | Platform | P4 | Usage credits and compute economy | managed API | Track contributed compute and future utility credits | Legal/accounting review before public credit claims | Ledger exists, public credits remain gated | `S036`, `F128` |
+| D076 | Platform | P4 | Enterprise administration | managed API + frontend | Add org admin, roles, governance, deployment controls and audit views | Enterprise features require RBAC and audit first | Admin can manage users, policies and audit | `S057-S058`, `P4-002` |
+| D077 | Platform | P4 | Compliance layer | managed API | Add GDPR/data retention/regional/logging controls | Compliance must be configurable and documented | Org can set retention, region and logging policy | `S057` |
+| D078 | Platform | P4 | Policy engine | managed API | Enforce security, routing, workflow, data and tool policies | Policy should decide before execution, not after | Policies can allow/deny routes/tools/data use | `S056`, `F099` |
+| D079 | Platform | P4 | AI app factory | frontend + managed API | Package workflows, models and tools into apps/internal tools | App factory should build on stable workflows and marketplace | User can create a simple AI app from workflow | `S054` |
+| D080 | Platform | P4 | Plugin/tool ecosystem | managed API + docs | Define third-party connector/tool API, permissions and review | Ecosystem must be permissioned and sandboxed | External tool can integrate safely | `S055`, `P4-004` |
+| D081 | Platform | P4 | Intelligence Well architecture | managed API + infra | Define global shared orchestration layer across compute, models, workflows and agents | This is platform-level; keep it behind planned status until real | Architecture covers trust, governance, metering and routing | `F123-F130`, `S024-S025` |
+
+## Recommended Implementation Sequence
+
+1. Start `D001-D008` to lock the plan and API boundaries.
+2. Then implement `D009-D013` so local node is secure and installable.
+3. Then implement `D014-D018` for first real chat.
+4. Then implement `D019-D030` for chat quality, persistence, switching, comparison and synthesis.
+5. Then implement `D031-D041` for backend routing and security foundations.
+6. Then implement `D042-D049` for product feeling, memory, workspaces and knowledge.
+7. Then implement `D050-D059` for real infrastructure and AI routing.
+8. Then implement `D060-D066` for workflows, automation, evals and registries.
+9. Then implement `D067-D081` only after the product has real users or strong validation.
+
+## Current Starting Slice
+
+Start with:
+
+- `D001-D008` as planning/contract/docs work.
+- `D009-D018` as the first production MVP implementation path.
+
+Do not begin `D050+` infrastructure/platform work until local chat is real and stable.
