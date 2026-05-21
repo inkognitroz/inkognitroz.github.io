@@ -1,32 +1,32 @@
 {
-  "version": 1,
-  "description": "Public-safe provider registry for the MMIR frontend. Live status must later come from a protected MMIR API, not raw provider runtimes.",
+  "version": 2,
+  "description": "Public-safe provider registry for the MMIR frontend. Status labels are product truth labels, not live telemetry. Live status must later come from a protected MMIR API or paired local node.",
   "providers": [
     {
       "id": "local-connector",
       "label": "Local Connector",
-      "status": "available-self-managed",
+      "status": "beta",
       "role": "Private local model runtime",
       "capabilities": ["health", "models", "chat", "local-test"],
-      "route": "MMIR frontend -> local connector -> local model runtime",
-      "notes": "Use your own local models without exposing raw runtimes publicly. Raw Ollama ports should stay private."
+      "route": "MMIR frontend -> paired local connector -> local model runtime",
+      "notes": "Local-first path is the current MVP focus. Raw Ollama ports should stay private and the connector must be hardened before broad use."
     },
     {
       "id": "compatible-backend",
       "label": "Compatible Backend",
-      "status": "self-managed",
+      "status": "beta",
       "role": "Trusted MMIR-compatible API",
-      "capabilities": ["health", "status", "models", "chat"],
+      "capabilities": ["health", "status", "models", "chat.completions"],
       "route": "MMIR frontend -> trusted backend API",
       "notes": "For users who bring their own compatible backend. Secrets and provider keys must stay server-side."
     },
     {
       "id": "managed-provider",
       "label": "Managed Provider Routing",
-      "status": "planned",
+      "status": "premium-planned",
       "role": "Paid managed routing layer",
-      "capabilities": ["health", "status", "models", "chat", "usage"],
-      "route": "MMIR frontend -> protected MMIR API -> provider router",
+      "capabilities": ["health", "status", "models", "chat.completions", "usage"],
+      "route": "MMIR frontend -> api.mmir.ai -> protected provider router",
       "notes": "Future managed layer for cloud model connectors, encrypted key vault, team workspaces and usage analytics."
     },
     {
