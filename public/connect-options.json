@@ -1,26 +1,26 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Static connect options for MMIR.ai. These are safe frontend options only; secrets and provisioning belong to protected backend services.",
   "options": [
     {
       "id": "local-connector",
       "title": "Connect local LLM",
-      "status": "free first",
-      "description": "Use a local connector to make models running on your PC or private VM available to MMIR.ai without exposing raw runtimes publicly.",
+      "status": "beta",
+      "description": "Use a local connector profile for models running on your PC or private VM. The hardened connector and in-page chat loop are being connected in the current delivery slice.",
       "target": "#local-connector"
     },
     {
       "id": "bring-backend",
       "title": "Add compatible backend",
-      "status": "self-managed",
-      "description": "Add a trusted MMIR-compatible backend URL for models, status and chat once your connector/API is ready.",
+      "status": "beta",
+      "description": "Add a trusted MMIR-compatible backend URL for health, model discovery and chat once your connector/API follows the MMIR contract.",
       "target": "#backend-settings"
     },
     {
       "id": "provider-api",
       "title": "Use managed provider route",
-      "status": "planned",
-      "description": "OpenAI, Claude, Gemini and similar providers require a protected backend or vault. Do not paste real keys into the public frontend.",
+      "status": "premium-planned",
+      "description": "OpenAI, Claude, Gemini and similar providers require api.mmir.ai, auth and a protected key vault. Do not paste real provider keys into the public frontend.",
       "target": "#provider-status"
     }
   ]
