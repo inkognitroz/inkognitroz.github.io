@@ -51,6 +51,15 @@
   border-color: rgba(15, 23, 42, 0.46);
 }
 
+.runtime-toolbar select:focus-visible,
+.runtime-toolbar button:focus-visible,
+.runtime-message-actions button:focus-visible,
+.runtime-code-header button:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
 .runtime-toolbar button:disabled {
   cursor: not-allowed;
   opacity: 0.48;
@@ -71,6 +80,7 @@
   max-height: 420px;
   overflow: auto;
   padding: 4px;
+  scrollbar-gutter: stable;
 }
 
 .runtime-message {
@@ -81,6 +91,7 @@
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.88);
+  overflow-wrap: anywhere;
 }
 
 .runtime-message-user {
@@ -116,6 +127,7 @@
   display: grid;
   gap: 0;
   overflow: hidden;
+  max-width: 100%;
   border: 1px solid rgba(15, 23, 42, 0.14);
   border-radius: 8px;
   background: #0f172a;
@@ -186,5 +198,14 @@
 @media (max-width: 720px) {
   .runtime-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .runtime-toolbar button,
+  .runtime-toolbar select {
+    width: 100%;
+  }
+
+  .runtime-message {
+    max-width: 100%;
   }
 }
