@@ -20,6 +20,11 @@ Commercial outcome:
 - Free local-first entry point.
 - Paid managed layer later: hosted router, team workspace, encrypted provider key vault, cloud connectors, usage analytics and support.
 
+## Detailed Backlogs
+
+- Front page promise backlog: `docs/MMIR_FRONT_PAGE_PROMISE_BACKLOG.md`
+- Pages smoke checklist: `docs/PAGES_SMOKE_CHECKLIST.md`
+
 ## Scope
 
 In scope now:
@@ -90,4 +95,4 @@ Out of scope for this launch pass:
 
 ## Current Working Item
 
-Next: confirm the latest `Deploy GitHub Pages` run after the content cleanup, then start the live connector chat flow.
+Start with the front page promise backlog P0 path: F001-F022, then move through chat/connect/local-node before premium and future platform features.
