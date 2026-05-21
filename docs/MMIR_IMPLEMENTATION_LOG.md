@@ -24,12 +24,12 @@ Updated: 2026-05-21
 - Managed backend template has API-key auth policy, rate limits, metrics and SSE streaming support.
 - Managed backend now includes an OpenAI-compatible provider adapter for server-side provider routing.
 - Managed backend now exposes sanitized bounded `/audit` events without raw prompts or provider secrets.
-- Backend and local-node CI now use Node 24, newer setup/checkout actions, lint and tests.
+- Backend and local-node CI now use Node 24, newer setup/checkout actions, lint, secret scanning and tests.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 
 ## Still Next In Sequence
 
-- D038-D041: stronger security scanning, dependency locking, deployment hardening and production readiness checks.
+- D039-D041: dependency locking, deployment hardening and production readiness checks.
 - D042-D050: workspaces, persistent memory, knowledge upload/RAG and vector store foundations.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
