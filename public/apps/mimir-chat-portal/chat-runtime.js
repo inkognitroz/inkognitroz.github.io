@@ -2,6 +2,8 @@
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   const ROLE_KEY='mimir-chat-active-role';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MAX_STORED_MESSAGES=80;
@@ -19,6 +21,8 @@
   let currentAbortController=null;
   let stopRequested=false;
   let lastActiveId='';
+  let currentChatKey='';
+  let pendingWorkspaceSwitch=false;
   let busy=false;
   let messages=[];
 
@@ -29,6 +33,8 @@
   function isLocal(profile){return profile?.provider==='local-node'||profile?.provider==='ollama-direct';}
   function joinUrl(base,path){return cleanUrl(base)+path;}
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
+  function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+  function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
   function activeRole(){
@@ -76,9 +82,9 @@
     return ids.length>3?visible+' +'+String(ids.length-3):visible;
   }
 
-  function loadMessages(){
+  function parseStoredMessages(raw){
     try{
-      const value=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+      const value=JSON.parse(raw||'[]');
       if(!Array.isArray(value))return [];
       return value.filter(message=>{
         return (message?.role==='user'||message?.role==='assistant')&&typeof message.content==='string';
@@ -88,8 +94,19 @@
     }
   }
 
+  function loadMessages(){
+    currentChatKey=chatStorageKey();
+    const raw=localStorage.getItem(currentChatKey)||(
+      activeWorkspaceId()===DEFAULT_WORKSPACE_ID?localStorage.getItem(CHAT_KEY):null
+    );
+    return parseStoredMessages(raw);
+  }
+
   function saveMessages(){
-    try{localStorage.setItem(CHAT_KEY,JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));}catch(error){}
+    try{
+      localStorage.setItem(currentChatKey||chatStorageKey(),JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));
+      window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:activeWorkspaceId()}}));
+    }catch(error){}
   }
 
   function createMessage(role,content,meta,extra={}){
@@ -278,8 +295,20 @@
     messages=[];
     saveMessages();
     if(transcriptEl)transcriptEl.innerHTML='';
-    setStatus('Conversation cleared locally.','idle');
+    setStatus('Conversation cleared for this workspace.','idle');
     if(promptEl)promptEl.focus();
+  }
+
+  function switchWorkspace(){
+    if(busy){
+      pendingWorkspaceSwitch=true;
+      setStatus('Workspace will switch after the current response.','loading');
+      return;
+    }
+    pendingWorkspaceSwitch=false;
+    messages=loadMessages();
+    renderStoredMessages();
+    setStatus('Workspace loaded.','idle');
   }
 
   function stopCurrentResponse(){
@@ -560,6 +589,7 @@
     }finally{
       currentAbortController=null;
       setBusy(false);
+      if(pendingWorkspaceSwitch)switchWorkspace();
     }
   }
 
@@ -573,6 +603,7 @@
     formEl.addEventListener('submit',(event)=>{event.preventDefault();sendMessage();});
     promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}});
     window.addEventListener('mmir-active-role-changed',()=>{const role=activeRole();setStatus(role?'Role set: '+role.label+'.':'Role preset cleared.','idle');});
+    window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('storage',()=>refreshState(true));
     refreshState(true);
     setInterval(()=>refreshState(false),3000);
