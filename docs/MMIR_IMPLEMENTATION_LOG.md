@@ -12,6 +12,7 @@ Updated: 2026-05-21
 - Runtime accessibility is stronger: live status, busy state, keyboard focus states, mobile-safe controls and clearer button labels.
 - First-run onboarding now tracks profile setup, active backend, live model discovery and first prompt completion.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
+- GitHub Pages workflow now opts into Node 24 actions and uses newer checkout/upload-pages actions to reduce upcoming runner deprecation risk.
 - Local backend profile defaults to MMIR Local Node at `http://127.0.0.1:3000`.
 - Live model/health data syncs back into saved backend profile metadata.
 - MMIR Local Node is hardened around localhost defaults, explicit CORS, pairing, request limits and safe errors.
