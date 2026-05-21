@@ -1,0 +1,97 @@
+.comparison-panel .comparison-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.comparison-model-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.comparison-model-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  font-size: 0.86rem;
+}
+
+.comparison-model-choice input {
+  accent-color: var(--mimir-accent, #10a37f);
+}
+
+.comparison-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.comparison-actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px !important;
+}
+
+.comparison-actions button:focus-visible,
+.comparison-model-choice:focus-within {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+.comparison-output {
+  display: grid;
+  gap: 10px;
+}
+
+.comparison-result {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.comparison-result h3 {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 0.96rem;
+}
+
+.comparison-result p {
+  margin: 0;
+  color: var(--mimir-muted, #6b7280);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.comparison-error {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.comparison-synthesis {
+  border-color: rgba(16, 163, 127, 0.35);
+  background: #f0faf7;
+}
+
+#comparison-status[data-state="ready"] { color: #047857; }
+#comparison-status[data-state="error"] { color: #b91c1c; }
+#comparison-status[data-state="loading"] { color: #1d4ed8; }
+
+@media (max-width: 560px) {
+  .comparison-actions button,
+  .comparison-model-choice {
+    width: 100%;
+    justify-content: center;
+  }
+}
