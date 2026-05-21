@@ -1,36 +1,36 @@
 {
-  "version": 2,
-  "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through a safe local connector. The actual connector is owned by mmir-local-node.",
+  "version": 3,
+  "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through the hardened MMIR Local Node.",
   "steps": [
     {
       "id": "install",
       "title": "Install local connector",
-      "status": "planned",
-      "description": "Download a small MMIR connector app or script from the local-node project. It should run locally and expose only a controlled connector API, not raw model runtimes."
+      "status": "beta",
+      "description": "Run the MMIR Local Node installer from the local-node project. It checks Node.js, detects Ollama, recommends a starter model and keeps the connector bound to localhost by default."
     },
     {
       "id": "detect",
       "title": "Detect local models",
-      "status": "planned",
-      "description": "The connector discovers supported local runtimes such as Ollama and returns available models through the MMIR /models contract."
+      "status": "beta",
+      "description": "The connector discovers Ollama models and returns them through the MMIR /models contract with safe metadata and hardware guidance."
     },
     {
       "id": "connect",
       "title": "Pair with MMIR.ai",
-      "status": "planned",
-      "description": "The frontend should pair with the local connector before model/chat control. It stores only the local connector URL and safe profile metadata."
+      "status": "beta",
+      "description": "The frontend pairs with the local connector before model/chat control. It stores only the local connector URL, session token and safe profile metadata."
     },
     {
       "id": "chat",
       "title": "Chat safely",
-      "status": "planned",
+      "status": "beta",
       "description": "MMIR routes chat requests through /chat/completions. Raw Ollama port 11434 should not be exposed publicly."
     }
   ],
   "security": [
     "No secrets in GitHub Pages frontend",
     "No public raw Ollama port",
-    "Local connector should require explicit local user action",
+    "Local connector requires pairing before model and chat routes",
     "Use controlled /health, /status, /models and /chat/completions endpoints",
     "Allow users to disconnect and delete local profiles"
   ]
