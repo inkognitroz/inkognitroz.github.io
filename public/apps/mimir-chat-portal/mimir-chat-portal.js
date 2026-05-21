@@ -1,6 +1,7 @@
 (function(){
   const STORAGE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
+  const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
   const listEl=document.getElementById('backend-list');
   const nameEl=document.getElementById('backend-name');
   const urlEl=document.getElementById('backend-url');
@@ -45,14 +46,16 @@
   function activeProfile(){const id=readActive();return readProfiles().find(p=>p.id===id)||null;}
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
+  function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
+
   function renderList(){
     const profiles=readProfiles();
     const activeId=readActive();
-    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No model or backend connected yet. Use + Connect Model, + Local AI Connector, or add a trusted backend URL.</p>';return;}
+    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No backend connected yet. Click + Connect Model to create a local node profile on 127.0.0.1.</p>';return;}
     listEl.innerHTML=profiles.map(p=>{
       const active=p.id===activeId;
       const health=p.health||'unknown';
-      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'open-webui')} · ${escapeHtml(p.models||'models not listed')} · ${escapeHtml(health)}</small></span>${active?'<em>Active</em>':''}</button>`;
+      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'local-node')} · ${escapeHtml(p.models||'models not listed')} · ${escapeHtml(health)}</small></span>${active?'<em>Active</em>':''}</button>`;
     }).join('');
     listEl.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>selectProfile(btn.dataset.id)));
   }
@@ -61,16 +64,16 @@
     const p=selectedProfile();
     const active=activeProfile();
     if(!p){
-      nameEl.value='';urlEl.value='';providerEl.value='open-webui';modelsEl.value='';
-      if(keyRefEl)keyRefEl.value='';
-      if(costEl)costEl.value='';
-      if(latencyEl)latencyEl.value='';
-      if(throughputEl)throughputEl.value='';
-      if(uptimeEl)uptimeEl.value='';
+      nameEl.value='MMIR Local Node';urlEl.value=DEFAULT_LOCAL_URL;providerEl.value='local-node';modelsEl.value='auto-discovered';
+      if(keyRefEl)keyRefEl.value='local pairing token only';
+      if(costEl)costEl.value='free local';
+      if(latencyEl)latencyEl.value='local best effort';
+      if(throughputEl)throughputEl.value='depends on model';
+      if(uptimeEl)uptimeEl.value='dev/local';
       if(healthEl)healthEl.value='unknown';
       launchLink.href='#';launchLink.classList.add('disabled');launchLink.setAttribute('aria-disabled','true');
     }else{
-      nameEl.value=p.name||'';urlEl.value=p.url||'';providerEl.value=p.provider||'open-webui';modelsEl.value=p.models||'';
+      nameEl.value=p.name||'';urlEl.value=p.url||'';providerEl.value=p.provider||'local-node';modelsEl.value=p.models||'';
       if(keyRefEl)keyRefEl.value=p.keyRef||'';
       if(costEl)costEl.value=p.cost||'';
       if(latencyEl)latencyEl.value=p.latency||'';
@@ -83,17 +86,17 @@
     if(active&&validUrl(active.url)){
       activeBadge.textContent='Active: '+(active.name||'backend');
       activeTitle.textContent=active.name||'Mimir Chat';
-      activeDesc.textContent=(active.provider||'Open WebUI')+' · '+(active.models||'models selected in backend')+' · '+(active.health||'unknown');
+      activeDesc.textContent=(active.provider||'local-node')+' · '+(active.models||'models selected in backend')+' · '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
-      activeBadge.textContent='No backend selected';activeTitle.textContent='Connect to local and cloud AI/LLM models, in one secure interface and start chatting.';activeDesc.textContent='Use + Connect Model to add a local connector, trusted backend, SaaS model route, or premium compute option.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
+      activeBadge.textContent='No backend selected';activeTitle.textContent='Connect MMIR Local Node or a trusted backend profile.';activeDesc.textContent='Use + Connect Model to create a local connector profile, then Set active and send a message.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
     }
   }
 
   function renderDashboard(){
     const profiles=readProfiles();
     const active=activeProfile();
-    const providers=[...new Set(profiles.map(p=>p.provider||'open-webui'))];
+    const providers=[...new Set(profiles.map(p=>p.provider||'local-node'))];
     const keyCount=profiles.filter(p=>String(p.keyRef||'').trim()).length;
     const readyCount=profiles.filter(p=>(p.health||'unknown')==='ready').length;
     const measuredCount=profiles.filter(profileMeasured).length;
@@ -110,13 +113,13 @@
       const ok=validUrl(p.url);
       const state=p.id===activeId?'Active':(ok?'Ready':'Missing URL');
       const health=p.health||'unknown';
-      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'open-webui')}</td><td>${escapeHtml(p.models||'—')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'—')}</td><td>${escapeHtml(p.latency||'—')}</td><td>${escapeHtml(p.throughput||'—')}</td><td><span class="health-chip health-${escapeHtml(health)}">${escapeHtml(health)}</span></td><td>${escapeHtml(state)}</td></tr>`;
+      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'local-node')}</td><td>${escapeHtml(p.models||'—')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'—')}</td><td>${escapeHtml(p.latency||'—')}</td><td>${escapeHtml(p.throughput||'—')}</td><td><span class="health-chip health-${escapeHtml(health)}">${escapeHtml(health)}</span></td><td>${escapeHtml(state)}</td></tr>`;
     }).join('');
   }
 
   function render(){renderList();renderEditor();renderDashboard();}
   function selectProfile(id){selectedId=id;setStatus('');render();}
-  function createProfile(){const profiles=readProfiles();const profile={id:uid(),name:'New backend',url:'',provider:'open-webui',models:'',keyRef:'',cost:'',latency:'',throughput:'',uptime:'',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('New backend profile created.');render();}
+  function createProfile(){const profiles=readProfiles();const profile=defaultProfile();profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('Local node profile created. Save, Set active, then send a message.');render();}
   function saveProfile(){
     const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
     const profiles=readProfiles();let p=selectedProfile();if(!p){p={id:uid(),createdAt:new Date().toISOString()};profiles.push(p);selectedId=p.id;}
