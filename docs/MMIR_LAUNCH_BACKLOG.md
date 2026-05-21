@@ -40,7 +40,7 @@ Out of scope for this launch pass:
 
 ## P0 - Site Stability
 
-- [ ] Keep GitHub Pages custom domain stable with `public/CNAME`.
+- [x] Keep GitHub Pages custom domain stable with `public/CNAME`.
 - [ ] Confirm `Deploy GitHub Pages` publishes from `./public` and stays green.
 - [ ] Add a simple post-deploy smoke checklist for `https://inkognitroz.github.io` and `https://mmir.ai`.
 - [ ] Remove or hide links that point users to unfinished internals.
@@ -90,4 +90,4 @@ Out of scope for this launch pass:
 
 ## Current Working Item
 
-Start with site stability and custom domain hardening, then move to live local-node chat.
+Site stability: verify deployment after `public/CNAME`, then add a smoke checklist.
