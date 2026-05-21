@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "description": "MMIR.ai chat flow. Static frontend guidance only.",
+  "stages": [
+    {
+      "id": "connect",
+      "title": "Connect",
+      "badge": "Core",
+      "description": "Connect a local node, compatible backend or protected provider route."
+    },
+    {
+      "id": "detect",
+      "title": "Detect node",
+      "badge": "Next",
+      "description": "Check health and show whether the node is online, degraded or offline."
+    },
+    {
+      "id": "models",
+      "title": "List models",
+      "badge": "Next",
+      "description": "Load available models and populate the model selector from the live backend."
+    },
+    {
+      "id": "context",
+      "title": "Add context",
+      "badge": "Premium",
+      "description": "Attach files, knowledge sources or project context before sending the prompt."
+    },
+    {
+      "id": "roles",
+      "title": "Assign roles",
+      "badge": "Premium",
+      "description": "Apply role presets such as architect, critic, coder, researcher or synthesizer."
+    },
+    {
+      "id": "chat",
+      "title": "Send prompt",
+      "badge": "Next",
+      "description": "Send the normalized request to the selected connector or backend route."
+    },
+    {
+      "id": "render",
+      "title": "Render answer",
+      "badge": "Next",
+      "description": "Render the answer, latency, health and warnings directly in the MMIR chat UI."
+    },
+    {
+      "id": "synthesis",
+      "title": "Compare and synthesize",
+      "badge": "Premium",
+      "description": "Run multiple model answers through comparison and synthesize the best result."
+    }
+  ]
+}
