@@ -55,7 +55,7 @@
     listEl.innerHTML=profiles.map(p=>{
       const active=p.id===activeId;
       const health=p.health||'unknown';
-      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'local-node')} · ${escapeHtml(p.models||'models not listed')} · ${escapeHtml(health)}</small></span>${active?'<em>Active</em>':''}</button>`;
+      return `<button type="button" class="backend-item ${p.id===selectedId?'selected':''}" data-id="${escapeHtml(p.id)}"><span><strong>${escapeHtml(p.name||'Unnamed backend')}</strong><small>${escapeHtml(p.provider||'local-node')} \u00b7 ${escapeHtml(p.models||'models not listed')} \u00b7 ${escapeHtml(health)}</small></span>${active?'<em>Active</em>':''}</button>`;
     }).join('');
     listEl.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>selectProfile(btn.dataset.id)));
   }
@@ -86,7 +86,7 @@
     if(active&&validUrl(active.url)){
       activeBadge.textContent='Active: '+(active.name||'backend');
       activeTitle.textContent=active.name||'Mimir Chat';
-      activeDesc.textContent=(active.provider||'local-node')+' · '+(active.models||'models selected in backend')+' · '+(active.health||'unknown');
+      activeDesc.textContent=(active.provider||'local-node')+' \u00b7 '+(active.models||'models selected in backend')+' \u00b7 '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
       activeBadge.textContent='No backend selected';activeTitle.textContent='Connect MMIR Local Node or a trusted backend profile.';activeDesc.textContent='Use + Connect Model to create a local connector profile, then Set active and send a message.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
@@ -113,7 +113,7 @@
       const ok=validUrl(p.url);
       const state=p.id===activeId?'Active':(ok?'Ready':'Missing URL');
       const health=p.health||'unknown';
-      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'local-node')}</td><td>${escapeHtml(p.models||'—')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'—')}</td><td>${escapeHtml(p.latency||'—')}</td><td>${escapeHtml(p.throughput||'—')}</td><td><span class="health-chip health-${escapeHtml(health)}">${escapeHtml(health)}</span></td><td>${escapeHtml(state)}</td></tr>`;
+      return `<tr><td>${escapeHtml(p.name||'Unnamed')}</td><td>${escapeHtml(p.provider||'local-node')}</td><td>${escapeHtml(p.models||'\u2014')}</td><td>${escapeHtml(p.keyRef||'local/no key')}</td><td>${escapeHtml(p.cost||'\u2014')}</td><td>${escapeHtml(p.latency||'\u2014')}</td><td>${escapeHtml(p.throughput||'\u2014')}</td><td><span class="health-chip health-${escapeHtml(health)}">${escapeHtml(health)}</span></td><td>${escapeHtml(state)}</td></tr>`;
     }).join('');
   }
 
@@ -131,5 +131,6 @@
 
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
   if(refreshDashboardBtn)refreshDashboardBtn.addEventListener('click',()=>{renderDashboard();setStatus('Dashboard refreshed.');});
+  window.addEventListener('mmir-backend-profiles-updated',()=>render());
   const profiles=readProfiles();selectedId=readActive()||(profiles[0]&&profiles[0].id)||null;render();
 })();
