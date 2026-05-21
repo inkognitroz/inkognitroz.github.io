@@ -17,7 +17,7 @@
   function activeId(){return localStorage.getItem(ACTIVE_KEY)||'';}
   function activeProfile(){const id=activeId();return readProfiles().find(profile=>profile.id===id)||null;}
   function cleanUrl(value){return String(value||'').trim().replace(/\/$/,'');}
-  function isLocal(profile,url){return profile?.provider==='local-node'||/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(url);}
+  function isLocal(profile){return profile?.provider==='local-node'||profile?.provider==='ollama-direct';}
   function joinUrl(base,path){return cleanUrl(base)+path;}
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
@@ -70,12 +70,21 @@
 
   function renderModels(models){
     if(!modelSelect)return;
+    modelSelect.innerHTML='';
     if(!models.length){
-      modelSelect.innerHTML='<option value="">No live models</option>';
+      const option=document.createElement('option');
+      option.value='';
+      option.textContent='No live models';
+      modelSelect.appendChild(option);
       modelSelect.disabled=true;
       return;
     }
-    modelSelect.innerHTML=models.map(model=>'<option value="'+model.id.replaceAll('"','&quot;')+'">'+(model.label||model.id).replaceAll('<','&lt;').replaceAll('>','&gt;')+'</option>').join('');
+    for(const model of models){
+      const option=document.createElement('option');
+      option.value=model.id;
+      option.textContent=model.label||model.id;
+      modelSelect.appendChild(option);
+    }
     modelSelect.disabled=false;
   }
 
@@ -100,7 +109,7 @@
   }
 
   async function pairIfNeeded(profile,url){
-    if(!isLocal(profile,url))return '';
+    if(!isLocal(profile))return '';
     const existing=sessionStorage.getItem(tokenKey(url));
     if(existing)return existing;
     const data=await fetchJson(joinUrl(url,'/pair'),{method:'POST',timeoutMs:5000});
