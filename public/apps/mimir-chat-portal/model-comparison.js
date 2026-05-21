@@ -2,6 +2,9 @@
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   const ROLE_KEY='mimir-chat-active-role';
+  const ACTIVE_WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const MEMORY_PREFIX='mimir-memory-v1:';
   const LIVE_MODELS_KEY='mimir-chat-live-models';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const MAX_COMPARE_MODELS=3;
@@ -23,6 +26,7 @@
   function joinUrl(base,path){return cleanUrl(base)+path;}
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function isLocal(profile){return profile?.provider==='local-node'||profile?.provider==='ollama-direct';}
+  function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
   function activeRole(){
@@ -31,6 +35,16 @@
       if(!value||typeof value!=='object'||!String(value.instruction||'').trim())return null;
       return {label:String(value.label||value.id||'Role'),instruction:String(value.instruction||'')};
     }catch(error){return null;}
+  }
+
+  function activeMemoryInstruction(){
+    try{
+      const value=JSON.parse(localStorage.getItem(MEMORY_PREFIX+workspaceId())||'[]');
+      if(!Array.isArray(value))return '';
+      const items=value.map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
+      if(!items.length)return '';
+      return 'Workspace memory for this task. Use only when relevant:\n'+items.map(item=>'- '+item).join('\n');
+    }catch(error){return '';}
   }
 
   function liveModels(){
@@ -133,8 +147,10 @@
 
   function messagesFor(prompt){
     const role=activeRole();
+    const memory=activeMemoryInstruction();
     const messages=[];
     if(role)messages.push({role:'system',content:role.instruction});
+    if(memory)messages.push({role:'system',content:memory});
     messages.push({role:'user',content:prompt});
     return messages;
   }
