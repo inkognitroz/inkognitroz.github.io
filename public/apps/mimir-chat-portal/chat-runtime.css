@@ -7,7 +7,7 @@
 
 .runtime-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto auto;
   gap: 10px;
   align-items: center;
   padding: 10px;
@@ -47,12 +47,22 @@
   white-space: nowrap;
 }
 
-.runtime-toolbar button:hover {
+.runtime-toolbar button:hover:not(:disabled) {
   border-color: rgba(15, 23, 42, 0.46);
+}
+
+.runtime-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 #runtime-clear {
   color: #475569;
+}
+
+#runtime-stop:not(:disabled) {
+  border-color: rgba(185, 28, 28, 0.36);
+  color: #b91c1c;
 }
 
 .runtime-transcript {
@@ -100,6 +110,27 @@
 .runtime-message small {
   color: inherit;
   opacity: 0.58;
+}
+
+.runtime-message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.runtime-message-actions button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(100, 116, 139, 0.26);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.runtime-message-actions button:hover {
+  border-color: rgba(15, 23, 42, 0.42);
 }
 
 @media (max-width: 720px) {
