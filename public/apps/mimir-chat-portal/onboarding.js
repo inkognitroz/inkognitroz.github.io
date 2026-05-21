@@ -1,15 +1,22 @@
 (function(){
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const chatCenter=document.querySelector('.mimir-chat-center');
 
   function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
   function activeProfile(){const id=localStorage.getItem(ACTIVE_KEY)||'';return readProfiles().find(profile=>profile.id===id)||null;}
   function statusOf(profile){return String(profile?.health||'unknown').toLowerCase();}
+  function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+  function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function hasFirstPrompt(){
     try{
-      const value=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+      const raw=localStorage.getItem(chatStorageKey())||(
+        activeWorkspaceId()===DEFAULT_WORKSPACE_ID?localStorage.getItem(CHAT_KEY):null
+      );
+      const value=JSON.parse(raw||'[]');
       if(!Array.isArray(value))return false;
       const hasUser=value.some(message=>message?.role==='user'&&String(message.content||'').trim());
       const hasAnswer=value.some(message=>message?.role==='assistant'&&String(message.content||'').trim()&&message.content!=='Thinking...');
@@ -57,7 +64,7 @@
       {label:'Create backend profile',done:hasProfile,detail:hasProfile?'A local or trusted backend profile exists.':'Start with MMIR Local Node on 127.0.0.1.',target:'#backend-settings'},
       {label:'Set active backend',done:hasActive,detail:hasActive?(active.name||'Backend is active'):'Select the profile and click Set active.',target:'#backend-settings'},
       {label:'Discover live model',done:ready,detail:ready?(active.models||'Model discovered'):(degraded?'Backend reached but needs attention.':'Run local node, refresh, then pair/discover models.'),target:'#local-connector'},
-      {label:'Send first prompt',done:sent,detail:sent?'First chat is saved locally.':(ready?'Type a prompt and press Send.':'Finish backend setup, then send the first prompt.'),target:'#mimir-prompt'}
+      {label:'Send first prompt',done:sent,detail:sent?'First chat is saved in this workspace.':(ready?'Type a prompt and press Send.':'Finish backend setup, then send the first prompt.'),target:'#mimir-prompt'}
     ];
     const firstOpen=steps.findIndex(item=>!item.done);
 
@@ -74,6 +81,8 @@
   }
 
   window.addEventListener('mmir-backend-profiles-updated',render);
+  window.addEventListener('mmir-workspace-changed',render);
+  window.addEventListener('mmir-chat-history-updated',render);
   window.addEventListener('storage',render);
   window.addEventListener('focus',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
