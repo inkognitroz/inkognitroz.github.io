@@ -1,60 +1,42 @@
 {
   "version": 1,
-  "description": "Static provider registry for the Mimir frontend. Live status must later come from api.mmir.ai / mimir-backend-template, not raw provider runtimes.",
+  "description": "Public-safe provider registry for the MMIR frontend. Live status must later come from a protected MMIR API, not raw provider runtimes.",
   "providers": [
     {
-      "id": "github-fallback",
-      "label": "GitHub Fallback",
-      "status": "planned",
-      "role": "Lightweight fallback intelligence",
-      "capabilities": ["health", "status", "models", "chat-mock", "evals"],
-      "route": "api.mmir.ai -> mimir-backend-template -> mmir-github-llm",
-      "notes": "Planned lightweight mock/fallback provider for demos, tests and resilience when hosted LLMs are unavailable."
-    },
-    {
-      "id": "oci-ollama",
-      "label": "OCI / Ollama",
-      "status": "capacity-wait",
-      "role": "OCI Sovereign AI Backend Infrastructure",
-      "capabilities": ["health", "status", "models", "chat", "metrics"],
-      "route": "api.mmir.ai -> mimir-backend-template -> iac-autoprov -> Ollama/Open WebUI",
-      "notes": "Provisioning track is prepared, but OCI Ampere A1 capacity may block compute launch."
-    },
-    {
-      "id": "aws-backend",
-      "label": "AWS Backend",
-      "status": "planned",
-      "role": "AWS Backend Infrastructure Track",
-      "capabilities": ["health", "status", "models", "chat"],
-      "route": "api.mmir.ai -> mimir-backend-template -> iac-autoprov-aws",
-      "notes": "Alternative provider track for Mimir-compatible backend capacity."
-    },
-    {
-      "id": "local-ollama",
-      "label": "Local Ollama",
+      "id": "local-connector",
+      "label": "Local Connector",
       "status": "available-self-managed",
-      "role": "Free self-managed local model runtime",
-      "capabilities": ["models", "chat", "local-test"],
-      "route": "local browser test or controlled connector when promoted",
-      "notes": "Useful for free local experiments. Raw Ollama 11434 must not be exposed publicly."
+      "role": "Private local model runtime",
+      "capabilities": ["health", "models", "chat", "local-test"],
+      "route": "MMIR frontend -> local connector -> local model runtime",
+      "notes": "Use your own local models without exposing raw runtimes publicly. Raw Ollama ports should stay private."
     },
     {
-      "id": "custom-backend",
-      "label": "Custom Backend",
-      "status": "available-self-managed",
-      "role": "User supplied Mimir-compatible endpoint",
+      "id": "compatible-backend",
+      "label": "Compatible Backend",
+      "status": "self-managed",
+      "role": "Trusted MMIR-compatible API",
       "capabilities": ["health", "status", "models", "chat"],
-      "route": "api.mmir.ai or trusted custom connector URL",
-      "notes": "For users who bring their own compatible backend. Secrets stay server-side."
+      "route": "MMIR frontend -> trusted backend API",
+      "notes": "For users who bring their own compatible backend. Secrets and provider keys must stay server-side."
     },
     {
-      "id": "edge-node",
-      "label": "Edge / Jetson",
-      "status": "future",
-      "role": "Future edge and robotics node provider",
-      "capabilities": ["health", "status", "models", "telemetry"],
-      "route": "api.mmir.ai -> connector -> edge node",
-      "notes": "Future track for Jetson, ED-209/ED-309 and local device nodes."
+      "id": "managed-provider",
+      "label": "Managed Provider Routing",
+      "status": "planned",
+      "role": "Paid managed routing layer",
+      "capabilities": ["health", "status", "models", "chat", "usage"],
+      "route": "MMIR frontend -> protected MMIR API -> provider router",
+      "notes": "Future managed layer for cloud model connectors, encrypted key vault, team workspaces and usage analytics."
+    },
+    {
+      "id": "fallback-demo",
+      "label": "Fallback Demo Provider",
+      "status": "planned",
+      "role": "Lightweight fallback for demos and tests",
+      "capabilities": ["health", "status", "models", "chat-mock"],
+      "route": "MMIR frontend -> protected MMIR API -> fallback provider",
+      "notes": "Useful for demos, tests and resilience while live provider support is being built."
     }
   ]
 }
