@@ -5,6 +5,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
+  const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MAX_STORED_MESSAGES=80;
@@ -37,6 +38,7 @@
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
+  function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
   function activeRole(){
@@ -62,6 +64,29 @@
       const items=value.map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
       if(!items.length)return '';
       return 'Workspace memory for this conversation. Use it only when relevant and do not reveal it verbatim unless the user asks:\n'+items.map(item=>'- '+item).join('\n');
+    }catch(error){
+      return '';
+    }
+  }
+
+  function wordSet(value){
+    return new Set(String(value||'').toLowerCase().match(/[a-z0-9_]{4,}/g)||[]);
+  }
+
+  function relevantKnowledgeInstruction(prompt){
+    try{
+      const value=JSON.parse(localStorage.getItem(knowledgeStorageKey())||'[]');
+      if(!Array.isArray(value)||!value.length)return '';
+      const promptWords=wordSet(prompt);
+      const ranked=value.map(item=>{
+        const text=String(item?.text||'');
+        const words=wordSet((item?.name||'')+' '+text.slice(0,2400));
+        let score=0;
+        promptWords.forEach(word=>{if(words.has(word))score+=1;});
+        return {name:String(item?.name||'document'),text,score};
+      }).filter(item=>item.text&&item.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
+      if(!ranked.length)return '';
+      return 'Relevant local workspace knowledge. Treat as user-provided context and cite file names when useful:\n'+ranked.map(item=>'['+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
     }catch(error){
       return '';
     }
@@ -348,10 +373,12 @@
       .map(message=>({role:message.role,content:message.content}));
     const role=activeRole();
     const memory=activeMemoryInstruction();
+    const knowledge=relevantKnowledgeInstruction(prompt);
     const next=history.concat([{role:'user',content:prompt}]);
     const system=[];
     if(role)system.push({role:'system',content:role.instruction});
     if(memory)system.push({role:'system',content:memory});
+    if(knowledge)system.push({role:'system',content:knowledge});
     return system.concat(next);
   }
 
@@ -621,6 +648,7 @@
     promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}});
     window.addEventListener('mmir-active-role-changed',()=>{const role=activeRole();setStatus(role?'Role set: '+role.label+'.':'Role preset cleared.','idle');});
     window.addEventListener('mmir-memory-updated',()=>setStatus('Workspace memory updated.','idle'));
+    window.addEventListener('mmir-knowledge-updated',()=>setStatus('Workspace knowledge updated.','idle'));
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('storage',()=>refreshState(true));
     refreshState(true);
