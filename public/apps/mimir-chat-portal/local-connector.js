@@ -37,6 +37,18 @@
     if(anchor)main.insertBefore(section,anchor); else main.appendChild(section);
   }
 
+  function renderChatFlow(stages){
+    if(!main||document.getElementById('chat-flow'))return;
+    const section=document.createElement('details');
+    section.id='chat-flow';
+    section.className='mimir-provider-drawer';
+    section.open=true;
+    const cards=(Array.isArray(stages)?stages:[]).map(stage=>'<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(stage.title||stage.id)+'</h3><span class="provider-status status-planned">'+safe(stage.badge||'Next')+'</span></div><p>'+safe(stage.description||'Chat flow step')+'</p></article>').join('');
+    section.innerHTML='<summary>+ Chat Pipeline</summary><section class="mimir-dashboard"><div class="dashboard-heading"><div><p class="eyebrow">Inspired by proven chat pipelines</p><h2>Connect, detect, list models, chat, render</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
+    const anchor=document.getElementById('connect-options')||document.getElementById('local-connector');
+    if(anchor)main.insertBefore(section,anchor.nextSibling); else main.appendChild(section);
+  }
+
   async function loadConnectOptions(){
     try{
       const response=await fetch('./connect-options.json',{cache:'default'});
@@ -58,13 +70,21 @@
       if(!response.ok)throw new Error('feature catalog unavailable');
       const data=await response.json();
       renderFeatureCatalog(data.features||[]);
-    }catch(error){
-      renderFeatureCatalog([]);
-    }
+    }catch(error){renderFeatureCatalog([]);}
+  }
+
+  async function loadChatFlow(){
+    try{
+      const response=await fetch('./chat-flow.json',{cache:'default'});
+      if(!response.ok)throw new Error('chat flow unavailable');
+      const data=await response.json();
+      renderChatFlow(data.stages||[]);
+    }catch(error){renderChatFlow([]);}
   }
 
   async function init(){
     loadConnectOptions();
+    loadChatFlow();
     loadFeatureCatalog();
     try{
       const response=await fetch('./local-connector-guide.json',{cache:'default'});
@@ -74,7 +94,7 @@
     }catch(error){
       render([
         {id:'install',title:'Install local connector',status:'planned',description:'Download and run the MMIR local connector when backend track ships it.'},
-        {id:'detect',title:'Detect local models',status:'planned',description:'Connector discovers local models and exposes safe /models metadata.'},
+        {id:'detect',title:'Detect local models',status:'planned',description:'Connector discovers local models and exposes safe model metadata.'},
         {id:'connect',title:'Connect to MMIR.ai',status:'planned',description:'Frontend stores only a local connector URL and non-sensitive profile metadata.'}
       ]);
     }
