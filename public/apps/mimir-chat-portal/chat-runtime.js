@@ -27,6 +27,26 @@
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
+  function writeActiveProfilePatch(patch){
+    try{
+      const id=activeId();
+      if(!id)return;
+      const profiles=readProfiles();
+      const index=profiles.findIndex(profile=>profile.id===id);
+      if(index<0)return;
+      profiles[index]={...profiles[index],...patch,updatedAt:new Date().toISOString()};
+      localStorage.setItem(PROFILE_KEY,JSON.stringify(profiles));
+      window.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated',{detail:{id,patch}}));
+    }catch(error){}
+  }
+
+  function summarizeModels(models){
+    const ids=models.map(model=>model.id).filter(Boolean);
+    if(!ids.length)return 'no live models';
+    const visible=ids.slice(0,3).join(', ');
+    return ids.length>3?visible+' +'+String(ids.length-3):visible;
+  }
+
   function loadMessages(){
     try{
       const value=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
@@ -241,9 +261,11 @@
       const models=await fetchJson(joinUrl(url,'/models'),{headers:authHeaders(token),timeoutMs:8000});
       const normalized=normalizeModels(models);
       renderModels(normalized);
+      writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
       setStatus(normalized.length?'Backend ready.':'Backend online, no live models reported.',normalized.length?'ready':'idle');
     }catch(error){
       renderModels([]);
+      writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
       setStatus(friendlyError(error),'error');
     }
   }
@@ -277,9 +299,11 @@
       }
       const content=data?.choices?.[0]?.message?.content||data?.content||'';
       updateMessage(assistant.message.id,content||'Backend returned an empty response.',selectedModel);
+      writeActiveProfilePatch({health:'ready'});
       setStatus('Response received.','ready');
     }catch(error){
       updateMessage(assistant.message.id,friendlyError(error),'error');
+      writeActiveProfilePatch({health:error?.status===401?'testing':'degraded'});
       setStatus(friendlyError(error),'error');
     }finally{
       busy=false;
