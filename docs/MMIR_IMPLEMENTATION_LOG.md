@@ -8,6 +8,7 @@ Updated: 2026-05-21
 - Chat history persists locally in the browser until the user clears it.
 - Chat history is now scoped by local workspace so separate projects do not overwrite each other.
 - Workspace memory can now store local project facts/preferences and inject them into chat/comparison context when relevant.
+- Local knowledge upload now stores text-like files per workspace and injects relevant snippets into chat context as a first RAG foundation.
 - Chat requests use the shared `/chat/completions` contract with `/chat` fallback.
 - Frontend prefers Server-Sent Events streaming and falls back to JSON when needed.
 - Chat supports Stop, Copy, Retry, Clear and safe code-block rendering without trusting model HTML.
@@ -31,7 +32,7 @@ Updated: 2026-05-21
 
 ## Still Next In Sequence
 
-- D044-D050: knowledge upload/RAG and vector store foundations.
+- D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
 
