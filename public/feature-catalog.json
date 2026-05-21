@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "description": "MMIR.ai feature catalog for plus-style expandable homepage sections. All items are safe frontend descriptions only.",
+  "features": [
+    {
+      "id": "connect-model",
+      "title": "Connect Model",
+      "badge": "First pipeline",
+      "headline": "Connect to local and cloud AI/LLM models, in one secure interface and start chatting.",
+      "description": "Start by connecting a local connector, trusted backend, SaaS model route or self-managed model endpoint through the MMIR control plane.",
+      "bullets": ["add a local or cloud model", "select the model you want to use", "keep provider secrets server-side", "start chatting from one UI"]
+    },
+    {
+      "id": "local-ai-connector",
+      "title": "Local AI Connector",
+      "badge": "Free first",
+      "headline": "Run your own AI locally — securely and privately.",
+      "description": "Connect local LLMs on your own machine with guided onboarding. MMIR will detect your local node, list available models and route chat through a controlled connector instead of exposing raw runtimes to the internet.",
+      "bullets": ["install a lightweight local connector", "discover local AI models", "run AI privately on your own hardware", "avoid cloud lock-in", "keep sensitive data local"]
+    },
+    {
+      "id": "multi-model-chat",
+      "title": "Multi-Model Chat",
+      "badge": "Core",
+      "headline": "One interface for every AI model you trust.",
+      "description": "Connect and use multiple local, cloud and SaaS AI models from one unified interface. Switch between models, compare answers and route tasks to the best AI for the job.",
+      "bullets": ["chat with many AI models in one place", "avoid switching between multiple apps", "compare answers instantly", "choose the strongest result", "combine specialized models together"]
+    },
+    {
+      "id": "workflow-orchestration",
+      "title": "Intelligent Workflow Orchestration",
+      "badge": "Premium",
+      "headline": "Build intelligent workflows across models, tools and agents.",
+      "description": "Combine models, instructions and workflows into reusable AI pipelines for research, coding, analysis, summarization and decision support.",
+      "bullets": ["create AI workflows visually", "automate repetitive work", "combine reasoning from multiple AI systems", "route tasks dynamically", "build reusable AI stacks"]
+    },
+    {
+      "id": "local-cloud-ai",
+      "title": "Local + Cloud AI Integration",
+      "badge": "Hybrid",
+      "headline": "Use local privacy and cloud scale together.",
+      "description": "Connect local LLMs, private VMs, Open WebUI, Ollama, SaaS APIs and future cloud runtimes through one orchestration layer.",
+      "bullets": ["combine private/local AI with powerful cloud models", "choose where workloads run", "move between local and cloud", "avoid dependency on one vendor"]
+    },
+    {
+      "id": "trusted-routing",
+      "title": "Trusted AI Routing",
+      "badge": "Premium",
+      "headline": "Route tasks to the right intelligence automatically.",
+      "description": "Route prompts and workflows to the best available model, backend or compute environment based on performance, trust level and user preferences.",
+      "bullets": ["faster and smarter responses", "optimized model selection", "improved reliability", "better use of hardware and cloud resources"]
+    },
+    {
+      "id": "knowledge-rag",
+      "title": "Knowledge & RAG Integration",
+      "badge": "Premium",
+      "headline": "AI that understands your own data.",
+      "description": "Upload files, connect repositories and attach knowledge sources so MMIR can provide contextual answers using your own information.",
+      "bullets": ["upload PDFs, notes and documents", "connect GitHub and future data sources", "ask questions about your own information", "create domain-specific AI assistants"]
+    },
+    {
+      "id": "persistent-memory",
+      "title": "Persistent AI Memory",
+      "badge": "Premium",
+      "headline": "AI that evolves with you over time.",
+      "description": "Remember workflows, preferences, projects and context to create a more personalized and efficient AI experience.",
+      "bullets": ["less repetitive prompting", "personalized AI behavior", "smarter workflows over time", "continuity across sessions and projects"]
+    },
+    {
+      "id": "fine-tuning",
+      "title": "Fine-Tuning & Model Adaptation",
+      "badge": "Premium",
+      "headline": "Customize AI for your workflows and domain.",
+      "description": "Future functionality can support lightweight fine-tuning, LoRA adapters and custom model specialization without requiring full-scale model training.",
+      "bullets": ["adapt AI to specific tasks", "create organization-specific AI behavior", "personalize open-source models", "improve quality for niche workflows"]
+    },
+    {
+      "id": "edge-mesh",
+      "title": "Edge Compute Mesh / Intelligence Well",
+      "badge": "Premium",
+      "headline": "A distributed intelligence platform powered by trusted compute.",
+      "description": "Trusted PCs, VMs, GPUs and edge devices can later contribute AI capacity into a shared orchestration network.",
+      "bullets": ["connect additional hardware and compute", "scale AI workloads dynamically", "share trusted model capacity", "access more intelligence through the MMIR network"]
+    },
+    {
+      "id": "secure-architecture",
+      "title": "Secure AI Architecture",
+      "badge": "Zero Trust",
+      "headline": "Built around Zero Trust and local-first principles.",
+      "description": "MMIR is designed around secure API layers, localhost isolation, protected backend routing and separation between frontend, secrets and runtime infrastructure.",
+      "bullets": ["safer AI usage", "local privacy", "reduced vendor exposure", "more control over infrastructure and data"]
+    },
+    {
+      "id": "one-click-deploy",
+      "title": "One-Click AI Deployment",
+      "badge": "Premium",
+      "headline": "From setup to working AI in minutes.",
+      "description": "Automate onboarding, deployment and infrastructure management so users can run advanced AI systems without deep technical knowledge.",
+      "bullets": ["minimal setup", "guided onboarding", "automated configuration", "faster time-to-value"]
+    },
+    {
+      "id": "control-plane",
+      "title": "AI Control Plane",
+      "badge": "Core",
+      "headline": "The orchestration layer for trusted AI.",
+      "description": "MMIR acts as the central control plane connecting models, workflows, agents, infrastructure and intelligence sources into one unified platform.",
+      "bullets": ["one place to manage AI", "unified orchestration", "centralized workflows", "scalable AI operations"]
+    }
+  ]
+}
