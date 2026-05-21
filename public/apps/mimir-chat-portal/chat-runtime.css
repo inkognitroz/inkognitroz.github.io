@@ -7,7 +7,7 @@
 
 .runtime-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto;
   gap: 10px;
   align-items: center;
   padding: 10px;
@@ -44,6 +44,15 @@
 .runtime-toolbar button {
   padding: 0 14px;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.runtime-toolbar button:hover {
+  border-color: rgba(15, 23, 42, 0.46);
+}
+
+#runtime-clear {
+  color: #475569;
 }
 
 .runtime-transcript {
