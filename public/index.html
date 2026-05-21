@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/onboarding.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
   <header class="mimir-topbar">
@@ -66,8 +67,8 @@
     <details id="multi-model-workspace" class="mimir-provider-drawer">
       <summary>+ Roles / Multi-Model Chat</summary>
       <section class="mimir-dashboard" aria-labelledby="workflow-title">
-        <div class="dashboard-heading"><div><p class="eyebrow">Beta role presets, planned comparison</p><h2 id="workflow-title">Roles, comparison, synthesis and learning</h2></div></div>
-        <p class="dashboard-note">Role presets are live for the active chat. Multi-model switching, comparison and synthesis come after the first reliable local chat loop is stable.</p>
+        <div class="dashboard-heading"><div><p class="eyebrow">Beta roles, comparison and synthesis</p><h2 id="workflow-title">Roles, comparison, synthesis and learning</h2></div></div>
+        <p class="dashboard-note">Role presets, live model comparison and synthesis are beta features for the active backend. Full multi-agent orchestration comes after the reliable local chat loop is stable.</p>
         <details class="model-catalog-hint"><summary>+ Role Presets</summary><div id="role-preset-grid" class="provider-status-grid" aria-live="polite"></div></details>
       </section>
     </details>
@@ -130,5 +131,6 @@
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>
   <script src="./apps/mimir-chat-portal/model-selection.js"></script>
+  <script src="./apps/mimir-chat-portal/model-comparison.js"></script>
 </body>
 </html>
