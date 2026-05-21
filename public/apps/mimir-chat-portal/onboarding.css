@@ -40,6 +40,12 @@
   color: #111827 !important;
 }
 
+.onboarding-step:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
 .onboarding-step span {
   width: max-content;
   padding: 2px 7px;
@@ -62,6 +68,16 @@
 .onboarding-step.is-done span {
   background: #ecfdf5;
   color: #047857;
+}
+
+.onboarding-step.is-current {
+  border-color: rgba(16, 163, 127, 0.46);
+  box-shadow: inset 0 0 0 1px rgba(16, 163, 127, 0.1);
+}
+
+.onboarding-step.is-current span {
+  background: #ecfdf5;
+  color: #0e8f70;
 }
 
 .onboarding-step.is-open:hover {
