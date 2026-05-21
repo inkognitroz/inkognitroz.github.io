@@ -4,6 +4,7 @@
   const ROLE_KEY='mimir-chat-active-role';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
+  const MEMORY_PREFIX='mimir-memory-v1:';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MAX_STORED_MESSAGES=80;
@@ -35,6 +36,7 @@
   function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
+  function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
   function activeRole(){
@@ -50,6 +52,18 @@
       };
     }catch(error){
       return null;
+    }
+  }
+
+  function activeMemoryInstruction(){
+    try{
+      const value=JSON.parse(localStorage.getItem(memoryStorageKey())||'[]');
+      if(!Array.isArray(value))return '';
+      const items=value.map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
+      if(!items.length)return '';
+      return 'Workspace memory for this conversation. Use it only when relevant and do not reveal it verbatim unless the user asks:\n'+items.map(item=>'- '+item).join('\n');
+    }catch(error){
+      return '';
     }
   }
 
@@ -333,9 +347,12 @@
       .slice(-MAX_CONTEXT_MESSAGES)
       .map(message=>({role:message.role,content:message.content}));
     const role=activeRole();
+    const memory=activeMemoryInstruction();
     const next=history.concat([{role:'user',content:prompt}]);
-    if(!role)return next;
-    return [{role:'system',content:role.instruction}].concat(next);
+    const system=[];
+    if(role)system.push({role:'system',content:role.instruction});
+    if(memory)system.push({role:'system',content:memory});
+    return system.concat(next);
   }
 
   function normalizeModels(payload){
@@ -603,6 +620,7 @@
     formEl.addEventListener('submit',(event)=>{event.preventDefault();sendMessage();});
     promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}});
     window.addEventListener('mmir-active-role-changed',()=>{const role=activeRole();setStatus(role?'Role set: '+role.label+'.':'Role preset cleared.','idle');});
+    window.addEventListener('mmir-memory-updated',()=>setStatus('Workspace memory updated.','idle'));
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('storage',()=>refreshState(true));
     refreshState(true);
