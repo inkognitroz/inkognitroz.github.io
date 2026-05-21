@@ -22,11 +22,14 @@ Updated: 2026-05-21
 - MMIR Local Node reports Ollama readiness, hardware profile, starter model recommendations and normalized model inventory.
 - MMIR Local Node streams Ollama chat over SSE.
 - Managed backend template has API-key auth policy, rate limits, metrics and SSE streaming support.
-- Docs now describe frontend/local/managed boundaries, security posture, environment contract and local install path.
+- Managed backend now includes an OpenAI-compatible provider adapter for server-side provider routing.
+- Managed backend now exposes sanitized bounded `/audit` events without raw prompts or provider secrets.
+- Backend and local-node CI now use Node 24, newer setup/checkout actions, lint and tests.
+- Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 
 ## Still Next In Sequence
 
-- D031-D041: provider adapter expansion, key vault design, audit logs, stronger CI/security scanning.
+- D038-D041: stronger security scanning, dependency locking, deployment hardening and production readiness checks.
 - D042-D050: workspaces, persistent memory, knowledge upload/RAG and vector store foundations.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
