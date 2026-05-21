@@ -9,6 +9,9 @@ Updated: 2026-05-21
 - Chat requests use the shared `/chat/completions` contract with `/chat` fallback.
 - Frontend prefers Server-Sent Events streaming and falls back to JSON when needed.
 - Chat supports Stop, Copy, Retry, Clear and safe code-block rendering without trusting model HTML.
+- Runtime accessibility is stronger: live status, busy state, keyboard focus states, mobile-safe controls and clearer button labels.
+- First-run onboarding now tracks profile setup, active backend, live model discovery and first prompt completion.
+- Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Local backend profile defaults to MMIR Local Node at `http://127.0.0.1:3000`.
 - Live model/health data syncs back into saved backend profile metadata.
 - MMIR Local Node is hardened around localhost defaults, explicit CORS, pairing, request limits and safe errors.
@@ -19,11 +22,11 @@ Updated: 2026-05-21
 
 ## Still Next In Sequence
 
-- D023: mobile and accessibility pass.
-- D024: first-run onboarding flow with clearer success/failure steps.
-- D025-D026: live/static model split plus license and commercial-use warnings.
-- D027-D030: role presets, multi-model switching, model comparison and synthesis.
+- D028-D030: multi-model switching, model comparison and synthesis.
 - D031-D041: provider adapter expansion, key vault design, audit logs, stronger CI/security scanning.
+- D042-D050: workspaces, persistent memory, knowledge upload/RAG and vector store foundations.
+- D051-D060: workflow builder, automation and AI routing.
+- D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
 
 ## Notes
 
