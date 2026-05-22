@@ -25,7 +25,15 @@
     const status=document.getElementById('runtime-state');
     if(!status)return;
     if(status.textContent!==message)status.textContent=message;
-    status.dataset.state=state||'ready';
+    const nextState=state||'ready';
+    if(status.dataset.state!==nextState)status.dataset.state=nextState;
+  }
+
+  function shouldReplaceRuntimeStatus(){
+    const status=document.getElementById('runtime-state');
+    const text=String(status?.textContent||'');
+    if(!text)return true;
+    return /Select a backend|Add and activate|Activate a backend profile|No live model|No live models|Checking backend|Request failed/i.test(text);
   }
 
   function applyDemoModels(){
@@ -54,7 +62,7 @@
     primaryLink.href='#mimir-chat-runtime';
     primaryLink.setAttribute('role','button');
     primaryLink.setAttribute('aria-label','Send prompt in demo mode');
-    primaryLink.setAttribute('aria-disabled','false');
+    if(primaryLink.getAttribute('aria-disabled')!=='false')primaryLink.setAttribute('aria-disabled','false');
     primaryLink.removeAttribute('target');
     primaryLink.classList.remove('disabled');
   }
@@ -138,7 +146,9 @@
     setText('active-chat-description','Try the MMIR.ai workflow now with safe sample responses. No account, backend or API key is needed for this demo.');
     ensureSendLink();
     applyDemoModels();
-    setStatus('Demo mode ready. Responses are simulated until a backend is connected.','ready');
+    if(forceWelcome||shouldReplaceRuntimeStatus()){
+      setStatus('Demo mode ready. Responses are simulated until a backend is connected.','ready');
+    }
     ensureWelcome(forceWelcome);
   }
 
