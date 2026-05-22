@@ -33,6 +33,8 @@ MMIR should default to local privacy and require explicit trust before crossing 
 
 ## Frontend Controls
 
+`inkognitroz.github.io` is public. Treat every committed asset, manifest and script as visible to users, competitors and automated scanners.
+
 The public frontend may store:
 
 - backend display name

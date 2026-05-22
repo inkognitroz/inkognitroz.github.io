@@ -9,6 +9,7 @@ const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runti
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
+const userJourneysPath = join(publicDir, 'user-journeys.json');
 
 function fail(message) {
   console.error(message);
@@ -115,6 +116,24 @@ if (existsSync(progressDashboardPath)) {
   }
 } else {
   fail('Missing progress dashboard manifest.');
+}
+
+if (existsSync(userJourneysPath)) {
+  const journeys = JSON.parse(readFileSync(userJourneysPath, 'utf8'));
+  const items = Array.isArray(journeys.journeys) ? journeys.journeys : [];
+  if (items.length < 10) {
+    fail('User journey manifest must define the core MMIR journeys.');
+  }
+  if (!String(journeys.public_repo_rule || '').includes('inkognitroz.github.io is public')) {
+    fail('User journey manifest must state the public repo secrecy boundary.');
+  }
+  for (const id of ['J001', 'J002', 'J004', 'J008', 'J010']) {
+    if (!items.some((journey) => journey.id === id)) {
+      fail(`User journey manifest is missing ${id}.`);
+    }
+  }
+} else {
+  fail('Missing user journey manifest.');
 }
 
 if (!process.exitCode) {

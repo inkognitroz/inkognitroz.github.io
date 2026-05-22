@@ -4,6 +4,8 @@ This document defines the current and target architecture boundaries for the MMI
 
 ## Architecture Intent
 
+MMIR is a trusted AI operating layer. Its strongest product surface is the orchestration layer: connecting models, roles, workflows, memory, knowledge, routing and policy across local, self-hosted and managed AI systems.
+
 MMIR should feel like one calm AI workspace while internally separating:
 
 - public UI

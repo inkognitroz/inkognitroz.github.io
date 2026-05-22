@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T16:02:29.951Z",
+  "updated_at": "2026-05-22T16:11:19.245Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,8 +18,8 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 104,
-    "done": 40,
+    "total": 105,
+    "done": 41,
     "beta": 38,
     "next": 6,
     "watch": 1,
@@ -338,6 +338,16 @@
       },
       {
         "phase": "Browser Models",
+        "total": 1,
+        "done": 1,
+        "beta": 0,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Product UX",
         "total": 1,
         "done": 1,
         "beta": 0,
@@ -1968,6 +1978,21 @@
       "status": "done",
       "status_note": "Shipped and guarded by local or CI checks for the current scope.",
       "evidence": "Immediate guide, browser model routes and automatic first-run defaults are shipped.",
+      "estimate": "Done"
+    },
+    {
+      "seq": "D105",
+      "phase": "Product UX",
+      "priority": "P0",
+      "work_package": "User journey contract",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Define public-safe end-to-end journeys for first answer, local model activation, backend connection, orchestration, memory, workflows, progress and blocked managed routes",
+      "best_practice": "Test the product by user journey, not only by components; public repo must not contain secrets",
+      "done_when": "User Journeys panel and docs show status, trust boundary, cost rule, steps, done criteria and gaps for each core journey",
+      "covers": "user-fit, orchestration layer, zero-trust",
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.",
       "estimate": "Done"
     }
   ]

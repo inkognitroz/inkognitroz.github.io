@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/progress-dashboard.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/user-journeys.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css" />
 </head>
@@ -31,6 +32,7 @@
       <a href="#workflow-builder">Workflows</a>
       <a href="#dataset-manager">Data</a>
       <a href="#training-automation">Automation</a>
+      <a href="#user-journeys">Journeys</a>
       <a href="#progress-dashboard">Progress</a>
       <a href="#platform-status">Status</a>
     </nav>
@@ -61,6 +63,7 @@
         <a href="#model-library">+ Model Library</a>
         <a href="#dataset-manager">+ Datasets</a>
         <a href="#training-automation">+ Training Automation</a>
+        <a href="#user-journeys">+ User Journeys</a>
         <a href="#progress-dashboard">+ Progress Dashboard</a>
         <a href="#plus-feature-catalog">+ Roadmap</a>
       </div>
@@ -170,6 +173,18 @@
       </section>
     </details>
 
+    <details id="user-journeys" class="mimir-provider-drawer">
+      <summary>+ User Journeys</summary>
+      <section class="mimir-dashboard" aria-labelledby="user-journeys-title">
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">Trusted AI operating layer</p><h2 id="user-journeys-title">MMIR user journeys</h2></div>
+          <button id="refresh-user-journeys" type="button" class="btn btn-secondary">Refresh journeys</button>
+        </div>
+        <p id="user-journeys-summary" class="dashboard-note" data-state="idle" aria-live="polite">Journey map is loaded from a public-safe manifest.</p>
+        <div id="user-journeys-root" class="user-journey-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="workflow-builder" class="mimir-provider-drawer">
       <summary>+ Workflow Builder</summary>
       <section class="mimir-dashboard" aria-labelledby="workflow-builder-title">
@@ -236,6 +251,7 @@
   <script src="./apps/mimir-chat-portal/provider-status.js"></script>
   <script src="./apps/mimir-chat-portal/platform-status.js"></script>
   <script src="./apps/mimir-chat-portal/progress-dashboard.js"></script>
+  <script src="./apps/mimir-chat-portal/user-journeys.js"></script>
   <script src="./apps/mimir-chat-portal/role-presets.js"></script>
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>

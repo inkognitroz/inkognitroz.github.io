@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-22T18:18:00+02:00",
+  "positioning": "MMIR is the trusted AI operating layer for orchestration across local, self-hosted and managed AI systems.",
+  "public_repo_rule": "inkognitroz.github.io is public. It may contain static UI, public-safe manifests and non-sensitive local metadata only. Secrets, provider keys, billing, private user data and managed routing policy belong in private/protected backend or local connector repos.",
+  "principles": [
+    "Useful first answer before setup",
+    "Local/private by default",
+    "Orchestration is the core product strength",
+    "No hidden paid routes or surprise spend",
+    "Truthful live/beta/planned/premium labels"
+  ],
+  "journeys": [
+    {
+      "id": "J001",
+      "name": "First useful answer",
+      "status": "live",
+      "priority": "P0",
+      "user_goal": "Ask MMIR something immediately and get a helpful answer before setup.",
+      "trust_boundary": "Public browser only. No backend, no account, no provider key.",
+      "free_first": "Free browser guide route. No paid service.",
+      "entry_points": ["First screen composer", "MMIR Guide model"],
+      "steps": [
+        "Page loads and prepares safe defaults automatically",
+        "MMIR Guide is selected when no live model is available",
+        "User types a prompt",
+        "Browser guide answers truthfully and explains next setup steps"
+      ],
+      "done_when": "A new visitor can send a prompt and receive an immediate response without choosing or configuring anything.",
+      "current_gap": "Guide is deterministic, not a full LLM. WebGPU or local-node path is needed for real model reasoning.",
+      "cost": "zero"
+    },
+    {
+      "id": "J002",
+      "name": "Free local model activation",
+      "status": "beta",
+      "priority": "P0",
+      "user_goal": "Run a private local model from MMIR with no cloud cost.",
+      "trust_boundary": "Browser to paired MMIR Local Node on 127.0.0.1, then to Ollama/local runtime.",
+      "free_first": "Uses user's machine and free/open local models. No cloud spend.",
+      "entry_points": ["+ Connect Model", "Model selector", "Local AI Connector"],
+      "steps": [
+        "User chooses a free installable model",
+        "MMIR shows OS-specific installer path",
+        "Installer prepares MMIR Local Node and Ollama/model where possible",
+        "Browser pairs with local node",
+        "Model discovery moves model from installable to live",
+        "User chats through /chat/completions"
+      ],
+      "done_when": "A normal user can pick a model, install, refresh and chat with a live local model without reading architecture docs.",
+      "current_gap": "Needs smoother one-click install UX and stronger post-install detection.",
+      "cost": "zero"
+    },
+    {
+      "id": "J003",
+      "name": "Existing trusted backend",
+      "status": "beta",
+      "priority": "P1",
+      "user_goal": "Connect an already-owned local, self-hosted or OpenAI-compatible backend.",
+      "trust_boundary": "Browser to explicit user-selected backend URL. Provider secrets must stay server-side.",
+      "free_first": "Allowed by default only when route is local, free or self-hosted.",
+      "entry_points": ["+ Connect Model", "Backend settings"],
+      "steps": [
+        "User creates or edits backend profile",
+        "Public UI stores only metadata and key reference labels",
+        "Health/models are checked",
+        "Chat uses shared MMIR/OpenAI-compatible contract"
+      ],
+      "done_when": "Compatible backend can be selected, health checked, listed and used without exposing secrets in the public repo.",
+      "current_gap": "More adapter-specific validation and guided setup is needed for non-local backends.",
+      "cost": "zero when self-hosted/free"
+    },
+    {
+      "id": "J004",
+      "name": "Model orchestration chat",
+      "status": "beta",
+      "priority": "P0",
+      "user_goal": "Use MMIR as the orchestration layer: switch models, apply roles, compare outputs and synthesize.",
+      "trust_boundary": "Browser orchestration over active trusted backend/local node. No hidden provider calls.",
+      "free_first": "Works with free browser guide/local/self-hosted models first.",
+      "entry_points": ["Roles / Multi-Model Chat", "Model Library", "Runtime model selector"],
+      "steps": [
+        "User chooses a role or model",
+        "User sends task once",
+        "MMIR routes to selected model or compares multiple selected models",
+        "Responses are labeled by model/role",
+        "User can synthesize results"
+      ],
+      "done_when": "A user can see clearly which model/role answered and can switch, compare and synthesize without losing context.",
+      "current_gap": "Comparison/synthesis needs more end-to-end smoke coverage and clearer first-screen discovery.",
+      "cost": "zero with local/free models"
+    },
+    {
+      "id": "J005",
+      "name": "Workspace memory and knowledge",
+      "status": "beta",
+      "priority": "P1",
+      "user_goal": "Keep project context, preferences and uploaded knowledge available across tasks.",
+      "trust_boundary": "Local browser storage by default; protected backend only when connected.",
+      "free_first": "Local storage and file-backed backend options before paid databases.",
+      "entry_points": ["Roles / Multi-Model Chat", "Datasets", "Data controls"],
+      "steps": [
+        "User creates/selects workspace",
+        "User adds memory or uploads knowledge",
+        "MMIR retrieves relevant context",
+        "User can inspect, export or delete local data"
+      ],
+      "done_when": "Context improves answers and the user can inspect/delete/export stored data.",
+      "current_gap": "RAG and connector sync need stronger protected-backend coverage before enterprise claims.",
+      "cost": "zero by default"
+    },
+    {
+      "id": "J006",
+      "name": "Workflow orchestration",
+      "status": "beta",
+      "priority": "P1",
+      "user_goal": "Chain prompts, roles, tools and actions into reusable AI workflows.",
+      "trust_boundary": "Workflow definitions in browser/protected backend; execution bounded by policy.",
+      "free_first": "Manual and planning-only flows first. No paid automation by default.",
+      "entry_points": ["Workflow Builder", "Training Automation"],
+      "steps": [
+        "User defines workflow steps",
+        "MMIR validates inputs and execution policy",
+        "User runs or plans workflow",
+        "Results and gate status are visible"
+      ],
+      "done_when": "A workflow can be created, validated and run or safely planned with transparent gates.",
+      "current_gap": "Needs more real execution paths, audit trail and workflow-level tests.",
+      "cost": "zero for local/manual/planning"
+    },
+    {
+      "id": "J007",
+      "name": "Progress and operator dashboard",
+      "status": "live",
+      "priority": "P1",
+      "user_goal": "Follow what is shipped, beta, next, blocked and owned by which repo.",
+      "trust_boundary": "Public-safe generated manifest only.",
+      "free_first": "Static dashboard on GitHub Pages.",
+      "entry_points": ["Progress Dashboard", "Platform Status"],
+      "steps": [
+        "Dashboard manifest is generated from backlog",
+        "User sees shipped/beta/next/watch/planned status",
+        "User sees repo ownership and decisions",
+        "Smoke test guards the manifest"
+      ],
+      "done_when": "Owner can follow progress without reading private repos or asking Codex for a manual status dump.",
+      "current_gap": "Could later ingest GitHub Issues/PRs through protected tooling, but current public view is static-safe.",
+      "cost": "zero"
+    },
+    {
+      "id": "J008",
+      "name": "Managed API and provider routing",
+      "status": "blocked",
+      "priority": "P1",
+      "user_goal": "Use hosted providers and managed routes safely through MMIR.",
+      "trust_boundary": "Browser to protected API, then server-side vault/provider adapters.",
+      "free_first": "Blocked from execution until identity, rate limit, audit and cost policy exist.",
+      "entry_points": ["Backend settings", "Future api.mmir.ai"],
+      "steps": [
+        "User authenticates",
+        "Provider key is stored only server-side",
+        "Route policy checks identity, cost and permission",
+        "Provider adapter executes request",
+        "Audit logs event without raw prompt leakage"
+      ],
+      "done_when": "No key reaches public assets/localStorage, paid usage requires explicit approval, and route is auditable.",
+      "current_gap": "Identity, secret vault and paid-route policy must be completed before launch.",
+      "cost": "blocked until approved"
+    },
+    {
+      "id": "J009",
+      "name": "Trusted node orchestration mesh",
+      "status": "planned",
+      "priority": "P2",
+      "user_goal": "Register trusted local/remote nodes and route work by capability, health, trust and cost.",
+      "trust_boundary": "Protected API plus paired nodes with identity and policy.",
+      "free_first": "Start with user-owned nodes and no anonymous compute.",
+      "entry_points": ["Edge Compute Mesh", "Future node registry"],
+      "steps": [
+        "Node registers with identity",
+        "MMIR records capabilities and health",
+        "Router chooses eligible node/model by policy",
+        "User sees why route was selected"
+      ],
+      "done_when": "Trusted nodes have identity, health, capabilities and policy-bound routing.",
+      "current_gap": "Requires managed identity, node registry and routing policy hardening.",
+      "cost": "zero for owned nodes; cloud spend blocked"
+    },
+    {
+      "id": "J010",
+      "name": "Marketplace and premium orchestration",
+      "status": "premium planned",
+      "priority": "P3",
+      "user_goal": "Publish, share, buy or monetize models, workflows, agents and managed compute.",
+      "trust_boundary": "Protected marketplace API with ownership, moderation, billing and policy.",
+      "free_first": "Free product must work before marketplace monetization.",
+      "entry_points": ["Future marketplace", "Model Library"],
+      "steps": [
+        "Seller/provider registers listing",
+        "MMIR verifies trust, ownership and policy",
+        "User chooses listing with explicit cost",
+        "Execution happens through protected routing"
+      ],
+      "done_when": "Marketplace listings cannot expose secrets, misrepresent trust or charge without explicit user approval.",
+      "current_gap": "Needs product validation, governance, payments and moderation before implementation.",
+      "cost": "paid only after explicit approval"
+    }
+  ]
+}

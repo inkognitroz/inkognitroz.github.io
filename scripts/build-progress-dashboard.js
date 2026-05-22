@@ -43,7 +43,8 @@ const overrides = new Map([
   ['D099', { status: 'next', evidence: 'Expanded free/open-source model catalog is a high-value activation task.' }],
   ['D100', { status: 'planned', evidence: 'Marketplace should start as a permissioned catalog after free model activation is smoother.' }],
   ['D101', { status: 'planned', evidence: 'Premium gates are designed, but no paid execution should run before explicit approval.' }],
-  ...range(102, 104).map((id) => [id, { status: 'done', evidence: 'Immediate guide, browser model routes and automatic first-run defaults are shipped.' }])
+  ...range(102, 104).map((id) => [id, { status: 'done', evidence: 'Immediate guide, browser model routes and automatic first-run defaults are shipped.' }]),
+  ['D105', { status: 'done', evidence: 'Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.' }]
 ]);
 
 const repoMeta = [
