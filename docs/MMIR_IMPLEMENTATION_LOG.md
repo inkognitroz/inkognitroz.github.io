@@ -53,6 +53,7 @@ Updated: 2026-05-22
 - Workflow automation trigger definitions now exist in the managed backend for visible and revocable manual, schedule and event triggers.
 - Bounded workflow agents now exist end to end at the planning layer: backend workflows can store role-scoped agents, planned runs expose agent tasks, and the frontend builder can define agents and bind steps to them.
 - Frontend workflow builder now has a visual canvas MVP that reflects the same workflow model and can reorder or insert real workflow steps.
+- Evaluation framework v1 now exists in the managed backend with protected datasets, planned/scored evaluation runs, per-target summaries and sanitized audit records.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
@@ -61,7 +62,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D065-D066: evaluation and registries.
+- D066: model and adapter registry.
 - D046-D049: vector store foundations, durable backend knowledge sync and project memory governance.
 - D067-D081: platform, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
