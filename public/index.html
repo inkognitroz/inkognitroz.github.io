@@ -3,235 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SaaS Fabric by Inkognitroz</title>
-  <meta name="description" content="Build, launch and monetize SaaS products. A static-first open-source app factory — no backend required." />
-  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>MMIR by Inkognitroz</title>
+  <meta name="description" content="MMIR is the orchestration layer for trusted AI: connect local AI, route models safely and control your AI infrastructure." />
+  <meta http-equiv="refresh" content="0; url=./mmir.html" />
+  <link rel="canonical" href="./mmir.html" />
+  <style>
+    :root{color-scheme:dark;background:#080d1f;color:#f8fbff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{min-height:100vh;margin:0;display:grid;place-items:center;background:linear-gradient(135deg,#080d1f,#142a5c 58%,#0f766e)}
+    main{width:min(680px,calc(100vw - 32px));padding:32px;border:1px solid rgba(255,255,255,.18);background:rgba(8,13,31,.72);box-shadow:0 24px 80px rgba(0,0,0,.35)}
+    p{line-height:1.6;color:#d8e6ff}a{color:#9fd8ff;font-weight:800}.eyebrow{text-transform:uppercase;letter-spacing:.14em;color:#79f2c0;font-weight:800;font-size:.78rem}h1{font-size:clamp(2rem,7vw,4rem);margin:.35rem 0 .75rem;letter-spacing:0}
+  </style>
   <script>
-    /* Restore saved theme before first paint to prevent flash */
-    (function () {
-      try {
-        var raw = JSON.parse(localStorage.getItem("saas-fabric-theme") || "null");
-        var t = raw && raw.vars && typeof raw.vars === "object" ? raw.vars : raw;
-        var styles = raw && raw.styles && typeof raw.styles === "object" ? raw.styles : null;
-        if (t && typeof t === "object" && !Array.isArray(t)) {
-          var r = document.documentElement;
-          Object.keys(t).forEach(function (k) {
-            /* Only apply CSS custom properties (--*) to avoid unexpected side-effects */
-            if (typeof k === "string" && k.indexOf("--") === 0) {
-              r.style.setProperty(k, t[k]);
-            }
-          });
-          if (styles) {
-            ["bgStyle", "buttonStyle", "cardStyle", "navStyle", "heroStyle"].forEach(function (key) {
-              if (typeof styles[key] === "string") {
-                r.dataset[key] = styles[key];
-              }
-            });
-          }
-        }
-      } catch (_) {}
+    (function(){
+      var allowed = new Set(['#connect-options','#mimir-instant-start','#mimir-chat-portal','#node-dashboard','#model-library','#progress-dashboard','#platform-status']);
+      var target = new URL('./mmir.html', window.location.href);
+      target.hash = allowed.has(window.location.hash) ? window.location.hash : '#mimir-instant-start';
+      window.location.replace(target.href);
     })();
   </script>
 </head>
-<body data-page="home">
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="header-brand">
-        <h1 id="site-title">SaaS Fabric</h1>
-        <p id="site-subtitle">Build, publish and monetize apps, tools and SaaS products.</p>
-      </div>
-      <nav aria-label="Primary navigation">
-        <a href="#app-factory">Apps</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#roadmap">Roadmap</a>
-        <a href="#about">About</a>
-        <a class="admin-link" href="./admin.html">Admin</a>
-      </nav>
-    </div>
-  </header>
-
-  <main id="home">
-
-    <!-- ── Hero ── -->
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="container hero-content">
-        <p class="hero-label" id="hero-label">App factory &amp; SaaS platform</p>
-        <h2 id="hero-title">Build, Launch &amp; Monetize Your SaaS Products</h2>
-        <p id="hero-description">SaaS Fabric is an open-source, static-first platform for building mini-apps, capturing ideas, tracking your roadmap and preparing to monetize — all without a backend.</p>
-        <div class="hero-ctas" id="hero-ctas">
-          <a href="#app-factory" class="btn btn-primary">Explore Apps</a>
-          <a href="#roadmap" class="btn btn-secondary">View Roadmap</a>
-        </div>
-        <div class="trust-bar" id="trust-bar" aria-label="Product guarantees">
-          <span class="trust-badge">✓ 100% Static</span>
-          <span class="trust-badge">✓ Open Source</span>
-          <span class="trust-badge">✓ GitHub Pages</span>
-          <span class="trust-badge">✓ No Backend</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── How It Works ── -->
-    <section id="how-it-works" class="container section-spaced">
-      <p class="section-label">Simple workflow</p>
-      <h2>How it works</h2>
-      <div class="steps-grid" id="steps-grid">
-        <div class="step">
-          <span class="step-number">1</span>
-          <h3>Build</h3>
-          <p>Turn ideas into small, focused apps and websites with clear, repeatable steps — no backend required.</p>
-        </div>
-        <div class="step">
-          <span class="step-number">2</span>
-          <h3>Organise</h3>
-          <p>Capture SaaS ideas and projects in one place. Prioritise what to build next and never lose a good idea.</p>
-        </div>
-        <div class="step">
-          <span class="step-number">3</span>
-          <h3>Monetize</h3>
-          <p>Prepare pricing, launch plans and conversion experiments so your product is ready to earn revenue.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Apps ── -->
-    <section id="app-factory" class="container section-spaced">
-      <p class="section-label">Live products</p>
-      <h2>App Factory</h2>
-      <div class="grid" data-section="appFactory"></div>
-    </section>
-
-    <!-- ── Projects ── -->
-    <section id="projects" class="container section-spaced">
-      <p class="section-label">Portfolio</p>
-      <h2>Projects</h2>
-      <div class="grid" data-section="projects"></div>
-    </section>
-
-    <!-- ── Tools ── -->
-    <section id="tools" class="container section-spaced">
-      <p class="section-label">Utilities</p>
-      <h2>Tools</h2>
-      <div class="grid" data-section="tools"></div>
-    </section>
-
-    <!-- ── SaaS Ideas ── -->
-    <section id="saas-ideas" class="container section-spaced">
-      <p class="section-label">Ideas pipeline</p>
-      <h2>SaaS Ideas</h2>
-      <div class="grid" data-section="saasIdeas"></div>
-    </section>
-
-    <!-- ── Templates ── -->
-    <section id="templates" class="container section-spaced">
-      <p class="section-label">Reusable starting points</p>
-      <h2>Templates</h2>
-      <div class="grid" data-section="templates"></div>
-    </section>
-
-    <!-- ── Monetization ── -->
-    <section id="monetization" class="container section-spaced">
-      <p class="section-label">Revenue path</p>
-      <h2>Monetization</h2>
-      <div class="grid" data-section="monetization"></div>
-    </section>
-
-    <!-- ── Roadmap ── -->
-    <section id="roadmap" class="container section-spaced">
-      <p class="section-label">What's coming</p>
-      <h2>Roadmap</h2>
-      <p class="section-description">Track what is planned, in progress, ready for review and launched. Filter by status or priority to focus on what needs action next.</p>
-      <div class="roadmap-controls" aria-label="Roadmap filters">
-        <label for="roadmap-status-filter">Status</label>
-        <select id="roadmap-status-filter">
-          <option value="all">All statuses</option>
-        </select>
-        <label for="roadmap-priority-filter">Priority</label>
-        <select id="roadmap-priority-filter">
-          <option value="all">All priorities</option>
-        </select>
-      </div>
-      <div id="roadmap-board" class="roadmap-board" aria-live="polite"></div>
-    </section>
-
-    <!-- ── Dashboards ── -->
-    <section id="dashboards" class="container section-spaced">
-      <p class="section-label">Metrics</p>
-      <h2>Dashboards</h2>
-      <p class="section-description">Local-only usage insights stay on this device. No cookies, no personal tracking.</p>
-      <section class="card usage-analytics" id="usage-analytics" aria-labelledby="usage-analytics-title">
-        <div class="usage-analytics-header">
-          <h3 id="usage-analytics-title">Usage analytics (this device only)</h3>
-          <button type="button" class="btn btn-secondary usage-analytics-reset" id="usage-analytics-reset">Reset local analytics</button>
-        </div>
-        <p class="usage-analytics-note" id="usage-analytics-note">Tracking section views and app link clicks in your browser only.</p>
-        <div class="usage-analytics-grid">
-          <article>
-            <h4>Most viewed sections</h4>
-            <ul id="usage-analytics-sections"></ul>
-          </article>
-          <article>
-            <h4>Most opened apps</h4>
-            <ul id="usage-analytics-apps"></ul>
-          </article>
-        </div>
-      </section>
-      <div class="grid" data-section="dashboards"></div>
-    </section>
-
-    <!-- ── Prompt Inbox ── -->
-    <section id="prompt-inbox" class="container section-spaced">
-      <p class="section-label">AI-assisted workflow</p>
-      <h2>Prompt Inbox</h2>
-      <p class="section-description">Store prompts and tasks here, then paste them into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to generate PR-ready updates.</p>
-      <div class="grid" data-section="promptInbox"></div>
-    </section>
-
-    <!-- ── Uploads ── -->
-    <section id="uploads" class="container section-spaced">
-      <p class="section-label">Assets</p>
-      <h2>Uploads / Files</h2>
-      <div class="grid" data-section="uploads"></div>
-    </section>
-
-    <!-- ── About ── -->
-    <section id="about" class="container section-spaced">
-      <p class="section-label">Background</p>
-      <h2>About</h2>
-      <div class="grid" data-section="about"></div>
-    </section>
-
+<body>
+  <main>
+    <p class="eyebrow">Trusted AI Control Plane</p>
+    <h1>MMIR</h1>
+    <p>MMIR is the orchestration layer for trusted AI. The old app-factory page is no longer the public identity for mmir.ai.</p>
+    <p><a href="./mmir.html#mimir-instant-start">Open MMIR</a></p>
   </main>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <strong>SaaS Fabric</strong>
-        <p id="footer-subtitle">Static-first app factory by Inkognitroz.</p>
-      </div>
-      <nav class="footer-links" aria-label="Product links">
-        <p class="footer-group-label">Product</p>
-        <a href="#app-factory">Apps</a>
-        <a href="#saas-ideas">Ideas</a>
-        <a href="#templates">Templates</a>
-        <a href="#monetization">Monetization</a>
-      </nav>
-      <nav class="footer-links" aria-label="Meta links">
-        <p class="footer-group-label">Platform</p>
-        <a href="#roadmap">Roadmap</a>
-        <a href="#about">About</a>
-        <a href="./admin.html">Admin</a>
-        <a href="https://github.com/inkognitroz/inkognitroz.github.io" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-      </nav>
-    </div>
-    <div class="container">
-      <p class="footer-legal">Version 1 · Static-first · GitHub Pages compatible · Powered by <code>public/content.json</code></p>
-    </div>
-  </footer>
-
-  <script src="./assets/app.js"></script>
-  <script src="./assets/usage-analytics.js"></script>
-  <script src="./assets/onboarding.js"></script>
-  <script src="./assets/theme.js"></script>
 </body>
 </html>
