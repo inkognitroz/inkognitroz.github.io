@@ -48,12 +48,35 @@
       </form>
 
       <div class="quick-suggestions" aria-label="Quick actions">
+        <a href="#growth-demo">+ Try Demo</a>
+        <a href="mailto:hello@mmir.ai?subject=MMIR.ai%20beta%20access&body=Hi%20MMIR.ai%2C%0A%0AI%20want%20beta%20access.%20My%20main%20use%20case%20is%3A%0A%0A">+ Beta Access</a>
         <a href="#connect-options">+ Connect Model</a>
         <a href="#local-connector">+ Local AI Connector</a>
         <a href="#multi-model-workspace">+ Role Presets</a>
         <a href="#model-library">+ Model Library</a>
         <a href="#plus-feature-catalog">+ Roadmap</a>
       </div>
+
+      <section id="growth-demo" class="mimir-growth-panel" aria-label="Demo and beta access">
+        <article class="growth-card growth-card-primary">
+          <p class="eyebrow">Try first</p>
+          <h2>Get a useful answer before setup.</h2>
+          <p>Demo mode runs safe sample responses in this page, so new users can understand the product before connecting a local node or managed backend.</p>
+          <div class="growth-actions">
+            <button id="try-demo-mode" type="button" class="btn btn-primary">Try demo mode</button>
+            <a class="button-link" href="mailto:hello@mmir.ai?subject=MMIR.ai%20beta%20access&body=Hi%20MMIR.ai%2C%0A%0AI%20want%20beta%20access.%20My%20main%20use%20case%20is%3A%0A%0A">Request beta access</a>
+          </div>
+        </article>
+        <article class="growth-card">
+          <p class="eyebrow">Private path</p>
+          <h2>Bring your own local model.</h2>
+          <p>MMIR Local Node is the activation path for private local AI, model discovery and the shared chat API contract.</p>
+          <div class="growth-actions">
+            <a class="button-link" href="#local-connector">Open local connector</a>
+            <a class="button-link" href="#workflow-builder">View workflows</a>
+          </div>
+        </article>
+      </section>
     </section>
 
     <details id="local-connector" class="mimir-provider-drawer">
@@ -162,6 +185,7 @@
   <script src="./apps/mimir-chat-portal/role-presets.js"></script>
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>
+  <script src="./apps/mimir-chat-portal/demo-growth.js"></script>
   <script src="./apps/mimir-chat-portal/model-selection.js"></script>
   <script src="./apps/mimir-chat-portal/model-comparison.js"></script>
   <script src="./apps/mimir-chat-portal/workflow-builder.js"></script>
