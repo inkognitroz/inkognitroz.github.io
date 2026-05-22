@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T16:44:25.374Z",
+  "updated_at": "2026-05-22T17:46:32.473Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,8 +18,8 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 106,
-    "done": 44,
+    "total": 107,
+    "done": 45,
     "beta": 38,
     "next": 4,
     "watch": 1,
@@ -358,6 +358,16 @@
       },
       {
         "phase": "QA / Journey Gates",
+        "total": 1,
+        "done": 1,
+        "beta": 0,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Node Onboarding",
         "total": 1,
         "done": 1,
         "beta": 0,
@@ -2016,6 +2026,21 @@
       "status": "done",
       "status_note": "Shipped and guarded by local or CI checks for the current scope.",
       "evidence": "CI now runs user-journey smoke gates for first answer, local activation, orchestration, privacy, progress and blocked paid routes.",
+      "estimate": "Done"
+    },
+    {
+      "seq": "D107",
+      "phase": "Node Onboarding",
+      "priority": "P0",
+      "work_package": "Raspberry Pi/Linux ARM node install",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Make Raspberry Pi and Linux ARM a visible installer path, detect edge device class, recommend small free starter models and document secure cross-device access",
+      "best_practice": "Edge nodes should be easy to add without teaching users to expose raw ports or spend money",
+      "done_when": "User sees Raspberry Pi/Linux ARM as a first-class node option and the installer keeps local/edge defaults safe",
+      "covers": "J002, J009, D013, D050-D052, zero-trust",
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "Universal installer now exposes Raspberry Pi/Linux ARM node setup, and Linux ARM installers classify edge devices with safer starter models.",
       "estimate": "Done"
     }
   ]

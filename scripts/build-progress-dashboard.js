@@ -45,7 +45,8 @@ const overrides = new Map([
   ['D101', { status: 'planned', evidence: 'Premium gates are designed, but no paid execution should run before explicit approval.' }],
   ...range(102, 104).map((id) => [id, { status: 'done', evidence: 'Immediate guide, browser model routes and automatic first-run defaults are shipped.' }]),
   ['D105', { status: 'done', evidence: 'Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.' }],
-  ['D106', { status: 'done', evidence: 'CI now runs user-journey smoke gates for first answer, local activation, orchestration, privacy, progress and blocked paid routes.' }]
+  ['D106', { status: 'done', evidence: 'CI now runs user-journey smoke gates for first answer, local activation, orchestration, privacy, progress and blocked paid routes.' }],
+  ['D107', { status: 'done', evidence: 'Universal installer now exposes Raspberry Pi/Linux ARM node setup, and Linux ARM installers classify edge devices with safer starter models.' }]
 ]);
 
 const repoMeta = [

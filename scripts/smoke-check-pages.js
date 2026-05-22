@@ -12,6 +12,8 @@ const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
 const userJourneysPath = join(publicDir, 'user-journeys.json');
+const universalInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-install.html');
+const linuxConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-linux.sh');
 
 function fail(message) {
   console.error(message);
@@ -100,6 +102,12 @@ requireText(firstImpressionPath, 'function syncReadyState()', 'First impression 
 requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
+requireText(universalInstallerPath, 'Raspberry Pi / Linux ARM', 'Universal installer must expose Raspberry Pi/Linux ARM as a first-class node path.');
+requireText(universalInstallerPath, 'Install Raspberry Pi Node', 'Universal installer must route detected Linux ARM devices to the Raspberry Pi node flow.');
+requireText(universalInstallerPath, 'Phone / Tablet', 'Universal installer must truthfully handle mobile devices as clients.');
+requireText(linuxConnectorInstallerPath, 'DEVICE_CLASS', 'Linux connector installer must classify edge node devices.');
+requireText(linuxConnectorInstallerPath, '32-bit ARM is not supported yet', 'Linux connector installer must give a clear 64-bit Raspberry Pi OS requirement.');
+requireText(linuxConnectorInstallerPath, 'MMIR_CONNECTOR_PLATFORM="$DEVICE_CLASS"', 'Linux connector installer must pass the detected edge device class to the local node.');
 
 if (existsSync(starterCatalogPath)) {
   const catalog = JSON.parse(readFileSync(starterCatalogPath, 'utf8'));
@@ -152,7 +160,7 @@ if (existsSync(progressDashboardPath)) {
   if (tasks.length < 100) {
     fail('Progress dashboard must expose the full sequential backlog.');
   }
-  for (const id of ['D001', 'D023', 'D082', 'D099', 'D104']) {
+  for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D107']) {
     if (!tasks.some((task) => task.seq === id)) {
       fail(`Progress dashboard is missing ${id}.`);
     }

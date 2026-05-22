@@ -19,15 +19,38 @@ SERVER_SOURCE="https://mmir.ai/downloads/mmir-local-connector-server.mjs"
 log(){ printf '\n==> %s\n' "$1"; }
 fail(){ printf '\nInstall failed: %s\n' "$1" >&2; exit 1; }
 exists(){ command -v "$1" >/dev/null 2>&1; }
+device_model(){
+  if [ -r /proc/device-tree/model ]; then
+    tr -d '\000' < /proc/device-tree/model
+    return
+  fi
+
+  awk -F': ' '/^(Model|Hardware)/ {print $2; exit}' /proc/cpuinfo 2>/dev/null || true
+}
+device_class(){
+  local machine model normalized
+  machine="$(uname -m)"
+  model="$(device_model || true)"
+  normalized="$(printf '%s %s' "$model" "$machine" | tr '[:upper:]' '[:lower:]')"
+  case "$normalized" in
+    *raspberry*pi*) printf raspberry-pi;;
+    *jetson*|*tegra*) printf nvidia-jetson;;
+    *aarch64*|*arm64*) printf linux-arm64;;
+    *x86_64*|*amd64*) printf linux-x64;;
+    *) printf linux;;
+  esac
+}
 
 [ "$(uname -s)" = "Linux" ] || fail "this installer is for Linux."
 mkdir -p "$ROOT" "$LOG_DIR"
+DEVICE_CLASS="${MMIR_NODE_DEVICE_CLASS:-$(device_class)}"
 
 node_major(){ "$1" -p 'Number(process.versions.node.split(".")[0])' 2>/dev/null || printf 0; }
 node_arch(){
   case "$(uname -m)" in
     x86_64|amd64) printf x64;;
     aarch64|arm64) printf arm64;;
+    armv7l|armv6l|armhf) fail "32-bit ARM is not supported yet. Use 64-bit Raspberry Pi OS (arm64/aarch64) for MMIR Local Connector.";;
     *) fail "unsupported Linux architecture: $(uname -m)";;
   esac
 }
@@ -77,6 +100,12 @@ recommended_model(){
   local kb gb
   kb="$(awk '/MemTotal/ {print $2}' /proc/meminfo 2>/dev/null || printf 0)"
   gb=$((kb/1024/1024))
+  case "$DEVICE_CLASS" in
+    raspberry-pi|nvidia-jetson|linux-arm64)
+      if [ "$gb" -ge 8 ]; then printf llama3.2:1b; else printf qwen2.5:0.5b; fi
+      return
+      ;;
+  esac
   if [ "$gb" -ge 16 ]; then printf llama3.2:3b; elif [ "$gb" -ge 8 ]; then printf llama3.2:1b; else printf qwen2.5:0.5b; fi
 }
 
@@ -110,7 +139,7 @@ Environment=PORT=$PORT
 Environment=OLLAMA_URL=$OLLAMA_URL
 Environment=MMIR_PAIRING_TOKEN_FILE=$TOKEN_FILE
 Environment=MMIR_DEFAULT_MODEL_FILE=$MODEL_FILE
-Environment=MMIR_CONNECTOR_PLATFORM=linux
+Environment=MMIR_CONNECTOR_PLATFORM=$DEVICE_CLASS
 WorkingDirectory=$ROOT
 
 [Install]
@@ -124,7 +153,7 @@ start_connector(){
     systemctl --user enable --now mmir-local-connector.service >/dev/null 2>&1 || true
   fi
   if ! curl -fsS --max-time 2 "http://$HOST:$PORT/health" >/dev/null 2>&1; then
-    HOST="$HOST" PORT="$PORT" OLLAMA_URL="$OLLAMA_URL" MMIR_PAIRING_TOKEN_FILE="$TOKEN_FILE" MMIR_DEFAULT_MODEL_FILE="$MODEL_FILE" MMIR_CONNECTOR_PLATFORM=linux "$NODE_BIN" "$SERVER" >>"$LOG_DIR/local-connector.log" 2>>"$LOG_DIR/local-connector.err.log" &
+    HOST="$HOST" PORT="$PORT" OLLAMA_URL="$OLLAMA_URL" MMIR_PAIRING_TOKEN_FILE="$TOKEN_FILE" MMIR_DEFAULT_MODEL_FILE="$MODEL_FILE" MMIR_CONNECTOR_PLATFORM="$DEVICE_CLASS" "$NODE_BIN" "$SERVER" >>"$LOG_DIR/local-connector.log" 2>>"$LOG_DIR/local-connector.err.log" &
   fi
   for _ in $(seq 1 30); do curl -fsS --max-time 2 "http://$HOST:$PORT/health" >/dev/null 2>&1 && return; sleep 1; done
   fail "local connector did not become ready on http://$HOST:$PORT."
@@ -142,6 +171,7 @@ UNINSTALL
 }
 
 log "Installing $APP"
+log "Device class: $DEVICE_CLASS"
 ensure_node; log "Using Node: $NODE_BIN"
 ensure_ollama
 ensure_model

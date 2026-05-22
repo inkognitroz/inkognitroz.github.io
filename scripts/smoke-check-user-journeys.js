@@ -19,6 +19,8 @@ const files = {
   memory: join(publicDir, 'apps', 'mimir-chat-portal', 'memory.js'),
   knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   workflowBuilder: join(publicDir, 'apps', 'mimir-chat-portal', 'workflow-builder.js'),
+  universalInstaller: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),
+  linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
   windowsInstaller: join(publicDir, 'downloads', 'mmir-local-node-windows.ps1'),
   unixInstaller: join(publicDir, 'downloads', 'mmir-local-node-macos-linux.sh'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -98,6 +100,9 @@ if (!j001?.free_first?.toLowerCase().includes('free browser guide')) {
 if (!j002?.trust_boundary?.includes('127.0.0.1')) {
   fail('J002 must stay inside browser -> paired local node -> local runtime.');
 }
+if (!j002?.entry_points?.some((entry) => String(entry).includes('Raspberry Pi'))) {
+  fail('J002 must include a Raspberry Pi/Linux ARM node entry point.');
+}
 
 requireIncludes(files.portal, 'ensureAutomaticDefaults();render();', 'J001/J002 need automatic first-run defaults.');
 requireIncludes(files.portal, 'blockedByFreeMode', 'J003/J008 need free-first backend guardrails.');
@@ -121,6 +126,10 @@ requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete c
 requireIncludes(files.workflowBuilder, 'workflow-builder-root', 'J006 needs visible workflow builder surface.');
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route, not a decorative button.');
+requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
+requireIncludes(files.universalInstaller, '127.0.0.1:3000', 'J002 edge install copy must keep the local-node localhost boundary visible.');
+requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');
+requireIncludes(files.linuxConnectorInstaller, 'qwen2.5:0.5b', 'J002 edge installer must have a small free starter model for low-memory devices.');
 requireIncludes(files.index, 'id="progress-dashboard"', 'J007 needs progress dashboard entrypoint.');
 requireIncludes(files.index, 'id="platform-status"', 'J007 needs platform status entrypoint.');
 requireIncludes(files.userJourneyDoc, 'free-first', 'Journey docs must preserve the free-first rule.');
@@ -146,11 +155,16 @@ const d106 = tasks.find((task) => task.seq === 'D106');
 if (!d106 || d106.status !== 'done') {
   fail('Progress dashboard must expose D106 as a completed journey gate.');
 }
+const d107 = tasks.find((task) => task.seq === 'D107');
+if (!d107 || d107.status !== 'done') {
+  fail('Progress dashboard must expose D107 as a completed Raspberry Pi/Linux ARM node onboarding gate.');
+}
 
 requireIncludes(files.windowsInstaller, 'install\\mmir-install.ps1', 'Windows bootstrap must delegate to the full local-node installer.');
 requireIncludes(files.windowsInstaller, '$env:MMIR_MODEL = $Model', 'Windows bootstrap must pass selected model into the installer.');
 requireIncludes(files.unixInstaller, './install/mmir-install.sh', 'Mac/Linux bootstrap must delegate to the full local-node installer.');
 requireIncludes(files.unixInstaller, 'export MMIR_MODEL="$MODEL"', 'Mac/Linux bootstrap must pass selected model into the installer.');
+requireIncludes(files.unixInstaller, 'MMIR_NODE_DEVICE_CLASS', 'Mac/Linux bootstrap must pass Linux ARM edge device class into the full installer.');
 
 if (!process.exitCode) {
   console.log('User journey smoke check passed.');

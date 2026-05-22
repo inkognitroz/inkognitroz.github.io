@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T18:18:00+02:00",
+  "updated_at": "2026-05-22T20:05:00+02:00",
   "positioning": "MMIR is the trusted AI operating layer for orchestration across local, self-hosted and managed AI systems.",
   "public_repo_rule": "inkognitroz.github.io is public. It may contain static UI, public-safe manifests and non-sensitive local metadata only. Secrets, provider keys, billing, private user data and managed routing policy belong in private/protected backend or local connector repos.",
   "principles": [
@@ -38,17 +38,17 @@
       "user_goal": "Run a private local model from MMIR with no cloud cost.",
       "trust_boundary": "Browser to paired MMIR Local Node on 127.0.0.1, then to Ollama/local runtime.",
       "free_first": "Uses user's machine and free/open local models. No cloud spend.",
-      "entry_points": ["+ Connect Model", "Model selector", "Local AI Connector"],
+      "entry_points": ["+ Connect Model", "Model selector", "Local AI Connector", "Raspberry Pi / Linux ARM installer"],
       "steps": [
         "User chooses a free installable model",
-        "MMIR shows OS-specific installer path",
+        "MMIR shows OS-specific installer path, including Raspberry Pi/Linux ARM",
         "Installer prepares MMIR Local Node and Ollama/model where possible",
         "Browser pairs with local node",
         "Model discovery moves model from installable to live",
         "User chats through /chat/completions"
       ],
       "done_when": "A normal user can pick a model, install, refresh and chat with a live local model without reading architecture docs.",
-      "current_gap": "Needs smoother one-click install UX and stronger post-install detection.",
+      "current_gap": "Needs smoother one-click install UX, stronger post-install detection and secure cross-device control-plane pairing beyond localhost.",
       "cost": "zero"
     },
     {
@@ -175,8 +175,9 @@
       "user_goal": "Register trusted local/remote nodes and route work by capability, health, trust and cost.",
       "trust_boundary": "Protected API plus paired nodes with identity and policy.",
       "free_first": "Start with user-owned nodes and no anonymous compute.",
-      "entry_points": ["Edge Compute Mesh", "Future node registry"],
+      "entry_points": ["Edge Compute Mesh", "Raspberry Pi / Linux ARM installer", "Future node registry"],
       "steps": [
+        "User installs a local/edge node on PC, VM, Raspberry Pi or Linux ARM device",
         "Node registers with identity",
         "MMIR records capabilities and health",
         "Router chooses eligible node/model by policy",

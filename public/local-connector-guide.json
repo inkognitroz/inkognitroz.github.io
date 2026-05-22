@@ -1,12 +1,12 @@
 {
-  "version": 6,
+  "version": 7,
   "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through the hardened MMIR Local Node.",
   "steps": [
     {
       "id": "install",
       "title": "Install connector",
       "status": "beta",
-      "description": "Use the universal installer from the Connect section on mmir.ai. It detects Mac, Windows, Linux/VM or Android client mode and gives the right MMIR Local Connector flow."
+      "description": "Use the universal installer from the Connect section on mmir.ai. It detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode and gives the right MMIR Local Connector flow."
     },
     {
       "id": "desktop-node",
@@ -15,10 +15,16 @@
       "description": "Mac, Windows and Linux installers create the local API on 127.0.0.1:3000, connect to Ollama on the same machine, pull a starter model and keep the connector local by default."
     },
     {
-      "id": "android-client",
-      "title": "Use Android as client",
+      "id": "mobile-client",
+      "title": "Use phone or tablet as client",
       "status": "client-mode",
-      "description": "Android uses mmir.ai as a client connected to a Mac, Windows, Linux or VM node. Native Android model hosting is a separate APK/runtime track and is not claimed as live."
+      "description": "Android, iPhone and iPad use mmir.ai as clients connected to a Mac, Windows, Linux, Raspberry Pi/Linux ARM or VM node. Native on-device mobile model hosting is a separate app/runtime track and is not claimed as live."
+    },
+    {
+      "id": "edge-node",
+      "title": "Run Raspberry Pi or Linux ARM node",
+      "status": "beta",
+      "description": "Use 64-bit Raspberry Pi OS or another arm64 Linux device with the Linux installer. MMIR marks it as an edge node, recommends a smaller starter model and keeps the connector bound to 127.0.0.1 by default."
     },
     {
       "id": "detect",
@@ -49,6 +55,7 @@
     "No secrets in GitHub Pages frontend",
     "No public raw Ollama port",
     "Local connector requires pairing before model and chat routes",
+    "Raspberry Pi and edge nodes should pair locally or use an explicit secure tunnel/control-plane path for cross-device access",
     "Use controlled /health, /status, /models and /chat/completions endpoints",
     "Use /tunnels/status and opt-in /tunnels/trycloudflare/start for temporary tunnel testing",
     "Android is client mode until native APK/runtime security is designed",

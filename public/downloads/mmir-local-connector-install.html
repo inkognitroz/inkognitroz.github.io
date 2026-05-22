@@ -96,10 +96,10 @@
 </head>
 <body>
   <main>
-    <h1>Install MMIR Local Connector</h1>
+    <h1>Install an MMIR node</h1>
     <p id="detected">Detecting this device...</p>
     <a class="primary" id="primary" href="./mmir-local-connector-mac.zip.html">Install Connector</a>
-    <p>The connector runs privately on <code>127.0.0.1:3000</code>, connects to Ollama on the same machine, and lets mmir.ai chat with local models through the MMIR API contract.</p>
+    <p>The connector turns Mac, Windows, Linux, Raspberry Pi, VMs and edge machines into private MMIR nodes. It runs on <code>127.0.0.1:3000</code>, connects to Ollama on the same machine, and lets mmir.ai chat with local models through the MMIR API contract.</p>
 
     <section class="grid" aria-label="Installer choices">
       <article class="card" data-platform="mac">
@@ -120,11 +120,17 @@
         <p>One shell installer for Linux desktops, servers and VMs. It installs the connector as a user service when systemd is available.</p>
         <a href="./mmir-local-connector-linux.sh" download>Download Linux installer</a>
       </article>
+      <article class="card" data-platform="raspberry-pi">
+        <div class="status">Live beta</div>
+        <h2>Raspberry Pi / Linux ARM</h2>
+        <p>Use 64-bit Raspberry Pi OS or another arm64 Linux device. The installer keeps the node private, pulls a small starter model and marks it as an edge node.</p>
+        <a href="./mmir-local-connector-linux.sh" download>Download Raspberry Pi installer</a>
+      </article>
       <article class="card" data-platform="android">
         <div class="status">Client mode</div>
-        <h2>Android</h2>
-        <p>Android connects to a Mac, Windows or Linux node. Native on-device Android model hosting needs a separate APK/runtime track.</p>
-        <a href="https://mmir.ai/#connect-options">Open MMIR.ai on Android</a>
+        <h2>Phone / Tablet</h2>
+        <p>Android, iPhone and iPad connect to a Mac, Windows, Linux, Raspberry Pi or VM node. Native on-device mobile model hosting needs a separate app/runtime track.</p>
+        <a href="https://mmir.ai/#connect-options">Open MMIR.ai on mobile</a>
       </article>
     </section>
   </main>
@@ -133,7 +139,8 @@
       mac: { label: 'Install Mac Connector', href: './mmir-local-connector-mac.zip.html', download: false, text: 'Detected macOS. Use the Mac installer.' },
       windows: { label: 'Install Windows Connector', href: './mmir-local-connector-windows.cmd', download: true, text: 'Detected Windows. Use the Windows installer.' },
       linux: { label: 'Install Linux Connector', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux. Use the Linux installer.' },
-      android: { label: 'Open MMIR.ai Client', href: 'https://mmir.ai/#connect-options', download: false, text: 'Detected Android. Use Android as a client connected to a desktop or VM node.' },
+      raspberry: { label: 'Install Raspberry Pi Node', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux ARM. Use the Raspberry Pi / Linux ARM node installer.' },
+      mobile: { label: 'Open MMIR.ai Client', href: 'https://mmir.ai/#connect-options', download: false, text: 'Detected mobile. Use this device as a client connected to a desktop, Raspberry Pi or VM node.' },
       unknown: { label: 'Choose Installer Below', href: '#', download: false, text: 'Choose the installer for the machine that will host the local model.' },
     };
 
@@ -141,9 +148,10 @@
       const ua = navigator.userAgent.toLowerCase();
       const platformName = String(navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
       const value = `${ua} ${platformName}`;
-      if (value.includes('android')) return 'android';
+      if (value.includes('android') || value.includes('iphone') || value.includes('ipad') || value.includes('ipod')) return 'mobile';
       if (value.includes('win')) return 'windows';
       if (value.includes('mac')) return 'mac';
+      if ((value.includes('linux') || value.includes('x11')) && /aarch64|arm64|armv/.test(value)) return 'raspberry';
       if (value.includes('linux') || value.includes('x11')) return 'linux';
       return 'unknown';
     }

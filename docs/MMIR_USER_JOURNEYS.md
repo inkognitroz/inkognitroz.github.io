@@ -27,7 +27,7 @@ MMIR should feel simple, personal, calm and powerful:
 | ID | Journey | Status | User goal | Trust boundary | Free-first rule | Done when |
 |---|---|---|---|---|---|---|
 | J001 | First useful answer | live | Ask MMIR something immediately | Public browser only | Uses browser guide, no account, no backend, no key | User can send a prompt and receive an immediate truthful guide answer |
-| J002 | Free local model activation | beta | Run a private local LLM through MMIR | Browser -> paired local node -> Ollama | Uses local machine and open local models only | User selects a free model, installs local node/Ollama, refreshes and sees live model |
+| J002 | Free local model activation | beta | Run a private local LLM through MMIR | Browser -> paired local node -> Ollama | Uses local machine, Raspberry Pi/Linux ARM node or open local models only | User selects a free model, installs local node/Ollama, refreshes and sees live model |
 | J003 | Existing trusted backend | beta | Connect an existing self-hosted or compatible backend | Browser -> user-selected backend | Non-local backend must be marked free/local/self-hosted unless protected paid policy exists | User can save backend metadata and chat through the shared contract |
 | J004 | Model orchestration chat | beta | Switch roles/models, compare answers and synthesize | Browser + active trusted backend | No hidden paid provider calls | User can select role/model/comparison and see labeled outputs |
 | J005 | Workspace memory and knowledge | beta | Keep useful project context across chats | Browser local storage and protected backend when connected | Local-first; memory is inspectable and deletable | User can create workspace, add memory/docs and see context used in answers |
@@ -71,7 +71,7 @@ Private/protected repos required:
 
 ## Current Highest-Value Fixes
 
-1. Make J002 one-click enough that a normal user can get a local model live without reading architecture.
+1. Make J002 one-click enough that a normal user can get a local model live on Mac, Windows, Linux, Raspberry Pi/Linux ARM or VM without reading architecture.
 2. Make J004 orchestration feel like MMIR's core strength: role, model, comparison and synthesis should be obvious and reliable.
 3. Add journey-level smoke tests so each route can be marked 100% only when it actually works end to end.
 4. Keep J008/J010 blocked until paid/provider/secret controls are real.
