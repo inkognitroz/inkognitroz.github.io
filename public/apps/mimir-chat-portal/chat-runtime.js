@@ -478,6 +478,13 @@
     return modelSelect?starterFromValue(modelSelect.value):null;
   }
 
+  function preferredStarterModel(){
+    return starterModels.find(model=>model.id==='mmir-guide')||
+      starterModels.find(model=>model.runtime==='browser-guide')||
+      starterModels[0]||
+      null;
+  }
+
   function commandLines(model){
     const ollamaModel=String(model?.model||'').trim();
     const envValue=ollamaModel||'gemma3:270m';
@@ -569,7 +576,10 @@
 
     const values=Array.from(modelSelect.options||[]).map(option=>option.value);
     if(previous&&values.includes(previous))modelSelect.value=previous;
-    else if(!models.length&&starterModels.some(model=>model.id==='mmir-guide'))modelSelect.value=starterValue(starterModels.find(model=>model.id==='mmir-guide'));
+    else if(!models.length){
+      const preferred=preferredStarterModel();
+      if(preferred)modelSelect.value=starterValue(preferred);
+    }
     modelSelect.disabled=!values.length;
     renderModelHelper();
   }

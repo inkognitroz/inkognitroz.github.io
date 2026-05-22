@@ -83,10 +83,11 @@ Updated: 2026-05-22
 - Chat model selection now also includes multiple live browser helpers and WebLLM/WebGPU model routes using official MLC model IDs for supported browsers, with graceful fallback when WebGPU is unavailable.
 - Free browser/installable model choices now render immediately on page load while local-node health is checked in the background, so the first chat surface does not look empty or blocked by backend setup.
 - `+ Connect Model` now activates/reuses the free local node profile and opens the backend setup panel instead of feeling like a dead action.
+- First-run now creates/reuses the free local-node profile automatically, keeps manual configuration optional, and auto-selects the free in-browser guide so the first chat path answers immediately.
 - Free local model install bootstrap files now exist for Windows and Mac/Linux, so a selected starter model can produce a concrete path to MMIR Local Node + Ollama.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
-- Activation/revenue items `D097-D103` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants and browser WebGPU models.
+- Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 

@@ -130,8 +130,7 @@
 
   function render(){renderList();renderEditor();renderDashboard();}
   function selectProfile(id){selectedId=id;setStatus('');render();}
-  function createProfile(){const profile=ensureFreeLocalProfile();setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Run the installer, then Refresh models.'));render();}
-  function ensureFreeLocalProfile(){
+  function upsertFreeLocalProfile(){
     const profiles=readProfiles();
     let profile=profiles.find(p=>cleanUrl(p.url)===DEFAULT_LOCAL_URL&&p.provider==='local-node');
     if(!profile){
@@ -143,12 +142,30 @@
     profile.provider='local-node';
     profile.updatedAt=new Date().toISOString();
     writeProfiles(profiles);
+    return profile;
+  }
+  function createProfile(){const profile=ensureFreeLocalProfile();setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Run the installer, then Refresh models.'));render();}
+  function ensureFreeLocalProfile(){
+    const profile=upsertFreeLocalProfile();
     selectedId=profile.id;
     writeActive(profile.id);
     setStatus('Free local profile is active.');
     render();
     openBackendSettings();
     return profile;
+  }
+  function ensureAutomaticDefaults(){
+    const profile=upsertFreeLocalProfile();
+    const profiles=readProfiles();
+    const active=profiles.find(p=>p.id===readActive());
+    if(!active||!validUrl(active.url)||blockedByFreeMode(active)){
+      writeActive(profile.id);
+      selectedId=profile.id;
+      setStatus('Free local profile prepared automatically. You can configure it later.');
+      return profile;
+    }
+    selectedId=active.id;
+    return active;
   }
   function saveProfile(){
     const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
@@ -163,6 +180,6 @@
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
   if(refreshDashboardBtn)refreshDashboardBtn.addEventListener('click',()=>{renderDashboard();setStatus('Dashboard refreshed.');});
   window.addEventListener('mmir-backend-profiles-updated',()=>render());
-  window.MimirBackendProfiles={ensureFreeLocalProfile};
-  const profiles=readProfiles();selectedId=readActive()||(profiles[0]&&profiles[0].id)||null;render();
+  window.MimirBackendProfiles={ensureFreeLocalProfile,ensureAutomaticDefaults};
+  ensureAutomaticDefaults();render();
 })();
