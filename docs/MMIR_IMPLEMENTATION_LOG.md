@@ -74,6 +74,8 @@ Updated: 2026-05-22
 - Managed backend now has a free, protected dataset registry foundation for future training, fine-tuning, RAG, preference and evaluation work, with versioned records, source/license/consent metadata, owner isolation, file-backed persistence and portable export/import/delete controls.
 - Frontend now has a dataset manager panel for creating, listing, versioning and deleting datasets through the active protected backend profile.
 - Training and LoRA remain explicitly planning-only until a worker, policy gate, evaluation gate and cost approval path exist.
+- Managed backend now has planning-only training job automation with automatic gates for dataset ownership, record count, consent, source rights, PII, compute route and cost policy.
+- Frontend now has a training automation panel that plans jobs through the protected backend and shows gate status without starting paid compute.
 - Frontend onboarding now has a free local activation action, and backend profiles are blocked from ambiguous paid use unless non-local routes are explicitly marked free, local or self-hosted.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
