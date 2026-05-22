@@ -159,6 +159,11 @@ const d107 = tasks.find((task) => task.seq === 'D107');
 if (!d107 || d107.status !== 'done') {
   fail('Progress dashboard must expose D107 as a completed Raspberry Pi/Linux ARM node onboarding gate.');
 }
+for (const id of ['D108', 'D115', 'D126', 'D145', 'D152']) {
+  if (!tasks.some((task) => task.seq === id)) {
+    fail(`Progress dashboard must expose expanded GUI parity task ${id}.`);
+  }
+}
 
 requireIncludes(files.windowsInstaller, 'install\\mmir-install.ps1', 'Windows bootstrap must delegate to the full local-node installer.');
 requireIncludes(files.windowsInstaller, '$env:MMIR_MODEL = $Model', 'Windows bootstrap must pass selected model into the installer.');

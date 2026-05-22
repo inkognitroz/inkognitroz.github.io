@@ -46,7 +46,9 @@ const overrides = new Map([
   ...range(102, 104).map((id) => [id, { status: 'done', evidence: 'Immediate guide, browser model routes and automatic first-run defaults are shipped.' }]),
   ['D105', { status: 'done', evidence: 'Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.' }],
   ['D106', { status: 'done', evidence: 'CI now runs user-journey smoke gates for first answer, local activation, orchestration, privacy, progress and blocked paid routes.' }],
-  ['D107', { status: 'done', evidence: 'Universal installer now exposes Raspberry Pi/Linux ARM node setup, and Linux ARM installers classify edge devices with safer starter models.' }]
+  ['D107', { status: 'done', evidence: 'Universal installer now exposes Raspberry Pi/Linux ARM node setup, and Linux ARM installers classify edge devices with safer starter models.' }],
+  ...range(108, 115).map((id) => [id, { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }]),
+  ...range(116, 152).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }])
 ]);
 
 const repoMeta = [

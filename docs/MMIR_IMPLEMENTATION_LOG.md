@@ -97,6 +97,7 @@ Updated: 2026-05-22
 - Live chat now injects a default MMIR platform instruction so local models understand MMIR as the trusted AI operating/orchestration layer before the user configures anything.
 - Chat composer now has an Open WebUI/ChatGPT-inspired MMIR dock: small `+` model connect, `Private`, `Boost 5.5`, `MMIR++`, `Vision`, voice input, live model chip and local CPU/RAM chip; the mode buttons feed real system instructions instead of being decorative.
 - Universal node install now has an explicit Raspberry Pi/Linux ARM path. The Linux installer detects edge device class, requires 64-bit ARM for Pi-class devices, recommends smaller free starter models and keeps the node private on localhost by default.
+- Backlog now includes `D108-D152`: dead-button cleanup, node dashboard, secure cross-device pairing, install/model health flows, first-screen WOW polish and a ChatGPT/Open WebUI parity track for files, search, tools, canvas, voice, multimodal, admin, RBAC, assistants, data analysis, scheduled tasks, connectors, PWA and sharing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.

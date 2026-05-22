@@ -157,10 +157,10 @@ if (existsSync(modelCatalogPath)) {
 if (existsSync(progressDashboardPath)) {
   const dashboard = JSON.parse(readFileSync(progressDashboardPath, 'utf8'));
   const tasks = Array.isArray(dashboard.tasks) ? dashboard.tasks : [];
-  if (tasks.length < 100) {
+  if (tasks.length < 150) {
     fail('Progress dashboard must expose the full sequential backlog.');
   }
-  for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D107']) {
+  for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D107', 'D125', 'D152']) {
     if (!tasks.some((task) => task.seq === id)) {
       fail(`Progress dashboard is missing ${id}.`);
     }
