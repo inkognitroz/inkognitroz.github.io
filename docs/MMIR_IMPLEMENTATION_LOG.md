@@ -9,6 +9,7 @@ Updated: 2026-05-22
 - Chat history is now scoped by local workspace so separate projects do not overwrite each other.
 - Workspace memory can now store local project facts/preferences and inject them into chat/comparison context when relevant.
 - Local knowledge upload now stores text-like files per workspace and injects relevant snippets into chat context as a first RAG foundation.
+- Privacy/local data controls now let users inspect counts, export, copy and delete workspace chat, memory and knowledge stored in the browser.
 - Chat requests use the shared `/chat/completions` contract with `/chat` fallback.
 - Frontend prefers Server-Sent Events streaming and falls back to JSON when needed.
 - Chat supports Stop, Copy, Retry, Clear and safe code-block rendering without trusting model HTML.
@@ -39,7 +40,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D087-D093: local data controls, backend RAG skeleton, managed identity, status monitoring, local-node timeout polish and shared frontend API client.
+- D088-D093: workspace creation polish, backend RAG skeleton, managed identity, status monitoring, local-node timeout polish and shared frontend API client.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
