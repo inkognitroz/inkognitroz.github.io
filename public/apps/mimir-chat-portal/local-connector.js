@@ -15,6 +15,7 @@
   function label(status){return normalizeStatus(status).replaceAll('-',' ');}
   function statusClass(status){return 'status-'+normalizeStatus(status).replace(/[^a-z0-9-]/g,'-');}
   function featureStatus(feature){return normalizeStatus(feature.status||feature.badge,feature);}
+  function isDownloadTarget(target){return /\.(command|pkg|dmg|zip)(?:[?#].*)?$/i.test(String(target||''));}
 
   function render(steps){
     if(!grid)return;
@@ -33,7 +34,11 @@
     section.open=true;
     const cards=(Array.isArray(options)?options:[]).map(option=>{
       const status=normalizeStatus(option.status);
-      return '<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(option.title||option.id)+'</h3><span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></div><p>'+safe(option.description||'Connection option')+'</p><a class="button-link" href="'+safe(option.target||'#backend-settings')+'">Open</a></article>';
+      const target=option.target||'#backend-settings';
+      const download=isDownloadTarget(target);
+      const action=download?'Download':'Open';
+      const downloadAttr=download?' download':'';
+      return '<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(option.title||option.id)+'</h3><span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></div><p>'+safe(option.description||'Connection option')+'</p><a class="button-link" href="'+safe(target)+'"'+downloadAttr+'>'+action+'</a></article>';
     }).join('');
     section.innerHTML='<summary>+ Connect Model</summary><section class="mimir-dashboard" aria-labelledby="connect-options-title"><div class="dashboard-heading"><div><p class="eyebrow">First pipeline</p><h2 id="connect-options-title">Connect to local and cloud AI/LLM models</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
     const anchor=document.getElementById('local-connector');
@@ -63,6 +68,7 @@
       renderConnectOptions(data.options||[]);
     }catch(error){
       renderConnectOptions([
+        {id:'mac-local-connector-download',title:'Install Mac Connector',status:'beta',description:'Download the MMIR Local Connector for Mac and start the private local AI path.',target:'./downloads/mmir-local-connector-mac.command'},
         {id:'local-connector',title:'Connect local LLM',status:'beta',description:'Connect a local PC or VM through the MMIR local connector.',target:'#local-connector'},
         {id:'bring-backend',title:'Add compatible backend',status:'beta',description:'Add a trusted backend URL when the connector API is ready.',target:'#backend-settings'},
         {id:'provider-api',title:'Use SaaS model/API',status:'premium-planned',description:'Provider keys must stay behind a protected backend.',target:'#provider-status'}
