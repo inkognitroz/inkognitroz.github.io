@@ -188,7 +188,7 @@
       const downloadAttr=download&&!isDownloadPage(target)?' download':'';
       return '<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(option.title||option.id)+'</h3><span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></div><p>'+safe(option.description||'Connection option')+'</p><a class="button-link" href="'+safe(target)+'"'+downloadAttr+'>'+safe(action)+'</a></article>';
     }).join('');
-    section.innerHTML='<summary>+ Connect Model</summary><section class="mimir-dashboard" aria-labelledby="connect-options-title"><div class="dashboard-heading"><div><p class="eyebrow">First pipeline</p><h2 id="connect-options-title">Connect to local and cloud AI/LLM models</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
+    section.innerHTML='<summary>+ Connect local AI</summary><section class="mimir-dashboard" aria-labelledby="connect-options-title"><div class="dashboard-heading"><div><p class="eyebrow">Ground zero</p><h2 id="connect-options-title">Open MMIR, connect local AI, install, ready</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
     const anchor=document.getElementById('local-connector');
     if(anchor)main.insertBefore(section,anchor); else main.appendChild(section);
   }
