@@ -39,6 +39,7 @@ Updated: 2026-05-22
 - Managed backend now fails closed into API-key auth when a non-mock managed provider is selected, unless anonymous managed-provider mode is explicitly enabled for local demo use.
 - Managed backend now has a protected node registry for registering, listing, heartbeat-updating and deleting owned compute nodes.
 - Node heartbeat now carries public-safe health metadata: latency, runtime version, model inventory count and bounded health history.
+- Managed backend now exposes a protected scheduler candidate endpoint that filters owned online nodes by trust, required capabilities, latency policy and GPU/resource signals without executing workloads.
 - MMIR Local Node now exposes public-safe node identity metadata for future managed registration.
 - Secure outbound tunnel rules are now documented for backend and local-node, with explicit no-inbound-port, short-lived-token and no-frontend-secret boundaries.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
@@ -49,7 +50,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D053-D059: resource scheduling and AI routing.
+- D054-D059: cloud runtime integration and AI routing.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
