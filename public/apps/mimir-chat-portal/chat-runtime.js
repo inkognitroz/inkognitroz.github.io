@@ -64,6 +64,7 @@
   function writeModes(modes){
     try{localStorage.setItem(MODE_KEY,JSON.stringify(modes));}
     catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-chat-modes-updated',{detail:modes}));
     updateModeButtons();
   }
   function openPanel(target){

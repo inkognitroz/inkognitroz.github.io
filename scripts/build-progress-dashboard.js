@@ -48,7 +48,9 @@ const overrides = new Map([
   ['D106', { status: 'done', evidence: 'CI now runs user-journey smoke gates for first answer, local activation, orchestration, privacy, progress and blocked paid routes.' }],
   ['D107', { status: 'done', evidence: 'Universal installer now exposes Raspberry Pi/Linux ARM node setup, and Linux ARM installers classify edge devices with safer starter models.' }],
   ['D108', { status: 'done', evidence: 'A public-safe UI action coverage manifest and CI smoke gate now guard homepage/chat controls, disabled hash links, generated panel anchors and handler evidence.' }],
-  ...range(109, 115).map((id) => [id, { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }]),
+  ...range(109, 113).map((id) => [id, { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }]),
+  ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
+  ['D115', { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }],
   ...range(116, 152).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }])
 ]);
 
@@ -177,6 +179,12 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
+const prioritizedNextIds = ['D109', 'D110', 'D111', 'D112', 'D113', 'D115', 'D023', 'D024', 'D025', 'D042'];
+const nextTasks = tasks.filter((task) => task.status === 'next');
+const prioritizedNextQueue = [
+  ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
+  ...nextTasks.map((task) => task.seq).filter((id) => !prioritizedNextIds.includes(id))
+].slice(0, 12);
 const data = {
   version: 1,
   updated_at: new Date().toISOString(),
@@ -192,7 +200,7 @@ const data = {
   summary: summarize(tasks),
   repos: repoMeta,
   repo_decisions: repoDecisions,
-  next_queue: tasks.filter((task) => task.status === 'next').slice(0, 12).map((task) => task.seq),
+  next_queue: prioritizedNextQueue,
   watchlist: tasks.filter((task) => task.status === 'watch' || task.status === 'blocked').map((task) => task.seq),
   tasks
 };

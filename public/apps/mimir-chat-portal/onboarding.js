@@ -4,6 +4,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const CHAT_KEY='mimir-chat-current-session-v1';
+  const MODE_KEY='mimir-chat-mode-controls-v1';
   const chatCenter=document.querySelector('.mimir-chat-center');
 
   function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
@@ -11,6 +12,28 @@
   function statusOf(profile){return String(profile?.health||'unknown').toLowerCase();}
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
+  function readModes(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(MODE_KEY)||'{}');
+      return {
+        private:saved.private!==false,
+        boost:Boolean(saved.boost),
+        super:Boolean(saved.super),
+        vision:Boolean(saved.vision)
+      };
+    }catch(error){
+      return {private:true,boost:false,super:false,vision:false};
+    }
+  }
+  function selectedModel(){
+    const select=document.getElementById('runtime-model');
+    const option=select?.selectedOptions?.[0];
+    return {
+      value:select?.value||'',
+      text:String(option?.textContent||'').trim(),
+      runtime:option?.dataset?.runtime||''
+    };
+  }
   function hasFirstPrompt(){
     try{
       const raw=localStorage.getItem(chatStorageKey())||(
@@ -66,20 +89,27 @@
     const hasProfile=profiles.length>0;
     const hasActive=Boolean(active);
     const ready=health==='ready';
-    const degraded=health==='degraded'||health==='offline'||health==='testing';
+    const localNodeSeen=Boolean(hasActive&&['ready','degraded','testing'].includes(health));
+    const localNodeProblem=health==='degraded'||health==='offline'||health==='testing';
     const sent=hasFirstPrompt();
+    const modes=readModes();
+    const privateOn=modes.private!==false;
+    const model=selectedModel();
+    const modelLive=Boolean(model.value&&!model.value.startsWith('starter:')&&/live/i.test(model.text));
+    const modelLabel=model.text.replace(/\s+-\s+live$/i,'');
 
     const steps=[
-      {label:'Create backend profile',done:hasProfile,detail:hasProfile?'A local or trusted backend profile exists.':'Start with MMIR Local Node on 127.0.0.1.',target:'#backend-settings'},
-      {label:'Set active backend',done:hasActive,detail:hasActive?(active.name||'Backend is active'):'Select the profile and click Set active.',target:'#backend-settings'},
-      {label:'Discover live model',done:ready,detail:ready?(active.models||'Model discovered'):(degraded?'Backend reached but needs attention.':'Run local node, refresh, then pair/discover models.'),target:'#local-connector'},
-      {label:'Send first prompt',done:sent,detail:sent?'First chat is saved in this workspace.':(ready?'Type a prompt and press Send.':'Finish backend setup, then send the first prompt.'),target:'#mimir-prompt'}
+      {label:'Browser ready',done:true,detail:'Free guide and installable model choices load automatically.',target:'#mimir-prompt'},
+      {label:'Private mode',done:privateOn,detail:privateOn?'Private-by-default routing instructions are on.':'Turn Private back on in the chat dock.',target:'#composer-mode-dock'},
+      {label:'Local node',done:localNodeSeen,detail:localNodeSeen?(active.name||'Local node profile is active.'):(hasProfile?'Local profile exists; start or refresh the node.':'MMIR prepares the free local profile for you.'),target:'#local-connector'},
+      {label:'Model live',done:modelLive||ready,detail:(modelLive?modelLabel+' is live.':(ready?(active.models||'Model discovered.'):(localNodeProblem?'Node needs attention before model is live.':'Browser guide works now; local model activates after install.'))),target:'#local-connector'},
+      {label:'First chat',done:sent,detail:sent?'First answer is saved in this workspace.':'Type or use a starter prompt to get the first useful answer.',target:'#mimir-prompt'}
     ];
     const firstOpen=steps.findIndex(item=>!item.done);
 
     const heading=document.createElement('div');
     heading.className='onboarding-heading';
-    heading.innerHTML='<div><p class="eyebrow">Free-first start</p><h2>Get to your first local answer</h2></div><small>No account, no paid provider, no cloud model required.</small>';
+    heading.innerHTML='<div><p class="eyebrow">Automatic launch checklist</p><h2>First-run success gates</h2></div><small>Browser, privacy, local node, live model and first chat update automatically.</small>';
 
     const grid=document.createElement('div');
     grid.className='onboarding-grid';
@@ -98,11 +128,21 @@
         document.getElementById('local-connector')?.setAttribute('open','');
       }
     });
+    const privateButton=document.createElement('button');
+    privateButton.type='button';
+    privateButton.id='activate-private-mode';
+    privateButton.textContent='Private mode';
+    privateButton.addEventListener('click',()=>{
+      const next={...readModes(),private:true};
+      localStorage.setItem(MODE_KEY,JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent('mmir-chat-modes-updated',{detail:next}));
+      render();
+    });
     const installLink=document.createElement('a');
     installLink.href='#local-connector';
     installLink.textContent='Local install';
     installLink.addEventListener('click',()=>openTarget('#local-connector'));
-    actions.append(freeButton,installLink);
+    actions.append(freeButton,privateButton,installLink);
 
     panel.innerHTML='';
     panel.append(heading,actions,grid);
@@ -111,6 +151,8 @@
   window.addEventListener('mmir-backend-profiles-updated',render);
   window.addEventListener('mmir-workspace-changed',render);
   window.addEventListener('mmir-chat-history-updated',render);
+  window.addEventListener('mmir-chat-modes-updated',render);
+  window.addEventListener('mmir-local-connector-refreshed',render);
   window.addEventListener('storage',render);
   window.addEventListener('focus',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();

@@ -21,6 +21,14 @@
       "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openPanel('#connect-options')", "section.id='connect-options'"]
     },
     {
+      "id": "first-run-checklist",
+      "surface": "First-run onboarding",
+      "status": "live",
+      "user_result": "The automatic launch checklist shows Browser ready, Private mode, Local node, Model live and First chat gates without asking the user to configure first.",
+      "selectors": ["#first-run-onboarding", "#activate-free-local", "#activate-private-mode"],
+      "evidence": ["First-run success gates", "Browser ready", "Private mode", "Model live", "mmir-chat-modes-updated"]
+    },
+    {
       "id": "backend-profile",
       "surface": "Backend settings",
       "status": "live",

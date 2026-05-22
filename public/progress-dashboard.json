@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T20:38:03.246Z",
+  "updated_at": "2026-05-22T20:47:20.698Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -19,9 +19,9 @@
   },
   "summary": {
     "total": 152,
-    "done": 46,
+    "done": 47,
     "beta": 38,
-    "next": 11,
+    "next": 10,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -289,9 +289,9 @@
       {
         "phase": "Activation UX",
         "total": 5,
-        "done": 3,
+        "done": 4,
         "beta": 0,
-        "next": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 1
@@ -748,17 +748,16 @@
     }
   ],
   "next_queue": [
-    "D023",
-    "D024",
-    "D025",
-    "D042",
     "D109",
     "D110",
     "D111",
     "D112",
     "D113",
-    "D114",
-    "D115"
+    "D115",
+    "D023",
+    "D024",
+    "D025",
+    "D042"
   ],
   "watchlist": [
     "D082",
@@ -2470,10 +2469,10 @@
       "best_practice": "Users need visible momentum during setup",
       "done_when": "New users know exactly what is working and what remains",
       "covers": "D024, D104",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
-      "estimate": "2-6h"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.",
+      "estimate": "Done"
     },
     {
       "seq": "D115",
