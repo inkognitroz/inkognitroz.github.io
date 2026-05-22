@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-22T20:20:00+02:00",
+  "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
+  "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
+  "groups": [
+    {
+      "id": "first-answer",
+      "surface": "First screen chat",
+      "status": "live",
+      "user_result": "A new visitor can type or choose a starter prompt and get a useful free browser answer before setup.",
+      "selectors": ["#mimir-prompt", "#primary-chat-link", "[data-prompt-action]", "#try-demo-mode"],
+      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "demo_start_click"]
+    },
+    {
+      "id": "connect-model",
+      "surface": "First screen and backend settings",
+      "status": "live",
+      "user_result": "The + Connect Model control creates or reuses the free local-node profile, makes it active and opens the setup panel.",
+      "selectors": ["#new-backend", "#composer-add-model", "#connect-options", "#backend-settings"],
+      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openPanel('#connect-options')", "section.id='connect-options'"]
+    },
+    {
+      "id": "backend-profile",
+      "surface": "Backend settings",
+      "status": "live",
+      "user_result": "Users can save, activate, open and delete backend profiles without placing provider keys in the public frontend.",
+      "selectors": ["#save-profile", "#set-active", "#launch-chat", "#delete-profile"],
+      "evidence": ["saveBtn.addEventListener('click',saveProfile)", "activeBtn.addEventListener('click',setActive)", "launchLink.href=ok?p.url:'#'", "deleteBtn.addEventListener('click',deleteProfile)", "local pairing token only"]
+    },
+    {
+      "id": "runtime-chat-controls",
+      "surface": "Chat runtime",
+      "status": "live",
+      "user_result": "Users can refresh models, stop a running response, clear local chat history, copy/retry answers and switch functional modes.",
+      "selectors": ["#runtime-refresh", "#runtime-stop", "#runtime-clear", "[data-chat-mode]", "#composer-voice-input"],
+      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
+    },
+    {
+      "id": "local-node-actions",
+      "surface": "Local connector",
+      "status": "beta",
+      "user_result": "Users can refresh local-node status, open settings and request/stop a free tunnel through paired local-node routes; unsupported tunnel control returns a clear safe error.",
+      "selectors": ["[data-local-action=\"refresh\"]", "[data-local-action=\"settings\"]", "[data-local-action=\"tunnel\"]", "[data-local-action=\"stop-tunnel\"]"],
+      "evidence": ["refreshLocalNode", "/tunnels/status", "/tunnels/trycloudflare/start", "/tunnels/stop"]
+    },
+    {
+      "id": "model-library",
+      "surface": "Model selector and catalog",
+      "status": "live",
+      "user_result": "Live backend models are preferred automatically; browser helpers, WebGPU models and installable free Ollama models remain visible with license/source guidance.",
+      "selectors": ["#runtime-model", "#model-library-grid"],
+      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "modelComplianceNote(model)", "Source/model card: verify before production use"]
+    },
+    {
+      "id": "operator-dashboards",
+      "surface": "Status, progress and journeys",
+      "status": "live",
+      "user_result": "The owner can refresh public-safe platform status, backlog progress and user journey state from the site.",
+      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#refresh-user-journeys"],
+      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "refresh-user-journeys", "refreshButton.addEventListener('click',init)"]
+    },
+    {
+      "id": "workspace-memory-knowledge",
+      "surface": "Workspace, memory, knowledge and privacy controls",
+      "status": "beta",
+      "user_result": "Users can create local workspaces, store memory/knowledge, sync when a protected backend exists, and export/delete local data.",
+      "selectors": ["#workspace-new", "#memory-save", "#knowledge-save", "#privacy-export", "#privacy-delete"],
+      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mmir-workspace-changed", "workspace-create", "privacy-delete"]
+    },
+    {
+      "id": "workflow-data-training",
+      "surface": "Workflow, datasets and training panels",
+      "status": "beta",
+      "user_result": "Users can define workflows, datasets and planning-only training jobs through protected backend contracts without starting paid compute.",
+      "selectors": ["#save-workflow", "#plan-workflow-run", "#save-dataset", "#plan-training-job"],
+      "evidence": ["workflow-builder-root", "/workflows", "/datasets", "/training/jobs"]
+    },
+    {
+      "id": "paid-provider-boundary",
+      "surface": "Provider status and catalog",
+      "status": "premium-planned",
+      "user_result": "Paid/provider-backed routes stay visible as future capability but blocked behind protected backend routing, auth, rate limits, audit and cost policy.",
+      "selectors": ["#provider-status", "#provider-status-grid"],
+      "evidence": ["requires-backend-router", "Provider keys must stay behind a protected backend", "premium-planned"]
+    }
+  ]
+}

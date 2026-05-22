@@ -84,3 +84,6 @@ jobs:
 
       - name: Smoke-check MMIR user journeys
         run: node scripts/smoke-check-user-journeys.js
+
+      - name: Smoke-check UI action coverage
+        run: node scripts/smoke-check-ui-actions.js

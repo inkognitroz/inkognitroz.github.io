@@ -1,54 +1,69 @@
-# inkognitroz.github.io
+# MMIR.ai Public App
 
-Public home of **SaaS Fabric by Inkognitroz**.
+Public frontend for MMIR, the trusted AI operating layer focused on AI orchestration.
 
-## Brand
-- **Name:** SaaS Fabric
-- **Subtitle:** Build, publish and monetize apps, tools and SaaS products.
+MMIR connects browser guidance, local models, self-hosted runtimes and future protected managed providers into one calm control surface. The public site must be useful immediately, stay free-first by default and never expose secrets.
 
-## What this is
-A simple, stable, GitHub Pages-compatible v1 platform built with HTML/CSS/JS. It renders dynamically from one file: `/public/content.json`.
+## Current Product Shape
 
-SaaS Fabric is positioned as a platform for creating, organizing, publishing and eventually monetizing many apps, websites, SaaS products, dashboards, tools, templates, Excel/CSV-based tools, AI-assisted apps, client portals and internal tools.
+- First-screen chat with free browser guide responses.
+- Automatic local-node profile for `http://127.0.0.1:3000`.
+- Live model discovery when MMIR Local Node is running.
+- Free browser/WebGPU and installable Ollama starter model choices.
+- Local-first workspaces, memory, knowledge, privacy controls and prompt registry.
+- Model roles, comparison and synthesis beta flows.
+- Workflow, dataset and training-planning beta panels.
+- Platform status, user journey and progress dashboards.
+- Raspberry Pi/Linux ARM, Mac, Windows and Linux local connector install paths.
 
-## Quick start
-1. Edit `/public/content.json`.
-2. Optional: open `/public/admin.html` locally for card editing, draft/publish status, validation, browser backups, CSV import, JSON export, and structured backup bundle export.
-3. Publish safely by exporting `content.json` and committing it in a PR.
-4. GitHub Actions deploys `/public` to `https://inkognitroz.github.io/`.
+## Repository Role
 
-## Safe publishing
-- **Current path:** use `/public/admin.html`, export `/public/content.json` or a structured backup bundle, and publish through a normal PR review + merge flow.
-- **Future path:** add a backend or serverless publishing/export endpoint (for example server-side ZIP bundles) that uses a GitHub App or another server-side secret. Never place GitHub tokens or other secrets in frontend code.
+This repo is intentionally public and GitHub Pages-compatible.
 
-## Privacy-friendly usage analytics (v1)
-- v1 includes a **local-only dashboard** on the homepage (`#dashboards`) that tracks section views and card link clicks **in browser storage only**.
-- No tracking cookies are used.
-- No personal data is collected or sent to a server.
-- Users can reset local analytics with **Reset local analytics** in the dashboard.
+- Static app source lives in `public/`.
+- Product and architecture docs live in `docs/`.
+- CI deploys `public/` to GitHub Pages.
+- Public manifests describe only safe metadata, status and copy.
 
-### Future hosted analytics path
-- Keep v1 local-only by default.
-- If hosted analytics is added later (for example Plausible or Umami), keep it opt-in and privacy-friendly:
-  - do not collect personal identifiers
-  - avoid cookies when possible
-  - document exactly what events are sent and why
+Secrets, provider keys, billing rules, private user data, managed routing policy and real auth belong in protected backend or local connector repos, not here.
 
-## Main sections
-Home, App Factory, SaaS Ideas, Projects, Templates, Tools, Dashboards, Uploads / Files, Prompt Inbox, Monetization, Roadmap, About.
+## Important Files
 
-## Structure
-- `public/index.html` - public platform hub
-- `public/admin.html` - local browser content editor
-- `public/content.json` - single source of content
-- `public/assets/` - CSS and JS
-- `.github/workflows/pages.yml` - Pages deployment (publishes `/public`)
-- `docs/` - operations and platform docs
+- `public/index.html`: main MMIR app shell.
+- `public/apps/mimir-chat-portal/`: chat, model, connector, workflow and dashboard UI.
+- `public/free-model-starters.json`: free browser and installable local starter models.
+- `public/ai-model-catalog.json`: public-safe model catalog metadata.
+- `public/user-journeys.json`: user journey contract.
+- `public/progress-dashboard.json`: generated sequential backlog dashboard.
+- `public/ui-action-coverage.json`: visible-control coverage contract.
+- `docs/MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md`: ordered source of truth for what to build next.
+- `docs/MMIR_API_CONTRACT_V0.md`: frontend/backend/local-node contract.
 
-## Security
-Read `docs/SECURITY.md` before adding any integrations.
-Never commit API keys or frontend secrets.
+## Development
 
-## Post-merge checklist
-After every merge, run the live checklist.
-See `docs/LIVE_TEST_CHECKLIST.md`.
+Regenerate the progress dashboard after backlog/status changes:
+
+```bash
+node scripts/build-progress-dashboard.js
+```
+
+Run static quality gates:
+
+```bash
+node scripts/smoke-check-pages.js
+node scripts/smoke-check-ui-actions.js
+node scripts/smoke-check-user-journeys.js
+```
+
+## Deployment
+
+GitHub Actions publishes `public/` through GitHub Pages. The site must remain static-host compatible; any secret-bearing or paid/provider-backed behavior must be routed through protected services outside this repo.
+
+## Security Posture
+
+- Free-first and local-first.
+- Zero-trust separation between frontend, local node, managed backend, providers and infrastructure.
+- No public secrets.
+- No hidden paid execution.
+- Truthful live, beta, planned, premium planned and blocked labels.
+- Local node stays on localhost by default and pairs before protected routes.

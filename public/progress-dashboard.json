@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T20:22:36.010Z",
+  "updated_at": "2026-05-22T20:38:03.246Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -19,9 +19,9 @@
   },
   "summary": {
     "total": 152,
-    "done": 45,
+    "done": 46,
     "beta": 38,
-    "next": 12,
+    "next": 11,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -379,9 +379,9 @@
       {
         "phase": "Product QA",
         "total": 1,
-        "done": 0,
+        "done": 1,
         "beta": 0,
-        "next": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -752,7 +752,6 @@
     "D024",
     "D025",
     "D042",
-    "D108",
     "D109",
     "D110",
     "D111",
@@ -2381,10 +2380,10 @@
       "best_practice": "Dead controls break trust faster than missing features",
       "done_when": "No visible control feels decorative or broken",
       "covers": "first impression, user trust",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
-      "estimate": "2-6h"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "A public-safe UI action coverage manifest and CI smoke gate now guard homepage/chat controls, disabled hash links, generated panel anchors and handler evidence.",
+      "estimate": "Done"
     },
     {
       "seq": "D109",

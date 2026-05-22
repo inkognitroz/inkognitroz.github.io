@@ -12,6 +12,7 @@ const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
 const userJourneysPath = join(publicDir, 'user-journeys.json');
+const uiActionCoveragePath = join(publicDir, 'ui-action-coverage.json');
 const universalInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-install.html');
 const linuxConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-linux.sh');
 
@@ -100,6 +101,8 @@ requireText(indexPath, 'mimir-instant-start', 'Homepage must show an automatic r
 requireText(indexPath, 'data-prompt-action', 'Homepage must include smart start actions that send useful prompts.');
 requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
 requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
+requireText(uiActionCoveragePath, 'Every visible MMIR control', 'Homepage must include a public-safe UI action coverage manifest.');
+requireText(join(root, 'scripts', 'smoke-check-ui-actions.js'), 'requireHashLinksAreSafe', 'Static quality gates must guard against active dead hash links.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
 requireText(universalInstallerPath, 'Raspberry Pi / Linux ARM', 'Universal installer must expose Raspberry Pi/Linux ARM as a first-class node path.');
