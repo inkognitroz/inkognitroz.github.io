@@ -35,7 +35,16 @@
     item.innerHTML='<span>'+(done?'Done':current?'Next':'Soon')+'</span><strong></strong><small></small>';
     item.querySelector('strong').textContent=label;
     item.querySelector('small').textContent=detail;
+    item.addEventListener('click',()=>openTarget(item.hash));
     return item;
+  }
+
+  function openTarget(target){
+    const el=document.querySelector(target);
+    if(!el)return;
+    if(el.tagName==='DETAILS')el.setAttribute('open','');
+    el.scrollIntoView({block:'start',behavior:'smooth'});
+    if(el.matches('textarea,input,select,button,a'))setTimeout(()=>el.focus(),120);
   }
 
   function render(){
@@ -92,6 +101,7 @@
     const installLink=document.createElement('a');
     installLink.href='#local-connector';
     installLink.textContent='Local install';
+    installLink.addEventListener('click',()=>openTarget('#local-connector'));
     actions.append(freeButton,installLink);
 
     panel.innerHTML='';

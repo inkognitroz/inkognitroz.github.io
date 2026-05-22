@@ -19,7 +19,7 @@ function walk(dir) {
 }
 
 function localAssetPath(fromFile, asset) {
-  if (!asset || asset.startsWith('http:') || asset.startsWith('https:') || asset.startsWith('#')) {
+  if (!asset || /^[a-z][a-z0-9+.-]*:/i.test(asset) || asset.startsWith('#')) {
     return null;
   }
 
