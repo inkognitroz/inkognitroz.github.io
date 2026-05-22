@@ -8,3 +8,4 @@ Welcome to **SaaS Fabric**.
 4. Use issue templates in `.github/ISSUE_TEMPLATE/` to queue new SaaS ideas, app factory tasks, and content updates.
 5. Keep v1 static, safe, and practical for non-technical maintenance.
 6. Keep MMIR as a product/app track until a dedicated MMIR repo/domain split is complete.
+7. Follow `docs/BACKUP_AND_CONNECTED_REPOS.md` for backup, PR flow, and connected-repo recovery guidance.

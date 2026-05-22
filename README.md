@@ -58,3 +58,6 @@ See `docs/PRODUCT_BOUNDARIES.md`.
 ## Post-merge checklist
 After every merge, run the live checklist.
 See `docs/LIVE_TEST_CHECKLIST.md`.
+
+## Backup and connected repos
+Use `docs/BACKUP_AND_CONNECTED_REPOS.md` for pull-request workflow, backup baseline, restore drill guidance, and connected-repository backup policy.
