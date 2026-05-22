@@ -1,20 +1,20 @@
 {
   "version": 6,
-  "description": "Static connect options for MMIR.ai. These are safe frontend options only; secrets and provisioning belong to protected backend services.",
+  "description": "Static connect options for MMIR.ai, the orchestration layer for trusted AI. These are safe frontend options only; secrets and provisioning belong to protected backend services.",
   "options": [
     {
       "id": "local-connector-installer",
       "title": "Install Local Connector",
       "status": "beta",
-      "description": "Open the universal installer. It detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode and gives the right MMIR Local Connector flow for local AI on 127.0.0.1:3000.",
+      "description": "Open mmir.ai, connect local AI, install, ready. The universal installer detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode and gives the right MMIR Local Connector flow for local AI on 127.0.0.1:3000.",
       "target": "./downloads/mmir-local-connector-install.html",
       "action": "Install"
     },
     {
       "id": "local-connector",
-      "title": "Connect local LLM",
+      "title": "Connect local AI",
       "status": "beta",
-      "description": "Use a local connector profile for models running on your PC, Raspberry Pi, Linux ARM edge device or private VM. The connector pairs locally, discovers live models, routes chat through the MMIR API contract and can request an opt-in free tunnel when enabled locally.",
+      "description": "Use a local connector profile for models running on your PC, Mac, Raspberry Pi, Linux ARM edge device or private VM. The connector pairs locally, discovers live models, routes chat through the MMIR API contract and can request an opt-in free tunnel when enabled locally.",
       "target": "#local-connector"
     },
     {
