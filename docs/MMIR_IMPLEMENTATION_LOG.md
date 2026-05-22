@@ -70,6 +70,10 @@ Updated: 2026-05-22
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - MMIR Local Node installer scripts now prefer reproducible `npm ci`, support explicit Ollama install opt-in, and run smoke checks through pairing-protected routes instead of old unpaired endpoints.
 - MMIR Local Node now has free release packaging via `npm run package:release`, producing a local tarball, SHA256 checksums and an unsigned release manifest without paid signing or paid hosting.
+- BitNet/1-bit local model support now has a recorded local-node spike decision: defer first-class BitNet runtime until it has a simple free installer, health check and MMIR adapter path, while keeping it as an advanced local provider candidate.
+- Managed backend now has a free, protected dataset registry foundation for future training, fine-tuning, RAG, preference and evaluation work, with versioned records, source/license/consent metadata, owner isolation, file-backed persistence and portable export/import/delete controls.
+- Frontend now has a dataset manager panel for creating, listing, versioning and deleting datasets through the active protected backend profile.
+- Training and LoRA remain explicitly planning-only until a worker, policy gate, evaluation gate and cost approval path exist.
 - Frontend onboarding now has a free local activation action, and backend profiles are blocked from ambiguous paid use unless non-local routes are explicitly marked free, local or self-hosted.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
@@ -78,7 +82,7 @@ Updated: 2026-05-22
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
 - Validate latest frontend/backend/local-node CI after the new commits and keep UX polish next.
-- D067-D081: platform, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
+- D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
 

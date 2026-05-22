@@ -168,6 +168,8 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - `D094` is implemented in the managed backend as optional `MMIR_DATA_DIR` JSON persistence for knowledge, memory and prompts, so demos and self-hosted installs can keep data without paid databases.
 - `D095` is implemented in the managed backend as protected owner-scoped `/data/export`, `/data/import` and `/data/workspaces/:workspace_id` controls for portable backup, restore and deletion.
 - `D096` is implemented in `mmir-local-node` as free repeatable release packaging with SHA256 checksums, manifest and CI validation.
+- `D067` is recorded in `mmir-local-node/docs/BITNET_LOCAL_SPIKE.md`: BitNet stays an advanced local adapter candidate until the free install, health and adapter path is simple enough for users.
+- `D068-D069` have a free end-to-end dataset foundation: `mimir-backend-template` now has protected `/datasets` versioning, source/license/consent metadata, file-backed persistence and portable data controls, and the frontend dataset manager can create, list, version and delete datasets through the active protected backend. Training jobs remain blocked behind future policy/eval/cost approval gates.
 - Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish and any CI failures from the new commits.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.

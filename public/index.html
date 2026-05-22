@@ -28,6 +28,7 @@
       <a href="#connect-options">Connect</a>
       <a href="#model-library">Models</a>
       <a href="#workflow-builder">Workflows</a>
+      <a href="#dataset-manager">Data</a>
       <a href="#platform-status">Status</a>
     </nav>
   </header>
@@ -55,6 +56,7 @@
         <a href="#local-connector">+ Local AI Connector</a>
         <a href="#multi-model-workspace">+ Role Presets</a>
         <a href="#model-library">+ Model Library</a>
+        <a href="#dataset-manager">+ Datasets</a>
         <a href="#plus-feature-catalog">+ Roadmap</a>
       </div>
 
@@ -144,6 +146,14 @@
       </section>
     </details>
 
+    <details id="dataset-manager" class="mimir-provider-drawer">
+      <summary>+ Datasets</summary>
+      <section class="mimir-dashboard" aria-labelledby="dataset-manager-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Protected data foundation</p><h2 id="dataset-manager-title">Dataset manager</h2></div></div>
+        <div id="dataset-manager-root" class="workflow-builder-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="backend-settings" class="mimir-settings-drawer">
       <summary>+ Add Backend / Capacity</summary>
       <div class="mimir-console" aria-label="MMIR backend console">
@@ -177,6 +187,7 @@
   <script src="./apps/mimir-chat-portal/memory.js"></script>
   <script src="./apps/mimir-chat-portal/knowledge.js"></script>
   <script src="./apps/mimir-chat-portal/knowledge-connectors.js"></script>
+  <script src="./apps/mimir-chat-portal/dataset-manager.js"></script>
   <script src="./apps/mimir-chat-portal/prompt-registry.js"></script>
   <script src="./apps/mimir-chat-portal/privacy-controls.js"></script>
   <script src="./apps/mimir-chat-portal/onboarding.js"></script>
