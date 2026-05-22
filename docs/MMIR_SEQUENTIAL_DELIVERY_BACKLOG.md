@@ -140,6 +140,7 @@ These items were added during code/architecture review and should be pulled forw
 | D093 | Frontend Architecture | P1 | Shared browser API client | `inkognitroz.github.io` | Extract shared profile, pairing, fetch, error and context helpers used by chat/comparison/status | Avoid divergent frontend networking behavior as features grow | Chat, comparison and status use one tested client layer | `D015-D018`, `D029-D030` |
 | D094 | Data Durability | P1 | Free backend file persistence | `mimir-backend-template` | Persist backend knowledge, memory and prompt registry state to local JSON files when `MMIR_DATA_DIR` is set | Free-first durable storage before paid databases; fail safely and keep ownership checks at API boundaries | Restart keeps backend knowledge, memory and prompts without requiring a paid database | `D044-D049`, `D089` |
 | D095 | Data Durability | P1 | Backend data backup and retention controls | `mimir-backend-template` | Add export/import, retention, delete-all-by-owner and corruption recovery guidance for file-backed data | Durable storage must also be portable, deletable and recoverable before multi-user use | Operator can back up, restore and delete a user's backend data with audit-safe behavior | `D044-D049`, `D077`, `D087` |
+| D096 | Launch Packaging | P1 | Free local-node release package | `mmir-local-node` | Add a repeatable local package command, checksum output, manifest and CI package validation | Users need verifiable install artifacts before paid signing is justified | `npm run package:release` produces a tarball, SHA256SUMS and manifest without paid services | `D013`, `S001` |
 
 ## Recommended Implementation Sequence
 
@@ -166,6 +167,7 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - `D048-D049` now have a consent-gated connector ingestion contract and a frontend source-ingestion panel. Future OAuth/app workers can build on this without putting connector secrets in public frontend code.
 - `D094` is implemented in the managed backend as optional `MMIR_DATA_DIR` JSON persistence for knowledge, memory and prompts, so demos and self-hosted installs can keep data without paid databases.
 - `D095` is implemented in the managed backend as protected owner-scoped `/data/export`, `/data/import` and `/data/workspaces/:workspace_id` controls for portable backup, restore and deletion.
-- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging and any CI failures from the new commits.
+- `D096` is implemented in `mmir-local-node` as free repeatable release packaging with SHA256 checksums, manifest and CI validation.
+- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish and any CI failures from the new commits.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.
