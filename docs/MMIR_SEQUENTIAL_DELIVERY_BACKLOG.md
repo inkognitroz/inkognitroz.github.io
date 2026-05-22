@@ -147,6 +147,7 @@ These items were added during code/architecture review and should be pulled forw
 | D100 | Marketplace | P1 | Model marketplace object model | managed API + frontend | Define registry records for models, providers, VM offers, seller metadata, trust status, install actions and revenue flags | Marketplace must start as permissioned catalog before payments | Models/backends can be listed, searched and connected without exposing secrets or charging unexpectedly | `D074-D075` |
 | D101 | Revenue | P1 | Premium compute/provider gates | managed API + frontend | Add paid-ready but blocked flows for managed VM/GPU, provider keys and hosted models with explicit user approval and cost limits | Free product must work first; paid flows must never surprise-spend | Premium options are visible as future/approval-required and cannot execute without policy | `D058`, `D075-D078` |
 | D102 | Guidance | P0 | MMIR in-browser guide assistant | `inkognitroz.github.io` | Add a free deterministic guide in the chat model selector that helps users understand setup, model choice, free versus premium and next steps | Immediate usefulness before local model install; no fake AI claims | User can ask onboarding/model/setup questions before connecting any backend | first-use value, activation |
+| D103 | Browser Models | P0 | Free browser WebGPU model route | `inkognitroz.github.io` | Add WebLLM-powered browser models for supported browsers, with truthful WebGPU requirement and no API key/cloud cost | Use official model IDs, no secrets, no paid provider, graceful fallback when WebGPU is unavailable | Browser-supported users can run small real LLMs directly from chat; unsupported browsers see clear fallback | activation, free-first |
 
 ## Recommended Implementation Sequence
 
@@ -169,6 +170,7 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - Keep `D082` visible until `https://mmir.ai/` is verified from an off-network connection, because the local environment still sees a newly registered domain filter block.
 - `D083-D093` have been used as pull-forward launch hardening for smoke checks, reproducible CI, automated public deploy/status UX, long local generations and shared frontend API behavior.
 - `D097-D098` are now pulled forward because empty chat/model states directly hurt activation. The selector must always show useful free choices, and installable models must have a concrete local path.
+- `D102-D103` are pulled forward so first-time users get working browser helpers immediately and WebGPU-capable browsers can run real free local-in-browser models without backend/API keys.
 - `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
 - `D044-D047` now have inspectable memory governance, prompt registry/versioning, backend chunk/retrieval foundations and frontend local-first backend sync.
 - `D048-D049` now have a consent-gated connector ingestion contract and a frontend source-ingestion panel. Future OAuth/app workers can build on this without putting connector secrets in public frontend code.

@@ -30,6 +30,9 @@
   let busy=false;
   let messages=[];
   let starterModels=[];
+  let webllmModule=null;
+  let webllmEngine=null;
+  let webllmModelId='';
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -408,12 +411,15 @@
     const history=messages
       .filter(message=>message.role==='user'||message.role==='assistant')
       .filter(message=>message.content&&message.content!=='Thinking...')
-      .slice(-MAX_CONTEXT_MESSAGES)
-      .map(message=>({role:message.role,content:message.content}));
+      .slice(-MAX_CONTEXT_MESSAGES);
+    if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===prompt){
+      history.pop();
+    }
+    const historyMessages=history.map(message=>({role:message.role,content:message.content}));
     const role=activeRole();
     const memory=activeMemoryInstruction();
     const knowledge=relevantKnowledgeInstruction(prompt);
-    const next=history.concat([{role:'user',content:prompt}]);
+    const next=historyMessages.concat([{role:'user',content:prompt}]);
     const system=[];
     if(role)system.push({role:'system',content:role.instruction});
     if(memory)system.push({role:'system',content:memory});
@@ -435,6 +441,11 @@
   function fallbackStarterModels(){
     return [
       {id:'mmir-guide',label:'MMIR Guide - free browser helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Immediate onboarding and setup help.',install_note:'No install required.'},
+      {id:'mmir-model-picker',label:'MMIR Model Picker - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Choosing the right free model and install route.',install_note:'No install required.'},
+      {id:'mmir-setup-coach',label:'MMIR Setup Coach - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Getting from first visit to local model running.',install_note:'No install required.'},
+      {id:'mmir-security-coach',label:'MMIR Security Coach - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Explaining local-first and zero-trust choices.',install_note:'No install required.'},
+      {id:'mmir-growth-coach',label:'MMIR Growth Coach - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Freemium, marketplace and premium feature guidance.',install_note:'No install required.'},
+      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B - active in browser',runtime:'webllm',status:'active-browser-webgpu',cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Fastest real browser LLM test without backend or API key.',install_note:'Runs locally in the browser with WebGPU.'},
       {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',cost:'free local',model:'gemma3:270m',size:'292 MB',best_for:'Smallest useful local starter.',install_note:'Install through Ollama and MMIR Local Node.'},
       {id:'ollama-llama32-1b',label:'Llama 3.2 1B - local assistant',runtime:'ollama',status:'installable-free',cost:'free local',model:'llama3.2:1b',size:'1.3 GB',best_for:'Better local assistant on normal laptops.',install_note:'Install through Ollama and MMIR Local Node.'}
     ];
@@ -494,6 +505,7 @@
       return;
     }
     const isGuide=model.runtime==='browser-guide';
+    const isWebLlm=model.runtime==='webllm';
     const commands=commandLines(model);
     modelHelperEl.hidden=false;
     modelHelperEl.innerHTML=''+
@@ -502,7 +514,8 @@
         '<a class="button-link" href="#backend-settings">Connect local profile</a>'+
       '</div>'+
       '<p>'+escapeHtml(model.best_for||model.install_note||'Free model option.')+'</p>'+
-      (isGuide?'<p>This helper works immediately in the browser. Choose an Ollama model below when you want a real local LLM.</p>':
+      (isGuide?'<p>This helper works immediately in the browser. Choose a WebGPU or Ollama model below when you want a real local LLM.</p>':
+      isWebLlm?'<p>This is a real browser LLM. It runs on the user machine with WebGPU, no API key and no cloud cost. First message downloads model weights and can take time.</p><p>Works best in a modern Chromium-based browser with WebGPU enabled.</p>':
         '<div class="runtime-install-grid">'+
           '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
           '<div><strong>Mac / Linux</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
@@ -532,16 +545,25 @@
     }
 
     if(starterModels.length){
-      const starterGroup=document.createElement('optgroup');
-      starterGroup.label='Free now / installable';
+      const browserGroup=document.createElement('optgroup');
+      browserGroup.label='Active free in this browser';
+      const webGpuGroup=document.createElement('optgroup');
+      webGpuGroup.label='Free browser WebGPU models';
+      const installGroup=document.createElement('optgroup');
+      installGroup.label='Free local installable';
       for(const model of starterModels){
         const option=document.createElement('option');
         option.value=starterValue(model);
-        option.textContent=model.label+' - '+String(model.status||'free').replaceAll('-',' ');
+        const statusText=model.runtime==='webllm'?'browser WebGPU':String(model.status||'free').replaceAll('-',' ');
+        option.textContent=model.label+' - '+statusText;
         option.dataset.runtime=model.runtime||'starter';
-        starterGroup.appendChild(option);
+        if(model.runtime==='browser-guide')browserGroup.appendChild(option);
+        else if(model.runtime==='webllm')webGpuGroup.appendChild(option);
+        else installGroup.appendChild(option);
       }
-      modelSelect.appendChild(starterGroup);
+      if(browserGroup.children.length)modelSelect.appendChild(browserGroup);
+      if(webGpuGroup.children.length)modelSelect.appendChild(webGpuGroup);
+      if(installGroup.children.length)modelSelect.appendChild(installGroup);
     }
 
     const values=Array.from(modelSelect.options||[]).map(option=>option.value);
@@ -664,14 +686,99 @@
     return api.friendlyError(error);
   }
 
-  function guideResponse(prompt){
+  function webGpuAvailable(){
+    return Boolean(window.isSecureContext&&navigator.gpu);
+  }
+
+  async function ensureWebLlmEngine(starter,onProgress){
+    const modelId=String(starter?.model||'').trim();
+    if(!modelId)throw new Error('Browser model id is missing.');
+    if(!webGpuAvailable())throw new Error('This browser does not expose WebGPU. Use a Chromium-based browser with WebGPU, or install the Ollama local node path.');
+    if(!webllmModule){
+      onProgress('Loading browser model runtime...');
+      webllmModule=await import('https://esm.run/@mlc-ai/web-llm');
+    }
+    if(webllmEngine&&webllmModelId===modelId)return webllmEngine;
+    if(webllmEngine&&typeof webllmEngine.unload==='function'){
+      try{await webllmEngine.unload();}catch(error){}
+    }
+    onProgress('Downloading/loading '+(starter.label||modelId)+'...');
+    webllmEngine=await webllmModule.CreateMLCEngine(modelId,{
+      initProgressCallback:(progress)=>{
+        const percent=typeof progress?.progress==='number'?Math.round(progress.progress*100):null;
+        const text=progress?.text||'Loading browser model';
+        onProgress(percent!==null?text+' '+percent+'%':text);
+      }
+    });
+    webllmModelId=modelId;
+    return webllmEngine;
+  }
+
+  async function sendWebLlmMessage(starter,prompt){
+    stopRequested=false;
+    currentAbortController=new AbortController();
+    setBusy(true);
+    appendMessage('user',prompt,'browser WebGPU');
+    promptEl.value='';
+    const assistant=appendMessage('assistant','Loading browser model...',starter.label,{retryPrompt:prompt,model:starter.label});
+    try{
+      const engine=await ensureWebLlmEngine(starter,(message)=>{
+        updateMessage(assistant.message.id,message,starter.label);
+        setStatus(message,'loading');
+      });
+      const payloadMessages=contextMessages(prompt);
+      const chunks=await engine.chat.completions.create({
+        messages:payloadMessages,
+        temperature:0.7,
+        max_tokens:700,
+        stream:true
+      });
+      let content='';
+      for await(const chunk of chunks){
+        if(currentAbortController.signal.aborted){
+          if(typeof engine.interruptGenerate==='function')engine.interruptGenerate();
+          break;
+        }
+        const delta=chunk?.choices?.[0]?.delta?.content||'';
+        if(delta){
+          content+=delta;
+          updateMessage(assistant.message.id,content,starter.label);
+          setStatus('Streaming from browser model...','loading');
+        }
+      }
+      updateMessage(assistant.message.id,content||'Browser model returned an empty response.',starter.label);
+      setStatus(stopRequested?'Browser generation stopped.':'Browser model response received.','ready');
+    }catch(error){
+      const fallback='Browser model could not start: '+(error?.message||'unknown error')+'\n\nYou can still use the free installable Ollama path from the model helper, or choose MMIR Guide for immediate setup help.';
+      updateMessage(assistant.message.id,fallback,'browser model unavailable');
+      setStatus('Browser model unavailable. Use local install path or guide.','error');
+    }finally{
+      currentAbortController=null;
+      setBusy(false);
+    }
+  }
+
+  function guideResponse(prompt,starter={}){
     const text=String(prompt||'').toLowerCase();
+    const helperId=starter.id||'mmir-guide';
     const wantsModel=/model|modell|llm|ollama|bitnet|1 bit|1-bit|gratis|free/.test(text);
     const wantsConnect=/connect|koble|install|installer|local|lokal|backend|node/.test(text);
     const wantsBusiness=/premium|betalt|marked|market|users|brukere|money|penger|inntekt/.test(text);
     const parts=[
-      'Jeg er MMIR Guide, en gratis nettleserhjelper som fungerer uten backend. Jeg er ikke en full LLM, men jeg kan hjelpe deg til første ekte lokale modell raskt.'
+      'Jeg er '+(starter.label||'MMIR Guide')+', en gratis nettleserhjelper som fungerer uten backend. Jeg er ikke en full LLM, men jeg kan hjelpe deg til første ekte lokale modell raskt.'
     ];
+    if(helperId==='mmir-model-picker'){
+      parts.push('Min anbefaling: start med Qwen2.5 0.5B WebGPU hvis browseren støtter WebGPU. Hvis ikke: Gemma 3 270M eller SmolLM2 135M via Ollama for raskest install, deretter Llama 3.2 1B eller Phi-4 Mini når maskinen tåler mer.');
+    }
+    if(helperId==='mmir-setup-coach'){
+      parts.push('Korteste setup: 1) velg en installable-free modell, 2) last ned Windows eller Mac/Linux installer, 3) kjør DryRun, 4) kjør install, 5) trykk Refresh. Når Local Node rapporterer modellen, flyttes chatten over til ekte live backend.');
+    }
+    if(helperId==='mmir-security-coach'){
+      parts.push('Sikkerhetsregelen er: offentlig frontend lagrer ikke hemmeligheter. Lokale modeller går via 127.0.0.1 og pairing. Provider-nøkler og betalte modeller må gå via beskyttet backend med auth, rate limit, audit og cost-policy.');
+    }
+    if(helperId==='mmir-growth-coach'){
+      parts.push('Smart inntektsstige: gratis browser helpers + gratis lokal chat først, deretter betalt managed VM/GPU, premium provider routing, team/admin, marketplace listing, evals og supportert enterprise governance.');
+    }
     if(wantsModel||!text){
       parts.push('Beste gratis start: velg Gemma 3 270M eller SmolLM2 135M for svak maskin, Gemma 3 1B eller Llama 3.2 1B for normal laptop, og DeepSeek-R1 1.5B eller Phi-4 Mini når du vil teste mer reasoning.');
     }
@@ -701,11 +808,15 @@
   }
 
   async function sendStarterMessage(starter,prompt){
+    if(starter.runtime==='webllm'){
+      await sendWebLlmMessage(starter,prompt);
+      return;
+    }
     setBusy(true);
     const meta=starter.runtime==='browser-guide'?'free browser helper':'installable free local';
     appendMessage('user',prompt,'browser');
     promptEl.value='';
-    const answer=starter.runtime==='browser-guide'?guideResponse(prompt):installResponse(starter);
+    const answer=starter.runtime==='browser-guide'?guideResponse(prompt,starter):installResponse(starter);
     appendMessage('assistant',answer,meta,{retryPrompt:prompt,model:starter.label});
     setStatus(starter.runtime==='browser-guide'?'Guide answered locally.':'Install path generated.','ready');
     setBusy(false);
@@ -735,7 +846,11 @@
     }catch(error){
       renderModels([]);
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
-      setStatus(friendlyError(error),'error');
+      if(starterModels.length){
+        setStatus('Free browser/installable models are ready. Local node is not running yet.','ready');
+      }else{
+        setStatus(friendlyError(error),'error');
+      }
     }
   }
 
