@@ -1,12 +1,12 @@
 {
-  "version": 4,
+  "version": 5,
   "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through the hardened MMIR Local Node.",
   "steps": [
     {
       "id": "install",
-      "title": "Install local connector",
+      "title": "Install Mac connector",
       "status": "beta",
-      "description": "Run the MMIR Local Node installer from the local-node project. Mac/Linux and Windows smoke installers can check Node.js, detect Ollama, recommend a starter model, pair locally and validate protected chat routes while keeping the connector bound to localhost by default."
+      "description": "Mac users can download the MMIR Local Connector from the Connect section on mmir.ai. The installer creates the local API, installs or starts Ollama, pulls a starter model and keeps the connector bound to localhost."
     },
     {
       "id": "detect",
@@ -24,7 +24,7 @@
       "id": "chat",
       "title": "Chat safely",
       "status": "beta",
-      "description": "MMIR routes chat requests through /chat/completions. Raw Ollama port 11434 should not be exposed publicly."
+      "description": "MMIR routes chat requests through /chat/completions on 127.0.0.1:3000. Raw Ollama port 11434 should not be exposed publicly."
     }
   ],
   "security": [
