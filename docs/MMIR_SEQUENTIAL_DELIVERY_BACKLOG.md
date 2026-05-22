@@ -165,6 +165,7 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - `D044-D047` now have inspectable memory governance, prompt registry/versioning, backend chunk/retrieval foundations and frontend local-first backend sync.
 - `D048-D049` now have a consent-gated connector ingestion contract and a frontend source-ingestion panel. Future OAuth/app workers can build on this without putting connector secrets in public frontend code.
 - `D094` is implemented in the managed backend as optional `MMIR_DATA_DIR` JSON persistence for knowledge, memory and prompts, so demos and self-hosted installs can keep data without paid databases.
-- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging, `D095` backend data backup/retention controls and any CI failures from the new commits.
+- `D095` is implemented in the managed backend as protected owner-scoped `/data/export`, `/data/import` and `/data/workspaces/:workspace_id` controls for portable backup, restore and deletion.
+- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging and any CI failures from the new commits.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.
