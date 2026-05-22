@@ -46,6 +46,7 @@ Updated: 2026-05-22
 - AWS runtime repo now has a plan/validate-first Terraform template, MMIR-compatible Ollama proxy, SSM-based API key retrieval, GitHub Actions validation and an explicit no-auto-apply safety model.
 - Self-healing runtime foundations now exist: managed backend exposes protected recovery action recommendations, and OCI/AWS runbooks define bounded health probe, restart and failover operator steps.
 - AI routing v1 now exists as a protected explainable decision endpoint that selects owned node, managed provider or no route based on policy, node eligibility, provider status and model availability.
+- Cost-aware routing policy now blocks paid or unknown managed providers unless explicitly allowed and keeps estimated provider cost inside user policy limits.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
@@ -54,7 +55,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D058-D059: cost policy and dynamic compute scaling.
+- D059: dynamic compute scaling.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
