@@ -34,6 +34,7 @@ Updated: 2026-05-22
 - Managed backend now exposes sanitized bounded `/audit` events without raw prompts or provider secrets.
 - Managed backend now preserves safe provider HTTP status codes such as `503`/`429` and audits provider failures without leaking prompts.
 - Managed backend now has protected knowledge document and search endpoints as the first server-side RAG contract.
+- Managed backend now fails closed into API-key auth when a non-mock managed provider is selected, unless anonymous managed-provider mode is explicitly enabled for local demo use.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
@@ -42,7 +43,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D090-D093: managed identity, status monitoring, local-node timeout polish and shared frontend API client.
+- D091-D093: status monitoring, local-node timeout polish and shared frontend API client.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
