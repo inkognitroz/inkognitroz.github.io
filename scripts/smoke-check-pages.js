@@ -90,6 +90,10 @@ requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must defau
 requireText(chatRuntimePath, 'const liveValues=(models||[]).map', 'Chat runtime must prefer live backend models over starter helpers when live models exist.');
 requireText(chatRuntimePath, 'function modelComplianceNote(model)', 'Chat runtime must show license/commercial-use warnings for starter model choices.');
 requireText(chatRuntimePath, 'Source/model card: verify before production use', 'Chat runtime must ask users to verify model cards before production use.');
+requireText(chatRuntimePath, 'composer-mode-dock', 'Chat composer must expose the Open WebUI-style mode dock.');
+requireText(chatRuntimePath, 'Boost 5.5', 'Chat composer must expose a functional boost mode.');
+requireText(chatRuntimePath, 'function modeInstruction()', 'Chat mode buttons must affect model instructions.');
+requireText(chatRuntimePath, '/hardware', 'Chat composer must show local CPU/RAM capability when local node exposes it.');
 requireText(indexPath, 'mimir-instant-start', 'Homepage must show an automatic ready state before technical setup sections.');
 requireText(indexPath, 'data-prompt-action', 'Homepage must include smart start actions that send useful prompts.');
 requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');

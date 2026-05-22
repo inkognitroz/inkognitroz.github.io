@@ -7,6 +7,7 @@
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const CHAT_KEY='mimir-chat-current-session-v1';
+  const MODE_KEY='mimir-chat-mode-controls-v1';
   const STARTER_MODEL_CATALOG='./free-model-starters.json';
   const STARTER_PREFIX='starter:';
   const MAX_STORED_MESSAGES=80;
@@ -19,6 +20,8 @@
   let statusEl=null;
   let transcriptEl=null;
   let modelHelperEl=null;
+  let modelChipEl=null;
+  let resourceChipEl=null;
   let refreshBtn=null;
   let stopBtn=null;
   let clearBtn=null;
@@ -45,6 +48,55 @@
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+  function readModes(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(MODE_KEY)||'{}');
+      return {
+        private:saved.private!==false,
+        boost:Boolean(saved.boost),
+        super:Boolean(saved.super),
+        vision:Boolean(saved.vision)
+      };
+    }catch(error){
+      return {private:true,boost:false,super:false,vision:false};
+    }
+  }
+  function writeModes(modes){
+    try{localStorage.setItem(MODE_KEY,JSON.stringify(modes));}
+    catch(error){}
+    updateModeButtons();
+  }
+  function openPanel(target){
+    const targetEl=document.querySelector(target);
+    if(targetEl&&'open' in targetEl)targetEl.open=true;
+    if(targetEl)targetEl.scrollIntoView({block:'start',behavior:'smooth'});
+  }
+  function modeInstruction(){
+    const modes=readModes();
+    const instructions=[];
+    if(modes.private)instructions.push('Private mode is enabled. Prefer local/private execution, avoid unnecessary external services, and call out any step that would move data outside the active trusted backend.');
+    if(modes.boost)instructions.push('Boost 5.5 mode is enabled. Be more careful, reason through tradeoffs internally, give sharper recommendations, and prioritize the highest-leverage next action.');
+    if(modes.super)instructions.push('MMIR++ mode is enabled. Combine perspectives from product strategist, architect, security reviewer and implementation lead, then synthesize one practical answer.');
+    if(modes.vision)instructions.push('Vision mode is enabled. Use provided images, screen context or uploaded files when present. If no visual input or vision-capable backend is available, say exactly what is missing and offer the nearest text/local alternative.');
+    return instructions.join('\n');
+  }
+  function activeModelLabel(){
+    const option=modelSelect?.selectedOptions?.[0];
+    return String(option?.textContent||modelSelect?.value||'No model').replace(/\s+-\s+live$/i,'').trim();
+  }
+  function updateRuntimeChips(){
+    if(modelChipEl)modelChipEl.textContent=activeModelLabel()||'Model ready';
+    if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
+  }
+  function updateModeButtons(){
+    const modes=readModes();
+    document.querySelectorAll('[data-chat-mode]').forEach(button=>{
+      const mode=button.getAttribute('data-chat-mode');
+      const active=Boolean(modes[mode]);
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
+  }
 
   function activeRole(){
     try{
@@ -202,15 +254,80 @@
 
   function ensureSendControl(){
     if(!primaryLink)return;
-    primaryLink.textContent='Send';
+    primaryLink.textContent='↑';
     primaryLink.setAttribute('href','#mimir-chat-runtime');
     primaryLink.setAttribute('role','button');
     primaryLink.setAttribute('aria-label','Send prompt to the active backend');
+    primaryLink.setAttribute('title','Send');
     primaryLink.removeAttribute('target');
+  }
+
+  function installComposerDock(){
+    if(!formEl||document.getElementById('composer-mode-dock'))return;
+    const dock=document.createElement('div');
+    dock.id='composer-mode-dock';
+    dock.className='composer-mode-dock';
+    dock.innerHTML=''+
+      '<div class="composer-tool-cluster" aria-label="Chat tools">'+
+        '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" title="Add model">+</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true">Private</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false">Boost 5.5</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false">MMIR++</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false">Vision</button>'+
+      '</div>'+
+      '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
+        '<span id="runtime-model-chip" class="composer-live-chip">Model checking</span>'+
+        '<span id="runtime-resource-chip" class="composer-live-chip">CPU/RAM checking</span>'+
+        '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+
+      '</div>';
+    const bar=formEl.querySelector('.composer-bar');
+    if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
+    modelChipEl=document.getElementById('runtime-model-chip');
+    resourceChipEl=document.getElementById('runtime-resource-chip');
+    document.getElementById('composer-add-model')?.addEventListener('click',()=>{
+      window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+      openPanel('#connect-options');
+    });
+    document.querySelectorAll('[data-chat-mode]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const mode=button.getAttribute('data-chat-mode');
+        const modes=readModes();
+        modes[mode]=!modes[mode];
+        writeModes(modes);
+        setStatus(mode+' mode '+(modes[mode]?'enabled.':'disabled.'),'idle');
+      });
+    });
+    document.getElementById('composer-voice-input')?.addEventListener('click',startVoiceInput);
+    updateModeButtons();
+    updateRuntimeChips();
+  }
+
+  function startVoiceInput(){
+    const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SpeechRecognition){
+      setStatus('Voice input is not available in this browser.','error');
+      return;
+    }
+    const recognition=new SpeechRecognition();
+    recognition.lang=document.documentElement.lang||navigator.language||'en-US';
+    recognition.interimResults=false;
+    recognition.maxAlternatives=1;
+    recognition.onstart=()=>setStatus('Listening...','loading');
+    recognition.onerror=()=>setStatus('Voice input failed or was cancelled.','error');
+    recognition.onresult=(event)=>{
+      const text=String(event.results?.[0]?.[0]?.transcript||'').trim();
+      if(text&&promptEl){
+        promptEl.value=(promptEl.value?promptEl.value+' ':'')+text;
+        promptEl.focus();
+        setStatus('Voice added to prompt.','ready');
+      }
+    };
+    recognition.start();
   }
 
   function installRuntimeUi(){
     if(!chatCenter||document.getElementById('mimir-chat-runtime'))return;
+    installComposerDock();
     const runtime=document.createElement('section');
     runtime.id='mimir-chat-runtime';
     runtime.className='mimir-chat-runtime';
@@ -235,7 +352,7 @@
     stopBtn=document.getElementById('runtime-stop');
     clearBtn=document.getElementById('runtime-clear');
     if(modelSelect)modelSelect.setAttribute('aria-label','Active chat model');
-    if(modelSelect)modelSelect.addEventListener('change',renderModelHelper);
+    if(modelSelect)modelSelect.addEventListener('change',()=>{renderModelHelper();updateRuntimeChips();});
     refreshBtn.addEventListener('click',()=>refreshState(true));
     stopBtn.addEventListener('click',stopCurrentResponse);
     clearBtn.addEventListener('click',clearConversation);
@@ -418,6 +535,14 @@
     ].join('\n');
   }
 
+  function hardwareSummary(hardware){
+    if(!hardware||typeof hardware!=='object')return '';
+    const cpu=hardware.cpu_count?String(hardware.cpu_count)+'c':'CPU';
+    const ram=hardware.memory_gb?String(hardware.memory_gb)+'GB RAM':'RAM';
+    const tier=hardware.memory_tier?String(hardware.memory_tier):'local';
+    return cpu+' / '+ram+' · '+tier;
+  }
+
   function contextMessages(prompt,backendMemory='',backendKnowledge=''){
     const history=messages
       .filter(message=>message.role==='user'||message.role==='assistant')
@@ -432,6 +557,8 @@
     const knowledge=relevantKnowledgeInstruction(prompt);
     const next=historyMessages.concat([{role:'user',content:prompt}]);
     const system=[{role:'system',content:defaultMmirInstruction()}];
+    const modes=modeInstruction();
+    if(modes)system.push({role:'system',content:modes});
     if(role)system.push({role:'system',content:role.instruction});
     if(memory)system.push({role:'system',content:memory});
     if(backendMemory)system.push({role:'system',content:backendMemory});
@@ -617,6 +744,7 @@
     }
     modelSelect.disabled=!values.length;
     renderModelHelper();
+    updateRuntimeChips();
   }
 
   async function fetchJson(url,options={}){
@@ -884,13 +1012,19 @@
       setStatus('Free browser models are ready. Checking local node in the background...','loading');
       await fetchJson(joinUrl(url,'/health'),{timeoutMs:5000});
       const token=await pairIfNeeded(profile,url);
-      const models=await fetchJson(joinUrl(url,'/models'),{headers:authHeaders(token),timeoutMs:8000});
+      const headers=authHeaders(token);
+      const [models,hardware]=await Promise.all([
+        fetchJson(joinUrl(url,'/models'),{headers,timeoutMs:8000}),
+        fetchJson(joinUrl(url,'/hardware'),{headers,timeoutMs:5000}).catch(()=>null)
+      ]);
       const normalized=normalizeModels(models);
       renderModels(normalized);
+      if(resourceChipEl)resourceChipEl.textContent=hardwareSummary(hardware)||'CPU/RAM local';
       writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
       setStatus(normalized.length?'Backend ready.':'Backend online. Free installable models are still available below.',normalized.length?'ready':'idle');
     }catch(error){
       renderModels([]);
+      if(resourceChipEl)resourceChipEl.textContent='CPU/RAM offline';
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
       if(starterModels.length){
         setStatus('Free browser/installable models are ready. Local node is not running yet.','ready');
