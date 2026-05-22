@@ -105,6 +105,8 @@ requireIncludes(files.portal, 'local pairing token only', 'Public UI must never 
 requireIncludes(files.chatRuntime, 'function preferredStarterModel()', 'J001 needs a deterministic first selected model.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
+requireIncludes(files.chatRuntime, 'function defaultMmirInstruction()', 'J001/J002 need live models to understand MMIR before the user configures anything.');
+requireIncludes(files.chatRuntime, 'trusted AI operating layer focused on orchestration', 'Live model default context must position MMIR correctly.');
 requireIncludes(files.chatRuntime, '/chat/completions', 'J002/J004 need the shared chat completions contract.');
 requireIncludes(files.chatRuntime, 'pairIfNeeded(profile,url)', 'J002/J003 need explicit pairing before protected local routes.');
 requireIncludes(files.chatRuntime, 'installable free local', 'J002 needs visible installable-free local model guidance.');

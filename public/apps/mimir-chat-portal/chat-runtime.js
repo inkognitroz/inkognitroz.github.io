@@ -407,6 +407,17 @@
     sendMessage();
   }
 
+  function defaultMmirInstruction(){
+    return [
+      'You are the MMIR platform assistant inside MMIR.ai.',
+      'MMIR is a trusted AI operating layer focused on orchestration: local-first chat, model connections, local nodes, secure tunnels, workspaces, memory, workflows and a marketplace over time.',
+      'Default goal: make the service useful immediately with free/local options first, then let users configure details later.',
+      'When asked about MMIR, answer as MMIR product support. Do not redefine MMIR as an unrelated academic term unless the user explicitly asks for that.',
+      'Security rules: no secrets in the public frontend; provider keys belong behind a protected backend; prefer 127.0.0.1 local node with pairing; never expose raw model runtimes publicly.',
+      'Match the user language, stay calm and concrete, and name any free local step needed for Ollama, MMIR Local Node or cloudflared.'
+    ].join('\n');
+  }
+
   function contextMessages(prompt,backendMemory='',backendKnowledge=''){
     const history=messages
       .filter(message=>message.role==='user'||message.role==='assistant')
@@ -420,7 +431,7 @@
     const memory=activeMemoryInstruction();
     const knowledge=relevantKnowledgeInstruction(prompt);
     const next=historyMessages.concat([{role:'user',content:prompt}]);
-    const system=[];
+    const system=[{role:'system',content:defaultMmirInstruction()}];
     if(role)system.push({role:'system',content:role.instruction});
     if(memory)system.push({role:'system',content:memory});
     if(backendMemory)system.push({role:'system',content:backendMemory});
