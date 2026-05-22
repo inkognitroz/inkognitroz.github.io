@@ -9,6 +9,7 @@ const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runti
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const firstImpressionPath = join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js');
 const onboardingPath = join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js');
+const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
@@ -101,6 +102,9 @@ requireText(chatRuntimePath, 'mmir-chat-modes-updated', 'Chat mode changes must 
 requireText(chatRuntimePath, '/hardware', 'Chat composer must show local CPU/RAM capability when local node exposes it.');
 requireText(indexPath, 'mimir-instant-start', 'Homepage must show an automatic ready state before technical setup sections.');
 requireText(indexPath, 'data-prompt-action', 'Homepage must include smart start actions that send useful prompts.');
+requireText(indexPath, 'id="node-dashboard"', 'Homepage must expose a node dashboard entrypoint.');
+requireText(indexPath, 'id="node-dashboard-root"', 'Homepage must expose a node dashboard render root.');
+requireText(indexPath, './apps/mimir-chat-portal/node-dashboard.js', 'Homepage must load the node dashboard script.');
 requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
 requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
 requireText(onboardingPath, 'First-run success gates', 'Homepage must expose automatic first-run success gates.');
@@ -109,6 +113,15 @@ requireText(onboardingPath, 'Private mode', 'First-run checklist must include pr
 requireText(onboardingPath, 'Local node', 'First-run checklist must include local node readiness.');
 requireText(onboardingPath, 'Model live', 'First-run checklist must include live model readiness.');
 requireText(onboardingPath, 'First chat', 'First-run checklist must include first chat success.');
+requireText(nodeDashboardPath, 'Install Health Doctor', 'Node dashboard must include install health doctor copy.');
+requireText(nodeDashboardPath, '/node/identity', 'Node dashboard must read public-safe local node identity.');
+requireText(nodeDashboardPath, '/hardware', 'Node dashboard must check hardware profile.');
+requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
+requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
+requireText(nodeDashboardPath, '/tunnels/trycloudflare/start', 'Node dashboard must expose a paired free tunnel start path.');
+requireText(nodeDashboardPath, 'Connector install', 'Install doctor must check connector install.');
+requireText(nodeDashboardPath, 'Ollama runtime', 'Install doctor must check Ollama/local runtime.');
+requireText(nodeDashboardPath, 'Model availability', 'Install doctor must check model availability.');
 requireText(uiActionCoveragePath, 'Every visible MMIR control', 'Homepage must include a public-safe UI action coverage manifest.');
 requireText(join(root, 'scripts', 'smoke-check-ui-actions.js'), 'requireHashLinksAreSafe', 'Static quality gates must guard against active dead hash links.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');

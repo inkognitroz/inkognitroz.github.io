@@ -1,0 +1,119 @@
+.node-dashboard-root {
+  display: grid;
+  gap: 12px;
+}
+
+.node-dashboard-grid,
+.node-doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.node-card,
+.node-doctor-card,
+.node-next-action {
+  border: 1px solid var(--mimir-line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+}
+
+.node-card {
+  display: grid;
+  gap: 6px;
+}
+
+.node-card span,
+.node-doctor-card span,
+.node-next-action span {
+  color: var(--mimir-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.node-card strong {
+  color: var(--mimir-text);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.node-card small,
+.node-doctor-card small,
+.node-next-action p {
+  color: var(--mimir-muted);
+  line-height: 1.4;
+}
+
+.node-doctor-card {
+  display: grid;
+  gap: 6px;
+  border-left-width: 4px;
+}
+
+.node-doctor-card[data-state="ready"] {
+  border-left-color: #10a37f;
+}
+
+.node-doctor-card[data-state="warn"] {
+  border-left-color: #d97706;
+}
+
+.node-doctor-card[data-state="error"] {
+  border-left-color: #dc2626;
+}
+
+.node-doctor-card strong {
+  color: var(--mimir-text);
+}
+
+.node-next-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.node-next-action p {
+  margin: 4px 0 0;
+}
+
+.node-dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.node-dashboard-actions button,
+.node-dashboard-actions a {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 163, 127, 0.32);
+  background: #0f766e;
+  color: #fff !important;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.node-dashboard-actions a {
+  background: #fff;
+  color: #0f766e !important;
+}
+
+@media (max-width: 560px) {
+  .node-next-action {
+    align-items: stretch;
+  }
+
+  .node-dashboard-actions,
+  .node-dashboard-actions button,
+  .node-dashboard-actions a {
+    width: 100%;
+  }
+}

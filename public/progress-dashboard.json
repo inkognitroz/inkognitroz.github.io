@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T20:47:20.698Z",
+  "updated_at": "2026-05-22T20:52:31.728Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -19,9 +19,9 @@
   },
   "summary": {
     "total": 152,
-    "done": 47,
+    "done": 49,
     "beta": 38,
-    "next": 10,
+    "next": 8,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -389,9 +389,9 @@
       {
         "phase": "Node UX",
         "total": 3,
-        "done": 0,
+        "done": 2,
         "beta": 0,
-        "next": 3,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -748,9 +748,7 @@
     }
   ],
   "next_queue": [
-    "D109",
     "D110",
-    "D111",
     "D112",
     "D113",
     "D115",
@@ -2394,10 +2392,10 @@
       "best_practice": "Node orchestration needs one calm control surface",
       "done_when": "User can see which nodes are live and what each can run",
       "covers": "D050-D052, J009",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
-      "estimate": "2-6h"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "The public frontend now has a Node Dashboard that reads active node identity, status, hardware, models, tunnel state and the current browser client from paired local-node routes.",
+      "estimate": "Done"
     },
     {
       "seq": "D110",
@@ -2411,7 +2409,7 @@
       "covers": "D051, D107",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
+      "evidence": "Secure cross-device pairing still needs the managed/control-plane flow beyond local TryCloudflare experiments.",
       "estimate": "2-6h"
     },
     {
@@ -2424,10 +2422,10 @@
       "best_practice": "Setup should diagnose itself before asking users to debug",
       "done_when": "User sees exact missing step and a safe repair action",
       "covers": "activation, support",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
-      "estimate": "2-6h"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "Install Health Doctor now checks connector reachability, pairing, Ollama/runtime status, model availability, hardware profile and tunnel support with next best actions.",
+      "estimate": "Done"
     },
     {
       "seq": "D112",
