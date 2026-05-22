@@ -109,6 +109,7 @@ Updated: 2026-05-22
 - D025 is now beta: model selection and catalog views are grouped into live backend, ready-now browser, install-to-activate free local and protected/planned routes so static suggestions no longer look live.
 - D117 is now beta: public safety audit runs in CI and blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API key fields and public paid-compute enablement.
 - D151 is now beta: Node Dashboard includes a local model manager with installed model inventory, disk/RAM impact and paired safe removal; local-node reports model resource metadata.
+- D116 is now beta: `docs/MMIR_CONTROL_PLANE_BOUNDARY.md` documents current/target architecture, trust zones, route ownership, public/private rules and Codex work rules for future agents.
 - Public repo handoff docs (`AGENTS.md`, `START_HERE.md`, `README.md`) now describe MMIR, the current backlog sequence, free/local-first guardrails and validation commands instead of the old SaaS Fabric workflow.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.

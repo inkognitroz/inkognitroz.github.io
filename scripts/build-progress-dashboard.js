@@ -56,6 +56,7 @@ const overrides = new Map([
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
   ...range(116, 152).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);

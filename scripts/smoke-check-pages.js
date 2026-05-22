@@ -158,6 +158,9 @@ requireText(uiActionCoveragePath, 'Every visible MMIR control', 'MMIR product pa
 requireText(join(root, 'scripts', 'smoke-check-ui-actions.js'), 'requireHashLinksAreSafe', 'Static quality gates must guard against active dead hash links.');
 requireText(join(root, 'scripts', 'public-safety-audit.js'), 'Public safety audit passed.', 'Static quality gates must run a public/private safety audit.');
 requireText(join(root, '.github', 'workflows', 'quality.yml'), 'node scripts/public-safety-audit.js', 'CI must run the public safety audit.');
+requireText(join(root, 'docs', 'MMIR_CONTROL_PLANE_BOUNDARY.md'), 'MMIR is the orchestration layer for trusted AI', 'Control-plane boundary spec must define MMIR identity.');
+requireText(join(root, 'docs', 'MMIR_CONTROL_PLANE_BOUNDARY.md'), '/models/pull', 'Control-plane boundary spec must assign local model management routes.');
+requireText(join(root, 'docs', 'MMIR_CONTROL_PLANE_BOUNDARY.md'), 'provider routes | managed API only', 'Control-plane boundary spec must keep provider routes server-side.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'remote_pairing_code_required', 'API client must handle remote pairing code requirements.');
