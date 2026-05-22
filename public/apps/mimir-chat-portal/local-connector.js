@@ -40,7 +40,7 @@
       const status=normalizeStatus(option.status);
       const target=option.target||'#backend-settings';
       const download=isDownloadTarget(target,option);
-      const action=option.action||download?'Download':'Open';
+      const action=option.action||(download?'Download':'Open');
       const downloadAttr=download&&!isDownloadPage(target)?' download':'';
       return '<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(option.title||option.id)+'</h3><span class="provider-status '+safe(statusClass(status))+'">'+safe(label(status))+'</span></div><p>'+safe(option.description||'Connection option')+'</p><a class="button-link" href="'+safe(target)+'"'+downloadAttr+'>'+safe(action)+'</a></article>';
     }).join('');
