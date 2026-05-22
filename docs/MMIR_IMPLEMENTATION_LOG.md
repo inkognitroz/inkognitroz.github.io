@@ -50,6 +50,7 @@ Updated: 2026-05-22
 - Dynamic compute scaling v1 now exists as a protected planning endpoint that chooses existing capacity, failover, deferred scaling or approval-required provisioning without starting cloud resources automatically.
 - Workflow object model v1 now exists in the managed backend with protected workflow create/list/get/delete routes and planned run records for bounded linear workflows.
 - Frontend now has a workflow builder MVP that can define linear steps, save workflows to the active backend, list saved workflows and request planned runs.
+- Workflow automation trigger definitions now exist in the managed backend for visible and revocable manual, schedule and event triggers.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
@@ -58,7 +59,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D062-D066: automation, agents, evaluation and registries.
+- D063-D066: agents, evaluation and registries.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
