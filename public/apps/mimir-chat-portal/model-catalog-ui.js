@@ -17,6 +17,20 @@
   function modelLicense(model){return model.license_name||model.license||'check required';}
   function commercialUse(model){return model.commercial_use||'check-required';}
   function isUnavailable(model){return ['planned','future','disabled','deprecated','requires-backend-router','requires-paid-provider','requires-paid-capacity'].includes(String(model.status||''));}
+  function isRegistryLive(model){return model.registry_source==='active-provider'||model.source==='active-provider'||String(model.access||'').includes('active backend');}
+  function modelLibraryGroups(models){
+    const groups=[
+      {id:'live',title:'Active backend models',hint:'Real models reported by the connected trusted backend.',items:[]},
+      {id:'free',title:'Free and installable suggestions',hint:'Free local/browser candidates that still need the matching runtime before they are live.',items:[]},
+      {id:'protected',title:'Protected, premium or planned routes',hint:'These stay disabled until a backend, policy or explicit cost approval exists.',items:[]}
+    ];
+    for(const model of models){
+      if(isRegistryLive(model))groups[0].items.push(model);
+      else if(isUnavailable(model))groups[2].items.push(model);
+      else groups[1].items.push(model);
+    }
+    return groups.filter(group=>group.items.length);
+  }
 
   function registryModelToCatalog(model){
     return {
@@ -112,19 +126,27 @@
     if(backendSettings)backendSettings.open=true;
   }
 
+  function cardForModel(model){
+    const disabled=isUnavailable(model);
+    const live=isRegistryLive(model);
+    const buttonLabel=live?'Use live backend model':(disabled?'Requires protected backend':'Use as suggestion');
+    return '<article class="model-card '+safe(statusClass(model.status))+'">'+
+      '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span>'+safe(live?'live backend':statusLabel(model.status||model.access||'model'))+'</span></div>'+
+      '<p>'+safe(model.best_for||model.notes||'Model option for a compatible backend.')+'</p>'+
+      '<dl><div><dt>Category</dt><dd>'+safe(model.category||'general')+'</dd></div><div><dt>Capacity</dt><dd>'+safe(model.capacity_hint||'backend')+'</dd></div><div><dt>License</dt><dd>'+safe(modelLicense(model))+'</dd></div><div><dt>Commercial</dt><dd>'+safe(commercialUse(model))+'</dd></div><div><dt>RAM</dt><dd>'+safe(model.ram_hint||'varies')+'</dd></div><div><dt>GPU</dt><dd>'+safe(model.gpu_hint||'varies')+'</dd></div></dl>'+
+      '<button type="button" data-id="'+safe(model.id)+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+safe(buttonLabel)+'</button>'+
+    '</article>';
+  }
+
   function renderLibrary(){
     if(!libraryGrid)return;
     const models=(catalog.models||[]).filter(item=>item.id!=='custom');
     if(!models.length){libraryGrid.innerHTML='<p class="empty-backends">Model catalog is not available yet.</p>';return;}
-    libraryGrid.innerHTML=models.map(model=>{
-      const disabled=isUnavailable(model);
-      const buttonLabel=disabled?'Requires protected backend':'Use as suggestion';
-      return '<article class="model-card '+safe(statusClass(model.status))+'">'+
-        '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span>'+safe(statusLabel(model.status||model.access||'model'))+'</span></div>'+
-        '<p>'+safe(model.best_for||model.notes||'Model option for a compatible backend.')+'</p>'+
-        '<dl><div><dt>Category</dt><dd>'+safe(model.category||'general')+'</dd></div><div><dt>Capacity</dt><dd>'+safe(model.capacity_hint||'backend')+'</dd></div><div><dt>License</dt><dd>'+safe(modelLicense(model))+'</dd></div><div><dt>Commercial</dt><dd>'+safe(commercialUse(model))+'</dd></div><div><dt>RAM</dt><dd>'+safe(model.ram_hint||'varies')+'</dd></div><div><dt>GPU</dt><dd>'+safe(model.gpu_hint||'varies')+'</dd></div></dl>'+
-        '<button type="button" data-id="'+safe(model.id)+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+safe(buttonLabel)+'</button>'+
-      '</article>';
+    libraryGrid.innerHTML=modelLibraryGroups(models).map(group=>{
+      return '<section class="model-library-section" data-model-section="'+safe(group.id)+'">'+
+        '<div class="model-library-section-head"><h3>'+safe(group.title)+'</h3><p>'+safe(group.hint)+'</p></div>'+
+        '<div class="model-library-section-grid">'+group.items.map(cardForModel).join('')+'</div>'+
+      '</section>';
     }).join('');
     libraryGrid.querySelectorAll('button[data-id]:not([disabled])').forEach(button=>button.addEventListener('click',()=>chooseModel(button.getAttribute('data-id'))));
   }

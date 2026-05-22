@@ -6,6 +6,9 @@
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
   const chatCenter=document.querySelector('.mimir-chat-center');
+  const promptEl=document.getElementById('mimir-prompt');
+  const primaryLink=document.getElementById('primary-chat-link');
+  let defaultsPrepared=false;
 
   function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
   function activeProfile(){const id=localStorage.getItem(ACTIVE_KEY)||'';return readProfiles().find(profile=>profile.id===id)||null;}
@@ -33,6 +36,41 @@
       text:String(option?.textContent||'').trim(),
       runtime:option?.dataset?.runtime||''
     };
+  }
+
+  function ensureFirstRunDefaults(){
+    if(defaultsPrepared)return;
+    defaultsPrepared=true;
+    window.MimirBackendProfiles?.ensureAutomaticDefaults?.();
+    const modes=readModes();
+    if(modes.private===false){
+      localStorage.setItem(MODE_KEY,JSON.stringify({...modes,private:true}));
+      window.dispatchEvent(new CustomEvent('mmir-chat-modes-updated',{detail:{...modes,private:true}}));
+    }
+  }
+
+  function chooseGuideModel(){
+    const select=document.getElementById('runtime-model');
+    if(!select)return false;
+    const guide=Array.from(select.options||[]).find(option=>option.value==='starter:mmir-guide')||
+      Array.from(select.options||[]).find(option=>option.dataset.runtime==='browser-guide');
+    if(!guide)return false;
+    select.value=guide.value;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+    return true;
+  }
+
+  function sendPrompt(value){
+    if(!promptEl)return;
+    ensureFirstRunDefaults();
+    chooseGuideModel();
+    promptEl.value=String(value||'Help me get started with MMIR.').trim();
+    promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+    promptEl.focus();
+    window.setTimeout(()=>{
+      chooseGuideModel();
+      primaryLink?.click();
+    },120);
   }
   function hasFirstPrompt(){
     try{
@@ -72,6 +110,7 @@
 
   function render(){
     if(!chatCenter)return;
+    ensureFirstRunDefaults();
     let panel=document.getElementById('first-run-onboarding');
     if(!panel){
       panel=document.createElement('section');
@@ -109,7 +148,7 @@
 
     const heading=document.createElement('div');
     heading.className='onboarding-heading';
-    heading.innerHTML='<div><p class="eyebrow">Automatic launch checklist</p><h2>First-run success gates</h2></div><small>Browser, privacy, local node, live model and first chat update automatically.</small>';
+    heading.innerHTML='<div><p class="eyebrow">Automatic launch checklist</p><h2>First-run success gates</h2></div><small>MMIR prepares safe defaults first. The user can configure details later.</small>';
 
     const grid=document.createElement('div');
     grid.className='onboarding-grid';
@@ -117,6 +156,11 @@
 
     const actions=document.createElement('div');
     actions.className='onboarding-actions';
+    const startButton=document.createElement('button');
+    startButton.type='button';
+    startButton.id='start-free-chat';
+    startButton.textContent='Start free chat';
+    startButton.addEventListener('click',()=>sendPrompt('Help me get started with MMIR. What is the fastest free and private path to connect a real local model?'));
     const freeButton=document.createElement('button');
     freeButton.type='button';
     freeButton.id='activate-free-local';
@@ -142,7 +186,7 @@
     installLink.href='#local-connector';
     installLink.textContent='Local install';
     installLink.addEventListener('click',()=>openTarget('#local-connector'));
-    actions.append(freeButton,privateButton,installLink);
+    actions.append(startButton,freeButton,privateButton,installLink);
 
     panel.innerHTML='';
     panel.append(heading,actions,grid);

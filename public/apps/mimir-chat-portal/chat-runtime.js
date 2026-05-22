@@ -637,6 +637,13 @@
     return modelSelect?starterFromValue(modelSelect.value):null;
   }
 
+  function starterAvailabilityLabel(model){
+    if(model?.runtime==='browser-guide')return 'ready now - browser helper';
+    if(model?.runtime==='webllm')return 'ready now - browser WebGPU';
+    if(model?.status==='installable-free')return 'install to activate - free local';
+    return String(model?.status||'free').replaceAll('-',' ');
+  }
+
   function preferredStarterModel(){
     return starterModels.find(model=>model.id==='mmir-guide')||
       starterModels.find(model=>model.runtime==='browser-guide')||
@@ -695,7 +702,7 @@
     modelHelperEl.hidden=false;
     modelHelperEl.innerHTML=''+
       '<div class="runtime-model-helper-head">'+
-        '<div><strong>'+escapeHtml(model.label)+'</strong><span>'+escapeHtml(model.status||'free')+' - '+escapeHtml(model.cost||'free')+'</span></div>'+
+        '<div><strong>'+escapeHtml(model.label)+'</strong><span>'+escapeHtml(starterAvailabilityLabel(model))+' - '+escapeHtml(model.cost||'free')+'</span></div>'+
         '<a class="button-link" href="#backend-settings">Connect local profile</a>'+
       '</div>'+
       '<p>'+escapeHtml(model.best_for||model.install_note||'Free model option.')+'</p>'+
@@ -819,7 +826,7 @@
     modelSelect.innerHTML='';
     if(models.length){
       const liveGroup=document.createElement('optgroup');
-      liveGroup.label='Live from active backend';
+      liveGroup.label='Live from active backend - real chat';
       for(const model of models){
         const option=document.createElement('option');
         option.value=model.id;
@@ -832,16 +839,15 @@
 
     if(starterModels.length){
       const browserGroup=document.createElement('optgroup');
-      browserGroup.label='Active free in this browser';
+      browserGroup.label='Ready now: free browser helpers';
       const webGpuGroup=document.createElement('optgroup');
-      webGpuGroup.label='Free browser WebGPU models';
+      webGpuGroup.label='Ready now: free browser WebGPU LLMs';
       const installGroup=document.createElement('optgroup');
-      installGroup.label='Free local installable';
+      installGroup.label='Install to activate: free local Ollama models';
       for(const model of starterModels){
         const option=document.createElement('option');
         option.value=starterValue(model);
-        const statusText=model.runtime==='webllm'?'browser WebGPU':String(model.status||'free').replaceAll('-',' ');
-        option.textContent=model.label+' - '+statusText;
+        option.textContent=model.label+' - '+starterAvailabilityLabel(model);
         option.dataset.runtime=model.runtime||'starter';
         if(model.runtime==='browser-guide')browserGroup.appendChild(option);
         else if(model.runtime==='webllm')webGpuGroup.appendChild(option);

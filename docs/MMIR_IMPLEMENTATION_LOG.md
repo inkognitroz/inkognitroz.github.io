@@ -105,6 +105,8 @@ Updated: 2026-05-22
 - D115 is now beta: the first screen shows a live readiness rail for free start, privacy, node and model status, and the send control uses safe encoding so the first impression avoids broken glyphs.
 - D114 first-run success checklist is now live: the homepage onboarding panel automatically tracks Browser ready, Private mode, Local node, Model live and First chat gates and updates from mode/profile/node/chat events.
 - D023 is now beta: mobile navigation stays visible through a horizontal, keyboard-focusable rail, readiness text wraps on phones, and quality gates block negative letter spacing, viewport-scaled chat typography and hidden mobile nav regressions.
+- D024 is now beta: first-run onboarding prepares safe defaults, preserves private mode and offers one-click free MMIR Guide chat so first value does not depend on a backend or paid model.
+- D025 is now beta: model selection and catalog views are grouped into live backend, ready-now browser, install-to-activate free local and protected/planned routes so static suggestions no longer look live.
 - Public repo handoff docs (`AGENTS.md`, `START_HERE.md`, `README.md`) now describe MMIR, the current backlog sequence, free/local-first guardrails and validation commands instead of the old SaaS Fabric workflow.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.

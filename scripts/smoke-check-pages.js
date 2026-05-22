@@ -97,8 +97,11 @@ for (const file of walk(publicDir)) {
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(chatPortalPath, 'window.MimirBackendProfiles={ensureFreeLocalProfile,ensureAutomaticDefaults};', 'Chat portal must expose automatic default setup for integration tests.');
 requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime must keep an explicit first-run starter model choice.');
+requireText(chatRuntimePath, 'function starterAvailabilityLabel(model)', 'Chat runtime must label whether a model is ready now or install-to-activate.');
 requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
 requireText(chatRuntimePath, 'const liveValues=(models||[]).map', 'Chat runtime must prefer live backend models over starter helpers when live models exist.');
+requireText(chatRuntimePath, 'Ready now: free browser helpers', 'Model selector must separate ready-now browser helpers from installable models.');
+requireText(chatRuntimePath, 'Install to activate: free local Ollama models', 'Model selector must clearly mark free local models as install-to-activate.');
 requireText(chatRuntimePath, 'function modelComplianceNote(model)', 'Chat runtime must show license/commercial-use warnings for starter model choices.');
 requireText(chatRuntimePath, 'Source/model card: verify before production use', 'Chat runtime must ask users to verify model cards before production use.');
 requireText(chatRuntimePath, 'composer-mode-dock', 'Chat composer must expose the Open WebUI-style mode dock.');
@@ -129,6 +132,11 @@ requireText(firstImpressionPath, 'mimir-readiness-rail', 'First impression must 
 requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readiness rail must update automatically.');
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(firstImpressionPath, 'trusted MMIR control plane', 'First impression runtime must keep local AI framed as control-plane activation.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'function ensureFirstRunDefaults()', 'Onboarding must prepare safe automatic defaults before asking the user to configure.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'id=\'start-free-chat\'', 'Onboarding must expose a one-click free first chat action.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'function sendPrompt(value)', 'Onboarding must send a useful first prompt, not only navigate.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'modelLibraryGroups(models)', 'Model catalog must render grouped live/free/protected model sections.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'Active backend models', 'Model catalog must distinguish active backend models from static suggestions.');
 requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:auto', 'Mobile navigation must remain accessible instead of disappearing.');
 requireText(mimirCssPath, '.readiness-pill:focus-visible', 'Readiness pills need keyboard focus states.');
 requireText(mimirCssPath, '.readiness-pill small{white-space:normal}', 'Mobile readiness status text must wrap instead of truncating.');

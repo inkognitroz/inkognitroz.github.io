@@ -18,8 +18,8 @@ const overrides = new Map([
   ...range(1, 21).map((id) => [id, { status: 'done', evidence: 'Core foundation, local node and first chat loop are implemented across the in-scope repos.' }]),
   ['D022', { status: 'beta', evidence: 'Code block rendering and copy controls exist; full safe markdown polish remains.' }],
   ['D023', { status: 'beta', evidence: 'Mobile nav remains available, keyboard focus states are guarded and MMIR chat CSS now avoids negative/viewport-scaled type; visual device QA continues.' }],
-  ['D024', { status: 'next', evidence: 'First-run flow now defaults automatically; installer/onboarding can be made smoother.' }],
-  ['D025', { status: 'next', evidence: 'Live/static model split exists but should be sharpened across all model surfaces.' }],
+  ['D024', { status: 'beta', evidence: 'First-run onboarding now prepares safe defaults, keeps Private mode on, and can start a free MMIR Guide chat with one action before local model setup.' }],
+  ['D025', { status: 'beta', evidence: 'Chat selector and model library now separate live backend models, ready-now browser helpers/WebGPU models, free install-to-activate local models and protected/planned routes.' }],
   ['D026', { status: 'done', evidence: 'Model catalog and chat helper now surface license/commercial-use checks and source/model-card links for starter choices.' }],
   ...range(27, 30).map((id) => [id, { status: 'beta', evidence: 'Roles, comparison and synthesis UI/API paths exist as beta surfaces.' }]),
   ...range(31, 41).map((id) => [id, { status: 'beta', evidence: 'Managed backend security/router foundations exist; production hardening continues.' }]),
@@ -183,7 +183,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D023', 'D024', 'D025', 'D042', 'D151', 'D117'];
+const prioritizedNextIds = ['D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

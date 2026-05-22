@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T21:34:34.835Z",
+  "updated_at": "2026-05-22T21:41:27.000Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,8 +20,8 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 42,
-    "next": 3,
+    "beta": 44,
+    "next": 1,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -60,8 +60,8 @@
         "phase": "Chat UX",
         "total": 5,
         "done": 1,
-        "beta": 2,
-        "next": 1,
+        "beta": 3,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 1
@@ -70,8 +70,8 @@
         "phase": "Model UX",
         "total": 4,
         "done": 2,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -748,8 +748,6 @@
     }
   ],
   "next_queue": [
-    "D024",
-    "D025",
     "D042"
   ],
   "watchlist": [
@@ -1112,10 +1110,10 @@
       "best_practice": "Onboarding should reduce architecture into a calm sequence",
       "done_when": "First-run user can reach first success screen",
       "covers": "F012-F014, F139-F143, S001, P2-004",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "First-run flow now defaults automatically; installer/onboarding can be made smoother.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-run onboarding now prepares safe defaults, keeps Private mode on, and can start a free MMIR Guide chat with one action before local model setup.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D025",
@@ -1127,10 +1125,10 @@
       "best_practice": "No static catalog item should look ready if backend cannot run it",
       "done_when": "UI marks live, unavailable, planned and premium models clearly",
       "covers": "F054-F068, F155-F158, S034",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Live/static model split exists but should be sharpened across all model surfaces.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Chat selector and model library now separate live backend models, ready-now browser helpers/WebGPU models, free install-to-activate local models and protected/planned routes.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D026",
