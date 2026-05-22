@@ -1,4 +1,5 @@
 (function(){
+  const api=window.MimirApiClient;
   const modelSelect=document.getElementById('backend-model-catalog');
   const capacitySelect=document.getElementById('backend-capacity-profile');
   const modelNotes=document.getElementById('backend-models');
@@ -6,7 +7,7 @@
   const description=document.getElementById('model-catalog-description');
   const libraryGrid=document.getElementById('model-library-grid');
   const backendSettings=document.getElementById('backend-settings');
-  let catalog={models:[],capacity_profiles:[]};
+  let catalog={models:[],capacity_profiles:[],registry_models:[]};
 
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function selectedModel(){return catalog.models.find(item=>item.id===modelSelect.value)||catalog.models[0]||null;}
@@ -15,7 +16,58 @@
   function statusLabel(status){return String(status||'unknown').replaceAll('-',' ');}
   function modelLicense(model){return model.license_name||model.license||'check required';}
   function commercialUse(model){return model.commercial_use||'check-required';}
-  function isUnavailable(model){return ['planned','future','requires-backend-router','requires-paid-provider','requires-paid-capacity'].includes(String(model.status||''));}
+  function isUnavailable(model){return ['planned','future','disabled','deprecated','requires-backend-router','requires-paid-provider','requires-paid-capacity'].includes(String(model.status||''));}
+
+  function registryModelToCatalog(model){
+    return {
+      id:model.id,
+      label:model.label||model.id,
+      family:model.family||'Registry',
+      provider_family:model.provider||'backend',
+      category:(model.source==='active-provider'?'active backend':'registry'),
+      access:model.source==='active-provider'?'active backend':'custom registry',
+      status:model.status||'candidate',
+      license_name:model.license||'check-required',
+      commercial_use:model.commercial_use||'check-required',
+      best_for:model.notes||'Model exposed by the protected backend registry.',
+      capacity_hint:model.cost_class||'backend-default',
+      size_hint:model.context_window?('context '+String(model.context_window)):'backend reported',
+      ram_hint:'backend reported',
+      gpu_hint:'backend reported',
+      cpu_hint:'backend reported',
+      context_hint:model.context_window?String(model.context_window):'backend reported',
+      notes:model.notes||'Registry metadata from active backend.',
+      registry_source:model.source||'backend'
+    };
+  }
+
+  function mergeRegistryModels(baseModels,registryModels){
+    const seen=new Set((baseModels||[]).map(model=>model.id));
+    const mapped=(registryModels||[]).map(registryModelToCatalog).filter(model=>{
+      if(!model.id||seen.has(model.id))return false;
+      seen.add(model.id);
+      return true;
+    });
+    return (baseModels||[]).concat(mapped);
+  }
+
+  async function fetchRegistryModels(){
+    if(!api)return [];
+    const profile=api.activeProfile();
+    const url=api.cleanUrl(profile?.url);
+    if(!profile||!url)return [];
+    try{
+      const token=await api.pairIfNeeded(profile,url);
+      const data=await api.fetchJson(api.joinUrl(url,'/registry/models'),{
+        method:'GET',
+        headers:api.authHeaders(token),
+        timeoutMs:5000
+      });
+      return Array.isArray(data?.data)?data.data:[];
+    }catch(error){
+      return [];
+    }
+  }
 
   function renderDescription(){
     if(!description||!modelSelect||!capacitySelect)return;
@@ -43,7 +95,7 @@
     if(model&&model.id!=='custom'){
       if(modelNotes)modelNotes.value=model.label||model.id;
       if(capacityNotes){
-        const note=[model.status?('Status: '+statusLabel(model.status)):'',model.access?('Access: '+model.access):'',('License: '+modelLicense(model)),('Commercial: '+commercialUse(model)),model.capacity_hint?('Capacity: '+model.capacity_hint):''].filter(Boolean).join(' · ');
+        const note=[model.status?('Status: '+statusLabel(model.status)):'',model.access?('Access: '+model.access):'',('License: '+modelLicense(model)),('Commercial: '+commercialUse(model)),model.capacity_hint?('Capacity: '+model.capacity_hint):''].filter(Boolean).join(' - ');
         if(note)capacityNotes.value=note;
       }
       if(capacitySelect&&model.capacity_hint){
@@ -95,9 +147,20 @@
       const response=await fetch('./ai-model-catalog.json',{cache:'default'});
       if(!response.ok)throw new Error('catalog unavailable');
       const data=await response.json();
-      catalog={models:Array.isArray(data.models)?data.models:[],capacity_profiles:Array.isArray(data.capacity_profiles)?data.capacity_profiles:[]};
+      const registryModels=await fetchRegistryModels();
+      const staticModels=Array.isArray(data.models)?data.models:[];
+      catalog={
+        models:mergeRegistryModels(staticModels,registryModels),
+        capacity_profiles:Array.isArray(data.capacity_profiles)?data.capacity_profiles:[],
+        registry_models:registryModels
+      };
     }catch(error){
-      catalog={models:[{id:'custom',label:'Custom / user supplied',best_for:'Use whatever the backend provides.'}],capacity_profiles:[]};
+      const registryModels=await fetchRegistryModels();
+      catalog={
+        models:mergeRegistryModels([{id:'custom',label:'Custom / user supplied',best_for:'Use whatever the backend provides.'}],registryModels),
+        capacity_profiles:[],
+        registry_models:registryModels
+      };
     }
     populate();
     if(modelSelect)modelSelect.addEventListener('change',applySuggestion);
