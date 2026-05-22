@@ -1,147 +1,176 @@
 (function(){
   const DEMO_KEY='mimir-demo-mode-v1';
-  const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
+  const WELCOME_KEY='mimir-demo-welcome-shown-v1';
   const promptEl=document.getElementById('mimir-prompt');
   const formEl=document.querySelector('.mimir-composer');
+  const demoButton=document.getElementById('try-demo-mode');
   const primaryLink=document.getElementById('primary-chat-link');
-  const demoBtn=document.getElementById('try-demo-mode');
-  const activeBadge=document.getElementById('active-badge');
-  const activeTitle=document.getElementById('active-chat-title');
-  const activeDesc=document.getElementById('active-chat-description');
-  let demoActivatedThisPage=false;
 
-  const demoModels=[
-    {id:'mmir-demo-strategist',label:'MMIR Demo Strategist'},
-    {id:'mmir-demo-architect',label:'MMIR Demo Architect'},
-    {id:'mmir-demo-growth',label:'MMIR Demo Growth Lead'}
-  ];
+  function active(){
+    try{return localStorage.getItem(DEMO_KEY)==='true';}
+    catch(error){return false;}
+  }
 
-  function demoActive(){return localStorage.getItem(DEMO_KEY)==='true';}
-  function hasActiveBackend(){return Boolean(localStorage.getItem(ACTIVE_BACKEND_KEY)||'');}
-  function statusEl(){return document.getElementById('runtime-state');}
-  function modelSelect(){return document.getElementById('runtime-model');}
-  function transcript(){return document.getElementById('runtime-transcript');}
-  function setStatus(text,state){const el=statusEl();if(el){el.textContent=text;el.dataset.state=state||'idle';}}
-  function escapeText(value){return String(value||'');}
+  function writeActive(value){
+    try{localStorage.setItem(DEMO_KEY,value?'true':'false');}
+    catch(error){}
+  }
 
-  function renderDemoModels(){
-    const select=modelSelect();
+  function setText(id,value){
+    const el=document.getElementById(id);
+    if(el&&el.textContent!==value)el.textContent=value;
+  }
+
+  function setStatus(message,state){
+    const status=document.getElementById('runtime-state');
+    if(!status)return;
+    if(status.textContent!==message)status.textContent=message;
+    status.dataset.state=state||'ready';
+  }
+
+  function applyDemoModels(){
+    const select=document.getElementById('runtime-model');
     if(!select)return;
+    const desired='demo-strategy-agent';
+    if(select.value===desired&&!select.disabled)return;
     select.innerHTML='';
-    for(const model of demoModels){
+    [
+      ['demo-strategy-agent','MMIR demo strategy agent'],
+      ['demo-local-node-guide','MMIR local node guide'],
+      ['demo-security-reviewer','MMIR security reviewer']
+    ].forEach(([value,label])=>{
       const option=document.createElement('option');
-      option.value=model.id;
-      option.textContent=model.label;
+      option.value=value;
+      option.textContent=label;
       select.appendChild(option);
-    }
+    });
+    select.value=desired;
     select.disabled=false;
   }
 
-  function renderMessage(role,content,meta){
-    const root=transcript();
-    if(!root)return;
-    const bubble=document.createElement('article');
-    bubble.className='runtime-message runtime-message-'+role;
-    bubble.setAttribute('aria-label',(role==='user'?'User':'Assistant')+' demo message');
-    const label=document.createElement('span');
-    label.className='runtime-message-label';
-    label.textContent=role==='user'?'You':'MMIR demo';
-    const body=document.createElement('div');
-    body.className='runtime-message-body';
-    for(const block of escapeText(content).split(/\n{2,}/).filter(Boolean)){
+  function ensureSendLink(){
+    if(!primaryLink)return;
+    primaryLink.textContent='Send';
+    primaryLink.href='#mimir-chat-runtime';
+    primaryLink.setAttribute('role','button');
+    primaryLink.setAttribute('aria-label','Send prompt in demo mode');
+    primaryLink.setAttribute('aria-disabled','false');
+    primaryLink.removeAttribute('target');
+    primaryLink.classList.remove('disabled');
+  }
+
+  function paragraph(target,text){
+    String(text||'').split(/\n{2,}/).filter(Boolean).forEach(block=>{
       const p=document.createElement('p');
       p.textContent=block;
-      body.appendChild(p);
-    }
+      target.appendChild(p);
+    });
+  }
+
+  function appendMessage(role,content,meta,flags){
+    const transcript=document.getElementById('runtime-transcript');
+    if(!transcript)return;
+    const bubble=document.createElement('article');
+    bubble.className='runtime-message runtime-message-'+role;
+    bubble.dataset.messageId='demo-'+Date.now()+'-'+Math.random().toString(16).slice(2);
+    if(flags&&flags.welcome)bubble.dataset.demoWelcome='true';
+    bubble.setAttribute('aria-label',(role==='user'?'User':'Assistant')+' message');
+    const label=document.createElement('span');
+    label.className='runtime-message-label';
+    label.textContent=role==='user'?'You':'MMIR';
+    const body=document.createElement('div');
+    body.className='runtime-message-body';
+    paragraph(body,content);
     bubble.append(label,body);
-    if(meta){const small=document.createElement('small');small.textContent=meta;bubble.appendChild(small);}
-    root.appendChild(bubble);
+    if(meta){
+      const small=document.createElement('small');
+      small.textContent=meta;
+      bubble.appendChild(small);
+    }
+    transcript.appendChild(bubble);
     bubble.scrollIntoView({block:'nearest'});
   }
 
-  function demoReply(prompt){
+  function replyFor(prompt){
     const text=String(prompt||'').toLowerCase();
-    if(/price|pricing|money|revenue|paid|monetiz/.test(text)){
-      return 'Demo answer: MMIR should monetize in three steps. Free proves the local-first workflow. Pro sells saved workspaces, memory, workflow automation and exports. Managed sells protected api.mmir.ai routing, hosted provider keys, team access and premium runtime capacity. The first revenue experiment should be beta access plus a clear managed-access request path.';
+    if(/revenue|money|pricing|users|growth|sales|customer|pay/.test(text)){
+      return 'Fastest money path: make the first screen prove value in under 30 seconds, capture beta intent, then convert qualified users into paid privacy and automation pilots. For MMIR.ai the funnel should be: demo mode, beta request, local node setup, paid workspace tier.\n\nNext build priorities: instrument CTA clicks, add one guided local-node install path, publish one clear use case for developers and privacy-focused teams, then ask every beta user for a concrete workflow they would pay to automate.';
     }
-    if(/install|local|ollama|node|model/.test(text)){
-      return 'Demo answer: The fastest activation path is Local Node first. The user opens mmir.ai, starts MMIR Local Node on 127.0.0.1, pairs once, loads models, then sends the first prompt. The product must keep raw Ollama private and make every failure state explain the next action.';
+    if(/local|ollama|node|install|connector|backend|model/.test(text)){
+      return 'The local path is the strongest wedge: users keep their model runtime private while MMIR.ai gives them a cleaner workspace, workflows, memory and governance. The next product step is a one-command local node, then a browser pairing flow that confirms health, models and chat capability.';
     }
-    if(/security|privacy|secret|safe|trust/.test(text)){
-      return 'Demo answer: The trust promise is simple: no provider keys in the public frontend, no raw Ollama exposed to the internet, local-first by default, opt-in logging only, and managed providers behind protected backend services. That should be visible before users connect anything.';
+    if(/security|privacy|safe|secret|key|risk|review/.test(text)){
+      return 'Security posture for this demo: no API keys, no network calls, no hidden backend and no prompt upload. Production should keep secrets server-side or inside the local node, require explicit pairing, and expose status clearly before any live model call is made.';
     }
-    if(/workflow|agent|team|memory|knowledge/.test(text)){
-      return 'Demo answer: The sticky product layer is workflows plus memory. A user should save a workspace, add local knowledge, choose roles, compare model answers, and turn repeated work into reusable flows. That is where Pro and team plans become natural.';
+    if(/workflow|agent|automation|jira|github|review|plan/.test(text)){
+      return 'Automation should start with repeatable review loops: repo triage, issue alignment, frontpage conversion review, security review and release readiness. Each loop should search existing work first, update the backlog, then create the smallest useful PR.';
     }
-    return 'Demo answer: MMIR.ai is a local-first AI workspace. The product should let users try value immediately, then graduate to local models, trusted backends and managed routing. Next best action: ship demo mode, beta capture, and the first reliable local-node chat loop.';
+    return 'Demo mode shows the core promise: one clean AI workspace that can later connect to a local node or protected MMIR backend. The product should feel useful before setup, then become powerful when users connect their own models and workflows.';
   }
 
-  function activateDemo(options={}){
-    localStorage.setItem(DEMO_KEY,'true');
-    demoActivatedThisPage=true;
-    renderDemoModels();
-    if(primaryLink){
-      primaryLink.classList.remove('disabled');
-      primaryLink.setAttribute('aria-disabled','false');
-      primaryLink.textContent='Send';
-      primaryLink.href='#mimir-chat-runtime';
-      primaryLink.removeAttribute('target');
-    }
-    if(activeBadge)activeBadge.textContent='Demo mode';
-    if(activeTitle)activeTitle.textContent='Demo mode active';
-    if(activeDesc)activeDesc.textContent='Try MMIR with safe static responses, then connect a local node or request managed access.';
-    setStatus('Demo mode ready. Ask about local AI, privacy, workflows or revenue.','ready');
-    if(options.welcome!==false&&!document.querySelector('[data-demo-welcome="true"]')){
-      const root=transcript();
-      if(root){
-        const marker=document.createElement('div');
-        marker.dataset.demoWelcome='true';
-        marker.hidden=true;
-        root.appendChild(marker);
-      }
-      renderMessage('assistant','Demo mode is live. No backend, provider key or private data is used. Ask a question or choose Local Node / Managed Access when you are ready.','safe static demo');
-    }
-  }
-
-  function sendDemoMessage(){
-    if(!demoActive())return false;
-    const prompt=String(promptEl?.value||'').trim();
-    if(!prompt){setStatus('Write a message or ask how MMIR makes money.','error');return true;}
-    const select=modelSelect();
-    const model=select&&!select.disabled?select.value:'mmir-demo-strategist';
-    renderMessage('user',prompt,'demo');
+  function sendDemoMessage(prompt){
+    appendMessage('user',prompt,'demo input');
     if(promptEl)promptEl.value='';
-    setStatus('Demo response generated locally in this page.','ready');
-    renderMessage('assistant',demoReply(prompt),model);
-    return true;
+    setStatus('Generating demo response...','loading');
+    window.setTimeout(()=>{
+      appendMessage('assistant',replyFor(prompt),'demo response - connect a backend for live AI');
+      setStatus('Demo response ready. Connect a real backend when ready.','ready');
+    },220);
   }
 
-  function intercept(event){
-    if(!demoActive())return;
+  function ensureWelcome(force){
+    const transcript=document.getElementById('runtime-transcript');
+    if(!transcript||transcript.querySelector('[data-demo-welcome="true"]'))return;
+    let shown=false;
+    try{shown=localStorage.getItem(WELCOME_KEY)==='true';}
+    catch(error){shown=false;}
+    if(shown&&!force)return;
+    appendMessage('assistant','Demo mode is ready. Try asking how MMIR.ai can get users, make money, connect local models, or stay private. These are deterministic sample responses, not a live model call.','demo mode',{welcome:true});
+    try{localStorage.setItem(WELCOME_KEY,'true');}
+    catch(error){}
+  }
+
+  function applyDemoMode(forceWelcome){
+    if(!active())return;
+    document.body.classList.add('mimir-demo-active');
+    setText('active-badge','Demo mode');
+    setText('active-chat-title','Demo mode is ready. Connect a backend when you need live models.');
+    setText('active-chat-description','Try the MMIR.ai workflow now with safe sample responses. No account, backend or API key is needed for this demo.');
+    ensureSendLink();
+    applyDemoModels();
+    setStatus('Demo mode ready. Responses are simulated until a backend is connected.','ready');
+    ensureWelcome(forceWelcome);
+  }
+
+  function handleSubmit(event){
+    if(!active())return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    sendDemoMessage();
+    const prompt=String(promptEl?.value||'').trim();
+    if(!prompt){setStatus('Write a message first.','error');return;}
+    sendDemoMessage(prompt);
   }
 
-  function onKeydown(event){
-    if(event.key==='Enter'&&!event.shiftKey&&demoActive()){
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      sendDemoMessage();
-    }
+  function handleKeydown(event){
+    if(!active()||event.key!=='Enter'||event.shiftKey)return;
+    handleSubmit(event);
   }
 
   function init(){
-    if(demoBtn){demoBtn.addEventListener('click',()=>activateDemo());}
-    if(primaryLink){primaryLink.addEventListener('click',intercept,true);}
-    if(formEl){formEl.addEventListener('submit',intercept,true);}
-    if(promptEl){promptEl.addEventListener('keydown',onKeydown,true);}
-    if(demoActive()&&!hasActiveBackend()){
-      setTimeout(()=>activateDemo({welcome:false}),0);
-    }
-    window.addEventListener('storage',()=>{
-      if(demoActive()&&!hasActiveBackend()&&!demoActivatedThisPage)activateDemo({welcome:false});
+    demoButton?.addEventListener('click',()=>{
+      writeActive(true);
+      applyDemoMode(true);
+      promptEl?.focus();
     });
+    formEl?.addEventListener('submit',handleSubmit,true);
+    primaryLink?.addEventListener('click',handleSubmit,true);
+    promptEl?.addEventListener('keydown',handleKeydown,true);
+
+    const observerTarget=document.getElementById('mimir-chat-runtime')||document.body;
+    const observer=new MutationObserver(()=>applyDemoMode(false));
+    observer.observe(observerTarget,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','aria-disabled','class','data-state']});
+
+    if(active())applyDemoMode(false);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
