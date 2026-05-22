@@ -1,0 +1,118 @@
+(function(){
+  const promptEl=document.getElementById('mimir-prompt');
+  const primaryLink=document.getElementById('primary-chat-link');
+  const statusEl=document.getElementById('first-impression-status');
+  const detailEl=document.getElementById('first-impression-detail');
+  const backendNode=document.getElementById('instant-node-backend');
+  const modelNode=document.getElementById('instant-node-model');
+
+  function selectedModel(){
+    const select=document.getElementById('runtime-model');
+    const option=select?.selectedOptions?.[0];
+    return {
+      value:select?.value||'',
+      text:String(option?.textContent||'').trim(),
+      runtime:option?.dataset?.runtime||''
+    };
+  }
+
+  function runtimeState(){
+    return String(document.getElementById('runtime-state')?.textContent||'').trim();
+  }
+
+  function setNode(el,text,active){
+    if(!el)return;
+    if(el.textContent!==text)el.textContent=text;
+    const nextActive=Boolean(active);
+    if(el.classList.contains('is-active')!==nextActive)el.classList.toggle('is-active',nextActive);
+  }
+
+  function setText(el,text){
+    if(el&&el.textContent!==text)el.textContent=text;
+  }
+
+  function setBodyState(add,removeA,removeB){
+    if(add&&!document.body.classList.contains(add))document.body.classList.add(add);
+    [removeA,removeB].filter(Boolean).forEach(name=>{
+      if(document.body.classList.contains(name))document.body.classList.remove(name);
+    });
+  }
+
+  function syncReadyState(){
+    const model=selectedModel();
+    const state=runtimeState();
+    const live=Boolean(model.value&&!model.value.startsWith('starter:')&&/live/i.test(model.text));
+    const browser=Boolean(model.value.startsWith('starter:')&&model.runtime==='browser-guide');
+    const webgpu=Boolean(model.runtime==='webllm');
+    const installable=Boolean(model.value.startsWith('starter:')&&!browser&&!webgpu);
+
+    if(live){
+      setText(statusEl,'Live AI is ready now.');
+      setText(detailEl,model.text.replace(/\s+-\s+live$/i,'')+' is connected through MMIR Local Node. Type anything, or use a smart start below.');
+      setNode(backendNode,'Local node',true);
+      setNode(modelNode,model.text.replace(/\s+-\s+live$/i,''),true);
+      setBodyState('mimir-first-ready','mimir-first-guide','mimir-first-install');
+      return;
+    }
+
+    if(browser||webgpu){
+      setText(statusEl,webgpu?'Free browser model is ready.':'MMIR guide is ready now.');
+      setText(detailEl,webgpu?'Runs in this browser when WebGPU is available. No paid provider or account required.':'No setup required. Ask for the best free local path and MMIR will guide the install.');
+      setNode(backendNode,'Browser',true);
+      setNode(modelNode,model.text||'MMIR guide',true);
+      setBodyState('mimir-first-guide','mimir-first-ready','mimir-first-install');
+      return;
+    }
+
+    if(installable){
+      setText(statusEl,'Free local model selected.');
+      setText(detailEl,'MMIR can generate the install commands and move to live chat when the local node reports the model.');
+      setNode(backendNode,'Installer',true);
+      setNode(modelNode,model.text||'Free model',true);
+      setBodyState('mimir-first-install','mimir-first-ready','mimir-first-guide');
+      return;
+    }
+
+    setText(statusEl,state&&state!=='Select a backend to start.'?state:'MMIR is checking the fastest free path...');
+    setText(detailEl,'Local node, browser helpers and installable free models are checked automatically.');
+    setNode(backendNode,'Checking',false);
+    setNode(modelNode,'Model',false);
+  }
+
+  function sendPrompt(value){
+    if(!promptEl)return;
+    promptEl.value=String(value||'').trim();
+    promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+    promptEl.focus();
+    window.setTimeout(()=>primaryLink?.click(),40);
+  }
+
+  function bindPromptActions(){
+    document.querySelectorAll('[data-prompt-action]').forEach(button=>{
+      if(button.dataset.firstImpressionBound==='true')return;
+      button.dataset.firstImpressionBound='true';
+      button.addEventListener('click',()=>{
+        const prompt=button.getAttribute('data-prompt')||button.textContent||'Help me get started with MMIR.';
+        sendPrompt(prompt);
+      });
+    });
+  }
+
+  function run(){
+    bindPromptActions();
+    syncReadyState();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+  new MutationObserver(run).observe(document.documentElement,{
+    childList:true,
+    subtree:true,
+    characterData:true,
+    attributes:true,
+    attributeFilter:['disabled','data-state','aria-disabled','class']
+  });
+  window.addEventListener('mmir-backend-profiles-updated',run);
+  window.addEventListener('mmir-local-connector-refreshed',run);
+  window.addEventListener('storage',run);
+  window.addEventListener('focus',run);
+})();

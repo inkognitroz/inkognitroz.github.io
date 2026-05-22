@@ -41,13 +41,28 @@
   <main class="mimir-chat-main" aria-labelledby="mimir-title">
     <section class="mimir-chat-center">
       <div class="mimir-greeting">
-        <p class="eyebrow">Local-first AI workspace</p>
-        <h1 id="mimir-title">Use your own AI models from one clean browser UI.</h1>
-        <p id="active-chat-description">Beta now: connect MMIR Local Node or a trusted backend profile and chat through the shared MMIR API contract.</p>
+        <p class="eyebrow">Trusted AI operating layer</p>
+        <h1 id="mimir-title">MMIR is ready. Ask your models.</h1>
+        <p id="active-chat-description">MMIR automatically finds the best free path first: live local model when available, browser guide when not, and setup help only when something is missing.</p>
       </div>
 
+      <section class="mimir-instant-start" aria-label="MMIR ready state">
+        <div class="instant-copy">
+          <p class="eyebrow">Automatic start</p>
+          <h2 id="first-impression-status">Preparing the fastest free AI path...</h2>
+          <p id="first-impression-detail">MMIR checks local node, live models and browser helpers automatically. You can just ask.</p>
+        </div>
+        <div class="instant-map" aria-label="Current orchestration path">
+          <span class="instant-node is-active">Browser</span>
+          <span class="instant-link" aria-hidden="true"></span>
+          <span id="instant-node-backend" class="instant-node">Local node</span>
+          <span class="instant-link" aria-hidden="true"></span>
+          <span id="instant-node-model" class="instant-node">Model</span>
+        </div>
+      </section>
+
       <form class="mimir-composer" aria-label="MMIR chat composer" onsubmit="return false;">
-        <textarea id="mimir-prompt" rows="2" placeholder="Message MMIR..." aria-label="Message MMIR"></textarea>
+        <textarea id="mimir-prompt" rows="2" placeholder="Ask MMIR to connect models, choose a free setup, or build your first workflow..." aria-label="Message MMIR"></textarea>
         <div class="composer-bar">
           <div class="composer-context"><span id="active-chat-title">Add a local connector or trusted backend profile.</span></div>
           <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary">+ Connect Model</button><a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open backend</a></div>
@@ -55,17 +70,11 @@
       </form>
 
       <div class="quick-suggestions" aria-label="Quick actions">
-        <a href="#growth-demo">+ Try Demo</a>
-        <a href="#beta-signup-form" data-growth-event="beta_access_click" data-growth-target="beta-signup-form">+ Beta Access</a>
-        <a href="#connect-options">+ Connect Model</a>
-        <a href="#local-connector">+ Local AI Connector</a>
-        <a href="#multi-model-workspace">+ Role Presets</a>
-        <a href="#model-library">+ Model Library</a>
-        <a href="#dataset-manager">+ Datasets</a>
-        <a href="#training-automation">+ Training Automation</a>
-        <a href="#user-journeys">+ User Journeys</a>
-        <a href="#progress-dashboard">+ Progress Dashboard</a>
-        <a href="#plus-feature-catalog">+ Roadmap</a>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Give me the fastest free MMIR setup for this machine. If a live local model is available, use it. If not, explain the automatic install path in three concrete steps.">Set up free local AI</button>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="best-model" data-prompt="Choose the best free model for me right now. Consider speed, privacy, local hardware, and what MMIR can already detect.">Pick my best model</button>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="first-workflow" data-prompt="Create my first useful MMIR workflow. Keep it simple, automated, free-first, and focused on getting value in under five minutes.">Create first workflow</button>
+        <a href="#connect-options">Connect models</a>
+        <a href="#local-connector">Local connector</a>
       </div>
 
       <section id="growth-demo" class="mimir-growth-panel" aria-label="Demo and beta access">
@@ -255,6 +264,7 @@
   <script src="./apps/mimir-chat-portal/role-presets.js"></script>
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>
+  <script src="./apps/mimir-chat-portal/first-impression.js"></script>
   <script src="./apps/mimir-chat-portal/runtime-controls-fix.js"></script>
   <script src="./apps/mimir-chat-portal/demo-growth.js"></script>
   <script src="./apps/mimir-chat-portal/beta-signup.js"></script>

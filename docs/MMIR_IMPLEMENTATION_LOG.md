@@ -93,6 +93,8 @@ Updated: 2026-05-22
 - Starter model helper now shows commercial-use warnings and source/model-card verification links before users treat a free model as production-safe.
 - Live backend models now take priority over browser/helper starter models, so a discovered model such as `mistral:latest` is selected automatically.
 - Local connector panel now performs real paired checks for local-node status, live model discovery and tunnel status/start/stop routes instead of showing only static guide cards.
+- First impression now opens with an automatic ready state instead of setup-first copy: the hero says MMIR is ready, shows the active orchestration path, highlights live `mistral:latest` when detected and gives smart prompt actions that send useful setup/model/workflow prompts directly.
+- Live chat now injects a default MMIR platform instruction so local models understand MMIR as the trusted AI operating/orchestration layer before the user configures anything.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.

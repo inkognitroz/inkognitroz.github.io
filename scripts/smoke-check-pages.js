@@ -7,6 +7,7 @@ const publicDir = resolve(root, 'public');
 const indexPath = join(publicDir, 'index.html');
 const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
+const firstImpressionPath = join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
@@ -89,6 +90,10 @@ requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must defau
 requireText(chatRuntimePath, 'const liveValues=(models||[]).map', 'Chat runtime must prefer live backend models over starter helpers when live models exist.');
 requireText(chatRuntimePath, 'function modelComplianceNote(model)', 'Chat runtime must show license/commercial-use warnings for starter model choices.');
 requireText(chatRuntimePath, 'Source/model card: verify before production use', 'Chat runtime must ask users to verify model cards before production use.');
+requireText(indexPath, 'mimir-instant-start', 'Homepage must show an automatic ready state before technical setup sections.');
+requireText(indexPath, 'data-prompt-action', 'Homepage must include smart start actions that send useful prompts.');
+requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
+requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
 
