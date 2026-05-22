@@ -66,11 +66,14 @@ jobs:
           test -f public/apps/app-template-generator/index.html
           test -f public/apps/football-evolution-matrix/index.html
 
-      - name: Smoke-check Mimir route references
+      - name: Smoke-check MMIR route references
         run: |
           set -euo pipefail
-          grep -RIn 'SaaS Fabric' public/index.html
-          grep -RIn 'data-section="appFactory"' public/index.html
+          grep -RIn 'MMIR' public/index.html
+          grep -RIn 'Trusted AI Control Plane' public/index.html
+          grep -RIn './mmir.html#mimir-instant-start' public/index.html
+          ! grep -RIn 'SaaS Fabric' public/index.html public/content.json
+          grep -RIn '"title": "MMIR"' public/content.json
           grep -RIn 'id="mimir-prompt"' public/mmir.html
           grep -RIn 'id="provider-status"' public/mmir.html
           grep -RIn 'id="provider-status-grid"' public/mmir.html
