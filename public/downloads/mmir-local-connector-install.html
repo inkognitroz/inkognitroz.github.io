@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Install MMIR Local Connector</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1114;
+      --panel: #161b1f;
+      --line: #2c363d;
+      --text: #f7fafc;
+      --muted: #b8c2cc;
+      --accent: #7ed957;
+      --accent-text: #101510;
+      --warn: #ffcf5a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(980px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 48px 0;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 4.75rem);
+      line-height: .94;
+      letter-spacing: 0;
+      margin: 0 0 18px;
+      max-width: 760px;
+    }
+    p {
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 720px;
+    }
+    .primary {
+      align-items: center;
+      background: var(--accent);
+      border: 0;
+      border-radius: 8px;
+      color: var(--accent-text);
+      cursor: pointer;
+      display: inline-flex;
+      font: inherit;
+      font-weight: 800;
+      justify-content: center;
+      margin: 16px 0 28px;
+      min-height: 48px;
+      padding: 0 18px;
+      text-decoration: none;
+    }
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      letter-spacing: 0;
+      margin: 0 0 8px;
+    }
+    .card p {
+      font-size: .95rem;
+      margin: 0 0 14px;
+    }
+    .card a {
+      color: var(--accent);
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .status {
+      color: var(--warn);
+      font-size: .86rem;
+      font-weight: 750;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    code { color: #e9f0f5; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Install MMIR Local Connector</h1>
+    <p id="detected">Detecting this device...</p>
+    <a class="primary" id="primary" href="./mmir-local-connector-mac.zip.html">Install Connector</a>
+    <p>The connector runs privately on <code>127.0.0.1:3000</code>, connects to Ollama on the same machine, and lets mmir.ai chat with local models through the MMIR API contract.</p>
+
+    <section class="grid" aria-label="Installer choices">
+      <article class="card" data-platform="mac">
+        <div class="status">Live beta</div>
+        <h2>Mac</h2>
+        <p>ZIP with a runnable <code>.command</code> installer for macOS. Works for Mac hardware and macOS VMs.</p>
+        <a href="./mmir-local-connector-mac.zip.html">Download Mac installer</a>
+      </article>
+      <article class="card" data-platform="windows">
+        <div class="status">Live beta</div>
+        <h2>Windows PC</h2>
+        <p>One <code>.cmd</code> launcher that installs the connector, private Node runtime when needed, Ollama, starter model and startup shortcut.</p>
+        <a href="./mmir-local-connector-windows.cmd" download>Download Windows installer</a>
+      </article>
+      <article class="card" data-platform="linux">
+        <div class="status">Live beta</div>
+        <h2>Linux / VM</h2>
+        <p>One shell installer for Linux desktops, servers and VMs. It installs the connector as a user service when systemd is available.</p>
+        <a href="./mmir-local-connector-linux.sh" download>Download Linux installer</a>
+      </article>
+      <article class="card" data-platform="android">
+        <div class="status">Client mode</div>
+        <h2>Android</h2>
+        <p>Android connects to a Mac, Windows or Linux node. Native on-device Android model hosting needs a separate APK/runtime track.</p>
+        <a href="https://mmir.ai/#connect-options">Open MMIR.ai on Android</a>
+      </article>
+    </section>
+  </main>
+  <script>
+    const targets = {
+      mac: { label: 'Install Mac Connector', href: './mmir-local-connector-mac.zip.html', download: false, text: 'Detected macOS. Use the Mac installer.' },
+      windows: { label: 'Install Windows Connector', href: './mmir-local-connector-windows.cmd', download: true, text: 'Detected Windows. Use the Windows installer.' },
+      linux: { label: 'Install Linux Connector', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux. Use the Linux installer.' },
+      android: { label: 'Open MMIR.ai Client', href: 'https://mmir.ai/#connect-options', download: false, text: 'Detected Android. Use Android as a client connected to a desktop or VM node.' },
+      unknown: { label: 'Choose Installer Below', href: '#', download: false, text: 'Choose the installer for the machine that will host the local model.' },
+    };
+
+    function platform() {
+      const ua = navigator.userAgent.toLowerCase();
+      const platformName = String(navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+      const value = `${ua} ${platformName}`;
+      if (value.includes('android')) return 'android';
+      if (value.includes('win')) return 'windows';
+      if (value.includes('mac')) return 'mac';
+      if (value.includes('linux') || value.includes('x11')) return 'linux';
+      return 'unknown';
+    }
+
+    const picked = targets[platform()];
+    const primary = document.getElementById('primary');
+    const detected = document.getElementById('detected');
+    primary.textContent = picked.label;
+    primary.href = picked.href;
+    if (picked.download) primary.setAttribute('download', '');
+    else primary.removeAttribute('download');
+    detected.textContent = picked.text;
+  </script>
+</body>
+</html>
