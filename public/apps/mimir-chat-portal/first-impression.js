@@ -47,8 +47,8 @@
     const installable=Boolean(model.value.startsWith('starter:')&&!browser&&!webgpu);
 
     if(live){
-      setText(statusEl,'Live AI is ready now.');
-      setText(detailEl,model.text.replace(/\s+-\s+live$/i,'')+' is connected through MMIR Local Node. Type anything, or use a smart start below.');
+      setText(statusEl,'Your local AI is ready in MMIR.');
+      setText(detailEl,model.text.replace(/\s+-\s+live$/i,'')+' is connected through the trusted MMIR control plane. Type anything, or use a smart start below.');
       setNode(backendNode,'Local node',true);
       setNode(modelNode,model.text.replace(/\s+-\s+live$/i,''),true);
       setBodyState('mimir-first-ready','mimir-first-guide','mimir-first-install');
@@ -56,8 +56,8 @@
     }
 
     if(browser||webgpu){
-      setText(statusEl,webgpu?'Free browser model is ready.':'MMIR guide is ready now.');
-      setText(detailEl,webgpu?'Runs in this browser when WebGPU is available. No paid provider or account required.':'No setup required. Ask for the best free local path and MMIR will guide the install.');
+      setText(statusEl,webgpu?'Free browser model is ready.':'Open. Connect local AI. Ready.');
+      setText(detailEl,webgpu?'Runs in this browser when WebGPU is available. No paid provider or account required.':'Ask now, or click Connect local AI to install one file, see your own models and chat through MMIR.');
       setNode(backendNode,'Browser',true);
       setNode(modelNode,model.text||'MMIR guide',true);
       setBodyState('mimir-first-guide','mimir-first-ready','mimir-first-install');
@@ -65,16 +65,16 @@
     }
 
     if(installable){
-      setText(statusEl,'Free local model selected.');
-      setText(detailEl,'MMIR can generate the install commands and move to live chat when the local node reports the model.');
+      setText(statusEl,'Install local AI to finish activation.');
+      setText(detailEl,'MMIR can guide the one-file local install and move to live chat when the local node reports the model.');
       setNode(backendNode,'Installer',true);
       setNode(modelNode,model.text||'Free model',true);
       setBodyState('mimir-first-install','mimir-first-ready','mimir-first-guide');
       return;
     }
 
-    setText(statusEl,state&&state!=='Select a backend to start.'?state:'MMIR is checking the fastest free path...');
-    setText(detailEl,'Local node, browser helpers and installable free models are checked automatically.');
+    setText(statusEl,state&&state!=='Select a backend to start.'?state:'Open. Connect local AI. Ready.');
+    setText(detailEl,'Local node, browser helpers and installable free models are checked automatically through the MMIR control plane.');
     setNode(backendNode,'Checking',false);
     setNode(modelNode,'Model',false);
   }
