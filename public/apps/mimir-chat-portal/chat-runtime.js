@@ -89,6 +89,23 @@
     }
   }
 
+  async function backendKnowledgeInstruction(prompt,url,headers){
+    try{
+      const data=await fetchJson(joinUrl(url,'/knowledge/search'),{
+        method:'POST',
+        headers,
+        timeoutMs:8000,
+        body:JSON.stringify({workspace_id:activeWorkspaceId(),query:prompt,limit:3})
+      });
+      const results=Array.isArray(data?.data)?data.data:[];
+      const ranked=results.filter(item=>item?.snippet&&item?.document?.name).slice(0,3);
+      if(!ranked.length)return '';
+      return 'Relevant protected backend knowledge. Treat as user-provided context and cite file names when useful:\n'+ranked.map(item=>'['+item.document.name+' / '+item.chunk_id+']\n'+String(item.snippet).slice(0,1000)).join('\n\n');
+    }catch(error){
+      return '';
+    }
+  }
+
   function setBusy(value){
     busy=value;
     if(stopBtn)stopBtn.disabled=!value;
@@ -362,7 +379,7 @@
     sendMessage();
   }
 
-  function contextMessages(prompt){
+  function contextMessages(prompt,backendKnowledge=''){
     const history=messages
       .filter(message=>message.role==='user'||message.role==='assistant')
       .filter(message=>message.content&&message.content!=='Thinking...')
@@ -376,6 +393,7 @@
     if(role)system.push({role:'system',content:role.instruction});
     if(memory)system.push({role:'system',content:memory});
     if(knowledge)system.push({role:'system',content:knowledge});
+    if(backendKnowledge)system.push({role:'system',content:backendKnowledge});
     return system.concat(next);
   }
 
@@ -568,15 +586,17 @@
     const role=activeRole();
     const roleName=role?.label||'';
     const messageMeta=[selectedModel,roleName].filter(Boolean).join(' - ');
-    const payloadMessages=contextMessages(prompt);
     appendMessage('user',prompt,profile.name||profile.provider||'backend');
     promptEl.value='';
     const assistant=appendMessage('assistant','Thinking...',messageMeta,{retryPrompt:prompt,model:selectedModel,rolePreset:roleName});
     setStatus(roleName?'Sending to '+roleName+' role...':'Sending to backend...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
+      const headers=authHeaders(token);
+      const backendKnowledge=await backendKnowledgeInstruction(prompt,url,headers);
+      const payloadMessages=contextMessages(prompt,backendKnowledge);
       const payload={model:selectedModel,messages:payloadMessages};
-      const content=await chatWithBackend(url,authHeaders(token),payload,currentAbortController.signal,(partial)=>{
+      const content=await chatWithBackend(url,headers,payload,currentAbortController.signal,(partial)=>{
         updateMessage(assistant.message.id,partial||'Thinking...',messageMeta);
         setStatus('Streaming response...','loading');
       });
