@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
   <header class="mimir-topbar">
@@ -25,6 +26,7 @@
     <nav aria-label="Primary navigation">
       <a href="#connect-options">Connect</a>
       <a href="#model-library">Models</a>
+      <a href="#workflow-builder">Workflows</a>
       <a href="#platform-status">Status</a>
     </nav>
   </header>
@@ -110,6 +112,14 @@
       </section>
     </details>
 
+    <details id="workflow-builder" class="mimir-provider-drawer">
+      <summary>+ Workflow Builder</summary>
+      <section class="mimir-dashboard" aria-labelledby="workflow-builder-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Linear workflow MVP</p><h2 id="workflow-builder-title">Workflow builder</h2></div></div>
+        <div id="workflow-builder-root" class="workflow-builder-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="backend-settings" class="mimir-settings-drawer">
       <summary>+ Add Backend / Capacity</summary>
       <div class="mimir-console" aria-label="MMIR backend console">
@@ -152,5 +162,6 @@
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>
   <script src="./apps/mimir-chat-portal/model-selection.js"></script>
   <script src="./apps/mimir-chat-portal/model-comparison.js"></script>
+  <script src="./apps/mimir-chat-portal/workflow-builder.js"></script>
 </body>
 </html>
