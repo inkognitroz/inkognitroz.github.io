@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T21:28:37.498Z",
+  "updated_at": "2026-05-22T21:34:34.835Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,8 +20,8 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 41,
-    "next": 4,
+    "beta": 42,
+    "next": 3,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -60,8 +60,8 @@
         "phase": "Chat UX",
         "total": 5,
         "done": 1,
-        "beta": 1,
-        "next": 2,
+        "beta": 2,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 1
@@ -748,7 +748,6 @@
     }
   ],
   "next_queue": [
-    "D023",
     "D024",
     "D025",
     "D042"
@@ -1098,10 +1097,10 @@
       "best_practice": "Accessibility and mobile are core product quality, not polish-only",
       "done_when": "Chat/connect works well on phone and keyboard",
       "covers": "F034-F035, S049, P2-005",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Mobile, keyboard and accessibility need a focused verification pass.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Mobile nav remains available, keyboard focus states are guarded and MMIR chat CSS now avoids negative/viewport-scaled type; visual device QA continues.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D024",

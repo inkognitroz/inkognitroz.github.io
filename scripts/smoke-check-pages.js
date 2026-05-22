@@ -10,6 +10,7 @@ const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runti
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const firstImpressionPath = join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js');
 const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
+const mimirCssPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css');
 const uiActionCoveragePath = join(publicDir, 'ui-action-coverage.json');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
@@ -128,6 +129,9 @@ requireText(firstImpressionPath, 'mimir-readiness-rail', 'First impression must 
 requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readiness rail must update automatically.');
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(firstImpressionPath, 'trusted MMIR control plane', 'First impression runtime must keep local AI framed as control-plane activation.');
+requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:auto', 'Mobile navigation must remain accessible instead of disappearing.');
+requireText(mimirCssPath, '.readiness-pill:focus-visible', 'Readiness pills need keyboard focus states.');
+requireText(mimirCssPath, '.readiness-pill small{white-space:normal}', 'Mobile readiness status text must wrap instead of truncating.');
 requireText(nodeDashboardPath, 'Install Health Doctor', 'Node dashboard must include install health doctor copy.');
 requireText(nodeDashboardPath, '/node/identity', 'Node dashboard must read public-safe local node identity.');
 requireText(nodeDashboardPath, '/hardware', 'Node dashboard must check hardware profile.');
@@ -194,6 +198,21 @@ if (existsSync(modelCatalogPath)) {
   }
 } else {
   fail('Missing AI model catalog.');
+}
+
+if (existsSync(mimirCssPath)) {
+  const mimirCss = readFileSync(mimirCssPath, 'utf8');
+  if (mimirCss.includes('letter-spacing:-')) {
+    fail('MMIR chat portal CSS must not use negative letter spacing.');
+  }
+  if (mimirCss.match(/font-size:clamp\([^)]*vw/i)) {
+    fail('MMIR chat portal CSS must not scale font-size with viewport width.');
+  }
+  if (mimirCss.includes('@media(max-width:720px){.mimir-topbar nav{display:none')) {
+    fail('MMIR mobile navigation must not be hidden.');
+  }
+} else {
+  fail('Missing MMIR chat portal CSS.');
 }
 
 if (existsSync(progressDashboardPath)) {

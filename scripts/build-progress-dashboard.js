@@ -17,7 +17,7 @@ const statusNotes = {
 const overrides = new Map([
   ...range(1, 21).map((id) => [id, { status: 'done', evidence: 'Core foundation, local node and first chat loop are implemented across the in-scope repos.' }]),
   ['D022', { status: 'beta', evidence: 'Code block rendering and copy controls exist; full safe markdown polish remains.' }],
-  ['D023', { status: 'next', evidence: 'Mobile, keyboard and accessibility need a focused verification pass.' }],
+  ['D023', { status: 'beta', evidence: 'Mobile nav remains available, keyboard focus states are guarded and MMIR chat CSS now avoids negative/viewport-scaled type; visual device QA continues.' }],
   ['D024', { status: 'next', evidence: 'First-run flow now defaults automatically; installer/onboarding can be made smoother.' }],
   ['D025', { status: 'next', evidence: 'Live/static model split exists but should be sharpened across all model surfaces.' }],
   ['D026', { status: 'done', evidence: 'Model catalog and chat helper now surface license/commercial-use checks and source/model-card links for starter choices.' }],
