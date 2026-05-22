@@ -81,3 +81,6 @@ jobs:
           grep -RIn './apps/mimir-chat-portal/provider-status.js' public/index.html
           grep -RIn './apps/mimir-chat-portal/role-presets.js' public/index.html
           grep -RIn './apps/mimir-chat-portal/local-connector.js' public/index.html
+
+      - name: Smoke-check MMIR user journeys
+        run: node scripts/smoke-check-user-journeys.js

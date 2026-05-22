@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T16:36:49.719Z",
+  "updated_at": "2026-05-22T16:40:35.547Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -19,9 +19,9 @@
   },
   "summary": {
     "total": 106,
-    "done": 42,
+    "done": 43,
     "beta": 38,
-    "next": 6,
+    "next": 5,
     "watch": 1,
     "blocked": 1,
     "planned": 18,
@@ -359,9 +359,9 @@
       {
         "phase": "QA / Journey Gates",
         "total": 1,
-        "done": 0,
+        "done": 1,
         "beta": 0,
-        "next": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -422,8 +422,7 @@
     "D024",
     "D025",
     "D026",
-    "D042",
-    "D106"
+    "D042"
   ],
   "watchlist": [
     "D082",
@@ -2015,10 +2014,10 @@
       "best_practice": "User journeys define done; component tests are not enough",
       "done_when": "CI can prove each public journey is live/beta/blocked exactly as labeled",
       "covers": "user-fit, D014-D018, D097-D105, zero-trust",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Journey-level smoke tests are the next quality gate before calling public flows 100% complete.",
-      "estimate": "2-6h"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "CI now runs user-journey smoke gates for first answer, local activation, orchestration, privacy, progress and blocked paid routes.",
+      "estimate": "Done"
     }
   ]
 }

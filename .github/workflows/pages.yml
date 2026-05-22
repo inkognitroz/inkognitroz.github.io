@@ -32,6 +32,8 @@ jobs:
           node-version: 24
       - name: Smoke check static site
         run: node scripts/smoke-check-pages.js
+      - name: Smoke check user journeys
+        run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
