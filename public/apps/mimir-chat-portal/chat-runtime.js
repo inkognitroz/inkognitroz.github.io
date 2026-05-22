@@ -272,7 +272,7 @@
 
   function ensureSendControl(){
     if(!primaryLink)return;
-    primaryLink.textContent='↑';
+    primaryLink.textContent='\u2191';
     primaryLink.setAttribute('href','#mimir-chat-runtime');
     primaryLink.setAttribute('role','button');
     primaryLink.setAttribute('aria-label','Send prompt to the active backend');

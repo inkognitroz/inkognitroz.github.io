@@ -9,8 +9,8 @@
       "surface": "First screen chat",
       "status": "live",
       "user_result": "A new visitor can type or choose a starter prompt and get a useful free browser answer before setup.",
-      "selectors": ["#mimir-prompt", "#primary-chat-link", "[data-prompt-action]", "#try-demo-mode"],
-      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "demo_start_click"]
+      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "[data-prompt-action]", "#try-demo-mode"],
+      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "demo_start_click"]
     },
     {
       "id": "saas-fabric-local-analytics",

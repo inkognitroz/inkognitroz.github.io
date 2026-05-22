@@ -54,7 +54,7 @@ const overrides = new Map([
   ['D112', { status: 'done', evidence: 'The chat model helper can start paired local-node Ollama pull jobs, poll install progress and refresh live model discovery when ready.' }],
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
-  ['D115', { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }],
+  ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
   ...range(116, 152).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }])
 ]);
 
@@ -183,7 +183,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D115', 'D023', 'D024', 'D025', 'D042', 'D151'];
+const prioritizedNextIds = ['D023', 'D024', 'D025', 'D042', 'D151', 'D117'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

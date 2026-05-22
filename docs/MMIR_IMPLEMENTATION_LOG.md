@@ -102,6 +102,7 @@ Updated: 2026-05-22
 - D109/D111 node activation UI is now live: a Node Dashboard reads paired local-node identity, status, hardware, models and tunnel state, and the Install Health Doctor explains the next best repair action.
 - D112/D113 model activation is now connected to local-node model jobs: installable free models can start a paired Ollama pull, show progress, refresh into live models and remove selected local models through a guarded action.
 - D110 is now beta: cross-device node pairing uses short-lived local approval codes before a tunnel/control-plane URL can release a pairing token, and the public node dashboard exposes the pairing action.
+- D115 is now beta: the first screen shows a live readiness rail for free start, privacy, node and model status, and the send control uses safe encoding so the first impression avoids broken glyphs.
 - D114 first-run success checklist is now live: the homepage onboarding panel automatically tracks Browser ready, Private mode, Local node, Model live and First chat gates and updates from mode/profile/node/chat events.
 - Public repo handoff docs (`AGENTS.md`, `START_HERE.md`, `README.md`) now describe MMIR, the current backlog sequence, free/local-first guardrails and validation commands instead of the old SaaS Fabric workflow.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.

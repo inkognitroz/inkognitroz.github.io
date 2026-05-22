@@ -124,6 +124,8 @@ requireText(mmirPath, 'id="node-dashboard-root"', 'MMIR product page must expose
 requireText(mmirPath, './apps/mimir-chat-portal/node-dashboard.js', 'MMIR product page must load the node dashboard script.');
 requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
 requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
+requireText(firstImpressionPath, 'mimir-readiness-rail', 'First impression must expose a live readiness rail on the first screen.');
+requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readiness rail must update automatically.');
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(firstImpressionPath, 'trusted MMIR control plane', 'First impression runtime must keep local AI framed as control-plane activation.');
 requireText(nodeDashboardPath, 'Install Health Doctor', 'Node dashboard must include install health doctor copy.');

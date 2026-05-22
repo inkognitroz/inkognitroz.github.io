@@ -5,6 +5,10 @@
   const detailEl=document.getElementById('first-impression-detail');
   const backendNode=document.getElementById('instant-node-backend');
   const modelNode=document.getElementById('instant-node-model');
+  const instantStart=document.querySelector('.mimir-instant-start');
+  const PROFILE_KEY='mimir-chat-backend-profiles';
+  const ACTIVE_KEY='mimir-chat-active-backend';
+  const MODE_KEY='mimir-chat-mode-controls-v1';
 
   function selectedModel(){
     const select=document.getElementById('runtime-model');
@@ -18,6 +22,29 @@
 
   function runtimeState(){
     return String(document.getElementById('runtime-state')?.textContent||'').trim();
+  }
+
+  function readProfiles(){
+    try{
+      const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');
+      return Array.isArray(value)?value:[];
+    }catch(error){
+      return [];
+    }
+  }
+
+  function activeProfile(){
+    const id=localStorage.getItem(ACTIVE_KEY)||'';
+    return readProfiles().find(profile=>profile.id===id)||null;
+  }
+
+  function readModes(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(MODE_KEY)||'{}');
+      return {private:saved.private!==false};
+    }catch(error){
+      return {private:true};
+    }
   }
 
   function setNode(el,text,active){
@@ -79,6 +106,54 @@
     setNode(modelNode,'Model',false);
   }
 
+  function ensureReadinessRail(){
+    let rail=document.getElementById('mimir-readiness-rail');
+    if(rail||!instantStart)return rail;
+    rail=document.createElement('nav');
+    rail.id='mimir-readiness-rail';
+    rail.className='mimir-readiness-rail';
+    rail.setAttribute('aria-label','MMIR readiness');
+    instantStart.insertAdjacentElement('afterend',rail);
+    return rail;
+  }
+
+  function readinessPill(label,value,state,target){
+    const link=document.createElement('a');
+    link.className='readiness-pill readiness-'+state;
+    link.href=target||'#mimir-prompt';
+    const strong=document.createElement('strong');
+    const small=document.createElement('small');
+    strong.textContent=label;
+    small.textContent=value;
+    link.append(strong,small);
+    link.addEventListener('click',()=>{
+      const el=document.querySelector(link.hash);
+      if(el&&el.tagName==='DETAILS')el.open=true;
+    });
+    return link;
+  }
+
+  function renderReadinessRail(){
+    const rail=ensureReadinessRail();
+    if(!rail)return;
+    const model=selectedModel();
+    const profile=activeProfile();
+    const modes=readModes();
+    const live=Boolean(model.value&&!model.value.startsWith('starter:')&&/live/i.test(model.text));
+    const browser=Boolean(model.value.startsWith('starter:')&&model.runtime==='browser-guide');
+    const webgpu=Boolean(model.runtime==='webllm');
+    const health=String(profile?.health||'unknown').toLowerCase();
+    const nodeReady=['ready','degraded','testing'].includes(health);
+    const modelLabel=(model.text||'MMIR Guide').replace(/\s+-\s+live$/i,'');
+    rail.innerHTML='';
+    rail.append(
+      readinessPill('Free start',browser?'Guide ready':webgpu?'Browser model':'Guide available','ready','#mimir-prompt'),
+      readinessPill('Privacy',modes.private?'Private on':'Turn on','ready','#composer-mode-dock'),
+      readinessPill('Node',nodeReady?(profile.name||'Local node'):'Auto-checking',nodeReady?'ready':'watch','#node-dashboard'),
+      readinessPill('Model',live?modelLabel:modelLabel||'Installable free',live?'ready':'watch','#model-library')
+    );
+  }
+
   function sendPrompt(value){
     if(!promptEl)return;
     promptEl.value=String(value||'').trim();
@@ -101,6 +176,7 @@
   function run(){
     bindPromptActions();
     syncReadyState();
+    renderReadinessRail();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();

@@ -134,6 +134,7 @@ requireIncludes(files.portal, 'ensureAutomaticDefaults();render();', 'J001/J002 
 requireIncludes(files.portal, 'blockedByFreeMode', 'J003/J008 need free-first backend guardrails.');
 requireIncludes(files.portal, 'local pairing token only', 'Public UI must never ask users to paste real provider keys.');
 requireIncludes(files.chatRuntime, 'function preferredStarterModel()', 'J001 needs a deterministic first selected model.');
+requireIncludes(files.chatRuntime, "primaryLink.textContent='\\u2191'", 'J001 send control must avoid broken first-screen glyph encoding.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'function defaultMmirInstruction()', 'J001/J002 need live models to understand MMIR before the user configures anything.');
@@ -154,6 +155,7 @@ requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route, not a decorative button.');
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'), '/pairing/sessions', 'J009 needs local approval codes before cross-device node pairing.');
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'remote_pairing_code_required', 'J009 remote node pairing must require a local one-time code.');
+requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'), 'mimir-readiness-rail', 'J001 first impression needs live readiness status on the first screen.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.universalInstaller, '127.0.0.1:3000', 'J002 edge install copy must keep the local-node localhost boundary visible.');
 requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');
