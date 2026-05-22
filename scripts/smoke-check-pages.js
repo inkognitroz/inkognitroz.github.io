@@ -5,6 +5,9 @@ import { spawnSync } from 'node:child_process';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const indexPath = join(publicDir, 'index.html');
+const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
+const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
+const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 
 function fail(message) {
   console.error(message);
@@ -30,6 +33,12 @@ function localAssetPath(fromFile, asset) {
 
   const base = cleanAsset.startsWith('/') ? publicDir : dirname(fromFile);
   return normalize(resolve(base, cleanAsset.replace(/^\//, '')));
+}
+
+function requireText(file, text, message) {
+  if (!existsSync(file) || !readFileSync(file, 'utf8').includes(text)) {
+    fail(message);
+  }
 }
 
 if (!existsSync(indexPath)) {
@@ -68,6 +77,28 @@ for (const file of walk(publicDir)) {
       fail(`Invalid JavaScript syntax: ${rel}\n${result.stderr || result.stdout}`);
     }
   }
+}
+
+requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
+requireText(chatPortalPath, 'window.MimirBackendProfiles={ensureFreeLocalProfile,ensureAutomaticDefaults};', 'Chat portal must expose automatic default setup for integration tests.');
+requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime must keep an explicit first-run starter model choice.');
+requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
+
+if (existsSync(starterCatalogPath)) {
+  const catalog = JSON.parse(readFileSync(starterCatalogPath, 'utf8'));
+  const models = Array.isArray(catalog.models) ? catalog.models : [];
+  const runtimes = new Set(models.map((model) => model.runtime).filter(Boolean));
+  if (models.length < 10) {
+    fail('Free starter catalog should keep at least ten visible free options.');
+  }
+  if (!models.some((model) => model.id === 'mmir-guide')) {
+    fail('Free starter catalog must include the immediate MMIR Guide.');
+  }
+  if (!runtimes.has('browser-guide') || !runtimes.has('webllm') || !runtimes.has('ollama')) {
+    fail('Free starter catalog must include browser guide, WebGPU and Ollama routes.');
+  }
+} else {
+  fail('Missing free starter model catalog.');
 }
 
 if (!process.exitCode) {
