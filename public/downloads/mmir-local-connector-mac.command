@@ -6,6 +6,9 @@ HOST="127.0.0.1"
 PORT="${MMIR_LOCAL_CONNECTOR_PORT:-3000}"
 OLLAMA_URL="${OLLAMA_URL:-http://127.0.0.1:11434}"
 MMIR_SITE="${MMIR_SITE:-https://mmir.ai/#connect-options}"
+SERVER_SOURCE="${MMIR_LOCAL_CONNECTOR_SERVER_SOURCE:-https://mmir.ai/downloads/mmir-local-connector-server.mjs}"
+SERVER_SHA256="${MMIR_LOCAL_CONNECTOR_SERVER_SHA256:-1b25a4ebb4f1311144cb03c04a98e11239e5c93e978e93c3a8028fd2ab6f873c}"
+TUNNEL_CONTROL="${MMIR_ENABLE_TUNNEL_CONTROL:-false}"
 ROOT="$HOME/Library/Application Support/MMIR Local Connector"
 NODE_DIR="$ROOT/node"
 SERVER="$ROOT/server.mjs"
@@ -79,37 +82,25 @@ ensure_model(){
 
 write_server(){
   if [ ! -s "$TOKEN_FILE" ]; then "$NODE_BIN" -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url")+"\n")' > "$TOKEN_FILE"; chmod 600 "$TOKEN_FILE"; fi
-  cat > "$SERVER" <<'SERVER_JS'
-import http from 'node:http';
-import fs from 'node:fs';
-import os from 'node:os';
-import crypto from 'node:crypto';
-const HOST=process.env.HOST||'127.0.0.1';
-const PORT=Number(process.env.PORT||3000);
-const OLLAMA_URL=(process.env.OLLAMA_URL||'http://127.0.0.1:11434').replace(/\/$/,'');
-const TOKEN=fs.readFileSync(process.env.MMIR_PAIRING_TOKEN_FILE,'utf8').trim();
-const MODEL=fs.readFileSync(process.env.MMIR_DEFAULT_MODEL_FILE,'utf8').trim()||'llama3.2:1b';
-const allowed=new Set(['https://mmir.ai','https://www.mmir.ai','https://inkognitroz.github.io','http://localhost:3000','http://127.0.0.1:3000','http://localhost:5173','http://127.0.0.1:5173']);
-function okOrigin(o){return !o||allowed.has(o)||/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(o)}
-function cors(o){return {'access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type,authorization,x-mmir-local-token','access-control-allow-origin':okOrigin(o)?(o||'https://mmir.ai'):'null'}}
-function send(res,code,obj,o,type='application/json; charset=utf-8'){res.writeHead(code,{'content-type':type,'cache-control':'no-store',...cors(o)});res.end(type.startsWith('application/json')?JSON.stringify(obj):obj)}
-function err(res,code,message,o){send(res,code,{error:{code:code===401?'unauthorized':'runtime_unavailable',message}},o)}
-function token(req){const h=req.headers['x-mmir-local-token'];if(typeof h==='string'&&h.trim())return h.trim();const m=String(req.headers.authorization||'').match(/^Bearer\s+(.+)$/i);return m?m[1].trim():''}
-function paired(req,res,o){const supplied=token(req);if(!supplied||supplied.length!==TOKEN.length){err(res,401,'Pair with this local connector before using models or chat.',o);return false}const yes=crypto.timingSafeEqual(Buffer.from(supplied),Buffer.from(TOKEN));if(!yes)err(res,401,'Pair with this local connector before using models or chat.',o);return yes}
-function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(Buffer.byteLength(s)>512*1024){reject(new Error('Request body is too large.'));req.destroy()}});req.on('end',()=>{try{resolve(s?JSON.parse(s):{})}catch{reject(new Error('Invalid JSON.'))}});req.on('error',reject)})}
-function hardware(){const gb=Math.round(os.totalmem()/1024/1024/1024);return {platform:os.platform(),arch:os.arch(),cpu_count:os.cpus().length,memory_gb:gb,memory_tier:gb>=48?'workstation':gb>=16?'medium':gb>=8?'entry':'small',recommended_model:MODEL,starter_models:[{id:MODEL,label:MODEL,fit:'recommended'}],warnings:gb<8?['Low memory machine. Use the smallest starter model.']:[]}}
-async function ollama(path,opts={}){const r=await fetch(OLLAMA_URL+path,{...opts,signal:AbortSignal.timeout(opts.timeoutMs||60000)});if(!r.ok)throw new Error('Ollama returned '+r.status);return r.json()}
-function completion(model,text,raw={}){return {id:'chatcmpl_mmir_'+Date.now(),object:'chat.completion',created:Math.floor(Date.now()/1000),model,provider:'local-node',choices:[{index:0,message:{role:'assistant',content:text||''},finish_reason:raw.done_reason||'stop'}],usage:{prompt_tokens:raw.prompt_eval_count||null,completion_tokens:raw.eval_count||null,total_tokens:null}}}
-async function chat(req,res,o){if(!paired(req,res,o))return;const b=await body(req);const messages=Array.isArray(b.messages)?b.messages.filter(m=>m&&typeof m.content==='string'&&m.content.trim()).map(m=>({role:m.role||'user',content:m.content})):[];if(!messages.length){err(res,400,'Messages must be a non-empty array.',o);return}const model=String(b.model||MODEL);const data=await ollama('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({model,messages,stream:false})});send(res,200,completion(model,data?.message?.content||'',data),o)}
-http.createServer(async(req,res)=>{const o=req.headers.origin||'';const u=new URL(req.url||'/',`http://${HOST}:${PORT}`);if(!okOrigin(o)){err(res,403,'Origin is not allowed.',o);return}if(req.method==='OPTIONS'){res.writeHead(204,cors(o));res.end();return}try{if(req.method==='GET'&&u.pathname==='/health'){send(res,200,{status:'online',service:'mmir-local-node',version:'0.1.0-mac-command',mode:'local',timestamp:new Date().toISOString()},o);return}if(req.method==='GET'&&u.pathname==='/status'){let runtime;try{runtime={provider:'ollama',status:'online',...(await ollama('/api/version',{timeoutMs:2500}))}}catch{runtime={provider:'ollama',status:'offline',reason:'unreachable'}}send(res,200,{status:runtime.status==='online'?'online':'degraded',service:'mmir-local-node',version:'0.1.0-mac-command',provider:'local-node',runtime,pairing:{required:true,configured:true},node:{id:'mmir-local-mac',name:'MMIR Local Connector',type:'local',registration:'mac-command'},capabilities:['health','status','pairing','hardware','models','chat.completions']},o);return}if(req.method==='POST'&&u.pathname==='/pair'){send(res,200,{paired:true,service:'mmir-local-node',version:'0.1.0-mac-command',token:TOKEN,header:'x-mmir-local-token',required:true},o);return}if(req.method==='GET'&&u.pathname==='/hardware'){if(paired(req,res,o))send(res,200,hardware(),o);return}if(req.method==='GET'&&u.pathname==='/models'){if(!paired(req,res,o))return;const tags=await ollama('/api/tags',{timeoutMs:8000});send(res,200,{object:'list',provider:'local-node',source:'ollama',hardware:hardware(),data:(tags.models||[]).map(m=>({id:m.name||m.model,name:m.name||m.model,provider:'ollama',status:'available',source:'local',capabilities:['chat']}))},o);return}if(req.method==='POST'&&(u.pathname==='/chat/completions'||u.pathname==='/chat')){await chat(req,res,o);return}err(res,404,'Route not found.',o)}catch(e){err(res,503,e.message||'Local connector failed.',o)}}).listen(PORT,HOST,()=>console.log(`MMIR Local Connector listening on http://${HOST}:${PORT}`));
-SERVER_JS
+  local temp actual_sha
+  temp="$(mktemp)"
+  log "Downloading MMIR connector server"
+  curl -fsSL "$SERVER_SOURCE" -o "$temp"
+  actual_sha="$(shasum -a 256 "$temp" | awk '{print $1}')"
+  if [ "$actual_sha" != "$SERVER_SHA256" ]; then
+    rm -f "$temp"
+    fail "connector server checksum mismatch. Expected $SERVER_SHA256 but got $actual_sha."
+  fi
+  "$NODE_BIN" --check "$temp" >/dev/null
+  mv "$temp" "$SERVER"
+  chmod 600 "$SERVER"
 }
 
 write_plist(){
   cat > "$PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict><key>Label</key><string>ai.mmir.local-connector</string><key>ProgramArguments</key><array><string>$NODE_BIN</string><string>$SERVER</string></array><key>EnvironmentVariables</key><dict><key>HOST</key><string>$HOST</string><key>PORT</key><string>$PORT</string><key>OLLAMA_URL</key><string>$OLLAMA_URL</string><key>MMIR_PAIRING_TOKEN_FILE</key><string>$TOKEN_FILE</string><key>MMIR_DEFAULT_MODEL_FILE</key><string>$MODEL_FILE</string></dict><key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>StandardOutPath</key><string>$LOG_DIR/local-connector.log</string><key>StandardErrorPath</key><string>$LOG_DIR/local-connector.err.log</string></dict></plist>
+<plist version="1.0"><dict><key>Label</key><string>ai.mmir.local-connector</string><key>ProgramArguments</key><array><string>$NODE_BIN</string><string>$SERVER</string></array><key>EnvironmentVariables</key><dict><key>HOST</key><string>$HOST</string><key>PORT</key><string>$PORT</string><key>OLLAMA_URL</key><string>$OLLAMA_URL</string><key>MMIR_PAIRING_TOKEN_FILE</key><string>$TOKEN_FILE</string><key>MMIR_DEFAULT_MODEL_FILE</key><string>$MODEL_FILE</string><key>MMIR_ENABLE_TUNNEL_CONTROL</key><string>$TUNNEL_CONTROL</string></dict><key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>StandardOutPath</key><string>$LOG_DIR/local-connector.log</string><key>StandardErrorPath</key><string>$LOG_DIR/local-connector.err.log</string></dict></plist>
 PLIST
 }
 
