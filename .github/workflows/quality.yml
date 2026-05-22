@@ -68,19 +68,24 @@ jobs:
       - name: Smoke-check Mimir route references
         run: |
           set -euo pipefail
-          grep -RIn 'id="mimir-prompt"' public/index.html
-          grep -RIn 'id="provider-status"' public/index.html
-          grep -RIn 'id="provider-status-grid"' public/index.html
-          grep -RIn 'id="local-connector"' public/index.html
-          grep -RIn 'id="local-connector-grid"' public/index.html
-          grep -RIn 'id="role-preset-grid"' public/index.html
-          grep -RIn 'id="backend-settings"' public/index.html
-          grep -RIn 'id="model-library-grid"' public/index.html
-          grep -RIn './apps/mimir-chat-portal/mimir-chat-portal.js' public/index.html
-          grep -RIn './apps/mimir-chat-portal/model-catalog-ui.js' public/index.html
-          grep -RIn './apps/mimir-chat-portal/provider-status.js' public/index.html
-          grep -RIn './apps/mimir-chat-portal/role-presets.js' public/index.html
-          grep -RIn './apps/mimir-chat-portal/local-connector.js' public/index.html
+          grep -RIn 'SaaS Fabric' public/index.html
+          grep -RIn 'data-section="appFactory"' public/index.html
+          grep -RIn 'id="mimir-prompt"' public/mmir.html
+          grep -RIn 'id="provider-status"' public/mmir.html
+          grep -RIn 'id="provider-status-grid"' public/mmir.html
+          grep -RIn 'id="local-connector"' public/mmir.html
+          grep -RIn 'id="local-connector-grid"' public/mmir.html
+          grep -RIn 'id="node-dashboard"' public/mmir.html
+          grep -RIn 'id="node-dashboard-root"' public/mmir.html
+          grep -RIn 'id="role-preset-grid"' public/mmir.html
+          grep -RIn 'id="backend-settings"' public/mmir.html
+          grep -RIn 'id="model-library-grid"' public/mmir.html
+          grep -RIn './apps/mimir-chat-portal/mimir-chat-portal.js' public/mmir.html
+          grep -RIn './apps/mimir-chat-portal/model-catalog-ui.js' public/mmir.html
+          grep -RIn './apps/mimir-chat-portal/provider-status.js' public/mmir.html
+          grep -RIn './apps/mimir-chat-portal/node-dashboard.js' public/mmir.html
+          grep -RIn './apps/mimir-chat-portal/role-presets.js' public/mmir.html
+          grep -RIn './apps/mimir-chat-portal/local-connector.js' public/mmir.html
 
       - name: Smoke-check MMIR user journeys
         run: node scripts/smoke-check-user-journeys.js
