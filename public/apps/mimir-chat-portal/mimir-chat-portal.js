@@ -51,6 +51,13 @@
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
   function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
+  function openBackendSettings(){
+    const drawer=document.getElementById('backend-settings');
+    if(drawer){
+      drawer.open=true;
+      drawer.scrollIntoView({block:'start',behavior:'smooth'});
+    }
+  }
 
   function renderList(){
     const profiles=readProfiles();
@@ -123,7 +130,7 @@
 
   function render(){renderList();renderEditor();renderDashboard();}
   function selectProfile(id){selectedId=id;setStatus('');render();}
-  function createProfile(){const profiles=readProfiles();const profile=defaultProfile();profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('Local node profile created. Save, Set active, then send a message.');render();}
+  function createProfile(){const profile=ensureFreeLocalProfile();setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Run the installer, then Refresh models.'));render();}
   function ensureFreeLocalProfile(){
     const profiles=readProfiles();
     let profile=profiles.find(p=>cleanUrl(p.url)===DEFAULT_LOCAL_URL&&p.provider==='local-node');
@@ -140,6 +147,7 @@
     writeActive(profile.id);
     setStatus('Free local profile is active.');
     render();
+    openBackendSettings();
     return profile;
   }
   function saveProfile(){

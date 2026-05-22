@@ -65,6 +65,75 @@
   opacity: 0.48;
 }
 
+.runtime-model-helper {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  border-radius: 8px;
+  background: rgba(240, 253, 244, 0.78);
+}
+
+.runtime-model-helper[hidden] {
+  display: none;
+}
+
+.runtime-model-helper-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.runtime-model-helper-head div {
+  display: grid;
+  gap: 2px;
+}
+
+.runtime-model-helper strong {
+  color: #0f172a;
+}
+
+.runtime-model-helper span,
+.runtime-model-helper p,
+.runtime-model-helper small {
+  margin: 0;
+  color: #475569;
+}
+
+.runtime-install-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.runtime-install-grid div {
+  display: grid;
+  gap: 6px;
+}
+
+.runtime-install-grid pre {
+  margin: 0;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.runtime-install-grid code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre;
+}
+
+.runtime-helper-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 #runtime-clear {
   color: #475569;
 }

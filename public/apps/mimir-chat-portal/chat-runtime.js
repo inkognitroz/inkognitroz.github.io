@@ -7,6 +7,8 @@
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const CHAT_KEY='mimir-chat-current-session-v1';
+  const STARTER_MODEL_CATALOG='./free-model-starters.json';
+  const STARTER_PREFIX='starter:';
   const MAX_STORED_MESSAGES=80;
   const MAX_CONTEXT_MESSAGES=24;
   const promptEl=document.getElementById('mimir-prompt');
@@ -16,6 +18,7 @@
   let modelSelect=null;
   let statusEl=null;
   let transcriptEl=null;
+  let modelHelperEl=null;
   let refreshBtn=null;
   let stopBtn=null;
   let clearBtn=null;
@@ -26,6 +29,7 @@
   let pendingWorkspaceSwitch=false;
   let busy=false;
   let messages=[];
+  let starterModels=[];
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -37,6 +41,7 @@
   function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
+  function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
 
   function activeRole(){
     try{
@@ -216,15 +221,18 @@
         '<button id="runtime-stop" type="button" aria-label="Stop current response" disabled>Stop</button>'+
         '<button id="runtime-clear" type="button" aria-label="Clear local chat history">Clear</button>'+
       '</div>'+
+      '<div id="runtime-model-helper" class="runtime-model-helper" hidden></div>'+
       '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite" aria-relevant="additions text" aria-busy="false"></div>';
     if(formEl&&formEl.nextSibling){chatCenter.insertBefore(runtime,formEl.nextSibling);}else{chatCenter.appendChild(runtime);}
     modelSelect=document.getElementById('runtime-model');
     statusEl=document.getElementById('runtime-state');
+    modelHelperEl=document.getElementById('runtime-model-helper');
     transcriptEl=document.getElementById('runtime-transcript');
     refreshBtn=document.getElementById('runtime-refresh');
     stopBtn=document.getElementById('runtime-stop');
     clearBtn=document.getElementById('runtime-clear');
     if(modelSelect)modelSelect.setAttribute('aria-label','Active chat model');
+    if(modelSelect)modelSelect.addEventListener('change',renderModelHelper);
     refreshBtn.addEventListener('click',()=>refreshState(true));
     stopBtn.addEventListener('click',stopCurrentResponse);
     clearBtn.addEventListener('click',clearConversation);
@@ -424,26 +432,123 @@
     })).filter(model=>model.id&&model.status!=='planned'&&model.status!=='premium_planned');
   }
 
+  function fallbackStarterModels(){
+    return [
+      {id:'mmir-guide',label:'MMIR Guide - free browser helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Immediate onboarding and setup help.',install_note:'No install required.'},
+      {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',cost:'free local',model:'gemma3:270m',size:'292 MB',best_for:'Smallest useful local starter.',install_note:'Install through Ollama and MMIR Local Node.'},
+      {id:'ollama-llama32-1b',label:'Llama 3.2 1B - local assistant',runtime:'ollama',status:'installable-free',cost:'free local',model:'llama3.2:1b',size:'1.3 GB',best_for:'Better local assistant on normal laptops.',install_note:'Install through Ollama and MMIR Local Node.'}
+    ];
+  }
+
+  async function loadStarterModels(){
+    try{
+      const response=await fetch(STARTER_MODEL_CATALOG,{cache:'default'});
+      if(!response.ok)throw new Error('starter model catalog unavailable');
+      const data=await response.json();
+      starterModels=(Array.isArray(data.models)?data.models:[]).filter(model=>model?.id&&model?.label);
+    }catch(error){
+      starterModels=fallbackStarterModels();
+    }
+    if(!starterModels.length)starterModels=fallbackStarterModels();
+    renderModelHelper();
+  }
+
+  function starterValue(model){
+    return STARTER_PREFIX+model.id;
+  }
+
+  function starterFromValue(value){
+    const id=String(value||'').startsWith(STARTER_PREFIX)?String(value).slice(STARTER_PREFIX.length):'';
+    return starterModels.find(model=>model.id===id)||null;
+  }
+
+  function selectedStarterModel(){
+    return modelSelect?starterFromValue(modelSelect.value):null;
+  }
+
+  function commandLines(model){
+    const ollamaModel=String(model?.model||'').trim();
+    const envValue=ollamaModel||'gemma3:270m';
+    return {
+      windows:[
+        'iwr -UseBasicParsing https://mmir.ai/downloads/mmir-local-node-windows.ps1 -OutFile mmir-local-node-windows.ps1',
+        '$env:MMIR_MODEL="'+envValue+'"',
+        '.\\mmir-local-node-windows.ps1 -DryRun',
+        '.\\mmir-local-node-windows.ps1'
+      ],
+      unix:[
+        'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh -o mmir-local-node-macos-linux.sh',
+        'chmod +x mmir-local-node-macos-linux.sh',
+        'MMIR_MODEL='+envValue+' ./mmir-local-node-macos-linux.sh'
+      ],
+      ollama:ollamaModel?['ollama pull '+ollamaModel]:[]
+    };
+  }
+
+  function renderModelHelper(){
+    if(!modelHelperEl||!modelSelect)return;
+    const model=selectedStarterModel();
+    if(!model){
+      modelHelperEl.hidden=true;
+      modelHelperEl.innerHTML='';
+      return;
+    }
+    const isGuide=model.runtime==='browser-guide';
+    const commands=commandLines(model);
+    modelHelperEl.hidden=false;
+    modelHelperEl.innerHTML=''+
+      '<div class="runtime-model-helper-head">'+
+        '<div><strong>'+escapeHtml(model.label)+'</strong><span>'+escapeHtml(model.status||'free')+' - '+escapeHtml(model.cost||'free')+'</span></div>'+
+        '<a class="button-link" href="#backend-settings">Connect local profile</a>'+
+      '</div>'+
+      '<p>'+escapeHtml(model.best_for||model.install_note||'Free model option.')+'</p>'+
+      (isGuide?'<p>This helper works immediately in the browser. Choose an Ollama model below when you want a real local LLM.</p>':
+        '<div class="runtime-install-grid">'+
+          '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
+          '<div><strong>Mac / Linux</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
+        '</div>'+
+        '<div class="runtime-helper-actions">'+
+          '<a class="button-link" href="./downloads/mmir-local-node-windows.ps1" download>Download Windows installer</a>'+
+          '<a class="button-link" href="./downloads/mmir-local-node-macos-linux.sh" download>Download Mac/Linux installer</a>'+
+        '</div>')+
+      '<small>'+escapeHtml(model.install_note||'Installer keeps MMIR Local Node bound to localhost and pairs before chat/model control.')+'</small>';
+  }
+
   function renderModels(models){
     if(!modelSelect)return;
     const previous=modelSelect.value;
     modelSelect.innerHTML='';
-    if(!models.length){
-      const option=document.createElement('option');
-      option.value='';
-      option.textContent='No live models';
-      modelSelect.appendChild(option);
-      modelSelect.disabled=true;
-      return;
+    if(models.length){
+      const liveGroup=document.createElement('optgroup');
+      liveGroup.label='Live from active backend';
+      for(const model of models){
+        const option=document.createElement('option');
+        option.value=model.id;
+        option.textContent=(model.label||model.id)+' - live';
+        option.dataset.runtime='live';
+        liveGroup.appendChild(option);
+      }
+      modelSelect.appendChild(liveGroup);
     }
-    for(const model of models){
-      const option=document.createElement('option');
-      option.value=model.id;
-      option.textContent=model.label||model.id;
-      modelSelect.appendChild(option);
+
+    if(starterModels.length){
+      const starterGroup=document.createElement('optgroup');
+      starterGroup.label='Free now / installable';
+      for(const model of starterModels){
+        const option=document.createElement('option');
+        option.value=starterValue(model);
+        option.textContent=model.label+' - '+String(model.status||'free').replaceAll('-',' ');
+        option.dataset.runtime=model.runtime||'starter';
+        starterGroup.appendChild(option);
+      }
+      modelSelect.appendChild(starterGroup);
     }
-    if(previous&&models.some(model=>model.id===previous))modelSelect.value=previous;
-    modelSelect.disabled=false;
+
+    const values=Array.from(modelSelect.options||[]).map(option=>option.value);
+    if(previous&&values.includes(previous))modelSelect.value=previous;
+    else if(!models.length&&starterModels.some(model=>model.id==='mmir-guide'))modelSelect.value=starterValue(starterModels.find(model=>model.id==='mmir-guide'));
+    modelSelect.disabled=!values.length;
+    renderModelHelper();
   }
 
   async function fetchJson(url,options={}){
@@ -559,6 +664,53 @@
     return api.friendlyError(error);
   }
 
+  function guideResponse(prompt){
+    const text=String(prompt||'').toLowerCase();
+    const wantsModel=/model|modell|llm|ollama|bitnet|1 bit|1-bit|gratis|free/.test(text);
+    const wantsConnect=/connect|koble|install|installer|local|lokal|backend|node/.test(text);
+    const wantsBusiness=/premium|betalt|marked|market|users|brukere|money|penger|inntekt/.test(text);
+    const parts=[
+      'Jeg er MMIR Guide, en gratis nettleserhjelper som fungerer uten backend. Jeg er ikke en full LLM, men jeg kan hjelpe deg til første ekte lokale modell raskt.'
+    ];
+    if(wantsModel||!text){
+      parts.push('Beste gratis start: velg Gemma 3 270M eller SmolLM2 135M for svak maskin, Gemma 3 1B eller Llama 3.2 1B for normal laptop, og DeepSeek-R1 1.5B eller Phi-4 Mini når du vil teste mer reasoning.');
+    }
+    if(wantsConnect||!text){
+      parts.push('Flyt: velg en installable-free modell i listen, last ned installer for Windows eller Mac/Linux, kjør DryRun først, kjør install, og la MMIR aktivere Local Node på http://127.0.0.1:3000. Etterpå vises modellen som live fra aktiv backend.');
+    }
+    if(wantsBusiness){
+      parts.push('Smart freemium: gratis lokal chat og installasjon først; betalte inntektslag senere bør være managed VM/GPU, premium provider routing, team governance, marketplace listing og supportert one-click deployment. Ingen betalt rute skal starte uten eksplisitt kostpolicy.');
+    }
+    parts.push('Neste handling her: velg en gratis Ollama-modell i modelllisten, eller trykk + Connect Model for å opprette en lokal profil.');
+    return parts.join('\n\n');
+  }
+
+  function installResponse(model){
+    const commands=commandLines(model);
+    return [
+      model.label+' er valgt som gratis lokal modell.',
+      'Den er ikke live i nettleseren ennå. Den blir live når MMIR Local Node og Ollama kjører lokalt og /models rapporterer modellen.',
+      'Windows:',
+      '```powershell\n'+commands.windows.join('\n')+'\n```',
+      'Mac / Linux:',
+      '```bash\n'+commands.unix.join('\n')+'\n```',
+      'Direkte Ollama-test hvis Ollama allerede er installert:',
+      '```bash\n'+commands.ollama.join('\n')+'\n```',
+      'Etter install: bruk + Connect Model, sett profilen aktiv, og trykk Refresh i chatten. Da skal modellen flytte seg fra installable-free til live backend-modell.'
+    ].join('\n\n');
+  }
+
+  async function sendStarterMessage(starter,prompt){
+    setBusy(true);
+    const meta=starter.runtime==='browser-guide'?'free browser helper':'installable free local';
+    appendMessage('user',prompt,'browser');
+    promptEl.value='';
+    const answer=starter.runtime==='browser-guide'?guideResponse(prompt):installResponse(starter);
+    appendMessage('assistant',answer,meta,{retryPrompt:prompt,model:starter.label});
+    setStatus(starter.runtime==='browser-guide'?'Guide answered locally.':'Install path generated.','ready');
+    setBusy(false);
+  }
+
   async function refreshState(force){
     ensureSendControl();
     const profile=activeProfile();
@@ -567,7 +719,7 @@
     lastActiveId=currentId;
     if(!profile||!cleanUrl(profile.url)){
       renderModels([]);
-      setStatus('Add and activate a backend profile first.','idle');
+      setStatus('Free guide and installable local models are ready. Connect a backend to make models live.','ready');
       return;
     }
     const url=cleanUrl(profile.url);
@@ -579,7 +731,7 @@
       const normalized=normalizeModels(models);
       renderModels(normalized);
       writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
-      setStatus(normalized.length?'Backend ready.':'Backend online, no live models reported.',normalized.length?'ready':'idle');
+      setStatus(normalized.length?'Backend ready.':'Backend online. Free installable models are still available below.',normalized.length?'ready':'idle');
     }catch(error){
       renderModels([]);
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
@@ -593,8 +745,13 @@
     const url=cleanUrl(profile?.url);
     const prompt=String(promptEl?.value||'').trim();
     let model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
-    if(!profile||!url){setStatus('Activate a backend profile before sending.','error');return;}
     if(!prompt){setStatus('Write a message first.','error');return;}
+    const starter=starterFromValue(model);
+    if(starter){
+      await sendStarterMessage(starter,prompt);
+      return;
+    }
+    if(!profile||!url){setStatus('Activate a backend profile or choose a free guide/installable model.','error');return;}
     if(!model){await refreshState(true);model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';if(!model){setStatus('No live model is available from this backend.','error');return;}}
 
     stopRequested=false;
@@ -650,7 +807,7 @@
     window.addEventListener('mmir-knowledge-updated',()=>setStatus('Workspace knowledge updated.','idle'));
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('storage',()=>refreshState(true));
-    refreshState(true);
+    loadStarterModels().then(()=>refreshState(true));
     setInterval(()=>refreshState(false),3000);
     window.addEventListener('focus',()=>refreshState(true));
   }

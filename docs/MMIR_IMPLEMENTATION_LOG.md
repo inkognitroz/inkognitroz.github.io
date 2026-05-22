@@ -79,8 +79,12 @@ Updated: 2026-05-22
 - Managed backend now has planning-only training job automation with automatic gates for dataset ownership, record count, consent, source rights, PII, compute route and cost policy.
 - Frontend now has a training automation panel that plans jobs through the protected backend and shows gate status without starting paid compute.
 - Frontend onboarding now has a free local activation action, and backend profiles are blocked from ambiguous paid use unless non-local routes are explicitly marked free, local or self-hosted.
+- Chat model selection no longer starts as an empty `No live models` state: it now includes a free browser guide plus installable free Ollama starter models with explicit local install commands.
+- `+ Connect Model` now activates/reuses the free local node profile and opens the backend setup panel instead of feeling like a dead action.
+- Free local model install bootstrap files now exist for Windows and Mac/Linux, so a selected starter model can produce a concrete path to MMIR Local Node + Ollama.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
+- Activation/revenue items `D097-D102` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates and a free guide assistant.
 
 ## Still Next In Sequence
 
