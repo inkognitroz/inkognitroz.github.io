@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T16:11:19.245Z",
+  "updated_at": "2026-05-22T16:36:49.719Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,8 +18,8 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 105,
-    "done": 41,
+    "total": 106,
+    "done": 42,
     "beta": 38,
     "next": 6,
     "watch": 1,
@@ -299,9 +299,9 @@
       {
         "phase": "Model Catalog",
         "total": 1,
-        "done": 0,
+        "done": 1,
         "beta": 0,
-        "next": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -352,6 +352,16 @@
         "done": 1,
         "beta": 0,
         "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "QA / Journey Gates",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -413,7 +423,7 @@
     "D025",
     "D026",
     "D042",
-    "D099"
+    "D106"
   ],
   "watchlist": [
     "D082",
@@ -1900,10 +1910,10 @@
       "best_practice": "Catalog can recommend without implying legal or hardware certainty",
       "done_when": "Users can choose model families and see exact install/connect route or backend requirement",
       "covers": "D025-D026, D066",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Expanded free/open-source model catalog is a high-value activation task.",
-      "estimate": "0.5-2d"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "Expanded open-source model catalog now covers more Ollama-compatible chat, code, embedding and multimodal families with license/commercial-use warnings.",
+      "estimate": "Done"
     },
     {
       "seq": "D100",
@@ -1994,6 +2004,21 @@
       "status_note": "Shipped and guarded by local or CI checks for the current scope.",
       "evidence": "Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.",
       "estimate": "Done"
+    },
+    {
+      "seq": "D106",
+      "phase": "QA / Journey Gates",
+      "priority": "P0",
+      "work_package": "Journey-level smoke tests",
+      "repos": "inkognitroz.github.io, mmir-local-node, mimir-backend-template",
+      "concrete_work": "Add automated smoke tests for first answer, connect model, local model activation, blocked paid/provider routes, progress dashboard and privacy controls",
+      "best_practice": "User journeys define done; component tests are not enough",
+      "done_when": "CI can prove each public journey is live/beta/blocked exactly as labeled",
+      "covers": "user-fit, D014-D018, D097-D105, zero-trust",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Journey-level smoke tests are the next quality gate before calling public flows 100% complete.",
+      "estimate": "2-6h"
     }
   ]
 }

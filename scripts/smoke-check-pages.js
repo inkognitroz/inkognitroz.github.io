@@ -8,6 +8,7 @@ const indexPath = join(publicDir, 'index.html');
 const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
+const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
 const userJourneysPath = join(publicDir, 'user-journeys.json');
 
@@ -90,8 +91,8 @@ if (existsSync(starterCatalogPath)) {
   const catalog = JSON.parse(readFileSync(starterCatalogPath, 'utf8'));
   const models = Array.isArray(catalog.models) ? catalog.models : [];
   const runtimes = new Set(models.map((model) => model.runtime).filter(Boolean));
-  if (models.length < 10) {
-    fail('Free starter catalog should keep at least ten visible free options.');
+  if (models.length < 18) {
+    fail('Free starter catalog should keep at least eighteen visible free options.');
   }
   if (!models.some((model) => model.id === 'mmir-guide')) {
     fail('Free starter catalog must include the immediate MMIR Guide.');
@@ -99,8 +100,36 @@ if (existsSync(starterCatalogPath)) {
   if (!runtimes.has('browser-guide') || !runtimes.has('webllm') || !runtimes.has('ollama')) {
     fail('Free starter catalog must include browser guide, WebGPU and Ollama routes.');
   }
+  for (const id of ['ollama-qwen3-06b', 'ollama-granite33-2b', 'ollama-codegemma-2b']) {
+    if (!models.some((model) => model.id === id && model.status === 'installable-free' && model.cost === 'free local')) {
+      fail(`Free starter catalog is missing public-safe installable model ${id}.`);
+    }
+  }
 } else {
   fail('Missing free starter model catalog.');
+}
+
+if (existsSync(modelCatalogPath)) {
+  const catalog = JSON.parse(readFileSync(modelCatalogPath, 'utf8'));
+  const models = Array.isArray(catalog.models) ? catalog.models : [];
+  if (models.length < 16) {
+    fail('AI model catalog should expose expanded open-source model families.');
+  }
+  for (const id of ['qwen3-small', 'granite33', 'codegemma', 'nomic-embed-text', 'llava']) {
+    if (!models.some((model) => model.id === id)) {
+      fail(`AI model catalog is missing ${id}.`);
+    }
+  }
+  for (const model of models.filter((item) => item.id !== 'custom')) {
+    if (!model.status || !model.license_name || !model.commercial_use || !model.best_for) {
+      fail(`AI model catalog entry ${model.id || '<missing id>'} is missing status/license/commercial/best_for metadata.`);
+    }
+    if (model.status === 'requires-backend-router' && !String(model.notes || '').match(/backend|router|protected|consent/i)) {
+      fail(`AI model catalog entry ${model.id} must explain why it requires protected backend handling.`);
+    }
+  }
+} else {
+  fail('Missing AI model catalog.');
 }
 
 if (existsSync(progressDashboardPath)) {

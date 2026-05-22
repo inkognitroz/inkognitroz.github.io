@@ -40,11 +40,12 @@ const overrides = new Map([
   ...range(83, 89).map((id) => [id, { status: 'done', evidence: 'Launch hardening and parity improvements have been pulled forward into current repos.' }]),
   ['D090', { status: 'blocked', evidence: 'Managed paid/provider routes stay blocked until identity, rate and cost controls are explicit.' }],
   ...range(91, 98).map((id) => [id, { status: 'done', evidence: 'Status, shared API, backend durability, package and activation improvements are shipped.' }]),
-  ['D099', { status: 'next', evidence: 'Expanded free/open-source model catalog is a high-value activation task.' }],
+  ['D099', { status: 'done', evidence: 'Expanded open-source model catalog now covers more Ollama-compatible chat, code, embedding and multimodal families with license/commercial-use warnings.' }],
   ['D100', { status: 'planned', evidence: 'Marketplace should start as a permissioned catalog after free model activation is smoother.' }],
   ['D101', { status: 'planned', evidence: 'Premium gates are designed, but no paid execution should run before explicit approval.' }],
   ...range(102, 104).map((id) => [id, { status: 'done', evidence: 'Immediate guide, browser model routes and automatic first-run defaults are shipped.' }]),
-  ['D105', { status: 'done', evidence: 'Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.' }]
+  ['D105', { status: 'done', evidence: 'Public-safe user journey contract, manifest and site panel define MMIR as a trusted AI operating/orchestration layer.' }],
+  ['D106', { status: 'next', evidence: 'Journey-level smoke tests are the next quality gate before calling public flows 100% complete.' }]
 ]);
 
 const repoMeta = [

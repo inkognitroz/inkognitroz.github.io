@@ -171,6 +171,20 @@
       "source_url": "https://ollama.com/library/qwen2.5"
     },
     {
+      "id": "ollama-qwen3-06b",
+      "label": "Qwen3 0.6B - tiny reasoning local",
+      "runtime": "ollama",
+      "status": "installable-free",
+      "cost": "free local",
+      "model": "qwen3:0.6b",
+      "size": "523 MB",
+      "context": "40K",
+      "best_for": "Small reasoning, multilingual and agent-style local tests.",
+      "install_note": "Use when the user wants a very small reasoning-capable local model.",
+      "commercial_use": "check Qwen terms",
+      "source_url": "https://ollama.com/library/qwen3"
+    },
+    {
       "id": "ollama-gemma3-1b",
       "label": "Gemma 3 1B - balanced free local",
       "runtime": "ollama",
@@ -199,6 +213,20 @@
       "source_url": "https://ollama.com/library/llama3.2"
     },
     {
+      "id": "ollama-tinyllama-11b",
+      "label": "TinyLlama 1.1B - tiny local chat",
+      "runtime": "ollama",
+      "status": "installable-free",
+      "cost": "free local",
+      "model": "tinyllama:1.1b",
+      "size": "638 MB",
+      "context": "2K",
+      "best_for": "Fast local smoke tests and lightweight offline chat on weak machines.",
+      "install_note": "Good fallback when downloads and memory must stay very small; answer quality is limited.",
+      "commercial_use": "check TinyLlama terms",
+      "source_url": "https://ollama.com/library/tinyllama"
+    },
+    {
       "id": "ollama-deepseek-r1-15b",
       "label": "DeepSeek-R1 1.5B - reasoning local",
       "runtime": "ollama",
@@ -213,6 +241,20 @@
       "source_url": "https://ollama.com/library/deepseek-r1"
     },
     {
+      "id": "ollama-granite33-2b",
+      "label": "Granite 3.3 2B - long-context business local",
+      "runtime": "ollama",
+      "status": "installable-free",
+      "cost": "free local",
+      "model": "granite3.3:2b",
+      "size": "1.5 GB",
+      "context": "128K",
+      "best_for": "Business-style assistants, RAG, long-context summaries and function/tool experiments.",
+      "install_note": "Good free candidate for product/business users who need long context on capable machines.",
+      "commercial_use": "Apache 2.0 / verify model card",
+      "source_url": "https://ollama.com/library/granite3.3"
+    },
+    {
       "id": "ollama-phi4-mini",
       "label": "Phi-4 Mini - compact premium-feel local",
       "runtime": "ollama",
@@ -225,6 +267,20 @@
       "install_note": "Bigger download, but a strong free local candidate on capable machines.",
       "commercial_use": "check Microsoft model terms",
       "source_url": "https://ollama.com/library/phi4-mini"
+    },
+    {
+      "id": "ollama-codegemma-2b",
+      "label": "CodeGemma 2B - code assistant",
+      "runtime": "ollama",
+      "status": "installable-free",
+      "cost": "free local",
+      "model": "codegemma:2b",
+      "size": "1.6 GB",
+      "context": "8K",
+      "best_for": "Local coding help, code completion experiments and developer onboarding.",
+      "install_note": "Use for code-focused local tests; verify fit before production coding workflows.",
+      "commercial_use": "check CodeGemma terms",
+      "source_url": "https://ollama.com/library/codegemma"
     }
   ]
 }
