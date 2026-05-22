@@ -4,7 +4,8 @@
 }
 
 .node-dashboard-grid,
-.node-doctor-grid {
+.node-doctor-grid,
+.node-model-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
@@ -12,7 +13,9 @@
 
 .node-card,
 .node-doctor-card,
-.node-next-action {
+.node-next-action,
+.node-model-manager,
+.node-model-card {
   border: 1px solid var(--mimir-line);
   border-radius: 8px;
   background: #fff;
@@ -26,7 +29,9 @@
 
 .node-card span,
 .node-doctor-card span,
-.node-next-action span {
+.node-next-action span,
+.node-model-manager span,
+.node-model-card span {
   color: var(--mimir-muted);
   font-size: 0.75rem;
   font-weight: 800;
@@ -42,7 +47,8 @@
 
 .node-card small,
 .node-doctor-card small,
-.node-next-action p {
+.node-next-action p,
+.node-model-manager p {
   color: var(--mimir-muted);
   line-height: 1.4;
 }
@@ -102,8 +108,74 @@
   gap: 8px;
 }
 
+.node-model-manager {
+  display: grid;
+  gap: 10px;
+}
+
+.node-model-manager-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+}
+
+.node-model-manager-head h3,
+.node-model-card h4 {
+  margin: 0;
+  color: var(--mimir-text);
+}
+
+.node-model-manager-head p {
+  max-width: 440px;
+  margin: 0;
+  text-align: right;
+}
+
+.node-model-card {
+  display: grid;
+  gap: 10px;
+}
+
+.node-model-card dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.node-model-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--mimir-line);
+  padding-top: 6px;
+}
+
+.node-model-card dt,
+.node-model-card dd {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.node-model-card dt {
+  color: var(--mimir-muted);
+}
+
+.node-model-card dd {
+  color: var(--mimir-text);
+  text-align: right;
+}
+
+.node-model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .node-dashboard-actions button,
-.node-dashboard-actions a {
+.node-dashboard-actions a,
+.node-model-actions button,
+.node-model-actions a {
   min-height: 36px;
   padding: 8px 12px;
   border-radius: 8px;
@@ -121,6 +193,11 @@
   color: #0f766e !important;
 }
 
+.node-model-actions a {
+  background: #fff;
+  color: #0f766e !important;
+}
+
 @media (max-width: 560px) {
   .node-next-action {
     align-items: stretch;
@@ -128,7 +205,20 @@
 
   .node-dashboard-actions,
   .node-dashboard-actions button,
-  .node-dashboard-actions a {
+  .node-dashboard-actions a,
+  .node-model-actions,
+  .node-model-actions button,
+  .node-model-actions a {
     width: 100%;
+  }
+
+  .node-model-manager-head {
+    display: grid;
+    align-items: start;
+  }
+
+  .node-model-manager-head p {
+    max-width: none;
+    text-align: left;
   }
 }

@@ -39,6 +39,25 @@
   function nodeType(identity,status,hardware){
     return identity?.type||status?.node?.type||hardware?.device_class||hardware?.platform||'local';
   }
+  function modelDisk(model){
+    return model?.resources?.disk_label||(
+      model?.details?.size?String(Math.round((Number(model.details.size)/1024/1024/1024)*10)/10)+' GB':'unknown'
+    );
+  }
+  function modelRam(model){
+    const ram=model?.resources?.estimated_ram_gb;
+    if(!ram)return 'unknown';
+    return String(ram)+' GB estimated';
+  }
+  function modelFit(model){
+    const fit=model?.resources?.fits_memory;
+    if(fit===true)return 'fits this node';
+    if(fit===false)return 'may exceed RAM';
+    return 'fit unknown';
+  }
+  function modelModified(model){
+    return model?.details?.modified_at?String(model.details.modified_at).slice(0,10):'not reported';
+  }
 
   async function pairedConnection(){
     const profile=activeProfile()||{provider:'local-node',url:DEFAULT_LOCAL_URL,name:'MMIR Local Node'};
@@ -132,6 +151,25 @@
         if(target&&target.tagName==='DETAILS')target.open=true;
       });
     });
+    root.querySelectorAll('[data-delete-model]').forEach(button=>{
+      button.addEventListener('click',async()=>{
+        if(!connection)return;
+        const model=button.getAttribute('data-delete-model')||'';
+        if(!model||!window.confirm('Remove '+model+' from this local node?'))return;
+        setSummary('Removing local model '+model+'...','loading');
+        const result=await fetchSafe(joinUrl(connection.url,'/models/delete'),{
+          method:'POST',
+          headers:{...connection.headers,'Content-Type':'application/json'},
+          body:JSON.stringify({model}),
+          timeoutMs:30000
+        });
+        if(!result.ok){
+          setSummary(api.friendlyError(result.error),'error');
+          return;
+        }
+        load();
+      });
+    });
   }
 
   function renderError(error){
@@ -169,6 +207,25 @@
         (canCreatePairingCode?'<button id="node-create-pairing-code" type="button">Pair another device</button>':'')+
       '</div><p id="node-pairing-code-status" class="node-pairing-code-status" data-state="idle" aria-live="polite">'+codeMessage+'</p></article>';
   }
+  function renderModelManager(models){
+    if(!Array.isArray(models)||!models.length){
+      return '<section class="node-model-manager"><div class="node-model-manager-head"><div><span>Local model manager</span><h3>No installed model yet</h3></div><p>Install a free Ollama model from the chat model list, then it appears here with disk/RAM impact and safe removal.</p></div></section>';
+    }
+    const cards=models.map(model=>{
+      const id=model.id||model.name||model.model||'model';
+      return '<article class="node-model-card">'+
+        '<div><h4>'+safe(id)+'</h4><span>'+safe(model.recommended?'recommended':'local model')+'</span></div>'+
+        '<dl>'+
+          '<div><dt>Disk</dt><dd>'+safe(modelDisk(model))+'</dd></div>'+
+          '<div><dt>RAM</dt><dd>'+safe(modelRam(model))+'</dd></div>'+
+          '<div><dt>Fit</dt><dd>'+safe(modelFit(model))+'</dd></div>'+
+          '<div><dt>Updated</dt><dd>'+safe(modelModified(model))+'</dd></div>'+
+        '</dl>'+
+        '<div class="node-model-actions"><a href="#mimir-prompt" data-open-target>Chat</a><button type="button" data-delete-model="'+safe(id)+'">Remove</button></div>'+
+      '</article>';
+    }).join('');
+    return '<section class="node-model-manager"><div class="node-model-manager-head"><div><span>Local model manager</span><h3>Installed models</h3></div><p>Manage local models without terminal commands. Deleting only affects this local Ollama runtime.</p></div><div class="node-model-grid">'+cards+'</div></section>';
+  }
 
   function renderReady(connection,status,identity,hardware,models,tunnel){
     const modelCount=Array.isArray(models)?models.length:0;
@@ -195,6 +252,7 @@
         card('Tunnel',statusText(tunnel?.status),tunnelSummary(tunnel))+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
+      renderModelManager(models)+
       renderAction(action,canStartTunnel,true);
     bindActions(connection);
     setSummary('Install Health Doctor checked connector, pairing, runtime, models, hardware and tunnel.','ready');

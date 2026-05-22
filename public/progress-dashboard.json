@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T21:47:11.488Z",
+  "updated_at": "2026-05-22T21:52:39.229Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 45,
+    "beta": 46,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 54,
+    "planned": 53,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -680,11 +680,11 @@
         "phase": "Model Admin",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Sharing",
@@ -3015,10 +3015,10 @@
       "best_practice": "Local AI needs storage/resource visibility",
       "done_when": "User can manage installed models without terminal commands",
       "covers": "Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D152",

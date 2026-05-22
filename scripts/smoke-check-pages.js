@@ -144,6 +144,9 @@ requireText(nodeDashboardPath, 'Install Health Doctor', 'Node dashboard must inc
 requireText(nodeDashboardPath, '/node/identity', 'Node dashboard must read public-safe local node identity.');
 requireText(nodeDashboardPath, '/hardware', 'Node dashboard must check hardware profile.');
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
+requireText(nodeDashboardPath, 'function renderModelManager(models)', 'Node dashboard must expose local model manager UI.');
+requireText(nodeDashboardPath, 'data-delete-model', 'Node dashboard must allow safe local model removal.');
+requireText(nodeDashboardPath, 'estimated_ram_gb', 'Node dashboard must show RAM impact from local model metadata.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
 requireText(nodeDashboardPath, '/tunnels/trycloudflare/start', 'Node dashboard must expose a paired free tunnel start path.');
 requireText(nodeDashboardPath, '/pairing/sessions', 'Node dashboard must create short-lived cross-device pairing codes locally.');
