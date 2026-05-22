@@ -45,6 +45,7 @@ Updated: 2026-05-22
 - Frontend memory is now inspectable, editable, enable/disable-capable and local-first, with optional sync to the active backend and relevant backend memory injection into chat/comparison context.
 - Managed backend now has a consent-gated connector ingestion contract for GitHub, Notion and docs sources that routes approved source text into protected knowledge without storing connector secrets.
 - Frontend now has a `Sources` panel for manually approved GitHub/docs/Notion source ingestion into the active backend knowledge store.
+- Managed backend now supports optional free file-backed JSON persistence via `MMIR_DATA_DIR` for backend knowledge, workspace memory and prompt registry state, while defaulting to in-memory mode for zero-cost demos.
 - Managed backend now fails closed into API-key auth when a non-mock managed provider is selected, unless anonymous managed-provider mode is explicitly enabled for local demo use.
 - Managed backend now has a protected node registry for registering, listing, heartbeat-updating and deleting owned compute nodes.
 - Node heartbeat now carries public-safe health metadata: latency, runtime version, model inventory count and bounded health history.
@@ -74,6 +75,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
+- Add backup/export/retention controls for file-backed backend data before any multi-user managed launch.
 - D067-D081: platform, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

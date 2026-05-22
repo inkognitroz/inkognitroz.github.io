@@ -138,6 +138,8 @@ These items were added during code/architecture review and should be pulled forw
 | D091 | Observability | P1 | Public status and deploy monitor | `inkognitroz.github.io`, `mimir-backend-template` | Add a simple uptime/deploy health checklist and status surface for Pages/API/local-node | Users should know whether failure is local, site or provider | Status docs/UI explain Pages, API, local node and provider health separately | `D002`, `D040` |
 | D092 | Local Node | P1 | Idle timeout for long local generations | `mmir-local-node` | Replace one full-request timeout for Ollama streaming with idle-timeout behavior | Long local model answers should not be cut off while tokens are flowing | Streaming aborts only after idle/no-token timeout or client disconnect | `D019`, `D009` |
 | D093 | Frontend Architecture | P1 | Shared browser API client | `inkognitroz.github.io` | Extract shared profile, pairing, fetch, error and context helpers used by chat/comparison/status | Avoid divergent frontend networking behavior as features grow | Chat, comparison and status use one tested client layer | `D015-D018`, `D029-D030` |
+| D094 | Data Durability | P1 | Free backend file persistence | `mimir-backend-template` | Persist backend knowledge, memory and prompt registry state to local JSON files when `MMIR_DATA_DIR` is set | Free-first durable storage before paid databases; fail safely and keep ownership checks at API boundaries | Restart keeps backend knowledge, memory and prompts without requiring a paid database | `D044-D049`, `D089` |
+| D095 | Data Durability | P1 | Backend data backup and retention controls | `mimir-backend-template` | Add export/import, retention, delete-all-by-owner and corruption recovery guidance for file-backed data | Durable storage must also be portable, deletable and recoverable before multi-user use | Operator can back up, restore and delete a user's backend data with audit-safe behavior | `D044-D049`, `D077`, `D087` |
 
 ## Recommended Implementation Sequence
 
@@ -162,6 +164,7 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
 - `D044-D047` now have inspectable memory governance, prompt registry/versioning, backend chunk/retrieval foundations and frontend local-first backend sync.
 - `D048-D049` now have a consent-gated connector ingestion contract and a frontend source-ingestion panel. Future OAuth/app workers can build on this without putting connector secrets in public frontend code.
-- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging, free durable storage and any CI failures from the new commits.
+- `D094` is implemented in the managed backend as optional `MMIR_DATA_DIR` JSON persistence for knowledge, memory and prompts, so demos and self-hosted installs can keep data without paid databases.
+- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging, `D095` backend data backup/retention controls and any CI failures from the new commits.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.
