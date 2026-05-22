@@ -83,6 +83,13 @@
         "tags": ["ai", "ollama", "llm", "chat", "static"]
       },
       {
+        "title": "MMIR Control Plane",
+        "description": "Trusted AI orchestration track for connecting local models, workflows and future managed AI infrastructure without making SaaS Fabric itself an AI-only product.",
+        "link": "./mmir.html",
+        "badge": "Beta",
+        "tags": ["ai", "orchestration", "local-first", "workflow"]
+      },
+      {
         "title": "App Template Generator",
         "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
         "link": "./apps/app-template-generator/",
@@ -134,6 +141,13 @@
         "link": "./index.html",
         "badge": "Live",
         "tags": ["github-pages", "platform"]
+      },
+      {
+        "title": "MMIR Control Plane",
+        "description": "AI control-plane product track inside the broader SaaS Fabric portfolio. MMIR owns trusted orchestration; SaaS Fabric owns the public app-factory hub.",
+        "link": "./mmir.html",
+        "badge": "Beta",
+        "tags": ["ai", "control-plane", "trusted-ai", "product"]
       },
       {
         "title": "Football Evolution Matrix",

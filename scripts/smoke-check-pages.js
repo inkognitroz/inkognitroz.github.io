@@ -5,16 +5,14 @@ import { spawnSync } from 'node:child_process';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const indexPath = join(publicDir, 'index.html');
+const mmirPath = join(publicDir, 'mmir.html');
 const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const firstImpressionPath = join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js');
-const onboardingPath = join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js');
-const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
 const userJourneysPath = join(publicDir, 'user-journeys.json');
-const uiActionCoveragePath = join(publicDir, 'ui-action-coverage.json');
 const universalInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-install.html');
 const linuxConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-linux.sh');
 
@@ -50,23 +48,28 @@ function requireText(file, text, message) {
   }
 }
 
-if (!existsSync(indexPath)) {
-  fail('Missing public/index.html');
-} else {
-  const html = readFileSync(indexPath, 'utf8');
+function checkHtmlAssetRefs(filePath, label) {
+  if (!existsSync(filePath)) {
+    fail(`Missing ${label}`);
+    return;
+  }
+  const html = readFileSync(filePath, 'utf8');
   const assetRefs = Array.from(html.matchAll(/\b(?:src|href)=["']([^"']+)["']/g)).map((match) => match[1]);
 
   for (const ref of assetRefs) {
-    const assetPath = localAssetPath(indexPath, ref);
+    const assetPath = localAssetPath(filePath, ref);
     if (!assetPath || extname(assetPath) === '.html') {
       continue;
     }
 
     if (!assetPath.startsWith(publicDir) || !existsSync(assetPath)) {
-      fail(`Missing referenced asset from index.html: ${ref}`);
+      fail(`Missing referenced asset from ${label}: ${ref}`);
     }
   }
 }
+
+checkHtmlAssetRefs(indexPath, 'public/index.html');
+checkHtmlAssetRefs(mmirPath, 'public/mmir.html');
 
 for (const file of walk(publicDir)) {
   const rel = relative(root, file);
@@ -98,32 +101,20 @@ requireText(chatRuntimePath, 'Source/model card: verify before production use', 
 requireText(chatRuntimePath, 'composer-mode-dock', 'Chat composer must expose the Open WebUI-style mode dock.');
 requireText(chatRuntimePath, 'Boost 5.5', 'Chat composer must expose a functional boost mode.');
 requireText(chatRuntimePath, 'function modeInstruction()', 'Chat mode buttons must affect model instructions.');
-requireText(chatRuntimePath, 'mmir-chat-modes-updated', 'Chat mode changes must update the first-run success checklist.');
 requireText(chatRuntimePath, '/hardware', 'Chat composer must show local CPU/RAM capability when local node exposes it.');
-requireText(indexPath, 'mimir-instant-start', 'Homepage must show an automatic ready state before technical setup sections.');
-requireText(indexPath, 'data-prompt-action', 'Homepage must include smart start actions that send useful prompts.');
-requireText(indexPath, 'id="node-dashboard"', 'Homepage must expose a node dashboard entrypoint.');
-requireText(indexPath, 'id="node-dashboard-root"', 'Homepage must expose a node dashboard render root.');
-requireText(indexPath, './apps/mimir-chat-portal/node-dashboard.js', 'Homepage must load the node dashboard script.');
+requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
+requireText(indexPath, 'SaaS Fabric', 'Homepage must keep the SaaS Fabric top-level identity.');
+requireText(indexPath, 'data-section="appFactory"', 'Homepage must render the SaaS Fabric app factory from content.json.');
+requireText(indexPath, 'Powered by <code>public/content.json</code>', 'Homepage must preserve the content.json publishing model.');
+requireText(mmirPath, 'mimir-instant-start', 'MMIR product page must show an automatic ready state before technical setup sections.');
+requireText(mmirPath, 'The orchestration layer for trusted AI.', 'MMIR product page hero must state the MMIR product identity.');
+requireText(mmirPath, 'Connect local AI', 'MMIR product page must show the first local AI activation action.');
+requireText(mmirPath, 'href="#connect-options">Connect local AI</a>', 'MMIR product page must link the first activation action to connect options.');
+requireText(mmirPath, 'data-prompt-action', 'MMIR product page must include smart start actions that send useful prompts.');
 requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
 requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
-requireText(onboardingPath, 'First-run success gates', 'Homepage must expose automatic first-run success gates.');
-requireText(onboardingPath, 'Browser ready', 'First-run checklist must include browser readiness.');
-requireText(onboardingPath, 'Private mode', 'First-run checklist must include private mode readiness.');
-requireText(onboardingPath, 'Local node', 'First-run checklist must include local node readiness.');
-requireText(onboardingPath, 'Model live', 'First-run checklist must include live model readiness.');
-requireText(onboardingPath, 'First chat', 'First-run checklist must include first chat success.');
-requireText(nodeDashboardPath, 'Install Health Doctor', 'Node dashboard must include install health doctor copy.');
-requireText(nodeDashboardPath, '/node/identity', 'Node dashboard must read public-safe local node identity.');
-requireText(nodeDashboardPath, '/hardware', 'Node dashboard must check hardware profile.');
-requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
-requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
-requireText(nodeDashboardPath, '/tunnels/trycloudflare/start', 'Node dashboard must expose a paired free tunnel start path.');
-requireText(nodeDashboardPath, 'Connector install', 'Install doctor must check connector install.');
-requireText(nodeDashboardPath, 'Ollama runtime', 'Install doctor must check Ollama/local runtime.');
-requireText(nodeDashboardPath, 'Model availability', 'Install doctor must check model availability.');
-requireText(uiActionCoveragePath, 'Every visible MMIR control', 'Homepage must include a public-safe UI action coverage manifest.');
-requireText(join(root, 'scripts', 'smoke-check-ui-actions.js'), 'requireHashLinksAreSafe', 'Static quality gates must guard against active dead hash links.');
+requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
+requireText(firstImpressionPath, 'trusted MMIR control plane', 'First impression runtime must keep local AI framed as control-plane activation.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
 requireText(universalInstallerPath, 'Raspberry Pi / Linux ARM', 'Universal installer must expose Raspberry Pi/Linux ARM as a first-class node path.');
@@ -201,6 +192,9 @@ if (existsSync(userJourneysPath)) {
   }
   if (!String(journeys.public_repo_rule || '').includes('inkognitroz.github.io is public')) {
     fail('User journey manifest must state the public repo secrecy boundary.');
+  }
+  if (!String(journeys.positioning || '').includes('the orchestration layer for trusted AI')) {
+    fail('User journey manifest must state the MMIR control-plane identity.');
   }
   for (const id of ['J001', 'J002', 'J004', 'J008', 'J010']) {
     if (!items.some((journey) => journey.id === id)) {

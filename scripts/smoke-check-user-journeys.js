@@ -7,6 +7,7 @@ const docsDir = resolve(root, 'docs');
 
 const files = {
   index: join(publicDir, 'index.html'),
+  mmir: join(publicDir, 'mmir.html'),
   journeys: join(publicDir, 'user-journeys.json'),
   progress: join(publicDir, 'progress-dashboard.json'),
   starters: join(publicDir, 'free-model-starters.json'),
@@ -23,6 +24,8 @@ const files = {
   linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
   windowsInstaller: join(publicDir, 'downloads', 'mmir-local-node-windows.ps1'),
   unixInstaller: join(publicDir, 'downloads', 'mmir-local-node-macos-linux.sh'),
+  productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
+  architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
   backlog: join(docsDir, 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md')
 };
@@ -82,6 +85,12 @@ const journeys = Array.isArray(journeyData.journeys) ? journeyData.journeys : []
 if (!String(journeyData.public_repo_rule || '').includes('inkognitroz.github.io is public')) {
   fail('Journey manifest must keep the public repo secrecy boundary explicit.');
 }
+if (!String(journeyData.positioning || '').includes('the orchestration layer for trusted AI')) {
+  fail('Journey manifest must position MMIR as the orchestration layer for trusted AI.');
+}
+if (!Array.isArray(journeyData.principles) || !journeyData.principles.some((item) => String(item).includes('One perfect first local AI experience'))) {
+  fail('Journey manifest must prioritize the first magical local AI experience.');
+}
 
 const j001 = requireJourney(journeys, 'J001', 'live');
 const j002 = requireJourney(journeys, 'J002', 'beta');
@@ -103,7 +112,24 @@ if (!j002?.trust_boundary?.includes('127.0.0.1')) {
 if (!j002?.entry_points?.some((entry) => String(entry).includes('Raspberry Pi'))) {
   fail('J002 must include a Raspberry Pi/Linux ARM node entry point.');
 }
+if (!j002?.user_goal?.includes('Open mmir.ai, connect local AI, install')) {
+  fail('J002 must encode the ground-zero local AI activation journey.');
+}
+if (!j002?.done_when?.includes('install one file')) {
+  fail('J002 must be judged by one-file install and instant chat readiness.');
+}
 
+requireIncludes(files.productDoctrine, 'MMIR is the orchestration layer for trusted AI.', 'Product doctrine must define MMIR true identity.');
+requireIncludes(files.productDoctrine, 'an Ollama wrapper', 'Product doctrine must reject the Ollama-wrapper framing.');
+requireIncludes(files.productDoctrine, 'Open mmir.ai', 'Product doctrine must preserve the first journey start.');
+requireIncludes(files.productDoctrine, 'Connect local AI', 'Product doctrine must preserve the first journey action.');
+requireIncludes(files.productDoctrine, 'Workflows are the moat.', 'Product doctrine must make workflows more important than chat.');
+requireIncludes(files.architectureBaseline, 'MMIR is the orchestration layer for trusted AI', 'Architecture baseline must use the control-plane identity.');
+requireIncludes(files.architectureBaseline, 'model runtime execution', 'Architecture baseline must keep runtime ownership out of the frontend.');
+requireIncludes(files.index, 'SaaS Fabric', 'Homepage must keep the SaaS Fabric top-level identity.');
+requireIncludes(files.index, 'data-section="appFactory"', 'Homepage must render the SaaS Fabric app factory from content.json.');
+requireIncludes(files.mmir, 'The orchestration layer for trusted AI.', 'MMIR product page hero must state the product identity.');
+requireIncludes(files.mmir, 'Connect local AI', 'MMIR product page must expose the ground-zero local AI action.');
 requireIncludes(files.portal, 'ensureAutomaticDefaults();render();', 'J001/J002 need automatic first-run defaults.');
 requireIncludes(files.portal, 'blockedByFreeMode', 'J003/J008 need free-first backend guardrails.');
 requireIncludes(files.portal, 'local pairing token only', 'Public UI must never ask users to paste real provider keys.');
@@ -111,7 +137,7 @@ requireIncludes(files.chatRuntime, 'function preferredStarterModel()', 'J001 nee
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'function defaultMmirInstruction()', 'J001/J002 need live models to understand MMIR before the user configures anything.');
-requireIncludes(files.chatRuntime, 'trusted AI operating layer focused on orchestration', 'Live model default context must position MMIR correctly.');
+requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
 requireIncludes(files.chatRuntime, '/chat/completions', 'J002/J004 need the shared chat completions contract.');
 requireIncludes(files.chatRuntime, 'pairIfNeeded(profile,url)', 'J002/J003 need explicit pairing before protected local routes.');
 requireIncludes(files.chatRuntime, 'installable free local', 'J002 needs visible installable-free local model guidance.');
@@ -130,8 +156,8 @@ requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must
 requireIncludes(files.universalInstaller, '127.0.0.1:3000', 'J002 edge install copy must keep the local-node localhost boundary visible.');
 requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');
 requireIncludes(files.linuxConnectorInstaller, 'qwen2.5:0.5b', 'J002 edge installer must have a small free starter model for low-memory devices.');
-requireIncludes(files.index, 'id="progress-dashboard"', 'J007 needs progress dashboard entrypoint.');
-requireIncludes(files.index, 'id="platform-status"', 'J007 needs platform status entrypoint.');
+requireIncludes(files.mmir, 'id="progress-dashboard"', 'J007 needs progress dashboard entrypoint.');
+requireIncludes(files.mmir, 'id="platform-status"', 'J007 needs platform status entrypoint.');
 requireIncludes(files.userJourneyDoc, 'free-first', 'Journey docs must preserve the free-first rule.');
 requireIncludes(files.backlog, '| D106 | QA / Journey Gates', 'Backlog must include journey-level smoke tests.');
 
