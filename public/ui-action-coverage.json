@@ -13,6 +13,14 @@
       "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "demo_start_click"]
     },
     {
+      "id": "saas-fabric-local-analytics",
+      "surface": "Public SaaS Fabric homepage",
+      "status": "live",
+      "user_result": "The public homepage keeps local-only usage analytics controllable by the user without cookies or external tracking.",
+      "selectors": ["#usage-analytics-reset"],
+      "evidence": ["usage-analytics-reset", "resetButton.addEventListener", "localStorage.removeItem(STORAGE_KEY)"]
+    },
+    {
       "id": "connect-model",
       "surface": "First screen and backend settings",
       "status": "live",
@@ -67,6 +75,14 @@
       "user_result": "Live backend models are preferred automatically; browser helpers, WebGPU models and installable free Ollama models remain visible with license/source guidance.",
       "selectors": ["#runtime-model", "#model-library-grid"],
       "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "modelComplianceNote(model)", "Source/model card: verify before production use"]
+    },
+    {
+      "id": "one-click-model-install",
+      "surface": "Chat model helper",
+      "status": "beta",
+      "user_result": "Users can choose an installable-free Ollama model, start a paired local-node install job, watch pull progress and refresh into a live model.",
+      "selectors": ["#install-selected-model", "#refresh-model-pulls", "#model-install-status", "#runtime-delete-model"],
+      "evidence": ["/models/pull", "/models/pulls/", "/models/delete", "installSelectedStarterModel", "pollModelInstall", "deleteSelectedLiveModel"]
     },
     {
       "id": "operator-dashboards",

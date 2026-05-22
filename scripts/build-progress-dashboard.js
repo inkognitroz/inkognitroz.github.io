@@ -51,7 +51,8 @@ const overrides = new Map([
   ['D109', { status: 'done', evidence: 'The public frontend now has a Node Dashboard that reads active node identity, status, hardware, models, tunnel state and the current browser client from paired local-node routes.' }],
   ['D110', { status: 'next', evidence: 'Secure cross-device pairing still needs the managed/control-plane flow beyond local TryCloudflare experiments.' }],
   ['D111', { status: 'done', evidence: 'Install Health Doctor now checks connector reachability, pairing, Ollama/runtime status, model availability, hardware profile and tunnel support with next best actions.' }],
-  ...range(112, 113).map((id) => [id, { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }]),
+  ['D112', { status: 'done', evidence: 'The chat model helper can start paired local-node Ollama pull jobs, poll install progress and refresh live model discovery when ready.' }],
+  ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'next', evidence: 'New high-priority activation and trust-polish item added after GUI parity review.' }],
   ...range(116, 152).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }])
@@ -182,7 +183,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D110', 'D112', 'D113', 'D115', 'D023', 'D024', 'D025', 'D042'];
+const prioritizedNextIds = ['D110', 'D115', 'D023', 'D024', 'D025', 'D042'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

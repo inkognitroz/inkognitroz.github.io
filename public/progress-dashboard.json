@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T20:52:31.728Z",
+  "updated_at": "2026-05-22T21:00:19.981Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -19,9 +19,9 @@
   },
   "summary": {
     "total": 152,
-    "done": 49,
-    "beta": 38,
-    "next": 8,
+    "done": 50,
+    "beta": 39,
+    "next": 6,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -69,9 +69,9 @@
       {
         "phase": "Model UX",
         "total": 4,
-        "done": 1,
-        "beta": 0,
-        "next": 3,
+        "done": 2,
+        "beta": 1,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -749,8 +749,6 @@
   ],
   "next_queue": [
     "D110",
-    "D112",
-    "D113",
     "D115",
     "D023",
     "D024",
@@ -2437,10 +2435,10 @@
       "best_practice": "Model install is the main activation wait state and must feel controlled",
       "done_when": "User can tell whether a model is downloading, live or failed",
       "covers": "D098-D099",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
-      "estimate": "2-6h"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "The chat model helper can start paired local-node Ollama pull jobs, poll install progress and refresh live model discovery when ready.",
+      "estimate": "Done"
     },
     {
       "seq": "D113",
@@ -2452,10 +2450,10 @@
       "best_practice": "Free local models should be reachable without terminal knowledge",
       "done_when": "Model library actions become real local-node operations",
       "covers": "D011, D099",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "New high-priority activation and trust-polish item added after GUI parity review.",
-      "estimate": "2-6h"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D114",

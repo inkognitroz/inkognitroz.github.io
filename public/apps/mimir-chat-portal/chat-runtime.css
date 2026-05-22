@@ -7,7 +7,7 @@
 
 .runtime-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto auto auto;
   gap: 10px;
   align-items: center;
   padding: 8px 10px;
@@ -143,6 +143,29 @@
   gap: 8px;
 }
 
+.runtime-model-install-status {
+  padding: 8px 10px;
+  border: 1px solid rgba(100, 116, 139, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #475569;
+}
+
+.runtime-model-install-status[data-state="loading"] {
+  border-color: rgba(29, 78, 216, 0.28);
+  color: #1d4ed8;
+}
+
+.runtime-model-install-status[data-state="ready"] {
+  border-color: rgba(16, 163, 127, 0.32);
+  color: #047857;
+}
+
+.runtime-model-install-status[data-state="error"] {
+  border-color: rgba(185, 28, 28, 0.28);
+  color: #b91c1c;
+}
+
 .composer-mode-dock {
   display: flex;
   align-items: center;
@@ -232,6 +255,11 @@
 }
 
 #runtime-stop:not(:disabled) {
+  border-color: rgba(185, 28, 28, 0.36);
+  color: #b91c1c;
+}
+
+#runtime-delete-model:not(:disabled) {
   border-color: rgba(185, 28, 28, 0.36);
   color: #b91c1c;
 }

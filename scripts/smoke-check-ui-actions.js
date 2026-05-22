@@ -4,7 +4,9 @@ import { extname, join, relative, resolve } from 'node:path';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const appDir = join(publicDir, 'apps', 'mimir-chat-portal');
+const assetsDir = join(publicDir, 'assets');
 const indexPath = join(publicDir, 'index.html');
+const mmirPath = join(publicDir, 'mmir.html');
 const coveragePath = join(publicDir, 'ui-action-coverage.json');
 
 const allowedStatuses = new Set(['live', 'beta', 'planned', 'premium-planned', 'disabled']);
@@ -28,6 +30,13 @@ function appFiles() {
   return readdirSync(appDir)
     .filter((name) => extname(name) === '.js')
     .map((name) => join(appDir, name));
+}
+
+function assetFiles() {
+  if (!existsSync(assetsDir)) return [];
+  return readdirSync(assetsDir)
+    .filter((name) => extname(name) === '.js')
+    .map((name) => join(assetsDir, name));
 }
 
 function escapeRegExp(value) {
@@ -163,8 +172,10 @@ function requireDynamicActionSignals(combinedSource) {
 }
 
 const indexSource = read(indexPath);
-const appSource = appFiles().map(read).join('\n');
-const combinedSource = `${indexSource}\n${appSource}\n${read(join(publicDir, 'connect-options.json'))}\n${read(join(publicDir, 'ai-model-catalog.json'))}`;
+const mmirSource = read(mmirPath);
+const pageSource = `${indexSource}\n${mmirSource}`;
+const scriptSource = appFiles().concat(assetFiles()).map(read).join('\n');
+const combinedSource = `${pageSource}\n${scriptSource}\n${read(join(publicDir, 'connect-options.json'))}\n${read(join(publicDir, 'ai-model-catalog.json'))}`;
 
 let coverage = {};
 try {
@@ -174,10 +185,10 @@ try {
 }
 
 requireManifestCoverage(coverage, combinedSource);
-requireHashLinksAreSafe(indexSource);
-requireAnchorTargets(indexSource, combinedSource);
-requireStaticControlsCovered(indexSource, coverage);
-requireDynamicActionSignals(`${indexSource}\n${appSource}`);
+requireHashLinksAreSafe(pageSource);
+requireAnchorTargets(pageSource, combinedSource);
+requireStaticControlsCovered(pageSource, coverage);
+requireDynamicActionSignals(`${pageSource}\n${scriptSource}`);
 
 if (!process.exitCode) {
   console.log('UI action coverage smoke check passed.');

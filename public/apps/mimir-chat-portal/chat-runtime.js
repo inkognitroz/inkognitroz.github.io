@@ -25,6 +25,9 @@
   let refreshBtn=null;
   let stopBtn=null;
   let clearBtn=null;
+  let deleteModelBtn=null;
+  let currentModelInstall=null;
+  let modelInstallPollTimer=null;
   let currentAbortController=null;
   let stopRequested=false;
   let lastActiveId='';
@@ -88,6 +91,19 @@
   function updateRuntimeChips(){
     if(modelChipEl)modelChipEl.textContent=activeModelLabel()||'Model ready';
     if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
+  }
+  function selectedOptionRuntime(){
+    return modelSelect?.selectedOptions?.[0]?.dataset?.runtime||'';
+  }
+  function selectedLiveModel(){
+    return selectedOptionRuntime()==='live'?String(modelSelect?.value||''):'';
+  }
+  function canManageSelectedLiveModel(){
+    const profile=activeProfile();
+    return Boolean(selectedLiveModel()&&api.isLocal(profile));
+  }
+  function updateRuntimeModelActions(){
+    if(deleteModelBtn)deleteModelBtn.disabled=busy||!canManageSelectedLiveModel();
   }
   function updateModeButtons(){
     const modes=readModes();
@@ -188,6 +204,7 @@
     busy=value;
     if(stopBtn)stopBtn.disabled=!value;
     if(refreshBtn)refreshBtn.disabled=value;
+    updateRuntimeModelActions();
     if(chatCenter)chatCenter.setAttribute('aria-busy',value?'true':'false');
     if(transcriptEl)transcriptEl.setAttribute('aria-busy',value?'true':'false');
     if(primaryLink)primaryLink.setAttribute('aria-disabled',value?'true':'false');
@@ -340,6 +357,7 @@
         '<label for="runtime-model">Model<select id="runtime-model" disabled><option value="">No live models</option></select></label>'+
         '<button id="runtime-refresh" type="button" aria-label="Refresh backend models">Refresh</button>'+
         '<button id="runtime-stop" type="button" aria-label="Stop current response" disabled>Stop</button>'+
+        '<button id="runtime-delete-model" type="button" aria-label="Remove selected local model" disabled>Remove model</button>'+
         '<button id="runtime-clear" type="button" aria-label="Clear local chat history">Clear</button>'+
       '</div>'+
       '<div id="runtime-model-helper" class="runtime-model-helper" hidden></div>'+
@@ -351,11 +369,13 @@
     transcriptEl=document.getElementById('runtime-transcript');
     refreshBtn=document.getElementById('runtime-refresh');
     stopBtn=document.getElementById('runtime-stop');
+    deleteModelBtn=document.getElementById('runtime-delete-model');
     clearBtn=document.getElementById('runtime-clear');
     if(modelSelect)modelSelect.setAttribute('aria-label','Active chat model');
-    if(modelSelect)modelSelect.addEventListener('change',()=>{renderModelHelper();updateRuntimeChips();});
+    if(modelSelect)modelSelect.addEventListener('change',()=>{renderModelHelper();updateRuntimeChips();updateRuntimeModelActions();});
     refreshBtn.addEventListener('click',()=>refreshState(true));
     stopBtn.addEventListener('click',stopCurrentResponse);
+    deleteModelBtn.addEventListener('click',deleteSelectedLiveModel);
     clearBtn.addEventListener('click',clearConversation);
   }
 
@@ -528,7 +548,7 @@
   function defaultMmirInstruction(){
     return [
       'You are the MMIR platform assistant inside MMIR.ai.',
-      'MMIR is a trusted AI operating layer focused on orchestration: local-first chat, model connections, local nodes, secure tunnels, workspaces, memory, workflows and a marketplace over time.',
+      'MMIR is the orchestration layer for trusted AI: a trusted AI operating layer focused on local-first chat, model connections, local nodes, secure tunnels, workspaces, memory, workflows and a marketplace over time.',
       'Default goal: make the service useful immediately with free/local options first, then let users configure details later.',
       'When asked about MMIR, answer as MMIR product support. Do not redefine MMIR as an unrelated academic term unless the user explicitly asks for that.',
       'Security rules: no secrets in the public frontend; provider keys belong behind a protected backend; prefer 127.0.0.1 local node with pairing; never expose raw model runtimes publicly.',
@@ -541,7 +561,7 @@
     const cpu=hardware.cpu_count?String(hardware.cpu_count)+'c':'CPU';
     const ram=hardware.memory_gb?String(hardware.memory_gb)+'GB RAM':'RAM';
     const tier=hardware.memory_tier?String(hardware.memory_tier):'local';
-    return cpu+' / '+ram+' · '+tier;
+    return cpu+' / '+ram+' / '+tier;
   }
 
   function contextMessages(prompt,backendMemory='',backendKnowledge=''){
@@ -688,9 +708,109 @@
         '<div class="runtime-helper-actions">'+
           '<a class="button-link" href="./downloads/mmir-local-node-windows.ps1" download>Download Windows installer</a>'+
           '<a class="button-link" href="./downloads/mmir-local-node-macos-linux.sh" download>Download Mac/Linux installer</a>'+
+          '<button id="install-selected-model" type="button">Install in Local Node</button>'+
+          '<button id="refresh-model-pulls" type="button">Check install progress</button>'+
         '</div>')+
+      '<p id="model-install-status" class="runtime-model-install-status" data-state="idle" aria-live="polite">'+escapeHtml(currentModelInstall?.message||'Local install can run through MMIR Local Node when it has the model install API.')+'</p>'+
       '<small>'+escapeHtml(model.install_note||'Installer keeps MMIR Local Node bound to localhost and pairs before chat/model control.')+'</small>'+
       (complianceNote?'<small>'+escapeHtml(complianceNote)+(sourceUrl?' <a href="'+escapeHtml(sourceUrl)+'" target="_blank" rel="noopener noreferrer">Open source</a>':'')+'</small>':'');
+    modelHelperEl.querySelector('#install-selected-model')?.addEventListener('click',installSelectedStarterModel);
+    modelHelperEl.querySelector('#refresh-model-pulls')?.addEventListener('click',()=>pollModelInstall(true));
+  }
+
+  function setModelInstallStatus(message,state){
+    currentModelInstall={...(currentModelInstall||{}),message:String(message||''),state:state||'idle'};
+    const el=document.getElementById('model-install-status');
+    if(el){
+      el.textContent=currentModelInstall.message;
+      el.dataset.state=currentModelInstall.state;
+    }
+  }
+
+  async function activeLocalConnection(){
+    let profile=activeProfile();
+    if(!profile||!cleanUrl(profile.url)||!api.isLocal(profile)){
+      profile=window.MimirBackendProfiles?.ensureFreeLocalProfile?.()||profile;
+    }
+    const url=cleanUrl(profile?.url);
+    if(!profile||!url)throw new Error('Create the free local profile first.');
+    const token=await pairIfNeeded(profile,url);
+    return {profile,url,headers:authHeaders(token)};
+  }
+
+  async function installSelectedStarterModel(){
+    const starter=selectedStarterModel();
+    const model=String(starter?.model||'').trim();
+    if(!starter||starter.runtime!=='ollama'||!model){
+      setModelInstallStatus('Choose an installable Ollama model first.','error');
+      return;
+    }
+    try{
+      setModelInstallStatus('Starting local model install for '+model+'...','loading');
+      const connection=await activeLocalConnection();
+      const job=await fetchJson(joinUrl(connection.url,'/models/pull'),{
+        method:'POST',
+        headers:connection.headers,
+        body:JSON.stringify({model}),
+        timeoutMs:10000
+      });
+      currentModelInstall={id:job.id,model,connection,message:'Install queued for '+model+'.',state:'loading'};
+      setModelInstallStatus('Install queued for '+model+'.','loading');
+      pollModelInstall(true);
+    }catch(error){
+      const message=error.status===404?'Local node needs an update/restart before one-click model install is available. Use the installer links below for now.':friendlyError(error);
+      setModelInstallStatus(message,'error');
+      setStatus(message,'error');
+    }
+  }
+
+  async function pollModelInstall(force){
+    if(!currentModelInstall?.id||!currentModelInstall?.connection){
+      if(force)setModelInstallStatus('No model install job is active yet.','idle');
+      return;
+    }
+    window.clearTimeout(modelInstallPollTimer);
+    try{
+      const {url,headers}=currentModelInstall.connection;
+      const job=await fetchJson(joinUrl(url,'/models/pulls/'+encodeURIComponent(currentModelInstall.id)),{
+        headers,
+        timeoutMs:8000
+      });
+      const percent=typeof job.percent==='number'?' '+String(job.percent)+'%':'';
+      if(job.status==='ready'){
+        setModelInstallStatus((job.model||currentModelInstall.model)+' installed. Refreshing live models...','ready');
+        await refreshState(true);
+        return;
+      }
+      if(job.status==='failed'){
+        setModelInstallStatus('Install failed: '+(job.error||'unknown error'),'error');
+        return;
+      }
+      setModelInstallStatus((job.model||currentModelInstall.model)+' '+(job.phase||job.status||'installing')+percent,'loading');
+      modelInstallPollTimer=window.setTimeout(()=>pollModelInstall(false),2500);
+    }catch(error){
+      setModelInstallStatus(friendlyError(error),'error');
+    }
+  }
+
+  async function deleteSelectedLiveModel(){
+    const model=selectedLiveModel();
+    if(!model)return;
+    if(!window.confirm('Remove '+model+' from the local Ollama runtime?'))return;
+    try{
+      setStatus('Removing local model '+model+'...','loading');
+      const connection=await activeLocalConnection();
+      await fetchJson(joinUrl(connection.url,'/models/delete'),{
+        method:'POST',
+        headers:connection.headers,
+        body:JSON.stringify({model}),
+        timeoutMs:30000
+      });
+      setStatus('Model removed. Refreshing model list...','ready');
+      await refreshState(true);
+    }catch(error){
+      setStatus(friendlyError(error),'error');
+    }
   }
 
   function renderModels(models){
@@ -746,6 +866,7 @@
     modelSelect.disabled=!values.length;
     renderModelHelper();
     updateRuntimeChips();
+    updateRuntimeModelActions();
   }
 
   async function fetchJson(url,options={}){
