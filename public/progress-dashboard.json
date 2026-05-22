@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T21:41:27.000Z",
+  "updated_at": "2026-05-22T21:47:11.488Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 44,
+    "beta": 45,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 55,
+    "planned": 54,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -110,11 +110,11 @@
         "phase": "Security/Ops",
         "total": 8,
         "done": 0,
-        "beta": 6,
+        "beta": 7,
         "next": 0,
         "watch": 0,
         "blocked": 1,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Product Feeling",
@@ -2505,10 +2505,10 @@
       "best_practice": "Public repo should stay public-safe by construction",
       "done_when": "CI blocks public leakage and flags suspicious copy",
       "covers": "public/private split",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "2-6h"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D118",

@@ -74,7 +74,7 @@
           '<label>Max cost<input id="training-max-cost" type="number" min="0" step="0.000001" value="0" /></label>'+
         '</div>'+
         '<div class="workflow-builder-row">'+
-          '<label><input id="training-allow-paid" type="checkbox" /> Allow paid compute</label>'+
+          '<label><input id="training-allow-paid" type="checkbox" disabled /> Paid compute requires owner approval</label>'+
           '<label><input id="training-allow-pii" type="checkbox" /> Allow PII</label>'+
           '<label><input id="training-allow-unverified" type="checkbox" /> Allow unverified rights</label>'+
         '</div>'+
@@ -124,7 +124,7 @@
       estimated_cost_usd:Number(document.getElementById('training-estimated-cost')?.value||0),
       policy:{
         max_cost_usd:Number(document.getElementById('training-max-cost')?.value||0),
-        allow_paid_compute:document.getElementById('training-allow-paid')?.checked===true,
+        allow_paid_compute:false,
         allow_pii:document.getElementById('training-allow-pii')?.checked===true,
         allow_unverified_rights:document.getElementById('training-allow-unverified')?.checked===true
       }

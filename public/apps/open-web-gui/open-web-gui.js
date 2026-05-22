@@ -62,16 +62,13 @@
   }
 
   function getHeaders() {
-    const headers = { "Content-Type": "application/json" };
-    const key = apiKeyInput.value.trim();
-    if (key) headers["Authorization"] = "Bearer " + key;
-    return headers;
+    return { "Content-Type": "application/json" };
   }
 
   /* ── Connection test ── */
   async function testConnection() {
     const base = getBaseUrl();
-    setStatus("busy", "Testing connection…");
+    setStatus("busy", "Testing connection...");
     testBtn.disabled = true;
 
     try {
@@ -86,7 +83,7 @@
 
       const data = await res.json();
       const models = (data.models || []).map(m => m.name || m.model || String(m)).filter(Boolean);
-      setStatus("ok", "Connected · " + models.length + " model(s) available");
+      setStatus("ok", "Connected - " + models.length + " model(s) available");
       renderModelChips(models);
     } catch (err) {
       const msg = err.name === "TimeoutError"
@@ -104,7 +101,7 @@
   function renderModelChips(models) {
     modelChips.innerHTML = "";
     if (!models.length) {
-      modelChips.innerHTML = '<span style="color:var(--muted);font-size:.82rem">No models found — check connection first.</span>';
+      modelChips.innerHTML = '<span style="color:var(--muted);font-size:.82rem">No models found - check connection first.</span>';
       modelDetails.open = false;
       return;
     }
@@ -196,7 +193,7 @@
 
     streaming = true;
     sendBtn.disabled = true;
-    setStatus("busy", "Generating…");
+    setStatus("busy", "Generating...");
 
     const base = getBaseUrl();
     const body = {
@@ -246,11 +243,11 @@
     } catch (err) {
       bubble.classList.remove("cursor-blink");
       const errMsg = err.name === "TimeoutError"
-        ? "Request timed out. The model may be loading — try again."
+        ? "Request timed out. The model may be loading - try again."
         : (err.message || "Unknown error");
-      bubble.textContent = "⚠ " + errMsg;
+      bubble.textContent = "Warning: " + errMsg;
       bubble.style.color = "var(--danger, #ff6b6b)";
-      assistantMsg.content = "⚠ " + errMsg;
+      assistantMsg.content = "Warning: " + errMsg;
       setStatus("err", errMsg);
     } finally {
       streaming = false;
@@ -296,7 +293,7 @@
 
   userInput.addEventListener("input", () => autoGrow(userInput));
 
-  [ollamaUrl, modelInput, apiKeyInput].forEach(el => {
+  [ollamaUrl, modelInput, systemPrompt].forEach(el => {
     el.addEventListener("change", saveConfig);
   });
 

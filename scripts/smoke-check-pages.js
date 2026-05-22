@@ -153,6 +153,8 @@ requireText(nodeDashboardPath, 'Ollama runtime', 'Install doctor must check Olla
 requireText(nodeDashboardPath, 'Model availability', 'Install doctor must check model availability.');
 requireText(uiActionCoveragePath, 'Every visible MMIR control', 'MMIR product page must include a public-safe UI action coverage manifest.');
 requireText(join(root, 'scripts', 'smoke-check-ui-actions.js'), 'requireHashLinksAreSafe', 'Static quality gates must guard against active dead hash links.');
+requireText(join(root, 'scripts', 'public-safety-audit.js'), 'Public safety audit passed.', 'Static quality gates must run a public/private safety audit.');
+requireText(join(root, '.github', 'workflows', 'quality.yml'), 'node scripts/public-safety-audit.js', 'CI must run the public safety audit.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'remote_pairing_code_required', 'API client must handle remote pairing code requirements.');

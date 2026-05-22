@@ -43,6 +43,7 @@ jobs:
             (echo 'Forbidden token-like string found in public frontend files.' && exit 1)
           ! grep -RInE 'SUPABASE_SERVICE_ROLE\s*=|STRIPE_SECRET\s*=|OPENAI_API_KEY\s*=|ANTHROPIC_API_KEY\s*=' public docs README.md START_HERE.md AGENTS.md CLAUDE.md || \
             (echo 'Forbidden secret assignment found. Use placeholders and server-side environment variables only.' && exit 1)
+          node scripts/public-safety-audit.js
 
       - name: Check required Mimir entrypoints
         run: |

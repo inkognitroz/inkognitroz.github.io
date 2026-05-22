@@ -107,6 +107,7 @@ Updated: 2026-05-22
 - D023 is now beta: mobile navigation stays visible through a horizontal, keyboard-focusable rail, readiness text wraps on phones, and quality gates block negative letter spacing, viewport-scaled chat typography and hidden mobile nav regressions.
 - D024 is now beta: first-run onboarding prepares safe defaults, preserves private mode and offers one-click free MMIR Guide chat so first value does not depend on a backend or paid model.
 - D025 is now beta: model selection and catalog views are grouped into live backend, ready-now browser, install-to-activate free local and protected/planned routes so static suggestions no longer look live.
+- D117 is now beta: public safety audit runs in CI and blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API key fields and public paid-compute enablement.
 - Public repo handoff docs (`AGENTS.md`, `START_HERE.md`, `README.md`) now describe MMIR, the current backlog sequence, free/local-first guardrails and validation commands instead of the old SaaS Fabric workflow.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
