@@ -26,6 +26,7 @@ Expected result:
 - Browser shows HTTPS lock.
 - Title is `MMIR.ai`.
 - The first screen is the MMIR public app shell.
+- The `Platform Status` panel can load `platform-status.json`.
 - No browser console errors block the main UI.
 
 ## If GitHub Pages Works But `mmir.ai` Fails
@@ -50,6 +51,18 @@ Check:
 - Ask the network/security team to allowlist `mmir.ai`.
 - Keep `https://inkognitroz.github.io` available only as a diagnostic; GitHub Pages will redirect it to the custom domain while `public/CNAME` is present.
 - Do not change app code to fix this category of failure unless the off-network test also fails.
+
+## Status Panel Interpretation
+
+The public `Platform Status` panel separates status into layers:
+
+- `MMIR public site`: the static Pages app shell and manifest.
+- `GitHub Pages origin`: the Pages redirect/origin layer.
+- `Domain reputation`: network filtering and newly registered domain issues.
+- `Managed API`: future `api.mmir.ai` health.
+- `Local node`: only checked when a browser has an active backend profile.
+
+If the app shell loads but the active backend is offline, fix the backend/local node rather than the domain. If only the domain reputation row is a problem, test from another network or request allowlisting.
 
 ## If Both URLs Fail
 

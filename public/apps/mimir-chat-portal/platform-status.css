@@ -1,0 +1,79 @@
+.platform-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.platform-status-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.platform-status-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.platform-status-card h3 {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 0.94rem;
+}
+
+.platform-status-card dl {
+  margin: 0;
+}
+
+.platform-status-card div {
+  display: grid;
+  gap: 2px;
+}
+
+.platform-status-card dt {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.platform-status-card dd {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  overflow-wrap: anywhere;
+}
+
+.platform-status-card small,
+#platform-status-summary {
+  color: var(--mimir-muted, #6b7280);
+}
+
+#platform-status-summary[data-state="ready"] {
+  color: #047857;
+}
+
+#platform-status-summary[data-state="error"] {
+  color: #b91c1c;
+}
+
+.provider-status.status-online {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.provider-status.status-watch,
+.provider-status.status-user-controlled,
+.provider-status.status-not-configured {
+  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+}
+
+.provider-status.status-offline,
+.provider-status.status-degraded {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}

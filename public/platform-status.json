@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-22T00:00:00+02:00",
+  "description": "Public-safe status manifest for MMIR.ai. Live backend telemetry must come from a user-selected backend or paired local node.",
+  "components": [
+    {
+      "id": "site-shell",
+      "label": "MMIR public site",
+      "status": "online",
+      "route": "mmir.ai / GitHub Pages",
+      "notes": "The static app shell is served from the public Pages artifact."
+    },
+    {
+      "id": "github-pages",
+      "label": "GitHub Pages origin",
+      "status": "online",
+      "route": "inkognitroz.github.io -> mmir.ai",
+      "notes": "The default GitHub Pages URL redirects to the custom domain while public/CNAME is present."
+    },
+    {
+      "id": "domain-reputation",
+      "label": "Domain reputation",
+      "status": "watch",
+      "route": "mmir.ai",
+      "notes": "Some corporate networks may temporarily block newly registered domains. Test from mobile data or ask for allowlisting if this happens."
+    },
+    {
+      "id": "managed-api",
+      "label": "Managed API",
+      "status": "planned",
+      "route": "api.mmir.ai",
+      "notes": "Managed provider routing requires auth, rate limits, audit logging and server-side provider secrets before public launch."
+    },
+    {
+      "id": "local-node",
+      "label": "Local node",
+      "status": "user-controlled",
+      "route": "http://127.0.0.1:3000",
+      "notes": "Local health is checked only when the user activates a local backend profile in this browser."
+    }
+  ]
+}

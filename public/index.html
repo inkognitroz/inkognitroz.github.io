@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/privacy-controls.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/onboarding.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
@@ -24,7 +25,7 @@
     <nav aria-label="Primary navigation">
       <a href="#connect-options">Connect</a>
       <a href="#model-library">Models</a>
-      <a href="#provider-status">Status</a>
+      <a href="#platform-status">Status</a>
     </nav>
   </header>
 
@@ -100,6 +101,15 @@
       </section>
     </details>
 
+    <details id="platform-status" class="mimir-provider-drawer">
+      <summary>+ Platform Status</summary>
+      <section class="mimir-dashboard" aria-labelledby="platform-status-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Site, API and local health</p><h2 id="platform-status-title">Status by layer</h2></div></div>
+        <p id="platform-status-summary" class="dashboard-note" data-state="idle" aria-live="polite">Status checks run locally in this browser.</p>
+        <div id="platform-status-grid" class="platform-status-grid" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="backend-settings" class="mimir-settings-drawer">
       <summary>+ Add Backend / Capacity</summary>
       <div class="mimir-console" aria-label="MMIR backend console">
@@ -135,6 +145,7 @@
   <script src="./apps/mimir-chat-portal/onboarding.js"></script>
   <script src="./apps/mimir-chat-portal/model-catalog-ui.js"></script>
   <script src="./apps/mimir-chat-portal/provider-status.js"></script>
+  <script src="./apps/mimir-chat-portal/platform-status.js"></script>
   <script src="./apps/mimir-chat-portal/role-presets.js"></script>
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>
