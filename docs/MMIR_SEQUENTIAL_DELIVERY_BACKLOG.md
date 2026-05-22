@@ -12,6 +12,7 @@ MMIR must always feel:
 - personal: the product reflects the user's own models, node, chats, projects and preferences
 - calm: advanced infrastructure is progressively disclosed and never noisy
 - powerful: expert capability exists under the surface when the user needs it
+- free-first: default paths must not require paid providers, paid cloud, paid storage or user spend
 
 Covers: `UX001-UX004`.
 
@@ -24,6 +25,7 @@ Covers: `UX001-UX004`.
 5. The primary API contract should be OpenAI-compatible where practical: `/chat/completions`, plus MMIR control endpoints `/health`, `/status`, `/models`, `/metrics` and later `/nodes`, `/workflows`, `/memory`.
 6. Every public feature must be one of: live, beta, planned, premium planned. No ambiguous promises.
 7. New complexity must not reach the first screen until it improves the user's first successful chat.
+8. Paid or ambiguous-cost routes must be blocked or clearly marked until the user explicitly chooses a free/local/self-hosted path or approves spend.
 
 ## Delivery Phases
 
@@ -160,6 +162,6 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
 - `D044-D047` now have inspectable memory governance, prompt registry/versioning, backend chunk/retrieval foundations and frontend local-first backend sync.
 - `D048-D049` now have a consent-gated connector ingestion contract and a frontend source-ingestion panel. Future OAuth/app workers can build on this without putting connector secrets in public frontend code.
-- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging and any CI failures from the new commits.
+- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local installer release packaging, free durable storage and any CI failures from the new commits.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.

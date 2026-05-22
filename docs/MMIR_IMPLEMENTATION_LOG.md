@@ -67,6 +67,7 @@ Updated: 2026-05-22
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - MMIR Local Node installer scripts now prefer reproducible `npm ci`, support explicit Ollama install opt-in, and run smoke checks through pairing-protected routes instead of old unpaired endpoints.
+- Frontend onboarding now has a free local activation action, and backend profiles are blocked from ambiguous paid use unless non-local routes are explicitly marked free, local or self-hosted.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 
