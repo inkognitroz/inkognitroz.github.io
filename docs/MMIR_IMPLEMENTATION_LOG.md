@@ -87,6 +87,7 @@ Updated: 2026-05-22
 - Free local model install bootstrap files now exist for Windows and Mac/Linux, so a selected starter model can produce a concrete path to MMIR Local Node + Ollama.
 - Public Progress Dashboard now exists on the site and is generated from the sequential backlog, with repo ownership, shipped/beta/next/watch status, full task list and smoke-test coverage for the manifest.
 - User Journeys now exist as a public-safe contract and site panel for validating MMIR as a trusted AI operating/orchestration layer while keeping secrets, provider keys and paid execution out of the public repo.
+- Local model journey was verified on the shared machine: MMIR Local Node `/health`, `/status`, pairing, `/models` and browser-style `/chat/completions` now work through local Ollama with `mistral:latest`; public frontend pairing now sends explicit JSON to avoid empty POST failures.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.

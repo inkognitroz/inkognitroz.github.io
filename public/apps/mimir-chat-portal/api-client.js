@@ -71,7 +71,12 @@
     const key=tokenKey(url);
     const existing=sessionStorage.getItem(key);
     if(existing)return existing;
-    const data=await fetchJson(joinUrl(url,'/pair'),{method:'POST',timeoutMs:5000});
+    const data=await fetchJson(joinUrl(url,'/pair'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:'{}',
+      timeoutMs:5000
+    });
     if(data?.token){
       sessionStorage.setItem(key,data.token);
       return data.token;
