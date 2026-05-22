@@ -4,7 +4,9 @@ This document defines the current and target architecture boundaries for the MMI
 
 ## Architecture Intent
 
-MMIR is a trusted AI operating layer. Its strongest product surface is the orchestration layer: connecting models, roles, workflows, memory, knowledge, routing and policy across local, self-hosted and managed AI systems.
+MMIR is the orchestration layer for trusted AI: an AI control plane for connecting models, roles, workflows, memory, knowledge, routing and policy across local, edge, self-hosted and managed AI systems.
+
+MMIR is not a chatbot, an Ollama wrapper, a local frontend or an OpenAI clone. The architecture must keep the product above the models while making the first local AI loop feel simple.
 
 MMIR should feel like one calm AI workspace while internally separating:
 
@@ -33,7 +35,8 @@ Current state:
 - `inkognitroz.github.io` is the public static UI.
 - `mmir-local-node` exists and can proxy local Ollama, but needs hardening.
 - `mimir-backend-template` exists and is the first managed API candidate.
-- The frontend does not yet complete an in-page real chat loop.
+- The frontend has an in-page chat runtime and beta orchestration surfaces.
+- The ground-zero product loop remains the highest-risk activation path: open mmir.ai, connect local AI, install one file, see local models and chat instantly.
 
 ## Target MVP Architecture
 
@@ -73,6 +76,7 @@ flowchart LR
 Owns:
 
 - first screen and product promise
+- orchestration UI and configuration controls
 - chat transcript and controls
 - backend profile metadata
 - live/beta/planned/premium labels
@@ -80,6 +84,8 @@ Owns:
 
 Must not own:
 
+- model runtime execution
+- model inventory truth beyond connected backend reports
 - provider API keys
 - billing decisions
 - organization permissions
@@ -148,7 +154,7 @@ Must not own:
 | Chat prompt managed mode | Sensitive app data | Transit only by default, no prompt logs unless explicit opt-in |
 | Audit events | Restricted operational data | No raw prompt content by default |
 
-## First Real Chat Sequence
+## Ground-Zero Local AI Sequence
 
 ```mermaid
 sequenceDiagram
@@ -157,7 +163,9 @@ sequenceDiagram
   participant N as Local Node
   participant O as Ollama
 
-  U->>UI: Open page
+  U->>UI: Open mmir.ai
+  U->>UI: Connect local AI
+  UI-->>U: One-file installer path
   UI->>N: GET /health
   N-->>UI: status online + version
   UI->>N: GET /models
@@ -191,7 +199,9 @@ No new repo should be created until one of these is true:
 ## Architectural Invariants
 
 - A static page can be public; secrets cannot.
+- MMIR is the control plane above models, not a wrapper around one model.
 - Local AI must be useful without cloud dependency.
 - Managed AI must be protected through one ingress.
 - Provider-specific code belongs behind adapters.
-- Every advanced platform concept must map back to the first chat loop or stay planned.
+- Workflows, memory and routing are more strategic than chat alone.
+- Every advanced platform concept must map back to the first local AI activation loop or stay planned.
