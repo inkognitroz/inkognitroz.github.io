@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T21:00:19.981Z",
+  "updated_at": "2026-05-22T21:21:10.564Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,8 +20,8 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 39,
-    "next": 6,
+    "beta": 40,
+    "next": 5,
     "watch": 1,
     "blocked": 1,
     "planned": 55,
@@ -390,8 +390,8 @@
         "phase": "Node UX",
         "total": 3,
         "done": 2,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -748,7 +748,6 @@
     }
   ],
   "next_queue": [
-    "D110",
     "D115",
     "D023",
     "D024",
@@ -2405,10 +2404,10 @@
       "best_practice": "Cross-device should stay zero-trust and local-first",
       "done_when": "User can connect to a Pi/VM node safely from another device",
       "covers": "D051, D107",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Secure cross-device pairing still needs the managed/control-plane flow beyond local TryCloudflare experiments.",
-      "estimate": "2-6h"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Local node and frontend now support short-lived local approval codes before remote/tunnel pairing releases a token; managed control-plane relay remains future work.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D111",

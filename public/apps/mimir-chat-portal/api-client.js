@@ -2,6 +2,7 @@
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   const TOKEN_PREFIX='mimir-local-node-token:';
+  const PAIRING_CODE_PREFIX='mimir-local-node-pairing-code:';
 
   function readProfiles(){
     try{
@@ -35,6 +36,24 @@
 
   function tokenKey(url){
     return TOKEN_PREFIX+cleanUrl(url);
+  }
+
+  function pairingCodeKey(url){
+    return PAIRING_CODE_PREFIX+cleanUrl(url);
+  }
+
+  function isRemotePairingCodeRequired(error){
+    return error?.status===403&&error?.payload?.error?.code==='remote_pairing_code_required';
+  }
+
+  function readPairingCode(url){
+    const key=pairingCodeKey(url);
+    const saved=sessionStorage.getItem(key);
+    if(saved)return saved;
+    if(typeof window.prompt!=='function')return '';
+    const code=window.prompt('Enter the MMIR pairing code shown on the local node device.');
+    if(code)sessionStorage.setItem(key,code);
+    return code||'';
   }
 
   async function fetchJson(url,options={}){
@@ -82,6 +101,22 @@
         return data.token;
       }
     }catch(error){
+      if(isRemotePairingCodeRequired(error)){
+        const code=readPairingCode(url);
+        if(code){
+          const data=await fetchJson(joinUrl(url,'/pair'),{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({code}),
+            timeoutMs:5000
+          });
+          if(data?.token){
+            sessionStorage.removeItem(pairingCodeKey(url));
+            sessionStorage.setItem(key,data.token);
+            return data.token;
+          }
+        }
+      }
       if(existing)return existing;
       throw error;
     }
@@ -97,6 +132,7 @@
   function friendlyError(error){
     if(error?.name==='AbortError')return 'Backend timed out. Check that the local node or API is running.';
     if(error?.status===401)return 'Backend requires pairing or an API key. Refresh the connection and try again.';
+    if(error?.status===403&&error?.payload?.error?.code==='remote_pairing_code_required')return 'Remote node pairing needs a fresh code from the device running MMIR Local Node.';
     if(error?.status===403)return 'This page origin is not allowed by the backend CORS policy.';
     if(error?.status===404)return 'Backend does not expose the expected MMIR route yet.';
     if(error?.status===413)return 'Prompt or document is too large for this backend.';
@@ -114,6 +150,7 @@
     joinUrl,
     isLocal,
     tokenKey,
+    pairingCodeKey,
     fetchJson,
     pairIfNeeded,
     authHeaders,

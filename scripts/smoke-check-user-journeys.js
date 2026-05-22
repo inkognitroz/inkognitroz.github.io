@@ -152,6 +152,8 @@ requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete c
 requireIncludes(files.workflowBuilder, 'workflow-builder-root', 'J006 needs visible workflow builder surface.');
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route, not a decorative button.');
+requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'), '/pairing/sessions', 'J009 needs local approval codes before cross-device node pairing.');
+requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'remote_pairing_code_required', 'J009 remote node pairing must require a local one-time code.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.universalInstaller, '127.0.0.1:3000', 'J002 edge install copy must keep the local-node localhost boundary visible.');
 requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');

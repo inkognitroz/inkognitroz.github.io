@@ -81,6 +81,21 @@
   margin: 4px 0 0;
 }
 
+.node-pairing-code-status {
+  flex-basis: 100%;
+  border-top: 1px solid var(--mimir-line);
+  padding-top: 8px;
+  font-size: 0.86rem;
+}
+
+.node-pairing-code-status[data-state="ready"] {
+  color: #047857;
+}
+
+.node-pairing-code-status[data-state="error"] {
+  color: #b91c1c;
+}
+
 .node-dashboard-actions {
   display: flex;
   flex-wrap: wrap;

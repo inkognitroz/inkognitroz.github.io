@@ -49,7 +49,7 @@ const overrides = new Map([
   ['D107', { status: 'done', evidence: 'Universal installer now exposes Raspberry Pi/Linux ARM node setup, and Linux ARM installers classify edge devices with safer starter models.' }],
   ['D108', { status: 'done', evidence: 'A public-safe UI action coverage manifest and CI smoke gate now guard homepage/chat controls, disabled hash links, generated panel anchors and handler evidence.' }],
   ['D109', { status: 'done', evidence: 'The public frontend now has a Node Dashboard that reads active node identity, status, hardware, models, tunnel state and the current browser client from paired local-node routes.' }],
-  ['D110', { status: 'next', evidence: 'Secure cross-device pairing still needs the managed/control-plane flow beyond local TryCloudflare experiments.' }],
+  ['D110', { status: 'beta', evidence: 'Local node and frontend now support short-lived local approval codes before remote/tunnel pairing releases a token; managed control-plane relay remains future work.' }],
   ['D111', { status: 'done', evidence: 'Install Health Doctor now checks connector reachability, pairing, Ollama/runtime status, model availability, hardware profile and tunnel support with next best actions.' }],
   ['D112', { status: 'done', evidence: 'The chat model helper can start paired local-node Ollama pull jobs, poll install progress and refresh live model discovery when ready.' }],
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
@@ -183,7 +183,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D110', 'D115', 'D023', 'D024', 'D025', 'D042'];
+const prioritizedNextIds = ['D115', 'D023', 'D024', 'D025', 'D042', 'D151'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

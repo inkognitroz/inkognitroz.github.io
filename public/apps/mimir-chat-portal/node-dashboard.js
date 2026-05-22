@@ -4,6 +4,7 @@
   const summary=document.getElementById('node-dashboard-summary');
   const refreshButton=document.getElementById('refresh-node-dashboard');
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
+  let remotePairingCode=null;
 
   if(!root||!api)return;
 
@@ -49,6 +50,14 @@
   async function fetchSafe(url,options){
     try{return {ok:true,data:await api.fetchJson(url,options)};}
     catch(error){return {ok:false,error};}
+  }
+
+  function setPairingCodeStatus(message,state){
+    const el=root.querySelector('#node-pairing-code-status');
+    if(el){
+      el.textContent=message||'';
+      el.dataset.state=state||'idle';
+    }
   }
 
   function card(label,value,note){
@@ -101,6 +110,22 @@
       });
       load();
     });
+    root.querySelector('#node-create-pairing-code')?.addEventListener('click',async()=>{
+      if(!connection)return;
+      setPairingCodeStatus('Creating short-lived pairing code on this device...','loading');
+      const result=await fetchSafe(joinUrl(connection.url,'/pairing/sessions'),{
+        method:'POST',
+        headers:{...connection.headers,'Content-Type':'application/json'},
+        body:'{}',
+        timeoutMs:6000
+      });
+      if(!result.ok){
+        setPairingCodeStatus(api.friendlyError(result.error),'error');
+        return;
+      }
+      remotePairingCode=result.data;
+      setPairingCodeStatus('Pairing code '+String(result.data.code||'')+' expires at '+String(result.data.expires_at||'soon')+'. Enter it on the other device when MMIR asks for a code.','ready');
+    });
     root.querySelectorAll('[data-open-target]').forEach(link=>{
       link.addEventListener('click',()=>{
         const target=document.querySelector(link.getAttribute('href'));
@@ -124,21 +149,25 @@
         card('Models','none','No live models until the local node is running.')+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
-      renderAction(action,false);
+      renderAction(action,false,false);
     bindActions(null);
     setSummary('Install Health Doctor found the local node offline.','error');
   }
 
-  function renderAction(action,canStartTunnel){
+  function renderAction(action,canStartTunnel,canCreatePairingCode){
     const target=action.target||'#local-connector';
     const isHash=target.startsWith('#');
+    const codeMessage=remotePairingCode?.code
+      ? 'Pairing code '+safe(remotePairingCode.code)+' expires at '+safe(remotePairingCode.expires_at||'soon')+'.'
+      : 'Create a short-lived code before pairing another device through a tunnel or future control-plane URL.';
     return '<article class="node-next-action"><div><span>Next best action</span><p><strong>'+safe(action.title)+'</strong><br>'+safe(action.detail)+'</p></div>'+
       '<div class="node-dashboard-actions">'+
         (isHash?'<a href="'+safe(target)+'" data-open-target>'+safe(action.primary||'Open')+'</a>':'<a id="node-install-link" href="'+safe(target)+'">'+safe(action.primary||'Open')+'</a>')+
         '<button id="node-use-free-local" type="button">Use free local</button>'+
         '<button id="node-refresh-inline" type="button">Refresh</button>'+
         (canStartTunnel?'<button id="node-start-tunnel" type="button">Start free tunnel</button>':'')+
-      '</div></article>';
+        (canCreatePairingCode?'<button id="node-create-pairing-code" type="button">Pair another device</button>':'')+
+      '</div><p id="node-pairing-code-status" class="node-pairing-code-status" data-state="idle" aria-live="polite">'+codeMessage+'</p></article>';
   }
 
   function renderReady(connection,status,identity,hardware,models,tunnel){
@@ -166,7 +195,7 @@
         card('Tunnel',statusText(tunnel?.status),tunnelSummary(tunnel))+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
-      renderAction(action,canStartTunnel);
+      renderAction(action,canStartTunnel,true);
     bindActions(connection);
     setSummary('Install Health Doctor checked connector, pairing, runtime, models, hardware and tunnel.','ready');
   }

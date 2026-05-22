@@ -64,9 +64,9 @@
       "id": "node-dashboard",
       "surface": "Node Dashboard",
       "status": "live",
-      "user_result": "Users can see active node health, hardware, models, tunnel state and exact next repair action from one local-first dashboard.",
-      "selectors": ["#node-dashboard", "#node-dashboard-root", "#refresh-node-dashboard", "#node-use-free-local", "#node-refresh-inline"],
-      "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "Connector install", "Model availability"]
+      "user_result": "Users can see active node health, hardware, models, tunnel state, cross-device pairing code and exact next repair action from one local-first dashboard.",
+      "selectors": ["#node-dashboard", "#node-dashboard-root", "#refresh-node-dashboard", "#node-use-free-local", "#node-refresh-inline", "#node-create-pairing-code", "#node-pairing-code-status"],
+      "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "/pairing/sessions", "Connector install", "Model availability"]
     },
     {
       "id": "model-library",

@@ -132,6 +132,8 @@ requireText(nodeDashboardPath, '/hardware', 'Node dashboard must check hardware 
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
 requireText(nodeDashboardPath, '/tunnels/trycloudflare/start', 'Node dashboard must expose a paired free tunnel start path.');
+requireText(nodeDashboardPath, '/pairing/sessions', 'Node dashboard must create short-lived cross-device pairing codes locally.');
+requireText(nodeDashboardPath, 'node-create-pairing-code', 'Node dashboard must expose a cross-device pairing action.');
 requireText(nodeDashboardPath, 'Connector install', 'Install doctor must check connector install.');
 requireText(nodeDashboardPath, 'Ollama runtime', 'Install doctor must check Ollama/local runtime.');
 requireText(nodeDashboardPath, 'Model availability', 'Install doctor must check model availability.');
@@ -139,6 +141,7 @@ requireText(uiActionCoveragePath, 'Every visible MMIR control', 'MMIR product pa
 requireText(join(root, 'scripts', 'smoke-check-ui-actions.js'), 'requireHashLinksAreSafe', 'Static quality gates must guard against active dead hash links.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'Local connector UI must show paired tunnel status.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'Local connector UI must expose the free tunnel start action.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'remote_pairing_code_required', 'API client must handle remote pairing code requirements.');
 requireText(universalInstallerPath, 'Raspberry Pi / Linux ARM', 'Universal installer must expose Raspberry Pi/Linux ARM as a first-class node path.');
 requireText(universalInstallerPath, 'Install Raspberry Pi Node', 'Universal installer must route detected Linux ARM devices to the Raspberry Pi node flow.');
 requireText(universalInstallerPath, 'Phone / Tablet', 'Universal installer must truthfully handle mobile devices as clients.');
