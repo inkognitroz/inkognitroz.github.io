@@ -1,12 +1,12 @@
 {
-  "version": 3,
+  "version": 4,
   "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through the hardened MMIR Local Node.",
   "steps": [
     {
       "id": "install",
       "title": "Install local connector",
       "status": "beta",
-      "description": "Run the MMIR Local Node installer from the local-node project. It checks Node.js, detects Ollama, recommends a starter model and keeps the connector bound to localhost by default."
+      "description": "Run the MMIR Local Node installer from the local-node project. Mac/Linux and Windows smoke installers can check Node.js, detect Ollama, recommend a starter model, pair locally and validate protected chat routes while keeping the connector bound to localhost by default."
     },
     {
       "id": "detect",
