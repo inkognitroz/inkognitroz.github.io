@@ -158,7 +158,7 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - Keep `D082` visible until `https://mmir.ai/` is verified from an off-network connection, because the local environment still sees a newly registered domain filter block.
 - `D083-D093` have been used as pull-forward launch hardening for smoke checks, reproducible CI, status UX, long local generations and shared frontend API behavior.
 - `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
-- Continue with `D056-D059` for self-healing runtime policy, AI routing, cost policy and dynamic compute scaling.
+- Continue with `D057-D059` for AI routing, cost policy and dynamic compute scaling.
 - Then resume `D046-D049` depth for durable knowledge, vector search, prompt registry and memory governance before moving into workflow builder items.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.
