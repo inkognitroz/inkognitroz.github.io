@@ -25,6 +25,7 @@ Updated: 2026-05-22
 - GitHub Pages deployment now runs a static smoke check for missing referenced assets, invalid JSON and invalid public JavaScript syntax before uploading the artifact.
 - Live-site diagnostics show `inkognitroz.github.io` redirecting to `https://mmir.ai/`; the observed `503` body in this environment is a network URL-filter block for a newly registered domain, not an MMIR app response.
 - Public UI now includes a `Platform Status` panel that separates static site, GitHub Pages origin, domain reputation, managed API and active backend/local-node health.
+- Platform Status now runs public GitHub Actions deploy/quality checks automatically from the browser and shows whether Pages is green, in progress or degraded without requiring the user to open GitHub.
 - Frontend chat, model comparison and platform status now share one browser API client for profiles, URL handling, pairing, JSON requests, auth headers and user-safe error messages.
 - Local backend profile defaults to MMIR Local Node at `http://127.0.0.1:3000`.
 - Live model/health data syncs back into saved backend profile metadata.
@@ -83,7 +84,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits and keep UX polish next.
+- Validate latest frontend/backend/local-node CI after the new commits, then keep UX polish and install/onboarding automation next.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

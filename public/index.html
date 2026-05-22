@@ -146,7 +146,10 @@
     <details id="platform-status" class="mimir-provider-drawer">
       <summary>+ Platform Status</summary>
       <section class="mimir-dashboard" aria-labelledby="platform-status-title">
-        <div class="dashboard-heading"><div><p class="eyebrow">Site, API and local health</p><h2 id="platform-status-title">Status by layer</h2></div></div>
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">Site, API and local health</p><h2 id="platform-status-title">Status by layer</h2></div>
+          <button id="refresh-platform-status" type="button" class="btn btn-secondary">Refresh checks</button>
+        </div>
         <p id="platform-status-summary" class="dashboard-note" data-state="idle" aria-live="polite">Status checks run locally in this browser.</p>
         <div id="platform-status-grid" class="platform-status-grid" aria-live="polite"></div>
       </section>

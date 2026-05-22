@@ -161,7 +161,7 @@ These items were added during code/architecture review and should be pulled forw
 Current pass has pulled forward launch hardening and real infrastructure foundations where they protect already-shipped chat/local-node behavior.
 
 - Keep `D082` visible until `https://mmir.ai/` is verified from an off-network connection, because the local environment still sees a newly registered domain filter block.
-- `D083-D093` have been used as pull-forward launch hardening for smoke checks, reproducible CI, status UX, long local generations and shared frontend API behavior.
+- `D083-D093` have been used as pull-forward launch hardening for smoke checks, reproducible CI, automated public deploy/status UX, long local generations and shared frontend API behavior.
 - `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
 - `D044-D047` now have inspectable memory governance, prompt registry/versioning, backend chunk/retrieval foundations and frontend local-first backend sync.
 - `D048-D049` now have a consent-gated connector ingestion contract and a frontend source-ingestion panel. Future OAuth/app workers can build on this without putting connector secrets in public frontend code.
@@ -171,6 +171,6 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - `D067` is recorded in `mmir-local-node/docs/BITNET_LOCAL_SPIKE.md`: BitNet stays an advanced local adapter candidate until the free install, health and adapter path is simple enough for users.
 - `D068-D069` have a free end-to-end dataset foundation: `mimir-backend-template` now has protected `/datasets` versioning, source/license/consent metadata, file-backed persistence and portable data controls, and the frontend dataset manager can create, list, version and delete datasets through the active protected backend. Training jobs remain blocked behind future policy/eval/cost approval gates.
 - `D070` now has planning-only automation: protected `/training/jobs` can create/list/read/delete training plans, automatically gate dataset rights, PII, compute and cost, and the frontend can plan jobs without executing paid or long-running work.
-- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish and any CI failures from the new commits.
+- Continue with the next validation-sensitive items before broader platform work: off-network domain verification, UX polish, local install/onboarding automation and any CI failures from the new commits.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.

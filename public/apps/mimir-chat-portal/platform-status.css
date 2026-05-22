@@ -52,6 +52,10 @@
   color: var(--mimir-muted, #6b7280);
 }
 
+#refresh-platform-status {
+  white-space: nowrap;
+}
+
 #platform-status-summary[data-state="ready"] {
   color: #047857;
 }
@@ -67,7 +71,11 @@
 
 .provider-status.status-watch,
 .provider-status.status-user-controlled,
-.provider-status.status-not-configured {
+.provider-status.status-not-configured,
+.provider-status.status-planned,
+.provider-status.status-queued,
+.provider-status.status-in-progress,
+.provider-status.status-unknown {
   background: rgba(245, 158, 11, 0.14);
   color: #92400e;
 }

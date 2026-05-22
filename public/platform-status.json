@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T00:00:00+02:00",
-  "description": "Public-safe status manifest for MMIR.ai. Live backend telemetry must come from a user-selected backend or paired local node.",
+  "updated_at": "2026-05-22T17:15:00+02:00",
+  "description": "Public-safe status manifest for MMIR.ai. Browser automation adds live public GitHub Actions checks and active backend telemetry only from a user-selected backend or paired local node.",
   "components": [
     {
       "id": "site-shell",
@@ -15,7 +15,7 @@
       "label": "GitHub Pages origin",
       "status": "online",
       "route": "inkognitroz.github.io -> mmir.ai",
-      "notes": "The default GitHub Pages URL redirects to the custom domain while public/CNAME is present."
+      "notes": "The default GitHub Pages URL redirects to the custom domain while public/CNAME is present. The status panel also checks the latest public Pages deploy run."
     },
     {
       "id": "domain-reputation",
