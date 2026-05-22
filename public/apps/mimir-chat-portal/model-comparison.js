@@ -1,13 +1,11 @@
 (function(){
-  const PROFILE_KEY='mimir-chat-backend-profiles';
-  const ACTIVE_KEY='mimir-chat-active-backend';
+  const api=window.MimirApiClient;
   const ROLE_KEY='mimir-chat-active-role';
   const ACTIVE_WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const LIVE_MODELS_KEY='mimir-chat-live-models';
-  const TOKEN_PREFIX='mimir-local-node-token:';
   const MAX_COMPARE_MODELS=3;
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   const promptEl=document.getElementById('mimir-prompt');
@@ -20,13 +18,6 @@
 
   if(!host)return;
 
-  function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
-  function activeId(){return localStorage.getItem(ACTIVE_KEY)||'';}
-  function activeProfile(){const id=activeId();return readProfiles().find(profile=>profile.id===id)||null;}
-  function cleanUrl(value){return String(value||'').trim().replace(/\/$/,'');}
-  function joinUrl(base,path){return cleanUrl(base)+path;}
-  function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
-  function isLocal(profile){return profile?.provider==='local-node'||profile?.provider==='ollama-direct';}
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
 
@@ -141,30 +132,15 @@
   }
 
   async function fetchJson(url,options={}){
-    const response=await fetch(url,options);
-    let data=null;
-    try{data=await response.json();}catch(error){data=null;}
-    if(!response.ok){
-      const err=new Error(data?.error?.message||('Request failed with '+response.status));
-      err.status=response.status;
-      throw err;
-    }
-    return data;
+    return api.fetchJson(url,options);
   }
 
   async function pairIfNeeded(profile,url){
-    if(!isLocal(profile))return '';
-    const existing=sessionStorage.getItem(tokenKey(url));
-    if(existing)return existing;
-    const data=await fetchJson(joinUrl(url,'/pair'),{method:'POST'});
-    if(data?.token){sessionStorage.setItem(tokenKey(url),data.token);return data.token;}
-    return '';
+    return api.pairIfNeeded(profile,url);
   }
 
   function headers(token){
-    const value={'Content-Type':'application/json'};
-    if(token)value['x-mmir-local-token']=token;
-    return value;
+    return api.authHeaders(token);
   }
 
   function messagesFor(prompt){
@@ -183,10 +159,10 @@
     const payload={model:model.id,messages:messagesFor(prompt),stream:false};
     let data=null;
     try{
-      data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers:headers(token),body:JSON.stringify(payload)});
+      data=await fetchJson(api.joinUrl(url,'/chat/completions'),{method:'POST',headers:headers(token),body:JSON.stringify(payload)});
     }catch(error){
       if(error.status!==404)throw error;
-      data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers:headers(token),body:JSON.stringify(payload)});
+      data=await fetchJson(api.joinUrl(url,'/chat'),{method:'POST',headers:headers(token),body:JSON.stringify(payload)});
     }
     return data?.choices?.[0]?.message?.content||data?.content||'';
   }
@@ -214,8 +190,8 @@
   }
 
   async function compareModels(){
-    const profile=activeProfile();
-    const url=cleanUrl(profile?.url);
+    const profile=api.activeProfile();
+    const url=api.cleanUrl(profile?.url);
     const prompt=String(promptEl?.value||'').trim();
     const models=selectedModels();
     if(!profile||!url){setStatus('Activate a backend profile first.','error');return;}
@@ -246,8 +222,8 @@
   }
 
   async function synthesizeResults(){
-    const profile=activeProfile();
-    const url=cleanUrl(profile?.url);
+    const profile=api.activeProfile();
+    const url=api.cleanUrl(profile?.url);
     const usable=lastResults.filter(result=>!result.error&&result.content);
     if(!profile||!url||usable.length<2){setStatus('Run a comparison with at least two usable responses first.','error');return;}
     const model=usable[0].model;

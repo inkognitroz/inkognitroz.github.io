@@ -25,6 +25,7 @@ Updated: 2026-05-22
 - GitHub Pages deployment now runs a static smoke check for missing referenced assets, invalid JSON and invalid public JavaScript syntax before uploading the artifact.
 - Live-site diagnostics show `inkognitroz.github.io` redirecting to `https://mmir.ai/`; the observed `503` body in this environment is a network URL-filter block for a newly registered domain, not an MMIR app response.
 - Public UI now includes a `Platform Status` panel that separates static site, GitHub Pages origin, domain reputation, managed API and active backend/local-node health.
+- Frontend chat, model comparison and platform status now share one browser API client for profiles, URL handling, pairing, JSON requests, auth headers and user-safe error messages.
 - Local backend profile defaults to MMIR Local Node at `http://127.0.0.1:3000`.
 - Live model/health data syncs back into saved backend profile metadata.
 - MMIR Local Node is hardened around localhost defaults, explicit CORS, pairing, request limits and safe errors.
@@ -44,7 +45,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D093: shared frontend API client.
+- D050-D059: node registry, secure tunnels, monitoring and AI routing.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.

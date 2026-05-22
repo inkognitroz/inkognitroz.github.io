@@ -1,12 +1,11 @@
 (function(){
+  const api=window.MimirApiClient;
   const PROFILE_KEY='mimir-chat-backend-profiles';
-  const ACTIVE_KEY='mimir-chat-active-backend';
   const ROLE_KEY='mimir-chat-active-role';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
-  const TOKEN_PREFIX='mimir-local-node-token:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MAX_STORED_MESSAGES=80;
   const MAX_CONTEXT_MESSAGES=24;
@@ -28,13 +27,11 @@
   let busy=false;
   let messages=[];
 
-  function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
-  function activeId(){return localStorage.getItem(ACTIVE_KEY)||'';}
-  function activeProfile(){const id=activeId();return readProfiles().find(profile=>profile.id===id)||null;}
-  function cleanUrl(value){return String(value||'').trim().replace(/\/$/,'');}
-  function isLocal(profile){return profile?.provider==='local-node'||profile?.provider==='ollama-direct';}
-  function joinUrl(base,path){return cleanUrl(base)+path;}
-  function tokenKey(url){return TOKEN_PREFIX+cleanUrl(url);}
+  function readProfiles(){return api.readProfiles();}
+  function activeId(){return api.activeId();}
+  function activeProfile(){return api.activeProfile();}
+  function cleanUrl(value){return api.cleanUrl(value);}
+  function joinUrl(base,path){return api.joinUrl(base,path);}
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
@@ -414,32 +411,7 @@
   }
 
   async function fetchJson(url,options={}){
-    const controller=new AbortController();
-    const timeoutMs=options.timeoutMs||15000;
-    const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-    const externalSignal=options.signal;
-    const abortFromExternal=()=>controller.abort();
-    if(externalSignal){
-      if(externalSignal.aborted)controller.abort();
-      else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
-    }
-    const {timeoutMs:ignoredTimeout,signal:ignoredSignal,...fetchOptions}=options;
-    try{
-      const response=await fetch(url,{...fetchOptions,signal:controller.signal});
-      let data=null;
-      try{data=await response.json();}catch(error){data=null;}
-      if(!response.ok){
-        const message=data?.error?.message||('Request failed with '+response.status);
-        const err=new Error(message);
-        err.status=response.status;
-        err.payload=data;
-        throw err;
-      }
-      return data;
-    }finally{
-      clearTimeout(timeout);
-      if(externalSignal)externalSignal.removeEventListener('abort',abortFromExternal);
-    }
+    return api.fetchJson(url,options);
   }
 
   function chunkContent(payload){
@@ -540,29 +512,15 @@
   }
 
   async function pairIfNeeded(profile,url){
-    if(!isLocal(profile))return '';
-    const existing=sessionStorage.getItem(tokenKey(url));
-    if(existing)return existing;
-    const data=await fetchJson(joinUrl(url,'/pair'),{method:'POST',timeoutMs:5000});
-    if(data?.token){sessionStorage.setItem(tokenKey(url),data.token);return data.token;}
-    return '';
+    return api.pairIfNeeded(profile,url);
   }
 
   function authHeaders(token){
-    const headers={'Content-Type':'application/json'};
-    if(token)headers['x-mmir-local-token']=token;
-    return headers;
+    return api.authHeaders(token);
   }
 
   function friendlyError(error){
-    if(error?.name==='AbortError')return 'Backend timed out. Check that the local node or API is running.';
-    if(error?.status===401)return 'Backend requires pairing. Refresh the connection and try again.';
-    if(error?.status===403)return 'This page origin is not allowed by the backend CORS policy.';
-    if(error?.status===404)return 'Backend does not expose the expected MMIR route yet.';
-    if(error?.status===413)return 'Prompt is too large for this backend.';
-    if(error?.status===503)return 'Runtime is unavailable. Check Ollama or the selected provider.';
-    if(String(error?.message||'').includes('Failed to fetch'))return 'Backend is unreachable or blocked by CORS. Check the URL and local node.';
-    return error?.message||'Chat request failed.';
+    return api.friendlyError(error);
   }
 
   async function refreshState(force){

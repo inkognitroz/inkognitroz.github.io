@@ -1,16 +1,11 @@
 (function(){
-  const PROFILE_KEY='mimir-chat-backend-profiles';
-  const ACTIVE_KEY='mimir-chat-active-backend';
+  const api=window.MimirApiClient;
   const grid=document.getElementById('platform-status-grid');
   const summary=document.getElementById('platform-status-summary');
   if(!grid)return;
 
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
-  function cleanUrl(value){return String(value||'').trim().replace(/\/$/,'');}
-  function joinUrl(base,path){return cleanUrl(base)+path;}
   function statusLabel(status){return String(status||'unknown').replaceAll('-',' ');}
-  function readProfiles(){try{const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(error){return [];}}
-  function activeProfile(){const id=localStorage.getItem(ACTIVE_KEY)||'';return readProfiles().find(profile=>profile.id===id)||null;}
 
   function setSummary(message,state){
     if(!summary)return;
@@ -18,22 +13,8 @@
     summary.dataset.state=state||'idle';
   }
 
-  async function fetchJson(url,timeoutMs=5000){
-    const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-    try{
-      const response=await fetch(url,{cache:'no-store',signal:controller.signal});
-      let data=null;
-      try{data=await response.json();}catch(error){data=null;}
-      if(!response.ok){
-        const err=new Error(data?.error?.message||('Request failed with '+response.status));
-        err.status=response.status;
-        throw err;
-      }
-      return data;
-    }finally{
-      clearTimeout(timeout);
-    }
+  async function fetchStatusJson(url,timeoutMs=5000){
+    return api.fetchJson(url,{cache:'no-store',timeoutMs});
   }
 
   function card(component){
@@ -59,17 +40,17 @@
   }
 
   async function activeBackendStatus(){
-    const profile=activeProfile();
-    const url=cleanUrl(profile?.url);
+    const profile=api.activeProfile();
+    const url=api.cleanUrl(profile?.url);
     if(!profile||!url){
       return activeBackendComponent(null,'not-configured','No active backend profile is selected in this browser.');
     }
 
     try{
-      const health=await fetchJson(joinUrl(url,'/health'),5000);
+      const health=await fetchStatusJson(api.joinUrl(url,'/health'),5000);
       let details='Health reachable: '+(health?.status||'online')+'.';
       try{
-        const status=await fetchJson(joinUrl(url,'/status'),5000);
+        const status=await fetchStatusJson(api.joinUrl(url,'/status'),5000);
         const capabilities=Array.isArray(status?.capabilities)?status.capabilities.slice(0,5).join(', '):'status available';
         details+=' Status reachable with capabilities: '+capabilities+'.';
       }catch(error){
@@ -90,7 +71,7 @@
     setSummary('Checking public status manifest...','loading');
     let components=[];
     try{
-      const manifest=await fetchJson('./platform-status.json',5000);
+      const manifest=await fetchStatusJson('./platform-status.json',5000);
       components=Array.isArray(manifest.components)?manifest.components:[];
       setSummary('Status manifest loaded. Active backend checks are browser-local.','ready');
     }catch(error){
