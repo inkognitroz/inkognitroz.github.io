@@ -151,13 +151,14 @@ These items were added during code/architecture review and should be pulled forw
 10. Then implement `D060-D066` for workflows, automation, evals and registries.
 11. Then implement `D067-D081` only after the product has real users or strong validation.
 
-## Current Starting Slice
+## Current Execution Slice
 
-Start with:
+Current pass has pulled forward launch hardening and real infrastructure foundations where they protect already-shipped chat/local-node behavior.
 
-- `D082` until both public URLs return healthy responses.
-- `D083-D086` as immediate review hardening for shipped frontend/backend flows.
-- `D001-D008` as planning/contract/docs work.
-- `D009-D018` as the first production MVP implementation path.
+- Keep `D082` visible until `https://mmir.ai/` is verified from an off-network connection, because the local environment still sees a newly registered domain filter block.
+- `D083-D093` have been used as pull-forward launch hardening for smoke checks, reproducible CI, status UX, long local generations and shared frontend API behavior.
+- `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
+- Continue with `D055-D059` for AWS runtime template, self-healing runtime policy, AI routing, cost policy and dynamic compute scaling.
+- Then resume `D046-D049` depth for durable knowledge, vector search, prompt registry and memory governance before moving into workflow builder items.
 
-Do not begin `D050+` infrastructure/platform work until local chat is real and stable.
+Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.
