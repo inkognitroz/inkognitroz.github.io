@@ -70,18 +70,22 @@
     if(!isLocal(profile))return '';
     const key=tokenKey(url);
     const existing=sessionStorage.getItem(key);
-    if(existing)return existing;
-    const data=await fetchJson(joinUrl(url,'/pair'),{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:'{}',
-      timeoutMs:5000
-    });
-    if(data?.token){
-      sessionStorage.setItem(key,data.token);
-      return data.token;
+    try{
+      const data=await fetchJson(joinUrl(url,'/pair'),{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:'{}',
+        timeoutMs:5000
+      });
+      if(data?.token){
+        sessionStorage.setItem(key,data.token);
+        return data.token;
+      }
+    }catch(error){
+      if(existing)return existing;
+      throw error;
     }
-    return '';
+    return existing||'';
   }
 
   function authHeaders(token){

@@ -14,7 +14,7 @@
       "id": "local-connector",
       "title": "Connect local LLM",
       "status": "beta",
-      "description": "Use a local connector profile for models running on your PC or private VM. The connector pairs locally, discovers models and routes chat through the MMIR API contract.",
+      "description": "Use a local connector profile for models running on your PC or private VM. The connector pairs locally, discovers live models, routes chat through the MMIR API contract and can request an opt-in free tunnel when enabled locally.",
       "target": "#local-connector"
     },
     {

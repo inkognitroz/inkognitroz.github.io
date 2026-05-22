@@ -25,6 +25,12 @@
       "title": "Chat safely",
       "status": "beta",
       "description": "MMIR routes chat requests through /chat/completions on 127.0.0.1:3000. Raw Ollama port 11434 should not be exposed publicly."
+    },
+    {
+      "id": "tunnel",
+      "title": "Optional local tunnel",
+      "status": "beta",
+      "description": "The local connector can report tunnel status and request an opt-in TryCloudflare tunnel when the local node is started with MMIR_ENABLE_TUNNEL_CONTROL=true and cloudflared is installed. Tunnel control stays disabled by default."
     }
   ],
   "security": [
@@ -32,6 +38,7 @@
     "No public raw Ollama port",
     "Local connector requires pairing before model and chat routes",
     "Use controlled /health, /status, /models and /chat/completions endpoints",
+    "Use /tunnels/status and opt-in /tunnels/trycloudflare/start for temporary tunnel testing",
     "Allow users to disconnect and delete local profiles"
   ]
 }

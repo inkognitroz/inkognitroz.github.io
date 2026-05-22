@@ -594,7 +594,12 @@
     }
 
     const values=Array.from(modelSelect.options||[]).map(option=>option.value);
-    if(previous&&values.includes(previous))modelSelect.value=previous;
+    const liveValues=(models||[]).map(model=>model.id).filter(Boolean);
+    if(liveValues.length&&(String(previous||'').startsWith(STARTER_PREFIX)||!liveValues.includes(previous))){
+      modelSelect.value=liveValues[0];
+    }
+    else if(previous&&values.includes(previous))modelSelect.value=previous;
+    else if(liveValues.length)modelSelect.value=liveValues[0];
     else if(!models.length){
       const preferred=preferredStarterModel();
       if(preferred)modelSelect.value=starterValue(preferred);

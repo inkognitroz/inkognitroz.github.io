@@ -104,6 +104,7 @@ requireIncludes(files.portal, 'blockedByFreeMode', 'J003/J008 need free-first ba
 requireIncludes(files.portal, 'local pairing token only', 'Public UI must never ask users to paste real provider keys.');
 requireIncludes(files.chatRuntime, 'function preferredStarterModel()', 'J001 needs a deterministic first selected model.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
+requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, '/chat/completions', 'J002/J004 need the shared chat completions contract.');
 requireIncludes(files.chatRuntime, 'pairIfNeeded(profile,url)', 'J002/J003 need explicit pairing before protected local routes.');
 requireIncludes(files.chatRuntime, 'installable free local', 'J002 needs visible installable-free local model guidance.');
@@ -116,6 +117,8 @@ requireIncludes(files.knowledge, 'mimir-knowledge-v1:', 'J005 needs workspace kn
 requireIncludes(files.privacyControls, 'export', 'J005 needs local data export controls.');
 requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete controls.');
 requireIncludes(files.workflowBuilder, 'workflow-builder-root', 'J006 needs visible workflow builder surface.');
+requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/status', 'J002/J009 need live local tunnel status.');
+requireIncludes(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route, not a decorative button.');
 requireIncludes(files.index, 'id="progress-dashboard"', 'J007 needs progress dashboard entrypoint.');
 requireIncludes(files.index, 'id="platform-status"', 'J007 needs platform status entrypoint.');
 requireIncludes(files.userJourneyDoc, 'free-first', 'Journey docs must preserve the free-first rule.');
