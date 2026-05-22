@@ -1,4 +1,5 @@
 (function(){
+  const api=window.MimirApiClient;
   const ACTIVE_WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
@@ -14,6 +15,13 @@
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function key(){return KNOWLEDGE_PREFIX+workspaceId();}
   function setStatus(message){if(statusEl)statusEl.textContent=message||'';}
+  function activeConnection(){
+    if(!api)return null;
+    const profile=api.activeProfile();
+    const url=api.cleanUrl(profile?.url);
+    if(!profile||!url)return null;
+    return {profile,url};
+  }
 
   function readKnowledge(){
     try{
@@ -42,7 +50,9 @@
       const title=document.createElement('strong');
       title.textContent=item.name;
       const meta=document.createElement('small');
-      meta.textContent=String(Math.round((item.size||item.text.length)/1024))+' KB stored locally';
+      const sync=item.sync==='backend'?'backend indexed':(item.sync==='local-only'?'local only':'stored locally');
+      const chunks=item.chunkCount?(' - '+String(item.chunkCount)+' chunk(s)'):'';
+      meta.textContent=String(Math.round((item.size||item.text.length)/1024))+' KB - '+sync+chunks;
       body.append(title,meta);
       const button=document.createElement('button');
       button.type='button';
@@ -57,26 +67,71 @@
     }
   }
 
+  async function syncToBackend(item){
+    const connection=activeConnection();
+    if(!connection)return null;
+    const token=await api.pairIfNeeded(connection.profile,connection.url);
+    const response=await api.fetchJson(api.joinUrl(connection.url,'/knowledge/documents'),{
+      method:'POST',
+      headers:api.authHeaders(token),
+      timeoutMs:12000,
+      body:JSON.stringify({
+        workspace_id:workspaceId(),
+        name:item.name,
+        type:item.type||'text/plain',
+        source_type:'upload',
+        text:item.text,
+        metadata:{
+          local_id:item.id,
+          size:String(item.size||item.text.length)
+        }
+      })
+    });
+    return response?.data||null;
+  }
+
   async function addFiles(){
     const files=Array.from(fileInput?.files||[]).slice(0,MAX_DOCUMENTS);
     if(!files.length){setStatus('Choose one or more files first.');return;}
     const current=readKnowledge();
+    let synced=0;
+    let localOnly=0;
     for(const file of files){
       const text=String(await file.text()).slice(0,MAX_CHARS_PER_DOC);
       if(!text.trim())continue;
-      current.push({
+      const item={
         id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
         name:file.name,
         type:file.type||'text/plain',
         size:file.size,
         text,
+        sync:'local',
         createdAt:new Date().toISOString()
-      });
+      };
+      try{
+        const backendDocument=await syncToBackend(item);
+        if(backendDocument){
+          item.backendId=backendDocument.id;
+          item.chunkCount=backendDocument.chunk_count||0;
+          item.sync='backend';
+          item.syncedAt=new Date().toISOString();
+          synced+=1;
+        }else{
+          localOnly+=1;
+        }
+      }catch(error){
+        item.sync='local-only';
+        item.syncError=api?.friendlyError?api.friendlyError(error):'Backend sync unavailable.';
+        localOnly+=1;
+      }
+      current.push(item);
     }
     saveKnowledge(current);
     fileInput.value='';
     render();
-    setStatus('Knowledge saved locally for this workspace.');
+    if(synced)setStatus('Knowledge saved locally and indexed in the active backend.');
+    else if(localOnly)setStatus('Knowledge saved locally. Backend indexing is unavailable for this profile.');
+    else setStatus('No readable text found in the selected files.');
   }
 
   function install(){
