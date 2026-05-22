@@ -38,6 +38,9 @@
   function validUrl(value){try{const url=new URL(value);return url.protocol==='http:'||url.protocol==='https:';}catch(e){return false;}}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function setStatus(text){statusEl.textContent=text||'';}
+  function costLooksFree(value){return /\b(free|gratis|local|localhost|self-hosted|self hosted|own hardware|no paid|no-cost|no cost)\b/i.test(String(value||''));}
+  function blockedByFreeMode(profile){return profile&&profile.provider!=='local-node'&&!costLooksFree(profile.cost);}
+  function freeModeMessage(){return 'Free-first guard: non-local backends must be marked free, local or self-hosted before they can be used.';}
   function readProfiles(){try{const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(e){return [];}}
   function notifyProfiles(){window.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated'));}
   function writeProfiles(profiles){localStorage.setItem(STORAGE_KEY,JSON.stringify(profiles));notifyProfiles();}
@@ -143,9 +146,10 @@
     const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
     const profiles=readProfiles();let p=selectedProfile();if(!p){p={id:uid(),createdAt:new Date().toISOString()};profiles.push(p);selectedId=p.id;}
     p.name=nameEl.value.trim()||'Unnamed backend';p.url=url;p.provider=providerEl.value;p.models=modelsEl.value.trim();p.keyRef=keyRefEl?keyRefEl.value.trim():'';p.cost=costEl?costEl.value.trim():'';p.latency=latencyEl?latencyEl.value.trim():'';p.throughput=throughputEl?throughputEl.value.trim():'';p.uptime=uptimeEl?uptimeEl.value.trim():'';p.health=healthEl?healthEl.value:'unknown';p.updatedAt=new Date().toISOString();
+    if(blockedByFreeMode(p)){setStatus(freeModeMessage());return;}
     writeProfiles(profiles);setStatus('Profile saved locally.');render();
   }
-  function setActive(){const p=selectedProfile();if(!p){setStatus('Select a backend first.');return;}if(!validUrl(p.url)){setStatus('Save a valid backend URL before setting active.');return;}writeActive(p.id);setStatus('Active backend set.');render();}
+  function setActive(){const p=selectedProfile();if(!p){setStatus('Select a backend first.');return;}if(!validUrl(p.url)){setStatus('Save a valid backend URL before setting active.');return;}if(blockedByFreeMode(p)){setStatus(freeModeMessage());return;}writeActive(p.id);setStatus('Active backend set.');render();}
   function deleteProfile(){const p=selectedProfile();if(!p)return;const profiles=readProfiles().filter(x=>x.id!==p.id);writeProfiles(profiles);if(readActive()===p.id)localStorage.removeItem(ACTIVE_KEY);selectedId=profiles[0]?profiles[0].id:null;setStatus('Backend profile deleted.');render();}
 
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
