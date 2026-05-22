@@ -51,7 +51,7 @@
 
       <div class="quick-suggestions" aria-label="Quick actions">
         <a href="#growth-demo">+ Try Demo</a>
-        <a href="mailto:hello@mmir.ai?subject=MMIR.ai%20beta%20access&body=Hi%20MMIR.ai%2C%0A%0AI%20want%20beta%20access.%20My%20main%20use%20case%20is%3A%0A%0A">+ Beta Access</a>
+        <a href="#beta-signup-form" data-growth-event="beta_access_click" data-growth-target="beta-signup-form">+ Beta Access</a>
         <a href="#connect-options">+ Connect Model</a>
         <a href="#local-connector">+ Local AI Connector</a>
         <a href="#multi-model-workspace">+ Role Presets</a>
@@ -67,8 +67,20 @@
           <p>Demo mode runs safe sample responses in this page, so new users can understand the product before connecting a local node or managed backend.</p>
           <div class="growth-actions">
             <button id="try-demo-mode" type="button" class="btn btn-primary">Try demo mode</button>
-            <a class="button-link" href="mailto:hello@mmir.ai?subject=MMIR.ai%20beta%20access&body=Hi%20MMIR.ai%2C%0A%0AI%20want%20beta%20access.%20My%20main%20use%20case%20is%3A%0A%0A">Request beta access</a>
+            <a class="button-link" href="#beta-signup-form" data-growth-event="beta_access_click" data-growth-target="beta-signup-form">Join beta list</a>
           </div>
+          <form id="beta-signup-form" aria-label="Join MMIR.ai beta list" novalidate>
+            <div class="profile-grid">
+              <label for="beta-email">Email<input id="beta-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required /></label>
+              <label for="beta-use-case">Use case<input id="beta-use-case" name="use_case" type="text" maxlength="240" placeholder="Private local AI, repo reviews, workflows" autocomplete="off" /></label>
+              <label for="beta-consent">Contact consent<input id="beta-consent" name="consent" type="checkbox" required /></label>
+            </div>
+            <div class="growth-actions">
+              <button id="beta-signup-submit" type="submit" class="btn btn-primary">Join beta list</button>
+              <a class="button-link" href="mailto:hello@mmir.ai?subject=MMIR.ai%20beta%20access&body=Hi%20MMIR.ai%2C%0A%0AI%20want%20beta%20access.%20My%20main%20use%20case%20is%3A%0A%0A">Email instead</a>
+            </div>
+            <p id="beta-signup-status" class="status" aria-live="polite"></p>
+          </form>
         </article>
         <article class="growth-card">
           <p class="eyebrow">Private path</p>
@@ -198,6 +210,7 @@
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>
   <script src="./apps/mimir-chat-portal/demo-growth.js"></script>
+  <script src="./apps/mimir-chat-portal/beta-signup.js"></script>
   <script src="./apps/mimir-chat-portal/model-selection.js"></script>
   <script src="./apps/mimir-chat-portal/model-comparison.js"></script>
   <script src="./apps/mimir-chat-portal/workflow-builder.js"></script>
