@@ -47,6 +47,7 @@ Updated: 2026-05-22
 - Self-healing runtime foundations now exist: managed backend exposes protected recovery action recommendations, and OCI/AWS runbooks define bounded health probe, restart and failover operator steps.
 - AI routing v1 now exists as a protected explainable decision endpoint that selects owned node, managed provider or no route based on policy, node eligibility, provider status and model availability.
 - Cost-aware routing policy now blocks paid or unknown managed providers unless explicitly allowed and keeps estimated provider cost inside user policy limits.
+- Dynamic compute scaling v1 now exists as a protected planning endpoint that chooses existing capacity, failover, deferred scaling or approval-required provisioning without starting cloud resources automatically.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
@@ -55,7 +56,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D059: dynamic compute scaling.
+- D060-D066: workflow object model, builder, automation, agents, evaluation and registries.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
