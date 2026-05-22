@@ -20,7 +20,7 @@ const overrides = new Map([
   ['D023', { status: 'next', evidence: 'Mobile, keyboard and accessibility need a focused verification pass.' }],
   ['D024', { status: 'next', evidence: 'First-run flow now defaults automatically; installer/onboarding can be made smoother.' }],
   ['D025', { status: 'next', evidence: 'Live/static model split exists but should be sharpened across all model surfaces.' }],
-  ['D026', { status: 'next', evidence: 'License and commercial-use warnings should be expanded before broader launch.' }],
+  ['D026', { status: 'done', evidence: 'Model catalog and chat helper now surface license/commercial-use checks and source/model-card links for starter choices.' }],
   ...range(27, 30).map((id) => [id, { status: 'beta', evidence: 'Roles, comparison and synthesis UI/API paths exist as beta surfaces.' }]),
   ...range(31, 41).map((id) => [id, { status: 'beta', evidence: 'Managed backend security/router foundations exist; production hardening continues.' }]),
   ['D042', { status: 'next', evidence: 'Calm UX polish is now high-leverage because core surfaces are visible.' }],

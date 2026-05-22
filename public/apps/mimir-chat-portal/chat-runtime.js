@@ -504,6 +504,22 @@
     };
   }
 
+  function safeExternalUrl(value){
+    try{
+      const url=new URL(String(value||''));
+      return ['https:','http:'].includes(url.protocol)?url.href:'';
+    }catch(error){
+      return '';
+    }
+  }
+
+  function modelComplianceNote(model){
+    const parts=[];
+    if(model?.commercial_use)parts.push('Commercial use: '+model.commercial_use);
+    if(model?.source_url)parts.push('Source/model card: verify before production use');
+    return parts.join(' - ');
+  }
+
   function renderModelHelper(){
     if(!modelHelperEl||!modelSelect)return;
     const model=selectedStarterModel();
@@ -515,6 +531,8 @@
     const isGuide=model.runtime==='browser-guide';
     const isWebLlm=model.runtime==='webllm';
     const commands=commandLines(model);
+    const sourceUrl=safeExternalUrl(model.source_url);
+    const complianceNote=modelComplianceNote(model);
     modelHelperEl.hidden=false;
     modelHelperEl.innerHTML=''+
       '<div class="runtime-model-helper-head">'+
@@ -532,7 +550,8 @@
           '<a class="button-link" href="./downloads/mmir-local-node-windows.ps1" download>Download Windows installer</a>'+
           '<a class="button-link" href="./downloads/mmir-local-node-macos-linux.sh" download>Download Mac/Linux installer</a>'+
         '</div>')+
-      '<small>'+escapeHtml(model.install_note||'Installer keeps MMIR Local Node bound to localhost and pairs before chat/model control.')+'</small>';
+      '<small>'+escapeHtml(model.install_note||'Installer keeps MMIR Local Node bound to localhost and pairs before chat/model control.')+'</small>'+
+      (complianceNote?'<small>'+escapeHtml(complianceNote)+(sourceUrl?' <a href="'+escapeHtml(sourceUrl)+'" target="_blank" rel="noopener noreferrer">Open source</a>':'')+'</small>':'');
   }
 
   function renderModels(models){

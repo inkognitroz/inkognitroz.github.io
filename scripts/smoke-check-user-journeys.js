@@ -107,6 +107,8 @@ requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer 
 requireIncludes(files.chatRuntime, '/chat/completions', 'J002/J004 need the shared chat completions contract.');
 requireIncludes(files.chatRuntime, 'pairIfNeeded(profile,url)', 'J002/J003 need explicit pairing before protected local routes.');
 requireIncludes(files.chatRuntime, 'installable free local', 'J002 needs visible installable-free local model guidance.');
+requireIncludes(files.chatRuntime, 'modelComplianceNote(model)', 'J002/J004 need visible model license and commercial-use warnings.');
+requireIncludes(files.chatRuntime, 'Source/model card: verify before production use', 'Model helper must tell users to verify official model cards.');
 requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 'Pairing requests must send explicit JSON content type.');
 requireIncludes(files.modelComparison, '/chat/completions', 'J004 comparison must use the same shared chat contract.');
 requireIncludes(files.memory, 'mimir-memory-v1:', 'J005 needs workspace memory storage.');

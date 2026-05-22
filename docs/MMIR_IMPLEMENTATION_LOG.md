@@ -90,6 +90,7 @@ Updated: 2026-05-22
 - Local model journey was verified on the shared machine: MMIR Local Node `/health`, `/status`, pairing, `/models` and browser-style `/chat/completions` now work through local Ollama with `mistral:latest`; public frontend pairing now sends explicit JSON to avoid empty POST failures.
 - Open-source model catalog is expanded for activation: Qwen3, Granite, TinyLlama, CodeGemma, Nomic embeddings and LLaVA-style entries now show install/connect status, capacity hints, license/commercial warnings and protected-backend boundaries.
 - CI now runs journey-level smoke gates for first useful answer, local model activation, trusted backend boundaries, orchestration, memory/knowledge, workflows, progress dashboard and blocked paid/provider routes.
+- Starter model helper now shows commercial-use warnings and source/model-card verification links before users treat a free model as production-safe.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.

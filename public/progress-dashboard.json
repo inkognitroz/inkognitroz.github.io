@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T16:40:35.547Z",
+  "updated_at": "2026-05-22T16:44:25.374Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -19,9 +19,9 @@
   },
   "summary": {
     "total": 106,
-    "done": 43,
+    "done": 44,
     "beta": 38,
-    "next": 5,
+    "next": 4,
     "watch": 1,
     "blocked": 1,
     "planned": 18,
@@ -69,9 +69,9 @@
       {
         "phase": "Model UX",
         "total": 2,
-        "done": 0,
+        "done": 1,
         "beta": 0,
-        "next": 2,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -421,7 +421,6 @@
     "D023",
     "D024",
     "D025",
-    "D026",
     "D042"
   ],
   "watchlist": [
@@ -814,10 +813,10 @@
       "best_practice": "Model choice must not imply legal clearance",
       "done_when": "User sees license/check-required warnings",
       "covers": "F057-F068",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "License and commercial-use warnings should be expanded before broader launch.",
-      "estimate": "0.5-2d"
+      "status": "done",
+      "status_note": "Shipped and guarded by local or CI checks for the current scope.",
+      "evidence": "Model catalog and chat helper now surface license/commercial-use checks and source/model-card links for starter choices.",
+      "estimate": "Done"
     },
     {
       "seq": "D027",

@@ -101,6 +101,15 @@
   color: #475569;
 }
 
+.runtime-model-helper small {
+  display: block;
+}
+
+.runtime-model-helper small a {
+  color: #0f766e;
+  font-weight: 650;
+}
+
 .runtime-install-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
