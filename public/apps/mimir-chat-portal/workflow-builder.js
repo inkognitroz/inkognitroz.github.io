@@ -5,15 +5,21 @@
   const root=document.getElementById('workflow-builder-root');
   const promptEl=document.getElementById('mimir-prompt');
   let steps=[newStep()];
+  let agents=[newAgent()];
   let savedWorkflows=[];
   let selectedWorkflowId='';
+  const STEP_TYPES=['prompt','model_call','tool','api','agent'];
+  const AGENT_ROLES=['researcher','architect','critic','coder','analyst','strategist','operator'];
 
   if(!root||!api)return;
 
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
-  function newStep(){return {id:'step-'+String(Date.now()).slice(-6),type:'model_call',name:'Model step',prompt:String(promptEl?.value||'').trim(),model:''};}
+  function uniqueId(prefix){return prefix+'-'+String(Date.now()).slice(-6)+'-'+String(Math.random()).slice(2,5);}
+  function newStep(){return {id:uniqueId('step'),type:'model_call',name:'Model step',prompt:String(promptEl?.value||'').trim(),model:'',agent_id:''};}
+  function newAgent(){return {id:uniqueId('agent'),role:'researcher',name:'Researcher',instructions:'',model:'',tools:'knowledge.search,routing.decision',max_iterations:3};}
   function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
   function setStatus(message,state){const el=document.getElementById('workflow-status');if(el){el.textContent=message||'';el.dataset.state=state||'idle';}}
+  function positiveInteger(value,fallback){const parsed=Number.parseInt(value,10);return Number.isFinite(parsed)&&parsed>0?parsed:fallback;}
 
   function activeConnection(){
     const profile=api.activeProfile();
@@ -32,6 +38,19 @@
     });
   }
 
+  function agentOptions(selected){
+    const options=['<option value="">Auto assign</option>'];
+    agents.forEach(agent=>{
+      const label=(agent.name||agent.role||agent.id)+' ('+(agent.role||'agent')+')';
+      options.push('<option value="'+escapeHtml(agent.id)+'" '+(selected===agent.id?'selected':'')+'>'+escapeHtml(label)+'</option>');
+    });
+    return options.join('');
+  }
+
+  function roleOptions(selected){
+    return AGENT_ROLES.map(role=>'<option value="'+role+'" '+(selected===role?'selected':'')+'>'+role+'</option>').join('');
+  }
+
   function stepHtml(step,index){
     return ''+
       '<article class="workflow-step" data-index="'+index+'">'+
@@ -39,11 +58,29 @@
         '<div class="workflow-builder-row">'+
           '<label>Name<input data-field="name" data-index="'+index+'" value="'+escapeHtml(step.name)+'" /></label>'+
           '<label>Type<select data-field="type" data-index="'+index+'">'+
-            ['prompt','model_call','tool','api','agent'].map(type=>'<option value="'+type+'" '+(step.type===type?'selected':'')+'>'+type.replace('_',' ')+'</option>').join('')+
+            STEP_TYPES.map(type=>'<option value="'+type+'" '+(step.type===type?'selected':'')+'>'+type.replace('_',' ')+'</option>').join('')+
           '</select></label>'+
+          '<label>Agent<select data-field="agent_id" data-index="'+index+'">'+agentOptions(step.agent_id)+'</select></label>'+
         '</div>'+
         '<label>Prompt<textarea data-field="prompt" data-index="'+index+'">'+escapeHtml(step.prompt)+'</textarea></label>'+
         '<label>Model<input data-field="model" data-index="'+index+'" value="'+escapeHtml(step.model)+'" /></label>'+
+      '</article>';
+  }
+
+  function agentHtml(agent,index){
+    return ''+
+      '<article class="workflow-agent" data-index="'+index+'">'+
+        '<header><h3>Agent '+String(index+1)+'</h3><button type="button" data-action="remove-agent" data-index="'+index+'">Remove</button></header>'+
+        '<div class="workflow-builder-row">'+
+          '<label>Name<input data-agent-field="name" data-index="'+index+'" value="'+escapeHtml(agent.name)+'" /></label>'+
+          '<label>Role<select data-agent-field="role" data-index="'+index+'">'+roleOptions(agent.role)+'</select></label>'+
+        '</div>'+
+        '<div class="workflow-builder-row">'+
+          '<label>Model<input data-agent-field="model" data-index="'+index+'" value="'+escapeHtml(agent.model)+'" /></label>'+
+          '<label>Max runs<input data-agent-field="max_iterations" data-index="'+index+'" type="number" min="1" max="20" value="'+escapeHtml(agent.max_iterations)+'" /></label>'+
+        '</div>'+
+        '<label>Tools<input data-agent-field="tools" data-index="'+index+'" value="'+escapeHtml(agent.tools)+'" /></label>'+
+        '<label>Instructions<textarea data-agent-field="instructions" data-index="'+index+'">'+escapeHtml(agent.instructions)+'</textarea></label>'+
       '</article>';
   }
 
@@ -54,6 +91,10 @@
           '<label>Workflow name<input id="workflow-name" value="Launch workflow" /></label>'+
           '<label>Workspace<input id="workflow-workspace" value="'+escapeHtml(workspaceId())+'" /></label>'+
         '</div>'+
+        '<section class="workflow-agent-section">'+
+          '<div class="workflow-builder-subhead"><h3>Agents</h3><button id="add-workflow-agent" type="button">Add agent</button></div>'+
+          '<div id="workflow-agent-list" class="workflow-agent-list">'+(agents.length?agents.map(agentHtml).join(''):'')+'</div>'+
+        '</section>'+
         '<div id="workflow-step-list" class="workflow-step-list">'+steps.map(stepHtml).join('')+'</div>'+
         '<div class="workflow-builder-actions">'+
           '<button id="add-workflow-step" type="button">Add step</button>'+
@@ -71,7 +112,7 @@
     if(!savedWorkflows.length)return '<p class="empty-backends">No workflows saved for this backend.</p>';
     return savedWorkflows.map(workflow=>''+
       '<article class="workflow-list-item">'+
-        '<div><strong>'+escapeHtml(workflow.name)+'</strong><small>'+escapeHtml(workflow.workspace_id)+' · '+String(workflow.steps?.length||0)+' step(s)</small></div>'+
+        '<div><strong>'+escapeHtml(workflow.name)+'</strong><small>'+escapeHtml(workflow.workspace_id)+' - '+String(workflow.steps?.length||0)+' step(s) - '+String(workflow.agents?.length||0)+' agent(s)</small></div>'+
         '<button type="button" data-action="select-workflow" data-id="'+escapeHtml(workflow.id)+'">'+(selectedWorkflowId===workflow.id?'Selected':'Select')+'</button>'+
       '</article>').join('');
   }
@@ -82,32 +123,84 @@
       const field=event.target.dataset.field;
       if(steps[index])steps[index][field]=event.target.value;
     }));
+    root.querySelectorAll('[data-agent-field]').forEach(input=>input.addEventListener('input',event=>{
+      const index=Number(event.target.dataset.index);
+      const field=event.target.dataset.agentField;
+      if(agents[index])agents[index][field]=event.target.value;
+    }));
     root.querySelectorAll('[data-action="remove-step"]').forEach(button=>button.addEventListener('click',event=>{
       const index=Number(event.currentTarget.dataset.index);
       steps=steps.filter((_,itemIndex)=>itemIndex!==index);
       if(!steps.length)steps=[newStep()];
       render();
     }));
+    root.querySelectorAll('[data-action="remove-agent"]').forEach(button=>button.addEventListener('click',event=>{
+      const index=Number(event.currentTarget.dataset.index);
+      const removed=agents[index]?.id;
+      agents=agents.filter((_,itemIndex)=>itemIndex!==index);
+      if(removed)steps=steps.map(step=>step.agent_id===removed?{...step,agent_id:''}:step);
+      render();
+    }));
     root.querySelectorAll('[data-action="select-workflow"]').forEach(button=>button.addEventListener('click',event=>{
       selectedWorkflowId=event.currentTarget.dataset.id||'';
+      const workflow=savedWorkflows.find(item=>item.id===selectedWorkflowId);
+      if(workflow){
+        steps=normalizeSteps(workflow.steps);
+        agents=normalizeAgents(workflow.agents);
+      }
       render();
     }));
     document.getElementById('add-workflow-step')?.addEventListener('click',()=>{steps.push(newStep());render();});
+    document.getElementById('add-workflow-agent')?.addEventListener('click',()=>{agents.push(newAgent());render();});
     document.getElementById('save-workflow')?.addEventListener('click',saveWorkflow);
     document.getElementById('refresh-workflows')?.addEventListener('click',loadWorkflows);
     document.getElementById('plan-workflow-run')?.addEventListener('click',planRun);
+  }
+
+  function normalizeSteps(items){
+    const normalized=Array.isArray(items)?items.map((step,index)=>({
+      id:step?.id||('step-'+String(index+1)),
+      type:STEP_TYPES.includes(step?.type)?step.type:'model_call',
+      name:step?.name||('Step '+String(index+1)),
+      prompt:step?.prompt||'',
+      model:step?.model||'',
+      agent_id:step?.agent_id||''
+    })):[];
+    return normalized.length?normalized:[newStep()];
+  }
+
+  function normalizeAgents(items){
+    return Array.isArray(items)?items.map((agent,index)=>({
+      id:agent?.id||('agent-'+String(index+1)),
+      role:AGENT_ROLES.includes(agent?.role)?agent.role:'researcher',
+      name:agent?.name||agent?.role||('Agent '+String(index+1)),
+      instructions:agent?.instructions||'',
+      model:agent?.model||'',
+      tools:Array.isArray(agent?.tools)?agent.tools.join(','):String(agent?.tools||''),
+      max_iterations:positiveInteger(agent?.max_iterations,3)
+    })):[];
   }
 
   function payload(){
     return {
       workspace_id:document.getElementById('workflow-workspace')?.value||workspaceId(),
       name:document.getElementById('workflow-name')?.value||'Workflow',
+      agents:agents.map((agent,index)=>({
+        id:agent.id||('agent-'+String(index+1)),
+        role:agent.role||'researcher',
+        name:agent.name||('Agent '+String(index+1)),
+        instructions:agent.instructions||'',
+        model:agent.model||'',
+        tools:String(agent.tools||'').split(',').map(tool=>tool.trim()).filter(Boolean),
+        max_iterations:positiveInteger(agent.max_iterations,3)
+      })),
       steps:steps.map((step,index)=>({
         id:step.id||('step-'+String(index+1)),
         type:step.type||'model_call',
         name:step.name||('Step '+String(index+1)),
         prompt:step.prompt||'',
-        model:step.model||''
+        model:step.model||'',
+        agent_id:step.agent_id||''
       }))
     };
   }
