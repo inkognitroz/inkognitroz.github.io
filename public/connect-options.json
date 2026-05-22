@@ -1,12 +1,19 @@
 {
-  "version": 2,
+  "version": 3,
   "description": "Static connect options for MMIR.ai. These are safe frontend options only; secrets and provisioning belong to protected backend services.",
   "options": [
+    {
+      "id": "mac-local-connector-download",
+      "title": "Install Mac Connector",
+      "status": "beta",
+      "description": "Download the MMIR Local Connector for Mac. Open the installer to install the local API, connect Ollama and start the private chat path on 127.0.0.1:3000.",
+      "target": "./downloads/mmir-local-connector-mac.command"
+    },
     {
       "id": "local-connector",
       "title": "Connect local LLM",
       "status": "beta",
-      "description": "Use a local connector profile for models running on your PC or private VM. The hardened connector and in-page chat loop are being connected in the current delivery slice.",
+      "description": "Use a local connector profile for models running on your PC or private VM. The connector pairs locally, discovers models and routes chat through the MMIR API contract.",
       "target": "#local-connector"
     },
     {
