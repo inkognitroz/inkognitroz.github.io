@@ -36,6 +36,9 @@ Updated: 2026-05-22
 - Managed backend now exposes sanitized bounded `/audit` events without raw prompts or provider secrets.
 - Managed backend now preserves safe provider HTTP status codes such as `503`/`429` and audits provider failures without leaking prompts.
 - Managed backend now has protected knowledge document and search endpoints as the first server-side RAG contract.
+- Managed backend knowledge now chunks extracted documents into an in-process lexical retrieval index with type validation, source metadata, chunk IDs and metadata-only list responses.
+- Frontend knowledge upload remains local-first/free, but syncs extracted text to the active protected backend when `/knowledge/documents` is available.
+- Chat context now retrieves relevant protected backend knowledge through `/knowledge/search` before sending a prompt, while retaining local-only fallback behavior.
 - Managed backend now fails closed into API-key auth when a non-mock managed provider is selected, unless anonymous managed-provider mode is explicitly enabled for local demo use.
 - Managed backend now has a protected node registry for registering, listing, heartbeat-updating and deleting owned compute nodes.
 - Node heartbeat now carries public-safe health metadata: latency, runtime version, model inventory count and bounded health history.
@@ -63,7 +66,8 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D046-D049: vector store foundations, durable backend knowledge sync and project memory governance.
+- D044-D045: inspectable backend memory governance and prompt registry/versioning.
+- D048-D049: GitHub and external docs ingestion connectors with explicit consent.
 - D067-D081: platform, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

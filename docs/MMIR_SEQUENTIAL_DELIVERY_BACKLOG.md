@@ -158,7 +158,7 @@ Current pass has pulled forward launch hardening and real infrastructure foundat
 - Keep `D082` visible until `https://mmir.ai/` is verified from an off-network connection, because the local environment still sees a newly registered domain filter block.
 - `D083-D093` have been used as pull-forward launch hardening for smoke checks, reproducible CI, status UX, long local generations and shared frontend API behavior.
 - `D050-D054` establish node registry, health metadata, secure tunnel contract, scheduler candidate policy and OCI proxy/API alignment.
-- `D063-D066` are implemented at the bounded planning/UI/backend layer across backend and frontend; continue with `D046-D049` for durable knowledge, vector search, prompt registry and memory governance.
-- Then resume `D046-D049` depth for durable knowledge, vector search, prompt registry and memory governance before moving into broader platform items.
+- `D046-D047` now have backend chunk/retrieval foundations and frontend local-first backend sync. Continue with `D044-D045` for inspectable memory governance and prompt registry/versioning.
+- Then resume `D048-D049` for GitHub and external docs ingestion connectors with explicit consent before moving into broader platform items.
 
 Avoid marketplace, enterprise and compute-economy work until the product has real user validation and the routing/security foundations above are observable.
