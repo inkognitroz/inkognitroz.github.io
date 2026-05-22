@@ -41,6 +41,8 @@ Updated: 2026-05-22
 - Chat context now retrieves relevant protected backend knowledge through `/knowledge/search` before sending a prompt, while retaining local-only fallback behavior.
 - Managed backend now has a protected prompt registry with workspace-scoped prompt create/list/read/delete and bounded version history.
 - Frontend now has a prompt registry panel that can save prompts to the active backend, load them into chat and create new prompt versions.
+- Managed backend now has protected workspace memory routes for create/list/search/update/disable/delete with ownership isolation and audit events that omit raw memory text.
+- Frontend memory is now inspectable, editable, enable/disable-capable and local-first, with optional sync to the active backend and relevant backend memory injection into chat/comparison context.
 - Managed backend now fails closed into API-key auth when a non-mock managed provider is selected, unless anonymous managed-provider mode is explicitly enabled for local demo use.
 - Managed backend now has a protected node registry for registering, listing, heartbeat-updating and deleting owned compute nodes.
 - Node heartbeat now carries public-safe health metadata: latency, runtime version, model inventory count and bounded health history.
@@ -68,7 +70,6 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D044: inspectable backend memory governance.
 - D048-D049: GitHub and external docs ingestion connectors with explicit consent.
 - D067-D081: platform, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
