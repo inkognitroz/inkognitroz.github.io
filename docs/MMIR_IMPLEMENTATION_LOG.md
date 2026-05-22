@@ -1,6 +1,6 @@
 # MMIR Implementation Log
 
-Updated: 2026-05-21
+Updated: 2026-05-22
 
 ## Completed This Pass
 
@@ -18,7 +18,10 @@ Updated: 2026-05-21
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.
 - Synthesis flow can combine at least two usable model responses into one synthesized answer through the same protected backend route.
+- Live model comparison and synthesis now inject the same relevant workspace knowledge context as normal chat.
 - GitHub Pages workflow now opts into Node 24 actions and uses newer checkout/upload-pages actions to reduce upcoming runner deprecation risk.
+- GitHub Pages deployment now runs a static smoke check for missing referenced assets, invalid JSON and invalid public JavaScript syntax before uploading the artifact.
+- Live-site diagnostics show `inkognitroz.github.io` redirecting to `https://mmir.ai/`; the observed `503` body in this environment is a network URL-filter block for a newly registered domain, not an MMIR app response.
 - Local backend profile defaults to MMIR Local Node at `http://127.0.0.1:3000`.
 - Live model/health data syncs back into saved backend profile metadata.
 - MMIR Local Node is hardened around localhost defaults, explicit CORS, pairing, request limits and safe errors.
@@ -27,11 +30,16 @@ Updated: 2026-05-21
 - Managed backend template has API-key auth policy, rate limits, metrics and SSE streaming support.
 - Managed backend now includes an OpenAI-compatible provider adapter for server-side provider routing.
 - Managed backend now exposes sanitized bounded `/audit` events without raw prompts or provider secrets.
-- Backend and local-node CI now use Node 24, newer setup/checkout actions, lint, secret scanning and tests.
+- Managed backend now preserves safe provider HTTP status codes such as `503`/`429` and audits provider failures without leaking prompts.
+- Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
+- MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
+- Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 
 ## Still Next In Sequence
 
+- D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
+- D087-D093: local data controls, backend RAG skeleton, managed identity, status monitoring, local-node timeout polish and shared frontend API client.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.

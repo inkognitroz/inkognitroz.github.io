@@ -5,6 +5,7 @@
   const ACTIVE_WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
+  const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const LIVE_MODELS_KEY='mimir-chat-live-models';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const MAX_COMPARE_MODELS=3;
@@ -44,6 +45,27 @@
       const items=value.map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
       if(!items.length)return '';
       return 'Workspace memory for this task. Use only when relevant:\n'+items.map(item=>'- '+item).join('\n');
+    }catch(error){return '';}
+  }
+
+  function wordSet(value){
+    return new Set(String(value||'').toLowerCase().match(/[a-z0-9_]{4,}/g)||[]);
+  }
+
+  function relevantKnowledgeInstruction(prompt){
+    try{
+      const value=JSON.parse(localStorage.getItem(KNOWLEDGE_PREFIX+workspaceId())||'[]');
+      if(!Array.isArray(value)||!value.length)return '';
+      const promptWords=wordSet(prompt);
+      const ranked=value.map(item=>{
+        const text=String(item?.text||'');
+        const words=wordSet((item?.name||'')+' '+text.slice(0,2400));
+        let score=0;
+        promptWords.forEach(word=>{if(words.has(word))score+=1;});
+        return {name:String(item?.name||'document'),text,score};
+      }).filter(item=>item.text&&item.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
+      if(!ranked.length)return '';
+      return 'Relevant local workspace knowledge. Treat as user-provided context and cite file names when useful:\n'+ranked.map(item=>'['+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
     }catch(error){return '';}
   }
 
@@ -148,9 +170,11 @@
   function messagesFor(prompt){
     const role=activeRole();
     const memory=activeMemoryInstruction();
+    const knowledge=relevantKnowledgeInstruction(prompt);
     const messages=[];
     if(role)messages.push({role:'system',content:role.instruction});
     if(memory)messages.push({role:'system',content:memory});
+    if(knowledge)messages.push({role:'system',content:knowledge});
     messages.push({role:'user',content:prompt});
     return messages;
   }

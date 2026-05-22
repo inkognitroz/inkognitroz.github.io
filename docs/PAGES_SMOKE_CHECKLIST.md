@@ -40,6 +40,17 @@ Check:
 - Cloudflare SSL/TLS is `Full` or `Full (strict)`.
 - DNS records are not split between old and new origins.
 
+## If `mmir.ai` Returns A Corporate URL-Filter Page
+
+Some networks block newly registered domains before reputation systems have caught up. This can look like a `503`, but the HTML body will say the page was blocked by a URL filter and may classify `mmir.ai` as `newly-registered-domain`.
+
+Check:
+
+- Test from a phone hotspot or another network.
+- Ask the network/security team to allowlist `mmir.ai`.
+- Keep `https://inkognitroz.github.io` available only as a diagnostic; GitHub Pages will redirect it to the custom domain while `public/CNAME` is present.
+- Do not change app code to fix this category of failure unless the off-network test also fails.
+
 ## If Both URLs Fail
 
 The problem is probably Pages deployment or repository visibility.

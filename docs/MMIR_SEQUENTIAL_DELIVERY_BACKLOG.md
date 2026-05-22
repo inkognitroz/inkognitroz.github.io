@@ -118,22 +118,45 @@ Covers: `UX001-UX004`.
 | D080 | Platform | P4 | Plugin/tool ecosystem | managed API + docs | Define third-party connector/tool API, permissions and review | Ecosystem must be permissioned and sandboxed | External tool can integrate safely | `S055`, `P4-004` |
 | D081 | Platform | P4 | Intelligence Well architecture | managed API + infra | Define global shared orchestration layer across compute, models, workflows and agents | This is platform-level; keep it behind planned status until real | Architecture covers trust, governance, metering and routing | `F123-F130`, `S024-S025` |
 
+## Review-Discovered Pull-Forward Items
+
+These items were added during code/architecture review and should be pulled forward before deeper `D046+` expansion when they protect launch quality or user trust.
+
+| Seq | Phase | Priority | Work package | Repos | Concrete work | Best practice | Done when | Covers |
+|---|---|---:|---|---|---|---|---|---|
+| D082 | Launch Reliability | P0 | Recover live public site | `inkognitroz.github.io`, DNS/Cloudflare | Diagnose current `503`, including corporate URL-filter blocks for newly registered domains, and verify Pages source, deployment artifact, custom domain and Cloudflare mode | Public launch surface must be observable and recoverable before adding features | Off-network test returns the MMIR UI, and blocked-network cases have an allowlist/communication path | `D002` |
+| D083 | Launch Reliability | P0 | Frontend smoke test | `inkognitroz.github.io` | Add an automated static smoke check for `public/index.html`, required CSS/JS assets and syntax-valid browser scripts | Static apps need a fast broken-asset/syntax gate before deployment | CI fails if a referenced asset is missing or a public script is syntactically invalid | `D014-D030`, `D041` |
+| D084 | CI/CD | P0 | Lockfiles and reproducible installs | `mimir-backend-template`, `mmir-local-node` | Commit package lockfiles and switch CI install step from `npm install` to `npm ci` | CI should install exactly reviewed dependency versions | CI uses lockfiles and dependency installation is reproducible | `D041` |
+| D085 | API Router | P1 | Provider error mapping and audit | `mimir-backend-template` | Preserve safe provider HTTP status codes, return user-safe provider errors and audit provider failures without prompt leakage | Do not collapse upstream `503/429/502` into generic `500` | Provider outages appear as provider errors in API responses and audit events | `D031-D040` |
+| D086 | Multi-Model | P1 | Knowledge parity in comparison | `inkognitroz.github.io` | Inject the same relevant workspace knowledge into compare/synthesize calls as normal chat | Comparison should not silently lose user context | Chat, comparison and synthesis use the same role/memory/knowledge context rules | `D029-D030`, `D044-D047` |
+| D087 | Privacy UX | P1 | Local data export/delete controls | `inkognitroz.github.io` | Add inspect, export and delete controls for workspace chats, memory and local knowledge | Local-first data still needs clear user control | User can see, export and delete all browser-stored MMIR workspace data | `D020`, `D044`, `D047` |
+| D088 | Product Feeling | P2 | Replace prompt-based workspace creation | `inkognitroz.github.io` | Replace `window.prompt` with an inline, accessible workspace creation control | Polished product flows should avoid browser modal prompts | New workspace flow works by keyboard/mobile and matches the UI system | `D043` |
+| D089 | Knowledge | P1 | Durable backend RAG route | `mimir-backend-template` | Add ingestion/search API skeleton for durable knowledge with file validation, ownership and audit hooks | Real RAG belongs behind authenticated backend or local-controlled storage | Backend exposes safe draft endpoints for knowledge ingestion/search behind auth | `D046-D047` |
+| D090 | Security/Ops | P1 | Managed identity before paid providers | `mimir-backend-template` | Add session/user identity plan before enabling shared paid OpenAI-compatible routes | Never expose shared paid provider capacity without user/account policy | Managed provider launch is blocked until identity/rate/cost controls are explicit | `D036-D039`, `D058` |
+| D091 | Observability | P1 | Public status and deploy monitor | `inkognitroz.github.io`, `mimir-backend-template` | Add a simple uptime/deploy health checklist and status surface for Pages/API/local-node | Users should know whether failure is local, site or provider | Status docs/UI explain Pages, API, local node and provider health separately | `D002`, `D040` |
+| D092 | Local Node | P1 | Idle timeout for long local generations | `mmir-local-node` | Replace one full-request timeout for Ollama streaming with idle-timeout behavior | Long local model answers should not be cut off while tokens are flowing | Streaming aborts only after idle/no-token timeout or client disconnect | `D019`, `D009` |
+| D093 | Frontend Architecture | P1 | Shared browser API client | `inkognitroz.github.io` | Extract shared profile, pairing, fetch, error and context helpers used by chat/comparison/status | Avoid divergent frontend networking behavior as features grow | Chat, comparison and status use one tested client layer | `D015-D018`, `D029-D030` |
+
 ## Recommended Implementation Sequence
 
-1. Start `D001-D008` to lock the plan and API boundaries.
-2. Then implement `D009-D013` so local node is secure and installable.
-3. Then implement `D014-D018` for first real chat.
-4. Then implement `D019-D030` for chat quality, persistence, switching, comparison and synthesis.
-5. Then implement `D031-D041` for backend routing and security foundations.
-6. Then implement `D042-D049` for product feeling, memory, workspaces and knowledge.
-7. Then implement `D050-D059` for real infrastructure and AI routing.
-8. Then implement `D060-D066` for workflows, automation, evals and registries.
-9. Then implement `D067-D081` only after the product has real users or strong validation.
+1. Keep `D082` first until the public site returns healthy responses.
+2. Finish `D083-D086` because they protect already-shipped user flows.
+3. Start `D001-D008` to lock the plan and API boundaries.
+4. Then implement `D009-D013` so local node is secure and installable.
+5. Then implement `D014-D018` for first real chat.
+6. Then implement `D019-D030` for chat quality, persistence, switching, comparison and synthesis.
+7. Then implement `D031-D041` for backend routing and security foundations.
+8. Then implement `D042-D049` for product feeling, memory, workspaces and knowledge, pulling in `D087-D093` where they reduce risk.
+9. Then implement `D050-D059` for real infrastructure and AI routing.
+10. Then implement `D060-D066` for workflows, automation, evals and registries.
+11. Then implement `D067-D081` only after the product has real users or strong validation.
 
 ## Current Starting Slice
 
 Start with:
 
+- `D082` until both public URLs return healthy responses.
+- `D083-D086` as immediate review hardening for shipped frontend/backend flows.
 - `D001-D008` as planning/contract/docs work.
 - `D009-D018` as the first production MVP implementation path.
 
