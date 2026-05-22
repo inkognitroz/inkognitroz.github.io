@@ -1,303 +1,202 @@
 {
   "site": {
-    "title": "SaaS Fabric",
-    "subtitle": "Static-first app factory by Inkognitroz.",
-    "heroLabel": "App factory & SaaS platform",
-    "heroTitle": "Build, Launch & Monetize Your SaaS Products",
-    "heroDescription": "SaaS Fabric is an open-source, static-first platform for building mini-apps, capturing ideas, tracking your roadmap and preparing to monetize — all without a backend.",
+    "title": "MMIR",
+    "subtitle": "The orchestration layer for trusted AI.",
+    "heroLabel": "Trusted AI control plane",
+    "heroTitle": "Own your AI infrastructure",
+    "heroDescription": "MMIR connects local AI, model routing, workflows, memory and trusted runtimes from one control plane. Open mmir.ai, connect local AI, install, ready.",
     "heroCtas": [
-      { "text": "Explore Apps", "href": "#app-factory", "style": "primary" },
-      { "text": "View Roadmap", "href": "#roadmap", "style": "secondary" }
+      { "text": "Connect local AI", "href": "./mmir.html#connect-options", "style": "primary" },
+      { "text": "Open chat", "href": "./mmir.html#mimir-instant-start", "style": "secondary" }
     ],
     "trustBadges": [
-      "✓ 100% Static",
-      "✓ Open Source",
-      "✓ GitHub Pages",
-      "✓ No Backend"
+      "Local-first",
+      "Model-agnostic",
+      "Workflow-ready",
+      "Trusted routing"
     ],
-    "promptWorkflow": "Store prompts in Prompt Inbox, then paste into GitHub Issues, Copilot, Codex, Claude Code, or ChatGPT to request pull requests. Review manually and merge safely."
+    "promptWorkflow": "Use MMIR as the control plane above models: connect local runtimes, choose safe routes, automate workflows and keep secrets out of the public frontend."
   },
   "roadmapBoard": {
     "columns": [
-      { "key": "idea", "label": "Idea" },
-      { "key": "planned", "label": "Planned" },
-      { "key": "in-progress", "label": "In progress" },
-      { "key": "ready-for-review", "label": "Ready for review" },
-      { "key": "launched", "label": "Launched" }
+      { "key": "now", "label": "Now" },
+      { "key": "next", "label": "Next" },
+      { "key": "later", "label": "Later" },
+      { "key": "blocked", "label": "Blocked" },
+      { "key": "live", "label": "Live" }
     ],
     "items": [
       {
-        "title": "Supabase architecture blueprint",
-        "description": "Define v2 architecture boundaries and data model options while keeping v1 fully static.",
-        "status": "idea",
-        "priority": "high",
-        "owner": "Inkognitroz",
-        "nextAction": "Draft architecture notes and constraints for issue review.",
-        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=feature-request.md"
-      },
-      {
-        "title": "Admin v2 content workflows",
-        "description": "Improve admin UX with clearer flow for JSON editing, validation and roadmap upkeep.",
-        "status": "planned",
+        "title": "First perfect local AI journey",
+        "description": "Open mmir.ai, connect local AI, install one connector, see own models and chat instantly.",
+        "status": "now",
         "priority": "critical",
         "owner": "Inkognitroz",
-        "nextAction": "Open scoped issue for editor UX upgrades and acceptance tests.",
-        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=feature-request.md"
+        "nextAction": "Keep the first-run path focused on one-click local activation.",
+        "relatedLink": "./mmir.html#connect-options"
       },
       {
-        "title": "Football Evolution Matrix v2",
-        "description": "Add improved matrix interactions and cleaner comparison workflow for analysts.",
-        "status": "in-progress",
-        "priority": "medium",
-        "owner": "Inkognitroz",
-        "nextAction": "Complete interaction polish and prepare PR for product review.",
-        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=new-app.md"
-      },
-      {
-        "title": "Platform design pass",
-        "description": "Refine spacing, typography and visual hierarchy across key sections.",
-        "status": "ready-for-review",
+        "title": "Backend router contract",
+        "description": "Keep auth, policy, provider abstraction, rate limiting and secrets outside the public frontend.",
+        "status": "next",
         "priority": "high",
         "owner": "Inkognitroz",
-        "nextAction": "Collect feedback on visual pass and finalize follow-up tweaks.",
-        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/pulls"
+        "nextAction": "Align backend endpoints and local-node pairing contracts.",
+        "relatedLink": "./mmir.html#platform-status"
       },
       {
-        "title": "Prompt Inbox workflow launch",
-        "description": "Ship initial prompt-to-issue workflow guidance and live examples.",
-        "status": "launched",
-        "priority": "low",
+        "title": "Workflow operating system",
+        "description": "Make workflows more important than chat by turning trusted AI into repeatable automations.",
+        "status": "next",
+        "priority": "high",
         "owner": "Inkognitroz",
-        "nextAction": "Track usage and gather next iteration requests.",
-        "relatedLink": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md"
+        "nextAction": "Ship workflow builder, memory and project context loops.",
+        "relatedLink": "./mmir.html#workflow-builder"
+      },
+      {
+        "title": "Paid frontier providers",
+        "description": "OpenAI, Claude, Gemini, Mistral, Grok and hosted GPU routes must stay behind protected backend routing and billing controls.",
+        "status": "blocked",
+        "priority": "high",
+        "owner": "Inkognitroz",
+        "nextAction": "Do not expose provider keys in public code.",
+        "relatedLink": "./mmir.html#model-library"
+      },
+      {
+        "title": "Public MMIR product page",
+        "description": "The public mmir.ai entry point is MMIR, not legacy app-factory branding.",
+        "status": "live",
+        "priority": "critical",
+        "owner": "Inkognitroz",
+        "nextAction": "Monitor Pages deploy and keep old branding out of the root experience.",
+        "relatedLink": "./mmir.html"
       }
     ]
   },
   "sections": {
     "appFactory": [
       {
-        "title": "Open Web GUI",
-        "description": "Chat with local or remote LLM models via Ollama directly in your browser. Configure an endpoint, pick a model, and start chatting — no backend required.",
-        "link": "./apps/open-web-gui/",
-        "badge": "Live",
-        "tags": ["ai", "ollama", "llm", "chat", "static"]
-      },
-      {
         "title": "MMIR Control Plane",
-        "description": "Trusted AI orchestration track for connecting local models, workflows and future managed AI infrastructure without making SaaS Fabric itself an AI-only product.",
+        "description": "Trusted AI orchestration for local models, workflows, memory and future managed AI infrastructure.",
         "link": "./mmir.html",
+        "badge": "Live",
+        "tags": ["ai", "orchestration", "trusted-ai", "local-first"]
+      },
+      {
+        "title": "Connect Local AI",
+        "description": "Install the local connector, pair the browser with your machine and chat with your own models.",
+        "link": "./mmir.html#connect-options",
+        "badge": "Priority",
+        "tags": ["local-node", "ollama", "installer", "privacy"]
+      },
+      {
+        "title": "Model Library",
+        "description": "Model-agnostic routing across browser helpers, Ollama, local models and protected provider routes.",
+        "link": "./mmir.html#model-library",
         "badge": "Beta",
-        "tags": ["ai", "orchestration", "local-first", "workflow"]
+        "tags": ["models", "routing", "open-source"]
       },
       {
-        "title": "App Template Generator",
-        "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
-        "link": "./apps/app-template-generator/",
-        "badge": "Live",
-        "tags": ["generator", "template", "planning", "static"]
-      },
-      {
-        "title": "Football Evolution Matrix",
-        "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",
-        "link": "./apps/football-evolution-matrix/",
-        "badge": "Live",
-        "tags": ["football", "analytics", "matrix"]
-      },
-      {
-        "title": "App Template Generator",
-        "description": "Generate implementation-ready SaaS app briefs, issue text, content.json cards and launch checklists in one static form.",
-        "link": "./apps/app-template-generator/",
-        "badge": "Live",
-        "tags": ["generator", "template", "planning", "static"]
-      },
-      {
-        "title": "SaaS Fabric Hub",
-        "description": "This site — a static app factory and portfolio hub built on GitHub Pages, powered by content.json.",
-        "link": "./index.html",
-        "badge": "Live",
-        "tags": ["platform", "github-pages", "static"]
-      }
-    ],
-    "saasIdeas": [
-      {
-        "title": "Prompt-to-brief SaaS",
-        "description": "A tool that turns rough prompts into structured implementation briefs, ready for Copilot or Codex.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["ai", "productivity", "saas"]
-      },
-      {
-        "title": "Portfolio KPI tracker",
-        "description": "Track launches, traffic, MRR goals and conversion experiments across your product portfolio.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["dashboard", "metrics", "saas"]
+        "title": "Workflow Builder",
+        "description": "Turn AI chat into repeatable workflows with memory, context and automation-first delivery.",
+        "link": "./mmir.html#workflow-builder",
+        "badge": "Beta",
+        "tags": ["workflows", "automation", "memory"]
       }
     ],
     "projects": [
       {
-        "title": "SaaS Fabric public hub",
-        "description": "Static-first GitHub Pages hub for portfolio and pipeline management.",
-        "link": "./index.html",
-        "badge": "Live",
-        "tags": ["github-pages", "platform"]
-      },
-      {
-        "title": "MMIR Control Plane",
-        "description": "AI control-plane product track inside the broader SaaS Fabric portfolio. MMIR owns trusted orchestration; SaaS Fabric owns the public app-factory hub.",
+        "title": "MMIR.ai",
+        "description": "The public control plane for trusted AI orchestration.",
         "link": "./mmir.html",
+        "badge": "Live",
+        "tags": ["control-plane", "trusted-ai", "product"]
+      },
+      {
+        "title": "MMIR Local Node",
+        "description": "Local runtime bridge for Ollama, model discovery, pairing and private chat routing.",
+        "link": "./mmir.html#node-dashboard",
         "badge": "Beta",
-        "tags": ["ai", "control-plane", "trusted-ai", "product"]
-      },
-      {
-        "title": "Football Evolution Matrix",
-        "description": "Editable historical football development matrix for physics, technique, tactics, mentality and data quality.",
-        "link": "./apps/football-evolution-matrix/",
-        "badge": "Live",
-        "tags": ["football", "analytics", "matrix", "app"]
-      },
-      {
-        "title": "App Template Generator",
-        "description": "Static planning app for turning new SaaS ideas into copy-ready implementation briefs and PR prompts.",
-        "link": "./apps/app-template-generator/",
-        "badge": "Live",
-        "tags": ["planning", "generator", "app"]
-      }
-    ],
-    "templates": [
-      {
-        "title": "Landing page starter",
-        "description": "Reusable marketing page structure for future products. Includes hero, features, CTA and footer.",
-        "link": "#",
-        "badge": "WIP",
-        "tags": ["template", "launch", "marketing"]
-      },
-      {
-        "title": "App brief generator template",
-        "description": "Generate issue text, folder structure, starter content.json card and launch checklist for a new SaaS Fabric app.",
-        "link": "./apps/app-template-generator/",
-        "badge": "Live",
-        "tags": ["template", "planning", "issue"]
-      },
-      {
-        "title": "Historical Performance Matrix",
-        "description": "A reusable template for comparing development across periods, categories and indicators.",
-        "link": "./apps/football-evolution-matrix/",
-        "badge": "Live",
-        "tags": ["template", "matrix", "research"]
+        "tags": ["local-node", "runtime", "ollama"]
       }
     ],
     "tools": [
       {
-        "title": "App Template Generator",
-        "description": "Turn an app idea into GitHub issue text, folder structure, content card and launch checklist.",
-        "link": "./apps/app-template-generator/",
+        "title": "Install Health Doctor",
+        "description": "Check connector install, Ollama runtime, model availability, hardware and tunnel readiness.",
+        "link": "./mmir.html#node-dashboard",
         "badge": "Live",
-        "tags": ["generator", "planning", "workflow"]
+        "tags": ["diagnostics", "node", "models"]
       },
       {
-        "title": "Prompt-to-brief converter",
-        "description": "Turn rough prompts into implementation-ready development briefs for AI coding assistants.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["ai", "productivity"]
-      },
-      {
-        "title": "Football Evolution Matrix",
-        "description": "Compare football development across time periods, indicators and data quality levels.",
-        "link": "./apps/football-evolution-matrix/",
+        "title": "Provider Status",
+        "description": "Show which layers are live, local, planned or blocked by security policy.",
+        "link": "./mmir.html#platform-status",
         "badge": "Live",
-        "tags": ["sports", "analysis", "editable"]
+        "tags": ["status", "providers", "security"]
       }
     ],
     "dashboards": [
       {
-        "title": "Portfolio KPI board",
-        "description": "Track launches, traffic, MRR goals and conversion experiments across your product portfolio.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["dashboard", "metrics"]
-      }
-    ],
-    "uploads": [
-      {
-        "title": "CSV/XLSX assets",
-        "description": "Store links to uploads and datasets used by tools and apps.",
-        "link": "#",
-        "tags": ["uploads", "files"]
+        "title": "Progress Dashboard",
+        "description": "Public-safe delivery status for MMIR journeys, controls and backlog.",
+        "link": "./mmir.html#progress-dashboard",
+        "badge": "Live",
+        "tags": ["delivery", "roadmap", "status"]
       }
     ],
     "promptInbox": [
       {
-        "title": "Add a new template card",
-        "description": "Create a PR updating sections.templates in public/content.json with one new template including title, description, tags and link.",
-        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md",
-        "tags": ["prompt", "issues"]
+        "title": "First journey QA",
+        "description": "Verify Open mmir.ai -> Connect local AI -> Install -> Ready -> Chat every deploy.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/104",
+        "tags": ["qa", "first-journey", "critical"]
       },
       {
-        "title": "Open PR: Align content issue template with live sections",
-        "description": "Update .github/ISSUE_TEMPLATE/content-update.md so section checkboxes match current sections in public/content.json.",
-        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=content-update.md",
-        "tags": ["code-review", "priority-high", "templates"]
-      },
-      {
-        "title": "Open PR: Harden CSV import parsing",
-        "description": "Replace naive comma split logic in public/assets/app.js parseCsv so quoted commas and escaped values import safely.",
-        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=bug-report.md",
-        "tags": ["code-review", "priority-high", "admin"]
-      },
-      {
-        "title": "Open PR: Add pre-deploy validation workflow",
-        "description": "Add a fast PR workflow to validate public/content.json and prevent invalid static content from reaching production.",
-        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/new?template=new-app.md",
-        "tags": ["code-review", "priority-medium", "ci"]
+        "title": "Security boundary review",
+        "description": "Confirm public frontend owns orchestration UI only, never secrets, provider keys or model runtime execution.",
+        "link": "https://github.com/inkognitroz/inkognitroz.github.io/issues/106",
+        "tags": ["security", "architecture", "control-plane"]
       }
     ],
     "monetization": [
       {
-        "title": "Freemium model",
-        "description": "Offer core tools free, gate advanced features and data exports behind a paid tier.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["pricing", "freemium", "strategy"]
+        "title": "Trusted AI Pro",
+        "description": "Premium orchestration, cloud routing, team memory, managed workflows and protected provider connectors.",
+        "link": "./mmir.html#model-library",
+        "badge": "Planned",
+        "tags": ["pricing", "teams", "enterprise"]
       },
       {
-        "title": "One-time purchases",
-        "description": "Sell standalone tools and templates as one-time digital products with no recurring cost.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["pricing", "one-time", "tools"]
+        "title": "Local-first adoption funnel",
+        "description": "Win users with a free local journey, then monetize orchestration, collaboration and managed compute.",
+        "link": "./mmir.html#user-journeys",
+        "badge": "Strategy",
+        "tags": ["growth", "conversion", "revenue"]
       }
     ],
     "roadmap": [
       {
-        "title": "v1.1 — Multi-product workflows",
-        "description": "Richer content filtering, app lifecycle tracking, and improved admin interface.",
-        "link": "#",
-        "badge": "WIP",
-        "tags": ["roadmap", "v1.1", "product"]
+        "title": "One perfect first experience",
+        "description": "Make local AI onboarding feel like opening an app: install one file, connect automatically and chat.",
+        "link": "./mmir.html#connect-options",
+        "badge": "Now",
+        "tags": ["onboarding", "activation", "local-ai"]
       },
       {
-        "title": "v1.2 — Monetization path",
-        "description": "Pricing page, product badge system, and basic conversion tracking.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["roadmap", "v1.2", "monetization"]
-      },
-      {
-        "title": "v2.0 — Multi-user platform",
-        "description": "Accounts, team workspaces, and a hosted SaaS version of the platform.",
-        "link": "#",
-        "badge": "Soon",
-        "tags": ["roadmap", "v2", "platform"]
+        "title": "AI workflow operating system",
+        "description": "Build persistent memory, project context, agents and workflow orchestration above model providers.",
+        "link": "./mmir.html#workflow-builder",
+        "badge": "Next",
+        "tags": ["workflows", "agents", "memory"]
       }
     ],
     "about": [
       {
-        "title": "About SaaS Fabric",
-        "description": "SaaS Fabric is a static-first, open-source app factory built by Inkognitroz. The goal is a practical, non-technical workflow for building and launching SaaS products without infrastructure overhead.",
+        "title": "About MMIR",
+        "description": "MMIR is the orchestration layer for trusted AI: local-first, hybrid-cloud-ready and model-agnostic by design.",
         "link": "https://github.com/inkognitroz/inkognitroz.github.io",
-        "tags": ["about", "platform", "open-source"]
+        "tags": ["about", "trusted-ai", "control-plane"]
       }
     ]
   }
