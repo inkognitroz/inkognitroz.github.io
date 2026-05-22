@@ -8,6 +8,7 @@ const indexPath = join(publicDir, 'index.html');
 const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const starterCatalogPath = join(publicDir, 'free-model-starters.json');
+const progressDashboardPath = join(publicDir, 'progress-dashboard.json');
 
 function fail(message) {
   console.error(message);
@@ -99,6 +100,21 @@ if (existsSync(starterCatalogPath)) {
   }
 } else {
   fail('Missing free starter model catalog.');
+}
+
+if (existsSync(progressDashboardPath)) {
+  const dashboard = JSON.parse(readFileSync(progressDashboardPath, 'utf8'));
+  const tasks = Array.isArray(dashboard.tasks) ? dashboard.tasks : [];
+  if (tasks.length < 100) {
+    fail('Progress dashboard must expose the full sequential backlog.');
+  }
+  for (const id of ['D001', 'D023', 'D082', 'D099', 'D104']) {
+    if (!tasks.some((task) => task.seq === id)) {
+      fail(`Progress dashboard is missing ${id}.`);
+    }
+  }
+} else {
+  fail('Missing progress dashboard manifest.');
 }
 
 if (!process.exitCode) {

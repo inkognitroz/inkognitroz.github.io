@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/onboarding.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/progress-dashboard.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css" />
 </head>
@@ -30,6 +31,7 @@
       <a href="#workflow-builder">Workflows</a>
       <a href="#dataset-manager">Data</a>
       <a href="#training-automation">Automation</a>
+      <a href="#progress-dashboard">Progress</a>
       <a href="#platform-status">Status</a>
     </nav>
   </header>
@@ -59,6 +61,7 @@
         <a href="#model-library">+ Model Library</a>
         <a href="#dataset-manager">+ Datasets</a>
         <a href="#training-automation">+ Training Automation</a>
+        <a href="#progress-dashboard">+ Progress Dashboard</a>
         <a href="#plus-feature-catalog">+ Roadmap</a>
       </div>
 
@@ -155,6 +158,18 @@
       </section>
     </details>
 
+    <details id="progress-dashboard" class="mimir-provider-drawer">
+      <summary>+ Progress Dashboard</summary>
+      <section class="mimir-dashboard" aria-labelledby="progress-dashboard-title">
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">Build progress and Codex queue</p><h2 id="progress-dashboard-title">MMIR delivery dashboard</h2></div>
+          <button id="refresh-progress-dashboard" type="button" class="btn btn-secondary">Refresh progress</button>
+        </div>
+        <p id="progress-dashboard-summary" class="dashboard-note" data-state="idle" aria-live="polite">Progress is loaded from the generated public-safe dashboard manifest.</p>
+        <div id="progress-dashboard-root" class="progress-dashboard-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="workflow-builder" class="mimir-provider-drawer">
       <summary>+ Workflow Builder</summary>
       <section class="mimir-dashboard" aria-labelledby="workflow-builder-title">
@@ -220,6 +235,7 @@
   <script src="./apps/mimir-chat-portal/model-catalog-ui.js"></script>
   <script src="./apps/mimir-chat-portal/provider-status.js"></script>
   <script src="./apps/mimir-chat-portal/platform-status.js"></script>
+  <script src="./apps/mimir-chat-portal/progress-dashboard.js"></script>
   <script src="./apps/mimir-chat-portal/role-presets.js"></script>
   <script src="./apps/mimir-chat-portal/local-connector.js"></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js"></script>

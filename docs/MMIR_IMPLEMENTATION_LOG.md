@@ -85,6 +85,7 @@ Updated: 2026-05-22
 - `+ Connect Model` now activates/reuses the free local node profile and opens the backend setup panel instead of feeling like a dead action.
 - First-run now creates/reuses the free local-node profile automatically, keeps manual configuration optional, and auto-selects the free in-browser guide so the first chat path answers immediately.
 - Free local model install bootstrap files now exist for Windows and Mac/Linux, so a selected starter model can produce a concrete path to MMIR Local Node + Ollama.
+- Public Progress Dashboard now exists on the site and is generated from the sequential backlog, with repo ownership, shipped/beta/next/watch status, full task list and smoke-test coverage for the manifest.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
