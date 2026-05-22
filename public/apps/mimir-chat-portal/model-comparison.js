@@ -33,7 +33,7 @@
     try{
       const value=JSON.parse(localStorage.getItem(MEMORY_PREFIX+workspaceId())||'[]');
       if(!Array.isArray(value))return '';
-      const items=value.map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
+      const items=value.filter(item=>item?.enabled!==false).map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
       if(!items.length)return '';
       return 'Workspace memory for this task. Use only when relevant:\n'+items.map(item=>'- '+item).join('\n');
     }catch(error){return '';}
@@ -143,20 +143,36 @@
     return api.authHeaders(token);
   }
 
-  function messagesFor(prompt){
+  async function backendMemoryInstruction(prompt,url,token){
+    try{
+      const data=await fetchJson(api.joinUrl(url,'/memory/search'),{
+        method:'POST',
+        headers:headers(token),
+        timeoutMs:8000,
+        body:JSON.stringify({workspace_id:workspaceId(),query:prompt,limit:6})
+      });
+      const results=Array.isArray(data?.data)?data.data:[];
+      const items=results.filter(item=>item?.enabled!==false&&item?.text).slice(0,6);
+      if(!items.length)return '';
+      return 'Relevant protected backend memory. Use only when relevant:\n'+items.map(item=>'- '+String(item.text).slice(0,500)).join('\n');
+    }catch(error){return '';}
+  }
+
+  function messagesFor(prompt,backendMemory=''){
     const role=activeRole();
     const memory=activeMemoryInstruction();
     const knowledge=relevantKnowledgeInstruction(prompt);
     const messages=[];
     if(role)messages.push({role:'system',content:role.instruction});
     if(memory)messages.push({role:'system',content:memory});
+    if(backendMemory)messages.push({role:'system',content:backendMemory});
     if(knowledge)messages.push({role:'system',content:knowledge});
     messages.push({role:'user',content:prompt});
     return messages;
   }
 
-  async function chat(profile,url,token,model,prompt){
-    const payload={model:model.id,messages:messagesFor(prompt),stream:false};
+  async function chat(profile,url,token,model,prompt,backendMemory=''){
+    const payload={model:model.id,messages:messagesFor(prompt,backendMemory),stream:false};
     let data=null;
     try{
       data=await fetchJson(api.joinUrl(url,'/chat/completions'),{method:'POST',headers:headers(token),body:JSON.stringify(payload)});
@@ -205,7 +221,8 @@
     setStatus('Comparing '+String(models.length)+' model(s)...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
-      const settled=await Promise.allSettled(models.map(async model=>({model,content:await chat(profile,url,token,model,prompt)})));
+      const backendMemory=await backendMemoryInstruction(prompt,url,token);
+      const settled=await Promise.allSettled(models.map(async model=>({model,content:await chat(profile,url,token,model,prompt,backendMemory)})));
       settled.forEach((item,index)=>{
         const result=item.status==='fulfilled'?item.value:{model:models[index],error:item.reason?.message||'Model request failed.'};
         lastResults.push(result);

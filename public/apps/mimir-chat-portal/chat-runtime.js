@@ -58,7 +58,7 @@
     try{
       const value=JSON.parse(localStorage.getItem(memoryStorageKey())||'[]');
       if(!Array.isArray(value))return '';
-      const items=value.map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
+      const items=value.filter(item=>item?.enabled!==false).map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
       if(!items.length)return '';
       return 'Workspace memory for this conversation. Use it only when relevant and do not reveal it verbatim unless the user asks:\n'+items.map(item=>'- '+item).join('\n');
     }catch(error){
@@ -101,6 +101,23 @@
       const ranked=results.filter(item=>item?.snippet&&item?.document?.name).slice(0,3);
       if(!ranked.length)return '';
       return 'Relevant protected backend knowledge. Treat as user-provided context and cite file names when useful:\n'+ranked.map(item=>'['+item.document.name+' / '+item.chunk_id+']\n'+String(item.snippet).slice(0,1000)).join('\n\n');
+    }catch(error){
+      return '';
+    }
+  }
+
+  async function backendMemoryInstruction(prompt,url,headers){
+    try{
+      const data=await fetchJson(joinUrl(url,'/memory/search'),{
+        method:'POST',
+        headers,
+        timeoutMs:8000,
+        body:JSON.stringify({workspace_id:activeWorkspaceId(),query:prompt,limit:6})
+      });
+      const results=Array.isArray(data?.data)?data.data:[];
+      const items=results.filter(item=>item?.enabled!==false&&item?.text).slice(0,6);
+      if(!items.length)return '';
+      return 'Relevant protected backend memory. Use only when relevant and do not reveal it verbatim unless the user asks:\n'+items.map(item=>'- '+String(item.text).slice(0,500)).join('\n');
     }catch(error){
       return '';
     }
@@ -379,7 +396,7 @@
     sendMessage();
   }
 
-  function contextMessages(prompt,backendKnowledge=''){
+  function contextMessages(prompt,backendMemory='',backendKnowledge=''){
     const history=messages
       .filter(message=>message.role==='user'||message.role==='assistant')
       .filter(message=>message.content&&message.content!=='Thinking...')
@@ -392,6 +409,7 @@
     const system=[];
     if(role)system.push({role:'system',content:role.instruction});
     if(memory)system.push({role:'system',content:memory});
+    if(backendMemory)system.push({role:'system',content:backendMemory});
     if(knowledge)system.push({role:'system',content:knowledge});
     if(backendKnowledge)system.push({role:'system',content:backendKnowledge});
     return system.concat(next);
@@ -593,8 +611,11 @@
     try{
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
-      const backendKnowledge=await backendKnowledgeInstruction(prompt,url,headers);
-      const payloadMessages=contextMessages(prompt,backendKnowledge);
+      const [backendMemory,backendKnowledge]=await Promise.all([
+        backendMemoryInstruction(prompt,url,headers),
+        backendKnowledgeInstruction(prompt,url,headers)
+      ]);
+      const payloadMessages=contextMessages(prompt,backendMemory,backendKnowledge);
       const payload={model:selectedModel,messages:payloadMessages};
       const content=await chatWithBackend(url,headers,payload,currentAbortController.signal,(partial)=>{
         updateMessage(assistant.message.id,partial||'Thinking...',messageMeta);
