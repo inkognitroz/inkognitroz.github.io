@@ -84,6 +84,32 @@
       '</article>';
   }
 
+  function canvasHtml(){
+    return ''+
+      '<section class="workflow-canvas-section">'+
+        '<div class="workflow-builder-subhead"><h3>Canvas</h3><button id="canvas-add-step" type="button">Add step</button></div>'+
+        '<div class="workflow-canvas" role="list">'+steps.map(canvasNodeHtml).join('')+'</div>'+
+      '</section>';
+  }
+
+  function canvasNodeHtml(step,index){
+    const agent=agents.find(item=>item.id===step.agent_id);
+    const agentName=agent?(agent.name||agent.role||agent.id):'Auto';
+    return ''+
+      '<article class="workflow-canvas-node" role="listitem" data-index="'+index+'">'+
+        '<button class="workflow-canvas-focus" type="button" data-action="focus-step" data-index="'+index+'">'+
+          '<strong>'+escapeHtml(step.name||('Step '+String(index+1)))+'</strong>'+
+          '<span>'+escapeHtml(step.type||'model_call')+'</span>'+
+          '<small>'+escapeHtml(agentName)+'</small>'+
+        '</button>'+
+        '<div class="workflow-canvas-node-actions">'+
+          '<button type="button" title="Move left" data-action="move-step-left" data-index="'+index+'" '+(index===0?'disabled':'')+'>&lt;</button>'+
+          '<button type="button" title="Insert after" data-action="insert-step-after" data-index="'+index+'">+</button>'+
+          '<button type="button" title="Move right" data-action="move-step-right" data-index="'+index+'" '+(index===steps.length-1?'disabled':'')+'>&gt;</button>'+
+        '</div>'+
+      '</article>';
+  }
+
   function render(){
     root.innerHTML=''+
       '<div class="workflow-builder-form">'+
@@ -95,6 +121,7 @@
           '<div class="workflow-builder-subhead"><h3>Agents</h3><button id="add-workflow-agent" type="button">Add agent</button></div>'+
           '<div id="workflow-agent-list" class="workflow-agent-list">'+(agents.length?agents.map(agentHtml).join(''):'')+'</div>'+
         '</section>'+
+        canvasHtml()+
         '<div id="workflow-step-list" class="workflow-step-list">'+steps.map(stepHtml).join('')+'</div>'+
         '<div class="workflow-builder-actions">'+
           '<button id="add-workflow-step" type="button">Add step</button>'+
@@ -134,6 +161,29 @@
       if(!steps.length)steps=[newStep()];
       render();
     }));
+    root.querySelectorAll('[data-action="move-step-left"]').forEach(button=>button.addEventListener('click',event=>{
+      const index=Number(event.currentTarget.dataset.index);
+      if(index>0){
+        [steps[index-1],steps[index]]=[steps[index],steps[index-1]];
+        render();
+      }
+    }));
+    root.querySelectorAll('[data-action="move-step-right"]').forEach(button=>button.addEventListener('click',event=>{
+      const index=Number(event.currentTarget.dataset.index);
+      if(index<steps.length-1){
+        [steps[index],steps[index+1]]=[steps[index+1],steps[index]];
+        render();
+      }
+    }));
+    root.querySelectorAll('[data-action="insert-step-after"]').forEach(button=>button.addEventListener('click',event=>{
+      const index=Number(event.currentTarget.dataset.index);
+      steps.splice(index+1,0,newStep());
+      render();
+    }));
+    root.querySelectorAll('[data-action="focus-step"]').forEach(button=>button.addEventListener('click',event=>{
+      const index=Number(event.currentTarget.dataset.index);
+      root.querySelector('.workflow-step[data-index="'+index+'"]')?.scrollIntoView({behavior:'smooth',block:'center'});
+    }));
     root.querySelectorAll('[data-action="remove-agent"]').forEach(button=>button.addEventListener('click',event=>{
       const index=Number(event.currentTarget.dataset.index);
       const removed=agents[index]?.id;
@@ -151,6 +201,7 @@
       render();
     }));
     document.getElementById('add-workflow-step')?.addEventListener('click',()=>{steps.push(newStep());render();});
+    document.getElementById('canvas-add-step')?.addEventListener('click',()=>{steps.push(newStep());render();});
     document.getElementById('add-workflow-agent')?.addEventListener('click',()=>{agents.push(newAgent());render();});
     document.getElementById('save-workflow')?.addEventListener('click',saveWorkflow);
     document.getElementById('refresh-workflows')?.addEventListener('click',loadWorkflows);
