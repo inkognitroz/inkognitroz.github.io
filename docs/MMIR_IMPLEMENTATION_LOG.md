@@ -7,6 +7,7 @@ Updated: 2026-05-22
 - Frontend has a real in-page chat runtime wired to active backend profiles.
 - Chat history persists locally in the browser until the user clears it.
 - Chat history is now scoped by local workspace so separate projects do not overwrite each other.
+- Workspace creation now uses an inline accessible form instead of a browser prompt.
 - Workspace memory can now store local project facts/preferences and inject them into chat/comparison context when relevant.
 - Local knowledge upload now stores text-like files per workspace and injects relevant snippets into chat context as a first RAG foundation.
 - Privacy/local data controls now let users inspect counts, export, copy and delete workspace chat, memory and knowledge stored in the browser.
@@ -40,7 +41,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D088-D093: workspace creation polish, backend RAG skeleton, managed identity, status monitoring, local-node timeout polish and shared frontend API client.
+- D089-D093: backend RAG skeleton, managed identity, status monitoring, local-node timeout polish and shared frontend API client.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.

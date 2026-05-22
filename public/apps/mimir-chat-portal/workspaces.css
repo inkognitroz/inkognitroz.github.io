@@ -2,9 +2,11 @@
   display: inline-flex;
   align-items: end;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
-.workspace-switcher label {
+.workspace-switcher label,
+.workspace-create-form label {
   display: grid;
   gap: 3px;
   color: var(--mimir-muted, #6b7280);
@@ -12,7 +14,8 @@
   font-weight: 700;
 }
 
-.workspace-switcher select {
+.workspace-switcher select,
+.workspace-create-form input {
   min-height: 32px;
   min-width: 132px;
   border: 1px solid var(--mimir-line, #e5e5e8);
@@ -23,14 +26,40 @@
 }
 
 .workspace-switcher button {
-  width: 32px;
-  min-width: 32px;
   min-height: 32px;
   padding: 0;
   border-radius: 8px !important;
 }
 
+.workspace-switcher > button {
+  width: 32px;
+  min-width: 32px;
+}
+
+.workspace-create-form {
+  display: inline-flex;
+  align-items: end;
+  gap: 6px;
+}
+
+.workspace-create-form[hidden] {
+  display: none;
+}
+
+.workspace-create-form button {
+  min-width: 72px;
+  padding: 0 10px;
+}
+
+.workspace-create-form small {
+  align-self: center;
+  color: #b91c1c;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .workspace-switcher select:focus-visible,
+.workspace-create-form input:focus-visible,
 .workspace-switcher button:focus-visible {
   outline: 3px solid rgba(16, 163, 127, 0.28);
   outline-offset: 2px;
@@ -40,7 +69,18 @@
 @media (max-width: 560px) {
   .workspace-switcher,
   .workspace-switcher label,
-  .workspace-switcher select {
+  .workspace-switcher select,
+  .workspace-create-form,
+  .workspace-create-form label,
+  .workspace-create-form input {
+    width: 100%;
+  }
+
+  .workspace-create-form {
+    display: grid;
+  }
+
+  .workspace-create-form button {
     width: 100%;
   }
 }

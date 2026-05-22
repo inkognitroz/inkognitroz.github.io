@@ -4,6 +4,9 @@
   const DEFAULT_WORKSPACE={id:'personal',name:'Personal'};
   const context=document.querySelector('.composer-context');
   let select=null;
+  let form=null;
+  let input=null;
+  let statusEl=null;
 
   function cleanName(value){return String(value||'').trim().slice(0,48);}
   function newId(name){return cleanName(name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('workspace-'+Date.now());}
@@ -48,8 +51,28 @@
     select.value=activeId();
   }
 
-  function createWorkspace(){
-    const name=cleanName(window.prompt('Workspace name','New workspace'));
+  function setStatus(message){
+    if(statusEl)statusEl.textContent=message||'';
+  }
+
+  function showForm(){
+    if(!form||!input)return;
+    form.hidden=false;
+    document.getElementById('workspace-new')?.setAttribute('aria-expanded','true');
+    input.value='';
+    setStatus('');
+    input.focus();
+  }
+
+  function hideForm(){
+    if(!form)return;
+    form.hidden=true;
+    document.getElementById('workspace-new')?.setAttribute('aria-expanded','false');
+    setStatus('');
+  }
+
+  function createWorkspace(name){
+    name=cleanName(name);
     if(!name)return;
     const workspaces=readWorkspaces();
     let id=newId(name);
@@ -60,22 +83,47 @@
     saveWorkspaces(workspaces);
     localStorage.setItem(ACTIVE_WORKSPACE_KEY,id);
     renderOptions();
+    hideForm();
     emit();
+  }
+
+  function submitWorkspace(event){
+    event.preventDefault();
+    const name=cleanName(input?.value);
+    if(!name){
+      setStatus('Name required.');
+      input?.focus();
+      return;
+    }
+    createWorkspace(name);
   }
 
   function install(){
     if(!context||document.getElementById('workspace-select'))return;
     const wrapper=document.createElement('span');
     wrapper.className='workspace-switcher';
-    wrapper.innerHTML='<label for="workspace-select">Workspace<select id="workspace-select"></select></label><button id="workspace-new" type="button" aria-label="Create workspace">+</button>';
+    wrapper.innerHTML=''+
+      '<label for="workspace-select">Workspace<select id="workspace-select"></select></label>'+
+      '<button id="workspace-new" type="button" aria-label="Create workspace" aria-expanded="false" aria-controls="workspace-create-form">+</button>'+
+      '<form id="workspace-create-form" class="workspace-create-form" hidden>'+
+        '<label for="workspace-name">New workspace<input id="workspace-name" type="text" maxlength="48" autocomplete="off" /></label>'+
+        '<button id="workspace-create" type="submit">Create</button>'+
+        '<button id="workspace-cancel" type="button">Cancel</button>'+
+        '<small id="workspace-status" aria-live="polite"></small>'+
+      '</form>';
     context.appendChild(wrapper);
     select=document.getElementById('workspace-select');
+    form=document.getElementById('workspace-create-form');
+    input=document.getElementById('workspace-name');
+    statusEl=document.getElementById('workspace-status');
     renderOptions();
     select.addEventListener('change',()=>{
       localStorage.setItem(ACTIVE_WORKSPACE_KEY,select.value);
       emit();
     });
-    document.getElementById('workspace-new')?.addEventListener('click',createWorkspace);
+    form?.addEventListener('submit',submitWorkspace);
+    document.getElementById('workspace-new')?.addEventListener('click',()=>form?.hidden?showForm():hideForm());
+    document.getElementById('workspace-cancel')?.addEventListener('click',hideForm);
     emit();
   }
 
