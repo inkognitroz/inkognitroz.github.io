@@ -1,12 +1,24 @@
 {
-  "version": 5,
+  "version": 6,
   "description": "Static onboarding guide for connecting local LLMs to MMIR.ai through the hardened MMIR Local Node.",
   "steps": [
     {
       "id": "install",
-      "title": "Install Mac connector",
+      "title": "Install connector",
       "status": "beta",
-      "description": "Mac users can download the MMIR Local Connector from the Connect section on mmir.ai. The installer creates the local API, installs or starts Ollama, pulls a starter model and keeps the connector bound to localhost."
+      "description": "Use the universal installer from the Connect section on mmir.ai. It detects Mac, Windows, Linux/VM or Android client mode and gives the right MMIR Local Connector flow."
+    },
+    {
+      "id": "desktop-node",
+      "title": "Run local node on Mac, Windows or Linux",
+      "status": "beta",
+      "description": "Mac, Windows and Linux installers create the local API on 127.0.0.1:3000, connect to Ollama on the same machine, pull a starter model and keep the connector local by default."
+    },
+    {
+      "id": "android-client",
+      "title": "Use Android as client",
+      "status": "client-mode",
+      "description": "Android uses mmir.ai as a client connected to a Mac, Windows, Linux or VM node. Native Android model hosting is a separate APK/runtime track and is not claimed as live."
     },
     {
       "id": "detect",
@@ -39,6 +51,7 @@
     "Local connector requires pairing before model and chat routes",
     "Use controlled /health, /status, /models and /chat/completions endpoints",
     "Use /tunnels/status and opt-in /tunnels/trycloudflare/start for temporary tunnel testing",
+    "Android is client mode until native APK/runtime security is designed",
     "Allow users to disconnect and delete local profiles"
   ]
 }
