@@ -1,12 +1,15 @@
 {
-  "version": 1,
-  "updated_at": "2026-05-22T20:05:00+02:00",
-  "positioning": "MMIR is the trusted AI operating layer for orchestration across local, self-hosted and managed AI systems.",
+  "version": 2,
+  "updated_at": "2026-05-22T21:15:00+02:00",
+  "positioning": "MMIR is the orchestration layer for trusted AI: an AI control plane across local, edge, self-hosted and managed AI systems.",
   "public_repo_rule": "inkognitroz.github.io is public. It may contain static UI, public-safe manifests and non-sensitive local metadata only. Secrets, provider keys, billing, private user data and managed routing policy belong in private/protected backend or local connector repos.",
   "principles": [
     "Useful first answer before setup",
     "Local/private by default",
+    "Not a chatbot, Ollama wrapper, local frontend or OpenAI clone",
+    "One perfect first local AI experience before marketplace, training, mesh economy or billing",
     "Orchestration is the core product strength",
+    "Workflows are the moat",
     "No hidden paid routes or surprise spend",
     "Truthful live/beta/planned/premium labels"
   ],
@@ -32,23 +35,24 @@
     },
     {
       "id": "J002",
-      "name": "Free local model activation",
+      "name": "First magical local AI activation",
       "status": "beta",
       "priority": "P0",
-      "user_goal": "Run a private local model from MMIR with no cloud cost.",
+      "user_goal": "Open mmir.ai, connect local AI, install, see own models and chat instantly.",
       "trust_boundary": "Browser to paired MMIR Local Node on 127.0.0.1, then to Ollama/local runtime.",
       "free_first": "Uses user's machine and free/open local models. No cloud spend.",
-      "entry_points": ["+ Connect Model", "Model selector", "Local AI Connector", "Raspberry Pi / Linux ARM installer"],
+      "entry_points": ["Connect local AI", "Model selector", "Local AI Connector", "Mac installer", "Windows installer", "Raspberry Pi / Linux ARM installer"],
       "steps": [
-        "User chooses a free installable model",
-        "MMIR shows OS-specific installer path, including Raspberry Pi/Linux ARM",
-        "Installer prepares MMIR Local Node and Ollama/model where possible",
+        "User opens mmir.ai",
+        "User chooses Connect local AI",
+        "MMIR shows the right one-file installer path for the user's device",
+        "Installer prepares MMIR Local Node and Ollama/model where possible while hiding brew, npm, Node.js, CORS, Docker and Terraform",
         "Browser pairs with local node",
-        "Model discovery moves model from installable to live",
-        "User chats through /chat/completions"
+        "Model discovery moves user's own models from installable to live",
+        "User chats instantly through /chat/completions"
       ],
-      "done_when": "A normal user can pick a model, install, refresh and chat with a live local model without reading architecture docs.",
-      "current_gap": "Needs smoother one-click install UX, stronger post-install detection and secure cross-device control-plane pairing beyond localhost.",
+      "done_when": "A normal user can open mmir.ai, click Connect local AI, install one file, return to MMIR, see local models and chat without reading architecture docs.",
+      "current_gap": "Needs smoother DMG/PKG-level Mac install UX, stronger post-install detection, Windows/Linux parity and secure cross-device control-plane pairing beyond localhost.",
       "cost": "zero"
     },
     {
@@ -59,7 +63,7 @@
       "user_goal": "Connect an already-owned local, self-hosted or OpenAI-compatible backend.",
       "trust_boundary": "Browser to explicit user-selected backend URL. Provider secrets must stay server-side.",
       "free_first": "Allowed by default only when route is local, free or self-hosted.",
-      "entry_points": ["+ Connect Model", "Backend settings"],
+      "entry_points": ["Connect local AI", "Backend settings"],
       "steps": [
         "User creates or edits backend profile",
         "Public UI stores only metadata and key reference labels",
@@ -72,10 +76,10 @@
     },
     {
       "id": "J004",
-      "name": "Model orchestration chat",
+      "name": "Model-agnostic orchestration",
       "status": "beta",
       "priority": "P0",
-      "user_goal": "Use MMIR as the orchestration layer: switch models, apply roles, compare outputs and synthesize.",
+      "user_goal": "Use MMIR as the orchestration layer above models: switch, route, compare, apply roles and synthesize.",
       "trust_boundary": "Browser orchestration over active trusted backend/local node. No hidden provider calls.",
       "free_first": "Works with free browser guide/local/self-hosted models first.",
       "entry_points": ["Roles / Multi-Model Chat", "Model Library", "Runtime model selector"],
@@ -86,7 +90,7 @@
         "Responses are labeled by model/role",
         "User can synthesize results"
       ],
-      "done_when": "A user can see clearly which model/role answered and can switch, compare and synthesize without losing context.",
+      "done_when": "A user can see clearly which model/role answered, why it was routed there, and can switch, compare and synthesize without losing context.",
       "current_gap": "Comparison/synthesis needs more end-to-end smoke coverage and clearer first-screen discovery.",
       "cost": "zero with local/free models"
     },
@@ -114,7 +118,7 @@
       "name": "Workflow orchestration",
       "status": "beta",
       "priority": "P1",
-      "user_goal": "Chain prompts, roles, tools and actions into reusable AI workflows.",
+      "user_goal": "Chain prompts, roles, tools, policies and actions into reusable AI workflows that matter more than chat.",
       "trust_boundary": "Workflow definitions in browser/protected backend; execution bounded by policy.",
       "free_first": "Manual and planning-only flows first. No paid automation by default.",
       "entry_points": ["Workflow Builder", "Training Automation"],
