@@ -81,6 +81,7 @@ Updated: 2026-05-22
 - Frontend onboarding now has a free local activation action, and backend profiles are blocked from ambiguous paid use unless non-local routes are explicitly marked free, local or self-hosted.
 - Chat model selection no longer starts as an empty `No live models` state: it now includes a free browser guide plus installable free Ollama starter models with explicit local install commands.
 - Chat model selection now also includes multiple live browser helpers and WebLLM/WebGPU model routes using official MLC model IDs for supported browsers, with graceful fallback when WebGPU is unavailable.
+- Free browser/installable model choices now render immediately on page load while local-node health is checked in the background, so the first chat surface does not look empty or blocked by backend setup.
 - `+ Connect Model` now activates/reuses the free local node profile and opens the backend setup panel instead of feeling like a dead action.
 - Free local model install bootstrap files now exist for Windows and Mac/Linux, so a selected starter model can produce a concrete path to MMIR Local Node + Ollama.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.

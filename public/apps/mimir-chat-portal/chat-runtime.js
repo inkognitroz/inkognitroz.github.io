@@ -461,7 +461,8 @@
       starterModels=fallbackStarterModels();
     }
     if(!starterModels.length)starterModels=fallbackStarterModels();
-    renderModelHelper();
+    renderModels([]);
+    setStatus('Free browser/installable models are ready. Local node check runs in the background.','ready');
   }
 
   function starterValue(model){
@@ -835,7 +836,7 @@
     }
     const url=cleanUrl(profile.url);
     try{
-      setStatus('Checking backend...','loading');
+      setStatus('Free browser models are ready. Checking local node in the background...','loading');
       await fetchJson(joinUrl(url,'/health'),{timeoutMs:5000});
       const token=await pairIfNeeded(profile,url);
       const models=await fetchJson(joinUrl(url,'/models'),{headers:authHeaders(token),timeoutMs:8000});
