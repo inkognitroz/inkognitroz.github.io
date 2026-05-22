@@ -39,6 +39,7 @@ Updated: 2026-05-22
 - Managed backend now fails closed into API-key auth when a non-mock managed provider is selected, unless anonymous managed-provider mode is explicitly enabled for local demo use.
 - Managed backend now has a protected node registry for registering, listing, heartbeat-updating and deleting owned compute nodes.
 - MMIR Local Node now exposes public-safe node identity metadata for future managed registration.
+- Secure outbound tunnel rules are now documented for backend and local-node, with explicit no-inbound-port, short-lived-token and no-frontend-secret boundaries.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
@@ -47,7 +48,7 @@ Updated: 2026-05-22
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- D051-D059: secure tunnels, monitoring and AI routing.
+- D052-D059: monitoring and AI routing.
 - D046-D050: vector store foundations, durable backend knowledge sync and project memory governance.
 - D051-D060: workflow builder, automation and AI routing.
 - D061-D081: platform, marketplace, enterprise controls and compute mesh foundations.
