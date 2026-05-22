@@ -39,9 +39,10 @@
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function setStatus(text){statusEl.textContent=text||'';}
   function readProfiles(){try{const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(e){return [];}}
-  function writeProfiles(profiles){localStorage.setItem(STORAGE_KEY,JSON.stringify(profiles));}
+  function notifyProfiles(){window.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated'));}
+  function writeProfiles(profiles){localStorage.setItem(STORAGE_KEY,JSON.stringify(profiles));notifyProfiles();}
   function readActive(){return localStorage.getItem(ACTIVE_KEY)||'';}
-  function writeActive(id){localStorage.setItem(ACTIVE_KEY,id);}
+  function writeActive(id){localStorage.setItem(ACTIVE_KEY,id);notifyProfiles();}
   function selectedProfile(){return readProfiles().find(p=>p.id===selectedId)||null;}
   function activeProfile(){const id=readActive();return readProfiles().find(p=>p.id===id)||null;}
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
@@ -120,6 +121,24 @@
   function render(){renderList();renderEditor();renderDashboard();}
   function selectProfile(id){selectedId=id;setStatus('');render();}
   function createProfile(){const profiles=readProfiles();const profile=defaultProfile();profiles.push(profile);writeProfiles(profiles);selectedId=profile.id;setStatus('Local node profile created. Save, Set active, then send a message.');render();}
+  function ensureFreeLocalProfile(){
+    const profiles=readProfiles();
+    let profile=profiles.find(p=>cleanUrl(p.url)===DEFAULT_LOCAL_URL&&p.provider==='local-node');
+    if(!profile){
+      profile=defaultProfile();
+      profiles.push(profile);
+    }
+    profile.cost='free local';
+    profile.keyRef='local pairing token only';
+    profile.provider='local-node';
+    profile.updatedAt=new Date().toISOString();
+    writeProfiles(profiles);
+    selectedId=profile.id;
+    writeActive(profile.id);
+    setStatus('Free local profile is active.');
+    render();
+    return profile;
+  }
   function saveProfile(){
     const url=cleanUrl(urlEl.value);if(url&&!validUrl(url)){setStatus('Enter a valid http or https backend URL.');return;}
     const profiles=readProfiles();let p=selectedProfile();if(!p){p={id:uid(),createdAt:new Date().toISOString()};profiles.push(p);selectedId=p.id;}
@@ -132,5 +151,6 @@
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
   if(refreshDashboardBtn)refreshDashboardBtn.addEventListener('click',()=>{renderDashboard();setStatus('Dashboard refreshed.');});
   window.addEventListener('mmir-backend-profiles-updated',()=>render());
+  window.MimirBackendProfiles={ensureFreeLocalProfile};
   const profiles=readProfiles();selectedId=readActive()||(profiles[0]&&profiles[0].id)||null;render();
 })();

@@ -70,14 +70,32 @@
 
     const heading=document.createElement('div');
     heading.className='onboarding-heading';
-    heading.innerHTML='<p class="eyebrow">First run</p><h2>Get to your first local answer</h2>';
+    heading.innerHTML='<div><p class="eyebrow">Free-first start</p><h2>Get to your first local answer</h2></div><small>No account, no paid provider, no cloud model required.</small>';
 
     const grid=document.createElement('div');
     grid.className='onboarding-grid';
     steps.forEach((item,index)=>grid.append(step(item.label,item.done,index===firstOpen,item.detail,item.target)));
 
+    const actions=document.createElement('div');
+    actions.className='onboarding-actions';
+    const freeButton=document.createElement('button');
+    freeButton.type='button';
+    freeButton.id='activate-free-local';
+    freeButton.textContent='Use free local';
+    freeButton.addEventListener('click',()=>{
+      const profile=window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+      if(profile){
+        render();
+        document.getElementById('local-connector')?.setAttribute('open','');
+      }
+    });
+    const installLink=document.createElement('a');
+    installLink.href='#local-connector';
+    installLink.textContent='Local install';
+    actions.append(freeButton,installLink);
+
     panel.innerHTML='';
-    panel.append(heading,grid);
+    panel.append(heading,actions,grid);
   }
 
   window.addEventListener('mmir-backend-profiles-updated',render);
