@@ -66,6 +66,7 @@ Updated: 2026-05-22
 - Model/provider/adapter registry v1 now exists in the managed backend, and the frontend model catalog can merge active backend registry models with the static public-safe catalog.
 - Backend and local-node CI now use Node 24, newer setup/checkout actions, lockfiles, `npm ci`, lint, secret scanning and tests.
 - MMIR Local Node now uses idle-timeout behavior for streaming Ollama responses so long generations are not cut off while tokens are still flowing.
+- MMIR Local Node installer scripts now prefer reproducible `npm ci`, support explicit Ollama install opt-in, and run smoke checks through pairing-protected routes instead of old unpaired endpoints.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 
