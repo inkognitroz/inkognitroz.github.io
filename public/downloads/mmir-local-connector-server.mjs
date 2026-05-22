@@ -2,6 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import crypto from 'node:crypto';
+import { spawn } from 'node:child_process';
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || 3000);
@@ -10,6 +11,18 @@ const TOKEN = fs.readFileSync(process.env.MMIR_PAIRING_TOKEN_FILE, 'utf8').trim(
 const MODEL = fs.readFileSync(process.env.MMIR_DEFAULT_MODEL_FILE, 'utf8').trim() || 'llama3.2:1b';
 const PLATFORM = process.env.MMIR_CONNECTOR_PLATFORM || os.platform();
 const VERSION = '0.1.0-standalone-device';
+const TUNNEL_CONTROL_ENABLED = process.env.MMIR_ENABLE_TUNNEL_CONTROL === 'true';
+const TUNNEL_LOCAL_URL = `http://127.0.0.1:${PORT}`;
+
+const tunnelState = {
+  provider: 'trycloudflare',
+  status: TUNNEL_CONTROL_ENABLED ? 'stopped' : 'disabled',
+  public_url: null,
+  started_at: null,
+  error: null,
+  process: null,
+  logs: [],
+};
 
 const allowed = new Set([
   'https://mmir.ai',
@@ -49,6 +62,48 @@ function fail(res, code, message, origin) {
       message,
     },
   }, origin);
+}
+
+function appendTunnelLog(message) {
+  const text = String(message || '').trim();
+  if (!text) return;
+
+  tunnelState.logs.push({
+    timestamp: new Date().toISOString(),
+    message: text.slice(0, 600),
+  });
+  tunnelState.logs = tunnelState.logs.slice(-20);
+
+  const urlMatch = text.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/i);
+  if (urlMatch) {
+    tunnelState.public_url = urlMatch[0];
+    tunnelState.status = 'online';
+    tunnelState.error = null;
+  }
+}
+
+function tunnelPayload() {
+  return {
+    provider: tunnelState.provider,
+    status: tunnelState.status,
+    control_enabled: TUNNEL_CONTROL_ENABLED,
+    local_url: TUNNEL_LOCAL_URL,
+    public_url: tunnelState.public_url,
+    started_at: tunnelState.started_at,
+    error: tunnelState.error,
+    requirements: [
+      'cloudflared installed on PATH',
+      'MMIR_ENABLE_TUNNEL_CONTROL=true set locally before starting MMIR Local Connector',
+      'pairing token required before tunnel status/start/stop',
+    ],
+    security: [
+      'Tunnel is opt-in and disabled by default',
+      'Raw Ollama stays private on 127.0.0.1:11434',
+      'MMIR model/chat routes still require the local pairing token',
+      'Do not put provider API keys or tunnel secrets in the public frontend',
+    ],
+    recent_logs: tunnelState.logs,
+  };
 }
 
 function requestToken(req) {
@@ -203,8 +258,78 @@ http.createServer(async (req, res) => {
           type: 'local',
           registration: PLATFORM,
         },
-        capabilities: ['health', 'status', 'pairing', 'hardware', 'models', 'chat.completions'],
+        tunnel: {
+          provider: tunnelState.provider,
+          status: tunnelState.status,
+          control_enabled: TUNNEL_CONTROL_ENABLED,
+          public_url: tunnelState.public_url,
+        },
+        capabilities: ['health', 'status', 'pairing', 'hardware', 'models', 'chat.completions', 'tunnels.status', 'tunnels.trycloudflare'],
       }, origin);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/node/identity') {
+      send(res, 200, {
+        id: `mmir-local-${PLATFORM}`,
+        name: 'MMIR Local Connector',
+        type: 'local',
+        trust_level: 'paired-local',
+        registration: PLATFORM,
+        capabilities: ['health', 'status', 'pairing', 'hardware', 'models', 'chat.completions', 'tunnels.status', 'tunnels.trycloudflare'],
+      }, origin);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/tunnels/status') {
+      if (paired(req, res, origin)) send(res, 200, tunnelPayload(), origin);
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/tunnels/trycloudflare/start') {
+      if (!paired(req, res, origin)) return;
+      if (!TUNNEL_CONTROL_ENABLED) {
+        fail(res, 403, 'Tunnel control is disabled. Restart MMIR Local Connector with MMIR_ENABLE_TUNNEL_CONTROL=true after installing cloudflared.', origin);
+        return;
+      }
+      if (tunnelState.process && !tunnelState.process.killed) {
+        send(res, 200, tunnelPayload(), origin);
+        return;
+      }
+
+      tunnelState.status = 'starting';
+      tunnelState.error = null;
+      tunnelState.public_url = null;
+      tunnelState.started_at = new Date().toISOString();
+      tunnelState.logs = [];
+      tunnelState.process = spawn('cloudflared', ['tunnel', '--url', TUNNEL_LOCAL_URL], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
+      });
+      tunnelState.process.stdout.on('data', chunk => appendTunnelLog(chunk.toString('utf8')));
+      tunnelState.process.stderr.on('data', chunk => appendTunnelLog(chunk.toString('utf8')));
+      tunnelState.process.on('error', error => {
+        tunnelState.status = 'unavailable';
+        tunnelState.error = error.code === 'ENOENT' ? 'cloudflared is not installed or not on PATH.' : error.message;
+        tunnelState.process = null;
+      });
+      tunnelState.process.on('exit', code => {
+        tunnelState.status = code === 0 ? 'stopped' : 'error';
+        tunnelState.error = code === 0 ? null : `cloudflared exited with code ${code}.`;
+        tunnelState.process = null;
+      });
+      send(res, 200, tunnelPayload(), origin);
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/tunnels/stop') {
+      if (!paired(req, res, origin)) return;
+      if (tunnelState.process && !tunnelState.process.killed) tunnelState.process.kill();
+      tunnelState.status = TUNNEL_CONTROL_ENABLED ? 'stopped' : 'disabled';
+      tunnelState.public_url = null;
+      tunnelState.error = null;
+      tunnelState.process = null;
+      send(res, 200, tunnelPayload(), origin);
       return;
     }
 
