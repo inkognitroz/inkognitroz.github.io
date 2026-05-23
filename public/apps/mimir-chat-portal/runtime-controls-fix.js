@@ -1,6 +1,18 @@
 (function(){
   const READY_COPY='Free guide works now; connect local node for live models.';
 
+  function setAttrIfChanged(element,name,value){
+    if(element.getAttribute(name)!==value)element.setAttribute(name,value);
+  }
+
+  function removeAttrIfPresent(element,name){
+    if(element.hasAttribute(name))element.removeAttribute(name);
+  }
+
+  function setClassIfChanged(element,name,enabled){
+    if(element.classList.contains(name)!==enabled)element.classList.toggle(name,enabled);
+  }
+
   function syncPrimaryLink(){
     const link=document.getElementById('primary-chat-link');
     if(!link)return;
@@ -8,13 +20,12 @@
     const label=String(link.textContent||'').trim().toLowerCase();
     if(link.id!=='primary-chat-link'&&href!=='#mimir-chat-runtime'&&label!=='send')return;
     const busy=document.querySelector('.mimir-chat-center')?.getAttribute('aria-busy')==='true';
-    link.setAttribute('href','#mimir-chat-runtime');
-    link.setAttribute('role','button');
-    link.removeAttribute('target');
-    link.removeAttribute('rel');
-    link.setAttribute('aria-disabled',busy?'true':'false');
-    const disabled=busy;
-    if(link.classList.contains('disabled')!==disabled)link.classList.toggle('disabled',disabled);
+    setAttrIfChanged(link,'href','#mimir-chat-runtime');
+    setAttrIfChanged(link,'role','button');
+    removeAttrIfPresent(link,'target');
+    removeAttrIfPresent(link,'rel');
+    setAttrIfChanged(link,'aria-disabled',busy?'true':'false');
+    setClassIfChanged(link,'disabled',busy);
   }
 
   function openTarget(target){
