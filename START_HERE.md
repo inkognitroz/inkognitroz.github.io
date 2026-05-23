@@ -1,10 +1,38 @@
 # START HERE
 
-Welcome to **SaaS Fabric**.
+Welcome to **MMIR**.
 
-1. Edit `/public/content.json` to update your platform content.
-2. Open `/public/admin.html` locally to add/edit/remove cards, preview, import CSV-style data, and export JSON.
-3. Commit changes and push to `main` to deploy on GitHub Pages (`https://inkognitroz.github.io/`).
-4. Use issue templates in `.github/ISSUE_TEMPLATE/` to queue new SaaS ideas, app factory tasks, and content updates.
-5. Keep v1 static, safe, and practical for non-technical maintenance.
-6. Keep MMIR as a product/app track until a dedicated MMIR repo/domain split is complete.
+MMIR is the orchestration layer for trusted AI. The current product milestone is one perfect first experience:
+
+```text
+Open mmir.ai
+-> Connect local AI
+-> Install
+-> Ready
+-> Chat works
+```
+
+## Work Order
+
+1. Check current GitHub issues and docs before creating new work.
+2. Prioritize the local AI activation journey.
+3. Keep public frontend changes static, safe and GitHub Pages-compatible.
+4. Keep secrets and paid execution out of the public repo.
+5. Run smoke checks before publishing.
+
+```bash
+node scripts/ensure-mmir-public-branding.js --check
+node scripts/smoke-check-pages.js
+node scripts/smoke-check-user-journeys.js
+node scripts/smoke-check-ui-actions.js
+```
+
+## Key Files
+
+- `public/index.html` - root MMIR entry/fallback
+- `public/mmir.html` - main product experience
+- `public/apps/mimir-chat-portal/` - MMIR chat/control-plane UI
+- `public/downloads/` - local connector installer entrypoints
+- `docs/MMIR_PRODUCT_DOCTRINE.md` - product identity
+- `docs/MMIR_CONTROL_PLANE_BOUNDARY.md` - architecture boundary
+- `docs/MMIR_SECURITY_BASELINE.md` - security baseline
