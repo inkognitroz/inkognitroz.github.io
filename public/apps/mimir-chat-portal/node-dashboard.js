@@ -7,6 +7,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const NODE_HANDOFF_PREFIX='mimir-node-handoff-v1:';
   let remotePairingCode=null;
 
   if(!root||!api)return;
@@ -16,6 +17,7 @@
   function activeProfile(){return api.activeProfile?.()||null;}
   function activeWorkspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
   function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
+  function nodeHandoffKey(){return NODE_HANDOFF_PREFIX+activeWorkspaceId();}
   function readRepairResume(){
     try{
       const value=JSON.parse(localStorage.getItem(repairResumeKey())||'null');
@@ -34,6 +36,19 @@
         provider_secrets_stored:false,
         raw_prompt_stored:false,
         raw_response_stored:false
+      }));
+    }catch(error){}
+  }
+  function storeNodeHandoff(payload){
+    try{
+      localStorage.setItem(nodeHandoffKey(),JSON.stringify({
+        ...payload,
+        at:new Date().toISOString(),
+        no_paid_routes_started:true,
+        provider_secrets_stored:false,
+        raw_prompt_stored:false,
+        raw_response_stored:false,
+        tunnel_policy:'outbound_only_explicit_start'
       }));
     }catch(error){}
   }
@@ -183,6 +198,88 @@
     return {...base,action:'chat-now',title:'Local path ready',detail:'Connector, pairing, runtime and models are ready for this device.',primary:'Chat now',target:'#mimir-prompt',steps:['Use verified chat','Add another node only when needed','Keep paid/provider routes approval-gated']};
   }
 
+  function blockingCheck(checks){
+    return checks.find(check=>check.state!=='ready'&&check.id!=='tunnel')||checks.find(check=>check.state!=='ready')||null;
+  }
+
+  function handoffStage(checks,tunnel,models){
+    const first=blockingCheck(checks);
+    if(!first)return {id:tunnel?.public_url?'remote-ready':'chat-ready',check:null};
+    if(first.id==='connector')return {id:'install-connector',check:first};
+    if(first.id==='pairing')return {id:'pair-browser',check:first};
+    if(first.id==='ollama')return {id:'start-runtime',check:first};
+    if(first.id==='model-pull'||first.id==='model_pull')return {id:'repair-model-install',check:first};
+    if(first.id==='model')return {id:'install-model',check:first};
+    if(first.id==='tunnel'&&tunnel?.control_enabled&&!tunnel.public_url)return {id:'optional-tunnel',check:first};
+    if(Array.isArray(models)&&models.length)return {id:'chat-ready',check:null};
+    return {id:'review-health',check:first};
+  }
+
+  function nodeHandoffPlan(checks,hardware,tunnel,models){
+    const device=detectDevice(hardware);
+    const stage=handoffStage(checks,tunnel,models);
+    const tunnelEnabled=Boolean(tunnel&&tunnel.control_enabled!==false);
+    const tunnelOnline=Boolean(tunnel?.public_url);
+    const base={
+      stage:stage.id,
+      device,
+      model:device.model,
+      tunnelEnabled,
+      tunnelOnline,
+      badges:['Desktop','VM/server','Raspberry Pi/Linux ARM','Phone/tablet client'],
+      steps:[
+        {id:'install',label:'Install node',ready:!['install-connector'].includes(stage.id)},
+        {id:'pair',label:'Pair browser',ready:!['install-connector','pair-browser'].includes(stage.id)},
+        {id:'model',label:'Live model',ready:['chat-ready','remote-ready','optional-tunnel'].includes(stage.id)},
+        {id:'proof',label:'Proof/chat',ready:['chat-ready','remote-ready','optional-tunnel'].includes(stage.id)}
+      ],
+      secondary:tunnelEnabled&&!tunnelOnline?{label:'Start free tunnel',action:'start-tunnel',target:'#node-start-tunnel'}:null
+    };
+    if(stage.id==='install-connector'){
+      return {...base,title:'MMIR will set up the free local node path',detail:'Use this device, a Linux VM or Raspberry Pi. The public site only prepares the free profile; the node stays private on localhost until you explicitly pair or start an outbound tunnel.',primary:'Install node',action:'install-connector',target:device.installer};
+    }
+    if(stage.id==='pair-browser'){
+      return {...base,title:'Pair this browser automatically',detail:'The connector is reachable. MMIR will refresh pairing through the local node before model, chat or tunnel routes are used.',primary:'Pair / refresh',action:'pair-browser',target:'#node-dashboard'};
+    }
+    if(stage.id==='start-runtime'){
+      return {...base,title:'Start the local runtime',detail:'The node answered, but Ollama or the local runtime is not online yet. Run the installer repair path and MMIR will resume proof after return.',primary:'Open local connector',action:'start-runtime',target:'#local-connector'};
+    }
+    if(stage.id==='repair-model-install'){
+      return {...base,title:'Repair the model install',detail:stage.check?.detail||'The model pull needs retry or a smaller free starter model for this device.',primary:'Retry free model',action:'repair-model-install',target:'#model-library'};
+    }
+    if(stage.id==='install-model'){
+      return {...base,title:'Install one free starter model',detail:'No live local chat model is visible yet. Start with '+device.model+' for '+device.label+', then MMIR returns to proof and first chat.',primary:'Install free model',action:'install-model',target:'#model-library'};
+    }
+    if(stage.id==='optional-tunnel'){
+      return {...base,title:'Local chat is ready; tunnel is optional',detail:'Use an outbound tunnel only when another trusted device needs this node. Do not expose raw Ollama or inbound ports.',primary:'Chat now',action:'chat-now',target:'#mimir-prompt',secondary:{label:'Start free tunnel',action:'start-tunnel',target:'#node-start-tunnel'}};
+    }
+    if(stage.id==='remote-ready'){
+      return {...base,title:'Trusted node is reachable from another device',detail:'Tunnel is online after pairing. Use it as a temporary trusted route and keep raw runtimes private.',primary:'Chat now',action:'chat-now',target:'#mimir-prompt'};
+    }
+    if(stage.id==='chat-ready'){
+      return {...base,title:'Local model path is ready',detail:'Connector, pairing, runtime and at least one model are available. MMIR can prove and send the first answer now.',primary:'Chat now',action:'chat-now',target:'#mimir-prompt'};
+    }
+    return {...base,title:'Review node health',detail:stage.check?.detail||'MMIR found a node state that needs attention before proof.',primary:'Refresh nodes',action:'review-health',target:'#node-dashboard'};
+  }
+
+  function renderNodeHandoff(plan){
+    const target=plan.target||'#node-dashboard';
+    const isHash=target.startsWith('#');
+    const actionAttrs=' data-node-handoff-action="'+safe(plan.action)+'" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="'+safe(target)+'" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'"';
+    const primary=isHash
+      ? '<a href="'+safe(target)+'" data-open-target'+actionAttrs+'>'+safe(plan.primary)+'</a>'
+      : '<a href="'+safe(target)+'"'+actionAttrs+'>'+safe(plan.primary)+'</a>';
+    const secondary=plan.secondary
+      ? '<button type="button"'+actionAttrs.replace('data-node-handoff-action="'+safe(plan.action)+'"','data-node-handoff-action="'+safe(plan.secondary.action)+'"').replace('data-node-handoff-target="'+safe(target)+'"','data-node-handoff-target="'+safe(plan.secondary.target)+'"')+'>'+safe(plan.secondary.label)+'</button>'
+      : '';
+    return '<article id="node-tunnel-handoff" class="node-handoff-card" data-stage="'+safe(plan.stage)+'">'+
+      '<div class="node-handoff-copy"><span>Automatic node handoff</span><h3>'+safe(plan.title)+'</h3><p>'+safe(plan.detail)+'</p><small>Free-first / outbound tunnel only / no public secrets / no paid routes started</small></div>'+
+      '<div class="node-handoff-rail">'+plan.steps.map(step=>'<em data-state="'+(step.ready?'ready':'next')+'">'+safe(step.label)+'</em>').join('')+'</div>'+
+      '<div class="node-handoff-devices">'+plan.badges.map(badge=>'<strong>'+safe(badge)+'</strong>').join('')+'</div>'+
+      '<div class="node-dashboard-actions">'+primary+secondary+'<button type="button" data-node-handoff-action="refresh" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="#node-dashboard" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'">Refresh</button></div>'+
+    '</article>';
+  }
+
   function renderDeviceRepair(guide){
     const target=guide.target||'#local-connector';
     const isHash=target.startsWith('#');
@@ -194,7 +291,7 @@
   }
 
   function nextAction(checks){
-    const first=checks.find(check=>check.state!=='ready');
+    const first=blockingCheck(checks);
     if(!first){
       return {
         title:'Node path is ready',
@@ -217,6 +314,9 @@
     }
     if(first.id==='model'){
       return {title:'Install a free local model',detail:'Pick an installable-free Ollama model, run the installer path, then refresh until it becomes live.',primary:'Model library',target:'#model-library'};
+    }
+    if(first.id==='tunnel'){
+      return {title:'Chat locally now; tunnel is optional',detail:'Local chat does not need a tunnel. Start an outbound tunnel only for another trusted device after pairing.',primary:'Chat now',target:'#mimir-prompt'};
     }
     return {title:'Review node health',detail:first.detail,primary:'Local connector',target:'#local-connector'};
   }
@@ -314,6 +414,47 @@
         }
       });
     });
+    root.querySelectorAll('[data-node-handoff-action]').forEach(control=>{
+      control.addEventListener('click',(event)=>{
+        const action=control.getAttribute('data-node-handoff-action')||'refresh';
+        const target=control.getAttribute('data-node-handoff-target')||control.getAttribute('href')||'#node-dashboard';
+        const payload={
+          action,
+          stage:control.getAttribute('data-node-handoff-stage')||'unknown',
+          target,
+          device:control.getAttribute('data-node-handoff-device')||'device',
+          model:control.getAttribute('data-node-handoff-model')||''
+        };
+        storeNodeHandoff(payload);
+        window.MimirActivationTelemetry?.record?.('node-handoff-action',{
+          status:action,
+          model:payload.model,
+          route:payload.device,
+          free:true,
+          note:'Node handoff selected: '+action+' -> '+target+'. no_paid_routes_started:true.'
+        });
+        if(action==='refresh'||action==='pair-browser'||action==='review-health'){
+          event.preventDefault();
+          window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+          load();
+          return;
+        }
+        if(action==='start-tunnel'){
+          event.preventDefault();
+          document.getElementById('node-start-tunnel')?.click();
+          return;
+        }
+        if(action==='install-model'||action==='repair-model-install'){
+          const library=document.getElementById('model-library');
+          if(library&&'open' in library)library.open=true;
+          window.dispatchEvent(new CustomEvent('mmir-model-library-focus-recommended',{detail:{source:'node-handoff',no_paid_routes_started:true}}));
+        }
+        if(action==='chat-now'){
+          document.getElementById('mimir-prompt')?.focus();
+          window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
+        }
+      });
+    });
     root.querySelectorAll('[data-delete-model]').forEach(button=>{
       button.addEventListener('click',async()=>{
         if(!connection)return;
@@ -345,6 +486,7 @@
     ];
     const action=nextAction(checks);
     const guide=guidedDeviceRepair(checks,null,null);
+    const plan=nodeHandoffPlan(checks,null,null,[]);
     root.innerHTML=
       renderRepairResumeBanner()+
       '<div class="node-dashboard-grid">'+
@@ -352,6 +494,7 @@
         card('Active node','offline',DEFAULT_LOCAL_URL)+
         card('Models','free route','Install a local model when the node is running.')+
       '</div>'+
+      renderNodeHandoff(plan)+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
       renderDeviceRepair(guide)+
       renderAction(action,false,false);
@@ -413,6 +556,7 @@
     const action=report?.action||nextAction(checks);
     const doctorSource=report?'Local Node Doctor':'Browser fallback doctor';
     const guide=guidedDeviceRepair(checks,hardware,tunnel);
+    const plan=nodeHandoffPlan(checks,hardware,tunnel,models);
     const canStartTunnel=Boolean(tunnel&&tunnel.control_enabled!==false&&!tunnel.public_url);
     root.innerHTML=
       renderRepairResumeBanner()+
@@ -425,6 +569,7 @@
         card('Tunnel',statusText(tunnel?.status),tunnelSummary(tunnel))+
         card('Doctor source',doctorSource,report?'Status: '+statusText(report.status):'Connector does not expose /doctor yet')+
       '</div>'+
+      renderNodeHandoff(plan)+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
       renderDeviceRepair(guide)+
       renderModelManager(models)+

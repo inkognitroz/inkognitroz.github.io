@@ -399,13 +399,19 @@ requireText(nodeDashboardPath, 'device-repair-action', 'D174 repair-card clicks 
 requireText(nodeDashboardPath, 'mimir-repair-resume-v1:', 'D175 repair-card clicks must store installer-return resume state.');
 requireText(nodeDashboardPath, 'renderRepairResumeBanner', 'D176 Node Dashboard must render the last repair resume result.');
 requireText(nodeDashboardPath, 'data-repair-resume-action', 'D176 repair resume banner must offer a next safe action.');
+requireText(nodeDashboardPath, 'nodeHandoffPlan', 'D204 Node Dashboard must compute an automatic node/tunnel handoff.');
+requireText(nodeDashboardPath, 'renderNodeHandoff', 'D204 Node Dashboard must render the automatic handoff card.');
+requireText(nodeDashboardPath, 'data-node-handoff-action', 'D204 node handoff must expose actionable controls.');
+requireText(nodeDashboardPath, 'outbound_only_explicit_start', 'D204 node handoff must keep tunnel start explicit and outbound-only.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), 'mmir-repair-resume-checked', 'D175 local connector must verify repair resume after return.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'mmir-repair-resume-checked', 'D175 repair resume results must feed activation telemetry.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-repair-card', 'D172 guided repair card needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-resume-banner', 'D176 Node Dashboard needs repair resume banner styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-handoff-card', 'D204 automatic node handoff needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.repair-resume-banner', 'D176 first screen needs repair resume banner styling.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'offline-connector', 'D173 repair harness must cover offline connector state.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'failed-model-pull', 'D173 repair harness must cover failed model pull state.');
+requireText(join(root, 'scripts', 'smoke-check-node-tunnel-handoff.js'), 'Node tunnel handoff smoke check passed.', 'D204 node/tunnel handoff needs dedicated CI fixture coverage.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');
@@ -520,6 +526,7 @@ requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Node handoff state', 'D204 privacy inventory must disclose node handoff state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, session tokens, invite codes, provider keys and backend data.');
 
 const parity = JSON.parse(text(guiParityPath));

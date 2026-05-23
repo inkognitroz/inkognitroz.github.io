@@ -551,12 +551,18 @@ requireIncludes(files.firstScreenHydration, 'renderRepairResumeBanner', 'D176 ne
 requireIncludes(files.firstScreenHydration, 'mmir-repair-resume-checked', 'D176 first-screen banner must refresh after repair resume checks.');
 requireIncludes(files.nodeDashboard, 'renderRepairResumeBanner', 'D176 needs Node Dashboard repair resume result visibility.');
 requireIncludes(files.nodeDashboard, 'data-repair-resume-action', 'D176 repair resume banner needs a concrete next action.');
+requireIncludes(files.nodeDashboard, 'nodeHandoffPlan', 'D204 needs one automatic node/tunnel handoff plan.');
+requireIncludes(files.nodeDashboard, 'renderNodeHandoff', 'D204 needs one visible node/tunnel handoff card.');
+requireIncludes(files.nodeDashboard, 'data-node-handoff-action', 'D204 node handoff needs actionable controls.');
+requireIncludes(files.nodeDashboard, 'outbound_only_explicit_start', 'D204 node handoff must keep tunnel start explicit and outbound-only.');
 requireIncludes(files.nodeDashboardCss, '.node-resume-banner', 'D176 needs Node Dashboard repair resume styling.');
+requireIncludes(files.nodeDashboardCss, '.node-handoff-card', 'D204 needs Node Dashboard handoff styling.');
 requireIncludes(files.repairResumeCss, '.repair-resume-banner', 'D176 needs first-screen repair resume styling.');
 requireIncludes(files.repairCardHarness, 'offline-connector', 'D173 repair harness must cover offline connector.');
 requireIncludes(files.repairCardHarness, 'offline-ollama', 'D173 repair harness must cover offline Ollama.');
 requireIncludes(files.repairCardHarness, 'failed-model-pull', 'D173 repair harness must cover failed model pull.');
 requireIncludes(files.repairCardHarness, 'pairing-required', 'D173 repair harness must cover pairing-required state.');
+requireIncludes(join(root, 'scripts', 'smoke-check-node-tunnel-handoff.js'), 'Node tunnel handoff smoke check passed.', 'D204 node/tunnel handoff must have dedicated smoke coverage.');
 requireIncludes(files.privacyControls, 'export', 'J005 needs local data export controls.');
 requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete controls.');
 requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 needs a visible data inventory.');
@@ -568,6 +574,7 @@ requireIncludes(files.privacyControls, 'First chat receipt', 'D166 privacy inven
 requireIncludes(files.privacyControls, 'Activation telemetry', 'D170 privacy inventory must disclose browser-local activation telemetry.');
 requireIncludes(files.privacyControls, 'Activation autopilot', 'D171 privacy inventory must disclose browser-local autopilot state.');
 requireIncludes(files.privacyControls, 'Repair resume state', 'D175 privacy inventory must disclose repair resume state.');
+requireIncludes(files.privacyControls, 'Node handoff state', 'D204 privacy inventory must disclose browser-local node handoff state.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');

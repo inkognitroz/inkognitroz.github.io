@@ -86,6 +86,15 @@
       "no_spend": true
     },
     {
+      "id": "node-handoff",
+      "surface": "Node Dashboard",
+      "selector": "[data-node-handoff-action]",
+      "status": "wired",
+      "result": "Automatic node handoff carries the user from installer to pairing, local model, proof/chat and optional outbound tunnel only when explicitly selected.",
+      "source_evidence": ["nodeHandoffPlan", "renderNodeHandoff", "data-node-handoff-action", "outbound tunnel only", "mimir-node-handoff-v1:"],
+      "no_spend": true
+    },
+    {
       "id": "progress-first-answer",
       "surface": "Progress Dashboard",
       "selector": "#progress-first-answer-next-step-action",

@@ -32,6 +32,7 @@
   const AUTOPILOT_PREFIX='mimir-activation-autopilot-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const NODE_HANDOFF_PREFIX='mimir-node-handoff-v1:';
   const DEMO_KEY='mimir-demo-mode-v1';
   const WELCOME_KEY='mimir-demo-welcome-shown-v1';
   const GROWTH_EVENTS_KEY='mimir-growth-events-v1';
@@ -66,7 +67,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX,SHARE_PREFIX,FIRST_CHAT_RECEIPT_PREFIX,ACTIVATION_EVENTS_PREFIX,AUTOPILOT_PREFIX,ACTIVATION_REPLAY_PREFIX,REPAIR_RESUME_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX,SHARE_PREFIX,FIRST_CHAT_RECEIPT_PREFIX,ACTIVATION_EVENTS_PREFIX,AUTOPILOT_PREFIX,ACTIVATION_REPLAY_PREFIX,REPAIR_RESUME_PREFIX,NODE_HANDOFF_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -269,6 +270,7 @@
     const autopilotKeys=keysByPrefix(local,AUTOPILOT_PREFIX);
     const activationReplayKeys=keysByPrefix(local,ACTIVATION_REPLAY_PREFIX);
     const repairResumeKeys=keysByPrefix(local,REPAIR_RESUME_PREFIX);
+    const nodeHandoffKeys=keysByPrefix(local,NODE_HANDOFF_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -445,6 +447,16 @@
         retention:'Latest installer/repair-card return state per workspace until cleared.',
         action:'Stores selected repair action, target label, device label, model label and verification status only; no provider secrets or raw prompts/responses.',
         keys:repairResumeKeys
+      },
+      {
+        id:'node-handoff',
+        label:'Node handoff state',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,nodeHandoffKeys),
+        size:formatBytes(storageSize(localStorage,nodeHandoffKeys)),
+        retention:'Latest node/tunnel handoff action per workspace until cleared.',
+        action:'Stores action, stage, target label, device label and model label only; no provider secrets, pairing tokens, raw prompts, raw responses or paid routes.',
+        keys:nodeHandoffKeys
       },
       {
         id:'workspace-memory',

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T16:23:07.589Z",
+  "updated_at": "2026-05-23T16:42:08.598Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 204,
+    "total": 205,
     "done": 51,
-    "beta": 128,
+    "beta": 129,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -880,6 +880,16 @@
         "phase": "Node Activation / Tunnels",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Installer / Node Activation",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1158,7 +1168,7 @@
     }
   ],
   "next_queue": [
-    "D204"
+    "D205"
   ],
   "watchlist": [
     "D082",
@@ -4220,9 +4230,24 @@
       "best_practice": "Cross-device node setup must stay outbound, private by default and free unless the user explicitly chooses paid capacity",
       "done_when": "User can choose local or remote node path, see tunnel readiness/start/retry status and return to model proof without dead steps, secrets or exposed inbound ports",
       "covers": "nodes, tunnels, activation, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Node Dashboard now renders an automatic node/tunnel handoff from installer to pairing, model install, proof/chat and optional outbound tunnel across desktop, VM and Raspberry Pi/Linux ARM paths.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D205",
+      "phase": "Installer / Node Activation",
+      "priority": "P0",
+      "work_package": "Universal installer release QA",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Verify and harden the free installer artifacts, release manifest, checksums, OS/device copy, Raspberry Pi/Linux ARM path and post-install return loop so node setup feels like one safe installer instead of instructions",
+      "best_practice": "Installers are product UX and security-critical: they must be truthful, reproducible, local-first and never hide paid/cloud work",
+      "done_when": "User downloads or opens the correct free installer for their device, returns to MMIR, sees health/model proof resume automatically and no public secret or paid route is introduced",
+      "covers": "installers, activation, QA, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next node/tunnel activation slice: make local-node, pairing and tunnel handoff feel automatic across desktop, VM and Raspberry Pi paths.",
+      "evidence": "Next activation slice: verify and harden the universal installer release artifacts, checksums, OS/device copy and post-install return loop.",
       "estimate": "2-6h"
     }
   ]

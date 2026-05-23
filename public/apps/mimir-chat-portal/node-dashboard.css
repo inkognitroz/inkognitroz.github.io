@@ -17,6 +17,7 @@
 .node-model-manager,
 .node-model-card,
 .node-resume-banner,
+.node-handoff-card,
 .node-repair-card {
   border: 1px solid var(--mimir-line);
   border-radius: 8px;
@@ -35,6 +36,7 @@
 .node-model-manager span,
 .node-model-card span,
 .node-resume-banner span,
+.node-handoff-card span,
 .node-repair-card span {
   color: var(--mimir-muted);
   font-size: 0.75rem;
@@ -54,10 +56,75 @@
 .node-next-action p,
 .node-model-manager p,
 .node-resume-banner p,
+.node-handoff-card p,
 .node-repair-card p,
 .node-repair-card small {
   color: var(--mimir-muted);
   line-height: 1.4;
+}
+
+.node-handoff-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.75fr);
+  gap: 12px;
+  align-items: center;
+  border-left: 4px solid #0f766e;
+  background: #f8fffc;
+}
+
+.node-handoff-copy h3 {
+  color: var(--mimir-text);
+  margin: 4px 0;
+}
+
+.node-handoff-copy p {
+  max-width: 760px;
+  margin: 0 0 6px;
+}
+
+.node-handoff-copy small {
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.node-handoff-rail {
+  display: grid;
+  gap: 6px;
+}
+
+.node-handoff-rail em,
+.node-handoff-devices strong {
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 999px;
+  color: #0f766e;
+  display: inline-flex;
+  font-style: normal;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1.2;
+  min-height: 30px;
+  padding: 7px 10px;
+}
+
+.node-handoff-rail em[data-state="next"] {
+  background: #fffbeb;
+  border-color: rgba(217, 119, 6, 0.3);
+  color: #92400e;
+}
+
+.node-handoff-rail em[data-state="ready"] {
+  background: #ecfdf5;
+}
+
+.node-handoff-devices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.node-handoff-card .node-dashboard-actions {
+  grid-column: 1 / -1;
 }
 
 .node-resume-banner {
@@ -271,6 +338,15 @@
 
   .node-resume-banner {
     display: grid;
+  }
+
+  .node-handoff-card {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .node-handoff-devices strong {
+    flex: 1 1 140px;
   }
 
   .node-dashboard-actions,

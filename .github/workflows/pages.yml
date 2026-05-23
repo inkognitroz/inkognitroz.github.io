@@ -92,6 +92,8 @@ jobs:
         run: node scripts/smoke-check-first-screen-visual-qa.js
       - name: Smoke check composer model picker
         run: node scripts/smoke-check-composer-model-picker.js
+      - name: Smoke check node tunnel handoff
+        run: node scripts/smoke-check-node-tunnel-handoff.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages
