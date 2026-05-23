@@ -53,6 +53,9 @@
     if(status==='checking'){
       return {state:'checking',title:'Repair check running',detail:'MMIR is checking connector, pairing, runtime and models after the install/repair return.',primary:'Refresh node health',target:'#node-dashboard'};
     }
+    if(status==='retrying'){
+      return {state:'checking',title:'Retrying starter install',detail:'MMIR is retrying '+(model||'the selected starter')+' once now that the local node is back.',primary:'Open chat runtime',target:'#mimir-chat-runtime'};
+    }
     if(resume?.action==='starter-install-repair'){
       return {state:'pending',title:'Starter install needs repair',detail:'MMIR kept '+(model||'the selected starter')+' selected. Fix the local node/Ollama path, then retry install/proof.',primary:'Continue repair',target:String(resume?.target||'#node-dashboard')};
     }

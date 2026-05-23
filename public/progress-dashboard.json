@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:06:06.896Z",
+  "updated_at": "2026-05-23T15:12:28.828Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 195,
+    "total": 196,
     "done": 51,
-    "beta": 119,
+    "beta": 120,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -750,8 +750,8 @@
         "phase": "Activation Automation",
         "total": 3,
         "done": 0,
-        "beta": 2,
-        "next": 1,
+        "beta": 3,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -802,6 +802,16 @@
         "done": 0,
         "beta": 1,
         "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Activation Closure",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1078,7 +1088,7 @@
     }
   ],
   "next_queue": [
-    "D195"
+    "D196"
   ],
   "watchlist": [
     "D082",
@@ -4005,9 +4015,24 @@
       "best_practice": "Repair should close the loop from failed install to successful install/proof",
       "done_when": "Repaired local node can retry the preserved starter install with one clear action and no paid route",
       "covers": "activation, install, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Repair resume checks can now retry the preserved starter install once after the local node returns as needs-model, with no paid routes and retry loop protection.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D196",
+      "phase": "Activation Closure",
+      "priority": "P0",
+      "work_package": "Starter retry success closure",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "When a retried starter install succeeds, close the repair resume, surface verified proof and prepare the first useful chat prompt",
+      "best_practice": "Users should see success and be carried to first answer after repair",
+      "done_when": "Successful retry clears repair ambiguity and moves the user to verified chat readiness",
+      "covers": "activation, proof, first chat",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next automation slice: after repair returns, offer one safe retry or auto-continue only when the local node proves ready.",
+      "evidence": "Next closure slice: successful starter retry should close repair ambiguity and move the user to verified first-chat readiness.",
       "estimate": "2-6h"
     }
   ]

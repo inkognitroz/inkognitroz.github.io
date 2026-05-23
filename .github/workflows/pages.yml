@@ -74,6 +74,8 @@ jobs:
         run: node scripts/smoke-check-recommended-starter-install-handoff.js
       - name: Smoke check starter install repair fallback
         run: node scripts/smoke-check-starter-install-repair-fallback.js
+      - name: Smoke check starter install retry after repair
+        run: node scripts/smoke-check-starter-install-retry-after-repair.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

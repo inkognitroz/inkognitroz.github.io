@@ -46,6 +46,7 @@ jobs:
           node scripts/smoke-check-recommended-starter-model-focus.js
           node scripts/smoke-check-recommended-starter-install-handoff.js
           node scripts/smoke-check-starter-install-repair-fallback.js
+          node scripts/smoke-check-starter-install-retry-after-repair.js
 
       - name: Commit migrated assets
         run: |

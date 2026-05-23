@@ -95,8 +95,13 @@ if (!d194 || d194.status !== 'beta') {
 }
 
 const d195 = tasks.find((task) => task.seq === 'D195');
-if (!d195 || d195.status !== 'next') {
-  fail('Progress dashboard must expose D195 as the next starter install retry-after-repair work item.');
+if (!d195 || d195.status !== 'beta') {
+  fail('Progress dashboard task D195 must stay beta after starter install retry-after-repair ships.');
+}
+
+const d196 = tasks.find((task) => task.seq === 'D196');
+if (!d196 || d196.status !== 'next') {
+  fail('Progress dashboard must expose D196 as the next starter retry success closure work item.');
 }
 
 if (!process.exitCode) {

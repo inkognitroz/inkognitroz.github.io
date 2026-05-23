@@ -186,14 +186,15 @@ Updated: 2026-05-23
 - D192 is now beta: Model Library imports exact free starter models, highlights the recommended starter and focuses it from first-screen/dashboard starter actions without enabling paid routes.
 - D193 is now beta: recommended starter cards hand exact starter ids/model tags into chat runtime selection, Local Node install, proof preference and no-spend telemetry.
 - D194 is now beta: failed starter installs store a repair resume, keep the selected starter/model, open the local repair path and refresh first-screen/Node Dashboard repair banners.
-- D195 is now the next automation slice: after repair returns, offer one safe retry or auto-continue only when the local node proves ready.
+- D195 is now beta: repair resume checks retry the preserved starter install once after the local node returns as needs-model, with no paid routes and retry loop protection.
+- D196 is now the next closure slice: successful starter retry should close repair ambiguity and move the user to verified first-chat readiness.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D195` starter install retry after repair.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D196` starter retry success closure.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

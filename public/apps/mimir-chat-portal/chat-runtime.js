@@ -1056,6 +1056,7 @@
 
   function starterInstallRepairFallback(starter,model,error){
     const target=starterInstallRepairTarget(error);
+    const existing=readRepairResume();
     const message=error?.status===401?'Pair this browser with the local node before install.':
       error?.status===404?'Update or restart MMIR Local Node so model install routes are available.':
       'Start MMIR Local Node and Ollama, then retry the selected starter install.';
@@ -1067,6 +1068,7 @@
       starter_id:starter?.id||'',
       note:'Starter install could not start for '+model+'. '+message,
       source:'chat-runtime',
+      retry_count:Number(existing?.retry_count||0),
       error_status:error?.status||'offline'
     });
     window.MimirActivationTelemetry?.record?.('starter-install-repair',{status:'needs-action',model,route:target,free:true,note:'Starter install repair opened '+target+'. no_paid_routes_started:true.'});
@@ -1074,6 +1076,23 @@
     openPanel('#node-dashboard');
     if(target==='#local-connector')openPanel('#local-connector');
     return message+' MMIR opened repair and kept '+model+' selected for retry.';
+  }
+
+  function handleRepairResumeChecked(event){
+    const resume=event?.detail||readRepairResume();
+    if(!resume||resume.action!=='starter-install-repair')return;
+    if(resume.status!=='needs-model'||!resume.starter_id)return;
+    if(Number(resume.retry_count||0)>=1||resume.status==='retrying')return;
+    const next=writeRepairResume({
+      ...resume,
+      status:'retrying',
+      retry_count:Number(resume.retry_count||0)+1,
+      retry_started_at:new Date().toISOString(),
+      note:'Local node is back; MMIR is retrying the preserved starter install once.'
+    });
+    pendingStarterHandoff={starter_id:next.starter_id,action:'install',model:next.model||''};
+    window.MimirActivationTelemetry?.record?.('starter-install-retry',{status:'retrying',model:next.model||'',route:'chat runtime',free:true,note:'Retrying preserved starter install once after repair. no_paid_routes_started:true.'});
+    runStarterHandoff({starter_id:next.starter_id,model:next.model||'',action:'install',source:'repair-resume',free:true,no_paid_routes_started:true});
   }
 
   function starterAvailabilityLabel(model){
@@ -1866,10 +1885,11 @@
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
+    window.addEventListener('mmir-repair-resume-checked',handleRepairResumeChecked);
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
     window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));
     window.addEventListener('storage',()=>{renderActivationReplayGate();refreshState(true);});
-    loadStarterModels().then(()=>refreshState(true));
+    loadStarterModels().then(()=>{refreshState(true);handleRepairResumeChecked({detail:readRepairResume()});});
     setInterval(()=>refreshState(false),3000);
     window.addEventListener('focus',()=>refreshState(true));
   }

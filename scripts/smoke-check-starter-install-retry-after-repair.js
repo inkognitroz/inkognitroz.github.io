@@ -18,7 +18,7 @@ function fail(message) {
 
 function text(file) {
   if (!existsSync(file)) {
-    fail(`Missing starter install repair fallback file: ${relative(root, file)}`);
+    fail(`Missing starter install retry-after-repair file: ${relative(root, file)}`);
     return '';
   }
   return readFileSync(file, 'utf8');
@@ -40,54 +40,41 @@ const coverage = text(files.coverage);
 const progressData = json(files.progressData);
 
 for (const needle of [
-  "REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:'",
-  'function starterInstallRepairTarget(error)',
-  'function starterInstallRepairFallback(starter,model,error)',
-  "action:'starter-install-repair'",
-  'starter_id:starter?.id',
-  'mmir-starter-install-repair-opened',
-  'starter-install-repair',
-  'pendingStarterHandoff={starter_id:resume.starter_id',
-  'MMIR opened repair and kept'
+  'function handleRepairResumeChecked(event)',
+  "resume.action!=='starter-install-repair'",
+  "resume.status!=='needs-model'",
+  'Number(resume.retry_count||0)>=1',
+  "status:'retrying'",
+  'retry_count:Number(resume.retry_count||0)+1',
+  'starter-install-retry',
+  'Retrying preserved starter install once after repair',
+  'runStarterHandoff({starter_id:next.starter_id'
 ]) {
-  if (!chatRuntime.includes(needle)) fail(`Chat runtime missing starter install repair fallback evidence: ${needle}`);
+  if (!chatRuntime.includes(needle)) fail(`Chat runtime missing starter retry-after-repair evidence: ${needle}`);
 }
 
 for (const needle of [
-  "resume?.action==='starter-install-repair'",
-  'Starter install needs repair',
-  'mmir-starter-install-repair-opened'
+  "status==='retrying'",
+  'Retrying starter install',
+  '#mimir-chat-runtime'
 ]) {
-  if (!nodeDashboard.includes(needle)) fail(`Node Dashboard missing starter install repair visibility evidence: ${needle}`);
+  if (!nodeDashboard.includes(needle)) fail(`Node Dashboard missing retrying starter visibility evidence: ${needle}`);
+  if (!hydration.includes(needle)) fail(`First-screen hydration missing retrying starter visibility evidence: ${needle}`);
 }
 
 for (const needle of [
-  "resume?.action==='starter-install-repair'",
-  'Starter install needs repair',
-  'MMIR kept'
-]) {
-  if (!hydration.includes(needle)) fail(`First-screen hydration missing starter install repair banner evidence: ${needle}`);
-}
-
-for (const needle of [
-  'starter-install-repair',
-  'mmir-starter-install-repair-opened',
-  'mimir-repair-resume-v1:',
+  'starter-install-retry',
+  'retrying',
   'pendingStarterHandoff',
   'no_paid_routes_started:true'
 ]) {
-  if (!coverage.includes(needle)) fail(`UI action coverage missing starter install repair evidence: ${needle}`);
+  if (!coverage.includes(needle)) fail(`UI action coverage missing starter retry-after-repair evidence: ${needle}`);
 }
 
 const tasks = Array.isArray(progressData.tasks) ? progressData.tasks : [];
-const d194 = tasks.find((task) => task.seq === 'D194');
-if (!d194 || d194.status !== 'beta') {
-  fail('Progress dashboard task D194 must be beta after starter install repair fallback ships.');
-}
-
 const d195 = tasks.find((task) => task.seq === 'D195');
 if (!d195 || d195.status !== 'beta') {
-  fail('Progress dashboard task D195 must stay beta after starter install retry-after-repair ships.');
+  fail('Progress dashboard task D195 must be beta after starter install retry-after-repair ships.');
 }
 
 const d196 = tasks.find((task) => task.seq === 'D196');
@@ -96,5 +83,5 @@ if (!d196 || d196.status !== 'next') {
 }
 
 if (!process.exitCode) {
-  console.log('Starter install repair fallback smoke check passed.');
+  console.log('Starter install retry-after-repair smoke check passed.');
 }

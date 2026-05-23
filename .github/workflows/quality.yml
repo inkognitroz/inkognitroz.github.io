@@ -156,3 +156,6 @@ jobs:
 
       - name: Smoke-check starter install repair fallback
         run: node scripts/smoke-check-starter-install-repair-fallback.js
+
+      - name: Smoke-check starter install retry after repair
+        run: node scripts/smoke-check-starter-install-retry-after-repair.js
