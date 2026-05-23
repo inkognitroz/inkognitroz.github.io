@@ -139,6 +139,13 @@ requireText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'MMIR product 
 requireText(mmirPath, './apps/mimir-chat-portal/admin-governance.js', 'MMIR product page must load admin governance script.');
 requireText(mmirPath, './apps/mimir-chat-portal/access-control.js', 'MMIR product page must load access control script.');
 requireText(mmirPath, './apps/mimir-chat-portal/runtime-settings.js', 'MMIR product page must load runtime settings script.');
+requireText(mmirPath, 'id="data-analysis"', 'D146 needs a visible data analysis panel.');
+requireText(mmirPath, './apps/mimir-chat-portal/data-analysis.js', 'D146 needs data analysis loaded on the product page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'mimir-data-analysis-v1:', 'D146 needs local data analysis snapshot storage.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'parseDelimited', 'D146 needs browser-only CSV/TSV parsing.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'renderSvgChart', 'D146 needs local chart rendering.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'MAX_FILE_BYTES', 'D146 needs bounded browser analysis input size.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.css'), '.data-analysis-chart', 'D146 needs chart styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');

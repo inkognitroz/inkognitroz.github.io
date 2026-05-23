@@ -39,6 +39,7 @@ const files = {
   adminGovernance: join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'),
   accessControl: join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'),
   runtimeSettings: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'),
+  dataAnalysis: join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'),
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
@@ -257,6 +258,11 @@ requireIncludes(files.runtimeSettings, 'runtime-context-length', 'D139 needs con
 requireIncludes(files.runtimeSettings, 'runtime-system-prompt', 'D139 needs bounded system prompt controls.');
 requireIncludes(files.chatRuntime, 'runtimePayload', 'D139 needs chat runtime to send settings to backend/local node routes.');
 requireIncludes(files.chatRuntime, 'runtimeInstruction', 'D139 needs custom system prompt injection through safe system context.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/data-analysis.js', 'D146 needs data analysis loaded on the product page.');
+requireIncludes(files.dataAnalysis, 'mimir-data-analysis-v1:', 'D146 needs free local data analysis snapshots.');
+requireIncludes(files.dataAnalysis, 'parseDelimited', 'D146 needs local CSV/TSV parsing.');
+requireIncludes(files.dataAnalysis, 'renderSvgChart', 'D146 needs local chart rendering.');
+requireIncludes(files.dataAnalysis, 'MAX_FILE_BYTES', 'D146 needs bounded input size.');
 requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
@@ -323,7 +329,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

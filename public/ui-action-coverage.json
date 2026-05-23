@@ -213,6 +213,14 @@
       "evidence": ["Save / rename", "Search saved chats", "dataset.conversationAction", "forkConversation", "safeShare", "exportConversation"]
     },
     {
+      "id": "data-analysis",
+      "surface": "Data analysis and charts",
+      "status": "beta",
+      "user_result": "Users can paste or upload CSV, TSV and JSON, get browser-only summaries/charts, save/export local snapshots and send a summary to chat without arbitrary code execution or paid backend cost.",
+      "selectors": ["#data-analysis", "#data-analysis-file", "#data-analysis-run", "#data-analysis-export", "#data-analysis-send-chat"],
+      "evidence": ["mimir-data-analysis-v1:", "MAX_FILE_BYTES", "parseDelimited", "renderSvgChart", "browser-only analysis"]
+    },
+    {
       "id": "workflow-data-training",
       "surface": "Workflow, datasets and training panels",
       "status": "beta",

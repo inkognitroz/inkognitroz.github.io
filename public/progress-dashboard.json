@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T06:41:55.847Z",
+  "updated_at": "2026-05-23T06:56:27.408Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 71,
+    "beta": 72,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 27,
+    "planned": 26,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -630,8 +630,8 @@
         "phase": "Data Analysis",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -641,10 +641,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Connectors",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D146"
+    "D147"
   ],
   "watchlist": [
     "D082",
@@ -2940,10 +2940,10 @@
       "best_practice": "Analysis should not run arbitrary code unsafely",
       "done_when": "User can inspect datasets and charts safely",
       "covers": "ChatGPT parity",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sequential GUI parity slice: safe data analysis and charting workspace with no arbitrary public-code execution.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Safe data analysis now runs in the browser with CSV/TSV/JSON parsing, summaries, SVG charts, local snapshots, JSON export and chat-summary handoff without arbitrary code execution.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D147",
@@ -2955,9 +2955,9 @@
       "best_practice": "Automation should be explicit and revocable",
       "done_when": "User can schedule safe local/protected jobs",
       "covers": "ChatGPT tasks parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next sequential GUI parity slice: scheduled task/reminder UI with explicit owner, schedule, revocation and cost boundaries.",
       "estimate": "1-3d"
     },
     {

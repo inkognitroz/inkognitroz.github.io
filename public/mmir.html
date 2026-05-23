@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/node-dashboard.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/conversation-manager.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/data-analysis.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
@@ -70,6 +71,7 @@
           <a href="#use-case-templates">Templates</a>
           <a href="#free-value-loops">Free</a>
           <a href="#dataset-manager">Data</a>
+          <a href="#data-analysis">Analysis</a>
           <a href="#training-automation">Automation</a>
           <a href="#user-journeys">Journeys</a>
           <a href="#gui-parity">Parity</a>
@@ -275,6 +277,15 @@
       </section>
     </details>
 
+    <details id="data-analysis" class="mimir-provider-drawer">
+      <summary>+ Data Analysis / Charts</summary>
+      <section class="mimir-dashboard" aria-labelledby="data-analysis-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Browser-only analytics</p><h2 id="data-analysis-title">Safe data analysis and charts</h2></div></div>
+        <p class="dashboard-note">CSV, TSV and JSON analysis runs locally in this browser. No arbitrary code execution, no public frontend secrets and no paid backend route.</p>
+        <div id="data-analysis-root" class="data-analysis-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="training-automation" class="mimir-provider-drawer">
       <summary>+ Training Automation</summary>
       <section class="mimir-dashboard" aria-labelledby="training-automation-title">
@@ -328,6 +339,7 @@
   <script src="./apps/mimir-chat-portal/access-control.js"></script>
   <script src="./apps/mimir-chat-portal/runtime-settings.js"></script>
   <script src="./apps/mimir-chat-portal/dataset-manager.js"></script>
+  <script src="./apps/mimir-chat-portal/data-analysis.js"></script>
   <script src="./apps/mimir-chat-portal/training-automation.js"></script>
   <script src="./apps/mimir-chat-portal/prompt-registry.js"></script>
   <script src="./apps/mimir-chat-portal/assistant-builder.js"></script>

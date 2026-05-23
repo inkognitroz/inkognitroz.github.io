@@ -28,6 +28,7 @@ Current priority after the matrix is:
 18. D144 agentic research planning.
 19. D145 custom assistant builder.
 20. D146 safe data analysis and charting workspace.
+21. D147 scheduled task/reminder UI.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -47,5 +48,6 @@ D143 is now beta across frontend/backend: memory has user-controlled scope, tags
 D144 is now beta across frontend/backend: research mode creates planning-only runs with selected sources, manual/free discovery links, ordered steps, citation rules and explicit approval gates before any autonomous browsing.
 D145 is now beta across frontend/backend: custom assistants are private by default, reusable, exportable, local-first and can carry instructions, model preference, tool allowlist, knowledge scope, runtime settings and sharing policy without public frontend secrets.
 D042 is now beta in the public UI: the first screen is calmer, core navigation is primary, the chat dock feels closer to modern chat products and free model routes load without an empty no-model state.
+D146 is now beta in the public UI: CSV, TSV and JSON analysis runs browser-only with summaries, charts, local snapshots, export and chat handoff while arbitrary code execution remains blocked.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

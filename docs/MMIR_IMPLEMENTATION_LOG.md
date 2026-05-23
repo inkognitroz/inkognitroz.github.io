@@ -138,13 +138,14 @@ Updated: 2026-05-23
 - D144 is now beta across frontend/backend: Research planning creates source-aware, citation-gated plans with manual/free discovery links and approval gates while keeping autonomous browsing and execution disabled by default.
 - D145 is now beta across frontend/backend: custom assistants are private by default, portable, protected by secret-like-token rejection and can be applied directly to chat runtime instructions without storing provider keys in GitHub Pages.
 - D042 is now beta in the public UI: first screen navigation is calmer, chat remains the primary surface, free browser/local routes load before local node checks, and model/node empty states now point users to the automatic free path instead of looking broken.
+- D146 is now beta in the public UI: safe data analysis runs locally in the browser for CSV/TSV/JSON with summaries, SVG charts, local snapshots, JSON export and chat-summary handoff without arbitrary public-code execution or paid backend cost.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D146` safe data analysis/charting workspace.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D147` scheduled task/reminder UI.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
