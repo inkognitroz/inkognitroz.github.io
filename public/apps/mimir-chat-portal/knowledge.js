@@ -5,6 +5,7 @@
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const HIGHLIGHT_PREFIX='mimir-answer-context-highlight-v1:';
+  const CORRECTION_PREFIX='mimir-context-corrections-v1:';
   const MAX_DOCUMENTS=10;
   const MAX_CHARS_PER_DOC=6000;
   const MAX_FILE_BYTES=1024*1024;
@@ -20,6 +21,7 @@
   let selectedFiles=[];
   let receiptFilterEl=null;
   let receiptActionsEl=null;
+  let correctionTrailEl=null;
   let receiptEventFilter=null;
 
   if(!host)return;
@@ -28,6 +30,7 @@
   function key(){return KNOWLEDGE_PREFIX+workspaceId();}
   function collectionKey(){return COLLECTIONS_PREFIX+workspaceId();}
   function highlightKey(){return HIGHLIGHT_PREFIX+workspaceId();}
+  function correctionKey(){return CORRECTION_PREFIX+workspaceId();}
   function setStatus(message){if(statusEl)statusEl.textContent=message||'';}
   function collectionId(name){
     const id=String(name||'').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -215,6 +218,94 @@
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:workspaceId()}}));
   }
 
+  function readCorrections(){
+    try{
+      const value=JSON.parse(localStorage.getItem(correctionKey())||'[]');
+      return Array.isArray(value)?value.filter(item=>item?.id).slice(0,40):[];
+    }catch(error){return [];}
+  }
+
+  function saveCorrections(items){
+    try{
+      localStorage.setItem(correctionKey(),JSON.stringify((Array.isArray(items)?items:[]).slice(0,40)));
+      window.dispatchEvent(new CustomEvent('mmir-context-corrections-updated',{detail:{workspaceId:workspaceId()}}));
+    }catch(error){}
+  }
+
+  function correctionEntry(filter,action,count,undo=[]){
+    return {
+      id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
+      target:'knowledge',
+      action,
+      message_id:String(filter?.messageId||'').trim().slice(0,120),
+      model:String(filter?.model||'').trim().slice(0,160),
+      source_ids:(filter?.ids||[]).slice(0,16),
+      source_count:Math.max(0,Math.round(Number(count)||0)),
+      undo:Array.isArray(undo)?undo.slice(0,24):[],
+      created_at:new Date().toISOString(),
+      local_only:true,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false,
+      no_paid_routes_started:true
+    };
+  }
+
+  function recordCorrection(entry){
+    saveCorrections([entry].concat(readCorrections().filter(item=>item.id!==entry.id)));
+    renderCorrectionTrail();
+  }
+
+  function latestUndoableCorrection(){
+    return readCorrections().find(item=>item.target==='knowledge'&&!item.undone_at&&Array.isArray(item.undo)&&item.undo.some(change=>change.kind==='knowledge-document'||change.kind==='knowledge-collection'))||null;
+  }
+
+  function markCorrectionUndone(id){
+    saveCorrections(readCorrections().map(item=>item.id===id?{...item,undone_at:new Date().toISOString()}:item));
+  }
+
+  function undoLatestCorrection(){
+    const entry=latestUndoableCorrection();
+    if(!entry){setStatus('No knowledge correction is available to undo.');return;}
+    const documentRestore=new Map(entry.undo.filter(change=>change.kind==='knowledge-document'&&change.id).map(change=>[String(change.id),change]));
+    const collectionRestore=new Map(entry.undo.filter(change=>change.kind==='knowledge-collection'&&change.id).map(change=>[String(change.id),change]));
+    let changed=0;
+    if(documentRestore.size){
+      saveKnowledge(readKnowledge().map(item=>{
+        const change=documentRestore.get(String(item.id))||documentRestore.get(String(item.backendId||''));
+        if(!change)return item;
+        changed+=1;
+        return {...item,enabled:change.enabled!==false,updatedAt:new Date().toISOString()};
+      }));
+    }
+    if(collectionRestore.size){
+      saveCollections(readCollections().map(collection=>{
+        const change=collectionRestore.get(String(collection.id));
+        if(!change)return collection;
+        changed+=1;
+        return {...collection,enabled:change.enabled!==false,updatedAt:new Date().toISOString()};
+      }));
+    }
+    markCorrectionUndone(entry.id);
+    renderCollections();
+    render();
+    setStatus(changed?('Undid '+String(changed)+' knowledge correction(s) locally.'):('Nothing changed; the original knowledge source is no longer present.'));
+  }
+
+  function renderCorrectionTrail(){
+    if(!correctionTrailEl)return;
+    const items=readCorrections().filter(item=>item.target==='knowledge').slice(0,3);
+    correctionTrailEl.hidden=!items.length;
+    correctionTrailEl.innerHTML='';
+    items.forEach(item=>{
+      const row=document.createElement('p');
+      row.dataset.state=item.undone_at?'undone':'ready';
+      const count=item.source_count?(' - '+String(item.source_count)+' source(s)'):'';
+      row.textContent=(item.undone_at?'Undone: ':'Logged: ')+String(item.action||'correction')+count+' - '+new Date(item.created_at||Date.now()).toLocaleString();
+      correctionTrailEl.appendChild(row);
+    });
+  }
+
   function clearReceiptDataset(){
     const panel=document.getElementById('knowledge-panel');
     if(!panel)return;
@@ -224,12 +315,14 @@
   }
 
   function clearReceiptFilter(){
+    const filter=activeReceiptFilter();
     receiptEventFilter=null;
     clearReceiptDataset();
     try{
       const highlight=readReceiptHighlight();
       if(highlight?.target==='#knowledge-panel')localStorage.removeItem(highlightKey());
     }catch(error){}
+    if(filter.active)recordCorrection(correctionEntry(filter,'clear-focus',filter.count,[]));
     document.querySelector('#knowledge-panel .runtime-answer-context-highlight')?.remove();
     renderCollections();
     render();
@@ -273,10 +366,12 @@
     const exactDocIds=new Set(filter.ids.filter(id=>items.some(item=>String(item.id)===id||String(item.backendId||'')===id)));
     const collectionIds=focusedCollectionIds(items,filter);
     let docChanges=0;
+    const undo=[];
     const next=items.map(item=>{
       if(!exactDocIds.has(String(item.id))&&!exactDocIds.has(String(item.backendId||'')))return item;
       if(item.enabled===false)return item;
       docChanges+=1;
+      undo.push({kind:'knowledge-document',id:item.id,enabled:item.enabled!==false});
       return {...item,enabled:false,updatedAt:new Date().toISOString()};
     });
     if(docChanges)saveKnowledge(next);
@@ -285,6 +380,7 @@
       const collections=readCollections().map(collection=>{
         if(!collectionIds.has(collection.id)||collection.enabled===false)return collection;
         collectionChanges+=1;
+        undo.push({kind:'knowledge-collection',id:collection.id,enabled:collection.enabled!==false});
         return {...collection,enabled:false,updatedAt:new Date().toISOString()};
       });
       if(collectionChanges)saveCollections(collections);
@@ -292,6 +388,7 @@
     renderCollections();
     render();
     const total=docChanges+collectionChanges;
+    if(total)recordCorrection(correctionEntry(filter,'disable-source',total,undo));
     setStatus(total?('Disabled '+String(total)+' receipt-focused knowledge source(s) for chat context.'):('Receipt-focused knowledge was already disabled or not available locally.'));
   }
 
@@ -301,16 +398,18 @@
     const saved=Array.isArray(items)?items:readKnowledge();
     const matches=receiptMatches(saved,active);
     const collections=focusedCollectionIds(saved,active);
-    receiptActionsEl.hidden=!active.active;
+    const undoable=latestUndoableCorrection();
+    receiptActionsEl.hidden=!active.active&&!undoable;
     receiptActionsEl.innerHTML='';
-    if(!active.active)return;
+    if(!active.active&&!undoable){renderCorrectionTrail();return;}
     const canDisableDocs=matches.some(item=>item.enabled!==false&&(active.idSet.has(String(item.id))||active.idSet.has(String(item.backendId||''))));
     const canDisableCollections=readCollections().some(collection=>collections.has(collection.id)&&collection.enabled!==false);
-    const actions=[
+    const actions=active.active?[
       {id:'review',label:'Review source',run:focusReceiptMatch,disabled:!matches.length&&!collections.size},
       {id:'disable',label:'Disable source',run:disableReceiptMatches,disabled:!canDisableDocs&&!canDisableCollections},
       {id:'clear',label:'Clear focus',run:clearReceiptFilter,disabled:false}
-    ];
+    ]:[];
+    if(undoable)actions.push({id:'undo',label:'Undo last correction',run:undoLatestCorrection,disabled:false});
     actions.forEach(action=>{
       const button=document.createElement('button');
       button.type='button';
@@ -320,6 +419,7 @@
       button.addEventListener('click',action.run);
       receiptActionsEl.appendChild(button);
     });
+    renderCorrectionTrail();
   }
 
   function collectionCounts(){
@@ -593,6 +693,7 @@
         '<p id="knowledge-status" class="dashboard-note" aria-live="polite"></p>'+
         '<p id="knowledge-receipt-filter-status" class="dashboard-note knowledge-receipt-filter" aria-live="polite" hidden></p>'+
         '<div id="knowledge-receipt-filter-actions" class="receipt-correction-actions" role="group" aria-label="Receipt knowledge correction actions" hidden></div>'+
+        '<div id="knowledge-correction-trail" class="context-correction-trail" aria-live="polite" hidden></div>'+
         '<div id="knowledge-list" class="knowledge-list" aria-live="polite"></div>'+
       '</div>';
     host.appendChild(details);
@@ -605,6 +706,7 @@
     statusEl=document.getElementById('knowledge-status');
     receiptFilterEl=document.getElementById('knowledge-receipt-filter-status');
     receiptActionsEl=document.getElementById('knowledge-receipt-filter-actions');
+    correctionTrailEl=document.getElementById('knowledge-correction-trail');
     fileInput?.addEventListener('change',()=>setSelectedFiles(fileInput.files||[]));
     ['dragenter','dragover'].forEach(type=>dropzoneEl?.addEventListener(type,handleDrag));
     ['dragleave','drop'].forEach(type=>dropzoneEl?.addEventListener(type,type==='drop'?handleDrop:handleDrag));
@@ -619,11 +721,13 @@
     renderPreviews();
     renderCollections();
     render();
+    renderCorrectionTrail();
   }
 
-  window.addEventListener('mmir-workspace-changed',()=>{receiptEventFilter=null;renderPreviews();renderCollections();render();setStatus('');});
+  window.addEventListener('mmir-workspace-changed',()=>{receiptEventFilter=null;renderPreviews();renderCollections();render();renderCorrectionTrail();setStatus('');});
   window.addEventListener('mmir-knowledge-updated',()=>{renderCollections();render();});
   window.addEventListener('mmir-knowledge-collections-updated',()=>{renderCollections();render();});
+  window.addEventListener('mmir-context-corrections-updated',renderCorrectionTrail);
   window.addEventListener('mmir-answer-context-highlight-updated',(event)=>{rememberReceiptFilter(event.detail||{});renderCollections();render();});
   window.addEventListener('mmir-answer-context-source-filter',(event)=>{rememberReceiptFilter(event.detail||{});renderCollections();render();});
   window.addEventListener('storage',()=>{renderCollections();render();});

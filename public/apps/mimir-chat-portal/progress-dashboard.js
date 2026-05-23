@@ -9,6 +9,7 @@
   const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
   const AUTOPILOT_PREFIX='mimir-activation-autopilot-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
+  const CONTEXT_CORRECTION_PREFIX='mimir-context-corrections-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   let dashboard=null;
@@ -24,6 +25,7 @@
   function activationEventsStorageKey(){return ACTIVATION_EVENTS_PREFIX+activeWorkspaceId();}
   function autopilotStorageKey(){return AUTOPILOT_PREFIX+activeWorkspaceId();}
   function activationReplayStorageKey(){return ACTIVATION_REPLAY_PREFIX+activeWorkspaceId();}
+  function contextCorrectionStorageKey(){return CONTEXT_CORRECTION_PREFIX+activeWorkspaceId();}
   function readProfiles(){
     try{
       const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');
@@ -77,6 +79,14 @@
     try{
       const value=JSON.parse(localStorage.getItem(activationEventsStorageKey())||'[]');
       return Array.isArray(value)?value:[];
+    }catch(error){
+      return [];
+    }
+  }
+  function readContextCorrections(){
+    try{
+      const value=JSON.parse(localStorage.getItem(contextCorrectionStorageKey())||'[]');
+      return Array.isArray(value)?value.filter((item)=>item?.id).slice(0,5):[];
     }catch(error){
       return [];
     }
@@ -696,6 +706,15 @@
     const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
     if(!scenarios.length)return '';
     const ready=scenarios.every((scenario)=>scenario.status==='ready'&&scenario.no_paid_routes_started===true);
+    const corrections=readContextCorrections();
+    const trail=corrections.length?'<div id="progress-context-correction-trail" class="progress-no-model-grid">'+corrections.map((item)=>
+      '<article class="progress-no-model-scenario" data-scenario="'+safe(item.target||'context')+'" data-state="'+safe(item.undone_at?'undone':'ready')+'">'+
+        '<span>'+safe(item.undone_at?'undone':'logged')+'</span><h3>'+safe(label(item.target||'context')+' '+label(item.action||'correction'))+'</h3>'+
+        '<p>'+safe(String(item.source_count||0)+' source(s), '+(item.undo?.length||0)+' undo step(s).')+'</p>'+
+        '<strong>'+safe(item.created_at?new Date(item.created_at).toLocaleString():'local event')+'</strong>'+
+        '<small>local only / no prompt or response</small>'+
+      '</article>'
+    ).join('')+'</div>':'<p id="progress-context-correction-trail" class="dashboard-note">No local context corrections have been logged in this workspace yet.</p>';
     return '<section id="progress-answer-context-source-correction" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
       '<div class="progress-route-map-head"><div><p class="eyebrow">Source correction</p><h2>'+safe(report.title||'Answer context source correction QA')+'</h2></div><small>'+safe(report.principle||'Receipt audit should lead to safe correction.')+'</small></div>'+
       '<div class="progress-no-model-grid">'+scenarios.map((scenario)=>
@@ -706,7 +725,27 @@
           '<small>no spend / metadata only</small>'+
         '</article>'
       ).join('')+'</div>'+
+      trail+
       '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe source correction metadata only.')+'</small>'+
+    '</section>';
+  }
+
+  function renderContextCorrectionAuditReport(data){
+    const report=data.context_correction_audit_report||{};
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    if(!scenarios.length)return '';
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&scenario.no_paid_routes_started===true);
+    return '<section id="progress-context-correction-audit" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Correction audit</p><h2>'+safe(report.title||'Context correction audit trail QA')+'</h2></div><small>'+safe(report.principle||'Corrections should be visible and reversible.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+scenarios.map((scenario)=>
+        '<article class="progress-no-model-scenario" data-scenario="'+safe(scenario.id)+'">'+
+          '<span>'+safe(label(scenario.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(scenario.target||scenario.id)+'</h3>'+
+          '<p>'+safe(scenario.expected||'')+'</p>'+
+          '<strong>'+safe(scenario.selector||report.storage_key||'correction audit')+'</strong>'+
+          '<small>no spend / reversible metadata</small>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe correction audit metadata only.')+'</small>'+
     '</section>';
   }
 
@@ -965,7 +1004,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();
@@ -995,6 +1034,7 @@
   if(refreshButton)refreshButton.addEventListener('click',init);
   window.addEventListener('hashchange',openHashDetails);
   window.addEventListener('mmir-first-chat-receipt-updated',render);
+  window.addEventListener('mmir-context-corrections-updated',render);
   window.addEventListener('mmir-activation-telemetry-updated',render);
   window.addEventListener('mmir-activation-autopilot-updated',render);
   window.addEventListener('mmir-activation-replay-updated',render);

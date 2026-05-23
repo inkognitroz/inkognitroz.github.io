@@ -1,0 +1,41 @@
+{
+  "title": "Context Correction Audit Trail QA",
+  "status": "ready",
+  "principle": "Context corrections should be visible, reversible and safe for team handoff without storing hidden conversation content.",
+  "public_repo_rule": "Correction events are browser-local metadata: target, action, source IDs, source count, undo steps and timestamps only. Raw prompts, raw responses, provider secrets and paid-route approvals are not stored.",
+  "storage_key": "mimir-context-corrections-v1:{workspace}",
+  "scenarios": [
+    {
+      "id": "memory-correction-log",
+      "status": "ready",
+      "target": "Memory receipt corrections",
+      "expected": "Disabling a receipt-focused memory item writes a metadata-only correction event with undo state.",
+      "selector": "#memory-correction-trail",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "knowledge-correction-log",
+      "status": "ready",
+      "target": "Knowledge receipt corrections",
+      "expected": "Disabling a receipt-focused knowledge document or collection writes a metadata-only correction event with undo state.",
+      "selector": "#knowledge-correction-trail",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "undo-last-correction",
+      "status": "ready",
+      "target": "Undo last correction",
+      "expected": "Memory and Knowledge correction action bars expose an undo button when a local undoable correction exists.",
+      "selector": "[data-receipt-correction=\"undo\"]",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "progress-dashboard-trail",
+      "status": "ready",
+      "target": "#progress-context-correction-trail",
+      "expected": "The progress dashboard shows the latest local correction metadata or an empty-state note for the current workspace.",
+      "selector": "#progress-context-correction-trail",
+      "no_paid_routes_started": true
+    }
+  ]
+}

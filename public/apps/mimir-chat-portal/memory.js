@@ -5,6 +5,7 @@
   const MEMORY_PREFIX='mimir-memory-v1:';
   const MEMORY_USE_PREFIX='mimir-memory-use-v1:';
   const HIGHLIGHT_PREFIX='mimir-answer-context-highlight-v1:';
+  const CORRECTION_PREFIX='mimir-context-corrections-v1:';
   const MAX_LOCAL_ITEMS=20;
   const MAX_IMPORT_LINES=12;
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
@@ -20,6 +21,7 @@
   let statusEl=null;
   let receiptFilterEl=null;
   let receiptActionsEl=null;
+  let correctionTrailEl=null;
   let editingId='';
   let receiptEventFilter=null;
 
@@ -32,6 +34,7 @@
   function key(){return MEMORY_PREFIX+workspaceId();}
   function useKey(){return MEMORY_USE_PREFIX+workspaceId();}
   function highlightKey(){return HIGHLIGHT_PREFIX+workspaceId();}
+  function correctionKey(){return CORRECTION_PREFIX+workspaceId();}
   function clean(value,max=1000){return String(value||'').trim().slice(0,max);}
   function cleanType(value){
     const type=clean(value,48).toLowerCase();
@@ -180,6 +183,83 @@
     }
   }
 
+  function readCorrections(){
+    try{
+      const value=JSON.parse(localStorage.getItem(correctionKey())||'[]');
+      return Array.isArray(value)?value.filter(item=>item?.id).slice(0,40):[];
+    }catch(error){return [];}
+  }
+
+  function saveCorrections(items){
+    try{
+      localStorage.setItem(correctionKey(),JSON.stringify((Array.isArray(items)?items:[]).slice(0,40)));
+      window.dispatchEvent(new CustomEvent('mmir-context-corrections-updated',{detail:{workspaceId:workspaceId()}}));
+    }catch(error){}
+  }
+
+  function correctionEntry(filter,action,count,undo=[]){
+    return {
+      id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
+      target:'memory',
+      action,
+      message_id:clean(filter?.messageId,120),
+      model:clean(filter?.model,160),
+      source_ids:(filter?.ids||[]).slice(0,16),
+      source_count:Math.max(0,Math.round(Number(count)||0)),
+      undo:Array.isArray(undo)?undo.slice(0,20):[],
+      created_at:new Date().toISOString(),
+      local_only:true,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false,
+      no_paid_routes_started:true
+    };
+  }
+
+  function recordCorrection(entry){
+    saveCorrections([entry].concat(readCorrections().filter(item=>item.id!==entry.id)));
+    renderCorrectionTrail();
+  }
+
+  function latestUndoableCorrection(){
+    return readCorrections().find(item=>item.target==='memory'&&!item.undone_at&&Array.isArray(item.undo)&&item.undo.some(change=>change.kind==='memory-item'))||null;
+  }
+
+  function markCorrectionUndone(id){
+    saveCorrections(readCorrections().map(item=>item.id===id?{...item,undone_at:new Date().toISOString()}:item));
+  }
+
+  function undoLatestCorrection(){
+    const entry=latestUndoableCorrection();
+    if(!entry){setStatus('No memory correction is available to undo.','idle');return;}
+    const restore=new Map(entry.undo.filter(change=>change.kind==='memory-item'&&change.id).map(change=>[String(change.id),change]));
+    let changed=0;
+    const next=readMemory().map(item=>{
+      const change=restore.get(String(item.id));
+      if(!change)return item;
+      changed+=1;
+      return {...item,enabled:change.enabled!==false,updatedAt:new Date().toISOString(),syncState:'local',syncError:''};
+    });
+    saveMemory(next);
+    markCorrectionUndone(entry.id);
+    render();
+    setStatus(changed?('Undid '+String(changed)+' memory correction(s) locally. Sync when ready.'):('Nothing changed; the original memory item is no longer present.'),changed?'ready':'idle');
+  }
+
+  function renderCorrectionTrail(){
+    if(!correctionTrailEl)return;
+    const items=readCorrections().filter(item=>item.target==='memory').slice(0,3);
+    correctionTrailEl.hidden=!items.length;
+    correctionTrailEl.innerHTML='';
+    items.forEach(item=>{
+      const row=document.createElement('p');
+      row.dataset.state=item.undone_at?'undone':'ready';
+      const count=item.source_count?(' - '+String(item.source_count)+' source(s)'):'';
+      row.textContent=(item.undone_at?'Undone: ':'Logged: ')+String(item.action||'correction')+count+' - '+new Date(item.created_at||Date.now()).toLocaleString();
+      correctionTrailEl.appendChild(row);
+    });
+  }
+
   function clearReceiptDataset(){
     const panel=document.getElementById('memory-panel');
     if(!panel)return;
@@ -189,12 +269,14 @@
   }
 
   function clearReceiptFilter(){
+    const filter=activeReceiptFilter();
     receiptEventFilter=null;
     clearReceiptDataset();
     try{
       const highlight=readReceiptHighlight();
       if(highlight?.target==='#memory-panel')localStorage.removeItem(highlightKey());
     }catch(error){}
+    if(filter.active)recordCorrection(correctionEntry(filter,'clear-focus',filter.count,[]));
     document.querySelector('#memory-panel .runtime-answer-context-highlight')?.remove();
     render();
     setStatus('Receipt source focus cleared.','ready');
@@ -225,12 +307,15 @@
     const ids=new Set(receiptMatches(items,filter).map(item=>item.id));
     if(!ids.size){setStatus('No matching memory source can be disabled from this receipt.','error');return;}
     let changed=0;
+    const undo=[];
     const next=items.map(item=>{
       if(!ids.has(item.id)||item.enabled===false)return item;
       changed+=1;
+      undo.push({kind:'memory-item',id:item.id,enabled:item.enabled!==false});
       return {...item,enabled:false,updatedAt:new Date().toISOString(),syncState:'local',syncError:''};
     });
     saveMemory(next);
+    if(changed)recordCorrection(correctionEntry(filter,'disable-source',changed,undo));
     render();
     setStatus(changed?('Disabled '+String(changed)+' receipt-focused memory item(s) locally. Sync when ready.'):('Receipt-focused memory was already disabled.'),changed?'ready':'idle');
   }
@@ -239,15 +324,17 @@
     if(!receiptActionsEl)return;
     const active=filter||activeReceiptFilter();
     const matches=receiptMatches(Array.isArray(items)?items:readMemory(),active);
-    receiptActionsEl.hidden=!active.active;
+    const undoable=latestUndoableCorrection();
+    receiptActionsEl.hidden=!active.active&&!undoable;
     receiptActionsEl.innerHTML='';
-    if(!active.active)return;
-    const actions=[
+    if(!active.active&&!undoable){renderCorrectionTrail();return;}
+    const actions=active.active?[
       {id:'review',label:'Review source',run:focusReceiptMatch,disabled:!matches.length},
       {id:'edit',label:'Edit memory',run:editReceiptMatch,disabled:!matches.length},
       {id:'disable',label:'Disable match',run:disableReceiptMatches,disabled:!matches.some(item=>item.enabled!==false)},
       {id:'clear',label:'Clear focus',run:clearReceiptFilter,disabled:false}
-    ];
+    ]:[];
+    if(undoable)actions.push({id:'undo',label:'Undo last correction',run:undoLatestCorrection,disabled:false});
     actions.forEach(action=>{
       const button=document.createElement('button');
       button.type='button';
@@ -257,6 +344,7 @@
       button.addEventListener('click',action.run);
       receiptActionsEl.appendChild(button);
     });
+    renderCorrectionTrail();
   }
 
   function activeConnection(){
@@ -643,6 +731,7 @@
         '<p id="memory-status" class="dashboard-note" aria-live="polite"></p>'+
         '<p id="memory-receipt-filter-status" class="dashboard-note memory-receipt-filter" aria-live="polite" hidden></p>'+
         '<div id="memory-receipt-filter-actions" class="receipt-correction-actions" role="group" aria-label="Receipt memory correction actions" hidden></div>'+
+        '<div id="memory-correction-trail" class="context-correction-trail" aria-live="polite" hidden></div>'+
         '<div class="memory-use-review">'+
           '<strong>Used in last message</strong>'+
           '<div id="memory-use-list" class="memory-use-list" aria-live="polite"></div>'+
@@ -662,16 +751,19 @@
     statusEl=document.getElementById('memory-status');
     receiptFilterEl=document.getElementById('memory-receipt-filter-status');
     receiptActionsEl=document.getElementById('memory-receipt-filter-actions');
+    correctionTrailEl=document.getElementById('memory-correction-trail');
     document.getElementById('memory-save')?.addEventListener('click',saveInput);
     document.getElementById('memory-sync')?.addEventListener('click',syncAll);
     document.getElementById('memory-refresh')?.addEventListener('click',loadBackendMemory);
     document.getElementById('memory-import')?.addEventListener('click',importNotes);
     render();
+    renderCorrectionTrail();
   }
 
-  window.addEventListener('mmir-workspace-changed',()=>{receiptEventFilter=null;editingId='';applyForm(null);render();setStatus('');});
+  window.addEventListener('mmir-workspace-changed',()=>{receiptEventFilter=null;editingId='';applyForm(null);render();renderCorrectionTrail();setStatus('');});
   window.addEventListener('mmir-memory-updated',render);
   window.addEventListener('mmir-memory-use-updated',()=>render());
+  window.addEventListener('mmir-context-corrections-updated',renderCorrectionTrail);
   window.addEventListener('mmir-answer-context-highlight-updated',(event)=>{rememberReceiptFilter(event.detail||{});render();});
   window.addEventListener('mmir-answer-context-source-filter',(event)=>{rememberReceiptFilter(event.detail||{});render();});
   window.addEventListener('mmir-backend-profiles-updated',()=>{if(activeConnection())syncAll();});

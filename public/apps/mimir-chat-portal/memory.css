@@ -63,9 +63,39 @@
   color: #92400e !important;
 }
 
+.receipt-correction-actions button[data-receipt-correction="undo"] {
+  border-color: rgba(37, 99, 235, 0.32) !important;
+  color: #1d4ed8 !important;
+}
+
 .receipt-correction-actions button:disabled {
   opacity: 0.52;
   cursor: not-allowed;
+}
+
+.context-correction-trail {
+  display: grid;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 8px;
+  background: #eff6ff;
+}
+
+.context-correction-trail[hidden] {
+  display: none;
+}
+
+.context-correction-trail p {
+  margin: 0;
+  color: #1e40af;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.context-correction-trail p[data-state="undone"] {
+  color: var(--mimir-muted, #6b7280);
 }
 
 .memory-panel textarea:focus-visible,

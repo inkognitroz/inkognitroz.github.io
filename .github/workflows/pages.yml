@@ -100,6 +100,8 @@ jobs:
         run: node scripts/smoke-check-answer-context-knowledge-source.js
       - name: Smoke check answer context source correction
         run: node scripts/smoke-check-answer-context-source-correction.js
+      - name: Smoke check context correction audit
+        run: node scripts/smoke-check-context-correction-audit.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

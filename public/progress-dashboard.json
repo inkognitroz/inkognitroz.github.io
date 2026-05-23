@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T22:15:58.629Z",
+  "updated_at": "2026-05-23T22:26:26.185Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 230,
+    "total": 231,
     "done": 51,
-    "beta": 154,
+    "beta": 155,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1018,6 +1018,16 @@
       },
       {
         "phase": "Memory / Knowledge Audit",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Context Correction",
         "total": 1,
         "done": 0,
         "beta": 0,
@@ -2369,6 +2379,47 @@
       }
     ]
   },
+  "context_correction_audit_report": {
+    "title": "Context Correction Audit Trail QA",
+    "status": "ready",
+    "principle": "Context corrections should be visible, reversible and safe for team handoff without storing hidden conversation content.",
+    "public_repo_rule": "Correction events are browser-local metadata: target, action, source IDs, source count, undo steps and timestamps only. Raw prompts, raw responses, provider secrets and paid-route approvals are not stored.",
+    "storage_key": "mimir-context-corrections-v1:{workspace}",
+    "scenarios": [
+      {
+        "id": "memory-correction-log",
+        "status": "ready",
+        "target": "Memory receipt corrections",
+        "expected": "Disabling a receipt-focused memory item writes a metadata-only correction event with undo state.",
+        "selector": "#memory-correction-trail",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "knowledge-correction-log",
+        "status": "ready",
+        "target": "Knowledge receipt corrections",
+        "expected": "Disabling a receipt-focused knowledge document or collection writes a metadata-only correction event with undo state.",
+        "selector": "#knowledge-correction-trail",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "undo-last-correction",
+        "status": "ready",
+        "target": "Undo last correction",
+        "expected": "Memory and Knowledge correction action bars expose an undo button when a local undoable correction exists.",
+        "selector": "[data-receipt-correction=\"undo\"]",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "progress-dashboard-trail",
+        "status": "ready",
+        "target": "#progress-context-correction-trail",
+        "expected": "The progress dashboard shows the latest local correction metadata or an empty-state note for the current workspace.",
+        "selector": "#progress-context-correction-trail",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2419,7 +2470,7 @@
     }
   ],
   "next_queue": [
-    "D230"
+    "D231"
   ],
   "watchlist": [
     "D082",
@@ -5871,9 +5922,24 @@
       "best_practice": "Corrections should be transparent, reversible and team-safe without storing raw prompts or secrets",
       "done_when": "User can see what context was corrected, undo accidental disables and keep a trustworthy audit trail",
       "covers": "memory, knowledge, audit, undo",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Context corrections now write browser-local metadata-only audit events, render recent correction trails and expose undo for disabled memory/knowledge sources.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D231",
+      "phase": "Chat UX / Context Correction",
+      "priority": "P0",
+      "work_package": "Retry after context correction",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "After a receipt-focused context correction, offer a safe retry path that uses the visible conversation state instead of storing hidden prompts, and marks the retried answer with corrected-context metadata",
+      "best_practice": "Corrections should immediately improve the next user-visible answer without creepy hidden state",
+      "done_when": "User can fix context and rerun the answer path with transparent corrected-context status and no raw hidden prompt storage",
+      "covers": "chat UX, audit, retry, trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add a context-correction audit trail and undo path so source changes stay transparent, reversible and safe for teams.",
+      "evidence": "Next activation slice: add retry-after-correction so users can rerun a visible answer path after fixing bad context without storing hidden prompts.",
       "estimate": "2-6h"
     }
   ]
