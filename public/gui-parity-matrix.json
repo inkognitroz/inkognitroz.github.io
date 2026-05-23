@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-23T00:00:00.000Z",
+  "principle": "Truthful parity: MMIR shows what is live, beta, planned, blocked or premium planned without implying paid or unsafe routes are active.",
+  "legend": {
+    "live": "Works now in the public/free flow.",
+    "beta": "Usable foundation exists, with polish or production hardening still needed.",
+    "planned": "Backlog item exists, but this is not live yet.",
+    "blocked": "Blocked until safety, identity, policy, cost or backend prerequisites are ready.",
+    "premium planned": "Commercial path is designed but not enabled without explicit approval."
+  },
+  "groups": [
+    {
+      "name": "ChatGPT-like chat",
+      "items": [
+        {"feature": "Clean chat composer", "status": "live", "mmir": "First-screen composer with MMIR context and send control.", "benchmark": "ChatGPT", "next": "Keep visual QA tight across mobile."},
+        {"feature": "Useful answer before setup", "status": "live", "mmir": "MMIR Guide browser helper and free starter prompts.", "benchmark": "ChatGPT", "next": "Prefer live local models automatically when detected."},
+        {"feature": "Streaming responses and stop", "status": "beta", "mmir": "SSE streaming, JSON fallback and AbortController stop are implemented.", "benchmark": "ChatGPT / Open WebUI", "next": "Broaden backend conformance tests."},
+        {"feature": "Copy, retry and clear", "status": "beta", "mmir": "Assistant answers can be copied/retried and workspace chat can be cleared.", "benchmark": "ChatGPT", "next": "Add rename, archive, pin and search in D127."},
+        {"feature": "Voice input", "status": "beta", "mmir": "Browser speech recognition button exists when supported.", "benchmark": "ChatGPT voice", "next": "Add device, read-aloud and local/provider labels in D135."},
+        {"feature": "Vision/image understanding", "status": "planned", "mmir": "Vision mode UI exists, but route must stay capability-gated.", "benchmark": "ChatGPT vision", "next": "Implement D136 with explicit model capability and privacy labels."}
+      ]
+    },
+    {
+      "name": "Open WebUI-like model control",
+      "items": [
+        {"feature": "Model selector", "status": "beta", "mmir": "Live backend models, browser helpers and installable free local models are separated.", "benchmark": "Open WebUI", "next": "Keep license and fit warnings visible."},
+        {"feature": "Ollama/local node connection", "status": "beta", "mmir": "MMIR Local Node, pairing, health, hardware and model discovery exist.", "benchmark": "Open WebUI / Ollama", "next": "Package smoother installers for every OS/device."},
+        {"feature": "One-click local model install", "status": "beta", "mmir": "Local-node model pull jobs, progress polling and install helper copy are present.", "benchmark": "Open WebUI", "next": "Improve post-install detection and error recovery."},
+        {"feature": "Local model delete/storage view", "status": "beta", "mmir": "Node Dashboard shows installed models with disk/RAM impact and removal.", "benchmark": "Open WebUI", "next": "Add update and bulk cleanup flows."},
+        {"feature": "OpenAI-compatible providers", "status": "beta", "mmir": "Backend/local contract uses /chat/completions and OpenAI-compatible shapes.", "benchmark": "Open WebUI API", "next": "Add conformance test suite in D141."},
+        {"feature": "Provider keys in browser", "status": "blocked", "mmir": "Provider secrets are intentionally blocked from public GitHub Pages.", "benchmark": "Open WebUI admin", "next": "Use protected backend/local vault only."}
+      ]
+    },
+    {
+      "name": "MMIR orchestration layer",
+      "items": [
+        {"feature": "Multi-model comparison", "status": "beta", "mmir": "One prompt can fan out to selected live backend models.", "benchmark": "Open WebUI", "next": "Improve empty/live-model guidance."},
+        {"feature": "Synthesis", "status": "beta", "mmir": "Usable model responses can be synthesized through the active backend.", "benchmark": "ChatGPT-style reasoning workflow", "next": "Make disagreements and routing evidence more inspectable."},
+        {"feature": "Role-based AI teams", "status": "beta", "mmir": "Role presets affect system instructions and comparisons.", "benchmark": "Custom assistants", "next": "Persist reusable assistants in D145."},
+        {"feature": "Workflow builder", "status": "beta", "mmir": "Linear workflows, agents, canvas, save/list and planned runs exist.", "benchmark": "Open WebUI pipelines / ChatGPT tasks", "next": "Add executable tool runtime after D131."},
+        {"feature": "Trusted node orchestration", "status": "beta", "mmir": "Node dashboard, pairing, tunnel status and hardware signals exist.", "benchmark": "MMIR-specific", "next": "Complete cross-device relay and self-healing nodes."},
+        {"feature": "Free value loops", "status": "beta", "mmir": "Chat, local model, comparison, memory and document loops appear on the first screen.", "benchmark": "MMIR-specific", "next": "Measure activation without tracking raw prompts."}
+      ]
+    },
+    {
+      "name": "Knowledge, memory and files",
+      "items": [
+        {"feature": "Workspace memory", "status": "beta", "mmir": "Local-first memory with optional protected backend sync and edit/delete controls.", "benchmark": "ChatGPT memory", "next": "Add scope, expiration and usage explanation in D143."},
+        {"feature": "Document upload/RAG", "status": "beta", "mmir": "Text-like local uploads and protected backend indexing/search contracts exist.", "benchmark": "ChatGPT files / Open WebUI documents", "next": "Add previews, richer types and collection scope."},
+        {"feature": "Knowledge collections", "status": "planned", "mmir": "Backlog item D129 covers named collections and enable/disable per chat.", "benchmark": "Open WebUI knowledge", "next": "Implement collection data model and UI."},
+        {"feature": "Rich attachments and previews", "status": "planned", "mmir": "Backlog item D128 covers drag/drop, previews and bounded routing.", "benchmark": "ChatGPT file upload", "next": "Keep file size/type gates visible."},
+        {"feature": "Import/export portability", "status": "planned", "mmir": "Workspace export exists; broad Chat/Open WebUI import-export is D150.", "benchmark": "Open WebUI import/export", "next": "Add portable manifest schema."}
+      ]
+    },
+    {
+      "name": "Advanced platform parity",
+      "items": [
+        {"feature": "Web search", "status": "planned", "mmir": "D130 requires explicit consent, sources and bring-your-own provider.", "benchmark": "ChatGPT search", "next": "No hidden browsing or paid spend."},
+        {"feature": "Tool/function calling", "status": "planned", "mmir": "D131 requires permissioned schemas, consent, logs and safe errors.", "benchmark": "Open WebUI tools", "next": "Keep execution policy-gated."},
+        {"feature": "Code interpreter", "status": "blocked", "mmir": "D132 must define sandbox and resource limits before execution.", "benchmark": "ChatGPT data analysis", "next": "Do not run arbitrary code unsafely."},
+        {"feature": "Canvas/artifacts", "status": "planned", "mmir": "D133 covers side-by-side editable artifacts.", "benchmark": "ChatGPT canvas", "next": "Start with text/code/workflow outputs."},
+        {"feature": "Image generation/editing", "status": "blocked", "mmir": "D134 stays blocked until local/provider policy and cost gates are explicit.", "benchmark": "ChatGPT images", "next": "No implied free paid-provider image generation."},
+        {"feature": "Marketplace and premium routes", "status": "premium planned", "mmir": "Marketplace, compute economy and premium capacity are designed but not active.", "benchmark": "Platform marketplace", "next": "Require identity, policy, moderation and approval before money moves."}
+      ]
+    }
+  ]
+}

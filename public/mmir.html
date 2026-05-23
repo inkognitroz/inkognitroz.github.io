@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/progress-dashboard.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/user-journeys.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/gui-parity-matrix.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/node-dashboard.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css" />
@@ -39,6 +40,7 @@
       <a href="#dataset-manager">Data</a>
       <a href="#training-automation">Automation</a>
       <a href="#user-journeys">Journeys</a>
+      <a href="#gui-parity">Parity</a>
       <a href="#progress-dashboard">Progress</a>
       <a href="#platform-status">Status</a>
     </nav>
@@ -200,6 +202,18 @@
       </section>
     </details>
 
+    <details id="gui-parity" class="mimir-provider-drawer">
+      <summary>+ ChatGPT / Open WebUI Parity</summary>
+      <section class="mimir-dashboard" aria-labelledby="gui-parity-title">
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">Truthful benchmark</p><h2 id="gui-parity-title">GUI parity matrix</h2></div>
+          <button id="refresh-gui-parity" type="button" class="btn btn-secondary">Refresh matrix</button>
+        </div>
+        <p id="gui-parity-summary" class="dashboard-note" data-state="idle" aria-live="polite">Parity is loaded from a public-safe feature matrix.</p>
+        <div id="gui-parity-root" class="gui-parity-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="user-journeys" class="mimir-provider-drawer">
       <summary>+ User Journeys</summary>
       <section class="mimir-dashboard" aria-labelledby="user-journeys-title">
@@ -281,6 +295,7 @@
   <script src="./apps/mimir-chat-portal/platform-status.js"></script>
   <script src="./apps/mimir-chat-portal/progress-dashboard.js"></script>
   <script src="./apps/mimir-chat-portal/user-journeys.js"></script>
+  <script src="./apps/mimir-chat-portal/gui-parity-matrix.js"></script>
   <script src="./apps/mimir-chat-portal/node-dashboard.js"></script>
   <script src="./apps/mimir-chat-portal/role-presets.js"></script>
   <script src="./apps/mimir-chat-portal/local-connector.js?v=20260522-doctrine"></script>

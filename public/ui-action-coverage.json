@@ -86,11 +86,11 @@
     },
     {
       "id": "operator-dashboards",
-      "surface": "Status, progress and journeys",
+      "surface": "Status, progress, parity and journeys",
       "status": "live",
-      "user_result": "The owner can refresh public-safe platform status, backlog progress and user journey state from the site.",
-      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#refresh-user-journeys"],
-      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "refresh-user-journeys", "refreshButton.addEventListener('click',init)"]
+      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity and user journey state from the site.",
+      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#refresh-gui-parity", "#refresh-user-journeys"],
+      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
     },
     {
       "id": "workspace-memory-knowledge",

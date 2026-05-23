@@ -12,6 +12,7 @@ const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-
 const firstImpressionPath = join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js');
 const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
 const mimirCssPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css');
+const guiParityPath = join(publicDir, 'gui-parity-matrix.json');
 
 function fail(message) {
   console.error(message);
@@ -117,6 +118,8 @@ requireText(mmirPath, 'id="node-dashboard-root"', 'MMIR product page must expose
 requireText(mmirPath, './apps/mimir-chat-portal/node-dashboard.js', 'MMIR product page must load the node dashboard script.');
 requireText(mmirPath, 'id="model-library"', 'MMIR product page must expose model-agnostic routing.');
 requireText(mmirPath, 'id="workflow-builder"', 'MMIR product page must expose workflow orchestration.');
+requireText(mmirPath, 'id="gui-parity"', 'MMIR product page must expose the ChatGPT/Open WebUI parity matrix.');
+requireText(mmirPath, './apps/mimir-chat-portal/gui-parity-matrix.js', 'MMIR product page must load GUI parity matrix script.');
 requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
@@ -133,6 +136,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'memory-loop', 'Free value loops must include memory.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'knowledge-loop', 'Free value loops must include documents/knowledge.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.css'), '.free-value-loop-grid', 'Free value loops need a responsive visual grid.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'gui-parity-matrix.js'), 'gui-parity-matrix.json', 'GUI parity matrix script must load the public-safe matrix data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'gui-parity-matrix.js'), 'statusClass', 'GUI parity matrix must render truthful status classes.');
+requireText(join(root, 'docs', 'MMIR_GUI_PARITY_MATRIX.md'), 'Source of truth', 'GUI parity matrix docs must point to the public JSON source of truth.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -161,6 +167,23 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, provider keys and backend data.');
+
+const parity = JSON.parse(text(guiParityPath));
+const parityGroups = Array.isArray(parity.groups) ? parity.groups : [];
+const parityItems = parityGroups.flatMap((group) => Array.isArray(group.items) ? group.items : []);
+if (parityItems.length < 24) {
+  fail('GUI parity matrix must expose at least twenty-four benchmarked feature states.');
+}
+for (const status of ['live', 'beta', 'planned', 'blocked', 'premium planned']) {
+  if (!parityItems.some((item) => item.status === status)) {
+    fail(`GUI parity matrix must include status: ${status}.`);
+  }
+}
+for (const feature of ['Model selector', 'Workflow builder', 'Web search', 'Code interpreter', 'Marketplace and premium routes']) {
+  if (!parityItems.some((item) => item.feature === feature)) {
+    fail(`GUI parity matrix is missing ${feature}.`);
+  }
+}
 
 if (!process.exitCode) {
   console.log('Static Pages smoke check passed.');

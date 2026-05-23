@@ -20,6 +20,7 @@ Updated: 2026-05-22
 - First-run onboarding now adapts to optional Auto, Developer, Business owner, Power user and Privacy/local intents without requiring configuration before value.
 - First-screen use-case templates now start concrete free-first loops for repo analysis, product planning, security review, model comparison and workflow planning.
 - First-screen free value loops now surface chat, local model activation, model comparison, memory and document knowledge as zero-cost outcomes.
+- Public GUI parity matrix now benchmarks ChatGPT-like, Open WebUI-like and MMIR-specific features with truthful live, beta, planned, blocked and premium-planned status.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.

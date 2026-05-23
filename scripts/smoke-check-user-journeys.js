@@ -10,6 +10,7 @@ const files = {
   mmir: join(publicDir, 'mmir.html'),
   journeys: join(publicDir, 'user-journeys.json'),
   progress: join(publicDir, 'progress-dashboard.json'),
+  parity: join(publicDir, 'gui-parity-matrix.json'),
   starters: join(publicDir, 'free-model-starters.json'),
   catalog: join(publicDir, 'ai-model-catalog.json'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
@@ -147,6 +148,11 @@ requireIncludes(files.freeValueLoops, 'local-model', 'D121 needs free local mode
 requireIncludes(files.freeValueLoops, 'compare-models', 'D121 needs free comparison loop.');
 requireIncludes(files.freeValueLoops, 'memory-loop', 'D121 needs free memory loop.');
 requireIncludes(files.freeValueLoops, 'knowledge-loop', 'D121 needs free document/knowledge loop.');
+requireIncludes(files.mmir, 'id="gui-parity"', 'D126 needs a visible ChatGPT/Open WebUI parity matrix.');
+requireIncludes(files.parity, 'ChatGPT-like chat', 'D126 needs ChatGPT-like feature grouping.');
+requireIncludes(files.parity, 'Open WebUI-like model control', 'D126 needs Open WebUI-like feature grouping.');
+requireIncludes(files.parity, 'MMIR orchestration layer', 'D126 needs MMIR-specific orchestration grouping.');
+requireIncludes(files.parity, '"blocked"', 'D126 must truthfully show blocked unsafe features.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -177,7 +183,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

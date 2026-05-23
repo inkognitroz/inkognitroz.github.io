@@ -1,0 +1,125 @@
+.gui-parity-root {
+  display: grid;
+  gap: 14px;
+}
+
+#gui-parity-summary[data-state="ready"] {
+  color: #047857;
+}
+
+#gui-parity-summary[data-state="error"] {
+  color: #b91c1c;
+}
+
+.gui-parity-group {
+  display: grid;
+  gap: 8px;
+}
+
+.gui-parity-group h3 {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 1rem;
+}
+
+.gui-parity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.gui-parity-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.gui-parity-card header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gui-parity-card strong {
+  color: var(--mimir-text, #111827);
+  font-size: 0.9rem;
+}
+
+.gui-parity-card header span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gui-parity-card.status-live header span {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.gui-parity-card.status-beta header span {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.gui-parity-card.status-blocked header span {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.gui-parity-card.status-premium-planned header span {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.gui-parity-card p,
+.gui-parity-card dl,
+.gui-parity-card dd {
+  margin: 0;
+}
+
+.gui-parity-card p {
+  color: var(--mimir-muted, #64748b);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.gui-parity-card dl {
+  display: grid;
+  gap: 4px;
+}
+
+.gui-parity-card dl div {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.gui-parity-card dt,
+.gui-parity-card dd {
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.gui-parity-card dt {
+  color: var(--mimir-muted, #64748b);
+  font-weight: 800;
+}
+
+.gui-parity-card dd {
+  color: var(--mimir-text, #111827);
+}
+
+@media (max-width: 760px) {
+  .gui-parity-grid {
+    grid-template-columns: 1fr;
+  }
+}

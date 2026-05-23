@@ -62,6 +62,7 @@ const overrides = new Map([
   ['D119', { status: 'beta', evidence: 'First-run onboarding now has optional Auto, Developer, Business owner, Power user and Privacy/local paths that store user intent locally, keep safe defaults automatic and launch matching starter prompts/panels.' }],
   ['D120', { status: 'beta', evidence: 'First screen now includes free-first use-case templates for repo analysis, product planning, security review, model comparison and workflow planning that start chat prompts and open the right MMIR panels.' }],
   ['D121', { status: 'beta', evidence: 'First screen now shows free value loops for useful chat, local model activation, model comparison, memory and documents, with state-aware cards and starter actions that require no account or paid provider.' }],
+  ['D126', { status: 'done', evidence: 'Public GUI parity matrix now lists ChatGPT-like, Open WebUI-like and MMIR-specific features with truthful live/beta/planned/blocked/premium-planned states, backed by JSON, docs and site UI.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 
