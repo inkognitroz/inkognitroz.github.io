@@ -76,8 +76,8 @@ if (!d203 || d203.status !== 'beta') {
   fail('Progress dashboard task D203 must stay beta after composer model picker ships.');
 }
 const d206 = tasks.find((task) => task.seq === 'D206');
-if (!d206 || d206.status !== 'next') {
-  fail('Progress dashboard must expose D206 as the next activation proof work item.');
+if (!d206 || d206.status !== 'beta') {
+  fail('Progress dashboard must expose D206 as beta after installer-to-live-model proof ships.');
 }
 
 if (!process.exitCode) {

@@ -127,11 +127,11 @@ if (!d205 || d205.status !== 'beta') {
   fail('Progress dashboard task D205 must be beta after installer release QA ships.');
 }
 const d206 = tasks.find((task) => task.seq === 'D206');
-if (!d206 || d206.status !== 'next') {
-  fail('Progress dashboard task D206 must be the next activation proof work item.');
+if (!d206 || d206.status !== 'beta') {
+  fail('Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D206') {
-  fail('Progress dashboard next queue must prioritize D206 after D205 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D207') {
+  fail('Progress dashboard next queue must prioritize D207 after D206 ships.');
 }
 
 if (!process.exitCode) {

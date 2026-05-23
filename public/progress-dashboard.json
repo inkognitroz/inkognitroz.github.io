@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T16:56:39.309Z",
+  "updated_at": "2026-05-23T17:20:50.891Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 206,
+    "total": 207,
     "done": 51,
-    "beta": 130,
+    "beta": 131,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -728,10 +728,10 @@
       },
       {
         "phase": "Model Activation",
-        "total": 5,
+        "total": 6,
         "done": 0,
         "beta": 5,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -900,8 +900,8 @@
         "phase": "Activation Proof / Local Chat",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1178,7 +1178,7 @@
     }
   ],
   "next_queue": [
-    "D206"
+    "D207"
   ],
   "watchlist": [
     "D082",
@@ -4270,9 +4270,24 @@
       "best_practice": "Release confidence should come from a user-shaped proof path, not only file checksums and source assertions",
       "done_when": "CI proves the installer return flow can close into live model proof and first-chat readiness with no provider keys, public secrets or paid routes",
       "covers": "activation, proof, local chat, QA",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Installer-return-to-live-model proof now has a deterministic mock local-node gate covering health, pairing, model inventory, first chat readiness, next action and no-spend/no-secret boundaries.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D207",
+      "phase": "Model Activation",
+      "priority": "P0",
+      "work_package": "Free live-model route hardening",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Harden the composer, model picker, model library and first-run gates so a new user always sees one ready-now browser guide route, installable free local model choices and a safe local proof path before any paid/provider option",
+      "best_practice": "First experience must never feel empty; no-model states should become useful free choices or exact install/proof actions",
+      "done_when": "User can start useful free chat immediately, then install/prove a local model with one obvious action and no public secrets or paid routes",
+      "covers": "activation, model UX, free-first",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: prove installer-return-to-live-model and first-chat readiness with deterministic local-node fixtures.",
+      "evidence": "Next activation slice: harden free live-model route selection so first-time users always see a useful ready-now or installable free path.",
       "estimate": "2-6h"
     }
   ]

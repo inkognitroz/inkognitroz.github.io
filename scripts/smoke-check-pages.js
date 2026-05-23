@@ -526,6 +526,8 @@ requireText(join(root, 'scripts', 'update-installer-release-hashes.js'), 'instal
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-release.json'), '"installer_qa"', 'D205 release manifest must publish public-safe installer QA metadata.');
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Release verification', 'D205 installer page must show release verification.');
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Installer trust boundaries', 'D205 installer page must show trust boundaries.');
+requireText(join(root, 'scripts', 'smoke-check-installer-to-live-model-proof.js'), 'Installer-to-live-model proof smoke check passed.', 'D206 installer-to-live-model proof must have a dedicated smoke harness.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D207 |', 'Backlog must keep a next sequential work item after D206.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

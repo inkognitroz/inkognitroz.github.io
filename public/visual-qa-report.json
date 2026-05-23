@@ -61,5 +61,5 @@
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D206 installer-to-live-model proof gate: verify installer return closes into live local model proof and first-chat readiness."
+  "next": "D207 free live-model route hardening: make ready-now and installable free choices unavoidable in the first chat/model journey."
 }
