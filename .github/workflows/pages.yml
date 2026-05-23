@@ -82,6 +82,8 @@ jobs:
         run: node scripts/smoke-check-first-answer-send-handoff.js
       - name: Smoke check first-answer next step
         run: node scripts/smoke-check-first-answer-next-step.js
+      - name: Smoke check visible-control dead ends
+        run: node scripts/smoke-check-visible-control-dead-ends.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

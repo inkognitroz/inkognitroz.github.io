@@ -190,14 +190,15 @@ Updated: 2026-05-23
 - D196 is now beta: successful starter install/retry verifies the repair resume, records starter-retry-success telemetry and prepares a first useful chat prompt.
 - D197 is now beta: verified starter/proof states expose `Send first answer` and carry the prepared prompt into an automatic first verified chat send from first screen, chat runtime and progress dashboard.
 - D198 is now beta: after first verified answer, chat proof, first-screen closure and Progress Dashboard show one receipt-driven next step such as save chat, connect node or add memory without raw prompt storage, provider secrets or paid routes.
-- D199 is now the next UX reliability slice: audit visible controls and wire or clearly gate any remaining dead ends.
+- D199 is now beta: visible-control audit proves key first-screen, composer, runtime proof, model library, node repair and progress controls are wired or gated, and Connect Model opens the model library instead of a dead configuration stop.
+- D200 is now the next performance slice: recover meaningful critical-shell JS headroom before adding more first-load UX.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D199` visible-control dead-end elimination pass.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D200` critical-shell headroom recovery.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

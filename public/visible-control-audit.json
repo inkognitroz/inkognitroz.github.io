@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-23T14:30:00+02:00",
+  "principle": "Every visible MMIR control must either complete a useful free/local action, open the exact next surface, or explain a protected/planned boundary.",
+  "public_repo_rule": "Public-safe audit only. It must not contain secrets, user prompts, provider keys, billing configuration or private telemetry.",
+  "controls": [
+    {
+      "id": "first-screen-send",
+      "surface": "First screen",
+      "selector": "#primary-chat-link",
+      "status": "wired",
+      "result": "Sends the prompt through the active free guide, browser model or verified backend route.",
+      "source_evidence": ["ensureSendControl", "sendMessage"],
+      "no_spend": true
+    },
+    {
+      "id": "first-screen-connect-model",
+      "surface": "First screen",
+      "selector": "#new-backend",
+      "status": "wired",
+      "result": "Creates or reuses the free local-node profile and opens the model library so the user can pick a real free model path.",
+      "source_evidence": ["newBtn.addEventListener('click',createProfile)", "document.getElementById('model-library')"],
+      "no_spend": true
+    },
+    {
+      "id": "composer-add-model",
+      "surface": "Chat composer",
+      "selector": "#composer-add-model",
+      "status": "wired",
+      "result": "Creates or reuses the free local-node profile and opens the model library from the plus button.",
+      "source_evidence": ["composer-add-model", "openPanel('#model-library')"],
+      "no_spend": true
+    },
+    {
+      "id": "mode-buttons",
+      "surface": "Chat composer",
+      "selector": "[data-chat-mode]",
+      "status": "wired",
+      "result": "Toggles Private, Boost, MMIR++ and Vision mode locally and applies the mode instruction on the next answer.",
+      "source_evidence": ["writeModes(modes)", "function modeInstruction()"],
+      "no_spend": true
+    },
+    {
+      "id": "voice-input",
+      "surface": "Chat composer",
+      "selector": "#composer-voice-input",
+      "status": "wired",
+      "result": "Starts browser speech recognition when available or shows a clear unsupported-browser message.",
+      "source_evidence": ["function startVoiceInput()", "Voice input is not available in this browser."],
+      "no_spend": true
+    },
+    {
+      "id": "runtime-proof-actions",
+      "surface": "Chat runtime",
+      "selector": "[data-proof-action]",
+      "status": "wired",
+      "result": "Retry, repair, install, connect settings, send first answer and save chat actions route to the exact next surface.",
+      "source_evidence": ["proofRepairActions", "handleProofAction", "Send first answer", "Save chat"],
+      "no_spend": true
+    },
+    {
+      "id": "model-library-starters",
+      "surface": "Model library",
+      "selector": "[data-starter-action]",
+      "status": "wired",
+      "result": "Starter model cards hand exact free model ids into runtime selection, local install and proof preference.",
+      "source_evidence": ["data-starter-action", "mmir-runtime-starter-handoff", "no_paid_routes_started:true"],
+      "no_spend": true
+    },
+    {
+      "id": "node-repair",
+      "surface": "Node Dashboard",
+      "selector": "[data-device-repair-action]",
+      "status": "wired",
+      "result": "Guided repair cards open installer, pairing, model install or tunnel controls from doctor state.",
+      "source_evidence": ["guidedDeviceRepair", "data-device-repair-action", "device-repair-action"],
+      "no_spend": true
+    },
+    {
+      "id": "progress-first-answer",
+      "surface": "Progress Dashboard",
+      "selector": "#progress-first-answer-next-step-action",
+      "status": "wired",
+      "result": "After a verified first answer, opens the next useful step: connect node, save chat or add memory.",
+      "source_evidence": ["firstAnswerNextStep", "first-answer-next-step", "Connect local node", "Add memory"],
+      "no_spend": true
+    },
+    {
+      "id": "paid-provider-routes",
+      "surface": "Provider and premium paths",
+      "selector": "[data-provider-action]",
+      "status": "gated",
+      "result": "Protected or paid provider work stays blocked until explicit backend policy, identity and cost approval exist.",
+      "source_evidence": ["skipped to avoid hidden provider cost", "no_paid_routes_started:true"],
+      "no_spend": true
+    }
+  ]
+}

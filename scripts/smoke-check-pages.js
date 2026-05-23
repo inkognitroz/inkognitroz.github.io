@@ -498,6 +498,9 @@ requireText(firstScreenHydrationPath, 'primary-chat-link', 'D197 first screen mu
 requireText(join(root, 'scripts', 'smoke-check-first-answer-next-step.js'), 'First-answer next-step smoke check passed.', 'D198 first-answer next-step must have a dedicated smoke harness.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "proofRepairActions('answered')", 'D198 chat runtime must replace repeated send prompts with a post-answer next step.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'firstAnswerNextStep', 'D198 Progress Dashboard must compute a receipt-driven next step.');
+requireText(join(root, 'scripts', 'smoke-check-visible-control-dead-ends.js'), 'Visible-control dead-end smoke check passed.', 'D199 visible-control dead-end pass must have a dedicated smoke harness.');
+requireText(join(publicDir, 'visible-control-audit.json'), 'composer-add-model', 'D199 public control audit must cover the composer Add Model control.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "openPanel('#model-library')", 'D199 composer Add Model must open the model library, not a dead setup stop.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

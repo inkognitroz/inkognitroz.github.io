@@ -12,6 +12,7 @@ const files = {
   mmir: join(publicDir, 'mmir.html'),
   journeys: join(publicDir, 'user-journeys.json'),
   progress: join(publicDir, 'progress-dashboard.json'),
+  visibleControlAudit: join(publicDir, 'visible-control-audit.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
   webManifest: join(publicDir, 'manifest.webmanifest'),
@@ -87,6 +88,7 @@ const files = {
   starterRetrySuccessHarness: join(root, 'scripts', 'smoke-check-starter-retry-success-closure.js'),
   firstAnswerHandoffHarness: join(root, 'scripts', 'smoke-check-first-answer-send-handoff.js'),
   firstAnswerNextStepHarness: join(root, 'scripts', 'smoke-check-first-answer-next-step.js'),
+  visibleControlHarness: join(root, 'scripts', 'smoke-check-visible-control-dead-ends.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -495,6 +497,9 @@ requireIncludes(files.progressDashboard, 'Send first answer', 'D197 Progress Das
 requireIncludes(files.firstAnswerNextStepHarness, 'First-answer next-step smoke check passed.', 'D198 first-answer next-step needs dedicated CI fixture coverage.');
 requireIncludes(files.chatRuntime, "proofRepairActions('answered')", 'D198 chat runtime must show a post-answer next step after first verified chat.');
 requireIncludes(files.progressDashboard, 'firstAnswerNextStep', 'D198 Progress Dashboard must compute receipt-driven next steps.');
+requireIncludes(files.visibleControlHarness, 'Visible-control dead-end smoke check passed.', 'D199 visible-control dead-end pass needs dedicated CI fixture coverage.');
+requireIncludes(files.visibleControlAudit, 'composer-add-model', 'D199 visible-control audit must cover composer Add Model.');
+requireIncludes(files.chatRuntime, "openPanel('#model-library')", 'D199 composer Add Model must open the model library.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

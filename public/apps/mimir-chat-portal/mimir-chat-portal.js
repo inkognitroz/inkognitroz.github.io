@@ -52,7 +52,7 @@
 
   function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
   function openBackendSettings(){
-    const drawer=document.getElementById('backend-settings');
+    const drawer=document.getElementById('model-library');
     if(drawer){
       drawer.open=true;
       drawer.scrollIntoView({block:'start',behavior:'smooth'});

@@ -672,7 +672,7 @@
     resourceChipEl=document.getElementById('runtime-resource-chip');
     document.getElementById('composer-add-model')?.addEventListener('click',()=>{
       window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
-      openPanel('#connect-options');
+      openPanel('#model-library');
     });
     document.querySelectorAll('[data-chat-mode]').forEach(button=>{
       button.addEventListener('click',()=>{

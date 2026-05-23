@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:39:56.748Z",
+  "updated_at": "2026-05-23T15:47:33.013Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 199,
+    "total": 200,
     "done": 51,
-    "beta": 123,
+    "beta": 124,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -830,6 +830,16 @@
         "phase": "UX Reliability",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Performance / UX Reliability",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1108,7 +1118,7 @@
     }
   ],
   "next_queue": [
-    "D199"
+    "D200"
   ],
   "watchlist": [
     "D082",
@@ -4095,9 +4105,24 @@
       "best_practice": "A freemium product earns trust only when every visible control either works or explains why it is gated",
       "done_when": "UI action coverage proves visible controls have handlers, useful result paths and no paid/secret side effects",
       "covers": "UX, QA, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Visible-control audit now proves key first-screen, composer, runtime proof, model library, node repair and progress controls are wired or gated; Connect Model opens the model library instead of a dead configuration stop.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D200",
+      "phase": "Performance / UX Reliability",
+      "priority": "P0",
+      "work_package": "Critical-shell headroom recovery",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Move or compress non-essential first-load behavior so the public page regains healthy JS headroom before more UX is added",
+      "best_practice": "The first impression must stay fast while functionality grows",
+      "done_when": "Performance budget has meaningful headroom, not just a barely passing threshold",
+      "covers": "performance, first impression, QA",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next UX reliability slice: audit visible first-screen/chat/dashboard/model/node controls and wire or clearly gate any remaining dead ends.",
+      "evidence": "Next performance slice: recover meaningful critical-shell JS headroom before more first-load UX is added.",
       "estimate": "2-6h"
     }
   ]

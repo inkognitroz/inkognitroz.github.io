@@ -50,6 +50,7 @@ jobs:
           node scripts/smoke-check-starter-retry-success-closure.js
           node scripts/smoke-check-first-answer-send-handoff.js
           node scripts/smoke-check-first-answer-next-step.js
+          node scripts/smoke-check-visible-control-dead-ends.js
 
       - name: Commit migrated assets
         run: |
