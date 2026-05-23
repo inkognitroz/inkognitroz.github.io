@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/connector-catalog.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/pwa.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/migration-portability.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/sharing-center.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/web-search.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/research-planner.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/tool-runner.css" />
@@ -76,6 +77,7 @@
           <a href="#vision-input">Vision</a>
           <a href="#pwa-install">Install</a>
           <a href="#migration-portability">Import</a>
+          <a href="#sharing-center">Share</a>
           <a href="#admin-governance">Admin</a>
           <a href="#access-control">Access</a>
           <a href="#runtime-settings-panel">Settings</a>
@@ -318,6 +320,15 @@
       </section>
     </details>
 
+    <details id="sharing-center" class="mimir-provider-drawer">
+      <summary>+ Safe Sharing</summary>
+      <section class="mimir-dashboard" aria-labelledby="sharing-center-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Public-safe collaboration</p><h2 id="sharing-center-title">Share chats, artifacts, workflows and collections safely</h2></div></div>
+        <p class="dashboard-note">MMIR creates redacted browser-local previews first. Real team permissions and revocation belong behind protected identity and backend policy before production sharing.</p>
+        <div id="sharing-center-root" class="sharing-center-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="data-analysis" class="mimir-provider-drawer">
       <summary>+ Data Analysis / Charts</summary>
       <section class="mimir-dashboard" aria-labelledby="data-analysis-title">
@@ -380,6 +391,7 @@
   <script src="./apps/mimir-chat-portal/connector-catalog.js"></script>
   <script src="./apps/mimir-chat-portal/pwa.js"></script>
   <script src="./apps/mimir-chat-portal/migration-portability.js"></script>
+  <script src="./apps/mimir-chat-portal/sharing-center.js"></script>
   <script src="./apps/mimir-chat-portal/web-search.js"></script>
   <script src="./apps/mimir-chat-portal/research-planner.js"></script>
   <script src="./apps/mimir-chat-portal/tool-runner.js"></script>

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T07:49:56.834Z",
+  "updated_at": "2026-05-23T08:09:06.053Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 152,
+    "total": 153,
     "done": 51,
-    "beta": 76,
+    "beta": 77,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -688,9 +688,9 @@
       },
       {
         "phase": "Sharing",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D152"
+    "D153"
   ],
   "watchlist": [
     "D082",
@@ -3030,10 +3030,25 @@
       "best_practice": "Sharing must not leak private prompts, files or tokens",
       "done_when": "User can share selected outputs safely",
       "covers": "ChatGPT/Open WebUI parity",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Safe Sharing now creates redacted browser-local share bundles, text copies, preview links and JSON exports for selected chats, artifacts, workflow drafts and knowledge collection manifests without public frontend secrets.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D153",
+      "phase": "Sharing",
+      "priority": "P1",
+      "work_package": "Authenticated protected sharing backend",
+      "repos": "mimir-backend-template, frontend later",
+      "concrete_work": "Add server-owned share objects, revocation, audit events and audience controls after identity/access control are ready",
+      "best_practice": "Local preview links are useful, but real teams need protected enforcement",
+      "done_when": "Owner can create, revoke and inspect access-controlled shares without public frontend secrets",
+      "covers": "team sharing",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sequential GUI parity slice: team sharing and public-safe links for selected chats, artifacts, workflows and collections with redaction and access controls.",
-      "estimate": "1-3d"
+      "evidence": "Next sequential sharing slice: protected authenticated share objects, revocation, audit and audience controls in the managed backend after identity/access control gates.",
+      "estimate": "0.5-2d"
     }
   ]
 }

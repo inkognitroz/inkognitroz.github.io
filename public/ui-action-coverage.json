@@ -149,6 +149,14 @@
       "evidence": ["mmir.portable_workspace", "chatGptMessages", "openWebUiMessages", "redactSecretLike", "redactedClone", "MAX_FILE_BYTES"]
     },
     {
+      "id": "safe-sharing",
+      "surface": "Safe Sharing",
+      "status": "beta",
+      "user_result": "Users can build redacted browser-local share previews for selected chats, artifacts, workflow drafts and knowledge collections, then copy text, copy a preview link or export JSON.",
+      "selectors": ["#sharing-center", "#sharing-type", "#sharing-item", "#sharing-build", "#sharing-copy-text", "#sharing-copy-link", "#sharing-export", "#sharing-clear-hash"],
+      "evidence": ["mmir.safe_share_bundle", "redactShareSecrets", "MAX_LINK_CHARS", "decodeShareHash", "server_side_enforcement_required:true", "mimir-share-bundles-v1:"]
+    },
+    {
       "id": "code-sandbox-preflight",
       "surface": "Code interpreter",
       "status": "beta",

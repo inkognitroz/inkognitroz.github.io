@@ -133,6 +133,13 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'redactSecretLike', 'D150 needs secret-like text redaction.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'redactedClone', 'D150 needs export-side secret-like text redaction.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.css'), '.migration-preview-card', 'D150 needs import preview styling.');
+requireText(mmirPath, 'id="sharing-center"', 'D152 needs a visible safe sharing panel.');
+requireText(mmirPath, './apps/mimir-chat-portal/sharing-center.js', 'D152 needs safe sharing script loaded.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'mmir.safe_share_bundle', 'D152 needs a safe share bundle schema.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'redactShareSecrets', 'D152 needs share redaction.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'decodeShareHash', 'D152 needs preview-link decoding.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'server_side_enforcement_required:true', 'D152 needs server-side enforcement boundary.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-preview-card', 'D152 needs share preview styling.');
 requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
 requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');
@@ -323,6 +330,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'runtime settings', 'Privacy inventory must include browser-local runtime settings.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, provider keys and backend data.');
 
 const parity = JSON.parse(text(guiParityPath));

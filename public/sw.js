@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d151-20260523-mobile-chat';
+const CACHE_NAME='mmir-pwa-d152-20260523-mobile-chat-safe-sharing';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -14,6 +14,8 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/pwa.js',
   './apps/mimir-chat-portal/migration-portability.css',
   './apps/mimir-chat-portal/migration-portability.js',
+  './apps/mimir-chat-portal/sharing-center.css',
+  './apps/mimir-chat-portal/sharing-center.js',
   './progress-dashboard.json',
   './user-journeys.json',
   './gui-parity-matrix.json',

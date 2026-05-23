@@ -197,6 +197,7 @@ These items were added during code/architecture review and should be pulled forw
 | D150 | Migration | P1 | Chat/Open WebUI import-export | `inkognitroz.github.io`, managed API later | Support portable import/export for chats, prompts, model profiles and knowledge manifests where legally and technically safe | Users should not feel locked in | User can move useful workspace data in or out | openness |
 | D151 | Model Admin | P1 | Local model manager | `inkognitroz.github.io`, `mmir-local-node` | Add list, pull, delete, update and disk/RAM impact controls for local models | Local AI needs storage/resource visibility | User can manage installed models without terminal commands | Open WebUI parity |
 | D152 | Sharing | P2 | Team sharing and public-safe links | managed API + frontend | Add shareable chats, artifacts, workflows and collections with redaction and access controls | Sharing must not leak private prompts, files or tokens | User can share selected outputs safely | ChatGPT/Open WebUI parity |
+| D153 | Sharing | P1 | Authenticated protected sharing backend | `mimir-backend-template`, frontend later | Add server-owned share objects, revocation, audit events and audience controls after identity/access control are ready | Local preview links are useful, but real teams need protected enforcement | Owner can create, revoke and inspect access-controlled shares without public frontend secrets | team sharing |
 
 ## Recommended Implementation Sequence
 
