@@ -55,7 +55,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 172).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 173).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -108,7 +108,8 @@ const overrides = new Map([
   ['D169', { status: 'beta', evidence: 'Local Node Doctor now exposes a protected /doctor route, the downloadable connector has the same contract, and the dashboard consumes it with model-pull-aware next repair actions.' }],
   ['D170', { status: 'beta', evidence: 'Progress dashboard now renders a browser-local activation telemetry timeline fed by defaults, proof, model install, doctor and first-chat events with raw_prompt_stored:false/raw_response_stored:false/secrets_stored:false.' }],
   ['D171', { status: 'beta', evidence: 'Activation Autopilot now runs safe free repairs only: automatic defaults, Private mode, model refresh and proof retry, with no paid routes, provider secrets, raw prompts or raw responses.' }],
-  ['D172', { status: 'next', evidence: 'Next activation slice: when autopilot cannot fix a device/runtime gap, show one exact OS/device repair card instead of generic troubleshooting.' }]
+  ['D172', { status: 'beta', evidence: 'Node Dashboard now renders one guided OS/device repair card from doctor checks, detecting Windows, macOS, Linux/VM and Raspberry Pi/Linux ARM with a starter model and exact next action.' }],
+  ['D173', { status: 'next', evidence: 'Next activation slice: add state-fixture verification for each guided repair card so the support UX cannot regress.' }]
 ]);
 
 const repoMeta = [
@@ -236,7 +237,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D172', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D173', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

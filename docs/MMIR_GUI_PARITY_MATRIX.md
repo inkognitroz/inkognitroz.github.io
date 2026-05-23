@@ -53,6 +53,7 @@ Current priority after the matrix is:
 43. D170 activation telemetry panel.
 44. D171 safe activation autopilot.
 45. D172 guided OS/device repair cards.
+46. D173 device repair verification harness.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -97,6 +98,7 @@ D168 is now beta in the public UI: model install completion and local-node onlin
 D169 is now beta: local node and downloadable connector expose `/doctor`, and Node Dashboard uses that health report for connector, Ollama, pairing, model pull, model, hardware and tunnel repair actions.
 D170 is now beta: activation telemetry shows defaults, proof, install, doctor and first-chat state without raw prompts, secrets or paid routes.
 D171 is now beta: safe activation autopilot runs free repairs automatically before asking users for OS/device steps.
-D172 is next: if autopilot cannot fix the gap, show one exact OS/device repair card from doctor state.
+D172 is now beta: if autopilot cannot fix the gap, Node Dashboard shows one exact OS/device repair card from doctor state.
+D173 is next: prove each repair card with state fixtures.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

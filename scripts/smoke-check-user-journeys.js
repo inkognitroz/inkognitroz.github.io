@@ -399,6 +399,10 @@ requireIncludes(files.nodeDashboard, '/pairing/sessions', 'J009 needs local appr
 requireIncludes(files.nodeDashboard, '/doctor', 'D169 needs the dashboard to consume the local health doctor route.');
 requireIncludes(files.nodeDashboard, 'Local Node Doctor', 'D169 needs authoritative local doctor source labeling.');
 requireIncludes(files.nodeDashboard, 'model-pull', 'D169 needs model pull state in the repair loop.');
+requireIncludes(files.nodeDashboard, 'guidedDeviceRepair', 'D172 needs doctor state mapped into one guided repair card.');
+requireIncludes(files.nodeDashboard, 'detectDevice', 'D172 needs OS/device detection for repair cards.');
+requireIncludes(files.nodeDashboard, 'Raspberry Pi / Linux ARM', 'D172 needs Raspberry Pi/Linux ARM repair guidance.');
+requireIncludes(files.nodeDashboard, 'node-repair-card', 'D172 needs the guided repair card rendered in Node Dashboard.');
 requireIncludes(files.privacyControls, 'export', 'J005 needs local data export controls.');
 requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete controls.');
 requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 needs a visible data inventory.');

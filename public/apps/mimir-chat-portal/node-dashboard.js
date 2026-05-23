@@ -58,6 +58,15 @@
   function modelModified(model){
     return model?.details?.modified_at?String(model.details.modified_at).slice(0,10):'not reported';
   }
+  function detectDevice(hardware){
+    const platform=String(hardware?.platform||navigator.platform||navigator.userAgent||'').toLowerCase();
+    const arch=String(hardware?.arch||navigator.userAgent||'').toLowerCase();
+    if(platform.includes('raspberry')||arch.includes('arm')&&platform.includes('linux'))return {label:'Raspberry Pi / Linux ARM',installer:'./downloads/mmir-local-connector-install.html',model:'qwen3:0.6b',note:'Use the Linux installer; it detects raspberry-pi and keeps starter models small.'};
+    if(platform.includes('linux'))return {label:'Linux / VM',installer:'./downloads/mmir-local-connector-linux.sh',model:'qwen3:0.6b',note:'Run the Linux connector on the VM or local device, then refresh this dashboard.'};
+    if(platform.includes('mac'))return {label:'macOS',installer:'./downloads/mmir-local-connector-mac.command',model:'llama3.2:1b',note:'Use the signed-free command installer path; DMG remains optional until published.'};
+    if(platform.includes('win'))return {label:'Windows',installer:'./downloads/mmir-local-connector-windows.cmd',model:'llama3.2:1b',note:'Use the Windows bootstrap, keep the connector on 127.0.0.1, then refresh.'};
+    return {label:'This device',installer:'./downloads/mmir-local-connector-install.html',model:'qwen3:0.6b',note:'Use the universal installer, then return here for pairing and model proof.'};
+  }
 
   async function pairedConnection(){
     const profile=activeProfile()||{provider:'local-node',url:DEFAULT_LOCAL_URL,name:'MMIR Local Node'};
@@ -85,6 +94,41 @@
 
   function doctor(label,state,detail){
     return '<article class="node-doctor-card" data-state="'+safe(state)+'"><span>'+safe(statusText(state))+'</span><strong>'+safe(label)+'</strong><small>'+safe(detail)+'</small></article>';
+  }
+
+  function guidedDeviceRepair(checks,hardware,tunnel){
+    const first=checks.find(check=>check.state!=='ready')||{id:'ready',detail:'Local path is ready.'};
+    const device=detectDevice(hardware);
+    const base={device,source:'Local Node Doctor',primary:'Open installer',target:device.installer};
+    if(first.id==='connector'){
+      return {...base,title:'Install connector for '+device.label,detail:device.note,steps:['Install MMIR Local Connector','Keep Ollama/private runtime on localhost','Return and refresh node health']};
+    }
+    if(first.id==='pairing'){
+      return {...base,title:'Pair this browser',detail:'Create or refresh a local pairing token before model, chat or tunnel routes are used.',primary:'Refresh nodes',target:'#node-dashboard',steps:['Refresh nodes','Create short-lived code for another device if needed','Never paste pairing tokens into public places']};
+    }
+    if(first.id==='ollama'){
+      return {...base,title:'Start Ollama on '+device.label,detail:'The connector is reachable, but the local runtime is offline. Start Ollama or rerun the connector installer.',steps:['Start Ollama','Rerun connector installer if Ollama is missing','Refresh and let autopilot retry proof']};
+    }
+    if(first.id==='model-pull'||first.id==='model_pull'){
+      return {...base,title:'Repair model install',detail:first.detail||'A model pull needs retry or a smaller starter model.',primary:'Model library',target:'#model-library',steps:['Open Model library','Retry '+device.model+' or another small free model','Wait for install-to-first-chat bridge']};
+    }
+    if(first.id==='model'){
+      return {...base,title:'Install '+device.model+' for '+device.label,detail:'No local chat model is available yet. Use the free starter that fits this device first.',primary:'Model library',target:'#model-library',steps:['Open Model library','Install '+device.model,'Autopilot will refresh proof after install']};
+    }
+    if(first.id==='tunnel'&&tunnel?.control_enabled){
+      return {...base,title:'Start optional tunnel only if needed',detail:'Local chat works without a tunnel. Use tunnel only for another trusted device.',primary:'Start free tunnel',target:'#node-start-tunnel',steps:['Keep raw Ollama private','Start tunnel only after pairing','Use short-lived remote pairing code']};
+    }
+    return {...base,title:'Local path ready',detail:'Connector, pairing, runtime and models are ready for this device.',primary:'Chat now',target:'#mimir-prompt',steps:['Use verified chat','Add another node only when needed','Keep paid/provider routes approval-gated']};
+  }
+
+  function renderDeviceRepair(guide){
+    const target=guide.target||'#local-connector';
+    const isHash=target.startsWith('#');
+    return '<article class="node-repair-card" data-device="'+safe(guide.device.label)+'">'+
+      '<div><span>Guided device repair</span><h3>'+safe(guide.title)+'</h3><p>'+safe(guide.detail)+'</p><small>'+safe(guide.source)+' / '+safe(guide.device.label)+' / starter '+safe(guide.device.model)+'</small></div>'+
+      '<ol>'+guide.steps.map(step=>'<li>'+safe(step)+'</li>').join('')+'</ol>'+
+      '<div class="node-model-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target>'+safe(guide.primary)+'</a>':'<a href="'+safe(target)+'">'+safe(guide.primary)+'</a>')+'</div>'+
+    '</article>';
   }
 
   function nextAction(checks){
@@ -201,6 +245,7 @@
       {id:'model',state:'warn',label:'Model availability',detail:'Live models appear after Ollama/local runtime is online.'}
     ];
     const action=nextAction(checks);
+    const guide=guidedDeviceRepair(checks,null,null);
     root.innerHTML=
       '<div class="node-dashboard-grid">'+
         card('Browser client','ready','This page is loaded and can prepare the free local profile.')+
@@ -208,6 +253,7 @@
         card('Models','free route','Install a local model when the node is running.')+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
+      renderDeviceRepair(guide)+
       renderAction(action,false,false);
     bindActions(null);
     setSummary('Install Health Doctor found the local node offline.','error');
@@ -266,6 +312,7 @@
     const checks=report?.checks||fallbackChecks;
     const action=report?.action||nextAction(checks);
     const doctorSource=report?'Local Node Doctor':'Browser fallback doctor';
+    const guide=guidedDeviceRepair(checks,hardware,tunnel);
     const canStartTunnel=Boolean(tunnel&&tunnel.control_enabled!==false&&!tunnel.public_url);
     root.innerHTML=
       '<div class="node-dashboard-grid">'+
@@ -278,6 +325,7 @@
         card('Doctor source',doctorSource,report?'Status: '+statusText(report.status):'Connector does not expose /doctor yet')+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
+      renderDeviceRepair(guide)+
       renderModelManager(models)+
       renderAction(action,canStartTunnel,true);
     bindActions(connection);

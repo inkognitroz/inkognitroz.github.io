@@ -15,7 +15,8 @@
 .node-doctor-card,
 .node-next-action,
 .node-model-manager,
-.node-model-card {
+.node-model-card,
+.node-repair-card {
   border: 1px solid var(--mimir-line);
   border-radius: 8px;
   background: #fff;
@@ -31,7 +32,8 @@
 .node-doctor-card span,
 .node-next-action span,
 .node-model-manager span,
-.node-model-card span {
+.node-model-card span,
+.node-repair-card span {
   color: var(--mimir-muted);
   font-size: 0.75rem;
   font-weight: 800;
@@ -48,7 +50,9 @@
 .node-card small,
 .node-doctor-card small,
 .node-next-action p,
-.node-model-manager p {
+.node-model-manager p,
+.node-repair-card p,
+.node-repair-card small {
   color: var(--mimir-muted);
   line-height: 1.4;
 }
@@ -172,6 +176,29 @@
   gap: 8px;
 }
 
+.node-repair-card {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.55fr) auto;
+  align-items: center;
+  border-left: 4px solid #0f766e;
+}
+
+.node-repair-card h3 {
+  color: var(--mimir-text);
+  margin: 4px 0;
+}
+
+.node-repair-card ol {
+  color: var(--mimir-muted);
+  margin: 0;
+  padding-left: 18px;
+}
+
+.node-repair-card li {
+  margin: 3px 0;
+}
+
 .node-dashboard-actions button,
 .node-dashboard-actions a,
 .node-model-actions button,
@@ -215,6 +242,11 @@
   .node-model-manager-head {
     display: grid;
     align-items: start;
+  }
+
+  .node-repair-card {
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .node-model-manager-head p {

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d171-20260523-activation-autopilot';
+const CACHE_NAME='mmir-pwa-d172-20260523-device-repair-cards';
 const SHELL_ASSETS=[
   './',
   './index.html',

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:03:27.274Z",
+  "updated_at": "2026-05-23T12:08:27.013Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 172,
+    "total": 173,
     "done": 51,
-    "beta": 96,
+    "beta": 97,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -738,10 +738,10 @@
       },
       {
         "phase": "Activation QA",
-        "total": 3,
+        "total": 4,
         "done": 0,
         "beta": 3,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -750,8 +750,8 @@
         "phase": "Activation Automation",
         "total": 2,
         "done": 0,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -808,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D172"
+    "D173"
   ],
   "watchlist": [
     "D082",
@@ -3390,9 +3390,24 @@
       "best_practice": "Only unavoidable user/device actions should be shown, and they should be specific",
       "done_when": "User sees one concrete install/repair card for their device and never gets a generic troubleshooting list",
       "covers": "activation, support, device onboarding",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Node Dashboard now renders one guided OS/device repair card from doctor checks, detecting Windows, macOS, Linux/VM and Raspberry Pi/Linux ARM with a starter model and exact next action.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D173",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "Device repair verification harness",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add automated journey fixtures for offline connector, offline Ollama, failed model pull, no model and pairing-required states so guided repair cards cannot regress",
+      "best_practice": "Device repair UX should be proven by state fixtures, not only static strings",
+      "done_when": "CI verifies each activation failure maps to one safe device-specific repair card",
+      "covers": "activation, QA, support",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: when autopilot cannot fix a device/runtime gap, show one exact OS/device repair card instead of generic troubleshooting.",
+      "evidence": "Next activation slice: add state-fixture verification for each guided repair card so the support UX cannot regress.",
       "estimate": "2-6h"
     }
   ]
