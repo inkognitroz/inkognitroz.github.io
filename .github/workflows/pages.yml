@@ -62,6 +62,8 @@ jobs:
         run: node scripts/smoke-check-critical-shell-headroom.js
       - name: Smoke check starter to proof funnel
         run: node scripts/smoke-check-starter-to-proof-funnel.js
+      - name: Smoke check starter funnel continue
+        run: node scripts/smoke-check-starter-funnel-continue.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

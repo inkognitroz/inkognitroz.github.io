@@ -138,3 +138,6 @@ jobs:
 
       - name: Smoke-check starter to proof funnel
         run: node scripts/smoke-check-starter-to-proof-funnel.js
+
+      - name: Smoke-check starter funnel continue
+        run: node scripts/smoke-check-starter-funnel-continue.js

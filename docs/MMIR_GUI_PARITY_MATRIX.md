@@ -70,6 +70,7 @@ Current priority after the matrix is:
 60. D187 critical-shell byte headroom.
 61. D188 starter-to-proof funnel.
 62. D189 starter funnel continue action.
+63. D190 first-screen starter funnel summary.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -131,6 +132,7 @@ D185 is now beta: first-screen activation recommends one free starter model for 
 D186 is now beta: recommended-starter selection telemetry appears in activation events and progress counts without storing prompts, responses or secrets.
 D187 is now beta: non-essential first-screen QA/repair hydration is deferred out of the critical shell while immediate activation remains available.
 D188 is now beta: Progress Dashboard shows whether recommended starter selections become install, live proof and first-chat receipts.
-D189 is next: add one safe Continue action from the starter funnel to the exact missing step.
+D189 is now beta: one safe Continue action opens the exact missing starter funnel step without auto-spend.
+D190 is next: surface starter funnel progress on the first screen without increasing critical JS.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

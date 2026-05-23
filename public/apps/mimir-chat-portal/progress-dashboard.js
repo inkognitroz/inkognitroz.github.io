@@ -215,7 +215,13 @@
       {id:'proved',label:'Live proof',event:proof,empty:'Run the tiny free proof.'},
       {id:'answered',label:'First answer',event:chat,empty:'Send the first verified chat.'}
     ];
-    return {state:chat?'ready':'watch',selected,steps};
+    const missing=steps.find((step)=>!step.event);
+    const nextAction=!selected?{kind:'select-starter',label:'Choose starter',target:'#mimir-instant-start'}:
+      missing?.id==='installed'?{kind:'install',label:'Open model library',target:'#model-library'}:
+      missing?.id==='proved'?{kind:'live-proof',label:'Run free proof',target:'#mimir-chat-runtime'}:
+      missing?.id==='answered'?{kind:'first-chat',label:'Start first chat',target:'#mimir-prompt'}:
+      {kind:'chat-now',label:'Chat now',target:'#mimir-prompt'};
+    return {state:chat?'ready':'watch',selected,steps,nextAction};
   }
 
   function renderStarterFunnel(){
@@ -231,6 +237,7 @@
           '<small>'+safe(step.event?new Date(step.event.at||Date.now()).toLocaleString()+' / '+(step.event.model||step.event.route||'local-first'):step.empty)+'</small>'+
         '</article>'
       ).join(''):'<p class="dashboard-note">No recommended-starter event exists in this browser workspace yet.</p>')+'</div>'+
+      '<div class="progress-activation-actions"><button id="progress-starter-continue" type="button" data-starter-funnel-action="'+safe(funnel.nextAction.kind)+'" data-target="'+safe(funnel.nextAction.target)+'">'+safe(funnel.nextAction.label)+'</button></div>'+
       '<small class="progress-activation-privacy">Local only: raw_prompt_stored:false, raw_response_stored:false, secrets_stored:false, no_paid_routes_started:true.</small>'+
     '</section>';
   }
@@ -448,6 +455,25 @@
     });
   }
 
+  function runStarterFunnelContinue(){
+    const action=starterFunnelState().nextAction;
+    window.MimirActivationTelemetry?.record?.('starter-funnel-action',{status:action.kind,route:action.target,free:true,note:'Starter funnel continue opened '+action.target+'. no_paid_routes_started:true.'});
+    if(action.kind==='live-proof'){
+      const retry=document.querySelector('#runtime-live-proof [data-proof-action="retry"]')||document.getElementById('runtime-refresh');
+      retry?.click?.();
+    }
+    if(action.kind==='first-chat'){
+      runFirstChatRecovery();
+      return;
+    }
+    if(action.target.startsWith('#'))openTarget(action.target);
+    setSummary('Starter funnel opened '+label(action.kind)+'. No paid route, provider key or secret was used.','ready');
+  }
+
+  function bindStarterFunnel(){
+    document.getElementById('progress-starter-continue')?.addEventListener('click',runStarterFunnelContinue);
+  }
+
   function bindActivationSimulator(){
     const scenarios=dashboard?.activation_simulator?.scenarios||[];
     root.querySelectorAll('[data-activation-replay]').forEach(button=>{
@@ -510,6 +536,7 @@
     root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindActivationTelemetry();
+    bindStarterFunnel();
     bindActivationSimulator();
     bindLiveGapChecklist();
     bindFilters();

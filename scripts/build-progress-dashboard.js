@@ -56,7 +56,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 189).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 190).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -126,7 +126,8 @@ const overrides = new Map([
   ['D186', { status: 'beta', evidence: 'Recommended starter selections now record privacy-safe activation telemetry and the Progress Dashboard counts starter-selected events without prompts, responses, secrets or paid routes.' }],
   ['D187', { status: 'beta', evidence: 'Non-essential repair/replay first-screen QA banners now hydrate from a deferred module, keeping the immediate first action in the critical shell while increasing JS headroom.' }],
   ['D188', { status: 'beta', evidence: 'Progress Dashboard now shows a local-only starter funnel from recommended-starter selection to install, live proof and first-chat receipt.' }],
-  ['D189', { status: 'next', evidence: 'Next starter funnel slice: add one safe continue action from the funnel to the exact install/proof/chat step without auto-spend.' }]
+  ['D189', { status: 'beta', evidence: 'Starter funnel now exposes one Continue action that opens the exact missing install, free proof or first-chat step and records no-spend telemetry.' }],
+  ['D190', { status: 'next', evidence: 'Next activation UX slice: surface starter funnel progress on the first screen without increasing the critical JS budget.' }]
 ]);
 
 const repoMeta = [
@@ -259,7 +260,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D189', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D190', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

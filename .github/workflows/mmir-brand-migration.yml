@@ -40,6 +40,7 @@ jobs:
           node scripts/smoke-check-recommended-starter-telemetry.js
           node scripts/smoke-check-critical-shell-headroom.js
           node scripts/smoke-check-starter-to-proof-funnel.js
+          node scripts/smoke-check-starter-funnel-continue.js
 
       - name: Commit migrated assets
         run: |

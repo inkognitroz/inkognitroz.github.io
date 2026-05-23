@@ -76,6 +76,7 @@ const files = {
   starterTelemetryHarness: join(root, 'scripts', 'smoke-check-recommended-starter-telemetry.js'),
   criticalShellHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
+  starterFunnelContinueHarness: join(root, 'scripts', 'smoke-check-starter-funnel-continue.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -444,6 +445,8 @@ requireIncludes(files.firstScreenHydration, 'MimirFirstScreenActivationHydration
 requireIncludes(files.starterFunnelHarness, 'Starter-to-proof funnel smoke check passed.', 'D188 starter-to-proof funnel needs dedicated CI fixture coverage.');
 requireIncludes(files.progressDashboard, 'renderStarterFunnel', 'D188 Progress Dashboard must render starter-to-proof funnel.');
 requireIncludes(files.progressDashboardCss, '.progress-starter-funnel', 'D188 starter-to-proof funnel needs visible styling.');
+requireIncludes(files.starterFunnelContinueHarness, 'Starter funnel continue smoke check passed.', 'D189 starter funnel continue action needs dedicated CI fixture coverage.');
+requireIncludes(files.progressDashboard, 'runStarterFunnelContinue', 'D189 Progress Dashboard must run starter funnel continue actions.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

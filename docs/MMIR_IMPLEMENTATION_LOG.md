@@ -180,14 +180,15 @@ Updated: 2026-05-23
 - D186 is now beta: recommended-starter selections record privacy-safe activation telemetry and Progress Dashboard counts starter-selected events without storing prompts, responses, secrets or paid routes.
 - D187 is now beta: non-essential repair/replay first-screen QA banners hydrate from a deferred module, preserving the immediate first action while improving critical-shell JS headroom.
 - D188 is now beta: Progress Dashboard shows a local-only starter funnel from recommended-starter selection to install, live proof and first-chat receipt.
-- D189 is now the next starter funnel slice: add one safe continue action to the exact install/proof/chat step without auto-spend.
+- D189 is now beta: starter funnel has one contextual Continue action that opens the exact missing install, free proof or first-chat step and records no-spend telemetry.
+- D190 is now the next activation UX slice: surface starter funnel progress on the first screen through deferred hydration without increasing the critical JS budget.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D189` starter funnel continue action.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D190` first-screen starter funnel summary.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
