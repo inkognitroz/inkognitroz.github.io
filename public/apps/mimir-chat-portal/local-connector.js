@@ -32,19 +32,20 @@
       const bullets=Array.isArray(feature.bullets)?feature.bullets:[];
       return '<details class="model-catalog-hint"><summary>+ '+safe(feature.title)+(feature.badge?' ('+safe(feature.badge)+')':'')+'</summary><p class="dashboard-note"><strong>'+safe(feature.headline||'')+'</strong></p><p class="dashboard-note">'+safe(feature.description||'')+'</p><div class="provider-capabilities">'+bullets.map(item=>'<span>'+safe(item)+'</span>').join('')+'</div></details>';
     }).join('');
-    section.innerHTML='<summary>+ All MMIR.ai Features</summary><section class="mimir-dashboard"><div class="dashboard-heading"><div><p class="eyebrow">Expand to learn more</p><h2>Everything is organized behind + sections</h2></div></div>'+cards+'</section>';
+    section.innerHTML='<summary>+ All MMIR.ai Features</summary><section class="mimir-dashboard" aria-labelledby="feature-catalog-title"><div class="dashboard-heading"><div><p class="eyebrow">Expand to learn more</p><h2 id="feature-catalog-title">Everything is organized behind + sections</h2></div></div>'+cards+'</section>';
     const anchor=document.getElementById('model-library');
     if(anchor)main.insertBefore(section,anchor); else main.appendChild(section);
   }
 
   function renderFlowStages(stages){
     if(!main||document.getElementById('mmir-flow-stages'))return;
+    if(!Array.isArray(stages)||!stages.length)return;
     const section=document.createElement('details');
     section.id='mmir-flow-stages';
     section.className='mimir-provider-drawer';
     section.open=true;
-    const cards=(Array.isArray(stages)?stages:[]).map(stage=>'<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(stage.title||stage.id)+'</h3><span class="provider-status status-planned">'+safe(stage.badge||'Next')+'</span></div><p>'+safe(stage.description||'Flow stage')+'</p></article>').join('');
-    section.innerHTML='<summary>+ Chat Pipeline</summary><section class="mimir-dashboard"><div class="dashboard-heading"><div><p class="eyebrow">Chat functionality pipeline</p><h2>Connect, detect, list models, send, render</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
+    const cards=stages.map(stage=>'<article class="provider-card"><div class="provider-card-header"><h3>+ '+safe(stage.title||stage.id)+'</h3><span class="provider-status status-planned">'+safe(stage.badge||'Next')+'</span></div><p>'+safe(stage.description||'Flow stage')+'</p></article>').join('');
+    section.innerHTML='<summary>+ Chat Pipeline</summary><section class="mimir-dashboard" aria-labelledby="chat-pipeline-title"><div class="dashboard-heading"><div><p class="eyebrow">Chat functionality pipeline</p><h2 id="chat-pipeline-title">Connect, detect, list models, send, render</h2></div></div><div class="provider-status-grid">'+cards+'</div></section>';
     const anchor=document.getElementById('connect-options')||document.getElementById('local-connector');
     if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(section,anchor.nextSibling); else main.appendChild(section);
   }
@@ -59,7 +60,7 @@
       renderConnectOptions([
         {id:'local-connector',title:'Connect local LLM',status:'free first',description:'Connect a local PC or VM through the MMIR local connector.',target:'#local-connector'},
         {id:'bring-backend',title:'Add compatible backend',status:'self-managed',description:'Add a trusted backend URL when the connector API is ready.',target:'#backend-settings'},
-        {id:'provider-api',title:'Use SaaS model/API',status:'backend required',description:'Provider keys must stay behind a protected backend.',target:'#provider-status'}
+        {id:'provider-route',title:'Use SaaS model route',status:'backend required',description:'Provider credentials stay behind a protected backend.',target:'#provider-status'}
       ]);
     }
   }
@@ -79,12 +80,12 @@
       if(!response.ok)throw new Error('flow stages unavailable');
       const data=await response.json();
       renderFlowStages(data.stages||[]);
-    }catch(error){renderFlowStages([]);}
+    }catch(error){return;}
   }
 
   async function init(){
-    loadConnectOptions();
-    loadFlowStages();
+    await loadConnectOptions();
+    await loadFlowStages();
     loadFeatureCatalog();
     try{
       const response=await fetch('./local-connector-guide.json',{cache:'default'});
