@@ -68,6 +68,7 @@
     const model=String(resume?.model||'').trim();
     if(status==='verified'){
       const modelCount=Number(resume?.model_count||0);
+      if(resume?.action==='starter-install-repair')return {state:'verified',title:'Starter repair verified',detail:(model||'The selected starter')+' is installed. MMIR is preparing proof and first chat.',action:'Chat now',target:'#mimir-prompt'};
       return {state:'verified',title:'Repair verified',detail:modelCount?'Node sees '+String(modelCount)+' live model'+(modelCount===1?'':'s')+'.':'Connector is back.',action:'Chat now',target:'#mimir-prompt'};
     }
     if(status==='needs-model'){

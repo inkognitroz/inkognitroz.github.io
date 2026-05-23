@@ -42,6 +42,7 @@
     const model=String(resume?.model||'').trim();
     if(status==='verified'){
       const count=Number(resume?.model_count||0);
+      if(resume?.action==='starter-install-repair')return {state:'verified',title:'Starter repair verified',detail:(model||'The selected starter')+' is installed. MMIR is preparing proof and first chat.',primary:'Chat now',target:'#mimir-prompt'};
       return {state:'verified',title:'Last repair verified',detail:count?'Connector is online and '+String(count)+' local model'+(count===1?'':'s')+' are visible.':'Connector is online; continue with local model activation.',primary:'Chat now',target:'#mimir-prompt'};
     }
     if(status==='needs-model'){

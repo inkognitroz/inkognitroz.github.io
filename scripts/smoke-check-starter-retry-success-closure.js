@@ -18,7 +18,7 @@ function fail(message) {
 
 function text(file) {
   if (!existsSync(file)) {
-    fail(`Missing starter install retry-after-repair file: ${relative(root, file)}`);
+    fail(`Missing starter retry success closure file: ${relative(root, file)}`);
     return '';
   }
   return readFileSync(file, 'utf8');
@@ -40,46 +40,40 @@ const coverage = text(files.coverage);
 const progressData = json(files.progressData);
 
 for (const needle of [
-  'function handleRepairResumeChecked(event)',
-  "resume.action!=='starter-install-repair'",
-  "resume.status!=='needs-model'",
-  'Number(resume.retry_count||0)>=1',
-  "status:'retrying'",
-  'retry_count:Number(resume.retry_count||0)+1',
-  'starter-install-retry',
-  'Retrying preserved starter install once after repair',
-  'runStarterHandoff({starter_id:next.starter_id'
+  'function closeStarterRetrySuccess(readyModel)',
+  "status:'verified'",
+  'model_count:1',
+  "target:'#mimir-prompt'",
+  'starter-retry-success',
+  'first_chat_ready:true',
+  'Give me my first useful MMIR answer with',
+  'closeStarterRetrySuccess(readyModel)'
 ]) {
-  if (!chatRuntime.includes(needle)) fail(`Chat runtime missing starter retry-after-repair evidence: ${needle}`);
+  if (!chatRuntime.includes(needle)) fail(`Chat runtime missing starter retry success closure evidence: ${needle}`);
 }
 
 for (const needle of [
-  "status==='retrying'",
-  'Retrying starter install',
-  '#mimir-chat-runtime'
+  'Starter repair verified',
+  'preparing proof and first chat',
+  '#mimir-prompt'
 ]) {
-  if (!nodeDashboard.includes(needle)) fail(`Node Dashboard missing retrying starter visibility evidence: ${needle}`);
-  if (!hydration.includes(needle)) fail(`First-screen hydration missing retrying starter visibility evidence: ${needle}`);
+  if (!nodeDashboard.includes(needle)) fail(`Node Dashboard missing starter retry success visibility evidence: ${needle}`);
+  if (!hydration.includes(needle)) fail(`First-screen hydration missing starter retry success visibility evidence: ${needle}`);
 }
 
 for (const needle of [
-  'starter-install-retry',
-  'retrying',
-  'pendingStarterHandoff',
+  'starter-retry-success',
+  'first_chat_ready:true',
+  'mimir-prompt',
   'no_paid_routes_started:true'
 ]) {
-  if (!coverage.includes(needle)) fail(`UI action coverage missing starter retry-after-repair evidence: ${needle}`);
+  if (!coverage.includes(needle)) fail(`UI action coverage missing starter retry success evidence: ${needle}`);
 }
 
 const tasks = Array.isArray(progressData.tasks) ? progressData.tasks : [];
-const d195 = tasks.find((task) => task.seq === 'D195');
-if (!d195 || d195.status !== 'beta') {
-  fail('Progress dashboard task D195 must be beta after starter install retry-after-repair ships.');
-}
-
 const d196 = tasks.find((task) => task.seq === 'D196');
 if (!d196 || d196.status !== 'beta') {
-  fail('Progress dashboard task D196 must stay beta after starter retry success closure ships.');
+  fail('Progress dashboard task D196 must be beta after starter retry success closure ships.');
 }
 
 const d197 = tasks.find((task) => task.seq === 'D197');
@@ -88,5 +82,5 @@ if (!d197 || d197.status !== 'next') {
 }
 
 if (!process.exitCode) {
-  console.log('Starter install retry-after-repair smoke check passed.');
+  console.log('Starter retry success closure smoke check passed.');
 }

@@ -91,8 +91,13 @@ if (!d195 || d195.status !== 'beta') {
 }
 
 const d196 = tasks.find((task) => task.seq === 'D196');
-if (!d196 || d196.status !== 'next') {
-  fail('Progress dashboard must expose D196 as the next starter retry success closure work item.');
+if (!d196 || d196.status !== 'beta') {
+  fail('Progress dashboard task D196 must stay beta after starter retry success closure ships.');
+}
+
+const d197 = tasks.find((task) => task.seq === 'D197');
+if (!d197 || d197.status !== 'next') {
+  fail('Progress dashboard must expose D197 as the next first-answer send handoff work item.');
 }
 
 if (!process.exitCode) {

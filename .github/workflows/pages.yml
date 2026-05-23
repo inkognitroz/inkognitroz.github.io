@@ -76,6 +76,8 @@ jobs:
         run: node scripts/smoke-check-starter-install-repair-fallback.js
       - name: Smoke check starter install retry after repair
         run: node scripts/smoke-check-starter-install-retry-after-repair.js
+      - name: Smoke check starter retry success closure
+        run: node scripts/smoke-check-starter-retry-success-closure.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

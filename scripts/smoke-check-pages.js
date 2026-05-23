@@ -488,6 +488,10 @@ requireText(join(root, 'scripts', 'smoke-check-starter-install-retry-after-repai
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'handleRepairResumeChecked', 'D195 chat runtime must retry the preserved starter after repair is checked.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'starter-install-retry', 'D195 retry must record no-spend activation telemetry.');
 requireText(firstScreenHydrationPath, 'Retrying starter install', 'D195 first screen must show retrying starter state.');
+requireText(join(root, 'scripts', 'smoke-check-starter-retry-success-closure.js'), 'Starter retry success closure smoke check passed.', 'D196 starter retry success closure must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'closeStarterRetrySuccess', 'D196 chat runtime must close repair resume on starter retry success.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'starter-retry-success', 'D196 starter retry success must be tracked without storing secrets.');
+requireText(firstScreenHydrationPath, 'Starter repair verified', 'D196 first screen must show starter repair verified state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

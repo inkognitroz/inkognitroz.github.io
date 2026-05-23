@@ -69,15 +69,7 @@
     }
   }
   function writeRepairResume(payload){
-    const resume={
-      ...payload,
-      status:payload?.status||'pending',
-      at:new Date().toISOString(),
-      no_paid_routes_started:true,
-      provider_secrets_stored:false,
-      raw_prompt_stored:false,
-      raw_response_stored:false
-    };
+    const resume={...payload,status:payload?.status||'pending',at:new Date().toISOString(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored:false,raw_response_stored:false};
     try{localStorage.setItem(repairResumeKey(),JSON.stringify(resume));}catch(error){}
     window.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
     return resume;
@@ -1028,7 +1020,7 @@
     renderModelHelper();
     updateRuntimeChips();
     updateRuntimeModelActions();
-    setStatus('Prepared '+(starter.model||starter.label)+' for install and proof. No paid route started.','ready');
+    setStatus('Prepared '+(starter.model||starter.label)+' for install/proof. No paid route.','ready');
     return starter;
   }
 
@@ -1057,25 +1049,16 @@
   function starterInstallRepairFallback(starter,model,error){
     const target=starterInstallRepairTarget(error);
     const existing=readRepairResume();
-    const message=error?.status===401?'Pair this browser with the local node before install.':
-      error?.status===404?'Update or restart MMIR Local Node so model install routes are available.':
-      'Start MMIR Local Node and Ollama, then retry the selected starter install.';
+    const message=error?.status===401?'Pair browser with local node.':
+      error?.status===404?'Update/restart Local Node for model install.':
+      'Start Local Node/Ollama, then retry starter.';
     pendingStarterHandoff={starter_id:starter?.id||'',action:'install',model};
-    const resume=writeRepairResume({
-      action:'starter-install-repair',
-      target,
-      model,
-      starter_id:starter?.id||'',
-      note:'Starter install could not start for '+model+'. '+message,
-      source:'chat-runtime',
-      retry_count:Number(existing?.retry_count||0),
-      error_status:error?.status||'offline'
-    });
+    const resume=writeRepairResume({action:'starter-install-repair',target,model,starter_id:starter?.id||'',note:'Install failed for '+model+'. '+message,retry_count:Number(existing?.retry_count||0)});
     window.MimirActivationTelemetry?.record?.('starter-install-repair',{status:'needs-action',model,route:target,free:true,note:'Starter install repair opened '+target+'. no_paid_routes_started:true.'});
     window.dispatchEvent(new CustomEvent('mmir-starter-install-repair-opened',{detail:resume}));
     openPanel('#node-dashboard');
     if(target==='#local-connector')openPanel('#local-connector');
-    return message+' MMIR opened repair and kept '+model+' selected for retry.';
+    return message+' MMIR opened repair and kept '+model+' selected.';
   }
 
   function handleRepairResumeChecked(event){
@@ -1083,16 +1066,24 @@
     if(!resume||resume.action!=='starter-install-repair')return;
     if(resume.status!=='needs-model'||!resume.starter_id)return;
     if(Number(resume.retry_count||0)>=1||resume.status==='retrying')return;
-    const next=writeRepairResume({
-      ...resume,
-      status:'retrying',
-      retry_count:Number(resume.retry_count||0)+1,
-      retry_started_at:new Date().toISOString(),
-      note:'Local node is back; MMIR is retrying the preserved starter install once.'
-    });
+    const next=writeRepairResume({...resume,status:'retrying',retry_count:Number(resume.retry_count||0)+1,retry_at:new Date().toISOString(),note:'Retrying preserved starter install once after repair.'});
     pendingStarterHandoff={starter_id:next.starter_id,action:'install',model:next.model||''};
     window.MimirActivationTelemetry?.record?.('starter-install-retry',{status:'retrying',model:next.model||'',route:'chat runtime',free:true,note:'Retrying preserved starter install once after repair. no_paid_routes_started:true.'});
     runStarterHandoff({starter_id:next.starter_id,model:next.model||'',action:'install',source:'repair-resume',free:true,no_paid_routes_started:true});
+  }
+
+  function closeStarterRetrySuccess(readyModel){
+    const resume=readRepairResume();
+    if(!resume||resume.action!=='starter-install-repair')return null;
+    const model=String(readyModel||resume.model||'').trim();
+    const next=writeRepairResume({...resume,status:'verified',model,model_count:1,target:'#mimir-prompt',note:'Starter retry installed '+(model||'the selected model')+'; preparing proof and first chat.'});
+    window.dispatchEvent(new CustomEvent('mmir-repair-resume-checked',{detail:next}));
+    window.MimirActivationTelemetry?.record?.('starter-retry-success',{status:'verified',model,route:'chat runtime',free:true,first_chat_ready:true,note:'Starter retry installed and moved to verified first-chat readiness. no_paid_routes_started:true.'});
+    if(promptEl&&!String(promptEl.value||'').trim()){
+      promptEl.value='Give me my first useful MMIR answer with '+(model||'this verified local model')+'.';
+      promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+    return next;
   }
 
   function starterAvailabilityLabel(model){
@@ -1223,8 +1214,7 @@
       setModelInstallStatus('Install queued for '+model+'.','loading');
       pollModelInstall(true);
     }catch(error){
-      const message=error.status===404?'Local node needs an update/restart before one-click model install is available. Use the installer links below for now.':friendlyError(error);
-      const repairMessage=starterInstallRepairFallback(starter,model,error)||message;
+      const repairMessage=starterInstallRepairFallback(starter,model,error)||friendlyError(error);
       setModelInstallStatus(repairMessage,'error');
       setStatus(repairMessage,'error');
     }
@@ -1247,6 +1237,7 @@
         const readyModel=String(job.model||currentModelInstall.model||'').trim();
         if(readyModel)preferProofModel(readyModel);
         setModelInstallStatus((readyModel||'Model')+' installed. Preparing verified chat...','ready');
+        closeStarterRetrySuccess(readyModel);
         window.dispatchEvent(new CustomEvent('mmir-model-install-ready',{detail:{model:readyModel,first_chat_bridge:true}}));
         await refreshState(true);
         return;

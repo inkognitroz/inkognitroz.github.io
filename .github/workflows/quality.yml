@@ -159,3 +159,6 @@ jobs:
 
       - name: Smoke-check starter install retry after repair
         run: node scripts/smoke-check-starter-install-retry-after-repair.js
+
+      - name: Smoke-check starter retry success closure
+        run: node scripts/smoke-check-starter-retry-success-closure.js

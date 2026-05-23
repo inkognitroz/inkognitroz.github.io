@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:12:28.828Z",
+  "updated_at": "2026-05-23T15:18:50.248Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 196,
+    "total": 197,
     "done": 51,
-    "beta": 120,
+    "beta": 121,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,10 +288,10 @@
       },
       {
         "phase": "Activation UX",
-        "total": 13,
+        "total": 14,
         "done": 4,
         "beta": 9,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -810,8 +810,8 @@
         "phase": "Activation Closure",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1088,7 +1088,7 @@
     }
   ],
   "next_queue": [
-    "D196"
+    "D197"
   ],
   "watchlist": [
     "D082",
@@ -4030,9 +4030,24 @@
       "best_practice": "Users should see success and be carried to first answer after repair",
       "done_when": "Successful retry clears repair ambiguity and moves the user to verified chat readiness",
       "covers": "activation, proof, first chat",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Successful starter install/retry now verifies the repair resume, records starter-retry-success telemetry and prepares a first useful chat prompt.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D197",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "First-answer send handoff after starter success",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "After verified proof is ready from starter install/retry, make the first answer action unmistakable and state-preserving on first screen, chat runtime and progress dashboard",
+      "best_practice": "The final activation step should feel like one obvious next action",
+      "done_when": "User sees one clear Chat now/Send first answer action with verified model selected",
+      "covers": "activation, first chat, UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next closure slice: successful starter retry should close repair ambiguity and move the user to verified first-chat readiness.",
+      "evidence": "Next activation UX slice: make the final first-answer send action unmistakable after verified starter proof.",
       "estimate": "2-6h"
     }
   ]
