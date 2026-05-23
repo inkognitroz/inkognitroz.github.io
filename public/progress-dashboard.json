@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:28:13.801Z",
+  "updated_at": "2026-05-23T10:39:11.572Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 163,
+    "total": 164,
     "done": 51,
-    "beta": 87,
+    "beta": 88,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -728,9 +728,9 @@
       },
       {
         "phase": "Model Activation",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -788,7 +788,7 @@
     }
   ],
   "next_queue": [
-    "D163"
+    "D164"
   ],
   "watchlist": [
     "D082",
@@ -3235,9 +3235,24 @@
       "best_practice": "First impression depends on seeing usable models immediately, not configuration chores",
       "done_when": "User sees verified live models, installable free models and retry/repair actions without manual debugging",
       "covers": "activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Chat now shows a live-model proof panel, verifies browser helper/WebGPU readiness, runs tiny free chat probes only on free/local-looking routes and skips possible paid provider probes.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D164",
+      "phase": "Model Activation",
+      "priority": "P0",
+      "work_package": "Proof-driven repair actions",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Convert failed live-model proof into exact repair paths for installer download, local node restart, Ollama start, model install and retry proof",
+      "best_practice": "Users should not interpret model failure; MMIR should tell them the next safest fix",
+      "done_when": "User can follow one repair action from failed proof to model live without reading docs",
+      "covers": "activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: make Connect model, browser helper, local node and backend model routes prove liveness with automatic free-route retry/repair actions.",
+      "evidence": "Next activation slice: turn failed live-model proof states into exact installer, local node, Ollama, model install and retry repair actions.",
       "estimate": "2-6h"
     }
   ]

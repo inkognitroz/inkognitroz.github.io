@@ -25,6 +25,7 @@
   let modelHelperEl=null;
   let modelChipEl=null;
   let resourceChipEl=null;
+  let proofEl=null;
   let refreshBtn=null;
   let stopBtn=null;
   let clearBtn=null;
@@ -43,6 +44,7 @@
   let webllmEngine=null;
   let webllmModelId='';
   let lastBackendMemoryUses=[];
+  let lastProofSignature='';
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -134,6 +136,40 @@
   function updateRuntimeChips(){
     if(modelChipEl)modelChipEl.textContent=activeModelLabel()||'Model ready';
     if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
+  }
+
+  function proofStateClass(state){
+    return ['ready','loading','error','blocked','idle'].includes(state)?state:'idle';
+  }
+
+  function renderLiveProof(message,state='idle',items=[]){
+    if(!proofEl)return;
+    const rows=(Array.isArray(items)?items:[]).map(item=>
+      '<span data-state="'+escapeHtml(proofStateClass(item.state))+'"><strong>'+escapeHtml(item.label||'Check')+'</strong>'+escapeHtml(item.detail?(' - '+item.detail):'')+'</span>'
+    ).join('');
+    proofEl.dataset.state=proofStateClass(state);
+    proofEl.innerHTML=''+
+      '<div><strong>Live model proof</strong><p>'+escapeHtml(message||'Browser helper is ready. Backend proof runs automatically when a free route is available.')+'</p></div>'+
+      '<div class="runtime-proof-rail">'+rows+'</div>'+
+      '<div class="runtime-proof-actions"><button id="runtime-proof-retry" type="button">Retry proof</button><button id="runtime-proof-repair" type="button">Repair free route</button></div>';
+    proofEl.querySelector('#runtime-proof-retry')?.addEventListener('click',()=>{lastProofSignature='';refreshState(true);});
+    proofEl.querySelector('#runtime-proof-repair')?.addEventListener('click',()=>{
+      openPanel('#node-dashboard');
+      openPanel('#model-library');
+    });
+  }
+
+  function routeLooksFree(profile,url){
+    const text=[profile?.provider,profile?.name,profile?.cost,url].join(' ');
+    return api.isLocal(profile)||/\b(free|gratis|local|localhost|127\.0\.0\.1|self-hosted|self hosted|mock|dev)\b/i.test(text);
+  }
+
+  function baseProofItems(url){
+    return [
+      {label:'Browser helper',state:'ready',detail:'verified free route'},
+      {label:'WebGPU',state:navigator.gpu?'ready':'idle',detail:navigator.gpu?'available for browser LLMs':'not available; browser guide still works'},
+      {label:'Backend health',state:url?'ready':'idle',detail:url||'not connected'}
+    ];
   }
   function selectedOptionRuntime(){
     return modelSelect?.selectedOptions?.[0]?.dataset?.runtime||'';
@@ -507,12 +543,14 @@
         '<button id="runtime-delete-model" type="button" aria-label="Remove selected local model" disabled>Remove model</button>'+
         '<button id="runtime-clear" type="button" aria-label="Clear local chat history">Clear</button>'+
       '</div>'+
+      '<div id="runtime-live-proof" class="runtime-live-proof" data-state="idle" aria-live="polite"></div>'+
       '<div id="runtime-model-helper" class="runtime-model-helper" hidden></div>'+
       '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite" aria-relevant="additions text" aria-busy="false"></div>';
     if(formEl&&formEl.nextSibling){chatCenter.insertBefore(runtime,formEl.nextSibling);}else{chatCenter.appendChild(runtime);}
     modelSelect=document.getElementById('runtime-model');
     statusEl=document.getElementById('runtime-state');
     modelHelperEl=document.getElementById('runtime-model-helper');
+    proofEl=document.getElementById('runtime-live-proof');
     transcriptEl=document.getElementById('runtime-transcript');
     refreshBtn=document.getElementById('runtime-refresh');
     stopBtn=document.getElementById('runtime-stop');
@@ -524,6 +562,7 @@
     stopBtn.addEventListener('click',stopCurrentResponse);
     deleteModelBtn.addEventListener('click',deleteSelectedLiveModel);
     clearBtn.addEventListener('click',clearConversation);
+    renderLiveProof('Browser helper is ready. Backend proof starts when a free backend or local node is reachable.','idle',baseProofItems(''));
   }
 
   function renderMessageActions(bubble,message){
@@ -771,6 +810,7 @@
     }
     if(!starterModels.length)starterModels=fallbackStarterModels();
     renderModels([]);
+    renderLiveProof('Browser helper routes are verified. Backend/model proof will start automatically when a free live route is reachable.','ready',baseProofItems(''));
     setStatus('Free browser/installable models are ready. Local node check runs in the background.','ready');
   }
 
@@ -1321,6 +1361,73 @@
     setBusy(false);
   }
 
+  async function tinyChatProbe(url,headers,model){
+    const payload={
+      model,
+      stream:false,
+      temperature:0,
+      max_tokens:8,
+      context_length:512,
+      messages:[
+        {role:'system',content:'MMIR live-model readiness probe. Reply with OK only.'},
+        {role:'user',content:'Reply OK.'}
+      ]
+    };
+    let data=null;
+    try{
+      data=await fetchJson(joinUrl(url,'/chat/completions'),{
+        method:'POST',
+        headers,
+        body:JSON.stringify(payload),
+        timeoutMs:25000
+      });
+    }catch(error){
+      if(error.status!==404)throw error;
+      data=await fetchJson(joinUrl(url,'/chat'),{
+        method:'POST',
+        headers,
+        body:JSON.stringify(payload),
+        timeoutMs:25000
+      });
+    }
+    const content=String(data?.choices?.[0]?.message?.content||data?.content||'').trim();
+    return content||'ok';
+  }
+
+  async function proveLiveRoute(profile,url,headers,models){
+    const firstModel=Array.isArray(models)&&models.length?models[0]:null;
+    const items=baseProofItems(url);
+    if(!firstModel?.id){
+      lastProofSignature='';
+      renderLiveProof('No backend model is live yet. Browser helper remains usable; install or connect a free local model to prove real chat.', 'idle', items.concat([{label:'Model list',state:'idle',detail:'no live model'}]));
+      window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'no-live-model',free:true}}));
+      return;
+    }
+    if(!routeLooksFree(profile,url)){
+      renderLiveProof('Model list verified, but automatic chat proof is skipped to avoid hidden provider cost. Mark the route free/local or use Local Node to probe automatically.', 'blocked', items.concat([{label:'Chat probe',state:'blocked',detail:'cost guard'}]));
+      window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'skipped-cost-guard',model:firstModel.id,free:false}}));
+      return;
+    }
+    const signature=[url,firstModel.id].join('|');
+    if(signature===lastProofSignature){
+      renderLiveProof('Live model proof is already verified for '+firstModel.id+'.', 'ready', items.concat([{label:'Chat probe',state:'ready',detail:firstModel.id}]));
+      return;
+    }
+    renderLiveProof('Proving '+firstModel.id+' with a tiny free chat probe...', 'loading', items.concat([{label:'Chat probe',state:'loading',detail:'max 8 tokens'}]));
+    try{
+      await tinyChatProbe(url,headers,firstModel.id);
+      lastProofSignature=signature;
+      writeActiveProfilePatch({health:'ready',liveness:'chat-probed',lastProofAt:new Date().toISOString(),lastProofModel:firstModel.id});
+      renderLiveProof(firstModel.id+' answered a tiny free readiness probe. This route is live.', 'ready', items.concat([{label:'Chat probe',state:'ready',detail:firstModel.id}]));
+      window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'verified',model:firstModel.id,free:true,url}}));
+    }catch(error){
+      lastProofSignature='';
+      writeActiveProfilePatch({health:error?.status===401?'testing':'degraded',liveness:'probe-failed',lastProofError:friendlyError(error)});
+      renderLiveProof('Model list loaded, but the tiny chat proof failed: '+friendlyError(error), 'error', items.concat([{label:'Chat probe',state:'error',detail:firstModel.id}]));
+      window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'failed',model:firstModel.id,error:friendlyError(error)}}));
+    }
+  }
+
   async function refreshState(force){
     ensureSendControl();
     const profile=activeProfile();
@@ -1329,12 +1436,14 @@
     lastActiveId=currentId;
     if(!profile||!cleanUrl(profile.url)){
       renderModels([]);
+      renderLiveProof('No backend is active yet. Browser helper works now; use Connect model to prepare a free local profile automatically.','idle',baseProofItems(''));
       setStatus('Free guide and installable local models are ready. Connect a backend to make models live.','ready');
       return;
     }
     const url=cleanUrl(profile.url);
     try{
       setStatus('Free browser models are ready. Checking local node in the background...','loading');
+      renderLiveProof('Checking backend health and model list before tiny chat proof...','loading',baseProofItems(url));
       await fetchJson(joinUrl(url,'/health'),{timeoutMs:5000});
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
@@ -1347,10 +1456,13 @@
       if(resourceChipEl)resourceChipEl.textContent=hardwareSummary(hardware)||'CPU/RAM local';
       writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
       setStatus(normalized.length?'Backend ready.':'Backend online. Free installable models are still available below.',normalized.length?'ready':'idle');
+      proveLiveRoute(profile,url,headers,normalized);
     }catch(error){
       renderModels([]);
       if(resourceChipEl)resourceChipEl.textContent='CPU/RAM offline';
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
+      lastProofSignature='';
+      renderLiveProof('Backend proof could not start: '+friendlyError(error),'error',baseProofItems(url).concat([{label:'Backend route',state:'error',detail:'repair local node'}]));
       if(starterModels.length){
         setStatus('Free browser/installable models are ready. Local node is not running yet.','ready');
       }else{

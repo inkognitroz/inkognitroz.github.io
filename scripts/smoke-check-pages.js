@@ -340,6 +340,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.css'), '.on
 requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime must keep an explicit first-run starter model choice.');
 requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
 requireText(chatRuntimePath, '/chat/completions', 'Chat runtime must use the shared chat completions contract.');
+requireText(chatRuntimePath, 'runtime-live-proof', 'D163 needs visible live model proof UI.');
+requireText(chatRuntimePath, 'tinyChatProbe', 'D163 needs a tiny free chat proof before marking a route verified.');
+requireText(chatRuntimePath, 'skipped to avoid hidden provider cost', 'D163 must not auto-probe possibly paid provider routes.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'), '.runtime-live-proof', 'D163 needs live proof styling.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
 requireText(chatRuntimePath, 'COLLECTIONS_PREFIX', 'Chat runtime must scope local knowledge to enabled collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'), 'COLLECTIONS_PREFIX', 'Model comparison must scope local knowledge to enabled collections.');

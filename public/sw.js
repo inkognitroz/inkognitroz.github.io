@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d162-20260523-share-activity';
+const CACHE_NAME='mmir-pwa-d163-20260523-live-model-proof';
 const SHELL_ASSETS=[
   './',
   './index.html',

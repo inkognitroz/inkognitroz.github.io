@@ -355,6 +355,9 @@ requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer 
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
 requireIncludes(files.chatRuntime, '/chat/completions', 'J002/J004 need the shared chat completions contract.');
+requireIncludes(files.chatRuntime, 'runtime-live-proof', 'D163 needs live model proof visible in the chat route.');
+requireIncludes(files.chatRuntime, 'tinyChatProbe', 'D163 needs tiny free route proof.');
+requireIncludes(files.chatRuntime, 'skipped to avoid hidden provider cost', 'D163 needs a cost guard for automatic proof.');
 requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 'Pairing requests must send explicit JSON content type.');
 requireIncludes(files.localConnector, '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(files.localConnector, '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route.');

@@ -48,9 +48,9 @@
       "id": "runtime-chat-controls",
       "surface": "Chat runtime",
       "status": "live",
-      "user_result": "Users can refresh models, stop a running response, clear local chat history, copy/retry answers and switch functional modes.",
-      "selectors": ["#runtime-refresh", "#runtime-stop", "#runtime-clear", "[data-chat-mode]", "#composer-voice-input"],
-      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
+      "user_result": "Users can refresh models, prove the selected free route is live, stop a running response, clear local chat history, copy/retry answers and switch functional modes.",
+      "selectors": ["#runtime-refresh", "#runtime-live-proof", "#runtime-proof-retry", "#runtime-proof-repair", "#runtime-stop", "#runtime-clear", "[data-chat-mode]", "#composer-voice-input"],
+      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "tinyChatProbe", "skipped to avoid hidden provider cost", "mmir-live-model-proof-updated", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
     },
     {
       "id": "local-node-actions",
