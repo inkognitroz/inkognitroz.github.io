@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
@@ -40,6 +41,7 @@ const files = {
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
   universalInstaller: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),
+  connectorRelease: join(publicDir, 'downloads', 'mmir-local-connector-release.json'),
   connectorServer: join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'),
   linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
@@ -102,6 +104,10 @@ function requireModel(models, id, predicate, message) {
   if (!model || !predicate(model)) {
     fail(message);
   }
+}
+
+function sha256File(file) {
+  return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
 requireIncludes(files.index, 'MMIR', 'Homepage must keep MMIR as the top-level product identity.');
@@ -261,6 +267,24 @@ requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector ser
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');
 requireIncludes(files.connectorServer, '/models/delete', 'Standalone connector server must support local model removal.');
 requireIncludes(files.connectorServer, '/pairing/sessions', 'Standalone connector server must support short-lived cross-device pairing codes.');
+const release = json(files.connectorRelease);
+if (release.contract_version !== '0.1' || release.default_host !== '127.0.0.1') {
+  fail('Connector release manifest must pin contract version and localhost default.');
+}
+const artifacts = Array.isArray(release.artifacts) ? release.artifacts : [];
+for (const artifact of artifacts.filter((item) => item?.sha256 && item?.path)) {
+  const artifactPath = join(publicDir, String(artifact.path).replace(/^\//, ''));
+  if (!existsSync(artifactPath)) {
+    fail(`Connector release manifest points to missing artifact: ${artifact.path}`);
+  } else if (sha256File(artifactPath) !== artifact.sha256) {
+    fail(`Connector release manifest checksum is stale for ${artifact.path}`);
+  }
+}
+for (const id of ['connector-server', 'mac-command', 'windows-cmd', 'linux-shell', 'universal-installer-page', 'mobile-client-mode']) {
+  if (!artifacts.some((item) => item.id === id)) {
+    fail(`Connector release manifest missing artifact: ${id}`);
+  }
+}
 requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');
 requireIncludes(files.userJourneyDoc, 'free-first', 'Journey docs must preserve the free-first rule.');
 requireIncludes(files.backlog, '| D106 | QA / Journey Gates', 'Backlog must include journey-level smoke tests.');
