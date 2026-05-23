@@ -19,7 +19,7 @@
       "platform": "shared",
       "kind": "node-server",
       "path": "/downloads/mmir-local-connector-server.mjs",
-      "sha256": "91dc52164343a8cb0cb58f9493ba15be51856b469639ae7f646aa55665d90753",
+      "sha256": "77b86c6564d5dd33c2d1d4d2e3de3d050cbd98e2a756086ffaa139e94ab7256b",
       "contract_version": "0.1",
       "required": true
     },
