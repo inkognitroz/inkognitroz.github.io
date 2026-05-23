@@ -148,6 +148,11 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.j
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Fork', 'Conversation manager must expose fork.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Export', 'Conversation manager must expose export.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Safe share', 'Conversation manager must expose redacted safe-share.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowledge-dropzone', 'Knowledge upload must expose drag/drop staging.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'MAX_FILE_BYTES', 'Knowledge upload must enforce file size bounds.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'fileIssue(file)', 'Knowledge upload must validate file type and size before indexing.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowledge-preview-list', 'Knowledge upload must show staged file previews.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.css'), '.knowledge-dropzone', 'Knowledge upload needs dropzone styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -189,7 +194,7 @@ for (const status of ['live', 'beta', 'planned', 'blocked', 'premium planned']) 
     fail(`GUI parity matrix must include status: ${status}.`);
   }
 }
-for (const feature of ['Model selector', 'Workflow builder', 'Web search', 'Code interpreter', 'Marketplace and premium routes']) {
+for (const feature of ['Model selector', 'Workflow builder', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Marketplace and premium routes']) {
   if (!parityItems.some((item) => item.feature === feature)) {
     fail(`GUI parity matrix is missing ${feature}.`);
   }

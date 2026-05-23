@@ -21,6 +21,7 @@ const files = {
   conversationManager: join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'),
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
   privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
+  knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -160,6 +161,9 @@ requireIncludes(files.conversationManager, 'Pin', 'D127 needs pin controls.');
 requireIncludes(files.conversationManager, 'Search saved chats', 'D127 needs search controls.');
 requireIncludes(files.conversationManager, 'Fork', 'D127 needs fork controls.');
 requireIncludes(files.conversationManager, 'Safe share', 'D127 needs redacted safe-share controls.');
+requireIncludes(files.knowledge, 'knowledge-dropzone', 'D128 needs drag/drop file staging.');
+requireIncludes(files.knowledge, 'MAX_FILE_BYTES', 'D128 needs explicit file size limits.');
+requireIncludes(files.knowledge, 'knowledge-preview-list', 'D128 needs file previews before indexing.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -190,7 +194,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

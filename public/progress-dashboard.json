@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T02:40:12.128Z",
+  "updated_at": "2026-05-23T02:44:10.532Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 52,
+    "beta": 53,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 46,
+    "planned": 45,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -460,11 +460,11 @@
         "phase": "Files",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Web Search",
@@ -2670,10 +2670,10 @@
       "best_practice": "File UX should be safe, visible and bounded",
       "done_when": "User can attach files and see how they are used",
       "covers": "ChatGPT/Open WebUI parity, D047",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Knowledge upload now supports drag/drop staging, text/Markdown/JSON/CSV/log type checks, 1 MB file limits, staged previews and local-first document snippets before optional protected backend indexing.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D129",

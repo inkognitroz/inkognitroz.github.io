@@ -21,6 +21,31 @@
   padding: 8px;
 }
 
+.knowledge-dropzone {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px dashed rgba(16, 163, 127, 0.46);
+  border-radius: 8px;
+  background: #f0fdf9;
+  cursor: pointer;
+}
+
+.knowledge-dropzone.is-dragging {
+  border-style: solid;
+  background: #ecfdf5;
+}
+
+.knowledge-dropzone strong {
+  color: var(--mimir-text, #111827);
+}
+
+.knowledge-dropzone span {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
 .knowledge-panel button {
   justify-self: start;
   min-height: 36px;
@@ -29,10 +54,48 @@
 }
 
 .knowledge-panel input:focus-visible,
+.knowledge-dropzone:focus-visible,
 .knowledge-panel button:focus-visible {
   outline: 3px solid rgba(16, 163, 127, 0.28);
   outline-offset: 2px;
   border-color: rgba(16, 163, 127, 0.72);
+}
+
+.knowledge-preview-list {
+  display: grid;
+  gap: 8px;
+}
+
+.knowledge-file-preview {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.knowledge-file-preview.is-ready {
+  border-color: rgba(16, 163, 127, 0.3);
+}
+
+.knowledge-file-preview.is-blocked {
+  border-color: rgba(185, 28, 28, 0.26);
+  background: #fff7f7;
+}
+
+.knowledge-file-preview strong,
+.knowledge-file-preview small {
+  display: block;
+}
+
+.knowledge-file-preview strong {
+  color: var(--mimir-text, #111827);
+  overflow-wrap: anywhere;
+}
+
+.knowledge-file-preview small {
+  color: var(--mimir-muted, #6b7280);
 }
 
 .knowledge-list {
@@ -63,6 +126,14 @@
 
 .knowledge-item small {
   color: var(--mimir-muted, #6b7280);
+}
+
+.knowledge-preview {
+  margin: 4px 0 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .knowledge-item button {
