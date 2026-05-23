@@ -124,6 +124,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/conversation-manager.js', 'MMIR 
 requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product page must load explicit web search script.');
+requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product page must load permissioned tool runner script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -163,6 +164,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'manu
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'web-search-consent', 'Web search UI must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'saveLocalSources', 'Web search UI must save selected sources to local knowledge.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.css'), '.web-search-result', 'Web search needs visible result/source styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), '/tools/execute', 'Tool runner must use the protected tool execution route.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'tool-runner-consent', 'Tool runner must require explicit consent.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'renderTrace', 'Tool runner must show visible traces.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.css'), '.tool-result-card', 'Tool runner needs visible result styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');

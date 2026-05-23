@@ -24,6 +24,7 @@ const files = {
   knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   comparison: join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'),
   webSearch: join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'),
+  toolRunner: join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -176,6 +177,10 @@ requireIncludes(files.webSearch, 'web-search-consent', 'D130 needs consent befor
 requireIncludes(files.webSearch, 'manualSearchUrls', 'D130 needs a free manual search path.');
 requireIncludes(files.webSearch, '/web/search', 'D130 needs protected backend search route support.');
 requireIncludes(files.webSearch, 'saveLocalSources', 'D130 needs selected sources saved into local knowledge.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/tool-runner.js', 'D131 needs permissioned tool runner loaded on the product page.');
+requireIncludes(files.toolRunner, '/tools/execute', 'D131 needs protected backend tool execution route support.');
+requireIncludes(files.toolRunner, 'tool-runner-consent', 'D131 needs explicit tool consent.');
+requireIncludes(files.toolRunner, 'renderTrace', 'D131 needs visible tool traces.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -206,7 +211,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

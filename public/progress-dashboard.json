@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T03:10:19.296Z",
+  "updated_at": "2026-05-23T03:21:00.297Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 55,
+    "beta": 56,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 43,
+    "planned": 42,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -480,11 +480,11 @@
         "phase": "Tools",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Code UX",
@@ -2715,10 +2715,10 @@
       "best_practice": "Tool execution should be policy-gated before model use",
       "done_when": "Models can call approved tools with visible trace",
       "covers": "Open WebUI parity, agents",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Permissioned tool runtime now exposes allowlisted tools, consent-gated execution and visible traces through the protected backend, with a public Tool Runner UI for approved knowledge, memory and web search tool calls.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D132",

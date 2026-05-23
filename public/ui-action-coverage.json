@@ -109,6 +109,14 @@
       "evidence": ["/web/search", "/web/search/providers", "manualSearchUrls", "saveLocalSources", "Manual free search"]
     },
     {
+      "id": "permissioned-tools",
+      "surface": "Tool runner",
+      "status": "beta",
+      "user_result": "Users can inspect approved backend tools, approve a tool call for the active workspace, run it and see a trace/result without frontend secrets.",
+      "selectors": ["#tool-runner-panel", "#tool-runner-tool", "#tool-runner-consent", "#tool-runner-load", "#tool-runner-run"],
+      "evidence": ["/tools", "/tools/execute", "tool-runner-consent", "renderTrace", "Tool trace ready"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

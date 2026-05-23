@@ -57,7 +57,7 @@
       "name": "Advanced platform parity",
       "items": [
         {"feature": "Web search", "status": "beta", "mmir": "Explicit search panel supports free manual source links, protected SearXNG/BYOK routes, consent and saving selected sources into knowledge.", "benchmark": "ChatGPT search", "next": "Add richer source ingestion once protected provider deployment is configured."},
-        {"feature": "Tool/function calling", "status": "planned", "mmir": "D131 requires permissioned schemas, consent, logs and safe errors.", "benchmark": "Open WebUI tools", "next": "Keep execution policy-gated."},
+        {"feature": "Tool/function calling", "status": "beta", "mmir": "Backend tool runtime exposes allowlisted knowledge, memory and web search tools with consent and trace; frontend Tool Runner can execute approved tools through protected backend routes.", "benchmark": "Open WebUI tools", "next": "Wire model-native tool calls and agent runs to the same policy gate."},
         {"feature": "Code interpreter", "status": "blocked", "mmir": "D132 must define sandbox and resource limits before execution.", "benchmark": "ChatGPT data analysis", "next": "Do not run arbitrary code unsafely."},
         {"feature": "Canvas/artifacts", "status": "planned", "mmir": "D133 covers side-by-side editable artifacts.", "benchmark": "ChatGPT canvas", "next": "Start with text/code/workflow outputs."},
         {"feature": "Image generation/editing", "status": "blocked", "mmir": "D134 stays blocked until local/provider policy and cost gates are explicit.", "benchmark": "ChatGPT images", "next": "No implied free paid-provider image generation."},

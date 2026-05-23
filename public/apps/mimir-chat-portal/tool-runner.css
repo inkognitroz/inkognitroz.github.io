@@ -1,0 +1,88 @@
+.tool-runner-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.tool-runner-body label {
+  display: grid;
+  gap: 5px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.tool-runner-body input,
+.tool-runner-body select {
+  width: 100%;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  padding: 8px;
+}
+
+.tool-runner-panel button {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px !important;
+}
+
+.tool-runner-output {
+  display: grid;
+  gap: 8px;
+}
+
+.tool-result-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tool-result-card h3 {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 0.92rem;
+}
+
+.tool-trace-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.tool-result-card pre {
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tool-runner-body input:focus-visible,
+.tool-runner-body select:focus-visible,
+.tool-runner-panel button:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+@media (max-width: 640px) {
+  .tool-runner-panel button {
+    width: 100%;
+  }
+}
