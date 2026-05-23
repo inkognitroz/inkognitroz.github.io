@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d166-20260523-first-chat-receipt';
+const CACHE_NAME='mmir-pwa-d167-20260523-receipt-dashboard';
 const SHELL_ASSETS=[
   './',
   './index.html',

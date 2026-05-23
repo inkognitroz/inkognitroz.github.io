@@ -48,6 +48,7 @@ Current priority after the matrix is:
 38. D165 verified first-chat handoff.
 39. D166 first-chat success receipt.
 40. D167 first-chat recovery dashboard.
+41. D168 install-to-first-chat bridge.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -87,6 +88,7 @@ D163 is now beta in the public UI: chat shows live-model proof, verifies browser
 D164 is now beta in the public UI: failed live-model proof states render repair actions for free local profile, installer, model library, connect settings and retry proof.
 D165 is now beta in the public UI: verified proof selects the model, updates the chat prompt and exposes a Chat with verified model action with a first-chat-ready event.
 D166 is now beta in the public UI: first backend chat success/failure writes a browser-local receipt with model, route, character counts, recovery actions and no raw prompt/response storage.
-D167 is next: first-chat receipt state should appear in dashboards and first-run gates with a clear automatic repair path when missing or failed.
+D167 is now beta in the public UI: first-chat receipt state appears in progress dashboard and first-run gates with repair/start actions that stay free-first and do not auto-spend.
+D168 is next: local model install/node-online events should bridge directly into refreshed proof and prepared first verified chat.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

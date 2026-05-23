@@ -33,8 +33,8 @@
       "surface": "First-run onboarding",
       "status": "live",
       "user_result": "The automatic launch checklist shows Browser ready, Private mode, Local node, Model live and First chat gates without asking the user to configure first.",
-      "selectors": ["#first-run-onboarding", "#start-free-chat", "#activate-free-local", "#activate-private-mode"],
-      "evidence": ["First-run success gates", "Start free chat", "Browser ready", "Private mode", "Model live", "mmir-chat-modes-updated"]
+      "selectors": ["#first-run-onboarding", "#start-free-chat", "#activate-free-local", "#activate-private-mode", "#recover-first-chat"],
+      "evidence": ["First-run success gates", "Start free chat", "Browser ready", "Private mode", "Model live", "First chat receipt", "recoverFirstChat", "mmir-first-chat-receipt-updated", "mmir-chat-modes-updated"]
     },
     {
       "id": "backend-profile",
@@ -96,9 +96,9 @@
       "id": "operator-dashboards",
       "surface": "Status, progress, parity and journeys",
       "status": "live",
-      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity and user journey state from the site.",
-      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#refresh-gui-parity", "#refresh-user-journeys"],
-      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
+      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity, first-chat receipt state and user journey state from the site.",
+      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#progress-first-chat-recovery", "#refresh-gui-parity", "#refresh-user-journeys"],
+      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "progress-first-chat-recovery", "firstChatReceiptState", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
     },
     {
       "id": "workspace-memory-knowledge",

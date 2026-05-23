@@ -47,6 +47,8 @@ const files = {
   scheduledTasks: join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'),
   connectorCatalog: join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'),
   pwa: join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'),
+  progressDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'),
+  progressDashboardCss: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'),
   migration: join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'),
   sharing: join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'),
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
@@ -181,6 +183,9 @@ requireIncludes(files.onboarding, 'Developer', 'D119 needs a developer path.');
 requireIncludes(files.onboarding, 'Business owner', 'D119 needs a business owner path.');
 requireIncludes(files.onboarding, 'Power user', 'D119 needs an AI power-user path.');
 requireIncludes(files.onboarding, 'Privacy / local', 'D119 needs a privacy/local path.');
+requireIncludes(files.onboarding, 'recoverFirstChat', 'D167 first-run gates need a first-chat recovery action.');
+requireIncludes(files.onboarding, 'First chat receipt', 'D167 first-run gates must show first-chat receipt state.');
+requireIncludes(files.onboarding, 'mmir-first-chat-receipt-updated', 'D167 first-run gates must refresh when receipt state changes.');
 requireIncludes(files.templates, 'repo-analysis', 'D120 needs a repo analysis use-case template.');
 requireIncludes(files.templates, 'product-plan', 'D120 needs a product planning use-case template.');
 requireIncludes(files.templates, 'security-review', 'D120 needs a security review use-case template.');
@@ -366,6 +371,9 @@ requireIncludes(files.chatRuntime, 'mimir-first-chat-receipt-v1:', 'D166 needs a
 requireIncludes(files.chatRuntime, 'raw_prompt_stored:false', 'D166 first-chat receipt must not store raw prompts.');
 requireIncludes(files.chatRuntime, 'raw_response_stored:false', 'D166 first-chat receipt must not store raw responses.');
 requireIncludes(files.chatRuntime, 'mmir-first-chat-receipt-updated', 'D166 first-chat receipt must refresh dependent UI.');
+requireIncludes(files.progressDashboard, 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
+requireIncludes(files.progressDashboard, 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
+requireIncludes(files.progressDashboardCss, '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');
 requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 'Pairing requests must send explicit JSON content type.');
 requireIncludes(files.localConnector, '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(files.localConnector, '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route.');

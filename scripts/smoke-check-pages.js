@@ -336,6 +336,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "cons
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'function intentOptions()', 'Onboarding must expose persona-based starter paths.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'Business owner', 'Onboarding must include a business owner path.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'Privacy / local', 'Onboarding must include a privacy/local path.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'recoverFirstChat', 'D167 first-run gates need a first-chat recovery action.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'First chat receipt', 'D167 first-run gates must show first-chat receipt state.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'mmir-first-chat-receipt-updated', 'D167 first-run gates must refresh when first-chat receipts change.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.css'), '.onboarding-intent-grid', 'Onboarding intent paths need a responsive visual layout.');
 requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime must keep an explicit first-run starter model choice.');
 requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
@@ -366,6 +369,9 @@ requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readin
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');
 requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:auto', 'Mobile navigation must remain accessible instead of disappearing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'privacy-data-inventory', 'Privacy controls must expose a full browser data inventory.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Conversation library', 'Privacy controls must include saved conversation library data.');

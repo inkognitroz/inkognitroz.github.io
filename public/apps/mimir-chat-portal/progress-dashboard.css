@@ -23,7 +23,8 @@
 .progress-phase-card,
 .progress-repo-card,
 .progress-next-card,
-.progress-decision-card {
+.progress-decision-card,
+.progress-receipt-card {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 8px;
   background: #fff;
@@ -198,13 +199,51 @@
   gap: 8px;
 }
 
+.progress-receipt-card {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.progress-receipt-card h2 {
+  color: var(--mimir-text, #111827);
+  font-size: 1rem;
+  margin: 2px 0 4px;
+}
+
+.progress-receipt-card small {
+  color: var(--mimir-muted, #6b7280);
+}
+
+.progress-receipt-card[data-state="ready"] {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.progress-receipt-card[data-state="error"] {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.progress-receipt-card button {
+  background: var(--mimir-text, #111827);
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 750;
+  min-height: 36px;
+  padding: 8px 13px;
+  white-space: nowrap;
+}
+
 @media (max-width: 860px) {
   .progress-columns {
     grid-template-columns: 1fr;
   }
 
   .progress-task-head,
-  .progress-toolbar {
+  .progress-toolbar,
+  .progress-receipt-card {
     display: grid;
   }
 }

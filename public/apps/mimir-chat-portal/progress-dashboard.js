@@ -3,6 +3,9 @@
   const refreshButton=document.getElementById('refresh-progress-dashboard');
   const summary=document.getElementById('progress-dashboard-summary');
   const DATA_URL='./progress-dashboard.json';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
@@ -11,6 +14,41 @@
 
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function label(value){return String(value||'unknown').replaceAll('-', ' ');}
+  function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+  function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
+  function readFirstChatReceipt(){
+    try{
+      const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+  function firstChatReceiptState(){
+    const receipt=readFirstChatReceipt();
+    if(receipt?.status==='success'){
+      return {
+        status:'ready',
+        label:'Verified',
+        detail:(receipt.model||'model')+' answered at '+new Date(receipt.first_success_at||receipt.at||Date.now()).toLocaleString()+'. No raw prompt or response is stored.',
+        action:'Open chat'
+      };
+    }
+    if(receipt?.status==='failed'){
+      return {
+        status:'error',
+        label:'Needs repair',
+        detail:'Last verified chat failed. Recovery actions are ready, and no raw prompt or response was stored.',
+        action:'Repair first chat'
+      };
+    }
+    return {
+      status:'idle',
+      label:'Not proven yet',
+      detail:'No verified live-model first-chat receipt exists for this browser workspace yet.',
+      action:'Start free path'
+    };
+  }
   function pct(done,beta,total){
     if(!total)return 0;
     return Math.round(((done||0)+(beta||0)*0.55)/total*100);
@@ -33,6 +71,14 @@
 
   function metric(labelText,value,note){
     return '<article class="progress-tile"><span>'+safe(labelText)+'</span><strong>'+safe(value)+'</strong><small>'+safe(note||'')+'</small></article>';
+  }
+
+  function renderFirstChatReceipt(){
+    const state=firstChatReceiptState();
+    return '<section class="progress-receipt-card" data-state="'+safe(state.status)+'">'+
+      '<div><p class="eyebrow">Activation receipt</p><h2>First chat receipt: '+safe(state.label)+'</h2><small>'+safe(state.detail)+'</small></div>'+
+      '<button id="progress-first-chat-recovery" type="button">'+safe(state.action)+'</button>'+
+    '</section>';
   }
 
   function renderSummary(data){
@@ -116,6 +162,41 @@
     if(status)status.addEventListener('change',()=>{filterStatus=status.value;render();});
   }
 
+  function openTarget(target){
+    const el=document.querySelector(target);
+    if(el&&'open' in el)el.open=true;
+    if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+  }
+
+  function runFirstChatRecovery(){
+    const state=firstChatReceiptState();
+    if(state.status==='ready'){
+      openTarget('#mimir-chat-runtime');
+      return;
+    }
+    if(state.status==='error'){
+      const retry=document.querySelector('#runtime-live-proof [data-proof-action="retry"]');
+      if(retry){
+        retry.click();
+        openTarget('#mimir-chat-runtime');
+        return;
+      }
+      window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+      openTarget('#local-connector');
+      return;
+    }
+    const start=document.getElementById('start-free-chat');
+    if(start){
+      start.click();
+      return;
+    }
+    openTarget('#mimir-prompt');
+  }
+
+  function bindFirstChatReceipt(){
+    document.getElementById('progress-first-chat-recovery')?.addEventListener('click',runFirstChatRecovery);
+  }
+
   function openHashDetails(){
     const id=window.location.hash?window.location.hash.slice(1):'';
     if(!id)return;
@@ -125,7 +206,8 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    bindFirstChatReceipt();
     bindFilters();
     openHashDetails();
   }
@@ -148,5 +230,8 @@
 
   if(refreshButton)refreshButton.addEventListener('click',init);
   window.addEventListener('hashchange',openHashDetails);
+  window.addEventListener('mmir-first-chat-receipt-updated',render);
+  window.addEventListener('mmir-chat-history-updated',render);
+  window.addEventListener('storage',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
