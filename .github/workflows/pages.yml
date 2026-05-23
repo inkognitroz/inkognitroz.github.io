@@ -106,6 +106,8 @@ jobs:
         run: node scripts/smoke-check-context-correction-retry.js
       - name: Smoke check context correction suggestions
         run: node scripts/smoke-check-context-correction-suggestions.js
+      - name: Smoke check protected context correction sync
+        run: node scripts/smoke-check-protected-context-correction-sync.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

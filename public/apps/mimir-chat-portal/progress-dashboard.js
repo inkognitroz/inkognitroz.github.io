@@ -814,6 +814,44 @@
     '</section>';
   }
 
+  function renderProtectedContextCorrectionSyncReport(data){
+    const report=data.protected_context_correction_sync_report||{};
+    const routes=Array.isArray(report.routes)?report.routes:[];
+    const checks=Array.isArray(report.backend_checks)?report.backend_checks:[];
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    if(!routes.length&&!scenarios.length)return '';
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&scenario.no_paid_routes_started===true&&scenario.provider_secrets_stored===false&&scenario.raw_prompt_stored===false&&scenario.raw_response_stored===false);
+    const routeCards=routes.map((route)=>
+      '<article class="progress-no-model-scenario" data-route="'+safe(route.method+' '+route.path)+'">'+
+        '<span>'+safe(label(route.status||'beta'))+'</span><h3>'+safe(route.method+' '+route.path)+'</h3>'+
+        '<p>'+safe(route.purpose||'Protected backend route.')+'</p>'+
+        '<strong>'+safe(route.auth||'protected-backend-auth')+'</strong>'+
+        '<small>backend:'+safe(report.backend_commit||'tracked')+' / public secrets:false</small>'+
+      '</article>'
+    ).join('');
+    const checkCards=checks.map((check)=>
+      '<article class="progress-no-model-scenario" data-check="'+safe(check.name)+'">'+
+        '<span>'+safe(label(check.result||'watch'))+'</span><h3>'+safe(check.name)+'</h3>'+
+        '<p>'+safe(check.evidence||'Backend check recorded.')+'</p>'+
+        '<strong>'+safe(check.command||'verified')+'</strong>'+
+        '<small>protected contract evidence</small>'+
+      '</article>'
+    ).join('');
+    const scenarioCards=scenarios.map((scenario)=>
+      '<article class="progress-no-model-scenario" data-scenario="'+safe(scenario.id)+'">'+
+        '<span>'+safe(label(scenario.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(scenario.id)+'</h3>'+
+        '<p>'+safe(scenario.expected||'Protected correction sync scenario.')+'</p>'+
+        '<strong>'+safe(scenario.route||'metadata-only')+'</strong>'+
+        '<small>raw_prompt_stored:'+safe(Boolean(scenario.raw_prompt_stored))+' / raw_response_stored:'+safe(Boolean(scenario.raw_response_stored))+' / provider_secrets_stored:'+safe(Boolean(scenario.provider_secrets_stored))+'</small>'+
+      '</article>'
+    ).join('');
+    return '<section id="progress-protected-context-correction-sync" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Protected sync</p><h2>'+safe(report.title||'Protected Context Correction Sync Contract')+'</h2></div><small>'+safe(report.principle||'Team correction data belongs behind protected auth.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+routeCards+scenarioCards+checkCards+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe protected sync evidence only.')+' Next: '+safe(report.next?.task||'D234')+' '+safe(report.next?.label||'UI handoff')+'.</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -1069,7 +1107,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();

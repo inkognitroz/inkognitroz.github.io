@@ -1,0 +1,126 @@
+{
+  "title": "Protected Context Correction Sync Contract",
+  "task": "D233",
+  "status": "beta",
+  "backend_repository": "mimir-backend-template",
+  "backend_commit": "df9fefb",
+  "principle": "Correction trails for teams belong behind protected backend auth; the public frontend may only carry metadata and UI state.",
+  "public_repo_rule": "No raw prompts, raw responses, provider secrets, API keys, chat transcripts, document text or paid route execution are stored in this public artifact.",
+  "sync_storage_boundary": {
+    "public_frontend": "Browser-local correction receipts and public-safe route contract evidence only.",
+    "protected_backend": "Owner-scoped correction trails, undo state and hygiene suggestions behind protected auth.",
+    "future_team_scope": "Organization-scoped review can build on the backend contract after RBAC and audit retention hardening."
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/context/corrections",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "List metadata-only correction trails and hygiene suggestions for an authenticated workspace owner."
+    },
+    {
+      "method": "POST",
+      "path": "/context/corrections",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Sync correction events from public clients after rejecting raw prompt, response, transcript and secret fields."
+    },
+    {
+      "method": "POST",
+      "path": "/context/corrections/:id/undo",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Mark one owned correction event as undone without deleting the audit trail."
+    }
+  ],
+  "metadata_contract": [
+    "workspace_id",
+    "target",
+    "action",
+    "message_id",
+    "answer_message_id",
+    "correction_id",
+    "model",
+    "source_ids",
+    "source_count",
+    "undo",
+    "suggestions",
+    "created_at",
+    "updated_at",
+    "undone_at"
+  ],
+  "backend_checks": [
+    {
+      "name": "Backend unit and contract tests",
+      "command": "npm.cmd test",
+      "result": "pass",
+      "evidence": "169 tests passed after rebase."
+    },
+    {
+      "name": "Managed API route manifest",
+      "command": "npm.cmd run contract:routes",
+      "result": "pass",
+      "evidence": "Runtime Fastify routes and MANAGED_API_ROUTES.json matched."
+    },
+    {
+      "name": "JSON/OpenAPI validation",
+      "command": "npm.cmd run lint",
+      "result": "pass",
+      "evidence": "MANAGED_API_ROUTES.json, openapi.json, package files and node fixture JSON were valid."
+    },
+    {
+      "name": "Backend secret scan",
+      "command": "npm.cmd run security:secrets",
+      "result": "pass",
+      "evidence": "No obvious secrets found."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "protected-route-manifest",
+      "status": "ready",
+      "expected": "The backend route manifest owns correction sync under protected-backend-auth, not public GitHub Pages.",
+      "route": "/context/corrections",
+      "no_paid_routes_started": true,
+      "provider_secrets_stored": false,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false
+    },
+    {
+      "id": "metadata-only-sync",
+      "status": "ready",
+      "expected": "The backend store accepts correction metadata but rejects raw prompts, raw responses, transcripts and secret-like fields.",
+      "route": "POST /context/corrections",
+      "no_paid_routes_started": true,
+      "provider_secrets_stored": false,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false
+    },
+    {
+      "id": "undo-state",
+      "status": "ready",
+      "expected": "Undo state is represented as metadata and marked undone while preserving the correction event.",
+      "route": "POST /context/corrections/:id/undo",
+      "no_paid_routes_started": true,
+      "provider_secrets_stored": false,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false
+    },
+    {
+      "id": "portable-private-data",
+      "status": "ready",
+      "expected": "Protected data export/import/delete includes context_corrections for owner-scoped workspace portability.",
+      "route": "/data/*",
+      "no_paid_routes_started": true,
+      "provider_secrets_stored": false,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false
+    }
+  ],
+  "next": {
+    "task": "D234",
+    "label": "Protected correction sync UI handoff",
+    "reason": "The backend contract exists; the next slice should let the public UI detect protected sync availability and hand off browser-local correction trails without exposing secrets."
+  }
+}

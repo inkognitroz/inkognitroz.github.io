@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T22:41:29.145Z",
+  "updated_at": "2026-05-23T23:03:11.991Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 233,
+    "total": 234,
     "done": 51,
-    "beta": 157,
+    "beta": 158,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,6 +1038,16 @@
       },
       {
         "phase": "Backend / Team Trust",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Frontend / Team Trust",
         "total": 1,
         "done": 0,
         "beta": 0,
@@ -2512,6 +2522,132 @@
       }
     ]
   },
+  "protected_context_correction_sync_report": {
+    "title": "Protected Context Correction Sync Contract",
+    "task": "D233",
+    "status": "beta",
+    "backend_repository": "mimir-backend-template",
+    "backend_commit": "df9fefb",
+    "principle": "Correction trails for teams belong behind protected backend auth; the public frontend may only carry metadata and UI state.",
+    "public_repo_rule": "No raw prompts, raw responses, provider secrets, API keys, chat transcripts, document text or paid route execution are stored in this public artifact.",
+    "sync_storage_boundary": {
+      "public_frontend": "Browser-local correction receipts and public-safe route contract evidence only.",
+      "protected_backend": "Owner-scoped correction trails, undo state and hygiene suggestions behind protected auth.",
+      "future_team_scope": "Organization-scoped review can build on the backend contract after RBAC and audit retention hardening."
+    },
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/context/corrections",
+        "auth": "protected-backend-auth",
+        "status": "beta",
+        "purpose": "List metadata-only correction trails and hygiene suggestions for an authenticated workspace owner."
+      },
+      {
+        "method": "POST",
+        "path": "/context/corrections",
+        "auth": "protected-backend-auth",
+        "status": "beta",
+        "purpose": "Sync correction events from public clients after rejecting raw prompt, response, transcript and secret fields."
+      },
+      {
+        "method": "POST",
+        "path": "/context/corrections/:id/undo",
+        "auth": "protected-backend-auth",
+        "status": "beta",
+        "purpose": "Mark one owned correction event as undone without deleting the audit trail."
+      }
+    ],
+    "metadata_contract": [
+      "workspace_id",
+      "target",
+      "action",
+      "message_id",
+      "answer_message_id",
+      "correction_id",
+      "model",
+      "source_ids",
+      "source_count",
+      "undo",
+      "suggestions",
+      "created_at",
+      "updated_at",
+      "undone_at"
+    ],
+    "backend_checks": [
+      {
+        "name": "Backend unit and contract tests",
+        "command": "npm.cmd test",
+        "result": "pass",
+        "evidence": "169 tests passed after rebase."
+      },
+      {
+        "name": "Managed API route manifest",
+        "command": "npm.cmd run contract:routes",
+        "result": "pass",
+        "evidence": "Runtime Fastify routes and MANAGED_API_ROUTES.json matched."
+      },
+      {
+        "name": "JSON/OpenAPI validation",
+        "command": "npm.cmd run lint",
+        "result": "pass",
+        "evidence": "MANAGED_API_ROUTES.json, openapi.json, package files and node fixture JSON were valid."
+      },
+      {
+        "name": "Backend secret scan",
+        "command": "npm.cmd run security:secrets",
+        "result": "pass",
+        "evidence": "No obvious secrets found."
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "protected-route-manifest",
+        "status": "ready",
+        "expected": "The backend route manifest owns correction sync under protected-backend-auth, not public GitHub Pages.",
+        "route": "/context/corrections",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "metadata-only-sync",
+        "status": "ready",
+        "expected": "The backend store accepts correction metadata but rejects raw prompts, raw responses, transcripts and secret-like fields.",
+        "route": "POST /context/corrections",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "undo-state",
+        "status": "ready",
+        "expected": "Undo state is represented as metadata and marked undone while preserving the correction event.",
+        "route": "POST /context/corrections/:id/undo",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "portable-private-data",
+        "status": "ready",
+        "expected": "Protected data export/import/delete includes context_corrections for owner-scoped workspace portability.",
+        "route": "/data/*",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      }
+    ],
+    "next": {
+      "task": "D234",
+      "label": "Protected correction sync UI handoff",
+      "reason": "The backend contract exists; the next slice should let the public UI detect protected sync availability and hand off browser-local correction trails without exposing secrets."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2562,7 +2698,7 @@
     }
   ],
   "next_queue": [
-    "D233"
+    "D234"
   ],
   "watchlist": [
     "D082",
@@ -6059,9 +6195,24 @@
       "best_practice": "Team trust data belongs behind protected routes, not GitHub Pages",
       "done_when": "Frontend has a public-safe contract fixture and backend route plan for owner-scoped correction review",
       "covers": "backend, teams, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Managed backend now has protected /context/corrections sync, list and undo routes, metadata-only storage, owner-scoped export/import/delete coverage and tests for raw prompt/response/secret rejection.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D234",
+      "phase": "Frontend / Team Trust",
+      "priority": "P1",
+      "work_package": "Protected correction sync UI handoff",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Let the public UI detect protected correction-sync availability, preview what metadata will sync, send correction trails through authenticated backend profiles and show sync status without storing secrets in GitHub Pages",
+      "best_practice": "Public UI should be a zero-trust client; backend remains source of authority for team correction review",
+      "done_when": "Users can sync or defer local correction trails with visible status, raw-prompt/response rejection evidence and no paid/provider route side effects",
+      "covers": "frontend, backend, teams, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: define protected context correction sync so teams can review correction trails through a private backend without exposing public secrets.",
+      "evidence": "Next activation slice: connect the public UI to the protected correction sync contract with availability checks, handoff state and explicit no-secret boundaries.",
       "estimate": "0.5-2d"
     }
   ]

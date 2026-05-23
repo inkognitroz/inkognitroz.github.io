@@ -224,14 +224,15 @@ Updated: 2026-05-23
 - D230 is now beta: context corrections now write browser-local metadata-only audit events, render recent correction trails in Memory/Knowledge/Progress, and expose undo for disabled memory/knowledge sources.
 - D231 is now beta: corrected answers can now surface a deferred Retry fixed action that uses visible chat state, writes metadata-only retry receipts and marks the retried answer without storing hidden raw prompts.
 - D232 is now beta: context correction suggestions now turn repeated local memory/knowledge corrections into explainable hygiene recommendations and panel review actions without mutating data.
-- D233 is now next: define protected context correction sync so team correction trails can move behind private backend routes without public secrets.
+- D233 is now beta: managed backend commit `df9fefb` adds protected `/context/corrections` list/sync/undo routes, metadata-only owner-scoped storage, portable data coverage, OpenAPI/route docs and tests that reject raw prompts, raw responses, transcripts and secrets.
+- D234 is now next: connect the public UI to the protected correction sync contract with availability checks, explicit metadata preview and sync/defer status without storing secrets in GitHub Pages.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D233` protected context correction sync contract.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D234` protected correction sync UI handoff.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

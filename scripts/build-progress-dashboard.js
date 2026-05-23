@@ -28,6 +28,7 @@ const answerContextSourceCorrectionReportPath = resolve(root, 'public', 'answer-
 const contextCorrectionAuditReportPath = resolve(root, 'public', 'context-correction-audit-report.json');
 const contextCorrectionRetryReportPath = resolve(root, 'public', 'context-correction-retry-report.json');
 const contextCorrectionSuggestionsReportPath = resolve(root, 'public', 'context-correction-suggestions-report.json');
+const protectedContextCorrectionSyncReportPath = resolve(root, 'public', 'protected-context-correction-sync-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -193,7 +194,8 @@ const overrides = new Map([
   ['D230', { status: 'beta', evidence: 'Context corrections now write browser-local metadata-only audit events, render recent correction trails and expose undo for disabled memory/knowledge sources.' }],
   ['D231', { status: 'beta', evidence: 'A deferred retry-after-correction module now adds Retry fixed actions to corrected answers, derives prompts from visible chat state and marks retried answers with metadata-only receipts.' }],
   ['D232', { status: 'beta', evidence: 'Context correction suggestions now derive local memory/knowledge hygiene recommendations from correction metadata and open review panels without mutating user data.' }],
-  ['D233', { status: 'next', evidence: 'Next activation slice: define protected context correction sync so teams can review correction trails through a private backend without exposing public secrets.' }]
+  ['D233', { status: 'beta', evidence: 'Managed backend now has protected /context/corrections sync, list and undo routes, metadata-only storage, owner-scoped export/import/delete coverage and tests for raw prompt/response/secret rejection.' }],
+  ['D234', { status: 'next', evidence: 'Next activation slice: connect the public UI to the protected correction sync contract with availability checks, handoff state and explicit no-secret boundaries.' }]
 ]);
 
 const repoMeta = [
@@ -417,6 +419,11 @@ function readContextCorrectionSuggestionsReport() {
   return JSON.parse(readFileSync(contextCorrectionSuggestionsReportPath, 'utf8'));
 }
 
+function readProtectedContextCorrectionSyncReport() {
+  if (!existsSync(protectedContextCorrectionSyncReportPath)) return null;
+  return JSON.parse(readFileSync(protectedContextCorrectionSyncReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -441,7 +448,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D233', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D234', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -484,6 +491,7 @@ const data = {
   context_correction_audit_report: readContextCorrectionAuditReport(),
   context_correction_retry_report: readContextCorrectionRetryReport(),
   context_correction_suggestions_report: readContextCorrectionSuggestionsReport(),
+  protected_context_correction_sync_report: readProtectedContextCorrectionSyncReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,
