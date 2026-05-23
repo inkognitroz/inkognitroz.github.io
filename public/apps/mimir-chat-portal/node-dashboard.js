@@ -16,7 +16,7 @@
   function statusText(value){return String(value||'unknown').replaceAll('-',' ');}
   function arrayData(value){return Array.isArray(value?.data)?value.data:(Array.isArray(value?.models)?value.models:[]);}
   function modelSummary(models){
-    if(!Array.isArray(models)||!models.length)return 'No live model discovered';
+    if(!Array.isArray(models)||!models.length)return 'Free browser route ready; install a local model for private live chat';
     const ids=models.map(model=>model.id||model.name||model.model).filter(Boolean);
     return ids.slice(0,4).join(', ')+(ids.length>4?' +'+String(ids.length-4):'');
   }
@@ -184,7 +184,7 @@
       '<div class="node-dashboard-grid">'+
         card('Browser client','ready','This page is loaded and can prepare the free local profile.')+
         card('Active node','offline',DEFAULT_LOCAL_URL)+
-        card('Models','none','No live models until the local node is running.')+
+        card('Models','free route','Install a local model when the node is running.')+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
       renderAction(action,false,false);
@@ -236,7 +236,7 @@
       {id:'connector',state:'ready',label:'Connector install',detail:'MMIR Local Node answered on '+connection.url+'.'},
       {id:'pairing',state:'ready',label:'Pairing',detail:pairingRequired?'This browser has a local pairing token for protected routes.':'Pairing is disabled for this local dev node.'},
       {id:'ollama',state:runtimeStatus==='online'?'ready':'warn',label:'Ollama runtime',detail:runtimeStatus==='online'?'Ollama/local runtime is online.':'Node is up, but local model runtime is '+statusText(runtimeStatus)+'.'},
-      {id:'model',state:modelCount?'ready':'warn',label:'Model availability',detail:modelCount?modelSummary(models):'No live model is installed yet. Use a free installable Ollama model.'},
+      {id:'model',state:modelCount?'ready':'warn',label:'Model availability',detail:modelCount?modelSummary(models):'Use a free installable Ollama model to activate private live chat.'},
       {id:'hardware',state:hardware?'ready':'warn',label:'Hardware profile',detail:hardware?hardwareSummary(hardware):'Hardware route did not return a profile.'},
       {id:'tunnel',state:tunnelReady?'ready':(tunnel?.control_enabled?'warn':'warn'),label:'Tunnel support',detail:tunnelSummary(tunnel)}
     ];

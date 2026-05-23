@@ -26,7 +26,7 @@
   }
   function statusText(status){return String(status||'unknown').replaceAll('-',' ');}
   function modelSummary(models){
-    if(!Array.isArray(models)||!models.length)return 'No live models discovered yet.';
+    if(!Array.isArray(models)||!models.length)return 'Free browser route ready; local models appear after node install.';
     const ids=models.map(model=>model.id||model.name||model.model).filter(Boolean);
     return ids.slice(0,4).join(', ')+(ids.length>4?' +'+String(ids.length-4):'');
   }
@@ -98,7 +98,7 @@
         api.fetchJson(api.joinUrl(url,'/tunnels/status'),{headers,timeoutMs:5000}).catch(error=>({status:'not-available',error:api.friendlyError(error)}))
       ]);
       const liveModels=Array.isArray(models?.data)?models.data:Array.isArray(models?.models)?models.models:[];
-      const baseMessage=liveModels.length?'Local node is online and exposes live models.':'Local node is online, but no Ollama models were discovered yet.';
+      const baseMessage=liveModels.length?'Local node is online and exposes live models.':'Local node is online; install one free Ollama model to make local chat live.';
       liveState={
         status:liveModels.length?'online':'degraded',
         message:baseMessage+tunnelNotice(tunnel),

@@ -45,30 +45,36 @@
       <span><strong>MMIR.ai</strong><small id="active-badge">No backend selected</small></span>
     </a>
     <nav aria-label="Primary navigation">
+      <a href="#mimir-chat-runtime">Chat</a>
       <a href="#connect-options">Connect</a>
       <a href="#node-dashboard">Nodes</a>
       <a href="#model-library">Models</a>
       <a href="#workflow-builder">Workflows</a>
-      <a href="#web-search-panel">Search</a>
-      <a href="#research-planner-panel">Research</a>
-      <a href="#tool-runner-panel">Tools</a>
-      <a href="#code-sandbox-panel">Code</a>
-      <a href="#artifact-workspace">Canvas</a>
-      <a href="#image-boundary">Images</a>
-      <a href="#voice-controls">Voice</a>
-      <a href="#vision-input">Vision</a>
-      <a href="#admin-governance">Admin</a>
-      <a href="#access-control">Access</a>
-      <a href="#runtime-settings-panel">Settings</a>
-      <a href="#assistant-builder-panel">Assistants</a>
-      <a href="#use-case-templates">Templates</a>
-      <a href="#free-value-loops">Free</a>
-      <a href="#dataset-manager">Data</a>
-      <a href="#training-automation">Automation</a>
-      <a href="#user-journeys">Journeys</a>
-      <a href="#gui-parity">Parity</a>
       <a href="#progress-dashboard">Progress</a>
       <a href="#platform-status">Status</a>
+      <details class="mimir-nav-more">
+        <summary>More</summary>
+        <div class="mimir-nav-menu">
+          <a href="#web-search-panel">Search</a>
+          <a href="#research-planner-panel">Research</a>
+          <a href="#tool-runner-panel">Tools</a>
+          <a href="#code-sandbox-panel">Code</a>
+          <a href="#artifact-workspace">Canvas</a>
+          <a href="#image-boundary">Images</a>
+          <a href="#voice-controls">Voice</a>
+          <a href="#vision-input">Vision</a>
+          <a href="#admin-governance">Admin</a>
+          <a href="#access-control">Access</a>
+          <a href="#runtime-settings-panel">Settings</a>
+          <a href="#assistant-builder-panel">Assistants</a>
+          <a href="#use-case-templates">Templates</a>
+          <a href="#free-value-loops">Free</a>
+          <a href="#dataset-manager">Data</a>
+          <a href="#training-automation">Automation</a>
+          <a href="#user-journeys">Journeys</a>
+          <a href="#gui-parity">Parity</a>
+        </div>
+      </details>
     </nav>
   </header>
 
@@ -77,14 +83,14 @@
       <div class="mimir-greeting">
         <p class="eyebrow">AI control plane</p>
         <h1 id="mimir-title">The orchestration layer for trusted AI.</h1>
-        <p id="active-chat-description">Open MMIR, connect local AI, install, ready: see your own models and chat through a trusted control plane.</p>
+        <p id="active-chat-description">Ask now. MMIR chooses the safest free route automatically, then upgrades to your local models when a node is connected.</p>
       </div>
 
       <section id="mimir-instant-start" class="mimir-instant-start" aria-label="MMIR ready state">
         <div class="instant-copy">
           <p class="eyebrow">Ground zero</p>
           <h2 id="first-impression-status">Open. Connect local AI. Ready.</h2>
-          <p id="first-impression-detail">MMIR checks local node, live models and browser helpers automatically, then routes through the safest free path.</p>
+          <p id="first-impression-detail">MMIR checks browser helpers, WebGPU, local node, models and privacy state automatically, then keeps the user on the safest free path.</p>
         </div>
         <div class="instant-map" aria-label="Current orchestration path">
           <span class="instant-node is-active">Browser</span>
@@ -98,17 +104,18 @@
       <form class="mimir-composer" aria-label="MMIR chat composer" onsubmit="return false;">
         <textarea id="mimir-prompt" rows="2" placeholder="Ask MMIR to connect models, choose a free setup, or build your first workflow..." aria-label="Message MMIR"></textarea>
         <div class="composer-bar">
-          <div class="composer-context"><span id="active-chat-title">Connect local AI or a trusted backend profile.</span></div>
-          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary">Connect local AI</button><a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open backend</a></div>
+          <div class="composer-context"><span id="active-chat-title">Auto route: free browser first, local node when available.</span></div>
+          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary">Connect model</button><a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Send</a></div>
         </div>
       </form>
 
       <div class="quick-suggestions" aria-label="Quick actions">
-        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Give me the fastest free MMIR setup for this machine. If a live local model is available, use it. If not, explain the automatic install path in three concrete steps.">Plan local install</button>
-        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="best-model" data-prompt="Choose the best free model for me right now. Consider speed, privacy, local hardware, and what MMIR can already detect.">Pick my best model</button>
-        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="first-workflow" data-prompt="Create my first useful MMIR workflow. Keep it simple, automated, free-first, and focused on getting value in under five minutes.">Create first workflow</button>
-        <a href="#connect-options">Connect local AI</a>
-        <a href="#local-connector">Local connector</a>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="free-chat" data-prompt="Start with the safest free MMIR chat route. Explain what is active now, what is local, and what I can do next without paying or configuring anything first.">Start free chat</button>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="best-model" data-prompt="Choose the best free model route for me right now. Consider browser WebGPU, Ollama, local hardware, privacy, speed and install effort.">Pick my best model</button>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Connect my first local model with the easiest free path. Give exact next actions for Windows, Mac, Linux and Raspberry Pi when relevant.">Connect my models</button>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="first-workflow" data-prompt="Create my first useful MMIR workflow. Keep it automated, free-first, private by default and useful in under five minutes.">Create workflow</button>
+        <a href="#connect-options">Install node</a>
+        <a href="#model-library">Browse models</a>
       </div>
 
       <section id="growth-demo" class="mimir-growth-panel" aria-label="Demo and beta access">

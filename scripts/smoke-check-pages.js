@@ -108,9 +108,13 @@ if (!String(content?.site?.subtitle || '').includes('orchestration layer for tru
 forbidText(contentPath, 'SaaS Fabric', 'content.json must not include retired SaaS Fabric branding.');
 
 requireText(mmirPath, 'id="mimir-instant-start"', 'MMIR product page must expose the redirect target for the first journey.');
+requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
+requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');
 requireText(firstImpressionPath, 'activation-connect-local', 'MMIR activation cockpit must expose local connector activation.');
 requireText(firstImpressionPath, 'activation-open-node-dashboard', 'MMIR activation cockpit must expose node health activation.');
+requireText(chatRuntimePath, 'Loading free model routes', 'D042 chat runtime must not start with an empty no-model state.');
+requireText(chatRuntimePath, 'guideResponseText', 'D042 guide helper copy must stay readable and ASCII-safe.');
 requireText(mmirPath, 'The orchestration layer for trusted AI.', 'MMIR product page hero must state the MMIR product identity.');
 requireText(mmirPath, 'Connect local AI', 'MMIR product page must show the first local AI activation action.');
 requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose a node dashboard entrypoint.');

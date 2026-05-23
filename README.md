@@ -41,6 +41,7 @@ MMIR is not a chatbot wrapper or a single-model UI. It is the control plane abov
 4. GitHub Actions deploys `/public` to `https://mmir.ai` / GitHub Pages.
 
 ```bash
+node scripts/serve-public.mjs
 node scripts/ensure-mmir-public-branding.js --check
 node scripts/smoke-check-pages.js
 node scripts/smoke-check-user-journeys.js

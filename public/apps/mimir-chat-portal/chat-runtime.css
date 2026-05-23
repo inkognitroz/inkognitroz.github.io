@@ -7,13 +7,14 @@
 
 .runtime-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto auto auto;
-  gap: 10px;
+  grid-template-columns: minmax(220px, 1fr) minmax(210px, 280px) repeat(4, auto);
+  gap: 8px;
   align-items: center;
   padding: 8px 10px;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(255, 255, 255, 0.54);
-  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 22px;
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.05);
 }
 
 .runtime-toolbar span {
@@ -42,7 +43,7 @@
 }
 
 .runtime-toolbar button {
-  padding: 0 14px;
+  padding: 0 13px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -70,8 +71,8 @@
   gap: 10px;
   padding: 12px;
   border: 1px solid rgba(16, 185, 129, 0.24);
-  border-radius: 8px;
-  background: rgba(240, 253, 244, 0.78);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 253, 244, 0.82));
 }
 
 .runtime-model-helper[hidden] {
@@ -171,7 +172,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 6px 10px;
+  padding: 7px 6px 9px;
   border-top: 1px solid rgba(148, 163, 184, 0.18);
 }
 
@@ -200,6 +201,7 @@
   font-weight: 650;
   line-height: 1;
   white-space: nowrap;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
 .composer-icon-button,
@@ -267,9 +269,9 @@
 .runtime-transcript {
   display: grid;
   gap: 10px;
-  max-height: 420px;
+  max-height: 460px;
   overflow: auto;
-  padding: 4px;
+  padding: 6px;
   scrollbar-gutter: stable;
 }
 
@@ -279,7 +281,7 @@
   max-width: min(760px, 92%);
   padding: 12px 14px;
   border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 8px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.88);
   overflow-wrap: anywhere;
 }
@@ -288,10 +290,12 @@
   justify-self: end;
   background: #0f172a;
   color: #fff;
+  border-color: #0f172a;
 }
 
 .runtime-message-assistant {
   justify-self: start;
+  background: #fff;
 }
 
 .runtime-message-label {

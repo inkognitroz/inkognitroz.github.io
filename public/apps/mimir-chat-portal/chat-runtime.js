@@ -372,7 +372,7 @@
 
   function summarizeModels(models){
     const ids=models.map(model=>model.id).filter(Boolean);
-    if(!ids.length)return 'no live models';
+    if(!ids.length)return 'free browser route ready; no backend model yet';
     const visible=ids.slice(0,3).join(', ');
     return ids.length>3?visible+' +'+String(ids.length-3):visible;
   }
@@ -500,8 +500,8 @@
     runtime.setAttribute('aria-label','MMIR live chat');
     runtime.innerHTML=''+
       '<div class="runtime-toolbar">'+
-        '<span id="runtime-state" data-state="idle" role="status" aria-live="polite">Select a backend to start.</span>'+
-        '<label for="runtime-model">Model<select id="runtime-model" disabled><option value="">No live models</option></select></label>'+
+        '<span id="runtime-state" data-state="idle" role="status" aria-live="polite">Loading free model routes...</span>'+
+        '<label for="runtime-model">Model<select id="runtime-model" disabled><option value="">Loading free routes...</option></select></label>'+
         '<button id="runtime-refresh" type="button" aria-label="Refresh backend models">Refresh</button>'+
         '<button id="runtime-stop" type="button" aria-label="Stop current response" disabled>Stop</button>'+
         '<button id="runtime-delete-model" type="button" aria-label="Remove selected local model" disabled>Remove model</button>'+
@@ -1212,12 +1212,56 @@
     }
   }
 
+  function guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,emptyPrompt){
+    const parts=[
+      'I am '+(starter.label||'MMIR Guide')+', a free browser helper that works before backend setup. I am not a full LLM, but I can get the user to the first real local model quickly.'
+    ];
+    if(helperId==='mmir-model-picker'){
+      parts.push('Best free start: use Qwen2.5 0.5B WebGPU if the browser supports WebGPU. Otherwise install Gemma 3 270M or SmolLM2 135M through Ollama for the fastest local activation, then move to Llama 3.2 1B or Phi-4 Mini when the machine can handle more.');
+    }
+    if(helperId==='mmir-setup-coach'){
+      parts.push('Shortest setup: choose an installable-free model, download the Windows or Mac/Linux installer, run DryRun first, run install, then press Refresh. When Local Node reports the model, chat moves to the real live backend route.');
+    }
+    if(helperId==='mmir-security-coach'){
+      parts.push('Security rule: the public frontend stores no secrets. Local models route through 127.0.0.1 and pairing. Provider keys and paid models must go through a protected backend with auth, rate limit, audit and cost policy.');
+    }
+    if(helperId==='mmir-growth-coach'){
+      parts.push('Smart revenue ladder: free browser helpers and free local chat first, then paid managed VM/GPU, premium provider routing, team/admin, marketplace listing, evals and supported enterprise governance.');
+    }
+    if(wantsModel||emptyPrompt){
+      parts.push('Recommended free local models: Gemma 3 270M or SmolLM2 135M for weak machines, Gemma 3 1B or Llama 3.2 1B for normal laptops, and DeepSeek-R1 1.5B or Phi-4 Mini for more reasoning.');
+    }
+    if(wantsConnect||emptyPrompt){
+      parts.push('Flow: choose an installable-free model in the list, download the Windows or Mac/Linux installer, run DryRun first, run install, and let MMIR activate Local Node on http://127.0.0.1:3000. After that, the model appears as a live active-backend model.');
+    }
+    if(wantsBusiness){
+      parts.push('Smart freemium: free local chat and installation first; paid layers later should be managed VM/GPU, premium provider routing, team governance, marketplace listing and supported one-click deployment. No paid route should start without explicit cost policy.');
+    }
+    parts.push('Next action here: choose a free Ollama model in the model list, or press + Add model to create the local profile.');
+    return parts.join('\n\n');
+  }
+
+  function installResponseText(model,commands){
+    return [
+      model.label+' is selected as a free local model.',
+      'It is not live in the browser yet. It becomes live when MMIR Local Node and Ollama run locally and /models reports the model.',
+      'Windows:',
+      '```powershell\n'+commands.windows.join('\n')+'\n```',
+      'Mac / Linux:',
+      '```bash\n'+commands.unix.join('\n')+'\n```',
+      'Direct Ollama test if Ollama is already installed:',
+      '```bash\n'+commands.ollama.join('\n')+'\n```',
+      'After install: use + Add model, keep the local profile active, and press Refresh in chat. The model should move from installable-free to live backend model.'
+    ].join('\n\n');
+  }
+
   function guideResponse(prompt,starter={}){
     const text=String(prompt||'').toLowerCase();
     const helperId=starter.id||'mmir-guide';
     const wantsModel=/model|modell|llm|ollama|bitnet|1 bit|1-bit|gratis|free/.test(text);
     const wantsConnect=/connect|koble|install|installer|local|lokal|backend|node/.test(text);
     const wantsBusiness=/premium|betalt|marked|market|users|brukere|money|penger|inntekt/.test(text);
+    return guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,!text);
     const parts=[
       'Jeg er '+(starter.label||'MMIR Guide')+', en gratis nettleserhjelper som fungerer uten backend. Jeg er ikke en full LLM, men jeg kan hjelpe deg til første ekte lokale modell raskt.'
     ];
@@ -1248,6 +1292,7 @@
 
   function installResponse(model){
     const commands=commandLines(model);
+    return installResponseText(model,commands);
     return [
       model.label+' er valgt som gratis lokal modell.',
       'Den er ikke live i nettleseren ennå. Den blir live når MMIR Local Node og Ollama kjører lokalt og /models rapporterer modellen.',

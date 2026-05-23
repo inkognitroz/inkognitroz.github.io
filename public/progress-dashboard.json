@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T06:27:11.330Z",
+  "updated_at": "2026-05-23T06:41:55.847Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 70,
+    "beta": 71,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 28,
+    "planned": 27,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -120,8 +120,8 @@
         "phase": "Product Feeling",
         "total": 6,
         "done": 1,
-        "beta": 4,
-        "next": 1,
+        "beta": 5,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -631,10 +631,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Scheduled Tasks",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D042"
+    "D146"
   ],
   "watchlist": [
     "D082",
@@ -1380,10 +1380,10 @@
       "best_practice": "Operational UI should be quiet and premium, not noisy marketing",
       "done_when": "First screen feels simple, personal, calm and powerful",
       "covers": "UX001-UX004, P2-001",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Calm UX polish is now high-leverage because core surfaces are visible.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First screen has calmer navigation, automatic free-route copy, better chat dock polish and model states that do not start as an empty no-model experience.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D043",
@@ -2940,9 +2940,9 @@
       "best_practice": "Analysis should not run arbitrary code unsafely",
       "done_when": "User can inspect datasets and charts safely",
       "covers": "ChatGPT parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next sequential GUI parity slice: safe data analysis and charting workspace with no arbitrary public-code execution.",
       "estimate": "1-3d"
     },
     {

@@ -162,6 +162,8 @@ requireIncludes(files.architectureBaseline, 'model runtime execution', 'Architec
 requireIncludes(files.mmir, 'The orchestration layer for trusted AI.', 'MMIR product page hero must state the product identity.');
 requireIncludes(files.mmir, 'Connect local AI', 'MMIR product page must expose the ground-zero local AI action.');
 requireIncludes(files.firstImpression, 'Open. Connect local AI. Ready.', 'First impression needs the ground-zero activation promise.');
+requireIncludes(files.mmir, 'mimir-nav-more', 'D042 needs calmer first-screen navigation with secondary controls grouped.');
+requireIncludes(files.chatRuntime, 'Loading free model routes', 'D042 chat runtime must load free route choices before local-node checks.');
 requireIncludes(files.portal, 'ensureAutomaticDefaults();render();', 'J001/J002 need automatic first-run defaults.');
 requireIncludes(files.portal, 'local pairing token only', 'Public UI must never ask users to paste real provider keys.');
 requireIncludes(files.onboarding, 'mimir-user-intent-v1', 'D119 needs optional persisted onboarding intent.');

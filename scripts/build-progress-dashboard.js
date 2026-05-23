@@ -23,7 +23,7 @@ const overrides = new Map([
   ['D026', { status: 'done', evidence: 'Model catalog and chat helper now surface license/commercial-use checks and source/model-card links for starter choices.' }],
   ...range(27, 30).map((id) => [id, { status: 'beta', evidence: 'Roles, comparison and synthesis UI/API paths exist as beta surfaces.' }]),
   ...range(31, 41).map((id) => [id, { status: 'beta', evidence: 'Managed backend security/router foundations exist; production hardening continues.' }]),
-  ['D042', { status: 'next', evidence: 'Calm UX polish is now high-leverage because core surfaces are visible.' }],
+  ['D042', { status: 'beta', evidence: 'First screen has calmer navigation, automatic free-route copy, better chat dock polish and model states that do not start as an empty no-model experience.' }],
   ...range(43, 49).map((id) => [id, { status: 'beta', evidence: 'Workspace, memory, prompt, knowledge and connector foundations are inspectable and local/protected.' }]),
   ...range(50, 54).map((id) => [id, { status: 'beta', evidence: 'Node registry, health, secure tunnel contract, scheduler policy and OCI alignment have foundations.' }]),
   ['D055', { status: 'planned', evidence: 'AWS runtime should wait until local/OCI patterns are stable.' }],
@@ -82,6 +82,7 @@ const overrides = new Map([
   ['D143', { status: 'beta', evidence: 'Memory governance now exposes local scope, tags, expiration, review notes, import notes, backend search reasons and visible last-message memory-use review data.' }],
   ['D144', { status: 'beta', evidence: 'Research planning now creates source-aware, citation-gated plans with manual/free discovery links, ordered steps, local plan storage and approval gates while keeping autonomous browsing disabled.' }],
   ['D145', { status: 'beta', evidence: 'Custom assistant builder now has local-first starter assistants, instructions, model preference, tool allowlist, knowledge scope, private/workspace sharing rules and protected backend sync.' }],
+  ['D146', { status: 'next', evidence: 'Next sequential GUI parity slice: safe data analysis and charting workspace with no arbitrary public-code execution.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

@@ -217,8 +217,8 @@
     }
 
     if(kind.browser||kind.webgpu){
-      setText(statusEl,kind.webgpu?'Free browser model is ready.':'Open. Connect local AI. Ready.');
-      setText(detailEl,kind.webgpu?'Runs in this browser when WebGPU is available. No paid provider or account required.':'Ask now, or click Connect local AI to install one file, see your own models and chat through MMIR.');
+      setText(statusEl,kind.webgpu?'Free browser model is ready.':'Ask now. MMIR will pick the safest route.');
+      setText(detailEl,kind.webgpu?'Runs in this browser when WebGPU is available. No paid provider or account required.':'Free browser help is available immediately. Connect local AI only when you want real private local models.');
       setNode(backendNode,'Browser',true);
       setNode(modelNode,model.text||'MMIR guide',true);
       setBodyState('mimir-first-guide','mimir-first-ready','mimir-first-install');
@@ -236,7 +236,8 @@
       return;
     }
 
-    setText(statusEl,state&&state!=='Select a backend to start.'?state:'Open. Connect local AI. Ready.');
+    const loadingDefault=state==='Select a backend to start.'||state==='Loading free model routes...';
+    setText(statusEl,state&&!loadingDefault?state:'Open. Connect local AI. Ready.');
     setText(detailEl,'Local node, browser helpers and installable free models are checked automatically through the MMIR control plane.');
     setNode(backendNode,'Checking',false);
     setNode(modelNode,'Model',false);
