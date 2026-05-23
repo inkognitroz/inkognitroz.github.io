@@ -127,6 +127,9 @@ jobs:
       - name: Smoke-check first-chat no-model DOM fixture
         run: node scripts/smoke-check-first-chat-no-model-dom-fixture.js
 
+      - name: Smoke-check no-model visual pass
+        run: node scripts/smoke-check-no-model-visual-pass.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T17:47:52.487Z",
+  "updated_at": "2026-05-23T17:54:26.016Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 210,
+    "total": 211,
     "done": 51,
-    "beta": 134,
+    "beta": 135,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -848,10 +848,10 @@
       },
       {
         "phase": "Deploy / QA",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -860,8 +860,8 @@
         "phase": "Visual QA / First Impression",
         "total": 2,
         "done": 0,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1244,7 +1244,7 @@
     }
   ],
   "next_queue": [
-    "D210"
+    "D211"
   ],
   "watchlist": [
     "D082",
@@ -4396,9 +4396,24 @@
       "best_practice": "First impression needs visible confidence, not only passing logic",
       "done_when": "CI/local fixture proves the no-model fallback is readable on desktop and mobile without overlap or hidden controls",
       "covers": "visual QA, mobile, activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "No-model visual pass now publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and progress fixture.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D211",
+      "phase": "Deploy / QA",
+      "priority": "P0",
+      "work_package": "Public no-model fixture deploy verification",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Verify after GitHub Pages deploy that the public app exposes the no-model fixture data, route floor scripts and progress dashboard evidence, then record the deployed commit and public-safe status",
+      "best_practice": "Local checks matter, but users see the deployed site",
+      "done_when": "Deployed public artifacts expose the no-model route floor and fixture report with green CI and no secret/cost regression",
+      "covers": "deploy, QA, activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: run a mobile/desktop visual pass for the no-model fixture and first-chat route floor.",
+      "evidence": "Next activation slice: verify the deployed public page exposes the no-model fixture and free route floor after GitHub Pages propagation.",
       "estimate": "2-6h"
     }
   ]

@@ -534,6 +534,8 @@ requireText(join(root, 'scripts', 'smoke-check-no-model-dead-end-browser.js'), '
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D209 |', 'Backlog must keep a next sequential work item after D208.');
 requireText(join(root, 'scripts', 'smoke-check-first-chat-no-model-dom-fixture.js'), 'First-chat no-model DOM fixture smoke check passed.', 'D209 first-chat no-model DOM fixture must have a dedicated smoke harness.');
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D210 |', 'Backlog must keep a next sequential work item after D209.');
+requireText(join(root, 'scripts', 'smoke-check-no-model-visual-pass.js'), 'No-model visual pass smoke check passed.', 'D210 no-model visual pass must have a dedicated smoke harness.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D211 |', 'Backlog must keep a next sequential work item after D210.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

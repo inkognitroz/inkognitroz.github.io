@@ -148,7 +148,8 @@ const overrides = new Map([
   ['D207', { status: 'beta', evidence: 'Composer model picker now keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.' }],
   ['D208', { status: 'beta', evidence: 'Chat send flow now falls back to a useful free starter when no live model route is selected, and CI guards the first chat/model DOM against empty no-model dead ends.' }],
   ['D209', { status: 'beta', evidence: 'Progress Dashboard now renders a no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios plus one free primary action for each.' }],
-  ['D210', { status: 'next', evidence: 'Next activation slice: run a mobile/desktop visual pass for the no-model fixture and first-chat route floor.' }]
+  ['D210', { status: 'beta', evidence: 'No-model visual pass now publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and progress fixture.' }],
+  ['D211', { status: 'next', evidence: 'Next activation slice: verify the deployed public page exposes the no-model fixture and free route floor after GitHub Pages propagation.' }]
 ]);
 
 const repoMeta = [
@@ -286,7 +287,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D210', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D211', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

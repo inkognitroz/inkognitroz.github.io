@@ -85,7 +85,8 @@ requireIncludes(files.chatRuntime, 'noModelFallbackStarter', 'D209 chat runtime 
 requireIncludes(files.composer, 'freeRouteFloor', 'D209 composer picker must keep free route floor behavior.');
 requireIncludes(files.qualityWorkflow, 'smoke-check-first-chat-no-model-dom-fixture.js', 'D209 quality workflow must run the first-chat no-model DOM fixture gate.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-first-chat-no-model-dom-fixture.js', 'D209 Pages workflow must run the first-chat no-model DOM fixture gate.');
-requireIncludes(files.backlog, '| D210 |', 'Backlog must keep a next sequential work item after D209.');
+requireIncludes(files.backlog, '| D210 |', 'Backlog must keep D210 as the no-model visual pass after D209.');
+requireIncludes(files.backlog, '| D211 |', 'Backlog must keep a next sequential work item after D210.');
 
 const progress = json(files.progressData);
 if (!progress.no_model_dead_end_report || progress.no_model_dead_end_report.title !== report.title) {
@@ -94,14 +95,18 @@ if (!progress.no_model_dead_end_report || progress.no_model_dead_end_report.titl
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d209 = tasks.find((task) => task.seq === 'D209');
 const d210 = tasks.find((task) => task.seq === 'D210');
+const d211 = tasks.find((task) => task.seq === 'D211');
 if (!d209 || d209.status !== 'beta') {
   fail('Progress dashboard task D209 must be beta after first-chat no-model DOM fixture ships.');
 }
-if (!d210 || d210.status !== 'next') {
-  fail('Progress dashboard task D210 must become the next work item after D209 ships.');
+if (!d210 || d210.status !== 'beta') {
+  fail('Progress dashboard task D210 must be beta after no-model visual pass ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D210') {
-  fail('Progress dashboard next queue must prioritize D210 after D209 ships.');
+if (!d211 || d211.status !== 'next') {
+  fail('Progress dashboard task D211 must become the next work item after D210 ships.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D211') {
+  fail('Progress dashboard next queue must prioritize D211 after D210 ships.');
 }
 
 if (!process.exitCode) {

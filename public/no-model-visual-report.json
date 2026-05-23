@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "title": "No-Model Visual Pass",
+  "principle": "The no-model fallback must be readable, calm and action-oriented on desktop and mobile.",
+  "public_repo_rule": "Visual evidence is selector and layout metadata only. It contains no prompts, responses, secrets, pairing tokens or billing data.",
+  "viewports": [
+    {
+      "id": "desktop-first-chat",
+      "width": 1440,
+      "height": 900,
+      "surfaces": [
+        "#composer-model-picker",
+        "#runtime-model-helper",
+        "#progress-no-model-fixture"
+      ],
+      "expected": [
+        "free route floor visible",
+        "at least one primary free action",
+        "progress no-model fixture visible",
+        "no paid/provider key copy"
+      ]
+    },
+    {
+      "id": "mobile-first-chat",
+      "width": 390,
+      "height": 844,
+      "surfaces": [
+        "#composer-model-picker",
+        "#runtime-model-helper",
+        "#progress-no-model-fixture"
+      ],
+      "expected": [
+        "single-column model cards",
+        "free primary action visible",
+        "full-width picker action buttons",
+        "progress fixture cards wrap without overlap",
+        "no hidden primary action"
+      ]
+    }
+  ],
+  "css_contract": [
+    ".composer-route-floor",
+    "@media (max-width:720px)",
+    ".composer-model-picker-grid{grid-template-columns:1fr",
+    ".progress-no-model-grid",
+    "repeat(auto-fit, minmax(210px, 1fr))"
+  ],
+  "copy_contract": [
+    "Free route floor active",
+    "No live backend model yet. MMIR selected a free starter route instead.",
+    "No paid route starts here"
+  ]
+}

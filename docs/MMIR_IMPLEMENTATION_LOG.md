@@ -201,14 +201,15 @@ Updated: 2026-05-23
 - D207 is now beta: composer model picker keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.
 - D208 is now beta: chat send flow falls back to a useful free starter when no live model route is selected, and CI guards first chat/model DOM against empty no-model dead ends.
 - D209 is now beta: Progress Dashboard renders a public-safe no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios, each with one free primary action.
-- D210 is now next: add mobile/desktop visual checks for the no-model fixture, composer route floor and first-chat fallback.
+- D210 is now beta: no-model visual pass publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and Progress Dashboard fixture.
+- D211 is now next: verify the deployed public page exposes the no-model fixture and free route floor after GitHub Pages propagation.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D210` no-model fixture visual pass.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D211` public no-model fixture deploy verification.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

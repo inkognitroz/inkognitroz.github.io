@@ -5,7 +5,7 @@
   "status": "beta",
   "cost_policy": "free-first; no paid services, provider keys or cloud compute used",
   "public_repo_rule": "Safe for inkognitroz.github.io: no secrets, tokens, provider keys, raw prompts or private node data.",
-  "method": "Deterministic DOM, CSS and action-path checks for the first screen, chat composer, model-library handoff and mobile layout.",
+  "method": "Deterministic DOM, CSS and action-path checks for the first screen, chat composer, model-library handoff, no-model fallback and mobile layout.",
   "browser_attempt": {
     "status": "attempted",
     "result": "Local browser inspection was attempted; deterministic CI checks remain the release gate for this slice."
@@ -55,11 +55,16 @@
       "id": "mobile-layout",
       "status": "guarded",
       "evidence": "Mobile media rules stack instant-start, readiness, composer, runtime dock, model library and quick actions."
+    },
+    {
+      "id": "D210 no-model fixture visual pass",
+      "status": "guarded",
+      "evidence": "No-model visual report covers desktop and mobile route floor, first-chat fallback and progress fixture selectors."
     }
   ],
   "known_limitations": [
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D210 no-model fixture visual pass: verify the no-model route floor and first-chat fallback are readable on desktop and mobile."
+  "next": "D211 public no-model fixture deploy verification: verify the deployed site exposes the no-model route floor and fixture report."
 }
