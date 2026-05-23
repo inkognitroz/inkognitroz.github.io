@@ -22,6 +22,8 @@
   function normalize(raw){
     const memoryIds=Array.isArray(raw?.memory_use_ids)?raw.memory_use_ids.map(item=>String(item||'').slice(0,120)).filter(Boolean).slice(0,8):[];
     const memorySources=Array.isArray(raw?.memory_sources)?raw.memory_sources.map(item=>String(item||'').slice(0,40)).filter(Boolean).slice(0,4):[];
+    const knowledgeIds=Array.isArray(raw?.knowledge_use_ids)?raw.knowledge_use_ids.map(item=>String(item||'').slice(0,120)).filter(Boolean).slice(0,12):[];
+    const knowledgeSources=Array.isArray(raw?.knowledge_sources)?raw.knowledge_sources.map(item=>String(item||'').slice(0,80)).filter(Boolean).slice(0,6):[];
     return {
       object:'mmir.answer_context_receipt',
       version:1,
@@ -40,6 +42,9 @@
       memory_use_ids:memoryIds,
       memory_use_count:Math.max(memoryIds.length,Math.round(Number(raw?.memory_use_count)||0)),
       memory_sources:memorySources,
+      knowledge_use_ids:knowledgeIds,
+      knowledge_use_count:Math.max(knowledgeIds.length,Math.round(Number(raw?.knowledge_use_count)||0)),
+      knowledge_sources:knowledgeSources,
       created_at:new Date().toISOString(),
       local_only:true,
       no_paid_routes_started:raw?.no_paid_routes_started!==false&&raw?.noPaid!==false,
@@ -74,7 +79,7 @@
   function status(value){return String(value||'none').replace('+',' + ');}
   function row(label,value){return '<dt>'+safe(label)+'</dt><dd>'+safe(value||'none')+'</dd>';}
   function writeHighlight(receipt,target){
-    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:receipt.route,memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,memory_sources:receipt.memory_sources||[],created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
+    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:receipt.route,memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,memory_sources:receipt.memory_sources||[],knowledge_use_ids:receipt.knowledge_use_ids||[],knowledge_use_count:receipt.knowledge_use_count||0,knowledge_sources:receipt.knowledge_sources||[],created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
     try{localStorage.setItem(highlightKey(),JSON.stringify(highlight));}catch(error){}
     window.dispatchEvent(new CustomEvent('mmir-answer-context-highlight-updated',{detail:highlight}));
     return highlight;
@@ -85,14 +90,16 @@
     el.dataset.receiptFilterMessage=receipt.message_id||'';
     el.dataset.receiptFilterModel=receipt.model||'';
     el.dataset.receiptFilterMemoryIds=(receipt.memory_use_ids||[]).join(',');
-    window.dispatchEvent(new CustomEvent('mmir-answer-context-source-filter',{detail:{target,message_id:receipt.message_id,model:receipt.model,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,no_paid_routes_started:true}}));
+    el.dataset.receiptFilterKnowledgeIds=(receipt.knowledge_use_ids||[]).join(',');
+    window.dispatchEvent(new CustomEvent('mmir-answer-context-source-filter',{detail:{target,message_id:receipt.message_id,model:receipt.model,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,memory_sources:receipt.memory_sources||[],knowledge:receipt.knowledge,knowledge_use_ids:receipt.knowledge_use_ids||[],knowledge_use_count:receipt.knowledge_use_count||0,knowledge_sources:receipt.knowledge_sources||[],no_paid_routes_started:true}}));
     el.querySelector('.runtime-answer-context-highlight')?.remove();
     const note=document.createElement('p');
     note.className='dashboard-note runtime-answer-context-highlight';
     note.dataset.state='ready';
     note.dataset.receiptHighlight=target;
     const memoryFilter=receipt.memory_use_count?(', memory matches '+receipt.memory_use_count+' '+((receipt.memory_sources||[]).join('/')||'local')):'';
-    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+(receipt.route||'browser')+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+memoryFilter+'.';
+    const knowledgeFilter=receipt.knowledge_use_count?(', knowledge matches '+receipt.knowledge_use_count+' '+((receipt.knowledge_sources||[]).join('/')||'local')):'';
+    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+(receipt.route||'browser')+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+memoryFilter+knowledgeFilter+'.';
     const summary=el.matches('details')?el.querySelector('summary'):null;
     if(summary)summary.after(note);
     else el.prepend(note);
@@ -135,6 +142,7 @@
       row('Route',receipt.route)+
       row('Role',receipt.role_preset||'none')+
       row('History',String(receipt.history_messages||0)+' messages')+
+      row('Knowledge sources',receipt.knowledge_use_count?String(receipt.knowledge_use_count)+' metadata match(es)':'none')+
       row('Modes',receipt.mode_summary||'default')+
       row('Cost',receipt.no_paid_routes_started?'no paid route started':receipt.cost_guard||'user-configured route')+
       '</dl>'+
@@ -170,6 +178,9 @@
         mode_summary:ctx.mode_summary||'',
         cost_guard:'free/local/default',
         ...memoryUseSummary(),
+        knowledge_use_ids:ctx.knowledge_use_ids||[],
+        knowledge_use_count:ctx.knowledge_use_count||0,
+        knowledge_sources:ctx.knowledge_sources||[],
         no_paid_routes_started:true
       });
     });

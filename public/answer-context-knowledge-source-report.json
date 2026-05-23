@@ -1,0 +1,39 @@
+{
+  "title": "Answer Context Knowledge Source QA",
+  "principle": "Knowledge used by an answer should produce safe source metadata that can focus exact local documents or collections without storing document text in receipts.",
+  "public_repo_rule": "Knowledge-use receipts store only document IDs, collection IDs, source labels and counts. Raw prompts, raw responses, snippets, uploaded document text and provider secrets stay out of receipt and highlight metadata.",
+  "scenarios": [
+    {
+      "id": "runtime-knowledge-use-snapshot",
+      "status": "ready",
+      "target": "chat runtime",
+      "expected": "The runtime snapshots metadata-only knowledge-use IDs for local and protected backend knowledge context into the next answer context.",
+      "storage_key": "__MimirLastAnswerContext.knowledge_use_ids",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "receipt-knowledge-source-ids",
+      "status": "ready",
+      "target": "answer context receipt",
+      "expected": "Answer receipts carry knowledge_use_ids, knowledge_use_count and knowledge_sources into drill-down highlights.",
+      "storage_key": "knowledge_use_ids",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "knowledge-panel-exact-match",
+      "status": "ready",
+      "target": "#knowledge-panel",
+      "expected": "Knowledge drill-downs set data-receipt-filter-knowledge-ids so local documents or collections can be marked as used in the selected answer.",
+      "storage_key": "data-receipt-filter-knowledge-ids",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "safe-knowledge-boundary",
+      "status": "ready",
+      "target": "public frontend",
+      "expected": "Knowledge source receipts and reports remain metadata-only and never publish snippets, uploaded text, raw prompts, raw responses or provider secrets.",
+      "storage_key": "public-safety-audit",
+      "no_paid_routes_started": true
+    }
+  ]
+}

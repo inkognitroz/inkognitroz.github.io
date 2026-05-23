@@ -170,7 +170,9 @@
       target:'#knowledge-panel',
       message_id:String(detail.message_id||'').trim().slice(0,120),
       model:String(detail.model||'').trim().slice(0,160),
+      knowledge:String(detail.knowledge||'none').trim().slice(0,60),
       knowledge_use_ids:cleanIds(detail.knowledge_use_ids),
+      knowledge_use_count:Math.max(0,Math.round(Number(detail.knowledge_use_count)||0)),
       knowledge_sources:Array.isArray(detail.knowledge_sources)?detail.knowledge_sources.map(item=>String(item||'').trim().slice(0,80)).filter(Boolean).slice(0,8):[]
     };
   }
@@ -183,14 +185,16 @@
     const messageId=String(panel?.dataset.receiptFilterMessage||source.message_id||highlight.message_id||'').trim().slice(0,120);
     const model=String(panel?.dataset.receiptFilterModel||source.model||highlight.model||'').trim().slice(0,160);
     const knowledge=String(source.knowledge||highlight.knowledge||'none').trim().slice(0,60);
+    const count=Math.max(ids.length,Math.round(Number(source.knowledge_use_count||highlight.knowledge_use_count)||0));
     const sources=Array.isArray(source.knowledge_sources)?source.knowledge_sources:(Array.isArray(highlight.knowledge_sources)?highlight.knowledge_sources:[]);
     return {
-      active:Boolean(messageId||ids.length||highlight.target==='#knowledge-panel'||source.target==='#knowledge-panel'),
+      active:Boolean(messageId||ids.length||count||highlight.target==='#knowledge-panel'||source.target==='#knowledge-panel'),
       messageId,
       model,
       knowledge,
       ids,
       idSet:new Set(ids),
+      count,
       sources:sources.map(item=>String(item||'').trim().slice(0,80)).filter(Boolean).slice(0,8)
     };
   }
@@ -264,7 +268,8 @@
     }else if(active.ids.length){
       receiptFilterEl.textContent='Receipt filter active: '+String(active.ids.length)+' knowledge source ID(s) are available, but no local document or collection matches yet.';
     }else{
-      receiptFilterEl.textContent='Receipt filter active: this answer used knowledge state '+(active.knowledge||'none')+'. Exact document IDs are not available yet, so no file is auto-filtered.';
+      const sourceLabel=active.sources.length?' Sources: '+active.sources.join(', ')+'.':'';
+      receiptFilterEl.textContent='Receipt filter active: this answer used knowledge state '+(active.knowledge||'none')+'. Exact document IDs are not available yet, so no file is auto-filtered.'+sourceLabel;
     }
   }
 

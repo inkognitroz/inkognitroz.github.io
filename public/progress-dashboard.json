@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T21:39:09.877Z",
+  "updated_at": "2026-05-23T21:56:38.562Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 228,
+    "total": 229,
     "done": 51,
-    "beta": 152,
+    "beta": 153,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -968,10 +968,10 @@
       },
       {
         "phase": "Memory / Knowledge UX",
-        "total": 2,
+        "total": 3,
         "done": 0,
         "beta": 2,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1010,8 +1010,8 @@
         "phase": "Knowledge / Context Audit",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -2280,6 +2280,45 @@
       }
     ]
   },
+  "answer_context_knowledge_source_report": {
+    "title": "Answer Context Knowledge Source QA",
+    "principle": "Knowledge used by an answer should produce safe source metadata that can focus exact local documents or collections without storing document text in receipts.",
+    "public_repo_rule": "Knowledge-use receipts store only document IDs, collection IDs, source labels and counts. Raw prompts, raw responses, snippets, uploaded document text and provider secrets stay out of receipt and highlight metadata.",
+    "scenarios": [
+      {
+        "id": "runtime-knowledge-use-snapshot",
+        "status": "ready",
+        "target": "chat runtime",
+        "expected": "The runtime snapshots metadata-only knowledge-use IDs for local and protected backend knowledge context into the next answer context.",
+        "storage_key": "__MimirLastAnswerContext.knowledge_use_ids",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "receipt-knowledge-source-ids",
+        "status": "ready",
+        "target": "answer context receipt",
+        "expected": "Answer receipts carry knowledge_use_ids, knowledge_use_count and knowledge_sources into drill-down highlights.",
+        "storage_key": "knowledge_use_ids",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "knowledge-panel-exact-match",
+        "status": "ready",
+        "target": "#knowledge-panel",
+        "expected": "Knowledge drill-downs set data-receipt-filter-knowledge-ids so local documents or collections can be marked as used in the selected answer.",
+        "storage_key": "data-receipt-filter-knowledge-ids",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "safe-knowledge-boundary",
+        "status": "ready",
+        "target": "public frontend",
+        "expected": "Knowledge source receipts and reports remain metadata-only and never publish snippets, uploaded text, raw prompts, raw responses or provider secrets.",
+        "storage_key": "public-safety-audit",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2330,7 +2369,7 @@
     }
   ],
   "next_queue": [
-    "D228"
+    "D229"
   ],
   "watchlist": [
     "D082",
@@ -5752,9 +5791,24 @@
       "best_practice": "Knowledge audit should become precise without storing document text in receipts",
       "done_when": "Selected answer receipts can focus the exact local knowledge document or collection used, with metadata-only storage",
       "covers": "knowledge, RAG, audit, trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Chat runtime now writes metadata-only knowledge-use entries, answer receipts carry knowledge source IDs/counts/sources, and Knowledge drill-downs can mark exact local documents or collections.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D229",
+      "phase": "Memory / Knowledge UX",
+      "priority": "P0",
+      "work_package": "Receipt source correction actions",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add safe actions from receipt-focused Memory and Knowledge sources to disable, review, clear focus or open source controls directly from the marked source state",
+      "best_practice": "Audit should lead to correction, not only inspection",
+      "done_when": "User can correct or clear a receipt-focused source without hunting through panels, with no prompt/snippet/secret leakage",
+      "covers": "memory, knowledge, audit, correction",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: capture safe knowledge document or collection IDs in runtime context receipts so Knowledge can mark exact sources, not only explain the gap.",
+      "evidence": "Next activation slice: add correction actions from receipt-focused Memory/Knowledge sources so users can disable, review or clear source focus without hunting through panels.",
       "estimate": "2-6h"
     }
   ]

@@ -49,6 +49,8 @@
   let webllmEngine=null;
   let webllmModelId='';
   let lastBackendMemoryUses=[];
+  let lastBackendKnowledgeUses=[];
+  let lastKnowledgeUses=[];
   let lastProofSignature='';
   let verifiedLiveModel=null;
   let preferredProofModel='';
@@ -507,6 +509,12 @@
     }catch(error){}
   }
 
+  function knowledgeUseSummary(items=lastKnowledgeUses){
+    const ids=[...new Set(items.flatMap(item=>[item[0],item[1]]).filter(Boolean))].slice(0,12);
+    const sources=[...new Set(items.map(item=>item[2]).filter(Boolean))].slice(0,6);
+    return {knowledge_use_ids:ids,knowledge_use_count:items.length,knowledge_sources:sources};
+  }
+
   function rankMemoryForPrompt(item,promptWords){
     const tags=Array.isArray(item?.tags)?item.tags.join(' '):'';
     const sourceWords=wordSet([item?.type,item?.scope,tags,item?.notes,item?.text].join(' '));
@@ -572,9 +580,9 @@
 
   function relevantKnowledgeInstruction(prompt){
     try{
-      if(contextControls().knowledge===false)return '';
+      if(contextControls().knowledge===false){lastKnowledgeUses=[];return '';}
       const value=JSON.parse(localStorage.getItem(knowledgeStorageKey())||'[]');
-      if(!Array.isArray(value)||!value.length)return '';
+      if(!Array.isArray(value)||!value.length){lastKnowledgeUses=lastBackendKnowledgeUses.slice(0,8);return '';}
       const promptWords=wordSet(prompt);
       const collections=readKnowledgeCollections();
       const ranked=value.map(item=>{
@@ -585,16 +593,20 @@
         const words=wordSet((item?.name||'')+' '+text.slice(0,2400));
         let score=0;
         promptWords.forEach(word=>{if(words.has(word))score+=1;});
-        return {name:String(item?.name||'document'),collection:collection.name,text,score};
+        return {id:String(item?.id||item?.backendId||item?.backend_id||''),collection_id:collection.id,name:String(item?.name||'document'),collection:collection.name,text,score};
       }).filter(item=>item&&item.text&&item.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
+      lastKnowledgeUses=ranked.map(item=>[item.id,item.collection_id,item.collection]).concat(lastBackendKnowledgeUses).slice(0,8);
       if(!ranked.length)return '';
       return 'Relevant local knowledge. Treat as user-provided; cite collection/file names when useful:\n'+ranked.map(item=>'['+item.collection+' / '+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
     }catch(error){
+      lastKnowledgeUses=lastBackendKnowledgeUses.slice(0,8);
       return '';
     }
   }
 
   async function backendKnowledgeInstruction(prompt,url,headers){
+    lastBackendKnowledgeUses=[];
+    if(contextControls().knowledge===false)return '';
     try{
       const data=await fetchJson(joinUrl(url,'/knowledge/search'),{
         method:'POST',
@@ -605,8 +617,10 @@
       const results=Array.isArray(data?.data)?data.data:[];
       const ranked=results.filter(item=>item?.snippet&&item?.document?.name).slice(0,3);
       if(!ranked.length)return '';
+      lastBackendKnowledgeUses=ranked.map(item=>[String(item?.document?.id||item?.document_id||item?.chunk_id||''),String(item?.document?.collection_id||item?.metadata?.collection_id||'backend'),String(item?.document?.collection||item?.metadata?.collection||'Backend knowledge')]);
       return 'Relevant protected backend knowledge. Treat as user-provided; cite file names when useful:\n'+ranked.map(item=>'['+item.document.name+' / '+item.chunk_id+']\n'+String(item.snippet).slice(0,1000)).join('\n\n');
     }catch(error){
+      lastBackendKnowledgeUses=[];
       return '';
     }
   }
@@ -1094,14 +1108,16 @@
     const historyMessages=history.map(message=>({role:message.role,content:message.content}));
     const role=activeRole();
     if(!backendMemory)lastBackendMemoryUses=[];
+    if(!backendKnowledge)lastBackendKnowledgeUses=[];
     const memory=activeMemoryInstruction(prompt);
     const knowledge=relevantKnowledgeInstruction(prompt);
     const runtime=runtimeInstruction();
+    const knowledgeUse=knowledgeUseSummary();
     const next=historyMessages.concat([{role:'user',content:prompt}]);
     const system=[{role:'system',content:defaultMmirInstruction()}];
     const modes=modeInstruction();
     const controls=contextControls();
-    window.__MimirLastAnswerContext={memory:contextState(Boolean(memory),Boolean(backendMemory),controls.memory===false),knowledge:contextState(Boolean(knowledge),Boolean(backendKnowledge),controls.knowledge===false),history_messages:historyMessages.length,runtime_settings_used:Boolean(runtime),mode_summary:modes.split('\n').filter(Boolean).map(item=>item.split(':')[0]).join(', '),role_preset:role?.label||''};
+    window.__MimirLastAnswerContext={memory:contextState(Boolean(memory),Boolean(backendMemory),controls.memory===false),knowledge:contextState(Boolean(knowledge),Boolean(backendKnowledge),controls.knowledge===false),history_messages:historyMessages.length,runtime_settings_used:Boolean(runtime),mode_summary:modes.split('\n').filter(Boolean).map(item=>item.split(':')[0]).join(', '),role_preset:role?.label||'',...knowledgeUse};
     if(modes)system.push({role:'system',content:modes});
     if(role)system.push({role:'system',content:role.instruction});
     if(runtime)system.push({role:'system',content:runtime});
@@ -1957,9 +1973,10 @@
     try{
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
+      const controls=contextControls();
       const [backendMemory,backendKnowledge]=await Promise.all([
-        backendMemoryInstruction(prompt,url,headers),
-        backendKnowledgeInstruction(prompt,url,headers)
+        controls.memory===false?Promise.resolve(''):backendMemoryInstruction(prompt,url,headers),
+        controls.knowledge===false?Promise.resolve(''):backendKnowledgeInstruction(prompt,url,headers)
       ]);
       const payloadMessages=contextMessages(prompt,backendMemory,backendKnowledge);
       const payload={model:selectedModel,messages:payloadMessages,...runtimePayload()};

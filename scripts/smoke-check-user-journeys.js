@@ -31,6 +31,7 @@ const files = {
   answerContextHighlightReport: join(publicDir, 'answer-context-highlight-report.json'),
   answerContextSourceFilterReport: join(publicDir, 'answer-context-source-filter-report.json'),
   answerContextFilterConsumptionReport: join(publicDir, 'answer-context-filter-consumption-report.json'),
+  answerContextKnowledgeSourceReport: join(publicDir, 'answer-context-knowledge-source-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -117,6 +118,7 @@ const files = {
   answerContextHighlightHarness: join(root, 'scripts', 'smoke-check-answer-context-highlight.js'),
   answerContextSourceFilterHarness: join(root, 'scripts', 'smoke-check-answer-context-source-filter.js'),
   answerContextFilterConsumptionHarness: join(root, 'scripts', 'smoke-check-answer-context-filter-consumption.js'),
+  answerContextKnowledgeSourceHarness: join(root, 'scripts', 'smoke-check-answer-context-knowledge-source.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -675,6 +677,9 @@ requireIncludes(files.progressDashboard, 'renderAnswerContextSourceFilterReport'
 requireIncludes(files.answerContextFilterConsumptionHarness, 'Answer context filter consumption smoke check passed.', 'D227 answer context filter consumption must have dedicated CI coverage.');
 requireIncludes(files.answerContextFilterConsumptionReport, 'knowledge-exact-id-explainer', 'D227 answer context filter consumption report must cover the Knowledge exact-ID gap.');
 requireIncludes(files.progressDashboard, 'renderAnswerContextFilterConsumptionReport', 'D227 Progress Dashboard must render answer context filter consumption evidence.');
+requireIncludes(files.answerContextKnowledgeSourceHarness, 'Answer context knowledge source smoke check passed.', 'D228 answer context knowledge source must have dedicated CI coverage.');
+requireIncludes(files.answerContextKnowledgeSourceReport, 'knowledge_use_ids', 'D228 answer context knowledge source report must cover knowledge-use ID behavior.');
+requireIncludes(files.progressDashboard, 'renderAnswerContextKnowledgeSourceReport', 'D228 Progress Dashboard must render answer context knowledge source evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');
