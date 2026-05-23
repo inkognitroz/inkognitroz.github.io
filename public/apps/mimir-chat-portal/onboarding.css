@@ -60,6 +60,90 @@
   outline-offset: 2px;
 }
 
+.onboarding-intents {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.onboarding-intent-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.onboarding-intent-head strong {
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.onboarding-intent-head span {
+  max-width: 460px;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.onboarding-intent-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.onboarding-intent {
+  display: grid;
+  gap: 4px;
+  min-height: 106px;
+  padding: 10px;
+  border: 1px solid rgba(100, 116, 139, 0.22);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.onboarding-intent[aria-pressed="true"] {
+  border-color: rgba(16, 163, 127, 0.52);
+  background: #ecfdf5;
+}
+
+.onboarding-intent span {
+  width: max-content;
+  max-width: 100%;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.onboarding-intent strong {
+  font-size: 0.88rem;
+  color: #111827;
+}
+
+.onboarding-intent small {
+  color: #64748b;
+  line-height: 1.32;
+}
+
+.onboarding-intent:hover {
+  border-color: rgba(16, 163, 127, 0.45);
+}
+
+.onboarding-intent:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+}
+
 .onboarding-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -123,22 +207,29 @@
 }
 
 @media (max-width: 820px) {
+  .onboarding-intent-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .onboarding-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
-  .onboarding-heading {
+  .onboarding-heading,
+  .onboarding-intent-head {
     display: grid;
     align-items: start;
   }
 
-  .onboarding-heading small {
+  .onboarding-heading small,
+  .onboarding-intent-head span {
     max-width: none;
     text-align: left;
   }
 
+  .onboarding-intent-grid,
   .onboarding-grid {
     grid-template-columns: 1fr;
   }

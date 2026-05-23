@@ -5,6 +5,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
+  const INTENT_KEY='mimir-user-intent-v1';
   const chatCenter=document.querySelector('.mimir-chat-center');
   const promptEl=document.getElementById('mimir-prompt');
   const primaryLink=document.getElementById('primary-chat-link');
@@ -36,6 +37,86 @@
       text:String(option?.textContent||'').trim(),
       runtime:option?.dataset?.runtime||''
     };
+  }
+
+  function intentOptions(){
+    return [
+      {
+        id:'auto',
+        label:'Auto',
+        short:'Choose for me',
+        detail:'MMIR uses the safest free route now and lets you configure later.',
+        target:'#mimir-prompt',
+        prompt:'Choose the best MMIR path for me automatically. Keep it free-first, private by default and useful in under five minutes.'
+      },
+      {
+        id:'developer',
+        label:'Developer',
+        short:'Repo, code, tools',
+        detail:'Start with local coding models, repo context and workflow automation.',
+        target:'#workflow-builder',
+        prompt:'Set up MMIR for a developer. Prioritize free local models, repo/document context, code review workflows and a safe path to connect GitHub later.'
+      },
+      {
+        id:'business-owner',
+        label:'Business owner',
+        short:'Users, growth, ops',
+        detail:'Turn business goals into useful workflows before advanced infrastructure.',
+        target:'#workflow-builder',
+        prompt:'Set up MMIR for a business owner. Create a simple free-first workflow that helps get users, improve sales and automate useful operations.'
+      },
+      {
+        id:'power-user',
+        label:'Power user',
+        short:'Models, routing, teams',
+        detail:'Expose comparison, roles, synthesis and model routing as the main path.',
+        target:'#model-library',
+        prompt:'Set up MMIR for an AI power user. Show how to compare models, route tasks, use role-based teams and combine answers safely.'
+      },
+      {
+        id:'privacy-local',
+        label:'Privacy / local',
+        short:'Private node first',
+        detail:'Keep Private mode on, connect Local Node and install a free local model.',
+        target:'#local-connector',
+        prompt:'Set up MMIR for a privacy-first local user. Keep everything local-first, connect the local node, choose a small free model and explain the trust boundary.'
+      }
+    ];
+  }
+
+  function selectedIntent(){
+    const value=localStorage.getItem(INTENT_KEY)||'auto';
+    return intentOptions().some(intent=>intent.id===value)?value:'auto';
+  }
+
+  function writeIntent(id){
+    const value=intentOptions().some(intent=>intent.id===id)?id:'auto';
+    localStorage.setItem(INTENT_KEY,value);
+    window.dispatchEvent(new CustomEvent('mmir-user-intent-updated',{detail:{intent:value}}));
+  }
+
+  function applyIntentDefaults(intent){
+    ensureFirstRunDefaults();
+    if(intent.id==='privacy-local'){
+      const next={...readModes(),private:true};
+      localStorage.setItem(MODE_KEY,JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent('mmir-chat-modes-updated',{detail:next}));
+      window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    }
+    if(intent.id==='developer'||intent.id==='business-owner'){
+      document.getElementById('workflow-builder')?.setAttribute('open','');
+    }
+    if(intent.id==='power-user'){
+      document.getElementById('model-library')?.setAttribute('open','');
+      document.getElementById('multi-model-workspace')?.setAttribute('open','');
+    }
+  }
+
+  function runIntent(intent){
+    writeIntent(intent.id);
+    applyIntentDefaults(intent);
+    openTarget(intent.target);
+    sendPrompt(intent.prompt);
   }
 
   function ensureFirstRunDefaults(){
@@ -150,6 +231,30 @@
     heading.className='onboarding-heading';
     heading.innerHTML='<div><p class="eyebrow">Automatic launch checklist</p><h2>First-run success gates</h2></div><small>MMIR prepares safe defaults first. The user can configure details later.</small>';
 
+    const intentPanel=document.createElement('div');
+    intentPanel.className='onboarding-intents';
+    intentPanel.setAttribute('aria-label','Personalized onboarding paths');
+    const intentHead=document.createElement('div');
+    intentHead.className='onboarding-intent-head';
+    intentHead.innerHTML='<strong>Personalize the start</strong><span>Optional. If the user does nothing, Auto keeps the default free private path.</span>';
+    const intentGrid=document.createElement('div');
+    intentGrid.className='onboarding-intent-grid';
+    const activeIntent=selectedIntent();
+    intentOptions().forEach(intent=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='onboarding-intent';
+      button.dataset.intent=intent.id;
+      button.setAttribute('aria-pressed',String(intent.id===activeIntent));
+      button.innerHTML='<span></span><strong></strong><small></small>';
+      button.querySelector('span').textContent=intent.short;
+      button.querySelector('strong').textContent=intent.label;
+      button.querySelector('small').textContent=intent.detail;
+      button.addEventListener('click',()=>runIntent(intent));
+      intentGrid.appendChild(button);
+    });
+    intentPanel.append(intentHead,intentGrid);
+
     const grid=document.createElement('div');
     grid.className='onboarding-grid';
     steps.forEach((item,index)=>grid.append(step(item.label,item.done,index===firstOpen,item.detail,item.target)));
@@ -189,7 +294,7 @@
     actions.append(startButton,freeButton,privateButton,installLink);
 
     panel.innerHTML='';
-    panel.append(heading,actions,grid);
+    panel.append(heading,intentPanel,actions,grid);
   }
 
   window.addEventListener('mmir-backend-profiles-updated',render);
@@ -197,6 +302,7 @@
   window.addEventListener('mmir-chat-history-updated',render);
   window.addEventListener('mmir-chat-modes-updated',render);
   window.addEventListener('mmir-local-connector-refreshed',render);
+  window.addEventListener('mmir-user-intent-updated',render);
   window.addEventListener('storage',render);
   window.addEventListener('focus',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();

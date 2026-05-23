@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T02:03:19.434Z",
+  "updated_at": "2026-05-23T02:15:08.816Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 48,
+    "beta": 49,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 51,
+    "planned": 50,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -410,11 +410,11 @@
         "phase": "Onboarding",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Templates",
@@ -2535,10 +2535,10 @@
       "best_practice": "Setup should adapt to user intent without forcing choices up front",
       "done_when": "User sees starter actions that match their goal",
       "covers": "user-fit",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-run onboarding now has optional Auto, Developer, Business owner, Power user and Privacy/local paths that store user intent locally, keep safe defaults automatic and launch matching starter prompts/panels.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D120",

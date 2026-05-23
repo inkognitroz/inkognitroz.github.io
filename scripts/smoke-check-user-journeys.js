@@ -14,6 +14,7 @@ const files = {
   catalog: join(publicDir, 'ai-model-catalog.json'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
+  onboarding: join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'),
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
   privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
@@ -129,6 +130,11 @@ requireIncludes(files.mmir, 'Connect local AI', 'MMIR product page must expose t
 requireIncludes(files.firstImpression, 'Open. Connect local AI. Ready.', 'First impression needs the ground-zero activation promise.');
 requireIncludes(files.portal, 'ensureAutomaticDefaults();render();', 'J001/J002 need automatic first-run defaults.');
 requireIncludes(files.portal, 'local pairing token only', 'Public UI must never ask users to paste real provider keys.');
+requireIncludes(files.onboarding, 'mimir-user-intent-v1', 'D119 needs optional persisted onboarding intent.');
+requireIncludes(files.onboarding, 'Developer', 'D119 needs a developer path.');
+requireIncludes(files.onboarding, 'Business owner', 'D119 needs a business owner path.');
+requireIncludes(files.onboarding, 'Power user', 'D119 needs an AI power-user path.');
+requireIncludes(files.onboarding, 'Privacy / local', 'D119 needs a privacy/local path.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -159,7 +165,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

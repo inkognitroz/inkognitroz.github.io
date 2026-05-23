@@ -119,6 +119,11 @@ requireText(mmirPath, 'id="model-library"', 'MMIR product page must expose model
 requireText(mmirPath, 'id="workflow-builder"', 'MMIR product page must expose workflow orchestration.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'function intentOptions()', 'Onboarding must expose persona-based starter paths.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'Business owner', 'Onboarding must include a business owner path.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), 'Privacy / local', 'Onboarding must include a privacy/local path.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.css'), '.onboarding-intent-grid', 'Onboarding intent paths need a responsive visual layout.');
 requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime must keep an explicit first-run starter model choice.');
 requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
 requireText(chatRuntimePath, '/chat/completions', 'Chat runtime must use the shared chat completions contract.');

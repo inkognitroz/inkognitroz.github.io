@@ -17,6 +17,7 @@ Updated: 2026-05-22
 - Chat supports Stop, Copy, Retry, Clear and safe code-block rendering without trusting model HTML.
 - Runtime accessibility is stronger: live status, busy state, keyboard focus states, mobile-safe controls and clearer button labels.
 - First-run onboarding now tracks profile setup, active backend, live model discovery and first prompt completion per workspace.
+- First-run onboarding now adapts to optional Auto, Developer, Business owner, Power user and Privacy/local intents without requiring configuration before value.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.
