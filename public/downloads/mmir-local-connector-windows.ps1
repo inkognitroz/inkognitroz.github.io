@@ -5,7 +5,7 @@ $AppName = "MMIR Local Connector"
 $HostAddress = "127.0.0.1"
 $Port = if ($env:MMIR_LOCAL_CONNECTOR_PORT) { $env:MMIR_LOCAL_CONNECTOR_PORT } else { "3000" }
 $OllamaUrl = if ($env:OLLAMA_URL) { $env:OLLAMA_URL } else { "http://127.0.0.1:11434" }
-$MmirSite = if ($env:MMIR_SITE) { $env:MMIR_SITE } else { "https://mmir.ai/#connect-options" }
+$MmirSite = if ($env:MMIR_SITE) { $env:MMIR_SITE } else { "https://mmir.ai/mmir.html?mmir_local_return=1#local-connector" }
 $Root = Join-Path $env:LOCALAPPDATA "MMIR Local Connector"
 $NodeDir = Join-Path $Root "node"
 $Server = Join-Path $Root "server.mjs"

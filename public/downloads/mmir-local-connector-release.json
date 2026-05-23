@@ -40,7 +40,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "781e1470b35061c0434de812c5abfba2bcbb73a66eb579b35e8ea4f441954e35",
+      "sha256": "6cc2d4949da69b25b9a49ed537ab8645971f2da0b104f894eef99a202a05f2bc",
       "recommended": true
     },
     {
@@ -75,7 +75,7 @@
       "platform": "windows",
       "kind": "powershell-installer",
       "path": "/downloads/mmir-local-connector-windows.ps1",
-      "sha256": "a4265200fd084b03112145c9feb64a8972f4086c062f64e7ccaf260c0676b320",
+      "sha256": "c1a28e9beeb9b862f139a3773b12d220959fe92b9025e3f9826d4991ad10a63c",
       "recommended": false
     },
     {
@@ -83,7 +83,7 @@
       "platform": "linux",
       "kind": "shell-installer",
       "path": "/downloads/mmir-local-connector-linux.sh",
-      "sha256": "69224853df62c26b41a25149f06f034166e2a20ac18afba94adc04b875f916d6",
+      "sha256": "b3c21428b83bd05341ef1a65427351d2f7b98a5a84009dd76e4abbdb28abc552",
       "recommended": true,
       "device_classes": ["linux-x64", "linux-arm64", "raspberry-pi", "nvidia-jetson"]
     },
