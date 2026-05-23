@@ -17,6 +17,7 @@ const files = {
   noModelPublicDeployVerification: join(publicDir, 'no-model-public-deploy-verification.json'),
   firstFreeChatResponseReport: join(publicDir, 'first-free-chat-response-report.json'),
   composerActionBarReport: join(publicDir, 'composer-action-bar-report.json'),
+  composerActionBarVisualReport: join(publicDir, 'composer-action-bar-visual-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -89,6 +90,7 @@ const files = {
   publicNoModelDeployHarness: join(root, 'scripts', 'smoke-check-public-no-model-deploy-verification.js'),
   firstFreeChatResponseHarness: join(root, 'scripts', 'smoke-check-first-free-chat-response-qa.js'),
   composerActionBarHarness: join(root, 'scripts', 'smoke-check-composer-action-bar-usefulness.js'),
+  composerActionBarVisualHarness: join(root, 'scripts', 'smoke-check-composer-action-bar-visual.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -605,6 +607,9 @@ requireIncludes(files.progressDashboard, 'renderFirstFreeChatResponseReport', 'D
 requireIncludes(files.composerActionBarHarness, 'Composer action bar usefulness smoke check passed.', 'D213 composer action bar usefulness must have dedicated CI coverage.');
 requireIncludes(files.composerActionBarReport, 'runtime-resource-chip', 'D213 composer action bar report must cover CPU/RAM resource chip.');
 requireIncludes(files.progressDashboard, 'renderComposerActionBarReport', 'D213 Progress Dashboard must render composer action bar evidence.');
+requireIncludes(files.composerActionBarVisualHarness, 'Composer action bar visual smoke check passed.', 'D214 composer action bar visual QA must have dedicated CI coverage.');
+requireIncludes(files.composerActionBarVisualReport, 'mobile-composer', 'D214 composer action bar visual report must cover mobile composer behavior.');
+requireIncludes(files.progressDashboard, 'renderComposerActionBarVisualReport', 'D214 Progress Dashboard must render composer action bar visual evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

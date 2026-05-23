@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "title": "Composer Action Bar Visual QA",
+  "principle": "The action bar must feel compact, calm and useful on the first chat screen across desktop and mobile.",
+  "public_repo_rule": "Visual evidence is selector, layout and copy metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+  "viewports": [
+    {
+      "id": "desktop-composer",
+      "width": 1440,
+      "height": 900,
+      "expected": [
+        "tool cluster and live cluster share one compact row when space allows",
+        "send button keeps stable 44px dimensions",
+        "composer feedback line is visible but secondary",
+        "resource chip is a clickable control, not decorative text"
+      ]
+    },
+    {
+      "id": "mobile-composer",
+      "width": 390,
+      "height": 844,
+      "expected": [
+        "composer mode dock stacks vertically",
+        "tool and live clusters wrap without overlap",
+        "mode and live chips can flex on small screens",
+        "feedback text remains readable",
+        "primary send button remains visible"
+      ]
+    }
+  ],
+  "selector_contract": [
+    "#composer-mode-dock",
+    "#composer-add-model",
+    "#runtime-model-chip",
+    "#runtime-resource-chip",
+    "#composer-voice-input",
+    "#composer-action-feedback",
+    "#primary-chat-link"
+  ],
+  "css_contract": [
+    ".composer-action-feedback",
+    ".composer-mode-dock",
+    ".composer-tool-cluster",
+    ".composer-live-cluster",
+    "#primary-chat-link.btn-primary",
+    "@media (max-width: 720px)",
+    "flex-direction: column",
+    "flex: 1 1 auto"
+  ],
+  "copy_contract": [
+    "Ready: free browser helper first, local model when connected.",
+    "Model picker opened. Free/browser/local routes stay first.",
+    "Node dashboard opened. CPU/RAM and model health come only from a paired local node."
+  ]
+}

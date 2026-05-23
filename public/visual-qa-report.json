@@ -60,11 +60,16 @@
       "id": "D210 no-model fixture visual pass",
       "status": "guarded",
       "evidence": "No-model visual report covers desktop and mobile route floor, first-chat fallback and progress fixture selectors."
+    },
+    {
+      "id": "D214 composer action bar visual QA",
+      "status": "guarded",
+      "evidence": "Composer action bar visual report covers desktop/mobile control wrapping, feedback readability, clickable resource chip and stable send control."
     }
   ],
   "known_limitations": [
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D214 composer action bar visual/mobile verification: verify compact controls wrap cleanly and keep send visible."
+  "next": "D215 message action completeness pass: harden retry, copy, save and safe-share/fork follow-through on transcript messages."
 }

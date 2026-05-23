@@ -108,6 +108,7 @@ requireIncludes(files.pagesWorkflow, 'smoke-check-public-no-model-deploy-verific
 requireIncludes(files.backlog, '| D212 |', 'Backlog must keep a next sequential work item after D211.');
 requireIncludes(files.backlog, '| D213 |', 'Backlog must keep a next sequential work item after D212.');
 requireIncludes(files.backlog, '| D214 |', 'Backlog must keep a next sequential work item after D213.');
+requireIncludes(files.backlog, '| D215 |', 'Backlog must keep a next sequential work item after D214.');
 
 const progress = json(files.progressData);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
@@ -115,6 +116,7 @@ const d211 = tasks.find((task) => task.seq === 'D211');
 const d212 = tasks.find((task) => task.seq === 'D212');
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
+const d215 = tasks.find((task) => task.seq === 'D215');
 if (!d211 || d211.status !== 'beta') {
   fail('Progress dashboard task D211 must be beta after public deploy verification ships.');
 }
@@ -124,11 +126,14 @@ if (!d212 || d212.status !== 'beta') {
 if (!d213 || d213.status !== 'beta') {
   fail('Progress dashboard task D213 must be beta after composer action bar usefulness ships.');
 }
-if (!d214 || d214.status !== 'next') {
-  fail('Progress dashboard task D214 must become the next work item after D213 ships.');
+if (!d214 || d214.status !== 'beta') {
+  fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D214') {
-  fail('Progress dashboard next queue must prioritize D214 after D213 ships.');
+if (!d215 || d215.status !== 'next') {
+  fail('Progress dashboard task D215 must become the next work item after D214 ships.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D215') {
+  fail('Progress dashboard next queue must prioritize D215 after D214 ships.');
 }
 
 if (!process.exitCode) {

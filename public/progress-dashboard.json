@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T18:30:33.810Z",
+  "updated_at": "2026-05-23T18:38:18.464Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 214,
+    "total": 215,
     "done": 51,
-    "beta": 138,
+    "beta": 139,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -930,6 +930,16 @@
         "phase": "Visual QA / Chat UX",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Transcript",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1485,6 +1495,61 @@
       ".composer-action-feedback"
     ]
   },
+  "composer_action_bar_visual_report": {
+    "version": 1,
+    "title": "Composer Action Bar Visual QA",
+    "principle": "The action bar must feel compact, calm and useful on the first chat screen across desktop and mobile.",
+    "public_repo_rule": "Visual evidence is selector, layout and copy metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "viewports": [
+      {
+        "id": "desktop-composer",
+        "width": 1440,
+        "height": 900,
+        "expected": [
+          "tool cluster and live cluster share one compact row when space allows",
+          "send button keeps stable 44px dimensions",
+          "composer feedback line is visible but secondary",
+          "resource chip is a clickable control, not decorative text"
+        ]
+      },
+      {
+        "id": "mobile-composer",
+        "width": 390,
+        "height": 844,
+        "expected": [
+          "composer mode dock stacks vertically",
+          "tool and live clusters wrap without overlap",
+          "mode and live chips can flex on small screens",
+          "feedback text remains readable",
+          "primary send button remains visible"
+        ]
+      }
+    ],
+    "selector_contract": [
+      "#composer-mode-dock",
+      "#composer-add-model",
+      "#runtime-model-chip",
+      "#runtime-resource-chip",
+      "#composer-voice-input",
+      "#composer-action-feedback",
+      "#primary-chat-link"
+    ],
+    "css_contract": [
+      ".composer-action-feedback",
+      ".composer-mode-dock",
+      ".composer-tool-cluster",
+      ".composer-live-cluster",
+      "#primary-chat-link.btn-primary",
+      "@media (max-width: 720px)",
+      "flex-direction: column",
+      "flex: 1 1 auto"
+    ],
+    "copy_contract": [
+      "Ready: free browser helper first, local model when connected.",
+      "Model picker opened. Free/browser/local routes stay first.",
+      "Node dashboard opened. CPU/RAM and model health come only from a paired local node."
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1535,7 +1600,7 @@
     }
   ],
   "next_queue": [
-    "D214"
+    "D215"
   ],
   "watchlist": [
     "D082",
@@ -4747,9 +4812,24 @@
       "best_practice": "Useful controls still fail if they crowd the first impression",
       "done_when": "CI/local visual contract proves composer controls wrap cleanly, feedback text is readable and primary send remains visible",
       "covers": "visual QA, mobile, chat UX",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Composer action bar visual QA now proves desktop/mobile selector, CSS and copy contracts for compact controls, feedback text and stable send behavior.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D215",
+      "phase": "Chat UX / Transcript",
+      "priority": "P0",
+      "work_package": "Message action completeness pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Harden transcript-level actions such as retry, copy, save, fork/share-safe and first-answer next steps so each answer has useful follow-through",
+      "best_practice": "A chat product feels incomplete if messages cannot be acted on",
+      "done_when": "User can act on assistant responses with clear no-secret/no-spend controls and no dead buttons",
+      "covers": "chat UX, transcript, reliability",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: verify the composer action bar visually on mobile/desktop and keep the first chat controls compact, readable and non-overlapping.",
+      "evidence": "Next activation slice: harden message-level actions such as retry, copy, save, fork and first-answer next steps so the transcript feels complete.",
       "estimate": "2-6h"
     }
   ]
