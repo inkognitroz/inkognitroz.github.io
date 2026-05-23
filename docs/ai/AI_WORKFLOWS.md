@@ -1,9 +1,9 @@
 # AI workflow templates
 
-Reusable workflow text for SaaS Fabric AI-assisted development.
+Reusable workflow text for MMIR AI-assisted development.
 
 ## New app brief
-Create a static SaaS Fabric app named [APP]. Target user: [USER]. Problem: [PROBLEM]. Core features: [FEATURES]. Keep it GitHub Pages-compatible. Do not add secrets or backend. Add route under `/public/apps/[slug]/` and add a content card.
+Create a static MMIR app named [APP]. Target user: [USER]. Problem: [PROBLEM]. Core features: [FEATURES]. Keep it GitHub Pages-compatible. Do not add secrets or backend. Add route under `/public/apps/[slug]/` and add a content card.
 
 ## Review checklist
 Review the change for security, UX, static-site compatibility, accessibility, maintainability and secret exposure. Return concrete fixes before merge.
