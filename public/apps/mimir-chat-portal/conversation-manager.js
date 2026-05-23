@@ -10,6 +10,7 @@
   let archivedEl=null;
   let listEl=null;
   let statusEl=null;
+  let transcriptObserver=null;
 
   if(!host)return;
 
@@ -72,9 +73,15 @@
     return localStorage.getItem(activeConversationKey())||'';
   }
 
-  function saveCurrentConversation(){
+  function openConversationPanel(){
+    const panel=document.getElementById('conversation-manager-panel');
+    if(panel&&'open' in panel)panel.open=true;
+    if(panel)panel.scrollIntoView({block:'start',behavior:'smooth'});
+  }
+
+  function saveCurrentConversation(options={}){
     const messages=readMessages();
-    if(!messages.length){setStatus('No current chat to save yet.','error');return;}
+    if(!messages.length){setStatus('No current chat to save yet.','error');return '';}
     const now=new Date().toISOString();
     const id=activeConversationId()||safeId();
     const title=String(titleEl?.value||'').trim()||titleFromMessages(messages);
@@ -94,7 +101,8 @@
     saveConversations(updated);
     if(titleEl)titleEl.value=title;
     render();
-    setStatus('Conversation saved.','ready');
+    if(!options.silent)setStatus('Conversation saved.','ready');
+    return id;
   }
 
   function clearCurrentChat(){
@@ -117,7 +125,7 @@
 
   function forkConversation(id){
     const item=readConversations().find(entry=>entry.id===id);
-    if(!item)return;
+    if(!item)return '';
     const now=new Date().toISOString();
     const fork={...item,id:safeId(),title:'Fork of '+(item.title||'Conversation'),pinned:false,archived:false,created_at:now,updated_at:now};
     saveConversations([fork,...readConversations()]);
@@ -126,6 +134,7 @@
     if(titleEl)titleEl.value=fork.title;
     render();
     setStatus('Conversation forked.','ready');
+    return fork.id;
   }
 
   function toggleField(id,field){
@@ -159,7 +168,7 @@
 
   async function safeShare(id){
     const item=readConversations().find(entry=>entry.id===id);
-    if(!item)return;
+    if(!item)return false;
     const lines=[
       '# MMIR conversation share',
       '',
@@ -176,9 +185,88 @@
     try{
       await navigator.clipboard.writeText(lines.join('\n'));
       setStatus('Safe-share text copied. Review before posting.','ready');
+      return true;
     }catch(error){
       setStatus('Clipboard blocked. Export JSON instead.','error');
+      return false;
     }
+  }
+
+  function activeOrSavedConversationId(){
+    return activeConversationId()||saveCurrentConversation({silent:true});
+  }
+
+  function forkCurrentConversation(){
+    const id=activeOrSavedConversationId();
+    if(!id)return '';
+    return forkConversation(id);
+  }
+
+  function safeShareCurrentConversation(){
+    const id=activeOrSavedConversationId();
+    if(!id)return Promise.resolve(false);
+    return safeShare(id);
+  }
+
+  function handleRuntimeAction(action,detail={}){
+    openConversationPanel();
+    window.dispatchEvent(new CustomEvent('mmir-conversation-action-requested',{detail:{
+      action,
+      message_id:detail.message_id||'',
+      workspace_id:workspaceId(),
+      no_paid_routes_started:true,
+      raw_prompt_stored:false,
+      raw_response_stored:false
+    }}));
+    if(action==='save-chat'){
+      const id=saveCurrentConversation();
+      if(id)setStatus('Conversation saved from transcript action.','ready');
+      return id;
+    }
+    if(action==='fork-chat'){
+      const id=forkCurrentConversation();
+      if(id)setStatus('Conversation forked from transcript action.','ready');
+      return id;
+    }
+    if(action==='safe-share'){
+      safeShareCurrentConversation();
+      return '';
+    }
+    setStatus('Unknown transcript action. No paid route or secret was used.','error');
+    return '';
+  }
+
+  function ensureTranscriptAction(actions,action,label,aria,bubble){
+    if(actions.querySelector('[data-runtime-message-action="'+action+'"]'))return;
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent=label;
+    button.setAttribute('data-runtime-message-action',action);
+    button.setAttribute('aria-label',aria);
+    button.addEventListener('click',()=>handleRuntimeAction(action,{message_id:bubble?.dataset?.messageId||''}));
+    actions.appendChild(button);
+  }
+
+  function enhanceTranscriptActions(){
+    document.querySelectorAll('.runtime-message-assistant').forEach(bubble=>{
+      const body=bubble.querySelector('.runtime-message-body');
+      if(!body||body.textContent.trim()==='Thinking...')return;
+      let actions=bubble.querySelector('.runtime-message-actions');
+      if(!actions){
+        actions=document.createElement('div');
+        actions.className='runtime-message-actions';
+        bubble.appendChild(actions);
+      }
+      actions.setAttribute('aria-label','Assistant message actions');
+      actions.querySelectorAll('button').forEach(button=>{
+        const label=String(button.textContent||'').trim().toLowerCase();
+        if(label==='copy')button.setAttribute('data-runtime-message-action','copy');
+        if(label==='retry')button.setAttribute('data-runtime-message-action','retry');
+      });
+      ensureTranscriptAction(actions,'save-chat','Save','Save this conversation locally',bubble);
+      ensureTranscriptAction(actions,'fork-chat','Fork','Fork this conversation locally',bubble);
+      ensureTranscriptAction(actions,'safe-share','Safe share','Copy a redacted share draft',bubble);
+    });
   }
 
   function matchesSearch(item,query){
@@ -285,11 +373,18 @@
     archivedEl?.addEventListener('change',render);
     listEl?.addEventListener('click',handleAction);
     render();
+    enhanceTranscriptActions();
+    const transcript=document.getElementById('runtime-transcript');
+    if(transcript&&!transcriptObserver){
+      transcriptObserver=new MutationObserver(enhanceTranscriptActions);
+      transcriptObserver.observe(transcript,{childList:true,subtree:true});
+    }
   }
 
-  window.addEventListener('mmir-chat-history-updated',render);
-  window.addEventListener('mmir-workspace-changed',()=>{if(titleEl)titleEl.value='';render();});
-  window.addEventListener('mmir-conversations-updated',render);
+  window.addEventListener('mmir-chat-history-updated',()=>{render();enhanceTranscriptActions();});
+  window.addEventListener('mmir-workspace-changed',()=>{if(titleEl)titleEl.value='';render();enhanceTranscriptActions();});
+  window.addEventListener('mmir-conversations-updated',()=>{render();enhanceTranscriptActions();});
   window.addEventListener('storage',render);
+  window.MimirConversationManager={saveCurrentConversation,forkCurrentConversation,safeShareCurrentConversation,handleRuntimeAction,open:openConversationPanel};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();

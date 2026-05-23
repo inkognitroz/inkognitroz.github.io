@@ -199,6 +199,9 @@ jobs:
       - name: Smoke-check first-answer next step
         run: node scripts/smoke-check-first-answer-next-step.js
 
+      - name: Smoke-check message action completeness
+        run: node scripts/smoke-check-message-action-completeness.js
+
       - name: Smoke-check visible-control dead ends
         run: node scripts/smoke-check-visible-control-dead-ends.js
 

@@ -248,9 +248,9 @@
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",
-      "user_result": "Users can save, rename, pin, archive, search, load, fork, export and safe-share local conversations per workspace.",
-      "selectors": ["#conversation-manager-panel", "#conversation-save", "#conversation-new", "#conversation-search", "[data-conversation-action]"],
-      "evidence": ["Save / rename", "Search saved chats", "dataset.conversationAction", "forkConversation", "safeShare", "exportConversation"]
+      "user_result": "Users can save, rename, pin, archive, search, load, fork, export and safe-share local conversations per workspace, including direct no-spend transcript actions on assistant replies.",
+      "selectors": ["#conversation-manager-panel", "#conversation-save", "#conversation-new", "#conversation-search", "[data-conversation-action]", ".runtime-message-actions", "[data-runtime-message-action]"],
+      "evidence": ["Save / rename", "Search saved chats", "dataset.conversationAction", "forkConversation", "safeShare", "exportConversation", "runtime-message-actions", "data-runtime-message-action", "mmir-conversation-action-requested", "enhanceTranscriptActions", "Save this conversation locally", "Fork this conversation locally", "Copy a redacted share draft", "no_paid_routes_started:true", "raw_prompt_stored:false", "raw_response_stored:false"]
     },
     {
       "id": "data-analysis",
