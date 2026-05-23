@@ -1,0 +1,29 @@
+.assistant-builder-panel{border:1px solid var(--mimir-line);background:#fff;border-radius:18px;padding:.8rem 1rem}
+.assistant-builder-panel summary{cursor:pointer;font-weight:800;color:var(--mimir-text)}
+.assistant-builder-body{display:grid;gap:.85rem;margin-top:.8rem}
+.assistant-builder-body label{display:grid;gap:.3rem;color:var(--mimir-muted);font-size:.86rem;font-weight:650}
+.assistant-builder-body input,.assistant-builder-body select,.assistant-builder-body textarea{width:100%;border:1px solid var(--mimir-line);background:#fff;border-radius:14px;color:var(--mimir-text);padding:.62rem .7rem;font:inherit}
+.assistant-builder-body textarea{min-height:7rem;resize:vertical}
+.assistant-starter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem}
+.assistant-starter-card{border:1px solid var(--mimir-line);background:#f8fafc;border-radius:14px;padding:.75rem;text-align:left;display:grid;gap:.2rem;color:var(--mimir-text)}
+.assistant-starter-card:hover{border-color:#94a3b8;background:#fff}
+.assistant-starter-card span,.assistant-starter-card small{color:var(--mimir-muted);line-height:1.35}
+.assistant-model-hint,.assistant-policy-note{margin:0;color:var(--mimir-muted);font-size:.84rem;line-height:1.45}
+.assistant-policy-note{border:1px dashed #cbd5e1;background:#f8fafc;border-radius:12px;padding:.65rem .75rem}
+.assistant-toggle-row{display:flex;flex-wrap:wrap;gap:.7rem}
+.assistant-toggle-row label{display:flex;align-items:center;gap:.38rem;color:var(--mimir-text);font-size:.86rem}
+.assistant-toggle-row input{width:auto}
+.assistant-list{display:grid;gap:.65rem}
+.assistant-card{border:1px solid var(--mimir-line);background:#fff;border-radius:16px;padding:.75rem;display:grid;gap:.55rem}
+.assistant-card header{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem}
+.assistant-card strong,.assistant-card small{display:block}
+.assistant-card small,.assistant-card p,.assistant-card em{color:var(--mimir-muted)}
+.assistant-card p{margin:0;line-height:1.45}
+.assistant-card em{font-style:normal;border:1px solid var(--mimir-line);border-radius:999px;padding:.16rem .45rem;font-size:.75rem;white-space:nowrap}
+.assistant-tags{display:flex;flex-wrap:wrap;gap:.35rem}
+.assistant-tags span{border:1px solid var(--mimir-line);border-radius:999px;padding:.16rem .45rem;color:var(--mimir-muted);font-size:.75rem}
+.assistant-meta{line-height:1.45}
+@media(max-width:720px){
+  .assistant-card header{display:grid}
+  .assistant-starter-grid{grid-template-columns:1fr}
+}

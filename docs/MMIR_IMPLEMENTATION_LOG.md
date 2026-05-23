@@ -35,6 +35,7 @@ Updated: 2026-05-23
 - Access control now has a protected backend RBAC policy/decision contract and public panel for fail-closed simulations across models, tools, knowledge, nodes, workflows and admin resources, while real runtime enforcement remains server-side.
 - Runtime settings now have safe defaults and optional controls for temperature, max tokens, context length, top-p, repeat penalty, seed and bounded system prompt; frontend, managed backend and Local Node share the validated chat contract.
 - Prompt library now works free/local-first with starter prompt patterns, tags, variables, search, insert/copy/version actions and backend prompt loading when a protected API is active; local prompts are included in privacy inventory and workspace export.
+- Custom assistant builder now works free/local-first with starter assistants, instructions, model preference, tool allowlist, knowledge scope, runtime settings, private/workspace sharing policy, local workspace export and optional protected backend sync.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.
@@ -135,6 +136,7 @@ Updated: 2026-05-23
 - D142 is now beta across frontend/backend: the Tools panel includes an approved tool/plugin gallery with permissions, trust labels, install state, public-secret boundaries and workspace-level enable/disable controls for tools and connectors.
 - D143 is now beta across frontend/backend: memory governance exposes scope, tags, expiration, review notes, import notes, backend matched-term reasons and a visible "used in last message" review panel while keeping disabled/expired memory out of model context.
 - D144 is now beta across frontend/backend: Research planning creates source-aware, citation-gated plans with manual/free discovery links and approval gates while keeping autonomous browsing and execution disabled by default.
+- D145 is now beta across frontend/backend: custom assistants are private by default, portable, protected by secret-like-token rejection and can be applied directly to chat runtime instructions without storing provider keys in GitHub Pages.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 

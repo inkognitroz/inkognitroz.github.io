@@ -8,6 +8,8 @@
     { "path": "/access/check", "owner": "managed-api", "auth": "protected-backend-auth", "status": "planned", "purpose": "Evaluate access-control decision server-side." },
     { "path": "/access/policies", "owner": "managed-api", "auth": "protected-backend-auth", "status": "planned", "purpose": "Manage protected access policies." },
     { "path": "/admin/overview", "owner": "managed-api", "auth": "protected-backend-auth", "status": "planned", "purpose": "Admin governance overview." },
+    { "path": "/assistants", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected custom assistant registry root." },
+    { "path": "/assistants/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Assistant dynamic route fragment." },
     { "path": "/audit", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected audit event snapshot." },
     { "path": "/chat", "owner": "legacy-adapter", "auth": "legacy", "status": "legacy", "legacy": true, "purpose": "Temporary adapter; new clients must prefer /chat/completions." },
     { "path": "/chat/completions", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "Canonical OpenAI-compatible chat route for nodes and managed API." },

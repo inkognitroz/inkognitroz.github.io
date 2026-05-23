@@ -12,6 +12,8 @@
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const ARTIFACT_PREFIX='mimir-artifacts-v1:';
   const PROMPT_PREFIX='mimir-prompts-v1:';
+  const ASSISTANT_PREFIX='mimir-assistants-v1:';
+  const ACTIVE_ASSISTANT_PREFIX='mimir-active-assistant-v1:';
   const TOOL_GALLERY_PREFIX='mimir-tool-gallery-v1:';
   const RESEARCH_PREFIX='mimir-research-plans-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
@@ -54,7 +56,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -160,6 +162,8 @@
     const conversations=readJson(CONVERSATION_PREFIX+id,[]);
     const artifacts=readJson(ARTIFACT_PREFIX+id,[]);
     const prompts=readJson(PROMPT_PREFIX+id,[]);
+    const assistants=readJson(ASSISTANT_PREFIX+id,[]);
+    const activeAssistant=readJson(ACTIVE_ASSISTANT_PREFIX+id,null);
     const toolGallery=readJson(TOOL_GALLERY_PREFIX+id,{});
     const researchPlans=readJson(RESEARCH_PREFIX+id,[]);
 
@@ -172,6 +176,8 @@
       conversations:Array.isArray(conversations)?conversations:[],
       artifacts:Array.isArray(artifacts)?artifacts:[],
       prompts:Array.isArray(prompts)?prompts:[],
+      assistants:Array.isArray(assistants)?assistants:[],
+      active_assistant:activeAssistant&&typeof activeAssistant==='object'?activeAssistant:null,
       tool_gallery:toolGallery&&typeof toolGallery==='object'&&!Array.isArray(toolGallery)?toolGallery:{},
       research_plans:Array.isArray(researchPlans)?researchPlans:[],
       memory:Array.isArray(memory)?memory:[],
@@ -186,6 +192,8 @@
       chat:snapshot.chat.length,
       artifacts:snapshot.artifacts.length,
       prompts:snapshot.prompts.length,
+      assistants:snapshot.assistants.length,
+      active_assistant:snapshot.active_assistant?1:0,
       tool_gallery:Object.keys(snapshot.tool_gallery).length,
       research_plans:snapshot.research_plans.length,
       memory:snapshot.memory.length,
@@ -221,6 +229,10 @@
     const knowledgeCollectionKeys=keysByPrefix(local,COLLECTIONS_PREFIX);
     const artifactKeys=keysByPrefix(local,ARTIFACT_PREFIX);
     const promptKeys=keysByPrefix(local,PROMPT_PREFIX);
+    const assistantKeys=[
+      ...keysByPrefix(local,ASSISTANT_PREFIX),
+      ...keysByPrefix(local,ACTIVE_ASSISTANT_PREFIX)
+    ];
     const toolGalleryKeys=keysByPrefix(local,TOOL_GALLERY_PREFIX);
     const researchKeys=keysByPrefix(local,RESEARCH_PREFIX);
     const conversationKeys=[
@@ -278,6 +290,16 @@
         retention:'Until exported, deleted by workspace reset or cleared with all MMIR data.',
         action:'Manage prompts in the Prompts panel or export/delete active workspace data.',
         keys:promptKeys
+      },
+      {
+        id:'assistant-library',
+        label:'Assistant library',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,assistantKeys),
+        size:formatBytes(storageSize(localStorage,assistantKeys)),
+        retention:'Reusable assistant definitions stay local unless synced to a protected backend.',
+        action:'Manage assistants in Assistants or export/delete active workspace data.',
+        keys:assistantKeys
       },
       {
         id:'tool-gallery',
@@ -439,6 +461,7 @@
     [
       ['Chat messages',activeCounts.chat],
       ['Prompts',activeCounts.prompts],
+      ['Assistants',activeCounts.assistants+activeCounts.active_assistant],
       ['Tool toggles',activeCounts.tool_gallery],
       ['Research plans',activeCounts.research_plans],
       ['Memory items',activeCounts.memory],
@@ -527,6 +550,7 @@
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-use-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-tool-gallery-updated',{detail:{workspaceId:id}}));
+    window.dispatchEvent(new CustomEvent('mmir-assistants-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-research-plans-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
@@ -548,6 +572,8 @@
     localStorage.removeItem(ACTIVE_CONVERSATION_PREFIX+workspaceId());
     localStorage.removeItem(ARTIFACT_PREFIX+workspaceId());
     localStorage.removeItem(PROMPT_PREFIX+workspaceId());
+    localStorage.removeItem(ASSISTANT_PREFIX+workspaceId());
+    localStorage.removeItem(ACTIVE_ASSISTANT_PREFIX+workspaceId());
     localStorage.removeItem(TOOL_GALLERY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());

@@ -26,6 +26,7 @@ Current priority after the matrix is:
 16. D142 tool/plugin gallery.
 17. D143 memory and notes governance.
 18. D144 agentic research planning.
+19. D145 custom assistant builder.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -43,5 +44,6 @@ D141 is now beta across backend/local-node: OpenAI-compatible clients get tested
 D142 is now beta across frontend/backend: approved tools and connectors expose permissions, trust labels, install state, public-secret boundaries and workspace-level enable/disable controls.
 D143 is now beta across frontend/backend: memory has user-controlled scope, tags, expiration, review notes, import notes, protected backend search reasons and a visible "used in last message" review panel.
 D144 is now beta across frontend/backend: research mode creates planning-only runs with selected sources, manual/free discovery links, ordered steps, citation rules and explicit approval gates before any autonomous browsing.
+D145 is now beta across frontend/backend: custom assistants are private by default, reusable, exportable, local-first and can carry instructions, model preference, tool allowlist, knowledge scope, runtime settings and sharing policy without public frontend secrets.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

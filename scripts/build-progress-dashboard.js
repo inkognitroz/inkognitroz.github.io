@@ -81,7 +81,7 @@ const overrides = new Map([
   ['D142', { status: 'beta', evidence: 'Tool/plugin gallery now lists approved tools and connectors with permissions, trust labels, install state, public-secret boundaries and workspace enable/disable controls.' }],
   ['D143', { status: 'beta', evidence: 'Memory governance now exposes local scope, tags, expiration, review notes, import notes, backend search reasons and visible last-message memory-use review data.' }],
   ['D144', { status: 'beta', evidence: 'Research planning now creates source-aware, citation-gated plans with manual/free discovery links, ordered steps, local plan storage and approval gates while keeping autonomous browsing disabled.' }],
-  ['D145', { status: 'next', evidence: 'Next slice: custom assistant builder with instructions, model, tools, knowledge scope and sharing rules.' }],
+  ['D145', { status: 'beta', evidence: 'Custom assistant builder now has local-first starter assistants, instructions, model preference, tool allowlist, knowledge scope, private/workspace sharing rules and protected backend sync.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

@@ -125,6 +125,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR pr
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product page must load explicit web search script.');
 requireText(mmirPath, './apps/mimir-chat-portal/research-planner.js', 'MMIR product page must load research planning script.');
+requireText(mmirPath, './apps/mimir-chat-portal/assistant-builder.js', 'MMIR product page must load assistant builder script.');
 requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product page must load permissioned tool runner script.');
 requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product page must load code sandbox preflight script.');
 requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR product page must load artifact workspace script.');
@@ -191,6 +192,12 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'), 'research-consent', 'Research planning UI must require explicit planning consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'), 'execution_allowed:false', 'Research planning UI must keep public execution disabled.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.css'), '.research-gate-grid', 'Research planning needs visible approval gate styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'assistant-builder.js'), 'mimir-assistants-v1:', 'Assistant builder must keep a free local assistant library fallback.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'assistant-builder.js'), '/assistants', 'Assistant builder must call the protected assistants route when a backend is active.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'assistant-builder.js'), 'assistant-knowledge-mode', 'Assistant builder must expose knowledge scope.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'assistant-builder.js'), 'assistant-sharing', 'Assistant builder must expose sharing policy.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'assistant-builder.js'), 'Provider keys, tokens, billing approvals', 'Assistant builder must keep public frontend secret boundaries visible.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'assistant-builder.css'), '.assistant-starter-grid', 'Assistant builder needs starter styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), '/tools/execute', 'Tool runner must use the protected tool execution route.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'tool-runner-consent', 'Tool runner must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'renderTrace', 'Tool runner must show visible traces.');

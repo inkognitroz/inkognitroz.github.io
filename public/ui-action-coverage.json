@@ -197,6 +197,14 @@
       "evidence": ["mimir-prompts-v1:", "starter-repo-review", "prompt-registry-variables", "applyVariables"]
     },
     {
+      "id": "assistant-builder",
+      "surface": "Custom assistant builder",
+      "status": "beta",
+      "user_result": "Users can create private-by-default assistants with instructions, model preference, allowed tools, knowledge scope, sharing rules and local/protected sync without public frontend secrets.",
+      "selectors": ["#assistant-builder-panel", "#assistant-save", "#assistant-refresh", "#assistant-load-local", "#assistant-apply-form", "#assistant-search"],
+      "evidence": ["mimir-assistants-v1:", "/assistants", "assistant-knowledge-mode", "assistant-sharing", "public frontend storage"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",
