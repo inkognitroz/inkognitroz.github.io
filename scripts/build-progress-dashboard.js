@@ -30,6 +30,7 @@ const contextCorrectionRetryReportPath = resolve(root, 'public', 'context-correc
 const contextCorrectionSuggestionsReportPath = resolve(root, 'public', 'context-correction-suggestions-report.json');
 const protectedContextCorrectionSyncReportPath = resolve(root, 'public', 'protected-context-correction-sync-report.json');
 const protectedCorrectionSyncUiReportPath = resolve(root, 'public', 'protected-correction-sync-ui-report.json');
+const protectedCorrectionReviewQueueReportPath = resolve(root, 'public', 'protected-correction-review-queue-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -197,7 +198,8 @@ const overrides = new Map([
   ['D232', { status: 'beta', evidence: 'Context correction suggestions now derive local memory/knowledge hygiene recommendations from correction metadata and open review panels without mutating user data.' }],
   ['D233', { status: 'beta', evidence: 'Managed backend now has protected /context/corrections sync, list and undo routes, metadata-only storage, owner-scoped export/import/delete coverage and tests for raw prompt/response/secret rejection.' }],
   ['D234', { status: 'beta', evidence: 'Public UI now previews correction metadata, checks active backend context.corrections capability, syncs sanitized events to /context/corrections and lets users keep trails local without storing secrets.' }],
-  ['D235', { status: 'next', evidence: 'Next activation slice: build a protected correction review queue so owners can inspect synced memory/knowledge correction trails safely.' }]
+  ['D235', { status: 'beta', evidence: 'Backend and public UI now expose protected /context/corrections/review with owner-safe filters, prioritized metadata-only review items, safe next actions and no raw prompt/response/secret storage.' }],
+  ['D236', { status: 'next', evidence: 'Next activation slice: turn correction review items into explicit remediation plans for memory scope, knowledge collection split and undo/action follow-through.' }]
 ]);
 
 const repoMeta = [
@@ -431,6 +433,11 @@ function readProtectedCorrectionSyncUiReport() {
   return JSON.parse(readFileSync(protectedCorrectionSyncUiReportPath, 'utf8'));
 }
 
+function readProtectedCorrectionReviewQueueReport() {
+  if (!existsSync(protectedCorrectionReviewQueueReportPath)) return null;
+  return JSON.parse(readFileSync(protectedCorrectionReviewQueueReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -455,7 +462,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D235', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D236', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -500,6 +507,7 @@ const data = {
   context_correction_suggestions_report: readContextCorrectionSuggestionsReport(),
   protected_context_correction_sync_report: readProtectedContextCorrectionSyncReport(),
   protected_correction_sync_ui_report: readProtectedCorrectionSyncUiReport(),
+  protected_correction_review_queue_report: readProtectedCorrectionReviewQueueReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

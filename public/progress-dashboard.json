@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T23:12:44.612Z",
+  "updated_at": "2026-05-23T23:31:16.706Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 235,
+    "total": 236,
     "done": 51,
-    "beta": 159,
+    "beta": 160,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -2784,6 +2784,137 @@
       "reason": "After sync works, team users need an owner-safe review queue for corrected memory and knowledge sources."
     }
   },
+  "protected_correction_review_queue_report": {
+    "title": "Protected Correction Review Queue",
+    "task": "D235",
+    "status": "beta",
+    "backend_commit": "8b61243",
+    "principle": "Correction review belongs behind protected auth. The public UI can request and render safe metadata, but it is not the source of authority.",
+    "public_repo_rule": "GitHub Pages may store local UI state and backend-returned correction metadata only; it must never store raw prompts, raw responses, transcripts, provider keys, session tokens or document text.",
+    "backend_route": {
+      "method": "GET",
+      "path": "/context/corrections/review",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Return owner-scoped prioritized correction review items with filters, summaries and safe next actions."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "source": "mimir-context-corrections-v1:{workspace}",
+      "sync_state": "mimir-context-correction-sync-v1:{workspace}",
+      "review_state": "mimir-context-correction-review-v1:{workspace}",
+      "metadata_only": true
+    },
+    "filters": [
+      {
+        "id": "all",
+        "selector": "[data-correction-review=\"load\"][data-target-filter=\"all\"]",
+        "query": "workspace_id, limit"
+      },
+      {
+        "id": "memory",
+        "selector": "[data-correction-review=\"load\"][data-target-filter=\"memory\"]",
+        "query": "workspace_id, target=memory, limit"
+      },
+      {
+        "id": "knowledge",
+        "selector": "[data-correction-review=\"load\"][data-target-filter=\"knowledge\"]",
+        "query": "workspace_id, target=knowledge, limit"
+      },
+      {
+        "id": "include-undone",
+        "selector": "[data-correction-review=\"load\"][data-include-undone=\"true\"]",
+        "query": "workspace_id, include_undone=true, limit"
+      }
+    ],
+    "ui_contract": {
+      "panel": ".context-correction-review-panel",
+      "summary": ".context-correction-review-summary",
+      "list": ".context-correction-review-list",
+      "open_target_action": "[data-correction-review=\"open\"]"
+    },
+    "safe_fields": [
+      "id",
+      "workspace_id",
+      "target",
+      "action",
+      "message_id",
+      "answer_message_id",
+      "correction_id",
+      "model",
+      "source_ids",
+      "source_count",
+      "undo",
+      "suggestions",
+      "review_status",
+      "review_priority",
+      "review_reason",
+      "next_actions",
+      "created_at",
+      "updated_at",
+      "undone_at"
+    ],
+    "blocked_fields": [
+      "prompt",
+      "raw_prompt",
+      "response",
+      "raw_response",
+      "messages",
+      "transcript",
+      "api_key",
+      "access_token",
+      "refresh_token",
+      "secret",
+      "document_text"
+    ],
+    "scenarios": [
+      {
+        "id": "load-review-queue",
+        "status": "ready",
+        "expected": "Users can load the protected review queue through the active backend profile.",
+        "route": "GET /context/corrections/review",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "filter-memory",
+        "status": "ready",
+        "expected": "Users can filter review items to memory corrections.",
+        "route": "GET /context/corrections/review?target=memory",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "filter-knowledge",
+        "status": "ready",
+        "expected": "Users can filter review items to knowledge corrections.",
+        "route": "GET /context/corrections/review?target=knowledge",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "open-target",
+        "status": "ready",
+        "expected": "Safe next actions open Memory, Knowledge or Progress panels without executing hidden remediation.",
+        "route": "browser-local panel handoff",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      }
+    ],
+    "next": {
+      "task": "D236",
+      "label": "Correction remediation plan handoff",
+      "reason": "After owners can inspect review items, MMIR should generate explicit repair plans for memory scope, knowledge collection split and undo/remediation actions."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2834,7 +2965,7 @@
     }
   ],
   "next_queue": [
-    "D235"
+    "D236"
   ],
   "watchlist": [
     "D082",
@@ -6361,9 +6492,24 @@
       "best_practice": "Team review needs observable correction state without leaking source content or browser secrets",
       "done_when": "Owners can inspect synced correction metadata, filter by target/action and choose next review actions through protected routes/UI",
       "covers": "backend, frontend, teams, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now expose protected /context/corrections/review with owner-safe filters, prioritized metadata-only review items, safe next actions and no raw prompt/response/secret storage.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D236",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Correction remediation plan handoff",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Convert correction review items into explicit remediation plans for memory scope, knowledge collection split, undo follow-through and context policy tuning without executing hidden destructive actions",
+      "best_practice": "Review queues become useful only when they produce concrete, reversible repair plans",
+      "done_when": "Owners can generate, inspect, approve or defer safe correction remediation plans with audit metadata and no raw prompt/response leakage",
+      "covers": "backend, frontend, memory, knowledge, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: build a protected correction review queue so owners can inspect synced memory/knowledge correction trails safely.",
+      "evidence": "Next activation slice: turn correction review items into explicit remediation plans for memory scope, knowledge collection split and undo/action follow-through.",
       "estimate": "0.5-2d"
     }
   ]

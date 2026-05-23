@@ -210,6 +210,86 @@
   cursor: not-allowed;
 }
 
+.context-correction-review-panel {
+  display: grid;
+  gap: 0.6rem;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.context-correction-review-panel[data-state="ready"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-review-panel[data-state="error"],
+.context-correction-review-panel[data-state="needs-backend"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-review-panel h4,
+.context-correction-review-panel p {
+  margin: 0;
+}
+
+.context-correction-review-filters,
+.context-correction-review-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.context-correction-review-filters button {
+  min-height: 32px;
+  padding: 0.4rem 0.65rem;
+}
+
+.context-correction-review-summary span {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  background: #fff;
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.context-correction-review-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.context-correction-review-list article {
+  display: grid;
+  gap: 0.35rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #fff;
+}
+
+.context-correction-review-list article[data-review-status="resolved"] {
+  opacity: 0.75;
+  background: #f8fafc;
+}
+
+.context-correction-review-list strong,
+.context-correction-review-list small {
+  display: block;
+}
+
+.context-correction-review-list button {
+  justify-self: start;
+  min-height: 30px;
+}
+
+.context-correction-review-policy {
+  color: #64748b;
+}
+
 .memory-panel textarea:focus-visible,
 .memory-panel input:focus-visible,
 .memory-panel select:focus-visible,

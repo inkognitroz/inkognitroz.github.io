@@ -129,16 +129,19 @@ requireIncludes(files.qualityWorkflow, 'smoke-check-protected-correction-sync-ui
 requireIncludes(files.pagesWorkflow, 'smoke-check-protected-correction-sync-ui.js', 'Pages workflow must run D234 protected correction sync UI QA.');
 requireIncludes(files.backlog, '| D235 |', 'Backlog must keep D235 as next sequential work after D234.');
 requireIncludes(files.implementationLog, 'D234 is now beta', 'Implementation log must mark D234 beta.');
-requireIncludes(files.implementationLog, 'D235 is now next', 'Implementation log must mark D235 next.');
+requireIncludes(files.implementationLog, 'D235 is now beta', 'Implementation log must mark D235 beta after review queue ships.');
+requireIncludes(files.implementationLog, 'D236 is now next', 'Implementation log must mark D236 next after D235 ships.');
 
 const progress = json(files.progressData);
 requireTrue(progress.protected_correction_sync_ui_report?.title === report.title, 'Progress dashboard data must embed D234 sync UI report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d234 = tasks.find((task) => task.seq === 'D234');
 const d235 = tasks.find((task) => task.seq === 'D235');
+const d236 = tasks.find((task) => task.seq === 'D236');
 requireTrue(d234?.status === 'beta', 'Progress dashboard task D234 must be beta after UI handoff ships.');
-requireTrue(d235?.status === 'next', 'Progress dashboard task D235 must become next after D234 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D235', 'Progress dashboard next queue must prioritize D235 after D234 ships.');
+requireTrue(d235?.status === 'beta', 'Progress dashboard task D235 must be beta after review queue ships.');
+requireTrue(d236?.status === 'next', 'Progress dashboard task D236 must become next after D235 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D236', 'Progress dashboard next queue must prioritize D236 after D235 ships.');
 
 if (failures.length) {
   process.exitCode = 1;
