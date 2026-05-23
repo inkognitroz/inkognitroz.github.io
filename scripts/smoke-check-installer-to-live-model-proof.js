@@ -339,7 +339,8 @@ async function run() {
   requireIncludes(files.coverage, 'mmir-install-to-first-chat-ready', 'D206 UI coverage must include install-to-first-chat evidence.');
   requireIncludes(files.qualityWorkflow, 'smoke-check-installer-to-live-model-proof.js', 'D206 quality workflow must run the installer-to-live-model proof gate.');
   requireIncludes(files.pagesWorkflow, 'smoke-check-installer-to-live-model-proof.js', 'D206 Pages workflow must run the installer-to-live-model proof gate.');
-  requireIncludes(files.backlog, '| D207 |', 'Backlog must keep a next sequential work item after D206.');
+  requireIncludes(files.backlog, '| D207 |', 'Backlog must keep D207 as the next model-activation hardening item after D206.');
+  requireIncludes(files.backlog, '| D208 |', 'Backlog must keep a next sequential work item after D207.');
   requireIncludes(files.mmir, 'local-connector.js?v=20260523-post-install-return', 'D206 product page must load the post-install return local connector code.');
 
   await proveInstallerReturnToFirstChat();
@@ -348,9 +349,11 @@ async function run() {
   const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
   const d206 = tasks.find((task) => task.seq === 'D206');
   const d207 = tasks.find((task) => task.seq === 'D207');
+  const d208 = tasks.find((task) => task.seq === 'D208');
   requireTrue(d206?.status === 'beta', 'Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
-  requireTrue(d207?.status === 'next', 'Progress dashboard task D207 must become the next work item after D206 ships.');
-  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D207', 'Progress dashboard next queue must prioritize D207 after D206 ships.');
+  requireTrue(d207?.status === 'beta', 'Progress dashboard task D207 must be beta after free live-route hardening ships.');
+  requireTrue(d208?.status === 'next', 'Progress dashboard task D208 must become the next work item after D207 ships.');
+  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D208', 'Progress dashboard next queue must prioritize D208 after D207 ships.');
 
   if (failures.length) {
     process.exitCode = 1;

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T17:20:50.891Z",
+  "updated_at": "2026-05-23T17:30:03.483Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 207,
+    "total": 208,
     "done": 51,
-    "beta": 131,
+    "beta": 132,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -730,8 +730,8 @@
         "phase": "Model Activation",
         "total": 6,
         "done": 0,
-        "beta": 5,
-        "next": 1,
+        "beta": 6,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -828,10 +828,10 @@
       },
       {
         "phase": "UX Reliability",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1178,7 +1178,7 @@
     }
   ],
   "next_queue": [
-    "D207"
+    "D208"
   ],
   "watchlist": [
     "D082",
@@ -4285,9 +4285,24 @@
       "best_practice": "First experience must never feel empty; no-model states should become useful free choices or exact install/proof actions",
       "done_when": "User can start useful free chat immediately, then install/prove a local model with one obvious action and no public secrets or paid routes",
       "covers": "activation, model UX, free-first",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Composer model picker now keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D208",
+      "phase": "UX Reliability",
+      "priority": "P0",
+      "work_package": "No-model dead-end browser gate",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a DOM-level deterministic gate for the first chat, composer picker and model helper proving that no loading, offline or no-live-model state appears without a visible free guide, installable local model, refresh or connector action",
+      "best_practice": "A trustworthy AI product must never strand first-time users on an empty state",
+      "done_when": "CI proves the browser UI always exposes at least one useful free action when no live backend model is connected",
+      "covers": "QA, activation, UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: harden free live-model route selection so first-time users always see a useful ready-now or installable free path.",
+      "evidence": "Next activation slice: add a DOM-level no-model dead-end gate so first chat never renders an empty model state without a useful free action.",
       "estimate": "2-6h"
     }
   ]

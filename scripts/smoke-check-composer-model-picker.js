@@ -129,8 +129,12 @@ const d206 = tasks.find((task) => task.seq === 'D206');
 if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D207') {
-  fail('Progress dashboard next queue must prioritize D207 after D206 ships.');
+const d207 = tasks.find((task) => task.seq === 'D207');
+if (!d207 || d207.status !== 'beta') {
+  fail('Progress dashboard task D207 must be beta after free live-route hardening ships.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D208') {
+  fail('Progress dashboard next queue must prioritize D208 after D207 ships.');
 }
 
 if (!process.exitCode) {

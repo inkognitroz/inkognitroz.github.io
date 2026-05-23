@@ -581,6 +581,8 @@ requireIncludes(files.connectorRelease, '"installer_qa"', 'D205 release manifest
 requireIncludes(join(root, 'scripts', 'smoke-check-installer-release-qa.js'), 'Installer release QA smoke check passed.', 'D205 installer release QA must have dedicated CI coverage.');
 requireIncludes(join(root, 'scripts', 'smoke-check-installer-to-live-model-proof.js'), 'Installer-to-live-model proof smoke check passed.', 'D206 installer-to-live-model proof must have dedicated CI coverage.');
 requireIncludes(files.chatRuntime, 'mmir-install-to-first-chat-ready', 'D206 chat runtime must bridge install return proof to first-chat readiness.');
+requireIncludes(join(root, 'scripts', 'smoke-check-free-live-route-hardening.js'), 'Free live-route hardening smoke check passed.', 'D207 free live-route hardening must have dedicated CI coverage.');
+requireIncludes(files.composerModelPicker, 'freeRouteFloor', 'D207 composer model picker must keep useful free routes visible while backend discovery catches up.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

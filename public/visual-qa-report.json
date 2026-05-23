@@ -61,5 +61,5 @@
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D207 free live-model route hardening: make ready-now and installable free choices unavoidable in the first chat/model journey."
+  "next": "D208 no-model dead-end browser gate: prove first chat never renders an empty model state without a useful free action."
 }

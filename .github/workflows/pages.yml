@@ -48,6 +48,8 @@ jobs:
         run: node scripts/smoke-check-installer-release-qa.js
       - name: Smoke check installer-to-live-model proof
         run: node scripts/smoke-check-installer-to-live-model-proof.js
+      - name: Smoke check free live-route hardening
+        run: node scripts/smoke-check-free-live-route-hardening.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render
