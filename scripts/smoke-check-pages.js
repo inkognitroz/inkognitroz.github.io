@@ -480,6 +480,10 @@ requireText(join(root, 'scripts', 'smoke-check-recommended-starter-install-hando
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'data-starter-action', 'D193 Model Library starter cards must expose install/select handoff actions.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'runStarterHandoff', 'D193 chat runtime must accept starter handoff events.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'selectStarterModelById', 'D193 chat runtime must select the exact starter model for install/proof.');
+requireText(join(root, 'scripts', 'smoke-check-starter-install-repair-fallback.js'), 'Starter install repair fallback smoke check passed.', 'D194 starter install repair fallback must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'starterInstallRepairFallback', 'D194 chat runtime must turn starter install failures into repair resume.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'), 'mmir-starter-install-repair-opened', 'D194 Node Dashboard must refresh when starter install repair opens.');
+requireText(firstScreenHydrationPath, 'Starter install needs repair', 'D194 first screen must show starter install repair state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

@@ -13,6 +13,7 @@
   const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const STARTER_MODEL_CATALOG='./free-model-starters.json';
   const STARTER_PREFIX='starter:';
   const MAX_STORED_MESSAGES=80;
@@ -58,6 +59,29 @@
   function cleanUrl(value){return api.cleanUrl(value);}
   function joinUrl(base,path){return api.joinUrl(base,path);}
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+  function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
+  function readRepairResume(){
+    try{
+      const value=JSON.parse(localStorage.getItem(repairResumeKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+  function writeRepairResume(payload){
+    const resume={
+      ...payload,
+      status:payload?.status||'pending',
+      at:new Date().toISOString(),
+      no_paid_routes_started:true,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false
+    };
+    try{localStorage.setItem(repairResumeKey(),JSON.stringify(resume));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
+    return resume;
+  }
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
   function memoryUseStorageKey(){return MEMORY_USE_PREFIX+activeWorkspaceId();}
@@ -1024,6 +1048,34 @@
     }
   }
 
+  function starterInstallRepairTarget(error){
+    if(error?.status===401)return '#node-dashboard';
+    if(error?.status===404)return '#local-connector';
+    return '#node-dashboard';
+  }
+
+  function starterInstallRepairFallback(starter,model,error){
+    const target=starterInstallRepairTarget(error);
+    const message=error?.status===401?'Pair this browser with the local node before install.':
+      error?.status===404?'Update or restart MMIR Local Node so model install routes are available.':
+      'Start MMIR Local Node and Ollama, then retry the selected starter install.';
+    pendingStarterHandoff={starter_id:starter?.id||'',action:'install',model};
+    const resume=writeRepairResume({
+      action:'starter-install-repair',
+      target,
+      model,
+      starter_id:starter?.id||'',
+      note:'Starter install could not start for '+model+'. '+message,
+      source:'chat-runtime',
+      error_status:error?.status||'offline'
+    });
+    window.MimirActivationTelemetry?.record?.('starter-install-repair',{status:'needs-action',model,route:target,free:true,note:'Starter install repair opened '+target+'. no_paid_routes_started:true.'});
+    window.dispatchEvent(new CustomEvent('mmir-starter-install-repair-opened',{detail:resume}));
+    openPanel('#node-dashboard');
+    if(target==='#local-connector')openPanel('#local-connector');
+    return message+' MMIR opened repair and kept '+model+' selected for retry.';
+  }
+
   function starterAvailabilityLabel(model){
     if(model?.runtime==='browser-guide')return 'ready now - browser helper';
     if(model?.runtime==='webllm')return 'ready now - browser WebGPU';
@@ -1153,8 +1205,9 @@
       pollModelInstall(true);
     }catch(error){
       const message=error.status===404?'Local node needs an update/restart before one-click model install is available. Use the installer links below for now.':friendlyError(error);
-      setModelInstallStatus(message,'error');
-      setStatus(message,'error');
+      const repairMessage=starterInstallRepairFallback(starter,model,error)||message;
+      setModelInstallStatus(repairMessage,'error');
+      setStatus(repairMessage,'error');
     }
   }
 
@@ -1710,12 +1763,18 @@
     const detail=event?.detail||{};
     const models=Array.isArray(detail.models)?detail.models:[];
     const firstModel=modelIdFromConnector(models[0]);
+    const resume=readRepairResume();
+    if(resume?.starter_id&&!firstModel)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
+    if(resume?.model)preferProofModel(resume.model);
     if(firstModel)preferProofModel(firstModel);
     refreshState(true);
   }
 
   function handleLocalInstallReturned(){
     window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    const resume=readRepairResume();
+    if(resume?.starter_id)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
+    if(resume?.model)preferProofModel(resume.model);
     lastProofSignature='';
     refreshState(true);
   }

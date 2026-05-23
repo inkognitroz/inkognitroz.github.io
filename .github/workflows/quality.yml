@@ -153,3 +153,6 @@ jobs:
 
       - name: Smoke-check recommended starter install handoff
         run: node scripts/smoke-check-recommended-starter-install-handoff.js
+
+      - name: Smoke-check starter install repair fallback
+        run: node scripts/smoke-check-starter-install-repair-fallback.js

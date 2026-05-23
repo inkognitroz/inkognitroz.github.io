@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d193-20260523-starter-handoff';
+const CACHE_NAME='mmir-pwa-d194-20260523-starter-repair';
 const SHELL_ASSETS=[
   './',
   './index.html',

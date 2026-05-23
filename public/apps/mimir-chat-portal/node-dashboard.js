@@ -53,6 +53,9 @@
     if(status==='checking'){
       return {state:'checking',title:'Repair check running',detail:'MMIR is checking connector, pairing, runtime and models after the install/repair return.',primary:'Refresh node health',target:'#node-dashboard'};
     }
+    if(resume?.action==='starter-install-repair'){
+      return {state:'pending',title:'Starter install needs repair',detail:'MMIR kept '+(model||'the selected starter')+' selected. Fix the local node/Ollama path, then retry install/proof.',primary:'Continue repair',target:String(resume?.target||'#node-dashboard')};
+    }
     return {state:'pending',title:'Repair path selected',detail:'Return after the installer or repair action; MMIR will resume this path and verify it automatically.',primary:'Resume repair',target:String(resume?.target||'#node-dashboard')};
   }
   function renderRepairResumeBanner(){
@@ -456,6 +459,8 @@
   if(refreshButton)refreshButton.addEventListener('click',load);
   window.addEventListener('mmir-backend-profiles-updated',load);
   window.addEventListener('mmir-local-connector-refreshed',load);
+  window.addEventListener('mmir-repair-resume-started',load);
+  window.addEventListener('mmir-starter-install-repair-opened',load);
   window.addEventListener('focus',load);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
 })();

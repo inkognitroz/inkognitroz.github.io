@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:57:55.557Z",
+  "updated_at": "2026-05-23T15:06:06.896Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 194,
+    "total": 195,
     "done": 51,
-    "beta": 118,
+    "beta": 119,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -748,10 +748,10 @@
       },
       {
         "phase": "Activation Automation",
-        "total": 2,
+        "total": 3,
         "done": 0,
         "beta": 2,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -800,8 +800,8 @@
         "phase": "Activation Repair",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1078,7 +1078,7 @@
     }
   ],
   "next_queue": [
-    "D194"
+    "D195"
   ],
   "watchlist": [
     "D082",
@@ -3990,9 +3990,24 @@
       "best_practice": "Failed one-click install should become a guided repair, not a dead error",
       "done_when": "Install failure opens the right local repair path and keeps the model selection ready for retry",
       "covers": "activation, install, repair",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Failed starter installs now store a repair resume, keep the selected starter/model, open the local repair path and refresh first-screen/Node Dashboard repair banners.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D195",
+      "phase": "Activation Automation",
+      "priority": "P0",
+      "work_package": "Starter install retry after repair",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "After connector/repair returns and the starter is still pending, offer one safe retry action or auto-continue only when the local node proves ready",
+      "best_practice": "Repair should close the loop from failed install to successful install/proof",
+      "done_when": "Repaired local node can retry the preserved starter install with one clear action and no paid route",
+      "covers": "activation, install, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next repair slice: failed starter install should open the exact local repair/installer path while preserving the selected model.",
+      "evidence": "Next automation slice: after repair returns, offer one safe retry or auto-continue only when the local node proves ready.",
       "estimate": "2-6h"
     }
   ]

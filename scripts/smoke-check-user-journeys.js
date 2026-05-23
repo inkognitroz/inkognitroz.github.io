@@ -82,6 +82,7 @@ const files = {
   firstScreenStarterContinueHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel-continue.js'),
   recommendedStarterFocusHarness: join(root, 'scripts', 'smoke-check-recommended-starter-model-focus.js'),
   recommendedStarterHandoffHarness: join(root, 'scripts', 'smoke-check-recommended-starter-install-handoff.js'),
+  starterInstallRepairHarness: join(root, 'scripts', 'smoke-check-starter-install-repair-fallback.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -469,6 +470,11 @@ requireIncludes(files.modelCatalogUi, 'model-library-starter-handoff', 'D193 Mod
 requireIncludes(files.chatRuntime, 'runStarterHandoff', 'D193 chat runtime must receive Model Library starter handoff events.');
 requireIncludes(files.chatRuntime, 'selectStarterModelById', 'D193 chat runtime must select the exact starter model without user reselection.');
 requireIncludes(files.chatRuntime, 'runtime-starter-handoff', 'D193 chat runtime must record no-spend handoff telemetry.');
+requireIncludes(files.starterInstallRepairHarness, 'Starter install repair fallback smoke check passed.', 'D194 starter install repair fallback needs dedicated CI fixture coverage.');
+requireIncludes(files.chatRuntime, 'starterInstallRepairFallback', 'D194 chat runtime must turn install failures into repair resume.');
+requireIncludes(files.chatRuntime, 'mmir-starter-install-repair-opened', 'D194 chat runtime must emit starter install repair events.');
+requireIncludes(files.nodeDashboard, 'mmir-starter-install-repair-opened', 'D194 Node Dashboard must refresh when starter install repair opens.');
+requireIncludes(files.firstScreenHydration, 'Starter install needs repair', 'D194 first screen must show starter install repair state.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');
