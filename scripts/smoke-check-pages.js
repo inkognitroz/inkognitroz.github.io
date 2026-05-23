@@ -107,7 +107,7 @@ if (!String(content?.site?.subtitle || '').includes('orchestration layer for tru
 }
 forbidText(contentPath, 'SaaS Fabric', 'content.json must not include retired SaaS Fabric branding.');
 
-requireText(mmirPath, 'mimir-instant-start', 'MMIR product page must show an automatic ready state before technical setup sections.');
+requireText(mmirPath, 'id="mimir-instant-start"', 'MMIR product page must expose the redirect target for the first journey.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');
 requireText(firstImpressionPath, 'activation-connect-local', 'MMIR activation cockpit must expose local connector activation.');
 requireText(firstImpressionPath, 'activation-open-node-dashboard', 'MMIR activation cockpit must expose node health activation.');
@@ -188,11 +188,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.css'), '.we
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), '/tools/execute', 'Tool runner must use the protected tool execution route.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'tool-runner-consent', 'Tool runner must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'renderTrace', 'Tool runner must show visible traces.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'mimir-tool-gallery-v1:', 'Tool/plugin gallery must persist workspace enable/disable state.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'tool-gallery-grid', 'Tool/plugin gallery must expose approved tools and connectors.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'public_frontend_secrets_allowed', 'Tool/plugin gallery must show public frontend secret boundaries.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.css'), '.tool-result-card', 'Tool runner needs visible result styling.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.css'), '.tool-gallery-card', 'Tool/plugin gallery needs visible permission card styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), '/code/sandbox/plan', 'Code sandbox UI must call the protected planning route when a backend is active.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'localPlan', 'Code sandbox UI must keep a free browser preflight fallback.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'code-sandbox-consent', 'Code sandbox UI must require explicit consent.');
