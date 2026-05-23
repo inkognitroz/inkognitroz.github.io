@@ -101,8 +101,8 @@
     return {
       status:clean(detail?.status||'ready',60),
       model:clean(detail?.model||'',120),
-      route:'local-first',
-      free:true,
+      route:clean(detail?.route||'local-first',80),
+      free:detail?.free!==false,
       first_chat_ready:false,
       note:clean(detail?.note||'Activation event recorded.',180)
     };

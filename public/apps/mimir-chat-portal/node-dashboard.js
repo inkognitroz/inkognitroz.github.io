@@ -99,26 +99,26 @@
   function guidedDeviceRepair(checks,hardware,tunnel){
     const first=checks.find(check=>check.state!=='ready')||{id:'ready',detail:'Local path is ready.'};
     const device=detectDevice(hardware);
-    const base={device,source:'Local Node Doctor',primary:'Open installer',target:device.installer};
+    const base={device,source:'Local Node Doctor',primary:'Open installer',target:device.installer,action:'install-connector'};
     if(first.id==='connector'){
       return {...base,title:'Install connector for '+device.label,detail:device.note,steps:['Install MMIR Local Connector','Keep Ollama/private runtime on localhost','Return and refresh node health']};
     }
     if(first.id==='pairing'){
-      return {...base,title:'Pair this browser',detail:'Create or refresh a local pairing token before model, chat or tunnel routes are used.',primary:'Refresh nodes',target:'#node-dashboard',steps:['Refresh nodes','Create short-lived code for another device if needed','Never paste pairing tokens into public places']};
+      return {...base,action:'pair-browser',title:'Pair this browser',detail:'Create or refresh a local pairing token before model, chat or tunnel routes are used.',primary:'Refresh nodes',target:'#node-dashboard',steps:['Refresh nodes','Create short-lived code for another device if needed','Never paste pairing tokens into public places']};
     }
     if(first.id==='ollama'){
-      return {...base,title:'Start Ollama on '+device.label,detail:'The connector is reachable, but the local runtime is offline. Start Ollama or rerun the connector installer.',steps:['Start Ollama','Rerun connector installer if Ollama is missing','Refresh and let autopilot retry proof']};
+      return {...base,action:'start-ollama',title:'Start Ollama on '+device.label,detail:'The connector is reachable, but the local runtime is offline. Start Ollama or rerun the connector installer.',steps:['Start Ollama','Rerun connector installer if Ollama is missing','Refresh and let autopilot retry proof']};
     }
     if(first.id==='model-pull'||first.id==='model_pull'){
-      return {...base,title:'Repair model install',detail:first.detail||'A model pull needs retry or a smaller starter model.',primary:'Model library',target:'#model-library',steps:['Open Model library','Retry '+device.model+' or another small free model','Wait for install-to-first-chat bridge']};
+      return {...base,action:'repair-model-pull',title:'Repair model install',detail:first.detail||'A model pull needs retry or a smaller starter model.',primary:'Model library',target:'#model-library',steps:['Open Model library','Retry '+device.model+' or another small free model','Wait for install-to-first-chat bridge']};
     }
     if(first.id==='model'){
-      return {...base,title:'Install '+device.model+' for '+device.label,detail:'No local chat model is available yet. Use the free starter that fits this device first.',primary:'Model library',target:'#model-library',steps:['Open Model library','Install '+device.model,'Autopilot will refresh proof after install']};
+      return {...base,action:'install-model',title:'Install '+device.model+' for '+device.label,detail:'No local chat model is available yet. Use the free starter that fits this device first.',primary:'Model library',target:'#model-library',steps:['Open Model library','Install '+device.model,'Autopilot will refresh proof after install']};
     }
     if(first.id==='tunnel'&&tunnel?.control_enabled){
-      return {...base,title:'Start optional tunnel only if needed',detail:'Local chat works without a tunnel. Use tunnel only for another trusted device.',primary:'Start free tunnel',target:'#node-start-tunnel',steps:['Keep raw Ollama private','Start tunnel only after pairing','Use short-lived remote pairing code']};
+      return {...base,action:'start-tunnel',title:'Start optional tunnel only if needed',detail:'Local chat works without a tunnel. Use tunnel only for another trusted device.',primary:'Start free tunnel',target:'#node-start-tunnel',steps:['Keep raw Ollama private','Start tunnel only after pairing','Use short-lived remote pairing code']};
     }
-    return {...base,title:'Local path ready',detail:'Connector, pairing, runtime and models are ready for this device.',primary:'Chat now',target:'#mimir-prompt',steps:['Use verified chat','Add another node only when needed','Keep paid/provider routes approval-gated']};
+    return {...base,action:'chat-now',title:'Local path ready',detail:'Connector, pairing, runtime and models are ready for this device.',primary:'Chat now',target:'#mimir-prompt',steps:['Use verified chat','Add another node only when needed','Keep paid/provider routes approval-gated']};
   }
 
   function renderDeviceRepair(guide){
@@ -127,7 +127,7 @@
     return '<article class="node-repair-card" data-device="'+safe(guide.device.label)+'">'+
       '<div><span>Guided device repair</span><h3>'+safe(guide.title)+'</h3><p>'+safe(guide.detail)+'</p><small>'+safe(guide.source)+' / '+safe(guide.device.label)+' / starter '+safe(guide.device.model)+'</small></div>'+
       '<ol>'+guide.steps.map(step=>'<li>'+safe(step)+'</li>').join('')+'</ol>'+
-      '<div class="node-model-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target>'+safe(guide.primary)+'</a>':'<a href="'+safe(target)+'">'+safe(guide.primary)+'</a>')+'</div>'+
+      '<div class="node-model-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-device-repair-action="'+safe(guide.action)+'" data-repair-device="'+safe(guide.device.label)+'" data-repair-model="'+safe(guide.device.model)+'">'+safe(guide.primary)+'</a>':'<a href="'+safe(target)+'" data-device-repair-action="'+safe(guide.action)+'" data-repair-device="'+safe(guide.device.label)+'" data-repair-model="'+safe(guide.device.model)+'">'+safe(guide.primary)+'</a>')+'</div>'+
     '</article>';
   }
 
@@ -213,6 +213,23 @@
       link.addEventListener('click',()=>{
         const target=document.querySelector(link.getAttribute('href'));
         if(target&&target.tagName==='DETAILS')target.open=true;
+      });
+    });
+    root.querySelectorAll('[data-device-repair-action]').forEach(link=>{
+      link.addEventListener('click',(event)=>{
+        const action=link.getAttribute('data-device-repair-action')||'repair';
+        const targetHref=link.getAttribute('href')||'';
+        window.MimirActivationTelemetry?.record?.('device-repair-action',{
+          status:'selected',
+          model:link.getAttribute('data-repair-model')||'',
+          route:link.getAttribute('data-repair-device')||'device',
+          free:true,
+          note:'Repair card selected: '+action+' -> '+targetHref
+        });
+        if(targetHref==='#node-start-tunnel'){
+          event.preventDefault();
+          document.getElementById('node-start-tunnel')?.click();
+        }
       });
     });
     root.querySelectorAll('[data-delete-model]').forEach(button=>{

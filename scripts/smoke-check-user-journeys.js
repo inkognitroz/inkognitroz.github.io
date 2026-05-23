@@ -404,6 +404,8 @@ requireIncludes(files.nodeDashboard, 'guidedDeviceRepair', 'D172 needs doctor st
 requireIncludes(files.nodeDashboard, 'detectDevice', 'D172 needs OS/device detection for repair cards.');
 requireIncludes(files.nodeDashboard, 'Raspberry Pi / Linux ARM', 'D172 needs Raspberry Pi/Linux ARM repair guidance.');
 requireIncludes(files.nodeDashboard, 'node-repair-card', 'D172 needs the guided repair card rendered in Node Dashboard.');
+requireIncludes(files.nodeDashboard, 'data-device-repair-action', 'D174 needs repair-card action links.');
+requireIncludes(files.nodeDashboard, 'device-repair-action', 'D174 needs repair-card telemetry events.');
 requireIncludes(files.repairCardHarness, 'offline-connector', 'D173 repair harness must cover offline connector.');
 requireIncludes(files.repairCardHarness, 'offline-ollama', 'D173 repair harness must cover offline Ollama.');
 requireIncludes(files.repairCardHarness, 'failed-model-pull', 'D173 repair harness must cover failed model pull.');

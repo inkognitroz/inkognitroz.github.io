@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:13:41.028Z",
+  "updated_at": "2026-05-23T12:18:01.476Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 174,
+    "total": 175,
     "done": 51,
-    "beta": 98,
+    "beta": 99,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,9 +288,9 @@
       },
       {
         "phase": "Activation UX",
-        "total": 6,
+        "total": 7,
         "done": 4,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -808,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D174"
+    "D175"
   ],
   "watchlist": [
     "D082",
@@ -3420,9 +3420,24 @@
       "best_practice": "A repair card should not stop at advice; it should carry the user to the next real action",
       "done_when": "User clicks one repair action and lands in the right install, pairing, model or chat flow with telemetry updated",
       "covers": "activation, support, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Guided repair-card links now carry data-device-repair-action metadata, trigger internal follow-through where needed and record selected paths in activation telemetry.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D175",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "Installer-return repair resume",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "After a user returns from an installer or repair-card link, resume the same activation path, refresh doctor/proof and show whether the repair succeeded",
+      "best_practice": "Setup should continue automatically after an install step",
+      "done_when": "User returns from installer and MMIR automatically verifies connector, model and first-chat readiness",
+      "covers": "activation, install, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: wire repair-card actions to the exact panel/installer/model-library flow and record the chosen path in activation telemetry.",
+      "evidence": "Next activation slice: resume the same activation path after a user returns from installer or repair-card links and automatically verify whether repair succeeded.",
       "estimate": "2-6h"
     }
   ]

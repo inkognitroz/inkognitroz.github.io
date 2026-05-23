@@ -379,6 +379,8 @@ requireText(nodeDashboardPath, 'model-pull', 'D169 node dashboard must include m
 requireText(nodeDashboardPath, 'guidedDeviceRepair', 'D172 node dashboard must map doctor state to one guided repair card.');
 requireText(nodeDashboardPath, 'detectDevice', 'D172 node dashboard must detect OS/device class for repair cards.');
 requireText(nodeDashboardPath, 'Raspberry Pi / Linux ARM', 'D172 repair card must support Raspberry Pi/Linux ARM.');
+requireText(nodeDashboardPath, 'data-device-repair-action', 'D174 repair card must expose actionable repair links.');
+requireText(nodeDashboardPath, 'device-repair-action', 'D174 repair-card clicks must be logged to activation telemetry.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-repair-card', 'D172 guided repair card needs visible styling.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'offline-connector', 'D173 repair harness must cover offline connector state.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'failed-model-pull', 'D173 repair harness must cover failed model pull state.');

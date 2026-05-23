@@ -74,6 +74,12 @@ for (const fixture of deviceFixtures) {
 if (!source.includes('guidedDeviceRepair') || !source.includes('renderDeviceRepair')) {
   fail('Node dashboard must keep guidedDeviceRepair and renderDeviceRepair as the repair-card contract.');
 }
+if (!source.includes('data-device-repair-action') || !source.includes('device-repair-action')) {
+  fail('Guided repair cards must expose action attributes and record selected paths.');
+}
+if (!source.includes('MimirActivationTelemetry') || !source.includes('Repair card selected: ')) {
+  fail('Guided repair-card choices must be recorded in activation telemetry.');
+}
 if (!css.includes('.node-repair-card')) {
   fail('Guided repair card must have visible CSS styling.');
 }

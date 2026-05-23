@@ -165,14 +165,15 @@ Updated: 2026-05-23
 - D171 is now beta: Activation Autopilot uses telemetry to run safe free repairs only: automatic defaults, Private mode, model refresh and proof retry, with no paid routes, provider secrets, raw prompts or raw responses.
 - D172 is now beta: Node Dashboard renders one guided OS/device repair card from doctor checks, detecting Windows, macOS, Linux/VM and Raspberry Pi/Linux ARM with a starter model and exact action.
 - D173 is now beta: a dedicated repair-card smoke harness verifies offline connector, pairing-required, offline Ollama, failed model pull, no-model and device fixtures against Node Dashboard source and UI coverage.
-- D174 is now the next activation slice: repair-card clicks should carry users to the exact installer/panel/model-library flow and record the choice in activation telemetry.
+- D174 is now beta: repair-card links carry `data-device-repair-action`, trigger internal follow-through where needed and record selected paths in activation telemetry.
+- D175 is now the next activation slice: after a user returns from installer or repair-card links, MMIR should resume that activation path and verify whether the repair worked.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D174` repair-card action follow-through.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D175` installer-return repair resume.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
