@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/conversation-manager.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/data-analysis.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/scheduled-tasks.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
@@ -72,6 +73,7 @@
           <a href="#free-value-loops">Free</a>
           <a href="#dataset-manager">Data</a>
           <a href="#data-analysis">Analysis</a>
+          <a href="#scheduled-tasks">Tasks</a>
           <a href="#training-automation">Automation</a>
           <a href="#user-journeys">Journeys</a>
           <a href="#gui-parity">Parity</a>
@@ -286,6 +288,15 @@
       </section>
     </details>
 
+    <details id="scheduled-tasks" class="mimir-provider-drawer">
+      <summary>+ Scheduled Tasks / Reminders</summary>
+      <section class="mimir-dashboard" aria-labelledby="scheduled-tasks-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Visible automation</p><h2 id="scheduled-tasks-title">Scheduled tasks and reminders</h2></div></div>
+        <p class="dashboard-note">Tasks are free/local-first and visible. Browser reminders run while this page is open; protected backend scheduling stays planned behind auth and cost policy.</p>
+        <div id="scheduled-tasks-root" class="scheduled-task-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="training-automation" class="mimir-provider-drawer">
       <summary>+ Training Automation</summary>
       <section class="mimir-dashboard" aria-labelledby="training-automation-title">
@@ -340,6 +351,7 @@
   <script src="./apps/mimir-chat-portal/runtime-settings.js"></script>
   <script src="./apps/mimir-chat-portal/dataset-manager.js"></script>
   <script src="./apps/mimir-chat-portal/data-analysis.js"></script>
+  <script src="./apps/mimir-chat-portal/scheduled-tasks.js"></script>
   <script src="./apps/mimir-chat-portal/training-automation.js"></script>
   <script src="./apps/mimir-chat-portal/prompt-registry.js"></script>
   <script src="./apps/mimir-chat-portal/assistant-builder.js"></script>

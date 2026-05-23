@@ -221,6 +221,14 @@
       "evidence": ["mimir-data-analysis-v1:", "MAX_FILE_BYTES", "parseDelimited", "renderSvgChart", "browser-only analysis"]
     },
     {
+      "id": "scheduled-tasks",
+      "surface": "Scheduled tasks and reminders",
+      "status": "beta",
+      "user_result": "Users can create, run, pause, cancel and export visible free/local scheduled reminders with owner, schedule, cost policy and run log.",
+      "selectors": ["#scheduled-tasks", "#scheduled-task-save", "#scheduled-task-run-due", "#scheduled-task-export", "[data-task-run]"],
+      "evidence": ["mimir-scheduled-tasks-v1:", "cost_policy:'free/local-only'", "checkDue", "sendTaskToChat", "Scheduled task created"]
+    },
+    {
       "id": "workflow-data-training",
       "surface": "Workflow, datasets and training panels",
       "status": "beta",

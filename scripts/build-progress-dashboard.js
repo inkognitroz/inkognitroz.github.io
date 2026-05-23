@@ -83,7 +83,8 @@ const overrides = new Map([
   ['D144', { status: 'beta', evidence: 'Research planning now creates source-aware, citation-gated plans with manual/free discovery links, ordered steps, local plan storage and approval gates while keeping autonomous browsing disabled.' }],
   ['D145', { status: 'beta', evidence: 'Custom assistant builder now has local-first starter assistants, instructions, model preference, tool allowlist, knowledge scope, private/workspace sharing rules and protected backend sync.' }],
   ['D146', { status: 'beta', evidence: 'Safe data analysis now runs in the browser with CSV/TSV/JSON parsing, summaries, SVG charts, local snapshots, JSON export and chat-summary handoff without arbitrary code execution.' }],
-  ['D147', { status: 'next', evidence: 'Next sequential GUI parity slice: scheduled task/reminder UI with explicit owner, schedule, revocation and cost boundaries.' }],
+  ['D147', { status: 'beta', evidence: 'Scheduled task UI now supports visible browser-local reminders with owner, due/repeat schedule, free/local cost policy, run log, pause/cancel/export and chat handoff.' }],
+  ['D148', { status: 'next', evidence: 'Next sequential GUI parity slice: external app connector catalog and protected OAuth/sync boundaries.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

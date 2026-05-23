@@ -146,6 +146,12 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'p
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'renderSvgChart', 'D146 needs local chart rendering.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'), 'MAX_FILE_BYTES', 'D146 needs bounded browser analysis input size.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.css'), '.data-analysis-chart', 'D146 needs chart styling.');
+requireText(mmirPath, 'id="scheduled-tasks"', 'D147 needs a visible scheduled tasks panel.');
+requireText(mmirPath, './apps/mimir-chat-portal/scheduled-tasks.js', 'D147 needs scheduled tasks loaded on the product page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'), 'mimir-scheduled-tasks-v1:', 'D147 needs local scheduled task storage.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'), 'cost_policy:\'free/local-only\'', 'D147 needs explicit free/local-only cost policy.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'), 'function checkDue()', 'D147 needs due-task checking.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.css'), '.scheduled-task-card', 'D147 needs task card styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');

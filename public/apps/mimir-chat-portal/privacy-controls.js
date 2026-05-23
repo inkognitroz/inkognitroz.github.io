@@ -17,6 +17,7 @@
   const TOOL_GALLERY_PREFIX='mimir-tool-gallery-v1:';
   const RESEARCH_PREFIX='mimir-research-plans-v1:';
   const DATA_ANALYSIS_PREFIX='mimir-data-analysis-v1:';
+  const SCHEDULED_TASKS_PREFIX='mimir-scheduled-tasks-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
@@ -57,7 +58,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -168,6 +169,7 @@
     const toolGallery=readJson(TOOL_GALLERY_PREFIX+id,{});
     const researchPlans=readJson(RESEARCH_PREFIX+id,[]);
     const dataAnalyses=readJson(DATA_ANALYSIS_PREFIX+id,[]);
+    const scheduledTasks=readJson(SCHEDULED_TASKS_PREFIX+id,[]);
 
     return {
       exported_at:new Date().toISOString(),
@@ -183,6 +185,7 @@
       tool_gallery:toolGallery&&typeof toolGallery==='object'&&!Array.isArray(toolGallery)?toolGallery:{},
       research_plans:Array.isArray(researchPlans)?researchPlans:[],
       data_analyses:Array.isArray(dataAnalyses)?dataAnalyses:[],
+      scheduled_tasks:Array.isArray(scheduledTasks)?scheduledTasks:[],
       memory:Array.isArray(memory)?memory:[],
       memory_use:Array.isArray(memoryUse)?memoryUse:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
@@ -200,6 +203,7 @@
       tool_gallery:Object.keys(snapshot.tool_gallery).length,
       research_plans:snapshot.research_plans.length,
       data_analyses:snapshot.data_analyses.length,
+      scheduled_tasks:snapshot.scheduled_tasks.length,
       memory:snapshot.memory.length,
       memory_use:snapshot.memory_use.length,
       knowledge:snapshot.knowledge.length,
@@ -240,6 +244,7 @@
     const toolGalleryKeys=keysByPrefix(local,TOOL_GALLERY_PREFIX);
     const researchKeys=keysByPrefix(local,RESEARCH_PREFIX);
     const dataAnalysisKeys=keysByPrefix(local,DATA_ANALYSIS_PREFIX);
+    const scheduledTaskKeys=keysByPrefix(local,SCHEDULED_TASKS_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -335,6 +340,16 @@
         retention:'Browser-only summaries and sampled rows stay local until exported or cleared.',
         action:'Manage snapshots in Data Analysis or export/delete active workspace data.',
         keys:dataAnalysisKeys
+      },
+      {
+        id:'scheduled-tasks',
+        label:'Scheduled tasks',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,scheduledTaskKeys),
+        size:formatBytes(storageSize(localStorage,scheduledTaskKeys)),
+        retention:'Visible reminders, schedules and run logs stay local until cancelled, exported or cleared.',
+        action:'Manage reminders in Scheduled Tasks or export/delete active workspace data.',
+        keys:scheduledTaskKeys
       },
       {
         id:'workspace-memory',
@@ -480,6 +495,7 @@
       ['Tool toggles',activeCounts.tool_gallery],
       ['Research plans',activeCounts.research_plans],
       ['Data analyses',activeCounts.data_analyses],
+      ['Tasks',activeCounts.scheduled_tasks],
       ['Memory items',activeCounts.memory],
       ['Memory use',activeCounts.memory_use],
       ['Knowledge files',activeCounts.knowledge],
@@ -569,6 +585,7 @@
     window.dispatchEvent(new CustomEvent('mmir-assistants-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-research-plans-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-data-analysis-updated',{detail:{workspaceId:id,count:0}}));
+    window.dispatchEvent(new CustomEvent('mmir-scheduled-tasks-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
@@ -593,6 +610,7 @@
     localStorage.removeItem(ACTIVE_ASSISTANT_PREFIX+workspaceId());
     localStorage.removeItem(TOOL_GALLERY_PREFIX+workspaceId());
     localStorage.removeItem(DATA_ANALYSIS_PREFIX+workspaceId());
+    localStorage.removeItem(SCHEDULED_TASKS_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
