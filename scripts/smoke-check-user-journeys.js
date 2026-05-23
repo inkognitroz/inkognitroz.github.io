@@ -335,6 +335,9 @@ requireIncludes(files.apiClient, 'setManagedSessionToken', 'D161 needs in-memory
 requireIncludes(files.apiClient, 'x-mmir-session-token', 'D161 needs protected backend session token headers.');
 requireIncludes(files.sharing, 'sharing-activate-recipient-token', 'D161 needs recipient session activation control.');
 requireIncludes(files.identityOrg, 'identity-activate-session', 'D161 needs identity session activation control.');
+requireIncludes(files.sharing, 'sharing-activity-summary', 'D162 needs share activity summaries in Safe Sharing.');
+requireIncludes(files.sharing, 'handoff_completed_count', 'D162 needs handoff activity counts.');
+requireIncludes(files.sharing, 'Revoked at', 'D162 needs revocation cues in the recipient/owner flow.');
 requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');

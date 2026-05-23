@@ -55,7 +55,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 162).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 163).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -98,7 +98,8 @@ const overrides = new Map([
   ['D159', { status: 'beta', evidence: 'Recipient handoff now guides invited users from invite acceptance to the intended protected share, opens payload only after backend policy allows it and shows session tokens once without public storage.' }],
   ['D160', { status: 'beta', evidence: 'Owner-side team share packets now create invite codes, copy non-secret share/invite details, prefill recipient handoff fields and keep one-time codes separate from packet text.' }],
   ['D161', { status: 'beta', evidence: 'Returned MMIR session tokens can now be activated for current-tab protected backend calls through api-client memory only, with clear actions in Identity and Safe Sharing plus privacy inventory disclosure.' }],
-  ['D162', { status: 'next', evidence: 'Next sharing/security slice: make share activity, handoff/read state and revocation cues more obvious for owners and recipients using protected audit/identity data.' }]
+  ['D162', { status: 'beta', evidence: 'Protected share activity summaries now count reads, access reviews, handoff success/failure and revocations in backend responses, and Safe Sharing renders activity/revocation cues for owners and recipients.' }],
+  ['D163', { status: 'next', evidence: 'Next activation slice: make Connect model, browser helper, local node and backend model routes prove liveness with automatic free-route retry/repair actions.' }]
 ]);
 
 const repoMeta = [
@@ -226,7 +227,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D162', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D163', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

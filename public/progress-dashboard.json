@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:16:13.614Z",
+  "updated_at": "2026-05-23T10:28:13.801Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 162,
+    "total": 163,
     "done": 51,
-    "beta": 86,
+    "beta": 87,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -720,7 +720,17 @@
         "phase": "Sharing/Security",
         "total": 5,
         "done": 0,
-        "beta": 4,
+        "beta": 5,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Model Activation",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -778,7 +788,7 @@
     }
   ],
   "next_queue": [
-    "D162"
+    "D163"
   ],
   "watchlist": [
     "D082",
@@ -3210,10 +3220,25 @@
       "best_practice": "Team sharing must remain understandable after the first handoff, especially when revoking access",
       "done_when": "Owner can see recent handoff/read state next to a share, recipient can see when a share is revoked or session is stale, and next action is explicit",
       "covers": "team governance",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Protected share activity summaries now count reads, access reviews, handoff success/failure and revocations in backend responses, and Safe Sharing renders activity/revocation cues for owners and recipients.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D163",
+      "phase": "Model Activation",
+      "priority": "P0",
+      "work_package": "Live-model proof and automatic retry",
+      "repos": "inkognitroz.github.io, mmir-local-node, mimir-backend-template",
+      "concrete_work": "Make Connect model, browser helper, local node and backend model routes prove liveness with a tiny free health/chat probe, then auto-select the best verified free route",
+      "best_practice": "First impression depends on seeing usable models immediately, not configuration chores",
+      "done_when": "User sees verified live models, installable free models and retry/repair actions without manual debugging",
+      "covers": "activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sharing/security slice: make share activity, handoff/read state and revocation cues more obvious for owners and recipients using protected audit/identity data.",
-      "estimate": "0.5-2d"
+      "evidence": "Next activation slice: make Connect model, browser helper, local node and backend model routes prove liveness with automatic free-route retry/repair actions.",
+      "estimate": "2-6h"
     }
   ]
 }

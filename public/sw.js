@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d161-20260523-memory-session-profile';
+const CACHE_NAME='mmir-pwa-d162-20260523-share-activity';
 const SHELL_ASSETS=[
   './',
   './index.html',

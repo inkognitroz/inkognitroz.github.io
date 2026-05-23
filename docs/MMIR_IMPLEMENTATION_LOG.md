@@ -153,14 +153,15 @@ Updated: 2026-05-23
 - D159 is now beta across frontend/backend: recipient handoff accepts invite/session onboarding, opens the intended protected share only after backend policy allows it and shows session tokens once without public storage.
 - D160 is now beta in the public UI: owner-side team-share packets create invite codes, copy non-secret share/invite details, prefill recipient handoff fields and keep one-time codes separate from packet text.
 - D161 is now beta in the public UI: returned MMIR session tokens can be activated for current-tab protected backend calls through api-client memory only, with Identity/Safe Sharing controls and privacy inventory disclosure.
-- D162 is now the next sharing/security slice: add clearer owner/recipient activity, stale-session and revocation cues around team shares.
+- D162 is now beta across frontend/backend: protected activity summaries count reads, access reviews, handoff success/failure and revocations, and Safe Sharing renders owner/recipient activity, stale-session and revocation cues without exposing share payloads.
+- D163 is now the next activation slice: Connect model, browser helper, local node and backend routes should prove liveness automatically and retry/repair the best free route before asking users to configure.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D162` team share activity and revocation cues.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D163` live-model proof and automatic retry.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

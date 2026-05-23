@@ -281,6 +281,44 @@
     };
   }
 
+  function countValue(value){
+    const number=Number(value||0);
+    return Number.isFinite(number)?number:0;
+  }
+
+  function activityFrom(source){
+    return source?.activity_summary||source?.activity||source?.audit?.activity_summary||null;
+  }
+
+  function eventLabel(type){
+    return String(type||'no activity').replace(/^share\./,'').replace(/_/g,' ');
+  }
+
+  function activityStrip(activity,share={}){
+    const summary=activity||{};
+    const revoked=share?.status==='revoked'||summary.revoked===true;
+    const last=summary.last_event;
+    return '<div class="sharing-activity-strip sharing-activity-summary" data-share-activity-summary="'+safe(summary.share_id||share?.id||share?.share_id||'')+'" data-revoked="'+safe(String(revoked))+'">'+
+      '<span>Reads <strong>'+countValue(summary.read_count)+'</strong></span>'+
+      '<span>Handoffs <strong>'+countValue(summary.handoff_completed_count)+'</strong></span>'+
+      '<span>Blocked <strong>'+countValue(summary.handoff_rejected_count)+'</strong></span>'+
+      '<span>Reviews <strong>'+countValue(summary.access_review_count)+'</strong></span>'+
+      '<span>'+safe(revoked?'Revoked':'Active')+'</span>'+
+      '<small>'+safe(last?('Last '+eventLabel(last.type)+' '+(last.at||'')):'No retained activity yet')+'</small>'+
+    '</div>';
+  }
+
+  function activityPanel(activity,share={}){
+    if(!activity)return '';
+    const actions=array(activity.next_safe_actions);
+    return '<section class="sharing-review-activity">'+
+      '<strong>Activity and revocation</strong>'+
+      activityStrip(activity,share)+
+      (activity.revoked_at?'<p class="dashboard-note">Revoked at '+safe(activity.revoked_at)+'. Payload should stay unavailable from the backend.</p>':'')+
+      (actions.length?'<ul>'+actions.map(action=>'<li>'+safe(action)+'</li>').join('')+'</ul>':'')+
+    '</section>';
+  }
+
   function renderBackendShares(){
     if(!backendListEl)return;
     if(!backendShares.length){
@@ -289,7 +327,7 @@
     }
     backendListEl.innerHTML=backendShares.map(share=>''+
       '<article class="sharing-backend-card">'+
-        '<div><strong>'+safe(share.title||'Protected share')+'</strong><span>'+safe(share.content_type)+' - '+safe(share.status)+' - '+safe(share.access?.visibility||'private')+'</span><small>'+safe(share.access?.visibility==='organization'?'Org '+(share.access?.org_id||'required')+' / min '+(share.access?.min_role||'member')+' / organization_membership_required':'Owner scoped or backend-auth scoped')+'</small></div>'+
+        '<div><strong>'+safe(share.title||'Protected share')+'</strong><span>'+safe(share.content_type)+' - '+safe(share.status)+' - '+safe(share.access?.visibility||'private')+'</span><small>'+safe(share.access?.visibility==='organization'?'Org '+(share.access?.org_id||'required')+' / min '+(share.access?.min_role||'member')+' / organization_membership_required':'Owner scoped or backend-auth scoped')+'</small>'+activityStrip(activityFrom(share),share)+'</div>'+
         '<div class="sharing-backend-actions">'+
           '<button type="button" data-share-action="load" data-share-id="'+safe(share.id)+'" '+(share.payload_available===false?'disabled':'')+'>Preview</button>'+
           '<button type="button" data-share-action="review" data-share-id="'+safe(share.id)+'">Review access</button>'+
@@ -309,6 +347,7 @@
     const review=payload.review||payload.data||payload;
     const audit=payload.audit||{};
     const events=array(audit.events);
+    const activity=activityFrom(review)||activityFrom(payload)||activityFrom(audit);
     const summary=review.audience_summary||{};
     const viewer=review.viewer||{};
     const actions=array(review.next_actions);
@@ -323,6 +362,7 @@
           '<div><dt>Viewer role</dt><dd>'+safe(viewer.org_role||'none')+'</dd><small>meets_min_role: '+safe(String(viewer.meets_min_role!==false))+'</small></div>'+
         '</div>'+
         '<section class="sharing-review-actions"><strong>Next safe action</strong><ul>'+actions.map(action=>'<li>'+safe(action)+'</li>').join('')+'</ul></section>'+
+        activityPanel(activity,review)+
         '<section class="sharing-review-audit"><strong>Recent share audit</strong>'+(
           events.length?
             '<ul>'+events.map(event=>'<li><span>'+safe(event.action||event.type||'share event')+'</span><small>'+safe(event.created_at||event.ts||'')+' '+safe(event.principal_id||event.actor||'')+'</small></li>').join('')+'</ul>':
@@ -342,6 +382,9 @@
     const token=payload.token||'';
     const actions=array(handoff.next_actions);
     const activeSession=api?.activeManagedSession?.();
+    const activity=activityFrom(handoff)||activityFrom(handoff.share)||activityFrom(payload);
+    const revoked=handoff.share?.status==='revoked'||activity?.revoked===true;
+    const sessionCue=activeSession?.token_available?'active in memory only':'not active; activate the returned token or accept a fresh handoff';
     recipientEl.innerHTML=''+
       '<article class="sharing-recipient-result" data-share-recipient="recipient-handoff">'+
         '<header><div><strong>Recipient handoff</strong><span>'+safe(handoff.share_id||'Protected share')+'</span></div><small>'+safe(handoff.status||'ready')+'</small></header>'+
@@ -352,7 +395,8 @@
           '<div><dt>Organization</dt><dd>'+safe(handoff.org?.name||handoff.accepted_invite?.org_id||'not confirmed')+'</dd><small>'+safe(handoff.member?.role?('role '+handoff.member.role):'role decided by backend')+'</small></div>'+
           '<div><dt>Share</dt><dd>'+safe(handoff.share?.status||'not opened')+'</dd><small>'+safe(handoff.access_review?.audience_summary?.visibility||'server-side policy')+'</small></div>'+
         '</div>'+
-        '<p class="dashboard-note">Current-tab managed session: '+safe(activeSession?.token_available?'active in memory only':'not active')+'</p>'+
+        activityPanel(activity,handoff.share||{id:handoff.share_id,status:handoff.share?.status})+
+        '<p class="dashboard-note">Current-tab managed session: '+safe(sessionCue)+'. '+safe(revoked?'This share is revoked or blocked; ask the owner for a fresh protected share.':'Use the session only with the protected backend profile.')+'</p>'+
         (token?'<section class="sharing-one-time"><div><span>Shown once</span><strong>Session token</strong><small>Use only with a protected backend profile. This public page does not store it in localStorage or sessionStorage.</small></div><input id="sharing-recipient-token" type="text" readonly value="'+safe(token)+'" /><div class="sharing-backend-actions"><button id="sharing-copy-recipient-token" type="button">Copy token</button><button id="sharing-activate-recipient-token" type="button">Activate for this tab</button><button id="sharing-hide-recipient-token" type="button">Hide</button></div></section>':'')+
         '<div class="sharing-backend-actions"><button id="sharing-clear-tab-session" type="button">Clear tab session</button></div>'+
         '<section class="sharing-review-actions"><strong>Next safe action</strong><ul>'+actions.map(action=>'<li>'+safe(action)+'</li>').join('')+'</ul></section>'+

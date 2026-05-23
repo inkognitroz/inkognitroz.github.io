@@ -26,7 +26,8 @@
     {
       "name": "Open WebUI-like model control",
       "items": [
-        {"feature": "Model selector", "status": "beta", "mmir": "Live backend models, browser helpers and installable free local models are separated.", "benchmark": "Open WebUI", "next": "Keep license and fit warnings visible."},
+        {"feature": "Model selector", "status": "beta", "mmir": "Live backend models, browser helpers and installable free local models are separated.", "benchmark": "Open WebUI", "next": "D163 should make live-model proof and post-install retry more automatic."},
+        {"feature": "Live model proof and automatic retry", "status": "planned", "mmir": "D163 will probe browser helper, local node and protected backend routes, then auto-select or repair the best free model path.", "benchmark": "Open WebUI", "next": "Keep all paid/provider routes blocked unless explicitly approved."},
         {"feature": "Model/runtime settings", "status": "beta", "mmir": "D139 adds safe defaults and advanced controls for temperature, max tokens, context length, top-p, repeat penalty, seed and bounded system prompt, routed through the shared chat contract.", "benchmark": "ChatGPT / Open WebUI", "next": "Add per-assistant/per-workspace presets after assistant objects are stable."},
         {"feature": "Ollama/local node connection", "status": "beta", "mmir": "MMIR Local Node, pairing, health, hardware and model discovery exist.", "benchmark": "Open WebUI / Ollama", "next": "Package smoother installers for every OS/device."},
         {"feature": "One-click local model install", "status": "beta", "mmir": "Local-node model pull jobs, progress polling and install helper copy are present.", "benchmark": "Open WebUI", "next": "Improve post-install detection and error recovery."},
@@ -63,7 +64,7 @@
         {"feature": "Share recipient onboarding", "status": "beta", "mmir": "D159 guides invited users from invite/session acceptance to the intended protected share with safe denial states and one-time token handling.", "benchmark": "ChatGPT Teams / enterprise sharing", "next": "Do not store invite codes, session tokens or protected payloads in the public frontend."},
         {"feature": "One-click team share packet", "status": "beta", "mmir": "D160 lets owners create invite-backed packets with share id, invite id, role and recipient instructions while keeping the one-time code separate and shown once.", "benchmark": "ChatGPT Teams / enterprise sharing", "next": "Prefill non-secret recipient fields and keep policy enforcement on the backend."},
         {"feature": "In-memory session backend profile", "status": "beta", "mmir": "D161 lets users activate returned MMIR session tokens for current-tab protected backend calls without localStorage or sessionStorage persistence.", "benchmark": "Enterprise AI sharing", "next": "Add clear, copy and expiry cues before broader recipient workflows."},
-        {"feature": "Team share activity and revocation cues", "status": "planned", "mmir": "D162 will make handoff, read and revocation state easier for owners and recipients to understand from Safe Sharing.", "benchmark": "Enterprise AI sharing", "next": "Use protected audit and identity data without exposing payload bodies."}
+        {"feature": "Team share activity and revocation cues", "status": "beta", "mmir": "D162 adds protected activity summaries for reads, access reviews, handoff success/failure and revocation, rendered in Safe Sharing for owners and recipients without exposing payload bodies.", "benchmark": "Enterprise AI sharing", "next": "Add richer recipient inbox and notifications after live-model activation polish."}
       ]
     },
     {
