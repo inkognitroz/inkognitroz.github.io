@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:55:00+02:00",
+  "updated_at": "2026-05-23T13:15:00+02:00",
   "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
   "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
   "groups": [
@@ -96,17 +96,17 @@
       "id": "operator-dashboards",
       "surface": "Status, progress, parity and journeys",
       "status": "live",
-      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity, first-chat receipt state, activation telemetry, activation simulator, safe activation autopilot and user journey state from the site.",
-      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#progress-first-chat-recovery", "#progress-activation-autopilot", "#progress-activation-clear", "#progress-activation-simulator", "#refresh-gui-parity", "#refresh-user-journeys"],
-      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "progress-first-chat-recovery", "firstChatReceiptState", "progress-activation-autopilot", "progress-activation-clear", "renderActivationSimulator", "activation_simulator", "progress-activation-simulator", "activationSummary", "mimir-activation-events-v1:", "MimirActivationAutopilot", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
+      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity, first-chat receipt state, activation telemetry, activation simulator, safe replay state, safe activation autopilot and user journey state from the site.",
+      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#progress-first-chat-recovery", "#progress-activation-autopilot", "#progress-activation-clear", "#progress-activation-simulator", "#progress-activation-replay-clear", "[data-activation-replay]", "#refresh-gui-parity", "#refresh-user-journeys"],
+      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "progress-first-chat-recovery", "firstChatReceiptState", "progress-activation-autopilot", "progress-activation-clear", "renderActivationSimulator", "activation_simulator", "progress-activation-simulator", "writeActivationReplay", "mimir-activation-replay-v1:", "mutated_real_connector:false", "activationSummary", "mimir-activation-events-v1:", "MimirActivationAutopilot", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
     },
     {
       "id": "workspace-memory-knowledge",
       "surface": "Workspace, memory, knowledge and privacy controls",
       "status": "beta",
-      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, see first-chat receipts, activation telemetry, autopilot and repair resume state, and export/delete local data.",
+      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, see first-chat receipts, activation telemetry, autopilot, activation replay and repair resume state, and export/delete local data.",
       "selectors": ["#workspace-new", "#memory-save", "#knowledge-dropzone", "#knowledge-collection-name", "[data-collection-toggle]", "#knowledge-save", "#privacy-export", "#privacy-delete"],
-      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "First chat receipt", "Activation telemetry", "Activation autopilot", "Repair resume state", "privacy-delete"]
+      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "First chat receipt", "Activation telemetry", "Activation autopilot", "Activation replay demo state", "Repair resume state", "privacy-delete"]
     },
     {
       "id": "explicit-web-search",

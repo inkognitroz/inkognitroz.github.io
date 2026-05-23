@@ -12,7 +12,8 @@ const files = {
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   telemetry: join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'),
   progressDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'),
-  progressCss: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css')
+  progressCss: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'),
+  privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js')
 };
 
 const expectedScenarioIds = [
@@ -135,8 +136,26 @@ if (!text(files.progressDashboard).includes('progress-activation-simulator')) {
   fail('Progress dashboard must expose the activation simulator panel id.');
 }
 
+for (const needle of ['mimir-activation-replay-v1:', 'writeActivationReplay', 'data-activation-replay', 'progress-activation-replay-clear', 'no_paid_routes_started:true', 'mutated_real_connector:false']) {
+  if (!text(files.progressDashboard).includes(needle)) {
+    fail(`D178 activation replay controls need progress-dashboard evidence: ${needle}`);
+  }
+}
+
 if (!text(files.progressCss).includes('.progress-simulator-card')) {
   fail('Progress dashboard must style activation simulator cards.');
+}
+
+if (!text(files.progressCss).includes('.progress-replay-state')) {
+  fail('Progress dashboard must style activation replay state.');
+}
+
+if (!text(files.privacyControls).includes('Activation replay demo state')) {
+  fail('Privacy inventory must disclose activation replay demo state.');
+}
+
+if (!text(files.privacyControls).includes('mimir-activation-replay-v1:')) {
+  fail('Privacy reset must include activation replay demo state.');
 }
 
 if (!process.exitCode) {

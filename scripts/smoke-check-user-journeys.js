@@ -389,13 +389,18 @@ requireIncludes(files.progressDashboard, 'progress-activation-autopilot', 'D171 
 requireIncludes(files.progressDashboard, 'activationSummary', 'D170 dashboard must summarize activation telemetry.');
 requireIncludes(files.progressDashboard, 'renderActivationSimulator', 'D177 dashboard must render activation simulator fixtures.');
 requireIncludes(files.progressDashboard, 'progress-activation-simulator', 'D177 dashboard must expose activation simulator panel.');
+requireIncludes(files.progressDashboard, 'data-activation-replay', 'D178 dashboard must expose safe replay controls.');
+requireIncludes(files.progressDashboard, 'mimir-activation-replay-v1:', 'D178 replay state must be workspace-local.');
+requireIncludes(files.progressDashboard, 'mutated_real_connector:false', 'D178 replay controls must not mutate real connectors.');
 requireIncludes(files.progressDashboardCss, '.progress-simulator-card', 'D177 dashboard must style activation simulator fixtures.');
+requireIncludes(files.progressDashboardCss, '.progress-replay-state', 'D178 dashboard must style activation replay state.');
 requireIncludes(files.activationSimulator, 'first-visit-free-guide', 'D177 simulator must cover first visit.');
 requireIncludes(files.activationSimulator, 'missing-connector', 'D177 simulator must cover missing connector.');
 requireIncludes(files.activationSimulator, 'installer-return-checking', 'D177 simulator must cover installer return.');
 requireIncludes(files.activationSimulator, 'connector-online-no-model', 'D177 simulator must cover connector online with no model.');
 requireIncludes(files.activationSimulator, 'verified-local-model', 'D177 simulator must cover verified local model.');
 requireIncludes(files.simulatorHarness, 'expectedScenarioIds', 'D177 simulator needs dedicated CI fixture coverage.');
+requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');
 requireIncludes(files.activationTelemetry, 'raw_prompt_stored:false', 'D170 telemetry must not store raw prompts.');

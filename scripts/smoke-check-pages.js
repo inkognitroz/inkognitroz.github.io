@@ -421,7 +421,12 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-activation-autopilot', 'D171 dashboard must expose manual safe autopilot run.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'renderActivationSimulator', 'D177 progress dashboard must render activation simulator fixtures.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-activation-simulator', 'D177 progress dashboard must expose activation simulator panel.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'data-activation-replay', 'D178 progress dashboard must expose safe activation replay controls.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-replay-v1:', 'D178 replay state must be browser-local and workspace-scoped.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mutated_real_connector:false', 'D178 replay controls must not mutate real connectors.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-simulator-card', 'D177 activation simulator needs progress dashboard styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-replay-state', 'D178 activation replay needs visible status styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay demo state.');
 requireText(join(publicDir, 'activation-simulator-fixtures.json'), 'verified-local-model', 'D177 activation simulator must include verified local model fixture.');
 requireText(join(root, 'scripts', 'smoke-check-activation-simulator.js'), 'expectedScenarioIds', 'D177 activation simulator must have a dedicated smoke harness.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');

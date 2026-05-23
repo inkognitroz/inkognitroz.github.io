@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d177-20260523-activation-simulator';
+const CACHE_NAME='mmir-pwa-d178-20260523-activation-replay';
 const SHELL_ASSETS=[
   './',
   './index.html',

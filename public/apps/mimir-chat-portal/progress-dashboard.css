@@ -255,6 +255,37 @@
   border-color: rgba(16, 163, 127, 0.24);
 }
 
+.progress-replay-state {
+  align-items: center;
+  background: #f0fdf9;
+  border: 1px solid rgba(16, 163, 127, 0.28);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.progress-replay-state span {
+  color: var(--mimir-muted, #6b7280);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.progress-replay-state strong {
+  color: var(--mimir-text, #111827);
+  display: block;
+  margin-top: 3px;
+}
+
+.progress-replay-state p {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.84rem;
+  margin: 4px 0;
+}
+
 .progress-simulator-grid {
   display: grid;
   gap: 8px;
@@ -287,6 +318,19 @@
   font-style: normal;
   font-weight: 750;
   padding: 3px 7px;
+}
+
+.progress-simulator-scenario button,
+.progress-replay-state button {
+  background: #fff;
+  border: 1px solid rgba(16, 163, 127, 0.34);
+  border-radius: 999px;
+  color: #0f766e;
+  cursor: pointer;
+  font-weight: 750;
+  min-height: 34px;
+  padding: 7px 12px;
+  justify-self: start;
 }
 
 .progress-activation-card[data-state="ready"] {
@@ -380,7 +424,8 @@
   .progress-task-head,
   .progress-toolbar,
   .progress-receipt-card,
-  .progress-activation-head {
+  .progress-activation-head,
+  .progress-replay-state {
     display: grid;
   }
 

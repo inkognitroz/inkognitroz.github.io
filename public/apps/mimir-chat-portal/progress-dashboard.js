@@ -8,6 +8,7 @@
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
   const AUTOPILOT_PREFIX='mimir-activation-autopilot-v1:';
+  const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
@@ -20,6 +21,7 @@
   function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
   function activationEventsStorageKey(){return ACTIVATION_EVENTS_PREFIX+activeWorkspaceId();}
   function autopilotStorageKey(){return AUTOPILOT_PREFIX+activeWorkspaceId();}
+  function activationReplayStorageKey(){return ACTIVATION_REPLAY_PREFIX+activeWorkspaceId();}
   function readFirstChatReceipt(){
     try{
       const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
@@ -68,6 +70,38 @@
     }catch(error){
       return null;
     }
+  }
+  function readActivationReplay(){
+    try{
+      const value=JSON.parse(localStorage.getItem(activationReplayStorageKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+  function writeActivationReplay(scenario){
+    const replay={
+      id:String(scenario.id||'scenario'),
+      state:String(scenario.state||scenario.id||'scenario'),
+      label:String(scenario.label||'Activation replay'),
+      simulated_signal:String(scenario.simulated_signal||'Public-safe activation fixture.'),
+      expected_next_action:String(scenario.expected_next_action||'Review the next safe action.'),
+      applied_at:new Date().toISOString(),
+      demo_only:true,
+      no_paid_routes_started:true,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      mutated_real_connector:false,
+      mutated_pairing_tokens:false
+    };
+    try{localStorage.setItem(activationReplayStorageKey(),JSON.stringify(replay));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-activation-replay-updated',{detail:replay}));
+    return replay;
+  }
+  function clearActivationReplay(){
+    try{localStorage.removeItem(activationReplayStorageKey());}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-activation-replay-updated',{detail:{cleared:true}}));
   }
   function activationSummary(){
     const events=readActivationEvents();
@@ -147,15 +181,18 @@
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
     if(!scenarios.length)return '';
     const surfaces=Array.isArray(simulator.required_surfaces)?simulator.required_surfaces:[];
+    const replay=readActivationReplay();
     return '<section id="progress-activation-simulator" class="progress-simulator-card">'+
       '<div class="progress-activation-head"><div><p class="eyebrow">Activation simulator</p><h2>'+safe(simulator.title||'Activation simulator')+'</h2><small>'+safe(simulator.principle||'Public-safe free-first activation fixtures.')+'</small></div>'+
       '<div class="progress-activation-counts"><span>'+safe(scenarios.length)+' scenarios</span><span>'+safe(surfaces.length)+' surfaces</span><span>no spend</span></div></div>'+
+      (replay?'<article id="progress-activation-replay-state" class="progress-replay-state"><div><span>Replay active</span><strong>'+safe(replay.label)+'</strong><p>'+safe(replay.expected_next_action)+'</p><small>demo_only:true / no_paid_routes_started:true / mutated_real_connector:false</small></div><button id="progress-activation-replay-clear" type="button">Reset replay</button></article>':'<p class="dashboard-note">No replay is active. Replay loads only a browser-local demo state and never touches connector tokens, provider keys or paid routes.</p>')+
       '<div class="progress-simulator-grid">'+scenarios.map((scenario)=>
         '<article class="progress-simulator-scenario" data-state="'+safe(scenario.state||scenario.id)+'">'+
           '<span>'+safe(scenario.id)+'</span><h3>'+safe(scenario.label)+'</h3>'+
           '<p>'+safe(scenario.expected_next_action)+'</p>'+
           '<small>'+safe(scenario.user_goal)+' / '+safe(scenario.cost||'free')+'</small>'+
           '<div class="progress-simulator-surfaces">'+(Array.isArray(scenario.surfaces)?scenario.surfaces.map((surface)=>'<em>'+safe(surface.surface)+'</em>').join(''):'')+'</div>'+
+          '<button type="button" data-activation-replay="'+safe(scenario.id)+'">Replay safely</button>'+
         '</article>'
       ).join('')+'</div>'+
       '<small class="progress-activation-privacy">'+safe(simulator.public_repo_rule||'Fixtures store no provider secrets, raw prompts or raw responses.')+'</small>'+
@@ -291,6 +328,24 @@
     });
   }
 
+  function bindActivationSimulator(){
+    const scenarios=dashboard?.activation_simulator?.scenarios||[];
+    root.querySelectorAll('[data-activation-replay]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const scenario=scenarios.find(item=>item.id===button.getAttribute('data-activation-replay'));
+        if(!scenario)return;
+        const replay=writeActivationReplay(scenario);
+        setSummary('Activation replay loaded: '+replay.label+'. Demo-only local state; no connector, token or paid route was changed.','ready');
+        render();
+      });
+    });
+    document.getElementById('progress-activation-replay-clear')?.addEventListener('click',()=>{
+      clearActivationReplay();
+      setSummary('Activation replay cleared. Real workspace data was not touched.','ready');
+      render();
+    });
+  }
+
   function openHashDetails(){
     const id=window.location.hash?window.location.hash.slice(1):'';
     if(!id)return;
@@ -303,6 +358,7 @@
     root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderActivationSimulator(dashboard)+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindActivationTelemetry();
+    bindActivationSimulator();
     bindFilters();
     openHashDetails();
   }
@@ -328,6 +384,7 @@
   window.addEventListener('mmir-first-chat-receipt-updated',render);
   window.addEventListener('mmir-activation-telemetry-updated',render);
   window.addEventListener('mmir-activation-autopilot-updated',render);
+  window.addEventListener('mmir-activation-replay-updated',render);
   window.addEventListener('mmir-chat-history-updated',render);
   window.addEventListener('storage',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
