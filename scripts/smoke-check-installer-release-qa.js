@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { extname, join, relative, resolve } from 'node:path';
 
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector';
+const textExtensions = new Set(['.cmd', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
 const files = {
   manifest: join(publicDir, 'downloads', 'mmir-local-connector-release.json'),
   installPage: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),
@@ -39,7 +40,11 @@ function json(file) {
 }
 
 function sha256(file) {
-  return createHash('sha256').update(readFileSync(file)).digest('hex');
+  const bytes = readFileSync(file);
+  const normalized = textExtensions.has(extname(file).toLowerCase())
+    ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')
+    : bytes;
+  return createHash('sha256').update(normalized).digest('hex');
 }
 
 function artifactPath(pathValue) {
@@ -71,6 +76,9 @@ if (manifest.installer_qa?.public_frontend_secrets_allowed !== false || manifest
 }
 if (manifest.installer_qa?.post_install_return_url !== returnUrl) {
   fail('Installer QA block must record the post-install return URL.');
+}
+if (manifest.installer_qa?.text_hash_normalization !== 'lf') {
+  fail('Installer QA block must document LF text hash normalization for cross-platform CI.');
 }
 
 let checksumCount = 0;
@@ -127,7 +135,8 @@ for (const file of [files.mac, files.windows, files.linux]) {
 [
   'createHash',
   'installer_qa',
-  'post_install_return_url'
+  'post_install_return_url',
+  "text_hash_normalization: 'lf'"
 ].forEach((needle) => requireIncludes(updateScript, needle, `Installer hash updater missing repeatability evidence: ${needle}`));
 
 if (checksumCount < 8) {

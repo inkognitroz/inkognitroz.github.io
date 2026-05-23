@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { extname, join, relative, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const docsDir = resolve(root, 'docs');
+const textExtensions = new Set(['.cmd', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
 
 const files = {
   index: join(publicDir, 'index.html'),
@@ -159,7 +160,11 @@ function requireModel(models, id, predicate, message) {
 }
 
 function sha256File(file) {
-  return createHash('sha256').update(readFileSync(file)).digest('hex');
+  const bytes = readFileSync(file);
+  const normalized = textExtensions.has(extname(file).toLowerCase())
+    ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')
+    : bytes;
+  return createHash('sha256').update(normalized).digest('hex');
 }
 
 requireIncludes(files.index, 'MMIR', 'Homepage must keep MMIR as the top-level product identity.');
@@ -585,6 +590,9 @@ requireIncludes(files.connectorServer, 'model-pull', 'Standalone connector serve
 const release = json(files.connectorRelease);
 if (release.contract_version !== '0.1' || release.default_host !== '127.0.0.1') {
   fail('Connector release manifest must pin contract version and localhost default.');
+}
+if (release.installer_qa?.text_hash_normalization !== 'lf') {
+  fail('Connector release manifest must document LF text hash normalization for CI-stable installer checksums.');
 }
 const artifacts = Array.isArray(release.artifacts) ? release.artifacts : [];
 for (const artifact of artifacts.filter((item) => item?.sha256 && item?.path)) {

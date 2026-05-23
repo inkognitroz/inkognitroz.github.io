@@ -1,14 +1,21 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const manifestPath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
 const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector';
+const textExtensions = new Set(['.cmd', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
+
+function bytesForHash(file) {
+  const bytes = readFileSync(file);
+  if (!textExtensions.has(extname(file).toLowerCase())) return bytes;
+  return Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+}
 
 function sha256(file) {
-  return createHash('sha256').update(readFileSync(file)).digest('hex');
+  return createHash('sha256').update(bytesForHash(file)).digest('hex');
 }
 
 function artifactPath(pathValue) {
@@ -31,6 +38,7 @@ manifest.installer_qa = {
   checksum_algorithm: 'sha256',
   artifacts_with_checksums: checksumCount,
   checksums_refreshed_by: 'scripts/update-installer-release-hashes.js',
+  text_hash_normalization: 'lf',
   default_host_verified: manifest.default_host === '127.0.0.1',
   post_install_return_url: returnUrl,
   public_frontend_secrets_allowed: false,
