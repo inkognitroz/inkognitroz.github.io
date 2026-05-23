@@ -1,23 +1,33 @@
-# SaaS Fabric blueprint (future)
+# MMIR Platform Blueprint
 
-## v1 (now)
+This file is kept for historical link compatibility, but the active product is MMIR.
+
+## v1
+
 - GitHub repository as source of truth
 - GitHub Pages publishes `/public`
-- Static, safe, no backend required
-- Content managed in one file: `public/content.json`
+- Static public frontend
+- No provider secrets in the browser
+- Local-first onboarding through MMIR Local Node
+- Smoke checks protect product identity, routes and user journeys
 
 ## Positioning
-SaaS Fabric is a platform for creating, organizing, publishing and eventually monetizing:
-- Apps and SaaS products
-- Websites and landing pages
-- Dashboards and internal tools
-- Templates and Excel/CSV-based tools
-- AI-assisted apps and client portals
 
-## Future platform stack
+MMIR is the orchestration layer for trusted AI:
+
+- local AI connection
+- provider/model routing
+- workflow orchestration
+- memory and project context
+- trusted nodes and runtime management
+- future marketplace, billing and governance
+
+## Future Platform Stack
+
 - **Code + tasks:** GitHub repositories + GitHub Issues
-- **Public hub:** GitHub Pages (`/public`)
-- **Apps / products:** Vercel or Netlify
-- **Backend:** Supabase (database, auth, storage, RLS)
-- **Payments:** Stripe subscriptions + one-time purchases
-- **Execution loop:** Prompt Inbox -> Issue -> AI-assisted PR -> Review -> Deploy
+- **Public product surface:** GitHub Pages / `mmir.ai`
+- **Local runtime bridge:** MMIR Local Node
+- **Managed API:** `mimir-backend-template` / `api.mmir.ai`
+- **Secrets:** protected backend or local secure storage only
+- **Payments:** future billing hooks behind explicit approval and backend policy
+- **Execution loop:** product goal -> issue -> AI-assisted implementation -> review -> tests -> deploy
