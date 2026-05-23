@@ -36,6 +36,9 @@ jobs:
             node --check "$file"
           done
 
+      - name: Check MMIR public branding
+        run: node scripts/ensure-mmir-public-branding.js --check
+
       - name: Check for forbidden frontend secrets
         run: |
           set -euo pipefail
