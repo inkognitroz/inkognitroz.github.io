@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T09:37:24.617Z",
+  "updated_at": "2026-05-23T09:49:26.615Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 158,
+    "total": 159,
     "done": 51,
-    "beta": 82,
+    "beta": 83,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -718,9 +718,9 @@
       },
       {
         "phase": "Sharing/Security",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -778,7 +778,7 @@
     }
   ],
   "next_queue": [
-    "D158"
+    "D159"
   ],
   "watchlist": [
     "D082",
@@ -3150,9 +3150,24 @@
       "best_practice": "Revocation and trust require inspectable access state, not hidden policy",
       "done_when": "Owner can inspect share audience, recent reads, revoked state and next-safe action from the UI",
       "covers": "team governance",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Share access review now exposes audience summaries, viewer decisions, next-safe actions and share-specific audit state from the protected backend inside Safe Sharing.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D159",
+      "phase": "Sharing/Security",
+      "priority": "P1",
+      "work_package": "Share recipient onboarding handoff",
+      "repos": "mimir-backend-template, inkognitroz.github.io",
+      "concrete_work": "Add a protected recipient flow that guides invited users from invite/session acceptance to the specific shared item without exposing invite codes, session tokens or payloads in the public repo",
+      "best_practice": "Team sharing becomes useful only when recipients can land, authenticate and open the right object with clear gates",
+      "done_when": "Recipient can paste/accept an invite code, establish a short-lived session, open the intended share if policy allows, and see a safe denial if not",
+      "covers": "team adoption",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sharing/security slice: show share access review, audience summaries and share-specific audit state so owners can inspect who can access what and why.",
+      "evidence": "Next sharing/security slice: guide recipients from invite/session acceptance to the intended protected share with safe denial states and no public token storage.",
       "estimate": "0.5-2d"
     }
   ]

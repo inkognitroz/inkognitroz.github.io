@@ -14,8 +14,10 @@
   let itemEl=null;
   let previewEl=null;
   let backendListEl=null;
+  let accessReviewEl=null;
   let statusEl=null;
   let currentBundle=null;
+  let currentAccessReview=null;
   let backendShares=[];
 
   if(!root)return;
@@ -286,9 +288,41 @@
         '<div><strong>'+safe(share.title||'Protected share')+'</strong><span>'+safe(share.content_type)+' - '+safe(share.status)+' - '+safe(share.access?.visibility||'private')+'</span><small>'+safe(share.access?.visibility==='organization'?'Org '+(share.access?.org_id||'required')+' / min '+(share.access?.min_role||'member')+' / organization_membership_required':'Owner scoped or backend-auth scoped')+'</small></div>'+
         '<div class="sharing-backend-actions">'+
           '<button type="button" data-share-action="load" data-share-id="'+safe(share.id)+'" '+(share.payload_available===false?'disabled':'')+'>Preview</button>'+
+          '<button type="button" data-share-action="review" data-share-id="'+safe(share.id)+'">Review access</button>'+
           '<button type="button" data-share-action="revoke" data-share-id="'+safe(share.id)+'" '+(share.status==='revoked'?'disabled':'')+'>Revoke</button>'+
         '</div>'+
       '</article>').join('');
+  }
+
+  function renderAccessReview(payload=currentAccessReview){
+    if(!accessReviewEl)return;
+    if(!payload){
+      accessReviewEl.innerHTML='<p class="dashboard-note">No share access review loaded yet. Load protected shares, then review access on a share.</p>';
+      return;
+    }
+    const review=payload.review||payload.data||payload;
+    const audit=payload.audit||{};
+    const events=array(audit.events);
+    const summary=review.audience_summary||{};
+    const viewer=review.viewer||{};
+    const actions=array(review.next_actions);
+    const status=viewer.can_read?'Can read':'Cannot read';
+    accessReviewEl.innerHTML=''+
+      '<article class="sharing-review-card" data-share-review="access-review">'+
+        '<header><div><strong>Access review</strong><span>'+safe(review.title||review.share_id||'Protected share')+'</span></div><small>'+safe(review.object||'share.access_review')+'</small></header>'+
+        '<div class="sharing-review-grid">'+
+          '<div><dt>Decision</dt><dd>'+safe(status)+'</dd><small>'+safe(viewer.can_revoke?'Viewer can revoke':'Revoke requires owner/admin authority')+'</small></div>'+
+          '<div><dt>Audience</dt><dd>'+safe(summary.visibility||'private')+'</dd><small>'+safe(summary.org_id?('Org '+summary.org_id+' / min '+(summary.min_role||'member')):(summary.audience||'Owner scoped'))+'</small></div>'+
+          '<div><dt>Policy</dt><dd>'+safe(summary.organization_membership_required?'Org membership required':(summary.authenticated_required?'Auth required':'Public preview only'))+'</dd><small>server_side_enforcement_required: '+safe(String(summary.server_side_enforcement_required!==false))+'</small></div>'+
+          '<div><dt>Viewer role</dt><dd>'+safe(viewer.org_role||'none')+'</dd><small>meets_min_role: '+safe(String(viewer.meets_min_role!==false))+'</small></div>'+
+        '</div>'+
+        '<section class="sharing-review-actions"><strong>Next safe action</strong><ul>'+actions.map(action=>'<li>'+safe(action)+'</li>').join('')+'</ul></section>'+
+        '<section class="sharing-review-audit"><strong>Recent share audit</strong>'+(
+          events.length?
+            '<ul>'+events.map(event=>'<li><span>'+safe(event.action||event.type||'share event')+'</span><small>'+safe(event.created_at||event.ts||'')+' '+safe(event.principal_id||event.actor||'')+'</small></li>').join('')+'</ul>':
+            '<p class="dashboard-note">No recent share-specific audit events returned yet.</p>'
+        )+'</section>'+
+      '</article>';
   }
 
   async function copyText(){
@@ -355,6 +389,22 @@
     }
   }
 
+  async function reviewProtectedShare(id){
+    if(!id)return;
+    try{
+      setStatus('Reviewing protected share access...','loading');
+      const path='/shares/'+encodeURIComponent(id)+'/'+'access-review';
+      const data=await request(path);
+      currentAccessReview={review:data.data||data,audit:data.audit||{}};
+      renderAccessReview(currentAccessReview);
+      setStatus('Access review ready: audience_summary, viewer decision and audit trail loaded.','ready');
+    }catch(error){
+      currentAccessReview=null;
+      renderAccessReview();
+      setStatus(error.message||'Share access review failed.','error');
+    }
+  }
+
   async function revokeProtectedShare(id){
     if(!id)return;
     try{
@@ -363,8 +413,10 @@
       const data=await request('/shares/'+encodeURIComponent(id)+'/'+suffix,{method:'POST',body:JSON.stringify({reason:'manual revoke from MMIR Safe Sharing'})});
       backendShares=backendShares.map(share=>share.id===id?data.data:share);
       if(currentBundle?.source==='protected-backend-d153'&&currentBundle.content?.title===data.data?.title)currentBundle=protectedShareToBundle(data.data);
+      currentAccessReview=null;
       renderBackendShares();
       renderPreview(currentBundle);
+      renderAccessReview();
       setStatus('Protected share revoked. Payload will no longer be returned by backend.','ready');
     }catch(error){
       setStatus(error.message||'Share revoke failed.','error');
@@ -424,11 +476,13 @@
       '</div>'+
       '<div id="sharing-preview" class="sharing-preview" aria-live="polite"></div>'+
       '<div id="sharing-backend-list" class="sharing-backend-list" aria-live="polite"></div>'+
+      '<div id="sharing-access-review" class="sharing-access-review" aria-live="polite"></div>'+
       '<p id="sharing-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>';
     typeEl=document.getElementById('sharing-type');
     itemEl=document.getElementById('sharing-item');
     previewEl=document.getElementById('sharing-preview');
     backendListEl=document.getElementById('sharing-backend-list');
+    accessReviewEl=document.getElementById('sharing-access-review');
     statusEl=document.getElementById('sharing-status');
     typeEl?.addEventListener('change',()=>{currentBundle=null;renderOptions();renderPreview();});
     document.getElementById('sharing-refresh')?.addEventListener('click',()=>{renderOptions();setStatus('Shareable items refreshed.','ready');});
@@ -449,10 +503,12 @@
         renderPreview(currentBundle);
         setStatus('Protected share preview loaded.','ready');
       }
+      if(button.dataset.shareAction==='review')reviewProtectedShare(id);
       if(button.dataset.shareAction==='revoke')revokeProtectedShare(id);
     });
     renderOptions();
     renderBackendShares();
+    renderAccessReview();
     if(!loadSharedHash())renderPreview();
   }
 

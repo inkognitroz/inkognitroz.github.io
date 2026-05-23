@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T20:20:00+02:00",
+  "updated_at": "2026-05-23T10:20:00+02:00",
   "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
   "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
   "groups": [
@@ -152,9 +152,9 @@
       "id": "safe-sharing",
       "surface": "Safe Sharing",
       "status": "beta",
-      "user_result": "Users can build redacted browser-local share previews, save/load/revoke protected backend shares, and choose organization audience/minimum role when a protected identity backend is active.",
-      "selectors": ["#sharing-center", "#sharing-type", "#sharing-item", "#sharing-visibility", "#sharing-org-id", "#sharing-min-role", "#sharing-build", "#sharing-copy-text", "#sharing-copy-link", "#sharing-save-backend", "#sharing-load-backend", "#sharing-export", "#sharing-clear-hash"],
-      "evidence": ["mmir.safe_share_bundle", "redactShareSecrets", "MAX_LINK_CHARS", "decodeShareHash", "server_side_enforcement_required:true", "organization_membership_required", "mimir-share-bundles-v1:", "/shares", "revokeProtectedShare"]
+      "user_result": "Users can build redacted browser-local share previews, save/load/revoke protected backend shares, choose organization audience/minimum role, and review audience_summary plus share audit state when a protected identity backend is active.",
+      "selectors": ["#sharing-center", "#sharing-type", "#sharing-item", "#sharing-visibility", "#sharing-org-id", "#sharing-min-role", "#sharing-build", "#sharing-copy-text", "#sharing-copy-link", "#sharing-save-backend", "#sharing-load-backend", "#sharing-access-review", "#sharing-export", "#sharing-clear-hash"],
+      "evidence": ["mmir.safe_share_bundle", "redactShareSecrets", "MAX_LINK_CHARS", "decodeShareHash", "server_side_enforcement_required:true", "organization_membership_required", "audience_summary", "access-review", "Review access", "mimir-share-bundles-v1:", "/shares", "revokeProtectedShare"]
     },
     {
       "id": "code-sandbox-preflight",

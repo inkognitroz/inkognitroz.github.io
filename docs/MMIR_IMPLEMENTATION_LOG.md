@@ -149,14 +149,15 @@ Updated: 2026-05-23
 - D155 is now beta across frontend/backend: protected identity routes expose principals, free-first organizations, owner/admin/member/viewer roles and owner guardrails, while the public UI can create orgs and manage members through the active protected backend without storing organization authority in GitHub Pages.
 - D156 is now beta across frontend/backend: short-lived MMIR session tokens and organization invite codes can be created, listed, accepted and revoked through protected backend routes, while the public UI shows one-time tokens/codes without storing them in GitHub Pages.
 - D157 is now beta across frontend/backend: protected shares can be scoped to organization id and minimum role, backend identity policy enforces owner/admin creation plus member-role read access, and Safe Sharing exposes organization audience controls while preview links remain non-authoritative.
-- D158 is now the next sharing/security slice: add share access review, audience summaries and share-specific audit state so owners can inspect who can access what and why.
+- D158 is now beta across frontend/backend: share access review exposes protected audience summaries, viewer decisions, next-safe actions and recent share-specific audit state inside Safe Sharing.
+- D159 is now the next sharing/security slice: add recipient onboarding from invite/session acceptance to the intended protected share, with safe denial states and no public token storage.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D158` share access review and audit trail.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D159` share recipient onboarding handoff.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
