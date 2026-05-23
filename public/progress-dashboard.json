@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:39:11.572Z",
+  "updated_at": "2026-05-23T10:49:12.645Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 164,
+    "total": 165,
     "done": 51,
-    "beta": 88,
+    "beta": 89,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -728,9 +728,9 @@
       },
       {
         "phase": "Model Activation",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -788,7 +788,7 @@
     }
   ],
   "next_queue": [
-    "D164"
+    "D165"
   ],
   "watchlist": [
     "D082",
@@ -3250,9 +3250,24 @@
       "best_practice": "Users should not interpret model failure; MMIR should tell them the next safest fix",
       "done_when": "User can follow one repair action from failed proof to model live without reading docs",
       "covers": "activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Live-model proof failures now render repair actions for free local profile, installer, model library, connect settings and retry proof from the proof panel.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D165",
+      "phase": "Model Activation",
+      "priority": "P0",
+      "work_package": "Verified first-chat handoff",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "After a route is verified, make the next chat action select that route, explain the active model and keep fallback browser guide available",
+      "best_practice": "First value should happen immediately after proof succeeds",
+      "done_when": "User can go from verified model to useful first answer without changing controls manually",
+      "covers": "activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: turn failed live-model proof states into exact installer, local node, Ollama, model install and retry repair actions.",
+      "evidence": "Next activation slice: after a route is verified, hand the user into first chat with the verified model selected and fallback guide preserved.",
       "estimate": "2-6h"
     }
   ]

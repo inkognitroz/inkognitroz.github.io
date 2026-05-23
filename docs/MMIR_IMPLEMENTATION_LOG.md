@@ -155,14 +155,15 @@ Updated: 2026-05-23
 - D161 is now beta in the public UI: returned MMIR session tokens can be activated for current-tab protected backend calls through api-client memory only, with Identity/Safe Sharing controls and privacy inventory disclosure.
 - D162 is now beta across frontend/backend: protected activity summaries count reads, access reviews, handoff success/failure and revocations, and Safe Sharing renders owner/recipient activity, stale-session and revocation cues without exposing share payloads.
 - D163 is now beta in the public UI: chat has a live-model proof panel, verifies browser helper/WebGPU readiness, runs a tiny free chat probe for free/local-looking live models and skips possible paid/provider probes.
-- D164 is now the next activation slice: failed proof states should become exact installer, local node, Ollama, model install and retry repair actions.
+- D164 is now beta in the public UI: failed live-model proof states render direct repair actions for free local profile, installer, model library, connect settings and retry proof.
+- D165 is now the next activation slice: after proof succeeds, first chat should use the verified model automatically while preserving browser-guide fallback.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D164` proof-driven repair actions.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D165` verified first-chat handoff.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

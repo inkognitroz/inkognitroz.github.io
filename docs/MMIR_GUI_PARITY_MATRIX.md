@@ -45,6 +45,7 @@ Current priority after the matrix is:
 35. D162 team share activity and revocation cues.
 36. D163 live-model proof and automatic retry.
 37. D164 proof-driven repair actions.
+38. D165 verified first-chat handoff.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -81,6 +82,7 @@ D160 is now beta in the public UI: owners can create team-share packets that cop
 D161 is now beta in the public UI: returned MMIR session tokens can be activated for current-tab protected backend calls without localStorage or sessionStorage persistence.
 D162 is now beta across backend/frontend: protected share activity summaries count reads, access reviews, handoff success/failure and revocations, and Safe Sharing renders those cues for owners and recipients.
 D163 is now beta in the public UI: chat shows live-model proof, verifies browser helpers/WebGPU availability and runs tiny free chat probes only on free/local-looking routes while skipping possible paid providers.
-D164 is next: failed live-model proof should become exact installer, local node, Ollama, model install and retry repair actions.
+D164 is now beta in the public UI: failed live-model proof states render repair actions for free local profile, installer, model library, connect settings and retry proof.
+D165 is next: after proof succeeds, the user should land in first chat with the verified model selected while keeping fallback guide available.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

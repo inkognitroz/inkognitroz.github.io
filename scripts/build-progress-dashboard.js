@@ -55,7 +55,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 164).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 165).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -100,7 +100,8 @@ const overrides = new Map([
   ['D161', { status: 'beta', evidence: 'Returned MMIR session tokens can now be activated for current-tab protected backend calls through api-client memory only, with clear actions in Identity and Safe Sharing plus privacy inventory disclosure.' }],
   ['D162', { status: 'beta', evidence: 'Protected share activity summaries now count reads, access reviews, handoff success/failure and revocations in backend responses, and Safe Sharing renders activity/revocation cues for owners and recipients.' }],
   ['D163', { status: 'beta', evidence: 'Chat now shows a live-model proof panel, verifies browser helper/WebGPU readiness, runs tiny free chat probes only on free/local-looking routes and skips possible paid provider probes.' }],
-  ['D164', { status: 'next', evidence: 'Next activation slice: turn failed live-model proof states into exact installer, local node, Ollama, model install and retry repair actions.' }]
+  ['D164', { status: 'beta', evidence: 'Live-model proof failures now render repair actions for free local profile, installer, model library, connect settings and retry proof from the proof panel.' }],
+  ['D165', { status: 'next', evidence: 'Next activation slice: after a route is verified, hand the user into first chat with the verified model selected and fallback guide preserved.' }]
 ]);
 
 const repoMeta = [
@@ -228,7 +229,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D164', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D165', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

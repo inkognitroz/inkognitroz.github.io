@@ -344,6 +344,9 @@ requireText(chatRuntimePath, 'runtime-live-proof', 'D163 needs visible live mode
 requireText(chatRuntimePath, 'tinyChatProbe', 'D163 needs a tiny free chat proof before marking a route verified.');
 requireText(chatRuntimePath, 'skipped to avoid hidden provider cost', 'D163 must not auto-probe possibly paid provider routes.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'), '.runtime-live-proof', 'D163 needs live proof styling.');
+requireText(chatRuntimePath, 'proofRepairActions', 'D164 needs proof-driven repair actions.');
+requireText(chatRuntimePath, 'data-proof-action', 'D164 needs visible repair controls from proof states.');
+requireText(chatRuntimePath, 'mmir-local-connector-install.html', 'D164 needs installer repair path from failed proof.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
 requireText(chatRuntimePath, 'COLLECTIONS_PREFIX', 'Chat runtime must scope local knowledge to enabled collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'), 'COLLECTIONS_PREFIX', 'Model comparison must scope local knowledge to enabled collections.');
