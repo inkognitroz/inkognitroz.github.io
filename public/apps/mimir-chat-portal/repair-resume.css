@@ -1,6 +1,7 @@
 .repair-resume-banner,
 .activation-replay-banner,
-.activation-closure-strip {
+.activation-closure-strip,
+.first-screen-starter-funnel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.8rem;
@@ -15,13 +16,15 @@
 
 .repair-resume-banner[hidden],
 .activation-replay-banner[hidden],
-.activation-closure-strip[hidden] {
+.activation-closure-strip[hidden],
+.first-screen-starter-funnel[hidden] {
   display: none;
 }
 
 .repair-resume-banner span,
 .activation-replay-banner span,
-.activation-closure-strip span {
+.activation-closure-strip span,
+.first-screen-starter-funnel span {
   color: var(--mimir-muted);
   font-size: 0.7rem;
   font-weight: 850;
@@ -31,7 +34,8 @@
 
 .repair-resume-banner strong,
 .activation-replay-banner strong,
-.activation-closure-strip strong {
+.activation-closure-strip strong,
+.first-screen-starter-funnel strong {
   display: block;
   color: var(--mimir-text);
   font-size: 0.98rem;
@@ -41,7 +45,8 @@
 
 .repair-resume-banner p,
 .activation-replay-banner p,
-.activation-closure-strip p {
+.activation-closure-strip p,
+.first-screen-starter-funnel p {
   color: var(--mimir-muted);
   font-size: 0.84rem;
   line-height: 1.35;
@@ -49,7 +54,8 @@
 }
 
 .activation-replay-banner small,
-.activation-closure-strip small {
+.activation-closure-strip small,
+.first-screen-starter-funnel small {
   color: #475569;
   font-size: 0.76rem;
 }
@@ -64,7 +70,8 @@
 .repair-resume-banner a,
 .activation-replay-banner a,
 .activation-replay-banner button,
-.activation-closure-strip button {
+.activation-closure-strip button,
+.first-screen-starter-funnel a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -120,6 +127,16 @@
   background: #f0fdf9;
 }
 
+.first-screen-starter-funnel {
+  border-left-color: #2563eb;
+  background: #f8fafc;
+}
+
+.first-screen-starter-funnel[data-state="ready"] {
+  border-left-color: #10a37f;
+  background: #f0fdf9;
+}
+
 .activation-closure-strip[data-state="watch"] {
   border-left-color: #d97706;
   background: #fffbeb;
@@ -133,7 +150,8 @@
 @media (max-width: 560px) {
   .repair-resume-banner,
   .activation-replay-banner,
-  .activation-closure-strip {
+  .activation-closure-strip,
+  .first-screen-starter-funnel {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
@@ -142,6 +160,7 @@
   .activation-replay-banner a,
   .activation-replay-banner button,
   .activation-closure-strip button,
+  .first-screen-starter-funnel a,
   .activation-replay-actions {
     width: 100%;
   }

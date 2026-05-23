@@ -3,9 +3,11 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
+  const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
   const instantStart=document.querySelector('.mimir-instant-start');
   let lastRepairResumeSignature='';
   let lastActivationReplaySignature='';
+  let lastStarterFunnelSignature='';
 
   function safe(value){
     return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
@@ -30,6 +32,15 @@
       return value&&typeof value==='object'?value:null;
     }catch(error){
       return null;
+    }
+  }
+
+  function readActivationEvents(){
+    try{
+      const value=JSON.parse(localStorage.getItem(ACTIVATION_EVENTS_PREFIX+activeWorkspaceId())||'[]');
+      return Array.isArray(value)?value:[];
+    }catch(error){
+      return [];
     }
   }
 
@@ -127,6 +138,58 @@
     return banner;
   }
 
+  function firstScreenStarterFunnelState(){
+    const events=readActivationEvents();
+    const selected=[...events].reverse().find((event)=>event.type==='recommended-starter')||null;
+    if(!selected)return null;
+    const after=events.filter((event)=>Number(event.at_ms||0)>=Number(selected.at_ms||0));
+    const sameModel=(event)=>!selected.model||!event.model||event.model===selected.model;
+    const install=after.find((event)=>event.type==='model-install'&&sameModel(event));
+    const proof=after.find((event)=>event.type==='live-proof'&&sameModel(event)&&(event.status==='ready'||event.status==='verified'||event.first_chat_ready));
+    const chat=after.find((event)=>event.type==='first-chat-receipt'&&(event.status==='success'||event.first_chat_ready));
+    const ready=Boolean(chat);
+    const next=!install?'Install model':!proof?'Run free proof':!chat?'First answer':'Ready';
+    const done=[selected,install,proof,chat].filter(Boolean).length;
+    return {state:ready?'ready':'watch',model:selected.model||selected.route||'recommended starter',next,done};
+  }
+
+  function ensureFirstScreenStarterFunnel(){
+    let banner=document.getElementById('first-screen-starter-funnel');
+    if(banner||!instantStart)return banner;
+    ensureRepairResumeStyles();
+    banner=document.createElement('aside');
+    banner.id='first-screen-starter-funnel';
+    banner.className='first-screen-starter-funnel';
+    banner.setAttribute('aria-live','polite');
+    const closure=document.getElementById('activation-closure-strip');
+    const replay=document.getElementById('activation-replay-banner');
+    const repair=document.getElementById('repair-resume-banner');
+    (replay||repair||closure||instantStart).insertAdjacentElement('afterend',banner);
+    return banner;
+  }
+
+  function renderFirstScreenStarterFunnel(){
+    const banner=ensureFirstScreenStarterFunnel();
+    if(!banner)return;
+    const state=firstScreenStarterFunnelState();
+    if(!state){
+      if(lastStarterFunnelSignature==='hidden')return;
+      lastStarterFunnelSignature='hidden';
+      banner.hidden=true;
+      return;
+    }
+    const signature=[state.state,state.model,state.next,state.done].join('|');
+    if(signature===lastStarterFunnelSignature)return;
+    lastStarterFunnelSignature=signature;
+    banner.hidden=false;
+    banner.dataset.state=state.state;
+    banner.innerHTML='<div><span>Starter progress</span><strong>'+safe(state.model)+'</strong><p>'+safe(state.done)+'/4 complete - next: '+safe(state.next)+'</p><small>local_only:true / no_paid_routes_started:true / raw_prompt_stored:false / secrets_stored:false</small></div><a href="#progress-dashboard" data-first-screen-starter-funnel>Open progress</a>';
+    banner.querySelector('[data-first-screen-starter-funnel]')?.addEventListener('click',(event)=>{
+      event.preventDefault();
+      openPanel('#progress-dashboard');
+    });
+  }
+
   function renderActivationReplayBanner(){
     const banner=ensureActivationReplayBanner();
     if(!banner)return;
@@ -165,13 +228,15 @@
   function run(){
     renderRepairResumeBanner();
     renderActivationReplayBanner();
+    renderFirstScreenStarterFunnel();
   }
 
-  window.MimirFirstScreenActivationHydration={renderRepairResumeBanner,renderActivationReplayBanner,clearActivationReplay};
+  window.MimirFirstScreenActivationHydration={renderRepairResumeBanner,renderActivationReplayBanner,renderFirstScreenStarterFunnel,clearActivationReplay};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
   window.addEventListener('mmir-repair-resume-started',run);
   window.addEventListener('mmir-repair-resume-checked',run);
   window.addEventListener('mmir-activation-replay-updated',run);
+  window.addEventListener('mmir-activation-telemetry-updated',run);
   window.addEventListener('storage',run);
   window.addEventListener('focus',run);
 })();

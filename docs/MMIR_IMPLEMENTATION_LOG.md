@@ -181,14 +181,15 @@ Updated: 2026-05-23
 - D187 is now beta: non-essential repair/replay first-screen QA banners hydrate from a deferred module, preserving the immediate first action while improving critical-shell JS headroom.
 - D188 is now beta: Progress Dashboard shows a local-only starter funnel from recommended-starter selection to install, live proof and first-chat receipt.
 - D189 is now beta: starter funnel has one contextual Continue action that opens the exact missing install, free proof or first-chat step and records no-spend telemetry.
-- D190 is now the next activation UX slice: surface starter funnel progress on the first screen through deferred hydration without increasing the critical JS budget.
+- D190 is now beta: first-screen deferred hydration shows selected starter progress toward install, proof and first answer without increasing critical JS.
+- D191 is now the next first-screen UX slice: add one safe continue action from the first-screen starter progress strip to the exact missing step.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D190` first-screen starter funnel summary.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D191` first-screen starter funnel continue action.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

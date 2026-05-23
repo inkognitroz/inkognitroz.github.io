@@ -68,8 +68,8 @@ if (!d189 || d189.status !== 'beta') {
 }
 
 const d190 = tasks.find((task) => task.seq === 'D190');
-if (!d190 || d190.status !== 'next') {
-  fail('Progress dashboard must expose D190 as the next first-screen starter funnel work item.');
+if (!d190 || !['beta', 'next'].includes(d190.status)) {
+  fail('Progress dashboard must expose D190 as beta or next after starter funnel continue ships.');
 }
 
 if (!process.exitCode) {

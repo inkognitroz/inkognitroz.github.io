@@ -141,3 +141,6 @@ jobs:
 
       - name: Smoke-check starter funnel continue
         run: node scripts/smoke-check-starter-funnel-continue.js
+
+      - name: Smoke-check first screen starter funnel
+        run: node scripts/smoke-check-first-screen-starter-funnel.js

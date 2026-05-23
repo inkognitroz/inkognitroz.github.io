@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d189-20260523-funnel-continue';
+const CACHE_NAME='mmir-pwa-d190-20260523-first-screen-funnel';
 const SHELL_ASSETS=[
   './',
   './index.html',

@@ -41,6 +41,7 @@ jobs:
           node scripts/smoke-check-critical-shell-headroom.js
           node scripts/smoke-check-starter-to-proof-funnel.js
           node scripts/smoke-check-starter-funnel-continue.js
+          node scripts/smoke-check-first-screen-starter-funnel.js
 
       - name: Commit migrated assets
         run: |

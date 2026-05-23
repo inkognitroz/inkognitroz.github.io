@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:26:08.784Z",
+  "updated_at": "2026-05-23T14:32:15.676Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 190,
+    "total": 191,
     "done": 51,
-    "beta": 114,
+    "beta": 115,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,10 +288,10 @@
       },
       {
         "phase": "Activation UX",
-        "total": 12,
+        "total": 13,
         "done": 4,
         "beta": 8,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -790,8 +790,8 @@
         "phase": "Activation UX / Performance",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1068,7 +1068,7 @@
     }
   ],
   "next_queue": [
-    "D190"
+    "D191"
   ],
   "watchlist": [
     "D082",
@@ -3920,9 +3920,24 @@
       "best_practice": "Users should see progress where they start, not only in the owner dashboard",
       "done_when": "First screen shows selected/install/proof/answer progress after hydration and keeps critical JS under budget",
       "covers": "activation, first impression, performance",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-screen deferred hydration now shows selected starter progress toward install, proof and first answer without increasing critical JS.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D191",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "First-screen starter funnel continue action",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add one safe continue action to the first-screen starter progress strip that opens the exact missing install, proof or first-chat surface",
+      "best_practice": "Users should continue from the first screen without understanding the dashboard",
+      "done_when": "First-screen starter progress has a contextual Continue button that never starts paid routes or stores secrets",
+      "covers": "activation, first impression, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation UX slice: surface starter funnel progress on the first screen without increasing the critical JS budget.",
+      "evidence": "Next first-screen UX slice: add one safe continue action from the first-screen starter progress strip to the exact missing step.",
       "estimate": "2-6h"
     }
   ]
