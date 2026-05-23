@@ -102,3 +102,6 @@ jobs:
 
       - name: Smoke-check UI action coverage
         run: node scripts/smoke-check-ui-actions.js
+
+      - name: Smoke-check MMIR performance budget
+        run: node scripts/smoke-check-performance-budget.js
