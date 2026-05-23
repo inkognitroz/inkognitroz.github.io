@@ -1,7 +1,7 @@
 # Ollama setup guide
 
 ## Goal
-Run local AI models that can be selected from SaaS Fabric without sending prompts to cloud providers.
+Run local AI models that can be selected from MMIR without sending prompts to cloud providers.
 
 ## Install
 1. Install Ollama on the machine that will run local models.
