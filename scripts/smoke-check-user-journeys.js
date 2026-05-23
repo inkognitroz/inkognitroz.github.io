@@ -15,6 +15,7 @@ const files = {
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
+  privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -136,6 +137,11 @@ requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 
 requireIncludes(files.localConnector, '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(files.localConnector, '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route.');
 requireIncludes(files.nodeDashboard, '/pairing/sessions', 'J009 needs local approval codes before cross-device node pairing.');
+requireIncludes(files.privacyControls, 'export', 'J005 needs local data export controls.');
+requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete controls.');
+requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 needs a visible data inventory.');
+requireIncludes(files.privacyControls, 'Provider keys and cloud credentials', 'J005/D118 must make the public frontend secrecy boundary visible.');
+requireIncludes(files.privacyControls, 'Clear pairing tokens', 'J009/D118 needs a safe way to clear temporary local node pairing tokens.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');
 requireIncludes(files.userJourneyDoc, 'free-first', 'Journey docs must preserve the free-first rule.');

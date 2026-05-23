@@ -6,24 +6,61 @@
   const LEGACY_CHAT_KEY='mimir-chat-current-session-v1';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
+  const PROFILE_KEY='mimir-chat-backend-profiles';
+  const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
+  const MODE_KEY='mimir-chat-mode-controls-v1';
+  const ROLE_KEY='mimir-chat-active-role';
+  const SELECTED_MODEL_KEY='mimir-chat-selected-model';
+  const LIVE_MODELS_KEY='mimir-chat-live-models';
+  const DEMO_KEY='mimir-demo-mode-v1';
+  const WELCOME_KEY='mimir-demo-welcome-shown-v1';
+  const GROWTH_EVENTS_KEY='mimir-growth-events-v1';
+  const GROWTH_SESSION_KEY='mimir-growth-session-v1';
+  const TOKEN_PREFIX='mimir-local-node-token:';
+  const PAIRING_CODE_PREFIX='mimir-local-node-pairing-code:';
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   let statusEl=null;
   let summaryEl=null;
-  let deleteArmed=false;
+  let inventoryEl=null;
+  let deleteWorkspaceArmed=false;
+  let deleteAllArmed=false;
   let deleteTimer=null;
 
   if(!host)return;
 
+  const LOCAL_EXACT_KEYS=[
+    WORKSPACES_KEY,
+    ACTIVE_WORKSPACE_KEY,
+    LEGACY_CHAT_KEY,
+    PROFILE_KEY,
+    ACTIVE_BACKEND_KEY,
+    MODE_KEY,
+    ROLE_KEY,
+    SELECTED_MODEL_KEY,
+    LIVE_MODELS_KEY,
+    DEMO_KEY,
+    WELCOME_KEY,
+    GROWTH_EVENTS_KEY
+  ];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX];
+  const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
+  const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
+
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
-  function workspaceName(){
+
+  function safe(value){
+    return String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  }
+
+  function workspaceName(id=workspaceId()){
     try{
       const workspaces=JSON.parse(localStorage.getItem(WORKSPACES_KEY)||'[]');
       if(Array.isArray(workspaces)){
-        const active=workspaces.find(item=>item?.id===workspaceId());
+        const active=workspaces.find(item=>item?.id===id);
         if(active?.name)return String(active.name);
       }
     }catch(error){}
-    return workspaceId()==='personal'?'Personal':workspaceId();
+    return id===DEFAULT_WORKSPACE_ID?'Personal':id;
   }
 
   function readJson(key,fallback){
@@ -33,6 +70,69 @@
     }catch(error){
       return fallback;
     }
+  }
+
+  function readSessionJson(key,fallback){
+    try{
+      const value=JSON.parse(sessionStorage.getItem(key)||'null');
+      return value ?? fallback;
+    }catch(error){
+      return fallback;
+    }
+  }
+
+  function storageKeys(storage){
+    const keys=[];
+    try{
+      for(let index=0;index<storage.length;index+=1){
+        const key=storage.key(index);
+        if(key)keys.push(key);
+      }
+    }catch(error){}
+    return keys;
+  }
+
+  function localKeys(){
+    return storageKeys(localStorage);
+  }
+
+  function sessionKeys(){
+    return storageKeys(sessionStorage);
+  }
+
+  function keysByPrefix(keys,prefix){
+    return keys.filter(key=>key.startsWith(prefix));
+  }
+
+  function keysByExact(keys,exact){
+    return exact.filter(key=>keys.includes(key));
+  }
+
+  function valueFor(storage,key){
+    try{return storage.getItem(key)||'';}
+    catch(error){return '';}
+  }
+
+  function storageSize(storage,keys){
+    return keys.reduce((total,key)=>total+key.length+valueFor(storage,key).length,0);
+  }
+
+  function formatBytes(chars){
+    const bytes=chars*2;
+    if(bytes<1024)return bytes+' B';
+    if(bytes<1024*1024)return (bytes/1024).toFixed(bytes<10240?1:0)+' KB';
+    return (bytes/(1024*1024)).toFixed(1)+' MB';
+  }
+
+  function countArrayKeys(storage,keys){
+    return keys.reduce((total,key)=>{
+      try{
+        const value=JSON.parse(storage.getItem(key)||'null');
+        return total+(Array.isArray(value)?value.length:(value?1:0));
+      }catch(error){
+        return total+(storage.getItem(key)?1:0);
+      }
+    },0);
   }
 
   function chatKey(id=workspaceId()){
@@ -46,7 +146,9 @@
 
     return {
       exported_at:new Date().toISOString(),
-      workspace:{id,name:workspaceName()},
+      workspace:{id,name:workspaceName(id)},
+      local_only:true,
+      excludes:['pairing tokens','provider keys','managed backend data'],
       chat:Array.isArray(chat)?chat:[],
       memory:Array.isArray(memory)?memory:[],
       knowledge:Array.isArray(knowledge)?knowledge:[]
@@ -68,6 +170,156 @@
     }
   }
 
+  function activeBackendCount(){
+    const profiles=readJson(PROFILE_KEY,[]);
+    const activeId=localStorage.getItem(ACTIVE_BACKEND_KEY)||'';
+    return Array.isArray(profiles)&&activeId&&profiles.some(profile=>profile?.id===activeId)?1:0;
+  }
+
+  function inventory(){
+    const local=localKeys();
+    const session=sessionKeys();
+    const chatKeys=[
+      ...keysByPrefix(local,CHAT_PREFIX),
+      ...(local.includes(LEGACY_CHAT_KEY)?[LEGACY_CHAT_KEY]:[])
+    ];
+    const memoryKeys=keysByPrefix(local,MEMORY_PREFIX);
+    const knowledgeKeys=keysByPrefix(local,KNOWLEDGE_PREFIX);
+    const workspaceKeys=keysByExact(local,[WORKSPACES_KEY,ACTIVE_WORKSPACE_KEY]);
+    const backendProfileKeys=keysByExact(local,[PROFILE_KEY,ACTIVE_BACKEND_KEY]);
+    const preferenceKeys=keysByExact(local,[MODE_KEY,ROLE_KEY,SELECTED_MODEL_KEY]);
+    const modelCacheKeys=keysByExact(local,[LIVE_MODELS_KEY]);
+    const growthKeys=keysByExact(local,[DEMO_KEY,WELCOME_KEY,GROWTH_EVENTS_KEY]);
+    const pairingKeys=[
+      ...keysByPrefix(session,TOKEN_PREFIX),
+      ...keysByPrefix(session,PAIRING_CODE_PREFIX)
+    ];
+    const transientSessionKeys=keysByExact(session,[GROWTH_SESSION_KEY]);
+
+    return [
+      {
+        id:'workspace-chat',
+        label:'Workspace chat',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,chatKeys),
+        size:formatBytes(storageSize(localStorage,chatKeys)),
+        retention:'Until the user exports or deletes it.',
+        action:'Export/delete active workspace or clear all MMIR local data.',
+        keys:chatKeys
+      },
+      {
+        id:'workspace-memory',
+        label:'Workspace memory',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,memoryKeys),
+        size:formatBytes(storageSize(localStorage,memoryKeys)),
+        retention:'Until disabled, edited, exported or deleted.',
+        action:'Export/delete active workspace or clear all MMIR local data.',
+        keys:memoryKeys
+      },
+      {
+        id:'workspace-knowledge',
+        label:'Workspace knowledge',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,knowledgeKeys),
+        size:formatBytes(storageSize(localStorage,knowledgeKeys)),
+        retention:'Text extracts stay local unless synced to a protected backend.',
+        action:'Export/delete active workspace or clear all MMIR local data.',
+        keys:knowledgeKeys
+      },
+      {
+        id:'workspaces',
+        label:'Workspaces',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,workspaceKeys),
+        size:formatBytes(storageSize(localStorage,workspaceKeys)),
+        retention:'Until the browser data is cleared.',
+        action:'Clear all MMIR local data to reset workspace state.',
+        keys:workspaceKeys
+      },
+      {
+        id:'backend-profiles',
+        label:'Backend profiles',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,backendProfileKeys),
+        size:formatBytes(storageSize(localStorage,backendProfileKeys)),
+        retention:'Endpoint metadata only. Provider secrets must stay outside the public site.',
+        action:activeBackendCount()?'Active profile can be refreshed or removed from Connect Model.':'Create or remove profiles from Connect Model.',
+        keys:backendProfileKeys
+      },
+      {
+        id:'preferences',
+        label:'Modes, role and selected model',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,preferenceKeys),
+        size:formatBytes(storageSize(localStorage,preferenceKeys)),
+        retention:'Until changed or reset.',
+        action:'Clear all MMIR local data to reset preferences.',
+        keys:preferenceKeys
+      },
+      {
+        id:'model-cache',
+        label:'Live model cache',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,modelCacheKeys),
+        size:formatBytes(storageSize(localStorage,modelCacheKeys)),
+        retention:'Refreshes when the active backend exposes models.',
+        action:'Refresh local node/backend model discovery.',
+        keys:modelCacheKeys
+      },
+      {
+        id:'demo-analytics',
+        label:'Demo and growth events',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,growthKeys),
+        size:formatBytes(storageSize(localStorage,growthKeys)),
+        retention:'Bounded local event buffer for product analytics demos.',
+        action:'Clear all MMIR local data to remove local event history.',
+        keys:growthKeys
+      },
+      {
+        id:'pairing-tokens',
+        label:'Pairing tokens',
+        location:'Browser sessionStorage',
+        count:pairingKeys.length,
+        size:formatBytes(storageSize(sessionStorage,pairingKeys)),
+        retention:'Temporary for this browser tab/session.',
+        action:'Use Clear pairing tokens after changing trusted node access.',
+        keys:pairingKeys
+      },
+      {
+        id:'session-state',
+        label:'Transient session state',
+        location:'Browser sessionStorage',
+        count:transientSessionKeys.length,
+        size:formatBytes(storageSize(sessionStorage,transientSessionKeys)),
+        retention:'Temporary for this browser tab/session.',
+        action:'Cleared automatically with the tab or through all-data reset.',
+        keys:transientSessionKeys
+      },
+      {
+        id:'managed-backend',
+        label:'Managed backend data',
+        location:'Protected backend only',
+        count:activeBackendCount(),
+        size:'Not stored here',
+        retention:'Owned by protected API policy, export/delete via backend data routes.',
+        action:'Public frontend never owns backend secrets or raw provider credentials.',
+        keys:[]
+      },
+      {
+        id:'provider-keys',
+        label:'Provider keys and cloud credentials',
+        location:'Never in public frontend',
+        count:0,
+        size:'0 B',
+        retention:'Must live in protected backend, local OS vault or user-owned runtime.',
+        action:'Do not paste provider keys into GitHub Pages or browser localStorage.',
+        keys:[]
+      }
+    ];
+  }
+
   function renderSummary(){
     if(!summaryEl)return;
     const activeCounts=counts();
@@ -87,6 +339,28 @@
     });
   }
 
+  function renderInventory(){
+    if(!inventoryEl)return;
+    inventoryEl.innerHTML=inventory().map(item=>''+
+      '<article class="privacy-inventory-card" data-inventory-item="'+safe(item.id)+'">'+
+        '<header>'+
+          '<strong>'+safe(item.label)+'</strong>'+
+          '<span>'+safe(item.location)+'</span>'+
+        '</header>'+
+        '<dl>'+
+          '<div><dt>Items</dt><dd>'+safe(item.count)+'</dd></div>'+
+          '<div><dt>Size</dt><dd>'+safe(item.size)+'</dd></div>'+
+          '<div><dt>Retention</dt><dd>'+safe(item.retention)+'</dd></div>'+
+          '<div><dt>Control</dt><dd>'+safe(item.action)+'</dd></div>'+
+        '</dl>'+
+      '</article>').join('');
+  }
+
+  function refresh(){
+    renderSummary();
+    renderInventory();
+  }
+
   function downloadJson(){
     const snapshot=workspaceSnapshot();
     const blob=new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'});
@@ -98,21 +372,36 @@
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    setStatus('Workspace data exported.','ready');
+    setStatus('Workspace data exported. Pairing tokens and provider keys are excluded.','ready');
   }
 
   async function copyJson(){
     try{
       await navigator.clipboard.writeText(JSON.stringify(workspaceSnapshot(),null,2));
-      setStatus('Workspace data copied.','ready');
+      setStatus('Workspace data copied. Pairing tokens and provider keys are excluded.','ready');
     }catch(error){
       setStatus('Clipboard access was blocked. Use export instead.','error');
     }
   }
 
   function clearDeleteArm(){
-    deleteArmed=false;
+    deleteWorkspaceArmed=false;
+    deleteAllArmed=false;
     clearTimeout(deleteTimer);
+  }
+
+  function arm(button,kind,message,timeoutMessage){
+    clearDeleteArm();
+    if(kind==='workspace')deleteWorkspaceArmed=true;
+    if(kind==='all')deleteAllArmed=true;
+    button.dataset.originalLabel=button.dataset.originalLabel||button.textContent;
+    button.textContent=kind==='workspace'?'Confirm delete':'Confirm reset';
+    setStatus(message,'warning');
+    deleteTimer=setTimeout(()=>{
+      clearDeleteArm();
+      button.textContent=button.dataset.originalLabel;
+      setStatus(timeoutMessage,'idle');
+    },8000);
   }
 
   function notifyDataChanged(){
@@ -120,19 +409,14 @@
     window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
-    window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName()}}));
+    window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
+    window.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated'));
+    window.dispatchEvent(new CustomEvent('mmir-active-model-changed',{detail:{id:'',label:''}}));
   }
 
   function deleteWorkspaceData(button){
-    if(!deleteArmed){
-      deleteArmed=true;
-      button.textContent='Confirm delete';
-      setStatus('Click again to delete local data for this workspace.','warning');
-      deleteTimer=setTimeout(()=>{
-        deleteArmed=false;
-        button.textContent='Delete workspace data';
-        setStatus('Delete cancelled.','idle');
-      },8000);
+    if(!deleteWorkspaceArmed){
+      arm(button,'workspace','Click again to delete local chat, memory and knowledge for this workspace.','Workspace delete cancelled.');
       return;
     }
 
@@ -141,10 +425,44 @@
     if(workspaceId()===DEFAULT_WORKSPACE_ID)localStorage.removeItem(LEGACY_CHAT_KEY);
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
-    button.textContent='Delete workspace data';
-    renderSummary();
+    button.textContent=button.dataset.originalLabel||'Delete workspace data';
+    refresh();
     notifyDataChanged();
     setStatus('Local workspace data deleted.','ready');
+  }
+
+  function clearPairingTokens(){
+    const removed=SESSION_PREFIXES.reduce((total,prefix)=>{
+      const keys=keysByPrefix(sessionKeys(),prefix);
+      keys.forEach(key=>sessionStorage.removeItem(key));
+      return total+keys.length;
+    },0);
+    refresh();
+    notifyDataChanged();
+    setStatus(removed?('Cleared '+removed+' temporary pairing token(s).'):'No pairing tokens were stored.','ready');
+  }
+
+  function clearAllLocalData(button){
+    if(!deleteAllArmed){
+      arm(button,'all','Click again to reset only MMIR data stored by this browser.','Full local reset cancelled.');
+      return;
+    }
+
+    clearDeleteArm();
+    const localSet=new Set([
+      ...keysByExact(localKeys(),LOCAL_EXACT_KEYS),
+      ...LOCAL_PREFIXES.flatMap(prefix=>keysByPrefix(localKeys(),prefix))
+    ]);
+    const sessionSet=new Set([
+      ...keysByExact(sessionKeys(),SESSION_EXACT_KEYS),
+      ...SESSION_PREFIXES.flatMap(prefix=>keysByPrefix(sessionKeys(),prefix))
+    ]);
+    localSet.forEach(key=>localStorage.removeItem(key));
+    sessionSet.forEach(key=>sessionStorage.removeItem(key));
+    button.textContent=button.dataset.originalLabel||'Delete all local MMIR data';
+    refresh();
+    notifyDataChanged();
+    setStatus('All browser-stored MMIR data for this site was removed.','ready');
   }
 
   function install(){
@@ -156,26 +474,41 @@
       '<summary>+ Privacy / Local Data</summary>'+
       '<div class="privacy-controls-body">'+
         '<div id="privacy-summary" class="privacy-summary" aria-live="polite"></div>'+
+        '<div class="privacy-inventory-head">'+
+          '<strong>Data inventory</strong>'+
+          '<span>Public frontend shows only browser data. Provider keys stay outside GitHub Pages.</span>'+
+        '</div>'+
+        '<div id="privacy-data-inventory" class="privacy-inventory-grid" aria-live="polite"></div>'+
         '<div class="privacy-actions">'+
-          '<button id="privacy-export" type="button">Export JSON</button>'+
-          '<button id="privacy-copy" type="button">Copy JSON</button>'+
+          '<button id="privacy-refresh-inventory" type="button">Refresh inventory</button>'+
+          '<button id="privacy-export" type="button">Export workspace JSON</button>'+
+          '<button id="privacy-copy" type="button">Copy workspace JSON</button>'+
+          '<button id="privacy-clear-pairing" type="button">Clear pairing tokens</button>'+
           '<button id="privacy-delete" type="button" class="danger">Delete workspace data</button>'+
+          '<button id="privacy-delete-all" type="button" class="danger">Delete all local MMIR data</button>'+
         '</div>'+
         '<p id="privacy-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>'+
       '</div>';
     host.appendChild(details);
     summaryEl=document.getElementById('privacy-summary');
+    inventoryEl=document.getElementById('privacy-data-inventory');
     statusEl=document.getElementById('privacy-status');
+    document.getElementById('privacy-refresh-inventory')?.addEventListener('click',()=>{refresh();setStatus('Data inventory refreshed.','ready');});
     document.getElementById('privacy-export')?.addEventListener('click',downloadJson);
     document.getElementById('privacy-copy')?.addEventListener('click',copyJson);
+    document.getElementById('privacy-clear-pairing')?.addEventListener('click',clearPairingTokens);
     document.getElementById('privacy-delete')?.addEventListener('click',(event)=>deleteWorkspaceData(event.currentTarget));
-    renderSummary();
+    document.getElementById('privacy-delete-all')?.addEventListener('click',(event)=>clearAllLocalData(event.currentTarget));
+    refresh();
   }
 
-  window.addEventListener('mmir-workspace-changed',()=>{clearDeleteArm();renderSummary();setStatus('');});
-  window.addEventListener('mmir-chat-history-updated',renderSummary);
-  window.addEventListener('mmir-memory-updated',renderSummary);
-  window.addEventListener('mmir-knowledge-updated',renderSummary);
-  window.addEventListener('storage',renderSummary);
+  window.addEventListener('mmir-workspace-changed',()=>{clearDeleteArm();refresh();setStatus('');});
+  window.addEventListener('mmir-chat-history-updated',refresh);
+  window.addEventListener('mmir-memory-updated',refresh);
+  window.addEventListener('mmir-knowledge-updated',refresh);
+  window.addEventListener('mmir-backend-profiles-updated',refresh);
+  window.addEventListener('mmir-active-model-changed',refresh);
+  window.addEventListener('mimir-growth-event',refresh);
+  window.addEventListener('storage',refresh);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();

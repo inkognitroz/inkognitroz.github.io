@@ -11,6 +11,7 @@ Updated: 2026-05-22
 - Workspace memory can now store local project facts/preferences and inject them into chat/comparison context when relevant.
 - Local knowledge upload now stores text-like files per workspace and injects relevant snippets into chat context as a first RAG foundation.
 - Privacy/local data controls now let users inspect counts, export, copy and delete workspace chat, memory and knowledge stored in the browser.
+- Privacy/data inventory now shows every public-frontend data class MMIR stores in the browser, distinguishes protected backend/provider-key boundaries, clears temporary pairing tokens and can reset only MMIR local browser data.
 - Chat requests use the shared `/chat/completions` contract with `/chat` fallback.
 - Frontend prefers Server-Sent Events streaming and falls back to JSON when needed.
 - Chat supports Stop, Copy, Retry, Clear and safe code-block rendering without trusting model HTML.
