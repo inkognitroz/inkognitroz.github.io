@@ -141,6 +141,14 @@
       "evidence": ["/connectors/catalog", "/connectors/sync-plans", "mimir-connector-plans-v1:", "connectorCatalogFallback", "public_frontend_secrets_allowed:false", "revocation_supported"]
     },
     {
+      "id": "migration-portability",
+      "surface": "Import / Export",
+      "status": "beta",
+      "user_result": "Users can export a redacted MMIR portable workspace and import ChatGPT, Open WebUI or MMIR-style JSON locally without provider keys, pairing tokens or paid routes.",
+      "selectors": ["#migration-portability", "#migration-export", "#migration-file", "#migration-analyze", "#migration-import", "#migration-send-chat"],
+      "evidence": ["mmir.portable_workspace", "chatGptMessages", "openWebUiMessages", "redactSecretLike", "redactedClone", "MAX_FILE_BYTES"]
+    },
+    {
       "id": "code-sandbox-preflight",
       "surface": "Code interpreter",
       "status": "beta",

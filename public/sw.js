@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d149-20260523';
+const CACHE_NAME='mmir-pwa-d150-20260523';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -12,6 +12,8 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/pwa.css',
   './apps/mimir-chat-portal/pwa.js',
+  './apps/mimir-chat-portal/migration-portability.css',
+  './apps/mimir-chat-portal/migration-portability.js',
   './progress-dashboard.json',
   './user-journeys.json',
   './gui-parity-matrix.json',

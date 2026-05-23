@@ -86,8 +86,9 @@ const overrides = new Map([
   ['D147', { status: 'beta', evidence: 'Scheduled task UI now supports visible browser-local reminders with owner, due/repeat schedule, free/local cost policy, run log, pause/cancel/export and chat handoff.' }],
   ['D148', { status: 'beta', evidence: 'External connector catalog now covers manual docs, local folders, GitHub, Drive/Docs, Gmail, Notion, Slack and Open WebUI with protected OAuth boundaries, sync planning, revocation metadata and no public frontend secrets.' }],
   ['D149', { status: 'beta', evidence: 'Mobile/PWA shell now has a manifest, service worker, offline fallback, install panel, mobile touch targets and local-node handoff without paid services.' }],
-  ['D150', { status: 'next', evidence: 'Next sequential GUI parity slice: portable Chat/Open WebUI import-export for chats, prompts, model profiles and knowledge manifests.' }],
-  ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
+  ['D150', { status: 'beta', evidence: 'Portable workspace migration now exports redacted MMIR JSON, provides an Open WebUI-style preview and imports ChatGPT/Open WebUI/MMIR-style JSON locally with bounded file size and no public frontend secrets.' }],
+  ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }],
+  ['D152', { status: 'next', evidence: 'Next sequential GUI parity slice: team sharing and public-safe links for selected chats, artifacts, workflows and collections with redaction and access controls.' }]
 ]);
 
 const repoMeta = [
@@ -215,7 +216,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D145', 'D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D152', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

@@ -125,6 +125,14 @@ requireText(offlinePath, 'MMIR is offline-ready', 'D149 needs a public-safe offl
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'), 'beforeinstallprompt', 'D149 needs install prompt handling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'), 'navigator.serviceWorker.register', 'D149 needs service worker registration.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'), 'openNode', 'D149 needs mobile node handoff.');
+requireText(mmirPath, 'id="migration-portability"', 'D150 needs a visible import/export portability panel.');
+requireText(mmirPath, './apps/mimir-chat-portal/migration-portability.js', 'D150 needs migration portability script loaded.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'mmir.portable_workspace', 'D150 needs MMIR portable workspace export.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'chatGptMessages', 'D150 needs ChatGPT export normalization.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'openWebUiMessages', 'D150 needs Open WebUI export normalization.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'redactSecretLike', 'D150 needs secret-like text redaction.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'), 'redactedClone', 'D150 needs export-side secret-like text redaction.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.css'), '.migration-preview-card', 'D150 needs import preview styling.');
 requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
 requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');

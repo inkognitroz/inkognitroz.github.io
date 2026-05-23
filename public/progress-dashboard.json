@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T07:30:20.933Z",
+  "updated_at": "2026-05-23T07:49:56.834Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 75,
+    "beta": 76,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 23,
+    "planned": 22,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -670,8 +670,8 @@
         "phase": "Migration",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -691,10 +691,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       }
     ]
   },
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D150"
+    "D152"
   ],
   "watchlist": [
     "D082",
@@ -3000,10 +3000,10 @@
       "best_practice": "Users should not feel locked in",
       "done_when": "User can move useful workspace data in or out",
       "covers": "openness",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sequential GUI parity slice: portable Chat/Open WebUI import-export for chats, prompts, model profiles and knowledge manifests.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Portable workspace migration now exports redacted MMIR JSON, provides an Open WebUI-style preview and imports ChatGPT/Open WebUI/MMIR-style JSON locally with bounded file size and no public frontend secrets.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D151",
@@ -3030,9 +3030,9 @@
       "best_practice": "Sharing must not leak private prompts, files or tokens",
       "done_when": "User can share selected outputs safely",
       "covers": "ChatGPT/Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next sequential GUI parity slice: team sharing and public-safe links for selected chats, artifacts, workflows and collections with redaction and access controls.",
       "estimate": "1-3d"
     }
   ]

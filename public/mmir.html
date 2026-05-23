@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/knowledge.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/connector-catalog.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/pwa.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/migration-portability.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/web-search.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/research-planner.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/tool-runner.css" />
@@ -74,6 +75,7 @@
           <a href="#voice-controls">Voice</a>
           <a href="#vision-input">Vision</a>
           <a href="#pwa-install">Install</a>
+          <a href="#migration-portability">Import</a>
           <a href="#admin-governance">Admin</a>
           <a href="#access-control">Access</a>
           <a href="#runtime-settings-panel">Settings</a>
@@ -307,6 +309,15 @@
       </section>
     </details>
 
+    <details id="migration-portability" class="mimir-provider-drawer">
+      <summary>+ Import / Export</summary>
+      <section class="mimir-dashboard" aria-labelledby="migration-portability-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">No lock-in</p><h2 id="migration-portability-title">ChatGPT, Open WebUI and MMIR portability</h2></div></div>
+        <p class="dashboard-note">Import/export runs locally in the browser. MMIR redacts token-like strings and never includes pairing tokens, OAuth refresh tokens, provider API keys or billing approvals.</p>
+        <div id="migration-portability-root" class="migration-portability-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="data-analysis" class="mimir-provider-drawer">
       <summary>+ Data Analysis / Charts</summary>
       <section class="mimir-dashboard" aria-labelledby="data-analysis-title">
@@ -368,6 +379,7 @@
   <script src="./apps/mimir-chat-portal/knowledge-connectors.js"></script>
   <script src="./apps/mimir-chat-portal/connector-catalog.js"></script>
   <script src="./apps/mimir-chat-portal/pwa.js"></script>
+  <script src="./apps/mimir-chat-portal/migration-portability.js"></script>
   <script src="./apps/mimir-chat-portal/web-search.js"></script>
   <script src="./apps/mimir-chat-portal/research-planner.js"></script>
   <script src="./apps/mimir-chat-portal/tool-runner.js"></script>
