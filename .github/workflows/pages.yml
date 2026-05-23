@@ -32,6 +32,8 @@ jobs:
           node-version: 24
       - name: Smoke check static site
         run: node scripts/smoke-check-pages.js
+      - name: Check MMIR API route manifest
+        run: node scripts/check-api-route-manifest.js
       - name: Smoke check UI action coverage
         run: node scripts/smoke-check-ui-actions.js
       - name: Smoke check user journeys
