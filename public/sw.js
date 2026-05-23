@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d150-20260523';
+const CACHE_NAME='mmir-pwa-d151-20260523-mobile-chat';
 const SHELL_ASSETS=[
   './',
   './index.html',
