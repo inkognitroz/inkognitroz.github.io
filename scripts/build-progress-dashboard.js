@@ -68,6 +68,7 @@ const overrides = new Map([
   ['D129', { status: 'beta', evidence: 'Knowledge collections now let users group uploaded documents, enable/disable each collection per workspace, and keep chat/comparison context scoped to enabled local collections.' }],
   ['D130', { status: 'beta', evidence: 'Web search now has an explicit consent-first UI with free manual source links, protected backend route support for SearXNG/BYOK providers, visible sources and save-to-knowledge behavior without public frontend keys.' }],
   ['D131', { status: 'beta', evidence: 'Permissioned tool runtime now exposes allowlisted tools, consent-gated execution and visible traces through the protected backend, with a public Tool Runner UI for approved knowledge, memory and web search tool calls.' }],
+  ['D132', { status: 'beta', evidence: 'Code interpreter now has planning-only sandbox policy, consented preflight, visible gates and a free browser fallback; code execution remains disabled until a disposable local sandbox worker is available.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

@@ -125,6 +125,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR pr
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product page must load explicit web search script.');
 requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product page must load permissioned tool runner script.');
+requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product page must load code sandbox preflight script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -168,6 +169,11 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), '/to
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'tool-runner-consent', 'Tool runner must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'renderTrace', 'Tool runner must show visible traces.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.css'), '.tool-result-card', 'Tool runner needs visible result styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), '/code/sandbox/plan', 'Code sandbox UI must call the protected planning route when a backend is active.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'localPlan', 'Code sandbox UI must keep a free browser preflight fallback.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'code-sandbox-consent', 'Code sandbox UI must require explicit consent.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'execution_allowed:false', 'Code sandbox UI must keep public execution disabled.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.css'), '.code-gate-grid', 'Code sandbox needs visible gate styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');

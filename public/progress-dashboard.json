@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T03:21:00.297Z",
+  "updated_at": "2026-05-23T03:34:48.602Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 56,
+    "beta": 57,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 42,
+    "planned": 41,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -490,11 +490,11 @@
         "phase": "Code UX",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Canvas",
@@ -2730,10 +2730,10 @@
       "best_practice": "Code execution is high-risk and must be sandboxed",
       "done_when": "Data-analysis/code route has clear safety gates",
       "covers": "ChatGPT parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Code interpreter now has planning-only sandbox policy, consented preflight, visible gates and a free browser fallback; code execution remains disabled until a disposable local sandbox worker is available.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D133",

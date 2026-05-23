@@ -117,6 +117,14 @@
       "evidence": ["/tools", "/tools/execute", "tool-runner-consent", "renderTrace", "Tool trace ready"]
     },
     {
+      "id": "code-sandbox-preflight",
+      "surface": "Code interpreter",
+      "status": "beta",
+      "user_result": "Users can plan a safe free/local code interpreter run, inspect gates and route execution to a future sandbox without running code from the public page.",
+      "selectors": ["#code-sandbox-panel", "#code-sandbox-policy", "#code-sandbox-plan", "#code-sandbox-consent", "#code-sandbox-output"],
+      "evidence": ["/code/sandbox/policy", "/code/sandbox/plan", "localPlan", "execution_allowed:false", "Sandbox plan ready"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",
