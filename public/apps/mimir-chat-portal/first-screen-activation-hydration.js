@@ -68,8 +68,8 @@
     const model=String(resume?.model||'').trim();
     if(status==='verified'){
       const modelCount=Number(resume?.model_count||0);
-      if(resume?.action==='starter-install-repair')return {state:'verified',title:'Starter repair verified',detail:(model||'The selected starter')+' is installed. MMIR is preparing proof and first chat.',action:'Chat now',target:'#mimir-prompt'};
-      return {state:'verified',title:'Repair verified',detail:modelCount?'Node sees '+String(modelCount)+' live model'+(modelCount===1?'':'s')+'.':'Connector is back.',action:'Chat now',target:'#mimir-prompt'};
+      if(resume?.action==='starter-install-repair')return {state:'verified',title:'Starter repair verified',detail:(model||'The selected starter')+' is installed. MMIR is preparing proof and first chat.',action:'Send first answer',target:'#mimir-prompt'};
+      return {state:'verified',title:'Repair verified',detail:modelCount?'Node sees '+String(modelCount)+' live model'+(modelCount===1?'':'s')+'.':'Connector is back.',action:'Send first answer',target:'#mimir-prompt'};
     }
     if(status==='needs-model'){
       return {state:'needs-model',title:'Connector is back',detail:'Install one free model'+(model?' like '+model:'')+'. MMIR verifies it.',action:'Open models',target:'#model-library'};
@@ -126,6 +126,10 @@
       if(target.startsWith('#')){
         event.preventDefault();
         openPanel(target);
+        if(copy.state==='verified'&&target==='#mimir-prompt'){
+          document.getElementById('mimir-prompt')?.focus();
+          window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
+        }
       }
     });
   }
@@ -158,8 +162,8 @@
     const next=!install?'Install model':!proof?'Run free proof':!chat?'First answer':'Ready';
     const action=!install?{kind:'install',label:'Open models',target:'#model-library'}:
       !proof?{kind:'live-proof',label:'Run proof',target:'#mimir-chat-runtime'}:
-      !chat?{kind:'first-chat',label:'Start chat',target:'#mimir-prompt'}:
-      {kind:'chat-now',label:'Chat now',target:'#mimir-prompt'};
+      !chat?{kind:'first-chat',label:'Send first answer',target:'#mimir-prompt'}:
+      {kind:'chat-now',label:'Open chat',target:'#mimir-prompt'};
     const done=[selected,install,proof,chat].filter(Boolean).length;
     return {state:ready?'ready':'watch',model:selected.model||selected.route||'recommended starter',next,done,action};
   }

@@ -95,7 +95,7 @@
       "label": "Verified local model reaches first chat",
       "user_goal": "Use the newly live local model for a useful first answer.",
       "simulated_signal": "Live local model proof succeeded and first_chat_ready is true.",
-      "expected_next_action": "Select the verified route and show Chat with verified model.",
+      "expected_next_action": "Select the verified route and show Send first answer.",
       "next_target": "#mimir-prompt",
       "cost": "free",
       "no_paid_routes_started": true,
@@ -104,7 +104,7 @@
       "raw_response_stored": false,
       "surfaces": [
         {"surface": "first-screen", "selector": "#activation-chat-now", "evidence": "Your local AI is ready in MMIR"},
-        {"surface": "chat-runtime", "selector": "#runtime-live-proof", "evidence": "Chat with verified model"},
+        {"surface": "chat-runtime", "selector": "#runtime-live-proof", "evidence": "Send first answer"},
         {"surface": "node-dashboard", "selector": "#mimir-prompt", "evidence": "Local path ready"},
         {"surface": "telemetry", "selector": "first_chat_ready:true", "evidence": "first_chat_ready:true"},
         {"surface": "progress-dashboard", "selector": "#progress-first-chat-recovery", "evidence": "firstChatReceiptState"}

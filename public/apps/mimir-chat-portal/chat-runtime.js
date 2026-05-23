@@ -171,10 +171,10 @@
   function modeInstruction(){
     const modes=readModes();
     const instructions=[];
-    if(modes.private)instructions.push('Private mode is enabled. Prefer local/private execution, avoid unnecessary external services, and call out any step that would move data outside the active trusted backend.');
-    if(modes.boost)instructions.push('Boost 5.5 mode is enabled. Be more careful, reason through tradeoffs internally, give sharper recommendations, and prioritize the highest-leverage next action.');
-    if(modes.super)instructions.push('MMIR++ mode is enabled. Combine perspectives from product strategist, architect, security reviewer and implementation lead, then synthesize one practical answer.');
-    if(modes.vision)instructions.push('Vision mode is enabled. Use provided images, screen context or uploaded files when present. If no visual input or vision-capable backend is available, say exactly what is missing and offer the nearest text/local alternative.');
+    if(modes.private)instructions.push('Private mode: prefer local/private execution, avoid unnecessary external services, and flag steps outside the trusted backend.');
+    if(modes.boost)instructions.push('Boost 5.5: reason carefully, sharpen recommendations, and prioritize the highest-leverage next action.');
+    if(modes.super)instructions.push('MMIR++: combine product, architecture, security and implementation perspectives into one practical answer.');
+    if(modes.vision)instructions.push('Vision mode: use images, screen context or uploads when present; otherwise say what is missing and offer the nearest text/local alternative.');
     return instructions.join('\n');
   }
   function activeModelLabel(){
@@ -259,7 +259,7 @@
       retry
     ];
     if(kind==='verified')return [
-      {id:'chat-now',label:'Chat with verified model'},
+      {id:'chat-now',label:'Send first answer'},
       retry
     ];
     return [
@@ -305,9 +305,11 @@
       }
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.value='Give me a short, useful first answer with this verified MMIR model.';
+        promptEl.dispatchEvent(new Event('input',{bubbles:true}));
       }
       promptEl?.focus();
-      setStatus('Verified model selected. Send when ready.','ready');
+      setStatus('Sending first verified answer...','loading');
+      window.setTimeout(()=>primaryLink?.click(),40);
     }
   }
 

@@ -187,7 +187,7 @@
       return {state:'watch',title:'Install '+starter.label,detail:'Use '+starter.model+' for '+starter.device+'; then free proof.',action:'Use '+starter.label,target:'#model-library',kind:'install-starter',starter};
     }
     if(receipt?.status!=='success'){
-      return {state:receipt?.status==='failed'?'error':'watch',title:'Get the first useful answer',detail:'A live model is ready; send the first chat and save a privacy-safe receipt.',action:'Start first chat',target:'#mimir-prompt',kind:'first-chat'};
+      return {state:receipt?.status==='failed'?'error':'watch',title:'Get the first useful answer',detail:'A live model is ready; send the first chat and save a privacy-safe receipt.',action:'Send first answer',target:'#mimir-prompt',kind:'first-chat'};
     }
     return {state:'ready',title:'Activation path is closed',detail:'Browser guide, local profile, live proof and first-chat receipt are all ready for this workspace.',action:'Chat now',target:'#mimir-prompt',kind:'chat-now'};
   }

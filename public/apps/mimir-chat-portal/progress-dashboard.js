@@ -70,7 +70,7 @@
       status:'idle',
       label:'Not proven yet',
       detail:'No verified live-model first-chat receipt exists for this browser workspace yet.',
-      action:'Start free path'
+      action:'Send first answer'
     };
   }
   function readActivationEvents(){
@@ -219,8 +219,8 @@
     const nextAction=!selected?{kind:'select-starter',label:'Choose starter',target:'#mimir-instant-start'}:
       missing?.id==='installed'?{kind:'install',label:'Open model library',target:'#model-library'}:
       missing?.id==='proved'?{kind:'live-proof',label:'Run free proof',target:'#mimir-chat-runtime'}:
-      missing?.id==='answered'?{kind:'first-chat',label:'Start first chat',target:'#mimir-prompt'}:
-      {kind:'chat-now',label:'Chat now',target:'#mimir-prompt'};
+      missing?.id==='answered'?{kind:'first-chat',label:'Send first answer',target:'#mimir-prompt'}:
+      {kind:'chat-now',label:'Open chat',target:'#mimir-prompt'};
     return {state:chat?'ready':'watch',selected,steps,nextAction};
   }
 
@@ -283,7 +283,7 @@
       {id:'local-profile',label:'Free local profile',state:profileReady?'ready':'watch',detail:profileReady?'Active local profile points to '+String(profile.url||'127.0.0.1')+'.':'MMIR can create the free local profile automatically.',action:profileReady?'Open settings':'Create local profile',target:'#backend-settings'},
       {id:'local-node',label:'Local node health',state:nodeReady?'ready':(nodeHealth==='offline'?'error':'watch'),detail:nodeReady?'Node state is '+nodeHealth+'.':(nodeHealth==='offline'?'Local node is offline or not paired.':'Node has not been verified in this browser yet.'),action:'Open node health',target:'#node-dashboard'},
       {id:'live-proof',label:'Live model proof',state:proofReady?'ready':'watch',detail:proofReady?'Proof model: '+String(profile?.lastProofModel||receipt?.model||'verified route')+'.':'Run a free proof after node/model setup.',action:proofReady?'Open chat':'Retry free proof',target:'#mimir-chat-runtime'},
-      {id:'first-chat',label:'First useful chat',state:firstChatReady?'ready':(firstChatFailed?'error':'watch'),detail:firstChatReady?'Receipt saved without raw prompt/response.':(firstChatFailed?'Last first chat failed; recovery is ready.':'No first-chat receipt yet.'),action:firstChatReady?'Open chat':'Start or repair first chat',target:'#mimir-prompt'}
+      {id:'first-chat',label:'First useful chat',state:firstChatReady?'ready':(firstChatFailed?'error':'watch'),detail:firstChatReady?'Receipt saved without raw prompt/response.':(firstChatFailed?'Last first chat failed; recovery is ready.':'No first-chat receipt yet.'),action:firstChatReady?'Open chat':'Send first answer',target:'#mimir-prompt'}
     ];
   }
 
@@ -428,6 +428,17 @@
       }
       window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
       openTarget('#local-connector');
+      return;
+    }
+    const prompt=document.getElementById('mimir-prompt');
+    if(prompt){
+      if(!String(prompt.value||'').trim()){
+        prompt.value='Give me my first useful MMIR answer and the next safe setup step.';
+        prompt.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      prompt.focus();
+      window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
+      setSummary('first-answer-send-handoff: sending first verified answer. No paid route, provider key or secret was used.','ready');
       return;
     }
     const start=document.getElementById('start-free-chat');

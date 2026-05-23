@@ -351,7 +351,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'), '.
 requireText(chatRuntimePath, 'proofRepairActions', 'D164 needs proof-driven repair actions.');
 requireText(chatRuntimePath, 'data-proof-action', 'D164 needs visible repair controls from proof states.');
 requireText(chatRuntimePath, 'mmir-local-connector-install.html', 'D164 needs installer repair path from failed proof.');
-requireText(chatRuntimePath, 'Chat with verified model', 'D165 needs first-chat handoff from verified model proof.');
+requireText(chatRuntimePath, 'Send first answer', 'D165/D197 need first-answer handoff from verified model proof.');
 requireText(chatRuntimePath, 'first_chat_ready:true', 'D165 needs a testable first-chat-ready signal.');
 requireText(chatRuntimePath, 'mimir-first-chat-receipt-v1:', 'D166 needs a browser-local first-chat receipt key.');
 requireText(chatRuntimePath, 'raw_prompt_stored:false', 'D166 receipt must prove raw prompts are not stored.');
@@ -492,6 +492,9 @@ requireText(join(root, 'scripts', 'smoke-check-starter-retry-success-closure.js'
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'closeStarterRetrySuccess', 'D196 chat runtime must close repair resume on starter retry success.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'starter-retry-success', 'D196 starter retry success must be tracked without storing secrets.');
 requireText(firstScreenHydrationPath, 'Starter repair verified', 'D196 first screen must show starter repair verified state.');
+requireText(join(root, 'scripts', 'smoke-check-first-answer-send-handoff.js'), 'First-answer send handoff smoke check passed.', 'D197 first-answer send handoff must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "setStatus('Sending first verified answer...','loading')", 'D197 chat runtime must turn verified proof action into an actual first-answer send.');
+requireText(firstScreenHydrationPath, 'primary-chat-link', 'D197 first screen must hand verified starter repair into the primary chat send action.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

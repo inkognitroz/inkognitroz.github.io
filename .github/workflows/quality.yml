@@ -162,3 +162,6 @@ jobs:
 
       - name: Smoke-check starter retry success closure
         run: node scripts/smoke-check-starter-retry-success-closure.js
+
+      - name: Smoke-check first-answer send handoff
+        run: node scripts/smoke-check-first-answer-send-handoff.js

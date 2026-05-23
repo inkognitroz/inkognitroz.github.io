@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:18:50.248Z",
+  "updated_at": "2026-05-23T15:32:56.436Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 197,
+    "total": 198,
     "done": 51,
-    "beta": 121,
+    "beta": 122,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -290,8 +290,8 @@
         "phase": "Activation UX",
         "total": 14,
         "done": 4,
-        "beta": 9,
-        "next": 1,
+        "beta": 10,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -815,6 +815,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Activation Retention",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1001,7 +1011,7 @@
         "label": "Verified local model reaches first chat",
         "user_goal": "Use the newly live local model for a useful first answer.",
         "simulated_signal": "Live local model proof succeeded and first_chat_ready is true.",
-        "expected_next_action": "Select the verified route and show Chat with verified model.",
+        "expected_next_action": "Select the verified route and show Send first answer.",
         "next_target": "#mimir-prompt",
         "cost": "free",
         "no_paid_routes_started": true,
@@ -1017,7 +1027,7 @@
           {
             "surface": "chat-runtime",
             "selector": "#runtime-live-proof",
-            "evidence": "Chat with verified model"
+            "evidence": "Send first answer"
           },
           {
             "surface": "node-dashboard",
@@ -1088,7 +1098,7 @@
     }
   ],
   "next_queue": [
-    "D197"
+    "D198"
   ],
   "watchlist": [
     "D082",
@@ -3567,7 +3577,7 @@
       "covers": "activation",
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
-      "evidence": "Verified live-model proof now selects the verified model, updates the prompt placeholder and exposes a Chat with verified model action plus first_chat_ready signal.",
+      "evidence": "Verified live-model proof now selects the verified model, updates the prompt placeholder and exposes a Send first answer action plus first_chat_ready signal.",
       "estimate": "Verify + polish"
     },
     {
@@ -4045,9 +4055,24 @@
       "best_practice": "The final activation step should feel like one obvious next action",
       "done_when": "User sees one clear Chat now/Send first answer action with verified model selected",
       "covers": "activation, first chat, UX",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Verified starter/proof states now expose Send first answer and carry the prompt through to an automatic first verified chat send from first screen, runtime and progress surfaces.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D198",
+      "phase": "Activation Retention",
+      "priority": "P0",
+      "work_package": "First-answer success next-step loop",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "After the first verified answer succeeds, show one calm next step based on the user path: save chat, connect a node, add memory/knowledge or compare another model",
+      "best_practice": "Activation should not dead-end after the first useful answer",
+      "done_when": "User sees a receipt-driven next step without raw prompt storage, provider secrets or paid routes",
+      "covers": "activation, retention, UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation UX slice: make the final first-answer send action unmistakable after verified starter proof.",
+      "evidence": "Next activation retention slice: after first verified answer, show one receipt-driven next step without storing raw prompts or starting paid routes.",
       "estimate": "2-6h"
     }
   ]

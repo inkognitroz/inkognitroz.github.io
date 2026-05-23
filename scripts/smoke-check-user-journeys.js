@@ -85,6 +85,7 @@ const files = {
   starterInstallRepairHarness: join(root, 'scripts', 'smoke-check-starter-install-repair-fallback.js'),
   starterInstallRetryHarness: join(root, 'scripts', 'smoke-check-starter-install-retry-after-repair.js'),
   starterRetrySuccessHarness: join(root, 'scripts', 'smoke-check-starter-retry-success-closure.js'),
+  firstAnswerHandoffHarness: join(root, 'scripts', 'smoke-check-first-answer-send-handoff.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -391,7 +392,7 @@ requireIncludes(files.chatRuntime, 'tinyChatProbe', 'D163 needs tiny free route 
 requireIncludes(files.chatRuntime, 'skipped to avoid hidden provider cost', 'D163 needs a cost guard for automatic proof.');
 requireIncludes(files.chatRuntime, 'proofRepairActions', 'D164 needs failed-proof repair actions.');
 requireIncludes(files.chatRuntime, 'data-proof-action', 'D164 needs repair controls rendered from proof state.');
-requireIncludes(files.chatRuntime, 'Chat with verified model', 'D165 needs first-chat handoff from verified model proof.');
+requireIncludes(files.chatRuntime, 'Send first answer', 'D165/D197 need first-answer handoff from verified model proof.');
 requireIncludes(files.chatRuntime, 'first_chat_ready:true', 'D165 needs a testable first-chat-ready signal.');
 requireIncludes(files.chatRuntime, 'mimir-first-chat-receipt-v1:', 'D166 needs a browser-local first-chat receipt.');
 requireIncludes(files.chatRuntime, 'raw_prompt_stored:false', 'D166 first-chat receipt must not store raw prompts.');
@@ -487,6 +488,9 @@ requireIncludes(files.chatRuntime, 'closeStarterRetrySuccess', 'D196 chat runtim
 requireIncludes(files.chatRuntime, 'starter-retry-success', 'D196 success closure must record no-spend activation telemetry.');
 requireIncludes(files.nodeDashboard, 'Starter repair verified', 'D196 Node Dashboard must show starter repair verified state.');
 requireIncludes(files.firstScreenHydration, 'Starter repair verified', 'D196 first screen must show starter repair verified state.');
+requireIncludes(files.firstAnswerHandoffHarness, 'First-answer send handoff smoke check passed.', 'D197 first-answer send handoff needs dedicated CI fixture coverage.');
+requireIncludes(files.chatRuntime, "setStatus('Sending first verified answer...','loading')", 'D197 chat runtime must turn verified proof action into an actual first-answer send.');
+requireIncludes(files.progressDashboard, 'Send first answer', 'D197 Progress Dashboard must expose one clear first-answer action.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

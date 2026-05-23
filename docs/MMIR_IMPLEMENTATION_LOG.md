@@ -156,7 +156,7 @@ Updated: 2026-05-23
 - D162 is now beta across frontend/backend: protected activity summaries count reads, access reviews, handoff success/failure and revocations, and Safe Sharing renders owner/recipient activity, stale-session and revocation cues without exposing share payloads.
 - D163 is now beta in the public UI: chat has a live-model proof panel, verifies browser helper/WebGPU readiness, runs a tiny free chat probe for free/local-looking live models and skips possible paid/provider probes.
 - D164 is now beta in the public UI: failed live-model proof states render direct repair actions for free local profile, installer, model library, connect settings and retry proof.
-- D165 is now beta in the public UI: verified proof selects the model, updates the chat prompt, exposes a Chat with verified model action and emits a first_chat_ready signal.
+- D165 is now beta in the public UI: verified proof selects the model, updates the chat prompt, exposes a Send first answer action and emits a first_chat_ready signal.
 - D166 is now beta in the public UI: first backend chat success/failure writes a browser-local privacy-safe receipt with model, route, character counts, recovery actions and explicit raw_prompt_stored:false/raw_response_stored:false fields.
 - D167 is now beta in the public UI: first-chat receipt state appears in the progress dashboard and first-run gates, with free-first repair/start actions and no hidden paid route execution.
 - D168 is now beta in the public UI: model install completion and local-node refreshed events prefer the installed/live model, rerun free proof, select it and prepare the first verified chat prompt without auto-spend.
@@ -188,14 +188,15 @@ Updated: 2026-05-23
 - D194 is now beta: failed starter installs store a repair resume, keep the selected starter/model, open the local repair path and refresh first-screen/Node Dashboard repair banners.
 - D195 is now beta: repair resume checks retry the preserved starter install once after the local node returns as needs-model, with no paid routes and retry loop protection.
 - D196 is now beta: successful starter install/retry verifies the repair resume, records starter-retry-success telemetry and prepares a first useful chat prompt.
-- D197 is now the next activation UX slice: make the final first-answer send action unmistakable after verified starter proof.
+- D197 is now beta: verified starter/proof states expose `Send first answer` and carry the prepared prompt into an automatic first verified chat send from first screen, chat runtime and progress dashboard.
+- D198 is now the next activation retention slice: after first verified answer, show one receipt-driven next step without raw prompt storage, provider secrets or paid routes.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D197` first-answer send handoff after starter success.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D198` first-answer success next-step loop.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

@@ -56,7 +56,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 197).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 198).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -102,7 +102,7 @@ const overrides = new Map([
   ['D162', { status: 'beta', evidence: 'Protected share activity summaries now count reads, access reviews, handoff success/failure and revocations in backend responses, and Safe Sharing renders activity/revocation cues for owners and recipients.' }],
   ['D163', { status: 'beta', evidence: 'Chat now shows a live-model proof panel, verifies browser helper/WebGPU readiness, runs tiny free chat probes only on free/local-looking routes and skips possible paid provider probes.' }],
   ['D164', { status: 'beta', evidence: 'Live-model proof failures now render repair actions for free local profile, installer, model library, connect settings and retry proof from the proof panel.' }],
-  ['D165', { status: 'beta', evidence: 'Verified live-model proof now selects the verified model, updates the prompt placeholder and exposes a Chat with verified model action plus first_chat_ready signal.' }],
+  ['D165', { status: 'beta', evidence: 'Verified live-model proof now selects the verified model, updates the prompt placeholder and exposes a Send first answer action plus first_chat_ready signal.' }],
   ['D166', { status: 'beta', evidence: 'First backend chat success/failure now writes a browser-local first-chat receipt with model, route, character counts, recovery actions and raw_prompt_stored:false/raw_response_stored:false.' }],
   ['D167', { status: 'beta', evidence: 'First-chat receipt state now appears in the progress dashboard and first-run gates with repair/start actions that stay free-first and do not auto-spend.' }],
   ['D168', { status: 'beta', evidence: 'Model install completion and local-node refreshed events now prefer the installed/live model, rerun free proof, select it and prepare the first verified chat prompt without auto-spend.' }],
@@ -134,7 +134,8 @@ const overrides = new Map([
   ['D194', { status: 'beta', evidence: 'Failed starter installs now store a repair resume, keep the selected starter/model, open the local repair path and refresh first-screen/Node Dashboard repair banners.' }],
   ['D195', { status: 'beta', evidence: 'Repair resume checks can now retry the preserved starter install once after the local node returns as needs-model, with no paid routes and retry loop protection.' }],
   ['D196', { status: 'beta', evidence: 'Successful starter install/retry now verifies the repair resume, records starter-retry-success telemetry and prepares a first useful chat prompt.' }],
-  ['D197', { status: 'next', evidence: 'Next activation UX slice: make the final first-answer send action unmistakable after verified starter proof.' }]
+  ['D197', { status: 'beta', evidence: 'Verified starter/proof states now expose Send first answer and carry the prompt through to an automatic first verified chat send from first screen, runtime and progress surfaces.' }],
+  ['D198', { status: 'next', evidence: 'Next activation retention slice: after first verified answer, show one receipt-driven next step without storing raw prompts or starting paid routes.' }]
 ]);
 
 const repoMeta = [
@@ -267,7 +268,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D197', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D198', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

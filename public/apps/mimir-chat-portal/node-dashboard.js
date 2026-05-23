@@ -42,8 +42,8 @@
     const model=String(resume?.model||'').trim();
     if(status==='verified'){
       const count=Number(resume?.model_count||0);
-      if(resume?.action==='starter-install-repair')return {state:'verified',title:'Starter repair verified',detail:(model||'The selected starter')+' is installed. MMIR is preparing proof and first chat.',primary:'Chat now',target:'#mimir-prompt'};
-      return {state:'verified',title:'Last repair verified',detail:count?'Connector is online and '+String(count)+' local model'+(count===1?'':'s')+' are visible.':'Connector is online; continue with local model activation.',primary:'Chat now',target:'#mimir-prompt'};
+      if(resume?.action==='starter-install-repair')return {state:'verified',title:'Starter repair verified',detail:(model||'The selected starter')+' is installed. MMIR is preparing proof and first chat.',primary:'Send first answer',target:'#mimir-prompt'};
+      return {state:'verified',title:'Last repair verified',detail:count?'Connector is online and '+String(count)+' local model'+(count===1?'':'s')+' are visible.':'Connector is online; continue with local model activation.',primary:'Send first answer',target:'#mimir-prompt'};
     }
     if(status==='needs-model'){
       return {state:'needs-model',title:'Connector is back, model needed',detail:'Install or expose one free local model'+(model?' such as '+model:'')+', then MMIR will verify live chat automatically.',primary:'Open model library',target:'#model-library'};
@@ -308,6 +308,10 @@
           free:true,
           note:'Node Dashboard repair resume action selected.'
         });
+        if((link.getAttribute('href')||'')==='#mimir-prompt'&&link.getAttribute('data-repair-resume-action')==='verified'){
+          document.getElementById('mimir-prompt')?.focus();
+          window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
+        }
       });
     });
     root.querySelectorAll('[data-delete-model]').forEach(button=>{

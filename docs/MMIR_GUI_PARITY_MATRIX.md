@@ -110,7 +110,7 @@ D161 is now beta in the public UI: returned MMIR session tokens can be activated
 D162 is now beta across backend/frontend: protected share activity summaries count reads, access reviews, handoff success/failure and revocations, and Safe Sharing renders those cues for owners and recipients.
 D163 is now beta in the public UI: chat shows live-model proof, verifies browser helpers/WebGPU availability and runs tiny free chat probes only on free/local-looking routes while skipping possible paid providers.
 D164 is now beta in the public UI: failed live-model proof states render repair actions for free local profile, installer, model library, connect settings and retry proof.
-D165 is now beta in the public UI: verified proof selects the model, updates the chat prompt and exposes a Chat with verified model action with a first-chat-ready event.
+D165/D197 are now beta in the public UI: verified proof selects the model, updates the chat prompt and exposes a Send first answer action with a first-chat-ready event.
 D166 is now beta in the public UI: first backend chat success/failure writes a browser-local receipt with model, route, character counts, recovery actions and no raw prompt/response storage.
 D167 is now beta in the public UI: first-chat receipt state appears in progress dashboard and first-run gates with repair/start actions that stay free-first and do not auto-spend.
 D168 is now beta in the public UI: model install completion and local-node online events prefer the installed/live model, rerun free proof, select it and prepare the first verified chat prompt.

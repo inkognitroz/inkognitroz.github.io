@@ -99,8 +99,13 @@ if (!d196 || d196.status !== 'beta') {
 }
 
 const d197 = tasks.find((task) => task.seq === 'D197');
-if (!d197 || d197.status !== 'next') {
-  fail('Progress dashboard must expose D197 as the next first-answer send handoff work item.');
+if (!d197 || d197.status !== 'beta') {
+  fail('Progress dashboard task D197 must stay beta after first-answer send handoff ships.');
+}
+
+const d198 = tasks.find((task) => task.seq === 'D198');
+if (!d198 || d198.status !== 'next') {
+  fail('Progress dashboard must expose D198 as the next first-answer success next-step work item.');
 }
 
 if (!process.exitCode) {
