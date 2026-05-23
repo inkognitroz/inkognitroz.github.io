@@ -38,6 +38,7 @@ jobs:
           node scripts/smoke-check-first-screen-activation-closure.js
           node scripts/smoke-check-device-starter-recommendation.js
           node scripts/smoke-check-recommended-starter-telemetry.js
+          node scripts/smoke-check-critical-shell-headroom.js
 
       - name: Commit migrated assets
         run: |

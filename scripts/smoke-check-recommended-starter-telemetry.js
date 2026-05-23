@@ -85,8 +85,8 @@ if (!d186 || d186.status !== 'beta') {
 }
 
 const d187 = tasks.find((task) => task.seq === 'D187');
-if (!d187 || d187.status !== 'next') {
-  fail('Progress dashboard must expose D187 as the next activation hardening work item.');
+if (!d187 || !['beta', 'next'].includes(d187.status)) {
+  fail('Progress dashboard must expose D187 as beta or next after starter telemetry ships.');
 }
 
 if (!process.exitCode) {

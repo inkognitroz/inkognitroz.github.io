@@ -8,6 +8,7 @@ const files = {
   progressData: join(publicDir, 'progress-dashboard.json'),
   progressDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'),
   firstScreen: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
+  firstScreenHydration: join(publicDir, 'apps', 'mimir-chat-portal', 'first-screen-activation-hydration.js'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   nodeDashboardCss: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'),
@@ -73,7 +74,7 @@ const fixtures = json(files.fixtures);
 const progressData = json(files.progressData);
 const scenarios = Array.isArray(fixtures.scenarios) ? fixtures.scenarios : [];
 const progress = text(files.progressDashboard);
-const first = text(files.firstScreen);
+const first = [text(files.firstScreen), text(files.firstScreenHydration)].join('\n');
 const runtime = text(files.chatRuntime);
 const combined = [
   text(files.mmir),
@@ -164,7 +165,7 @@ for (const needle of [
   'data-activation-replay-open',
   'clearActivationReplay',
   'localStorage.removeItem(ACTIVATION_REPLAY_PREFIX+activeWorkspaceId())',
-  'if(target===\'#mimir-prompt\')promptEl?.focus()',
+  "if(target==='#mimir-prompt')document.getElementById('mimir-prompt')?.focus()",
   'renderActivationReplayBanner',
   'Go to next step',
   'Reset replay',

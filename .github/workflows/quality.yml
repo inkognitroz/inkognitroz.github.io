@@ -132,3 +132,6 @@ jobs:
 
       - name: Smoke-check recommended starter telemetry
         run: node scripts/smoke-check-recommended-starter-telemetry.js
+
+      - name: Smoke-check critical shell headroom
+        run: node scripts/smoke-check-critical-shell-headroom.js

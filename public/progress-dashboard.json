@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:00:43.691Z",
+  "updated_at": "2026-05-23T14:12:48.318Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 187,
+    "total": 188,
     "done": 51,
-    "beta": 111,
+    "beta": 112,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -770,6 +770,16 @@
         "phase": "Performance / Activation UX",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Activation Analytics",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1048,7 +1058,7 @@
     }
   ],
   "next_queue": [
-    "D187"
+    "D188"
   ],
   "watchlist": [
     "D082",
@@ -3855,9 +3865,24 @@
       "best_practice": "The WOW first impression should stay fast as activation UX grows",
       "done_when": "Critical JS budget regains headroom, first action remains instant, and replay/repair QA still hydrates safely after load",
       "covers": "performance, activation, architecture",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Non-essential repair/replay first-screen QA banners now hydrate from a deferred module, keeping the immediate first action in the critical shell while increasing JS headroom.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D188",
+      "phase": "Activation Analytics",
+      "priority": "P0",
+      "work_package": "Starter-to-proof funnel",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Connect recommended-starter selection events to later install, live-proof and first-chat receipt events in the Progress Dashboard without storing raw prompts, responses, secrets or paid routes",
+      "best_practice": "Owner should see whether free starter recommendations actually lead to working models",
+      "done_when": "Progress Dashboard shows a privacy-safe starter funnel from selected starter to install/proof/first answer",
+      "covers": "activation, analytics, model UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation hardening slice: regain critical-shell byte headroom by moving non-essential first-screen QA banners into deferred hydration.",
+      "evidence": "Next activation funnel slice: show whether recommended starter selections become install, live proof and first-chat receipts without invasive tracking.",
       "estimate": "2-6h"
     }
   ]

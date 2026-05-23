@@ -8,6 +8,7 @@ const progressDataPath = join(publicDir, 'progress-dashboard.json');
 const files = {
   mmir: join(publicDir, 'mmir.html'),
   firstScreen: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
+  firstScreenHydration: join(publicDir, 'apps', 'mimir-chat-portal', 'first-screen-activation-hydration.js'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   chatRuntimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
@@ -26,7 +27,7 @@ const expectedScenarioIds = [
 ];
 
 const surfaceFiles = {
-  'first-screen': files.firstScreen,
+  'first-screen': [files.firstScreen, files.firstScreenHydration],
   'chat-runtime': files.chatRuntime,
   'node-dashboard': files.nodeDashboard,
   telemetry: files.telemetry,
@@ -114,7 +115,8 @@ for (const scenario of scenarios) {
   }
 
   for (const surface of surfaces) {
-    const source = text(surfaceFiles[surface.surface] || files.mmir);
+    const surfaceSource=surfaceFiles[surface.surface] || files.mmir;
+    const source = Array.isArray(surfaceSource) ? surfaceSource.map((file)=>text(file)).join('\n') : text(surfaceSource);
     if (!surface.evidence || !source.includes(surface.evidence)) {
       fail(`Scenario ${scenario.id} surface ${surface.surface} lacks source evidence: ${surface.evidence}.`);
     }
@@ -163,13 +165,13 @@ if (!text(files.privacyControls).includes('mimir-activation-replay-v1:')) {
 }
 
 for (const needle of ['activation-replay-banner', 'mimir-activation-replay-v1:', 'demo_only:true', 'mutated_real_connector:false', 'mmir-activation-replay-updated']) {
-  if (!text(files.firstScreen).includes(needle)) {
+  if (![text(files.firstScreen), text(files.firstScreenHydration)].join('\n').includes(needle)) {
     fail(`D179 first-screen replay handoff needs evidence: ${needle}`);
   }
 }
 
 for (const needle of ['data-activation-replay-jump', 'data-activation-replay-reset', 'clearActivationReplay', 'Go to next step', 'Reset replay']) {
-  if (!text(files.firstScreen).includes(needle)) {
+  if (![text(files.firstScreen), text(files.firstScreenHydration)].join('\n').includes(needle)) {
     fail(`D180 first-screen replay controls need evidence: ${needle}`);
   }
 }

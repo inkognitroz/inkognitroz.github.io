@@ -61,6 +61,7 @@ const files = {
   nodeDashboardCss: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'),
   repairResumeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
+  firstScreenHydration: join(publicDir, 'apps', 'mimir-chat-portal', 'first-screen-activation-hydration.js'),
   universalInstaller: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),
   connectorRelease: join(publicDir, 'downloads', 'mmir-local-connector-release.json'),
   connectorServer: join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'),
@@ -73,6 +74,7 @@ const files = {
   firstScreenClosureHarness: join(root, 'scripts', 'smoke-check-first-screen-activation-closure.js'),
   deviceStarterHarness: join(root, 'scripts', 'smoke-check-device-starter-recommendation.js'),
   starterTelemetryHarness: join(root, 'scripts', 'smoke-check-recommended-starter-telemetry.js'),
+  criticalShellHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -394,11 +396,12 @@ requireIncludes(files.progressDashboard, 'firstChatReceiptState', 'D167 dashboar
 requireIncludes(files.progressDashboard, 'progress-activation-clear', 'D170 dashboard must expose activation telemetry controls.');
 requireIncludes(files.progressDashboard, 'progress-activation-autopilot', 'D171 dashboard must expose a manual safe autopilot run.');
 requireIncludes(files.progressDashboard, 'activationSummary', 'D170 dashboard must summarize activation telemetry.');
-requireIncludes(files.firstImpression, 'activation-replay-banner', 'D179 first screen must show active replay state.');
-requireIncludes(files.firstImpression, 'mutated_real_connector:false', 'D179 first screen replay state must be demo-only.');
-requireIncludes(files.firstImpression, 'data-activation-replay-jump', 'D180 first screen must jump to replay next target.');
-requireIncludes(files.firstImpression, 'data-activation-replay-reset', 'D180 first screen must reset active replay state.');
-requireIncludes(files.firstImpression, 'clearActivationReplay', 'D180 replay reset must only clear the demo replay key.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/first-screen-activation-hydration.js', 'D187 MMIR page must defer first-screen activation hydration.');
+requireIncludes(files.firstScreenHydration, 'activation-replay-banner', 'D179 first screen must show active replay state.');
+requireIncludes(files.firstScreenHydration, 'mutated_real_connector:false', 'D179 first screen replay state must be demo-only.');
+requireIncludes(files.firstScreenHydration, 'data-activation-replay-jump', 'D180 first screen must jump to replay next target.');
+requireIncludes(files.firstScreenHydration, 'data-activation-replay-reset', 'D180 first screen must reset active replay state.');
+requireIncludes(files.firstScreenHydration, 'clearActivationReplay', 'D180 replay reset must only clear the demo replay key.');
 requireIncludes(files.chatRuntime, 'runtime-activation-replay', 'D179 chat runtime must show active replay near live proof.');
 requireIncludes(files.chatRuntime, 'real live proof unchanged', 'D179 replay handoff must not replace real proof.');
 requireIncludes(files.chatRuntimeCss, '.runtime-activation-replay', 'D179 chat runtime replay state needs styling.');
@@ -435,6 +438,8 @@ requireIncludes(files.starterTelemetryHarness, 'Recommended starter telemetry sm
 requireIncludes(files.firstImpression, "recommended-starter", 'D186 first screen must record recommended starter telemetry.');
 requireIncludes(files.activationTelemetry, "if(type==='recommended-starter')", 'D186 activation telemetry must sanitize recommended starter events.');
 requireIncludes(files.progressDashboard, 'starterSelected', 'D186 Progress Dashboard must count recommended starter selections.');
+requireIncludes(files.criticalShellHarness, 'Critical shell headroom smoke check passed.', 'D187 critical-shell headroom needs dedicated CI fixture coverage.');
+requireIncludes(files.firstScreenHydration, 'MimirFirstScreenActivationHydration', 'D187 deferred hydration module must own non-critical first-screen activation banners.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');
@@ -462,8 +467,8 @@ requireIncludes(files.nodeDashboard, 'device-repair-action', 'D174 needs repair-
 requireIncludes(files.nodeDashboard, 'mimir-repair-resume-v1:', 'D175 needs repair-card clicks to store resume state.');
 requireIncludes(files.localConnector, 'mmir-repair-resume-checked', 'D175 needs local connector to verify repair resume after return.');
 requireIncludes(files.activationTelemetry, 'mmir-repair-resume-checked', 'D175 needs repair resume verification in activation telemetry.');
-requireIncludes(files.firstImpression, 'renderRepairResumeBanner', 'D176 needs first-screen repair resume result visibility.');
-requireIncludes(files.firstImpression, 'mmir-repair-resume-checked', 'D176 first-screen banner must refresh after repair resume checks.');
+requireIncludes(files.firstScreenHydration, 'renderRepairResumeBanner', 'D176 needs first-screen repair resume result visibility.');
+requireIncludes(files.firstScreenHydration, 'mmir-repair-resume-checked', 'D176 first-screen banner must refresh after repair resume checks.');
 requireIncludes(files.nodeDashboard, 'renderRepairResumeBanner', 'D176 needs Node Dashboard repair resume result visibility.');
 requireIncludes(files.nodeDashboard, 'data-repair-resume-action', 'D176 repair resume banner needs a concrete next action.');
 requireIncludes(files.nodeDashboardCss, '.node-resume-banner', 'D176 needs Node Dashboard repair resume styling.');

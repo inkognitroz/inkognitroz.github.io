@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d186-20260523-starter-telemetry';
+const CACHE_NAME='mmir-pwa-d187-20260523-shell-headroom';
 const SHELL_ASSETS=[
   './',
   './index.html',
