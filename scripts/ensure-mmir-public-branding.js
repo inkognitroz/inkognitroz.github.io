@@ -11,7 +11,29 @@ const replacements = new Map([
     ['Balanced SaaS dark theme', 'Balanced MMIR dark theme']
   ]],
   ['public/apps/football-evolution-matrix/index.html', [
-    ['saas-fabric-theme', 'mmir-theme']
+    ['saas-fabric-theme', 'mmir-theme'],
+    ['Tilbake til SaaS Fabric', 'Tilbake til MMIR']
+  ]],
+  ['public/ai-models.json', [
+    ['Static model registry for SaaS Fabric AI experiments. Do not store API keys here.', 'Static model registry for MMIR AI experiments. Do not store API keys here.']
+  ]],
+  ['public/apps/app-template-generator/generator.js', [
+    ['static-first SaaS Fabric app', 'static-first MMIR app']
+  ]],
+  ['public/apps/mimir-chat-portal/index.html', [
+    ['Mimir Chat Portal · SaaS Fabric', 'Mimir Chat Portal · MMIR'],
+    ['Static launchpad for the SaaS Fabric Mimir AI chat backend and local AI tools.', 'Static launchpad for MMIR AI chat orchestration, backend routing and local AI tools.'],
+    ['SaaS Fabric chat workflows', 'MMIR chat workflows'],
+    ['Back to SaaS Fabric', 'Back to MMIR'],
+    ['point SaaS Fabric at an Open WebUI backend', 'point MMIR at an Open WebUI backend'],
+    ['Mimir / SaaS Fabric', 'Mimir / MMIR']
+  ]],
+  ['public/internal.html', [
+    ['legacy SaaS Fabric prototypes', 'legacy static-app prototypes']
+  ]],
+  ['public/ui-action-coverage.json', [
+    ['saas-fabric-local-analytics', 'mmir-local-analytics'],
+    ['Public SaaS Fabric homepage', 'Public MMIR homepage']
   ]],
   ['public/assets/onboarding.js', [
     ['saas-fabric-onboarding-dismissed', 'mmir-onboarding-dismissed'],
@@ -29,7 +51,9 @@ const replacements = new Map([
   ['public/assets/app.js', [
     ['saas-fabric-admin-backups', 'mmir-admin-backups'],
     ['saas-fabric-admin-draft', 'mmir-admin-draft'],
-    ['saas-fabric-export-bundle', 'mmir-export-bundle']
+    ['saas-fabric-export-bundle', 'mmir-export-bundle'],
+    ['site.title || "SaaS Fabric"', 'site.title || "MMIR"'],
+    ['SaaS Fabric export bundle', 'MMIR export bundle']
   ]],
   ['public/assets/usage-analytics.js', [
     ['saas-fabric-usage-events-v1', 'mmir-usage-events-v1']
