@@ -1,7 +1,7 @@
 # Model evaluation checklist
 
 ## Goal
-Evaluate local and hosted models pragmatically before they become default choices in SaaS Fabric.
+Evaluate local and hosted models pragmatically before they become default choices in MMIR.
 
 ## Evaluation dimensions
 
