@@ -6,6 +6,7 @@
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
   const INTENT_KEY='mimir-user-intent-v1';
+  const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const chatCenter=document.querySelector('.mimir-chat-center');
   const promptEl=document.getElementById('mimir-prompt');
   const primaryLink=document.getElementById('primary-chat-link');
@@ -16,6 +17,7 @@
   function statusOf(profile){return String(profile?.health||'unknown').toLowerCase();}
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
+  function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
   function readModes(){
     try{
       const saved=JSON.parse(localStorage.getItem(MODE_KEY)||'{}');
@@ -36,6 +38,37 @@
       value:select?.value||'',
       text:String(option?.textContent||'').trim(),
       runtime:option?.dataset?.runtime||''
+    };
+  }
+  function readFirstChatReceipt(){
+    try{
+      const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+
+  function firstChatGate(sent){
+    const receipt=readFirstChatReceipt();
+    if(receipt?.status==='success'){
+      return {
+        done:true,
+        detail:'Verified receipt saved for '+String(receipt.model||'model')+'; no raw prompt stored.',
+        target:'#progress-dashboard'
+      };
+    }
+    if(receipt?.status==='failed'){
+      return {
+        done:false,
+        detail:'Verified chat failed; use recovery to retry proof or repair the local route.',
+        target:'#runtime-live-proof'
+      };
+    }
+    return {
+      done:false,
+      detail:sent?'First answer exists; verified receipt is missing. Run proof recovery.':'Send one verified chat; MMIR will save a private receipt.',
+      target:'#runtime-live-proof'
     };
   }
 
@@ -153,6 +186,20 @@
       primaryLink?.click();
     },120);
   }
+  function recoverFirstChat(){
+    ensureFirstRunDefaults();
+    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    openTarget('#mimir-chat-runtime');
+    const receipt=readFirstChatReceipt();
+    const action=document.querySelector(receipt?.status==='failed'?'[data-proof-action="retry"]':'[data-proof-action="chat-now"]')||
+      document.querySelector('[data-proof-action="retry"]')||
+      document.getElementById('runtime-refresh');
+    if(action){
+      action.click();
+      return;
+    }
+    openTarget('#local-connector');
+  }
   function hasFirstPrompt(){
     try{
       const raw=localStorage.getItem(chatStorageKey())||(
@@ -218,12 +265,13 @@
     const modelLive=Boolean(model.value&&!model.value.startsWith('starter:')&&/live/i.test(model.text));
     const modelLabel=model.text.replace(/\s+-\s+live$/i,'');
 
+    const firstChat=firstChatGate(sent);
     const steps=[
       {label:'Browser ready',done:true,detail:'Free guide and installable model choices load automatically.',target:'#mimir-prompt'},
       {label:'Private mode',done:privateOn,detail:privateOn?'Private-by-default routing instructions are on.':'Turn Private back on in the chat dock.',target:'#composer-mode-dock'},
       {label:'Local node',done:localNodeSeen,detail:localNodeSeen?(active.name||'Local node profile is active.'):(hasProfile?'Local profile exists; start or refresh the node.':'MMIR prepares the free local profile for you.'),target:'#local-connector'},
       {label:'Model live',done:modelLive||ready,detail:(modelLive?modelLabel+' is live.':(ready?(active.models||'Model discovered.'):(localNodeProblem?'Node needs attention before model is live.':'Browser guide works now; local model activates after install.'))),target:'#local-connector'},
-      {label:'First chat',done:sent,detail:sent?'First answer is saved in this workspace.':'Type or use a starter prompt to get the first useful answer.',target:'#mimir-prompt'}
+      {label:'First chat',done:firstChat.done,detail:firstChat.detail,target:firstChat.target}
     ];
     const firstOpen=steps.findIndex(item=>!item.done);
 
@@ -291,7 +339,12 @@
     installLink.href='#local-connector';
     installLink.textContent='Local install';
     installLink.addEventListener('click',()=>openTarget('#local-connector'));
-    actions.append(startButton,freeButton,privateButton,installLink);
+    const recoverButton=document.createElement('button');
+    recoverButton.type='button';
+    recoverButton.id='recover-first-chat';
+    recoverButton.textContent='Repair first chat';
+    recoverButton.addEventListener('click',recoverFirstChat);
+    actions.append(startButton,freeButton,recoverButton,privateButton,installLink);
 
     panel.innerHTML='';
     panel.append(heading,intentPanel,actions,grid);
@@ -300,6 +353,7 @@
   window.addEventListener('mmir-backend-profiles-updated',render);
   window.addEventListener('mmir-workspace-changed',render);
   window.addEventListener('mmir-chat-history-updated',render);
+  window.addEventListener('mmir-first-chat-receipt-updated',render);
   window.addEventListener('mmir-chat-modes-updated',render);
   window.addEventListener('mmir-local-connector-refreshed',render);
   window.addEventListener('mmir-user-intent-updated',render);
