@@ -6,7 +6,7 @@
       "id": "local-connector-installer",
       "title": "Install Local Connector",
       "status": "beta",
-      "description": "Open mmir.ai, connect local AI, install, ready. The universal installer detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode, reads the release manifest, and only promotes a Mac DMG after a real MMIR Local Node artifact is published.",
+      "description": "Open mmir.ai, connect local AI, install, ready. The universal installer detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode, reads the release manifest, returns to MMIR after install, and only promotes a Mac DMG after a real MMIR Local Node artifact is published.",
       "target": "./downloads/mmir-local-connector-install.html",
       "release_manifest": "./downloads/mmir-local-connector-release.json",
       "action": "Install"

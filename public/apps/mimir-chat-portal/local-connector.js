@@ -49,6 +49,40 @@
     if(targetEl&&'open' in targetEl)targetEl.open=true;
     if(targetEl)targetEl.scrollIntoView({behavior:'smooth',block:'start'});
   }
+  function isPostInstallReturn(){
+    const params=new URLSearchParams(window.location.search||'');
+    const hash=String(window.location.hash||'').toLowerCase();
+    return params.get('mmir_local_return')==='1'||
+      params.get('local_node_ready')==='1'||
+      hash.includes('local-connector-ready')||
+      hash.includes('mmir-local-ready');
+  }
+  function schedulePostInstallRefresh(){
+    [250,1800,5000,10000].forEach((ms,index)=>{
+      setTimeout(()=>{
+        refreshLocalNode();
+        document.getElementById('runtime-refresh')?.click();
+        window.dispatchEvent(new CustomEvent('mmir-local-install-returned',{detail:{url:DEFAULT_LOCAL_URL,attempt:index+1}}));
+      },ms);
+    });
+  }
+  function activatePostInstallReturn(){
+    if(!isPostInstallReturn())return false;
+    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    const panel=document.getElementById('local-connector');
+    if(panel&&'open' in panel)panel.open=true;
+    if(panel)setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),50);
+    liveState={
+      status:'checking',
+      message:'Installer returned to MMIR. Checking the local node and refreshing live models automatically...',
+      models:[],
+      tunnel:null,
+      url:DEFAULT_LOCAL_URL
+    };
+    render(guideSteps);
+    schedulePostInstallRefresh();
+    return true;
+  }
 
   function render(steps){
     if(!grid)return;
@@ -250,7 +284,7 @@
         {id:'connect',title:'Connect to MMIR.ai',status:'planned',description:'Frontend stores only a local connector URL and non-sensitive profile metadata.'}
       ]);
     }
-    refreshLocalNode();
+    if(!activatePostInstallReturn())refreshLocalNode();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();

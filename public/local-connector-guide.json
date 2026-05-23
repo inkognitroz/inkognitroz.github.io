@@ -7,7 +7,7 @@
       "id": "install",
       "title": "Install connector",
       "status": "beta",
-      "description": "Use the universal installer from the Connect section on mmir.ai. It detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode, reads the release manifest, and never promotes a Mac DMG until a real release artifact is published."
+      "description": "Use the universal installer from the Connect section on mmir.ai. It detects Mac, Windows, Linux/VM, Raspberry Pi/Linux ARM or Android client mode, reads the release manifest, returns to MMIR after install, and never promotes a Mac DMG until a real release artifact is published."
     },
     {
       "id": "desktop-node",
@@ -31,7 +31,7 @@
       "id": "detect",
       "title": "Detect local models",
       "status": "beta",
-      "description": "The connector discovers Ollama models and returns them through the MMIR /models contract with safe metadata and hardware guidance."
+      "description": "After install, mmir.ai opens with mmir_local_return=1, activates the free local profile, checks the connector and refreshes Ollama models through the MMIR /models contract automatically."
     },
     {
       "id": "connect",
