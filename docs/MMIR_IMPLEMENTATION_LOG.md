@@ -146,14 +146,15 @@ Updated: 2026-05-23
 - D152 is now beta in the public UI: Safe Sharing creates redacted browser-local bundles, copyable text, preview links and JSON exports for selected chats, artifacts, workflow drafts and knowledge collection manifests while keeping authenticated sharing planned for the protected backend.
 - D153 is now beta in the managed backend: protected share objects are owner-scoped, redacted before storage, revocable, audit-safe and covered by backend portable export/import/delete.
 - D154 is now beta in the public UI: Safe Sharing can save redacted bundles to protected `/shares`, load protected share metadata and revoke owned shares through the active backend profile.
-- D155 was added as the next identity task because team sharing, marketplace and premium routes need real account/session and organization boundaries.
+- D155 is now beta across frontend/backend: protected identity routes expose principals, free-first organizations, owner/admin/member/viewer roles and owner guardrails, while the public UI can create orgs and manage members through the active protected backend without storing organization authority in GitHub Pages.
+- D156 is now the next identity/security slice: add short-lived session-token and invite planning/acceptance contracts tied to organizations before real cross-user sharing, marketplace or premium routes.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D155` account and organization identity foundation.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D156` session and invite foundation.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

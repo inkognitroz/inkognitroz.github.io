@@ -143,6 +143,12 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), 
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), '/shares', 'D154 needs protected share route support.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'revokeProtectedShare', 'D154 needs protected share revocation support.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-backend-card', 'D154 needs protected share list styling.');
+requireText(mmirPath, './apps/mimir-chat-portal/identity-org.js', 'D155 needs identity/organization UI loaded on the product page.');
+requireText(mmirPath, './apps/mimir-chat-portal/identity-org.css', 'D155 needs identity/organization styling loaded on the product page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/me', 'D155 needs protected identity principal route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/orgs', 'D155 needs protected organization list/create route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), 'owner/admin', 'D155 needs visible owner/admin organization role boundaries.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.css'), '.identity-org-card', 'D155 needs organization card styling.');
 requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
 requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');

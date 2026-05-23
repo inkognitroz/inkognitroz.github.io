@@ -498,7 +498,17 @@
         count:activeBackendCount(),
         size:'Not stored here',
         retention:'Owned by protected API policy, export/delete via backend data routes.',
-        action:'Public frontend never owns backend secrets or raw provider credentials.',
+        action:'Public frontend never owns backend secrets, raw provider credentials or organization authority.',
+        keys:[]
+      },
+      {
+        id:'organization-identity',
+        label:'Organization identity',
+        location:'Protected backend only',
+        count:activeBackendCount(),
+        size:'Not stored here',
+        retention:'Organization membership, roles and owner/admin actions stay behind /identity/*.',
+        action:'Manage Identity / Organizations through a protected backend profile; nothing is exported from local workspace JSON.',
         keys:[]
       },
       {

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d154-20260523-mobile-chat-share-sync';
+const CACHE_NAME='mmir-pwa-d155-20260523-mobile-chat-identity-org';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -16,6 +16,8 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/migration-portability.js',
   './apps/mimir-chat-portal/sharing-center.css',
   './apps/mimir-chat-portal/sharing-center.js',
+  './apps/mimir-chat-portal/identity-org.css',
+  './apps/mimir-chat-portal/identity-org.js',
   './progress-dashboard.json',
   './user-journeys.json',
   './gui-parity-matrix.json',

@@ -1,0 +1,181 @@
+.identity-orgs-root {
+  display: grid;
+  gap: 12px;
+}
+
+.identity-summary-row,
+.identity-controls-grid,
+.identity-org-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.identity-summary-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.identity-summary-row article,
+.identity-org-card,
+.identity-empty,
+.identity-policy-panel {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.identity-summary-row article {
+  display: grid;
+  gap: 5px;
+}
+
+.identity-summary-row span,
+.identity-summary-row small,
+.identity-org-card span,
+.identity-org-card li,
+.identity-empty span,
+.identity-policy-panel span {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.identity-summary-row strong,
+.identity-org-card strong,
+.identity-empty strong,
+.identity-policy-panel strong {
+  min-width: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.identity-controls-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.identity-controls-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+.identity-controls-grid input,
+.identity-controls-grid select {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+}
+
+.identity-policy-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.identity-policy-panel h3,
+.identity-org-card h3 {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 0.92rem;
+}
+
+.identity-policy-panel p {
+  margin: 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.identity-policy-panel div,
+.identity-policy-mini div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.identity-org-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.identity-org-card,
+.identity-empty {
+  display: grid;
+  gap: 10px;
+}
+
+.identity-card-head {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.identity-card-head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.identity-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.identity-chip-row span {
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #ecfeff;
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.identity-member-list {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.identity-member-list li strong {
+  display: block;
+}
+
+.identity-policy-mini {
+  display: grid;
+  gap: 5px;
+}
+
+.identity-orgs button {
+  min-height: 36px;
+  border-radius: 8px !important;
+}
+
+.identity-orgs button:focus-visible,
+.identity-controls-grid input:focus-visible,
+.identity-controls-grid select:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1000px) {
+  .identity-summary-row,
+  .identity-controls-grid,
+  .identity-org-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .identity-card-head {
+    display: grid;
+  }
+}

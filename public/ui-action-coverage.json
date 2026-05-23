@@ -213,6 +213,14 @@
       "evidence": ["/access/policies", "/access/check", "rbac-beta-fail-closed", "server_side_enforcement_required:true"]
     },
     {
+      "id": "identity-orgs",
+      "surface": "Identity / Organizations",
+      "status": "beta",
+      "user_result": "Owner can load protected identity, create a free organization, save or remove members and keep owner/admin role changes behind backend enforcement.",
+      "selectors": ["#identity-orgs", "#identity-refresh", "#identity-create-org", "#identity-add-member", "#identity-remove-member", "#identity-disable-org", "#identity-open-share"],
+      "evidence": ["/identity/me", "/identity/orgs", "owner/admin", "Organization identity", "Protected identity and organization state loaded"]
+    },
+    {
       "id": "runtime-settings",
       "surface": "Runtime Settings",
       "status": "beta",

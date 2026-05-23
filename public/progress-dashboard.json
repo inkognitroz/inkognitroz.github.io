@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T08:36:33.338Z",
+  "updated_at": "2026-05-23T08:58:27.828Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 155,
+    "total": 156,
     "done": 51,
-    "beta": 79,
+    "beta": 80,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -700,6 +700,16 @@
         "phase": "Identity",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Identity/Security",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -758,7 +768,7 @@
     }
   ],
   "next_queue": [
-    "D155"
+    "D156"
   ],
   "watchlist": [
     "D082",
@@ -3085,9 +3095,24 @@
       "best_practice": "Team sharing, marketplace and premium routes need real identity before trust",
       "done_when": "Owner can create an org workspace and assign roles without exposing provider secrets",
       "covers": "enterprise readiness",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Managed backend now exposes protected principal and organization routes with owner/admin/member/viewer guardrails, and the public UI can load identity, create a free org, save/remove members and disable owned orgs through the active protected backend.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D156",
+      "phase": "Identity/Security",
+      "priority": "P1",
+      "work_package": "Session and invite foundation",
+      "repos": "managed API + frontend",
+      "concrete_work": "Add short-lived session-token and invite planning/acceptance contracts tied to organizations, without passwords, paid routes or browser-stored provider keys",
+      "best_practice": "Multi-user sharing needs revocable identity handoff before public links or marketplace",
+      "done_when": "Owner can create a revocable invite/session plan and the UI shows exactly what is active, expired or blocked",
+      "covers": "team identity",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next platform-readiness slice: account/session and organization identity foundation for real team sharing, marketplace and premium routes.",
+      "evidence": "Next identity/security slice: short-lived session-token and invite planning/acceptance contracts tied to organizations before real cross-user sharing or marketplace routes.",
       "estimate": "0.5-2d"
     }
   ]
