@@ -30,7 +30,9 @@
 .progress-starter-funnel,
 .progress-starter-step,
 .progress-simulator-card,
-.progress-simulator-scenario {
+.progress-simulator-scenario,
+.progress-no-model-fixture,
+.progress-no-model-scenario {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 8px;
   background: #fff;
@@ -44,7 +46,8 @@
 .progress-decision-card span,
 .progress-activation-event span,
 .progress-starter-step span,
-.progress-simulator-scenario span {
+.progress-simulator-scenario span,
+.progress-no-model-scenario span {
   color: var(--mimir-muted, #6b7280);
   display: block;
   font-size: 0.76rem;
@@ -75,7 +78,8 @@
 .progress-repo-card h3,
 .progress-next-card h3,
 .progress-decision-card h3,
-.progress-simulator-scenario h3 {
+.progress-simulator-scenario h3,
+.progress-no-model-scenario h3 {
   color: var(--mimir-text, #111827);
   font-size: 0.95rem;
   margin: 5px 0;
@@ -373,6 +377,38 @@
 .progress-simulator-scenario {
   display: grid;
   gap: 7px;
+}
+
+.progress-no-model-fixture {
+  display: grid;
+  gap: 10px;
+}
+
+.progress-no-model-fixture[data-state="ready"] {
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.progress-no-model-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.progress-no-model-scenario {
+  display: grid;
+  gap: 7px;
+}
+
+.progress-no-model-scenario p,
+.progress-no-model-scenario small {
+  color: var(--mimir-muted, #6b7280);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.progress-no-model-scenario strong {
+  color: #047857;
+  font-size: 0.9rem;
 }
 
 .progress-live-gap-checklist {

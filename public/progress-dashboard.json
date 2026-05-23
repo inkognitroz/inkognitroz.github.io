@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T17:39:28.637Z",
+  "updated_at": "2026-05-23T17:47:52.487Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 209,
+    "total": 210,
     "done": 51,
-    "beta": 133,
+    "beta": 134,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -740,8 +740,8 @@
         "phase": "Activation QA",
         "total": 7,
         "done": 0,
-        "beta": 6,
-        "next": 1,
+        "beta": 7,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -858,10 +858,10 @@
       },
       {
         "phase": "Visual QA / First Impression",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1128,6 +1128,72 @@
       }
     ]
   },
+  "no_model_dead_end_report": {
+    "version": 1,
+    "title": "No-Model Dead-End Browser Fixture",
+    "principle": "First chat must always expose one useful free action before paid/provider routes.",
+    "public_repo_rule": "This report stores only UI state labels and public-safe action names. It contains no prompts, responses, pairing tokens, provider keys, billing data or private user content.",
+    "required_surfaces": [
+      "first-screen",
+      "chat-runtime",
+      "composer-model-picker",
+      "model-helper",
+      "progress-dashboard"
+    ],
+    "required_actions": [
+      "Use free browser guide",
+      "Open free model picker",
+      "Install/prove free local model",
+      "Refresh local node proof"
+    ],
+    "scenarios": [
+      {
+        "id": "loading-free-routes",
+        "label": "Runtime model list is still loading",
+        "simulated_dom_state": "runtime-model select has no live backend options yet",
+        "primary_action": "Use free browser guide",
+        "secondary_action": "Open free model picker",
+        "target": "#mimir-prompt",
+        "expected_dom_evidence": [
+          "freeRouteFloor",
+          "No paid route starts here",
+          "Loading free model routes"
+        ],
+        "free": true,
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "offline-local-node",
+        "label": "Local node is offline or not paired",
+        "simulated_dom_state": "backend proof cannot reach local node",
+        "primary_action": "Install/prove free local model",
+        "secondary_action": "Open node health",
+        "target": "#local-connector",
+        "expected_dom_evidence": [
+          "proofRepairActions",
+          "Connect local node",
+          "Open + Add model"
+        ],
+        "free": true,
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "no-live-model-after-refresh",
+        "label": "Backend responds but no live model is selected",
+        "simulated_dom_state": "send flow has no selected live model",
+        "primary_action": "Use free browser guide",
+        "secondary_action": "Install/prove free local model",
+        "target": "#mimir-prompt",
+        "expected_dom_evidence": [
+          "noModelFallbackStarter",
+          "MMIR selected a free starter route instead",
+          "await sendStarterMessage(fallback,prompt)"
+        ],
+        "free": true,
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1178,7 +1244,7 @@
     }
   ],
   "next_queue": [
-    "D209"
+    "D210"
   ],
   "watchlist": [
     "D082",
@@ -4315,9 +4381,24 @@
       "best_practice": "Source checks are useful, but the first user journey should be verified as a composed UI state",
       "done_when": "CI proves the composed first-chat DOM always has one primary free action and owner-visible progress evidence",
       "covers": "QA, first impression, activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress Dashboard now renders a no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios plus one free primary action for each.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D210",
+      "phase": "Visual QA / First Impression",
+      "priority": "P0",
+      "work_package": "No-model fixture visual pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add mobile and desktop visual/layout checks for the no-model fixture, composer route floor, first-chat fallback and progress evidence so the improved flow is not only logically present but visually calm and obvious",
+      "best_practice": "First impression needs visible confidence, not only passing logic",
+      "done_when": "CI/local fixture proves the no-model fallback is readable on desktop and mobile without overlap or hidden controls",
+      "covers": "visual QA, mobile, activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: verify the no-model fallback with a richer first-chat DOM fixture and owner-visible progress evidence.",
+      "evidence": "Next activation slice: run a mobile/desktop visual pass for the no-model fixture and first-chat route floor.",
       "estimate": "2-6h"
     }
   ]

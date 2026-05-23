@@ -341,7 +341,8 @@ async function run() {
   requireIncludes(files.pagesWorkflow, 'smoke-check-installer-to-live-model-proof.js', 'D206 Pages workflow must run the installer-to-live-model proof gate.');
   requireIncludes(files.backlog, '| D207 |', 'Backlog must keep D207 as the next model-activation hardening item after D206.');
   requireIncludes(files.backlog, '| D208 |', 'Backlog must keep D208 as the no-model dead-end gate after D207.');
-  requireIncludes(files.backlog, '| D209 |', 'Backlog must keep a next sequential work item after D208.');
+  requireIncludes(files.backlog, '| D209 |', 'Backlog must keep D209 as the first-chat no-model DOM fixture after D208.');
+  requireIncludes(files.backlog, '| D210 |', 'Backlog must keep a next sequential work item after D209.');
   requireIncludes(files.mmir, 'local-connector.js?v=20260523-post-install-return', 'D206 product page must load the post-install return local connector code.');
 
   await proveInstallerReturnToFirstChat();
@@ -352,11 +353,13 @@ async function run() {
   const d207 = tasks.find((task) => task.seq === 'D207');
   const d208 = tasks.find((task) => task.seq === 'D208');
   const d209 = tasks.find((task) => task.seq === 'D209');
+  const d210 = tasks.find((task) => task.seq === 'D210');
   requireTrue(d206?.status === 'beta', 'Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
   requireTrue(d207?.status === 'beta', 'Progress dashboard task D207 must be beta after free live-route hardening ships.');
   requireTrue(d208?.status === 'beta', 'Progress dashboard task D208 must be beta after no-model dead-end browser gate ships.');
-  requireTrue(d209?.status === 'next', 'Progress dashboard task D209 must become the next work item after D208 ships.');
-  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D209', 'Progress dashboard next queue must prioritize D209 after D208 ships.');
+  requireTrue(d209?.status === 'beta', 'Progress dashboard task D209 must be beta after first-chat no-model DOM fixture ships.');
+  requireTrue(d210?.status === 'next', 'Progress dashboard task D210 must become the next work item after D209 ships.');
+  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D210', 'Progress dashboard next queue must prioritize D210 after D209 ships.');
 
   if (failures.length) {
     process.exitCode = 1;

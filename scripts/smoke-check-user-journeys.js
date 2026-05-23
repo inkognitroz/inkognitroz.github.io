@@ -585,6 +585,8 @@ requireIncludes(join(root, 'scripts', 'smoke-check-free-live-route-hardening.js'
 requireIncludes(files.composerModelPicker, 'freeRouteFloor', 'D207 composer model picker must keep useful free routes visible while backend discovery catches up.');
 requireIncludes(join(root, 'scripts', 'smoke-check-no-model-dead-end-browser.js'), 'No-model dead-end browser smoke check passed.', 'D208 no-model dead-end browser gate must have dedicated CI coverage.');
 requireIncludes(files.chatRuntime, 'noModelFallbackStarter', 'D208 chat runtime must avoid no-model dead ends by falling back to a useful free starter.');
+requireIncludes(join(root, 'scripts', 'smoke-check-first-chat-no-model-dom-fixture.js'), 'First-chat no-model DOM fixture smoke check passed.', 'D209 first-chat no-model DOM fixture must have dedicated CI coverage.');
+requireIncludes(files.progressDashboard, 'renderNoModelDeadEndReport', 'D209 Progress Dashboard must expose no-model fixture evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

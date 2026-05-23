@@ -5,6 +5,7 @@ const root = process.cwd();
 const backlogPath = resolve(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md');
 const outputPath = resolve(root, 'public', 'progress-dashboard.json');
 const activationSimulatorPath = resolve(root, 'public', 'activation-simulator-fixtures.json');
+const noModelDeadEndReportPath = resolve(root, 'public', 'no-model-dead-end-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -146,7 +147,8 @@ const overrides = new Map([
   ['D206', { status: 'beta', evidence: 'Installer-return-to-live-model proof now has a deterministic mock local-node gate covering health, pairing, model inventory, first chat readiness, next action and no-spend/no-secret boundaries.' }],
   ['D207', { status: 'beta', evidence: 'Composer model picker now keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.' }],
   ['D208', { status: 'beta', evidence: 'Chat send flow now falls back to a useful free starter when no live model route is selected, and CI guards the first chat/model DOM against empty no-model dead ends.' }],
-  ['D209', { status: 'next', evidence: 'Next activation slice: verify the no-model fallback with a richer first-chat DOM fixture and owner-visible progress evidence.' }]
+  ['D209', { status: 'beta', evidence: 'Progress Dashboard now renders a no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios plus one free primary action for each.' }],
+  ['D210', { status: 'next', evidence: 'Next activation slice: run a mobile/desktop visual pass for the no-model fixture and first-chat route floor.' }]
 ]);
 
 const repoMeta = [
@@ -255,6 +257,11 @@ function readActivationSimulator() {
   return JSON.parse(readFileSync(activationSimulatorPath, 'utf8'));
 }
 
+function readNoModelDeadEndReport() {
+  if (!existsSync(noModelDeadEndReportPath)) return null;
+  return JSON.parse(readFileSync(noModelDeadEndReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -279,7 +286,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D209', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D210', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -299,6 +306,7 @@ const data = {
   status_legend: statusNotes,
   summary: summarize(tasks),
   activation_simulator: readActivationSimulator(),
+  no_model_dead_end_report: readNoModelDeadEndReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

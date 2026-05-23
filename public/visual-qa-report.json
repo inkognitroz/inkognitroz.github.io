@@ -61,5 +61,5 @@
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D209 first-chat no-model DOM fixture: render the composed first-chat state across loading, offline and no-live-model cases."
+  "next": "D210 no-model fixture visual pass: verify the no-model route floor and first-chat fallback are readable on desktop and mobile."
 }
