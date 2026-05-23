@@ -94,18 +94,18 @@ if (!progress.composer_action_bar_report || progress.composer_action_bar_report.
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d225 = tasks.find((task) => task.seq === 'D225');
+const d226 = tasks.find((task) => task.seq === 'D226');
 if (!d213 || d213.status !== 'beta') {
   fail('Progress dashboard task D213 must be beta after composer action bar usefulness ships.');
 }
 if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
-if (!d225 || d225.status !== 'next') {
-  fail('Progress dashboard task D225 must become the next work item after D224 ships.');
+if (!d226 || d226.status !== 'next') {
+  fail('Progress dashboard task D226 must become the next work item after D225 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D225') {
-  fail('Progress dashboard next queue must prioritize D225 after D224 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D226') {
+  fail('Progress dashboard next queue must prioritize D226 after D225 ships.');
 }
 
 if (!process.exitCode) {

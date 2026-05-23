@@ -20,6 +20,7 @@ const promotedContextNextAnswerReportPath = resolve(root, 'public', 'promoted-co
 const contextControlsReportPath = resolve(root, 'public', 'context-controls-report.json');
 const answerContextReceiptReportPath = resolve(root, 'public', 'answer-context-receipt-report.json');
 const answerContextDrilldownReportPath = resolve(root, 'public', 'answer-context-drilldown-report.json');
+const answerContextHighlightReportPath = resolve(root, 'public', 'answer-context-highlight-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -177,7 +178,8 @@ const overrides = new Map([
   ['D222', { status: 'beta', evidence: 'Per-message context controls now let users see and turn local Memory/Knowledge on or off for the next answer, enforced by chat-runtime guards.' }],
   ['D223', { status: 'beta', evidence: 'Answer context receipts now record and render safe per-answer metadata for model, route, memory, knowledge, history, role, modes and cost guard.' }],
   ['D224', { status: 'beta', evidence: 'Answer context receipts now include direct Memory, Knowledge, Model and Privacy drill-down actions that open existing public-safe panels.' }],
-  ['D225', { status: 'next', evidence: 'Next activation slice: make receipt drill-downs context-aware, highlighting the exact memory, knowledge collection or model route behind the selected answer.' }]
+  ['D225', { status: 'beta', evidence: 'Receipt drill-downs now write local metadata highlights and render the selected answer context inside Memory, Knowledge, Model and Privacy panels.' }],
+  ['D226', { status: 'next', evidence: 'Next activation slice: add source-level receipt filters where IDs are available, so Memory/Knowledge panels can focus the exact source item.' }]
 ]);
 
 const repoMeta = [
@@ -361,6 +363,11 @@ function readAnswerContextDrilldownReport() {
   return JSON.parse(readFileSync(answerContextDrilldownReportPath, 'utf8'));
 }
 
+function readAnswerContextHighlightReport() {
+  if (!existsSync(answerContextHighlightReportPath)) return null;
+  return JSON.parse(readFileSync(answerContextHighlightReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -385,7 +392,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D225', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D226', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -420,6 +427,7 @@ const data = {
   context_controls_report: readContextControlsReport(),
   answer_context_receipt_report: readAnswerContextReceiptReport(),
   answer_context_drilldown_report: readAnswerContextDrilldownReport(),
+  answer_context_highlight_report: readAnswerContextHighlightReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

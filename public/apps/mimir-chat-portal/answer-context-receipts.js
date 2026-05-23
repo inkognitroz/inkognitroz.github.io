@@ -2,9 +2,11 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const RECEIPT_PREFIX='mimir-answer-context-receipts-v1:';
+  const HIGHLIGHT_PREFIX='mimir-answer-context-highlight-v1:';
 
   function workspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function key(){return RECEIPT_PREFIX+workspaceId();}
+  function highlightKey(){return HIGHLIGHT_PREFIX+workspaceId();}
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function selector(value){return window.CSS?.escape?CSS.escape(String(value||'')):String(value||'').replace(/[^a-zA-Z0-9_-]/g,'-');}
   function receipts(){
@@ -53,12 +55,33 @@
   }
   function status(value){return String(value||'none').replace('+',' + ');}
   function row(label,value){return '<dt>'+safe(label)+'</dt><dd>'+safe(value||'none')+'</dd>';}
-  function openReceiptTarget(target){
+  function writeHighlight(receipt,target){
+    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:receipt.route,memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
+    try{localStorage.setItem(highlightKey(),JSON.stringify(highlight));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-answer-context-highlight-updated',{detail:highlight}));
+    return highlight;
+  }
+  function renderHighlight(target,receipt){
+    const el=document.querySelector(target);
+    if(!el)return;
+    el.querySelector('.runtime-answer-context-highlight')?.remove();
+    const note=document.createElement('p');
+    note.className='dashboard-note runtime-answer-context-highlight';
+    note.dataset.state='ready';
+    note.dataset.receiptHighlight=target;
+    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+(receipt.route||'browser')+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+'.';
+    const summary=el.matches('details')?el.querySelector('summary'):null;
+    if(summary)summary.after(note);
+    else el.prepend(note);
+  }
+  function openReceiptTarget(target,receipt){
     const open=()=>{
       const el=document.querySelector(target);
       if(!el)return;
       let panel=el.closest('details');
       while(panel){panel.open=true;panel=panel.parentElement?.closest?.('details')||null;}
+      writeHighlight(receipt,target);
+      renderHighlight(target,receipt);
       el.scrollIntoView({behavior:'smooth',block:'start'});
       (el.querySelector?.('summary,button,input,select,textarea,a[href]')||el).focus?.({preventScroll:true});
     };
@@ -95,7 +118,7 @@
       actionButtons()+
       '<small>Local receipt only. No prompt, response or provider secret is stored in this receipt.</small>';
     el.querySelectorAll('[data-receipt-open]').forEach((button)=>{
-      button.addEventListener('click',(event)=>{event.preventDefault();openReceiptTarget(button.getAttribute('data-receipt-open')||'#privacy-controls-panel');});
+      button.addEventListener('click',(event)=>{event.preventDefault();openReceiptTarget(button.getAttribute('data-receipt-open')||'#privacy-controls-panel',receipt);});
     });
     const note=bubble.querySelector('.runtime-message-action-status');
     if(note)note.before(el);

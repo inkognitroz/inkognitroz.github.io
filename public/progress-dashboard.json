@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T21:12:24.645Z",
+  "updated_at": "2026-05-23T21:19:21.279Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 225,
+    "total": 226,
     "done": 51,
-    "beta": 149,
+    "beta": 150,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -998,9 +998,9 @@
       },
       {
         "phase": "Chat UX / Context Audit",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -2145,6 +2145,49 @@
       }
     ]
   },
+  "answer_context_highlight_report": {
+    "title": "Answer Context Highlight QA",
+    "principle": "Receipt drill-downs should leave the user at the relevant control with a clear, safe reminder of the answer context they came from.",
+    "public_repo_rule": "Highlights store only metadata: message id, target panel, model/route labels and context status. They store no prompts, no responses and no provider secrets.",
+    "scenarios": [
+      {
+        "id": "highlight-memory",
+        "status": "ready",
+        "target": "#memory-panel",
+        "expected": "Memory drill-down writes a local highlight and renders the receipt context in the Memory panel.",
+        "storage_key": "mimir-answer-context-highlight-v1:<workspace>",
+        "event": "mmir-answer-context-highlight-updated",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "highlight-knowledge",
+        "status": "ready",
+        "target": "#knowledge-panel",
+        "expected": "Knowledge drill-down writes a local highlight and renders the receipt context in the Knowledge panel.",
+        "storage_key": "mimir-answer-context-highlight-v1:<workspace>",
+        "event": "mmir-answer-context-highlight-updated",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "highlight-model",
+        "status": "ready",
+        "target": "#model-library",
+        "expected": "Model drill-down highlights the model and route labels behind the answer.",
+        "storage_key": "mimir-answer-context-highlight-v1:<workspace>",
+        "event": "mmir-answer-context-highlight-updated",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "highlight-privacy",
+        "status": "ready",
+        "target": "#privacy-controls-panel",
+        "expected": "Privacy drill-down opens local export/delete controls with the same safe context metadata.",
+        "storage_key": "mimir-answer-context-highlight-v1:<workspace>",
+        "event": "mmir-answer-context-highlight-updated",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2195,7 +2238,7 @@
     }
   ],
   "next_queue": [
-    "D225"
+    "D226"
   ],
   "watchlist": [
     "D082",
@@ -5572,9 +5615,24 @@
       "best_practice": "Audit controls should point to the relevant item, not just the general panel",
       "done_when": "User lands on the right source/route with a clear receipt-linked highlight",
       "covers": "chat UX, audit, context, usability",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Receipt drill-downs now write local metadata highlights and render the selected answer context inside Memory, Knowledge, Model and Privacy panels.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D226",
+      "phase": "Chat UX / Context Audit",
+      "priority": "P0",
+      "work_package": "Source-level receipt filters",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add receipt-linked filters or badges in Memory/Knowledge/Model panels when source IDs are available from memory-use or future knowledge-use receipts",
+      "best_practice": "Source audit should become precise as the context pipeline gains IDs",
+      "done_when": "User can filter to the exact used memory, collection or model route when metadata exists",
+      "covers": "chat UX, audit, memory, knowledge",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: make receipt drill-downs context-aware, highlighting the exact memory, knowledge collection or model route behind the selected answer.",
+      "evidence": "Next activation slice: add source-level receipt filters where IDs are available, so Memory/Knowledge panels can focus the exact source item.",
       "estimate": "2-6h"
     }
   ]

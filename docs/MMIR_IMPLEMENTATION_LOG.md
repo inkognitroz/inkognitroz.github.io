@@ -216,14 +216,15 @@ Updated: 2026-05-23
 - D222 is now beta: per-message context controls show Memory and Knowledge toggles beside the composer, persist locally per workspace and are enforced by chat-runtime before the next answer.
 - D223 is now beta: answer context receipts record and render safe per-answer metadata for model, route, role, modes, history count, memory/knowledge source state and cost guard without storing raw prompts, raw responses or provider secrets in the receipt.
 - D224 is now beta: answer context receipts include direct Memory, Knowledge, Model and Privacy actions that open existing panels without sending prompts, storing secrets or starting paid routes.
-- D225 is now next: make receipt actions context-aware, highlighting the exact memory, knowledge collection or model route where available.
+- D225 is now beta: receipt drill-downs now write local metadata highlights and render the selected answer context inside Memory, Knowledge, Model and Privacy panels.
+- D226 is now next: add source-level receipt filters where IDs are available from memory-use or future knowledge-use receipts.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D225` context-aware receipt highlights.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D226` source-level receipt filters.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
