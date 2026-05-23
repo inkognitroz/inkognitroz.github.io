@@ -108,3 +108,6 @@ jobs:
 
       - name: Smoke-check first journey with mock local connector
         run: node scripts/smoke-check-first-journey-mock-local.js
+
+      - name: Smoke-check local install return
+        run: node scripts/smoke-check-local-install-return.js
