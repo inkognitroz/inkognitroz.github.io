@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d172-20260523-device-repair-cards';
+const CACHE_NAME='mmir-pwa-d173-20260523-repair-card-harness';
 const SHELL_ASSETS=[
   './',
   './index.html',

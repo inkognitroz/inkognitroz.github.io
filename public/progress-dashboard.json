@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:08:27.013Z",
+  "updated_at": "2026-05-23T12:13:41.028Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 173,
+    "total": 174,
     "done": 51,
-    "beta": 97,
+    "beta": 98,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,10 +288,10 @@
       },
       {
         "phase": "Activation UX",
-        "total": 5,
+        "total": 6,
         "done": 4,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -740,8 +740,8 @@
         "phase": "Activation QA",
         "total": 4,
         "done": 0,
-        "beta": 3,
-        "next": 1,
+        "beta": 4,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -808,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D173"
+    "D174"
   ],
   "watchlist": [
     "D082",
@@ -3405,9 +3405,24 @@
       "best_practice": "Device repair UX should be proven by state fixtures, not only static strings",
       "done_when": "CI verifies each activation failure maps to one safe device-specific repair card",
       "covers": "activation, QA, support",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A dedicated node repair-card smoke harness now verifies offline connector, pairing-required, offline Ollama, failed model pull, no-model and device fixtures against Node Dashboard source and UI coverage.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D174",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "Repair-card action follow-through",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Wire guided repair cards to the exact panel, installer or model-library action and record the chosen path in activation telemetry",
+      "best_practice": "A repair card should not stop at advice; it should carry the user to the next real action",
+      "done_when": "User clicks one repair action and lands in the right install, pairing, model or chat flow with telemetry updated",
+      "covers": "activation, support, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add state-fixture verification for each guided repair card so the support UX cannot regress.",
+      "evidence": "Next activation slice: wire repair-card actions to the exact panel/installer/model-library flow and record the chosen path in activation telemetry.",
       "estimate": "2-6h"
     }
   ]

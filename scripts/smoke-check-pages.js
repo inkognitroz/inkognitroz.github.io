@@ -380,6 +380,8 @@ requireText(nodeDashboardPath, 'guidedDeviceRepair', 'D172 node dashboard must m
 requireText(nodeDashboardPath, 'detectDevice', 'D172 node dashboard must detect OS/device class for repair cards.');
 requireText(nodeDashboardPath, 'Raspberry Pi / Linux ARM', 'D172 repair card must support Raspberry Pi/Linux ARM.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-repair-card', 'D172 guided repair card needs visible styling.');
+requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'offline-connector', 'D173 repair harness must cover offline connector state.');
+requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'failed-model-pull', 'D173 repair harness must cover failed model pull state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');

@@ -61,6 +61,7 @@ const files = {
   connectorRelease: join(publicDir, 'downloads', 'mmir-local-connector-release.json'),
   connectorServer: join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'),
   linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
+  repairCardHarness: join(root, 'scripts', 'smoke-check-node-repair-cards.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -403,6 +404,10 @@ requireIncludes(files.nodeDashboard, 'guidedDeviceRepair', 'D172 needs doctor st
 requireIncludes(files.nodeDashboard, 'detectDevice', 'D172 needs OS/device detection for repair cards.');
 requireIncludes(files.nodeDashboard, 'Raspberry Pi / Linux ARM', 'D172 needs Raspberry Pi/Linux ARM repair guidance.');
 requireIncludes(files.nodeDashboard, 'node-repair-card', 'D172 needs the guided repair card rendered in Node Dashboard.');
+requireIncludes(files.repairCardHarness, 'offline-connector', 'D173 repair harness must cover offline connector.');
+requireIncludes(files.repairCardHarness, 'offline-ollama', 'D173 repair harness must cover offline Ollama.');
+requireIncludes(files.repairCardHarness, 'failed-model-pull', 'D173 repair harness must cover failed model pull.');
+requireIncludes(files.repairCardHarness, 'pairing-required', 'D173 repair harness must cover pairing-required state.');
 requireIncludes(files.privacyControls, 'export', 'J005 needs local data export controls.');
 requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete controls.');
 requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 needs a visible data inventory.');

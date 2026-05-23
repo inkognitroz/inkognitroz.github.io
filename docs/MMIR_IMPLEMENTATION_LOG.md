@@ -164,14 +164,15 @@ Updated: 2026-05-23
 - D170 is now beta: progress dashboard renders browser-local activation telemetry from automatic defaults, live proof, model install, local doctor and first-chat receipt events, with raw_prompt_stored:false, raw_response_stored:false and secrets_stored:false.
 - D171 is now beta: Activation Autopilot uses telemetry to run safe free repairs only: automatic defaults, Private mode, model refresh and proof retry, with no paid routes, provider secrets, raw prompts or raw responses.
 - D172 is now beta: Node Dashboard renders one guided OS/device repair card from doctor checks, detecting Windows, macOS, Linux/VM and Raspberry Pi/Linux ARM with a starter model and exact action.
-- D173 is now the next activation slice: add state-fixture tests for offline connector, offline Ollama, failed model pull, no model and pairing-required repair cards.
+- D173 is now beta: a dedicated repair-card smoke harness verifies offline connector, pairing-required, offline Ollama, failed model pull, no-model and device fixtures against Node Dashboard source and UI coverage.
+- D174 is now the next activation slice: repair-card clicks should carry users to the exact installer/panel/model-library flow and record the choice in activation telemetry.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D173` device repair verification harness.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D174` repair-card action follow-through.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
