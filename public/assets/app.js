@@ -3,8 +3,8 @@
   const SECTION_KEYS = ["appFactory", "saasIdeas", "projects", "templates", "tools", "dashboards", "uploads", "promptInbox", "monetization", "roadmap", "about"];
   const SITE_FIELDS = ["title", "subtitle", "heroTitle", "heroDescription", "promptWorkflow"];
   const STATUS_VALUES = new Set(["draft", "published"]);
-  const ADMIN_BACKUPS_KEY = "saas-fabric-admin-backups";
-  const ADMIN_DRAFT_KEY = "saas-fabric-admin-draft";
+  const ADMIN_BACKUPS_KEY = "mmir-admin-backups";
+  const ADMIN_DRAFT_KEY = "mmir-admin-draft";
   const EXPORT_BUNDLE_VERSION = "1.0.0";
   const MAX_BACKUPS = 12;
   let backupIdCounter = 0;
@@ -149,7 +149,7 @@
     const trustBar = root.querySelector("#trust-bar");
     const footerSubtitle = root.querySelector("#footer-subtitle");
 
-    if (titleEl) titleEl.textContent = site.title || "SaaS Fabric";
+    if (titleEl) titleEl.textContent = site.title || "MMIR";
     if (subtitleEl) subtitleEl.textContent = site.subtitle || "Build, publish and monetize apps, tools and SaaS products.";
     if (heroLabelEl && site.heroLabel) heroLabelEl.textContent = site.heroLabel;
     if (heroTitleEl) heroTitleEl.textContent = site.heroTitle || "Build, Launch & Monetize Your SaaS Products";
@@ -316,7 +316,7 @@
 
   function buildBundleReadme(metadata) {
     return [
-      "SaaS Fabric export bundle",
+      "MMIR export bundle",
       "",
       `Generated: ${metadata.generatedAt}`,
       `Bundle version: ${metadata.bundleVersion}`,
@@ -381,7 +381,7 @@
     });
 
     return {
-      type: "saas-fabric-export-bundle",
+      type: "mmir-export-bundle",
       version: EXPORT_BUNDLE_VERSION,
       generatedAt,
       files
@@ -717,7 +717,7 @@
     const fileDate = bundle.generatedAt.replace(/[:.]/g, "-");
     downloadFile(
       JSON.stringify(bundle, null, 2),
-      `saas-fabric-export-bundle-${fileDate}.json`,
+      `mmir-export-bundle-${fileDate}.json`,
       "application/json;charset=utf-8"
     );
     saveBackupSnapshot(content, "Exported backup bundle");

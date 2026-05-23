@@ -1,7 +1,7 @@
 (function () {
   if (document.body?.dataset?.page !== "home") return;
 
-  const STORAGE_KEY = "saas-fabric-usage-events-v1";
+  const STORAGE_KEY = "mmir-usage-events-v1";
   const MAX_EVENTS = 800;
   const trackedSectionViews = new Set();
 

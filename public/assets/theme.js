@@ -1,5 +1,5 @@
 (function () {
-  var STORAGE_KEY = "saas-fabric-theme";
+  var STORAGE_KEY = "mmir-theme";
 
   var DEFAULTS = {
     "--bg": "#0a0f1f",
@@ -44,7 +44,7 @@
   };
 
   var PRESETS = [
-    preset("Default", "Balanced SaaS dark theme", {}),
+    preset("Default", "Balanced MMIR dark theme", {}),
     preset("Deep Night", "High-contrast dark mode", {"--bg":"#05070d","--bg-top":"#111827","--surface":"#0b1020","--surface-elevated":"#111827","--panel":"#0b1020","--panel-soft":"#111827","--card-bg":"#111827","--text":"#f8fafc","--muted":"#cbd5e1","--accent":"#93c5fd","--accent-2":"#c084fc","--border":"#1f2937","--border-soft":"#334155","--header-bg":"rgba(5, 7, 13, 0.92)","--focus-ring":"#93c5fd","--hero-start":"#93c5fd","--hero-end":"#c084fc","--button-bg":"#111827","--button-hover-bg":"#1f2937","--input-bg":"#070b14"}),
     preset("Ocean", "Blue/teal product look", {"--bg":"#031525","--bg-top":"#073b5f","--surface":"#08233a","--surface-elevated":"#0b3454","--panel":"#08233a","--panel-soft":"#0d4268","--card-bg":"#0b304d","--text":"#ecfeff","--muted":"#a5d8e8","--accent":"#22d3ee","--accent-2":"#38bdf8","--accent-contrast":"#041014","--success":"#2dd4bf","--border":"#155e75","--border-soft":"#1f7a92","--header-bg":"rgba(3, 21, 37, 0.90)","--focus-ring":"#67e8f9","--hero-start":"#22d3ee","--hero-end":"#38bdf8","--button-bg":"#0d4268","--button-hover-bg":"#155e75","--input-bg":"#051c2f"}),
     preset("Forest", "Calm green operations theme", {"--bg":"#06140d","--bg-top":"#12321f","--surface":"#0d2015","--surface-elevated":"#14331f","--panel":"#0d2015","--panel-soft":"#183d27","--card-bg":"#132d1d","--text":"#f0fdf4","--muted":"#bbf7d0","--accent":"#4ade80","--accent-2":"#22c55e","--accent-contrast":"#052e16","--success":"#86efac","--border":"#1f5132","--border-soft":"#2f6f45","--header-bg":"rgba(6, 20, 13, 0.91)","--focus-ring":"#86efac","--hero-start":"#4ade80","--hero-end":"#22c55e","--button-bg":"#183d27","--button-hover-bg":"#225536","--input-bg":"#08180f"}),
@@ -211,7 +211,7 @@
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;
-    a.download = "saas-fabric-theme.json";
+    a.download = "mmir-theme.json";
     a.click();
     URL.revokeObjectURL(url);
   }

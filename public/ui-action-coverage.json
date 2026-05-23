@@ -13,8 +13,8 @@
       "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "demo_start_click"]
     },
     {
-      "id": "saas-fabric-local-analytics",
-      "surface": "Public SaaS Fabric homepage",
+      "id": "mmir-local-analytics",
+      "surface": "Public MMIR homepage",
       "status": "live",
       "user_result": "The public homepage keeps local-only usage analytics controllable by the user without cookies or external tracking.",
       "selectors": ["#usage-analytics-reset"],

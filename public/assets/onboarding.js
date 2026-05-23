@@ -1,6 +1,6 @@
 (function () {
-  const STORAGE_KEY = "saas-fabric-onboarding-dismissed";
-  const AUTO_OPEN_KEY = "saas-fabric-onboarding-auto-opened";
+  const STORAGE_KEY = "mmir-onboarding-dismissed";
+  const AUTO_OPEN_KEY = "mmir-onboarding-auto-opened";
 
   const path = window.location.pathname;
   const isAdmin = document.body.dataset.page === "admin";
@@ -16,7 +16,7 @@
       { title: "Tilpass design", text: "Åpne palett-knappen for å bytte tema, kontrast, typografi og layout uten å endre kode." }
     ]
   } : isAdmin ? {
-    title: "SaaS Fabric Admin",
+    title: "MMIR Admin",
     subtitle: "Trygg lokal innholdsredigering før publisering via pull request.",
     steps: [
       { title: "Last inn innhold", text: "Hent content.json, rediger kort og bruk validering før du eksporterer." },
@@ -25,13 +25,13 @@
       { title: "Publiser trygt", text: "Eksporter content.json og publiser via PR. Ikke legg GitHub-tokens eller andre secrets i frontend." }
     ]
   } : {
-    title: "SaaS Fabric",
-    subtitle: "En statisk app-fabrikk for ideer, mini-apper, templates, roadmap og kommersialisering.",
+    title: "MMIR",
+    subtitle: "Et trusted AI control plane for lokal AI, modeller, workflows, memory og trygg routing.",
     steps: [
-      { title: "Utforsk appene", text: "Start i App Factory, Projects og Tools for å åpne det som allerede er bygget." },
-      { title: "Fang nye ideer", text: "Bruk SaaS Ideas, Templates og Prompt Inbox for å gjøre ideer om til klare PR-oppgaver." },
+      { title: "Utforsk appene", text: "Start i Connect, Nodes, Models og Workflows for å åpne det som allerede er bygget." },
+      { title: "Fang nye ideer", text: "Bruk MMIR Ideas, Templates og Prompt Inbox for å gjøre ideer om til klare backlogg-oppgaver." },
       { title: "Tilpass utseendet", text: "Bruk palett-widgeten for standardtemaer, farger, typografi, spacing og import/eksport av theme." },
-      { title: "Publiser stegvis", text: "Hold v1 statisk og trygg. Bruk Admin og GitHub PR-er før Supabase, betaling og ekte backend legges til." }
+      { title: "Publiser stegvis", text: "Hold v1 statisk og trygg. Bruk Admin og GitHub PR-er før betaling, org-flyt og managed backend legges til." }
     ]
   };
 

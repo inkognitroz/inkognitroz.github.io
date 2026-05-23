@@ -58,7 +58,7 @@
     const dataModelList = d.dataModel.length ? d.dataModel : ["Define minimal content/data model"];
     return [
       `## Goal`,
-      `Ship **${d.appName}** as a static-first SaaS Fabric app with a clear v1 scope.`,
+      `Ship **${d.appName}** as a static-first MMIR app with a clear v1 scope.`,
       ``,
       `## App brief`,
       `- **App name:** ${d.appName}`,

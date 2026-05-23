@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Static model registry for SaaS Fabric AI experiments. Do not store API keys here.",
+  "description": "Static model registry for MMIR AI experiments. Do not store API keys here.",
   "providers": [
     {
       "id": "ollama-local",
