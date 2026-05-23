@@ -363,7 +363,7 @@ async function run() {
   const d212 = tasks.find((task) => task.seq === 'D212');
   const d213 = tasks.find((task) => task.seq === 'D213');
   const d214 = tasks.find((task) => task.seq === 'D214');
-  const d231 = tasks.find((task) => task.seq === 'D231');
+  const d232 = tasks.find((task) => task.seq === 'D232');
   requireTrue(d206?.status === 'beta', 'Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
   requireTrue(d207?.status === 'beta', 'Progress dashboard task D207 must be beta after free live-route hardening ships.');
   requireTrue(d208?.status === 'beta', 'Progress dashboard task D208 must be beta after no-model dead-end browser gate ships.');
@@ -373,8 +373,8 @@ async function run() {
   requireTrue(d212?.status === 'beta', 'Progress dashboard task D212 must be beta after first free chat response QA ships.');
   requireTrue(d213?.status === 'beta', 'Progress dashboard task D213 must be beta after composer action bar usefulness ships.');
   requireTrue(d214?.status === 'beta', 'Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
-  requireTrue(d231?.status === 'next', 'Progress dashboard task D231 must become the next work item after D230 ships.');
-  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D231', 'Progress dashboard next queue must prioritize D231 after D230 ships.');
+  requireTrue(d232?.status === 'next', 'Progress dashboard task D232 must become the next work item after D231 ships.');
+  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D232', 'Progress dashboard next queue must prioritize D232 after D231 ships.');
 
   if (failures.length) {
     process.exitCode = 1;

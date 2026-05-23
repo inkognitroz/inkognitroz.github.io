@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T22:26:26.185Z",
+  "updated_at": "2026-05-23T22:34:48.860Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 231,
+    "total": 232,
     "done": 51,
-    "beta": 155,
+    "beta": 156,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -968,10 +968,10 @@
       },
       {
         "phase": "Memory / Knowledge UX",
-        "total": 3,
+        "total": 4,
         "done": 0,
         "beta": 3,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1030,8 +1030,8 @@
         "phase": "Chat UX / Context Correction",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -2420,6 +2420,47 @@
       }
     ]
   },
+  "context_correction_retry_report": {
+    "title": "Context Correction Retry QA",
+    "status": "ready",
+    "principle": "After fixing bad context, the next useful action should be to retry the visible answer path with the corrected source state.",
+    "public_repo_rule": "Retry receipts store only metadata, prompt character count, correction IDs and answer IDs. They do not store raw prompts, raw responses, provider secrets or paid-route approvals.",
+    "storage_key": "mimir-context-correction-retry-v1:{workspace}",
+    "scenarios": [
+      {
+        "id": "retry-button-after-correction",
+        "status": "ready",
+        "target": "[data-message-action=\"retry-corrected\"]",
+        "expected": "Assistant answers with a matching context correction get a Retry fixed action after deferred hydration.",
+        "selector": "context-correction-retry.js",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "visible-prompt-source",
+        "status": "ready",
+        "target": "visible prior user message",
+        "expected": "The retry action derives the prompt from the visible chat transcript instead of storing a hidden raw prompt in the correction receipt.",
+        "selector": "visiblePromptBefore",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "retry-receipt",
+        "status": "ready",
+        "target": "mimir-context-correction-retry-v1",
+        "expected": "Retry attempts write a local receipt with correction ID, target, prompt length and no raw prompt or response.",
+        "selector": "mmir.corrected_context_retry",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "corrected-answer-badge",
+        "status": "ready",
+        "target": ".context-correction-retry-badge",
+        "expected": "The retried assistant answer is marked as corrected-context output when the next visible answer arrives.",
+        "selector": ".context-correction-retry-badge",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2470,7 +2511,7 @@
     }
   ],
   "next_queue": [
-    "D231"
+    "D232"
   ],
   "watchlist": [
     "D082",
@@ -5937,10 +5978,25 @@
       "best_practice": "Corrections should immediately improve the next user-visible answer without creepy hidden state",
       "done_when": "User can fix context and rerun the answer path with transparent corrected-context status and no raw hidden prompt storage",
       "covers": "chat UX, audit, retry, trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A deferred retry-after-correction module now adds Retry fixed actions to corrected answers, derives prompts from visible chat state and marks retried answers with metadata-only receipts.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D232",
+      "phase": "Memory / Knowledge UX",
+      "priority": "P1",
+      "work_package": "Context correction learning suggestions",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Summarize repeated correction patterns and suggest safer memory or knowledge hygiene actions such as expiry, scope narrowing, collection split or source review queue",
+      "best_practice": "The platform should learn from user corrections without silently changing user memory",
+      "done_when": "User receives local, explainable suggestions for improving context quality after repeated corrections",
+      "covers": "memory, knowledge, suggestions, trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add retry-after-correction so users can rerun a visible answer path after fixing bad context without storing hidden prompts.",
-      "estimate": "2-6h"
+      "evidence": "Next activation slice: add context correction learning suggestions so MMIR can recommend safer memory/knowledge hygiene after repeated corrections.",
+      "estimate": "0.5-2d"
     }
   ]
 }

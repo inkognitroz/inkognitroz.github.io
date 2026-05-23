@@ -222,14 +222,15 @@ Updated: 2026-05-23
 - D228 is now beta: chat runtime writes metadata-only knowledge-use entries, answer receipts carry knowledge source IDs/counts/sources, and Knowledge drill-downs can mark exact local documents or collections.
 - D229 is now beta: receipt-focused Memory and Knowledge sources now expose safe correction actions to review, edit or disable used context and clear source focus without deleting source data.
 - D230 is now beta: context corrections now write browser-local metadata-only audit events, render recent correction trails in Memory/Knowledge/Progress, and expose undo for disabled memory/knowledge sources.
-- D231 is now next: add retry-after-correction so users can rerun a visible answer path after fixing bad context without storing hidden prompts.
+- D231 is now beta: corrected answers can now surface a deferred Retry fixed action that uses visible chat state, writes metadata-only retry receipts and marks the retried answer without storing hidden raw prompts.
+- D232 is now next: add context correction learning suggestions so repeated corrections become explainable memory/knowledge hygiene recommendations.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D231` retry after context correction.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D232` context correction learning suggestions.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
