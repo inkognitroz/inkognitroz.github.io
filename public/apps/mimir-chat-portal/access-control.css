@@ -1,0 +1,188 @@
+.access-root,
+.access-decision-root {
+  display: grid;
+  gap: 12px;
+}
+
+.access-summary-row,
+.access-grid,
+.access-controls-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.access-summary-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.access-grid {
+  grid-template-columns: minmax(260px, 0.7fr) minmax(320px, 1.3fr);
+}
+
+.access-controls-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.access-controls-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+.access-controls-grid select,
+.access-controls-grid input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+}
+
+.access-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.access-card h3,
+.access-decision h3 {
+  margin: 0;
+  color: var(--mimir-text, #111827);
+  font-size: 0.9rem;
+}
+
+.access-card strong,
+.access-card span,
+.access-card li,
+.access-decision strong,
+.access-decision span,
+.access-decision li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.access-card strong,
+.access-decision strong {
+  color: var(--mimir-text, #111827);
+  font-size: 0.84rem;
+}
+
+.access-card span,
+.access-card li,
+.access-decision span,
+.access-decision li {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.access-policy-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.access-policy-grid div,
+.access-decision > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.access-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.access-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+}
+
+.access-table th,
+.access-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  text-align: left;
+  vertical-align: top;
+}
+
+.access-table th {
+  color: var(--mimir-text, #111827);
+  font-weight: 700;
+}
+
+.access-table td {
+  color: var(--mimir-muted, #6b7280);
+  overflow-wrap: anywhere;
+}
+
+.access-decision {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.access-decision[data-state="allow"] {
+  border-color: rgba(16, 163, 127, 0.38);
+  background: #f0fdf4;
+}
+
+.access-decision[data-state="deny"] {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: #fff7ed;
+}
+
+.access-decision section {
+  display: grid;
+  gap: 6px;
+  grid-column: span 2;
+}
+
+.access-decision ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.access-control button {
+  min-height: 36px;
+  border-radius: 8px !important;
+}
+
+.access-control button:focus-visible,
+.access-controls-grid select:focus-visible,
+.access-controls-grid input:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1000px) {
+  .access-summary-row,
+  .access-grid,
+  .access-controls-grid,
+  .access-decision {
+    grid-template-columns: 1fr;
+  }
+
+  .access-decision section {
+    grid-column: auto;
+  }
+}

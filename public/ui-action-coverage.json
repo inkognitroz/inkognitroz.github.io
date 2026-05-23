@@ -165,6 +165,14 @@
       "evidence": ["/admin/overview", "browser-local-fallback", "provider_keys_browser_allowed:false", "Protected admin overview loaded"]
     },
     {
+      "id": "access-control",
+      "surface": "Access / RBAC",
+      "status": "beta",
+      "user_result": "Owner can inspect deny-by-default role policy, simulate model/tool/knowledge/node/workflow/admin decisions and see that runtime enforcement remains server-side.",
+      "selectors": ["#access-control", "#access-load-policy", "#access-check", "#access-open-admin", "#access-root"],
+      "evidence": ["/access/policies", "/access/check", "rbac-beta-fail-closed", "server_side_enforcement_required:true"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

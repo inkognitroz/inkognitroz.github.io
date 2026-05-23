@@ -74,6 +74,8 @@ const overrides = new Map([
   ['D135', { status: 'beta', evidence: 'Voice now has browser-local push-to-talk, read-aloud, stop speech, voice route/device checks, language/voice/rate/pitch settings and local privacy inventory coverage.' }],
   ['D136', { status: 'beta', evidence: 'Vision now has local image/screenshot preview, model capability gating, metadata-only chat handoff and explicit raw-image blocking until a trusted multimodal route exists.' }],
   ['D137', { status: 'beta', evidence: 'Admin governance now has a protected backend overview plus public panel for users, planned roles, provider/tool state, policies and sanitized audit metadata while multi-user writes fail closed.' }],
+  ['D138', { status: 'beta', evidence: 'Access control now has protected backend policy/decision routes and a public RBAC panel for fail-closed model, tool, knowledge, node, workflow and admin simulations; runtime enforcement remains server-side.' }],
+  ['D139', { status: 'next', evidence: 'Next slice: model/runtime settings panel with safe defaults for temperature, context length, system prompt and max tokens per profile/chat.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 
@@ -202,7 +204,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D139', 'D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

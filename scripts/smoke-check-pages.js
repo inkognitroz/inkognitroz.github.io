@@ -131,6 +131,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/image-boundary.js', 'MMIR produc
 requireText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'MMIR product page must load voice controls script.');
 requireText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'MMIR product page must load vision input script.');
 requireText(mmirPath, './apps/mimir-chat-portal/admin-governance.js', 'MMIR product page must load admin governance script.');
+requireText(mmirPath, './apps/mimir-chat-portal/access-control.js', 'MMIR product page must load access control script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -199,6 +200,11 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'), 'browser-local-fallback', 'Admin governance must keep a browser-local fallback.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'), 'provider_keys_browser_allowed:false', 'Admin governance must show provider keys are blocked in browser.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.css'), '.admin-policy-grid', 'Admin governance needs visible policy styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), '/access/policies', 'Access control must call the protected policy route when a backend is active.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), '/access/check', 'Access control must call the protected decision route when a backend is active.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), 'rbac-beta-fail-closed', 'Access control must keep the fail-closed RBAC mode visible.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), 'server_side_enforcement_required:true', 'Access control must show server-side enforcement is required.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.css'), '.access-table', 'Access control needs visible policy matrix styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -245,7 +251,7 @@ for (const status of ['live', 'beta', 'planned', 'blocked', 'premium planned']) 
     fail(`GUI parity matrix must include status: ${status}.`);
   }
 }
-for (const feature of ['Model selector', 'Workflow builder', 'Knowledge collections', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Marketplace and premium routes']) {
+for (const feature of ['Model selector', 'Workflow builder', 'Knowledge collections', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Access Control / RBAC', 'Marketplace and premium routes']) {
   if (!parityItems.some((item) => item.feature === feature)) {
     fail(`GUI parity matrix is missing ${feature}.`);
   }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T04:07:39.147Z",
+  "updated_at": "2026-05-23T04:20:08.019Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 62,
-    "next": 1,
+    "beta": 63,
+    "next": 2,
     "watch": 1,
     "blocked": 1,
-    "planned": 36,
+    "planned": 34,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -550,21 +550,21 @@
         "phase": "Access Control",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Settings",
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Prompt UX",
@@ -748,6 +748,7 @@
     }
   ],
   "next_queue": [
+    "D139",
     "D042"
   ],
   "watchlist": [
@@ -2820,10 +2821,10 @@
       "best_practice": "Permissions belong server-side and must fail closed",
       "done_when": "Unauthorized model/tool/data access is blocked and explained",
       "covers": "zero-trust, Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Access control now has protected backend policy/decision routes and a public RBAC panel for fail-closed model, tool, knowledge, node, workflow and admin simulations; runtime enforcement remains server-side.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D139",
@@ -2835,9 +2836,9 @@
       "best_practice": "Advanced controls should be discoverable without overwhelming first run",
       "done_when": "User can tune models per chat/profile",
       "covers": "ChatGPT/Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next slice: model/runtime settings panel with safe defaults for temperature, context length, system prompt and max tokens per profile/chat.",
       "estimate": "0.5-2d"
     },
     {

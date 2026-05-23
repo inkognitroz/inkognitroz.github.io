@@ -19,6 +19,8 @@ Current priority after the matrix is:
 9. D135 advanced voice polish.
 10. D136 vision and screenshot boundary.
 11. D137 admin governance overview.
+12. D138 access control / RBAC.
+13. D139 model/runtime settings panel.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -29,5 +31,6 @@ D134 is now beta as a boundary layer: image routes can be planned with local/fre
 D135 is now beta in the public UI: browser-local push-to-talk, read-aloud, route/device checks and local voice settings are available without external provider secrets.
 D136 is now beta in the public UI: images and pasted screenshots can be previewed locally, checked against model capability gates and handed to chat as metadata only until a trusted multimodal route exists.
 D137 is now beta across backend/frontend: admin overview shows current owner, planned roles, provider/tool state, fail-closed policy and audit metadata without enabling multi-user writes.
+D138 is now beta across backend/frontend: access policy and access decision routes expose a deny-by-default RBAC matrix, and the public UI can simulate model, tool, knowledge, node, workflow and admin decisions while making server-side enforcement explicit.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.
