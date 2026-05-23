@@ -118,6 +118,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/node-dashboard.js', 'MMIR produc
 requireText(mmirPath, 'id="model-library"', 'MMIR product page must expose model-agnostic routing.');
 requireText(mmirPath, 'id="workflow-builder"', 'MMIR product page must expose workflow orchestration.');
 requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
+requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -125,6 +126,13 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'model-comparison', 'Use-case templates must include model comparison.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'workflow-planning', 'Use-case templates must include workflow planning.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.css'), '.use-case-template-grid', 'Use-case templates need a responsive card layout.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'function loopOptions()', 'Free value loops must expose concrete activation loops.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'free-chat', 'Free value loops must include chat.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'local-model', 'Free value loops must include local model activation.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'compare-models', 'Free value loops must include model comparison.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'memory-loop', 'Free value loops must include memory.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.js'), 'knowledge-loop', 'Free value loops must include documents/knowledge.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.css'), '.free-value-loop-grid', 'Free value loops need a responsive visual grid.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
