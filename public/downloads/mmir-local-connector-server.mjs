@@ -161,6 +161,30 @@ function requestToken(req) {
   return match ? match[1].trim() : '';
 }
 
+function isLoopbackAddress(address) {
+  const value = String(address || '').trim().toLowerCase().replace(/^::ffff:/, '');
+  return value === '::1' || value === 'localhost' || value === '127.0.0.1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(value);
+}
+
+function isLocalPairingRequest(req) {
+  return isLoopbackAddress(req.socket?.remoteAddress || req.connection?.remoteAddress || '');
+}
+
+function activeRemotePairingSession() {
+  if (!remotePairingSession || remotePairingSession.used) return null;
+  if (Date.now() > remotePairingSession.expires_at_ms) {
+    remotePairingSession = null;
+    return null;
+  }
+  return remotePairingSession;
+}
+
+function timingSafeTextEqual(left, right) {
+  const a = Buffer.from(String(left || ''));
+  const b = Buffer.from(String(right || ''));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 function paired(req, res, origin) {
   const supplied = requestToken(req);
   if (!supplied || supplied.length !== TOKEN.length) {
@@ -291,6 +315,45 @@ function createPairingCodeSession() {
     ttl_seconds: Math.round(ttlMs / 1000),
     used: false,
   };
+}
+
+async function pair(req, res, origin) {
+  const payload = await body(req);
+  if (isLocalPairingRequest(req)) {
+    send(res, 200, {
+      paired: true,
+      service: 'mmir-local-node',
+      version: VERSION,
+      token: TOKEN,
+      header: 'x-mmir-local-token',
+      required: true,
+      pairing_mode: 'local-loopback',
+    }, origin);
+    return;
+  }
+
+  const session = activeRemotePairingSession();
+  const code = String(payload?.code || '').trim();
+  if (!session) {
+    fail(res, 403, 'Create a pairing session on the device running MMIR Local Connector before remote pairing.', origin);
+    return;
+  }
+  if (!code || !timingSafeTextEqual(code, session.code)) {
+    fail(res, 401, 'Pairing code is invalid or expired.', origin);
+    return;
+  }
+
+  remotePairingSession.used = true;
+  send(res, 200, {
+    paired: true,
+    service: 'mmir-local-node',
+    version: VERSION,
+    token: TOKEN,
+    header: 'x-mmir-local-token',
+    required: true,
+    pairing_mode: 'remote-code',
+    paired_at: new Date().toISOString(),
+  }, origin);
 }
 
 function completion(model, content, raw = {}) {
@@ -461,18 +524,15 @@ http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && url.pathname === '/pair') {
-      send(res, 200, {
-        paired: true,
-        service: 'mmir-local-node',
-        version: VERSION,
-        token: TOKEN,
-        header: 'x-mmir-local-token',
-        required: true,
-      }, origin);
+      await pair(req, res, origin);
       return;
     }
 
     if (req.method === 'POST' && url.pathname === '/pairing/sessions') {
+      if (!isLocalPairingRequest(req)) {
+        fail(res, 403, 'Pairing sessions can only be created from the device running MMIR Local Connector.', origin);
+        return;
+      }
       const session = createPairingCodeSession();
       remotePairingSession = session;
       send(res, 200, {
