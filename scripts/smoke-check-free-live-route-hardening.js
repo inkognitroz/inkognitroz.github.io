@@ -85,20 +85,25 @@ for (const needle of [
 requireIncludes(files.onboarding, 'Browser guide works now; local model activates after install.', 'D207 first-run gates must explain useful free fallback instead of empty model state.');
 requireIncludes(files.qualityWorkflow, 'smoke-check-free-live-route-hardening.js', 'D207 quality workflow must run free live-route hardening.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-free-live-route-hardening.js', 'D207 Pages workflow must run free live-route hardening.');
-requireIncludes(files.backlog, '| D208 |', 'Backlog must keep a next sequential work item after D207.');
+requireIncludes(files.backlog, '| D208 |', 'Backlog must keep D208 as the no-model dead-end gate after D207.');
+requireIncludes(files.backlog, '| D209 |', 'Backlog must keep a next sequential work item after D208.');
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d207 = tasks.find((task) => task.seq === 'D207');
 const d208 = tasks.find((task) => task.seq === 'D208');
+const d209 = tasks.find((task) => task.seq === 'D209');
 if (!d207 || d207.status !== 'beta') {
   fail('Progress dashboard task D207 must be beta after free live-model route hardening ships.');
 }
-if (!d208 || d208.status !== 'next') {
-  fail('Progress dashboard task D208 must become the next work item after D207 ships.');
+if (!d208 || d208.status !== 'beta') {
+  fail('Progress dashboard task D208 must be beta after no-model dead-end browser gate ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D208') {
-  fail('Progress dashboard next queue must prioritize D208 after D207 ships.');
+if (!d209 || d209.status !== 'next') {
+  fail('Progress dashboard task D209 must become the next work item after D208 ships.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D209') {
+  fail('Progress dashboard next queue must prioritize D209 after D208 ships.');
 }
 
 if (!process.exitCode) {

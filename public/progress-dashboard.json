@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T17:30:03.483Z",
+  "updated_at": "2026-05-23T17:39:28.637Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 208,
+    "total": 209,
     "done": 51,
-    "beta": 132,
+    "beta": 133,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -738,10 +738,10 @@
       },
       {
         "phase": "Activation QA",
-        "total": 6,
+        "total": 7,
         "done": 0,
         "beta": 6,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -830,8 +830,8 @@
         "phase": "UX Reliability",
         "total": 2,
         "done": 0,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1178,7 +1178,7 @@
     }
   ],
   "next_queue": [
-    "D208"
+    "D209"
   ],
   "watchlist": [
     "D082",
@@ -4300,9 +4300,24 @@
       "best_practice": "A trustworthy AI product must never strand first-time users on an empty state",
       "done_when": "CI proves the browser UI always exposes at least one useful free action when no live backend model is connected",
       "covers": "QA, activation, UX",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Chat send flow now falls back to a useful free starter when no live model route is selected, and CI guards the first chat/model DOM against empty no-model dead ends.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D209",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "First-chat no-model DOM fixture",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Expand the no-model gate into a richer first-chat DOM fixture that renders the composer, model picker, runtime helper and first-screen progress evidence together across loading, offline and no-live-model states",
+      "best_practice": "Source checks are useful, but the first user journey should be verified as a composed UI state",
+      "done_when": "CI proves the composed first-chat DOM always has one primary free action and owner-visible progress evidence",
+      "covers": "QA, first impression, activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add a DOM-level no-model dead-end gate so first chat never renders an empty model state without a useful free action.",
+      "evidence": "Next activation slice: verify the no-model fallback with a richer first-chat DOM fixture and owner-visible progress evidence.",
       "estimate": "2-6h"
     }
   ]

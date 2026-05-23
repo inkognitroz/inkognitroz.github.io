@@ -50,6 +50,8 @@ jobs:
         run: node scripts/smoke-check-installer-to-live-model-proof.js
       - name: Smoke check free live-route hardening
         run: node scripts/smoke-check-free-live-route-hardening.js
+      - name: Smoke check no-model dead-end browser gate
+        run: node scripts/smoke-check-no-model-dead-end-browser.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

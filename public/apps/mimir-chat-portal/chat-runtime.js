@@ -1118,6 +1118,17 @@
       starterModels[0]||
       null;
   }
+  function noModelFallbackStarter(){
+    const fallback=preferredStarterModel();
+    if(!fallback||!modelSelect)return null;
+    const value=starterValue(fallback);
+    if(!Array.from(modelSelect.options||[]).some(option=>option.value===value))return null;
+    modelSelect.value=value;
+    modelSelect.disabled=false;
+    modelSelect.dispatchEvent(new Event('change',{bubbles:true}));
+    setStatus('No live backend model yet. MMIR selected a free starter route instead.','ready');
+    return fallback;
+  }
 
   function commandLines(model){
     const ollamaModel=String(model?.model||'').trim();
@@ -1821,7 +1832,19 @@
       return;
     }
     if(!profile||!url){setStatus('Activate a backend profile or choose a free guide/installable model.','error');return;}
-    if(!model){await refreshState(true);model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';if(!model){setStatus('No live model is available from this backend.','error');return;}}
+    if(!model){
+      await refreshState(true);
+      model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
+      if(!model){
+        const fallback=noModelFallbackStarter();
+        if(fallback){
+          await sendStarterMessage(fallback,prompt);
+          return;
+        }
+        setStatus('No model route is visible yet. Open + Add model for free browser and local install choices.','error');
+        return;
+      }
+    }
 
     stopRequested=false;
     currentAbortController=new AbortController();

@@ -199,14 +199,15 @@ Updated: 2026-05-23
 - D205 is now beta: universal installer release QA verifies artifact checksums against the public manifest, keeps fake DMG links blocked, shows installer trust boundaries and records no-spend installer QA metadata.
 - D206 is now beta: installer-return-to-live-model proof has a deterministic mock local-node gate covering health, pairing, live free model inventory, first chat readiness, one useful next action and no-spend/no-secret boundaries.
 - D207 is now beta: composer model picker keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.
-- D208 is now next: add a DOM-level no-model dead-end browser gate so first chat never renders an empty model state without a useful free action.
+- D208 is now beta: chat send flow falls back to a useful free starter when no live model route is selected, and CI guards first chat/model DOM against empty no-model dead ends.
+- D209 is now next: expand the no-model gate into a richer first-chat DOM fixture with owner-visible progress evidence.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D208` no-model dead-end browser gate.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D209` first-chat no-model DOM fixture.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

@@ -145,7 +145,8 @@ const overrides = new Map([
   ['D205', { status: 'beta', evidence: 'Universal installer release QA now verifies artifact checksums against the public manifest, keeps fake DMG links blocked, shows installer trust boundaries and records no-spend installer QA metadata.' }],
   ['D206', { status: 'beta', evidence: 'Installer-return-to-live-model proof now has a deterministic mock local-node gate covering health, pairing, model inventory, first chat readiness, next action and no-spend/no-secret boundaries.' }],
   ['D207', { status: 'beta', evidence: 'Composer model picker now keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.' }],
-  ['D208', { status: 'next', evidence: 'Next activation slice: add a DOM-level no-model dead-end gate so first chat never renders an empty model state without a useful free action.' }]
+  ['D208', { status: 'beta', evidence: 'Chat send flow now falls back to a useful free starter when no live model route is selected, and CI guards the first chat/model DOM against empty no-model dead ends.' }],
+  ['D209', { status: 'next', evidence: 'Next activation slice: verify the no-model fallback with a richer first-chat DOM fixture and owner-visible progress evidence.' }]
 ]);
 
 const repoMeta = [
@@ -278,7 +279,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D208', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D209', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
