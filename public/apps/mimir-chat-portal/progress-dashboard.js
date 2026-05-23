@@ -482,6 +482,25 @@
     '</section>';
   }
 
+  function renderMessageActionAccessibilityReport(data){
+    const report=data.message_action_accessibility_report||{};
+    const checks=Array.isArray(report.checks)?report.checks:[];
+    if(!checks.length)return '';
+    const ready=checks.every((check)=>check.status==='ready');
+    return '<section id="progress-message-action-accessibility" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Transcript accessibility</p><h2>'+safe(report.title||'Message action accessibility QA')+'</h2></div><small>'+safe(report.principle||'Keyboard and assistive tech paths stay first-class.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+checks.map((check)=>
+        '<article class="progress-no-model-scenario" data-check="'+safe(check.id)+'">'+
+          '<span>'+safe(label(check.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(check.selector||check.id)+'</h3>'+
+          '<p>'+safe(check.expected||'')+'</p>'+
+          '<strong>'+safe((check.evidence||[]).slice(0,2).join(' + '))+'</strong>'+
+          '<small>accessibility contract / public-safe metadata only</small>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe accessibility evidence only.')+'</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -737,7 +756,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();

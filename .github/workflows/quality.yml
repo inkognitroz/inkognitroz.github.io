@@ -151,6 +151,9 @@ jobs:
       - name: Smoke-check message action browser fixture
         run: node scripts/smoke-check-message-action-browser-fixture.js
 
+      - name: Smoke-check message action accessibility
+        run: node scripts/smoke-check-message-action-accessibility.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

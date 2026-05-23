@@ -45,7 +45,7 @@
     "@media (max-width: 720px)"
   ],
   "copy_contract": [
-    "Actions are local-first",
+    "Copy assistant answer",
     "Share safe",
     "Next",
     "Copied locally. Review before sharing."

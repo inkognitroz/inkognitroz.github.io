@@ -557,6 +557,9 @@ requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D217 |
 requireText(join(root, 'scripts', 'smoke-check-message-action-browser-fixture.js'), 'Message action browser fixture smoke check passed.', 'D217 message action browser fixture must have a dedicated smoke harness.');
 requireText(join(publicDir, 'message-action-browser-fixture-report.json'), 'safe-share-redaction', 'D217 message action browser fixture report must publish safe-share behavior evidence.');
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D218 |', 'Backlog must keep a next sequential work item after D217.');
+requireText(join(root, 'scripts', 'smoke-check-message-action-accessibility.js'), 'Message action accessibility smoke check passed.', 'D218 message action accessibility must have a dedicated smoke harness.');
+requireText(join(publicDir, 'message-action-accessibility-report.json'), 'keyboard-focus', 'D218 message action accessibility report must publish keyboard focus evidence.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D219 |', 'Backlog must keep a next sequential work item after D218.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

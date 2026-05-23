@@ -130,8 +130,8 @@ const d206 = tasks.find((task) => task.seq === 'D206');
 if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D218') {
-  fail('Progress dashboard next queue must prioritize D218 after D217 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D219') {
+  fail('Progress dashboard next queue must prioritize D219 after D218 ships.');
 }
 
 if (!process.exitCode) {

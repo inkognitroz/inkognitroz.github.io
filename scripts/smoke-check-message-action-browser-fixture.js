@@ -179,15 +179,15 @@ if (!progress.message_action_browser_fixture_report || progress.message_action_b
 }
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d217 = tasks.find((task) => task.seq === 'D217');
-const d218 = tasks.find((task) => task.seq === 'D218');
+const d219 = tasks.find((task) => task.seq === 'D219');
 if (!d217 || d217.status !== 'beta') {
   fail('Progress dashboard task D217 must be beta after browser fixture ships.');
 }
-if (!d218 || d218.status !== 'next') {
-  fail('Progress dashboard task D218 must become next after D217 ships.');
+if (!d219 || d219.status !== 'next') {
+  fail('Progress dashboard task D219 must become next after D218 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D218') {
-  fail('Progress dashboard next queue must prioritize D218 after D217 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D219') {
+  fail('Progress dashboard next queue must prioritize D219 after D218 ships.');
 }
 
 if (!process.exitCode) {

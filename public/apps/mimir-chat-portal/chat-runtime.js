@@ -884,6 +884,8 @@
     if(message.role!=='assistant'||!message.content||message.content==='Thinking...')return;
     const actions=document.createElement('div');
     actions.className='runtime-message-actions';
+    actions.setAttribute('role','group');
+    actions.setAttribute('aria-label','Message actions');
     const addAction=(id,label,aria,handler)=>{
       const button=document.createElement('button');
       button.type='button';
@@ -902,11 +904,13 @@
     addAction('share-safe','Share safe','Copy a redacted safe share for this answer',()=>runDeferredMessageAction('share-safe',message));
     addAction('next-step','Next','Open the best safe next step for this answer',()=>runDeferredMessageAction('next-step',message));
     const note=document.createElement('small');
+    note.id='runtime-message-action-status-'+message.id.replace(/[^a-zA-Z0-9_-]/g,'-');
     note.className='runtime-message-action-status';
     note.dataset.state='idle';
     note.setAttribute('role','status');
     note.setAttribute('aria-live','polite');
-    note.textContent='Actions are local-first: copy, retry, save, fork, safe share or continue.';
+    actions.setAttribute('aria-describedby',note.id);
+    note.textContent='Local actions: copy, retry, save, fork, share, next.';
     bubble.append(actions,note);
   }
 
@@ -1057,8 +1061,8 @@
     return [
       'You are the MMIR.ai platform assistant.',
       'MMIR is the orchestration layer for trusted AI: local-first chat, model connections, nodes, tunnels, workspaces, memory and workflows.',
-      'Goal: useful immediately with free/local defaults; configuration can wait.',
-      'Answer as MMIR product support unless the user asks for another meaning.',
+      'Goal: useful now with free/local defaults; config can wait.',
+      'Answer as MMIR support unless the user asks for another meaning.',
       'Security: no secrets in public frontend; provider keys stay behind protected backend; prefer paired 127.0.0.1 local node; never expose raw runtimes.',
       'Match the user language and name the free local step for Ollama, MMIR Local Node or cloudflared.'
     ].join('\n');
@@ -1613,7 +1617,7 @@
   async function ensureWebLlmEngine(starter,onProgress){
     const modelId=String(starter?.model||'').trim();
     if(!modelId)throw new Error('Browser model id is missing.');
-    if(!webGpuAvailable())throw new Error('This browser does not expose WebGPU. Use a Chromium-based browser with WebGPU, or install the Ollama local node path.');
+    if(!webGpuAvailable())throw new Error('WebGPU is unavailable. Use Chromium/WebGPU or install the Ollama local-node path.');
     if(!webllmModule){
       onProgress('Loading browser model runtime...');
       webllmModule=await import('https://esm.run/@mlc-ai/web-llm');
@@ -1671,7 +1675,7 @@
       updateMessage(assistant.message.id,content||'Browser model returned an empty response.',starter.label);
       setStatus(stopRequested?'Browser generation stopped.':'Browser model response received.','ready');
     }catch(error){
-      const fallback='Browser model could not start: '+(error?.message||'unknown error')+'\n\nYou can still use the free installable Ollama path from the model helper, or choose MMIR Guide for immediate setup help.';
+      const fallback='Browser model could not start: '+(error?.message||'unknown error')+'\n\nUse the free Ollama install path, or choose MMIR Guide for setup help.';
       updateMessage(assistant.message.id,fallback,'browser model unavailable');
       setStatus('Browser model unavailable. Use local install path or guide.','error');
     }finally{

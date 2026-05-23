@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T19:29:18.878Z",
+  "updated_at": "2026-05-23T19:42:05.706Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 218,
+    "total": 219,
     "done": 51,
-    "beta": 142,
+    "beta": 143,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -950,6 +950,16 @@
         "phase": "Chat UX / Accessibility",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Conversations",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1716,7 +1726,7 @@
       "@media (max-width: 720px)"
     ],
     "copy_contract": [
-      "Actions are local-first",
+      "Copy assistant answer",
       "Share safe",
       "Next",
       "Copied locally. Review before sharing."
@@ -1772,6 +1782,59 @@
     ],
     "result": "ready"
   },
+  "message_action_accessibility_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T22:25:00+02:00",
+    "title": "Message Action Accessibility QA",
+    "principle": "Transcript controls must work for keyboard and assistive technology users, not only pointer users.",
+    "public_repo_rule": "Accessibility evidence is selector and copy metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "checks": [
+      {
+        "id": "group-label",
+        "selector": ".runtime-message-actions",
+        "expected": "Action buttons are grouped with a concise accessible label.",
+        "evidence": [
+          "role=\"group\"",
+          "aria-label=\"Message actions\""
+        ],
+        "status": "ready"
+      },
+      {
+        "id": "button-labels",
+        "selector": "[data-message-action]",
+        "expected": "Each transcript action keeps a specific aria-label.",
+        "evidence": [
+          "Copy assistant answer",
+          "Save this chat locally",
+          "Copy a redacted safe share for this answer"
+        ],
+        "status": "ready"
+      },
+      {
+        "id": "status-announcement",
+        "selector": ".runtime-message-action-status",
+        "expected": "Action feedback is connected to the group and announced politely.",
+        "evidence": [
+          "aria-describedby",
+          "role=\"status\"",
+          "aria-live=\"polite\""
+        ],
+        "status": "ready"
+      },
+      {
+        "id": "keyboard-focus",
+        "selector": ".runtime-message-actions button:focus-visible",
+        "expected": "Keyboard focus has a visible outline and stable button sizing.",
+        "evidence": [
+          "outline: 3px solid",
+          "outline-offset: 2px",
+          "min-height: 30px"
+        ],
+        "status": "ready"
+      }
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1822,7 +1885,7 @@
     }
   ],
   "next_queue": [
-    "D218"
+    "D219"
   ],
   "watchlist": [
     "D082",
@@ -5094,9 +5157,24 @@
       "best_practice": "Working controls still fail users if keyboard and assistive tech paths are weak",
       "done_when": "CI proves each message action has accessible labels, focus-visible styling and status announcements",
       "covers": "chat UX, accessibility, keyboard",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Message action accessibility pass now adds grouped controls, described status feedback and verified focus/aria contracts.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D219",
+      "phase": "Chat UX / Conversations",
+      "priority": "P0",
+      "work_package": "Conversation handoff polish",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Improve the handoff from message Save/Fork into the conversation manager so saved branches are easy to find, load and continue",
+      "best_practice": "Save and fork should feel like a natural continuation, not a hidden storage side effect",
+      "done_when": "User sees the saved/forked chat clearly, with active state, title and next action surfaced",
+      "covers": "chat UX, persistence, conversation manager",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: improve message action accessibility, keyboard flow and screen-reader labeling after the local behavior fixture.",
+      "evidence": "Next activation slice: polish the conversation manager handoff after message Save/Fork so saved branches are easier to find and continue.",
       "estimate": "2-6h"
     }
   ]
