@@ -37,6 +37,19 @@
   };
   let localConnectorState=null;
   let lastCockpitSignature='';
+  let lastReadinessSignature='';
+  let scheduled=false;
+
+  function scheduleRun(){
+    if(scheduled)return;
+    scheduled=true;
+    const flush=()=>{
+      scheduled=false;
+      run();
+    };
+    if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(flush);
+    else window.setTimeout(flush,50);
+  }
 
   function ensureActivationCockpitShell(){
     if(!document.querySelector('link[href*="activation-cockpit.css"]')){
@@ -282,13 +295,16 @@
     const health=String(profile?.health||'unknown').toLowerCase();
     const nodeReady=['ready','degraded','testing'].includes(health);
     const modelLabel=(model.text||'MMIR Guide').replace(/\s+-\s+live$/i,'');
-    rail.innerHTML='';
-    rail.append(
-      readinessPill('Free start',browser?'Guide ready':webgpu?'Browser model':'Guide available','ready','#mimir-prompt'),
-      readinessPill('Privacy',modes.private?'Private on':'Turn on','ready','#composer-mode-dock'),
-      readinessPill('Node',nodeReady?(profile.name||'Local node'):'Auto-checking',nodeReady?'ready':'watch','#node-dashboard'),
-      readinessPill('Model',live?modelLabel:modelLabel||'Installable free',live?'ready':'watch','#model-library')
-    );
+    const items=[
+      {label:'Free start',value:browser?'Guide ready':webgpu?'Browser model':'Guide available',state:'ready',target:'#mimir-prompt'},
+      {label:'Privacy',value:modes.private?'Private on':'Turn on',state:'ready',target:'#composer-mode-dock'},
+      {label:'Node',value:nodeReady?(profile.name||'Local node'):'Auto-checking',state:nodeReady?'ready':'watch',target:'#node-dashboard'},
+      {label:'Model',value:live?modelLabel:modelLabel||'Installable free',state:live?'ready':'watch',target:'#model-library'}
+    ];
+    const signature=JSON.stringify(items);
+    if(signature===lastReadinessSignature)return;
+    lastReadinessSignature=signature;
+    rail.replaceChildren(...items.map(item=>readinessPill(item.label,item.value,item.state,item.target)));
   }
 
   function sendPrompt(value){
@@ -336,19 +352,31 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  new MutationObserver(run).observe(document.documentElement,{
-    childList:true,
-    subtree:true,
-    characterData:true,
-    attributes:true,
-    attributeFilter:['disabled','data-state','aria-disabled','class']
-  });
-  window.addEventListener('mmir-backend-profiles-updated',run);
+  if(typeof MutationObserver==='function'){
+    const observerTargets=[
+      document.getElementById('runtime-model'),
+      document.getElementById('runtime-state'),
+      document.getElementById('composer-mode-dock'),
+      document.getElementById('node-dashboard'),
+      document.getElementById('model-library')
+    ].filter(Boolean);
+    const observer=new MutationObserver(scheduleRun);
+    observerTargets.forEach(target=>observer.observe(target,{
+      childList:true,
+      subtree:true,
+      characterData:true,
+      attributes:true,
+      attributeFilter:['disabled','data-state','aria-disabled','class','selected','value']
+    }));
+  }
+  document.getElementById('runtime-model')?.addEventListener('input',scheduleRun);
+  document.getElementById('runtime-model')?.addEventListener('change',scheduleRun);
+  window.addEventListener('mmir-backend-profiles-updated',scheduleRun);
   window.addEventListener('mmir-local-connector-refreshed',(event)=>{
     localConnectorState=event.detail||null;
-    run();
+    scheduleRun();
   });
-  window.addEventListener('mmir-chat-modes-updated',run);
-  window.addEventListener('storage',run);
-  window.addEventListener('focus',run);
+  window.addEventListener('mmir-chat-modes-updated',scheduleRun);
+  window.addEventListener('storage',scheduleRun);
+  window.addEventListener('focus',scheduleRun);
 })();
