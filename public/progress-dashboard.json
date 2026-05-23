@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T03:48:11.195Z",
+  "updated_at": "2026-05-23T03:54:18.143Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 59,
+    "beta": 60,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 39,
+    "planned": 38,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -520,11 +520,11 @@
         "phase": "Voice",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Multimodal",
@@ -2775,10 +2775,10 @@
       "best_practice": "Voice must be opt-in and privacy-visible",
       "done_when": "User can speak/listen with consent and visible route",
       "covers": "ChatGPT parity, D072",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Voice now has browser-local push-to-talk, read-aloud, stop speech, voice route/device checks, language/voice/rate/pitch settings and local privacy inventory coverage.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D136",

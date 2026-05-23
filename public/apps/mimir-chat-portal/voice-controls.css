@@ -1,0 +1,92 @@
+.voice-controls-body {
+  display: grid;
+  gap: 10px;
+}
+
+.voice-controls-body label {
+  display: grid;
+  gap: 5px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.voice-controls-body input,
+.voice-controls-body select {
+  width: 100%;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  padding: 8px;
+  font: inherit;
+}
+
+.voice-controls-body input[type="range"] {
+  padding: 0;
+  accent-color: #0f766e;
+}
+
+.voice-controls-body .memory-consent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voice-controls-body .memory-consent input {
+  width: auto;
+}
+
+.voice-slider-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.voice-controls button {
+  min-height: 36px;
+  border-radius: 8px !important;
+}
+
+.voice-device-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.voice-device-list div {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.voice-device-list span {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.74rem;
+}
+
+.voice-device-list strong {
+  color: var(--mimir-text, #111827);
+  font-size: 0.82rem;
+}
+
+.voice-controls-body input:focus-visible,
+.voice-controls-body select:focus-visible,
+.voice-controls button:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+@media (max-width: 640px) {
+  .voice-slider-row {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-controls button {
+    width: 100%;
+  }
+}

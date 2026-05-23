@@ -17,7 +17,7 @@
         {"feature": "Useful answer before setup", "status": "live", "mmir": "MMIR Guide browser helper and free starter prompts.", "benchmark": "ChatGPT", "next": "Prefer live local models automatically when detected."},
         {"feature": "Streaming responses and stop", "status": "beta", "mmir": "SSE streaming, JSON fallback and AbortController stop are implemented.", "benchmark": "ChatGPT / Open WebUI", "next": "Broaden backend conformance tests."},
         {"feature": "Copy, retry and clear", "status": "beta", "mmir": "Assistant answers can be copied/retried and workspace chat can be cleared.", "benchmark": "ChatGPT", "next": "Add rename, archive, pin and search in D127."},
-        {"feature": "Voice input", "status": "beta", "mmir": "Browser speech recognition button exists when supported.", "benchmark": "ChatGPT voice", "next": "Add device, read-aloud and local/provider labels in D135."},
+        {"feature": "Voice input", "status": "beta", "mmir": "D135 adds browser-local push-to-talk, voice route/device checks, read-aloud, stop speech and local voice settings.", "benchmark": "ChatGPT voice", "next": "Add native/local TTS/STT providers when trusted routes exist."},
         {"feature": "Vision/image understanding", "status": "planned", "mmir": "Vision mode UI exists, but route must stay capability-gated.", "benchmark": "ChatGPT vision", "next": "Implement D136 with explicit model capability and privacy labels."}
       ]
     },

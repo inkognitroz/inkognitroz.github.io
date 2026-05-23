@@ -20,6 +20,7 @@
   const WELCOME_KEY='mimir-demo-welcome-shown-v1';
   const GROWTH_EVENTS_KEY='mimir-growth-events-v1';
   const GROWTH_SESSION_KEY='mimir-growth-session-v1';
+  const VOICE_SETTINGS_KEY='mimir-voice-settings-v1';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const PAIRING_CODE_PREFIX='mimir-local-node-pairing-code:';
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
@@ -44,7 +45,8 @@
     LIVE_MODELS_KEY,
     DEMO_KEY,
     WELCOME_KEY,
-    GROWTH_EVENTS_KEY
+    GROWTH_EVENTS_KEY,
+    VOICE_SETTINGS_KEY
   ];
   const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
@@ -205,7 +207,7 @@
     ];
     const workspaceKeys=keysByExact(local,[WORKSPACES_KEY,ACTIVE_WORKSPACE_KEY]);
     const backendProfileKeys=keysByExact(local,[PROFILE_KEY,ACTIVE_BACKEND_KEY]);
-    const preferenceKeys=keysByExact(local,[MODE_KEY,ROLE_KEY,SELECTED_MODEL_KEY]);
+    const preferenceKeys=keysByExact(local,[MODE_KEY,ROLE_KEY,SELECTED_MODEL_KEY,VOICE_SETTINGS_KEY]);
     const modelCacheKeys=keysByExact(local,[LIVE_MODELS_KEY]);
     const growthKeys=keysByExact(local,[DEMO_KEY,WELCOME_KEY,GROWTH_EVENTS_KEY]);
     const pairingKeys=[
@@ -297,7 +299,7 @@
       },
       {
         id:'preferences',
-        label:'Modes, role and selected model',
+        label:'Modes, role, selected model and voice settings',
         location:'Browser localStorage',
         count:countArrayKeys(localStorage,preferenceKeys),
         size:formatBytes(storageSize(localStorage,preferenceKeys)),

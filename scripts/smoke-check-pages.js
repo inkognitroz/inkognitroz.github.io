@@ -128,6 +128,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product p
 requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product page must load code sandbox preflight script.');
 requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR product page must load artifact workspace script.');
 requireText(mmirPath, './apps/mimir-chat-portal/image-boundary.js', 'MMIR product page must load image boundary script.');
+requireText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'MMIR product page must load voice controls script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -184,6 +185,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'), 'estimated_cost_usd:0', 'Image boundary must keep the default route free.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'), 'Protected paid provider', 'Image boundary must label protected paid-provider routes.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.css'), '.image-gate-grid', 'Image boundary needs visible gate styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'), 'startDictation', 'Voice controls must expose push-to-talk dictation.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'), 'speechSynthesis', 'Voice controls must expose browser read-aloud.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'), 'mimir-voice-settings-v1', 'Voice settings must persist locally.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.css'), '.voice-device-list', 'Voice controls need visible route/device status styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -214,6 +219,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Clear pairing tokens', 'Privacy controls must let users clear temporary local node pairing tokens.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Delete all local MMIR data', 'Privacy controls must let users reset only MMIR browser data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'voice settings', 'Privacy inventory must include browser-local voice settings.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, provider keys and backend data.');

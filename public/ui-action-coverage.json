@@ -141,6 +141,14 @@
       "evidence": ["generation_enabled:false", "estimated_cost_usd:0", "Protected paid provider", "Image route plan ready"]
     },
     {
+      "id": "voice-controls",
+      "surface": "Voice",
+      "status": "beta",
+      "user_result": "Users can check browser-local voice capability, push to talk, read the last answer aloud, stop speech and save local voice preferences.",
+      "selectors": ["#voice-controls", "#voice-check-devices", "#voice-start-dictation", "#voice-read-last", "#voice-stop-read", "#voice-save-settings"],
+      "evidence": ["startDictation", "speechSynthesis", "mimir-voice-settings-v1", "Voice route checked"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",
