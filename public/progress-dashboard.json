@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:34:53.531Z",
+  "updated_at": "2026-05-23T12:46:17.378Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 177,
+    "total": 178,
     "done": 51,
-    "beta": 101,
+    "beta": 102,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -740,8 +740,8 @@
         "phase": "Activation QA",
         "total": 5,
         "done": 0,
-        "beta": 4,
-        "next": 1,
+        "beta": 5,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -755,6 +755,231 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Activation QA/UX",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      }
+    ]
+  },
+  "activation_simulator": {
+    "version": 1,
+    "title": "MMIR Activation Simulator",
+    "principle": "Free-first activation must always land on one useful next action without provider secrets, raw prompts, paid routes or public runtime exposure.",
+    "public_repo_rule": "Fixtures are public-safe state labels only. They do not contain provider keys, pairing tokens, raw prompts, raw responses, billing data or private user content.",
+    "required_surfaces": [
+      "first-screen",
+      "chat-runtime",
+      "node-dashboard",
+      "telemetry",
+      "progress-dashboard"
+    ],
+    "scenarios": [
+      {
+        "id": "first-visit-free-guide",
+        "state": "first_visit",
+        "label": "First visit gets a free answer path",
+        "user_goal": "Land on MMIR and get immediate value before installing anything.",
+        "simulated_signal": "No backend profile, no local node, no first-chat receipt.",
+        "expected_next_action": "Use the free browser guide or start a local install only when needed.",
+        "cost": "free",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "surfaces": [
+          {
+            "surface": "first-screen",
+            "selector": "#mimir-readiness-rail",
+            "evidence": "renderReadinessRail"
+          },
+          {
+            "surface": "chat-runtime",
+            "selector": "#runtime-model",
+            "evidence": "model.id==='mmir-guide'"
+          },
+          {
+            "surface": "node-dashboard",
+            "selector": "#node-dashboard",
+            "evidence": "Install Health Doctor"
+          },
+          {
+            "surface": "telemetry",
+            "selector": "mimir-activation-events-v1:",
+            "evidence": "automatic-defaults"
+          },
+          {
+            "surface": "progress-dashboard",
+            "selector": "#progress-dashboard-root",
+            "evidence": "renderActivationSimulator"
+          }
+        ]
+      },
+      {
+        "id": "missing-connector",
+        "state": "missing_connector",
+        "label": "Missing connector maps to one device repair",
+        "user_goal": "Understand exactly what to install on this device.",
+        "simulated_signal": "Local node is unreachable on localhost.",
+        "expected_next_action": "Show one OS/device-specific connector repair card.",
+        "cost": "free",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "surfaces": [
+          {
+            "surface": "first-screen",
+            "selector": "#repair-resume-banner",
+            "evidence": "renderRepairResumeBanner"
+          },
+          {
+            "surface": "chat-runtime",
+            "selector": "[data-proof-action]",
+            "evidence": "proofRepairActions"
+          },
+          {
+            "surface": "node-dashboard",
+            "selector": "[data-device-repair-action]",
+            "evidence": "guidedDeviceRepair"
+          },
+          {
+            "surface": "telemetry",
+            "selector": "device-repair-action",
+            "evidence": "MimirActivationTelemetry"
+          },
+          {
+            "surface": "progress-dashboard",
+            "selector": "#progress-activation-simulator",
+            "evidence": "activation_simulator"
+          }
+        ]
+      },
+      {
+        "id": "installer-return-checking",
+        "state": "installer_return_checking",
+        "label": "Installer return resumes verification",
+        "user_goal": "Return from installer and have MMIR continue automatically.",
+        "simulated_signal": "mmir_local_return=1 and stored repair resume state.",
+        "expected_next_action": "Refresh connector, model discovery, proof and repair resume status.",
+        "cost": "free",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "surfaces": [
+          {
+            "surface": "first-screen",
+            "selector": "#repair-resume-banner",
+            "evidence": "mmir-repair-resume-checked"
+          },
+          {
+            "surface": "chat-runtime",
+            "selector": "#runtime-refresh",
+            "evidence": "mmir-local-connector-refreshed"
+          },
+          {
+            "surface": "node-dashboard",
+            "selector": ".node-resume-banner",
+            "evidence": "data-repair-resume-action"
+          },
+          {
+            "surface": "telemetry",
+            "selector": "repair-resume",
+            "evidence": "mmir-repair-resume-checked"
+          },
+          {
+            "surface": "progress-dashboard",
+            "selector": "#progress-activation-simulator",
+            "evidence": "renderActivationSimulator"
+          }
+        ]
+      },
+      {
+        "id": "connector-online-no-model",
+        "state": "connector_online_no_model",
+        "label": "Connector online asks for one free model",
+        "user_goal": "Install a model that fits the current device without terminal work.",
+        "simulated_signal": "Connector is reachable, runtime exists, model count is zero.",
+        "expected_next_action": "Open model library with an installable free starter model.",
+        "cost": "free",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "surfaces": [
+          {
+            "surface": "first-screen",
+            "selector": "#activation-model-card",
+            "evidence": "Install local AI to finish activation"
+          },
+          {
+            "surface": "chat-runtime",
+            "selector": "#install-selected-model",
+            "evidence": "installSelectedStarterModel"
+          },
+          {
+            "surface": "node-dashboard",
+            "selector": "#model-library",
+            "evidence": "Install a free local model"
+          },
+          {
+            "surface": "telemetry",
+            "selector": "model-install",
+            "evidence": "mmir-model-install-ready"
+          },
+          {
+            "surface": "progress-dashboard",
+            "selector": "#progress-activation-simulator",
+            "evidence": "renderActivationSimulator"
+          }
+        ]
+      },
+      {
+        "id": "verified-local-model",
+        "state": "verified_local_model",
+        "label": "Verified local model reaches first chat",
+        "user_goal": "Use the newly live local model for a useful first answer.",
+        "simulated_signal": "Live local model proof succeeded and first_chat_ready is true.",
+        "expected_next_action": "Select the verified route and show Chat with verified model.",
+        "cost": "free",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "surfaces": [
+          {
+            "surface": "first-screen",
+            "selector": "#activation-chat-now",
+            "evidence": "Your local AI is ready in MMIR"
+          },
+          {
+            "surface": "chat-runtime",
+            "selector": "#runtime-live-proof",
+            "evidence": "Chat with verified model"
+          },
+          {
+            "surface": "node-dashboard",
+            "selector": "#mimir-prompt",
+            "evidence": "Local path ready"
+          },
+          {
+            "surface": "telemetry",
+            "selector": "first_chat_ready:true",
+            "evidence": "first_chat_ready:true"
+          },
+          {
+            "surface": "progress-dashboard",
+            "selector": "#progress-first-chat-recovery",
+            "evidence": "firstChatReceiptState"
+          }
+        ]
       }
     ]
   },
@@ -808,7 +1033,7 @@
     }
   ],
   "next_queue": [
-    "D177"
+    "D178"
   ],
   "watchlist": [
     "D082",
@@ -3465,9 +3690,24 @@
       "best_practice": "The launch journey should be tested as one product flow, not separate widgets",
       "done_when": "CI can prove the free-first activation loop reaches a useful next action in every simulated state",
       "covers": "activation, QA, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Activation simulator fixtures now cover first visit, missing connector, installer return, connector-online/no-model and verified local model across first screen, chat, Node Dashboard, telemetry and progress surfaces.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D178",
+      "phase": "Activation QA/UX",
+      "priority": "P0",
+      "work_package": "Safe activation replay controls",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add controls that can load simulator states into browser-local demo mode for owner/dev QA without mutating real connector tokens, paid routes or user data",
+      "best_practice": "QA should be reproducible from the public app without pretending real infrastructure is online",
+      "done_when": "Owner can replay activation states safely and reset them from the browser",
+      "covers": "activation, QA, demo",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation QA slice: simulate the complete free-first activation loop across first screen, chat, Node Dashboard, telemetry and progress surfaces.",
+      "evidence": "Next activation slice: add safe replay controls that can load simulator states into browser-local demo mode without secrets, paid routes or real connector mutation.",
       "estimate": "2-6h"
     }
   ]

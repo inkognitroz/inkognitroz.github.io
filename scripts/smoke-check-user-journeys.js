@@ -12,6 +12,7 @@ const files = {
   mmir: join(publicDir, 'mmir.html'),
   journeys: join(publicDir, 'user-journeys.json'),
   progress: join(publicDir, 'progress-dashboard.json'),
+  activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
   webManifest: join(publicDir, 'manifest.webmanifest'),
   serviceWorker: join(publicDir, 'sw.js'),
@@ -64,6 +65,7 @@ const files = {
   connectorServer: join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'),
   linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
   repairCardHarness: join(root, 'scripts', 'smoke-check-node-repair-cards.js'),
+  simulatorHarness: join(root, 'scripts', 'smoke-check-activation-simulator.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -385,6 +387,15 @@ requireIncludes(files.progressDashboard, 'firstChatReceiptState', 'D167 dashboar
 requireIncludes(files.progressDashboard, 'progress-activation-clear', 'D170 dashboard must expose activation telemetry controls.');
 requireIncludes(files.progressDashboard, 'progress-activation-autopilot', 'D171 dashboard must expose a manual safe autopilot run.');
 requireIncludes(files.progressDashboard, 'activationSummary', 'D170 dashboard must summarize activation telemetry.');
+requireIncludes(files.progressDashboard, 'renderActivationSimulator', 'D177 dashboard must render activation simulator fixtures.');
+requireIncludes(files.progressDashboard, 'progress-activation-simulator', 'D177 dashboard must expose activation simulator panel.');
+requireIncludes(files.progressDashboardCss, '.progress-simulator-card', 'D177 dashboard must style activation simulator fixtures.');
+requireIncludes(files.activationSimulator, 'first-visit-free-guide', 'D177 simulator must cover first visit.');
+requireIncludes(files.activationSimulator, 'missing-connector', 'D177 simulator must cover missing connector.');
+requireIncludes(files.activationSimulator, 'installer-return-checking', 'D177 simulator must cover installer return.');
+requireIncludes(files.activationSimulator, 'connector-online-no-model', 'D177 simulator must cover connector online with no model.');
+requireIncludes(files.activationSimulator, 'verified-local-model', 'D177 simulator must cover verified local model.');
+requireIncludes(files.simulatorHarness, 'expectedScenarioIds', 'D177 simulator needs dedicated CI fixture coverage.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');
 requireIncludes(files.activationTelemetry, 'raw_prompt_stored:false', 'D170 telemetry must not store raw prompts.');

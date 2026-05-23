@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d176-20260523-repair-resume-banner';
+const CACHE_NAME='mmir-pwa-d177-20260523-activation-simulator';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -20,6 +20,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/identity-org.css',
   './apps/mimir-chat-portal/identity-org.js',
   './progress-dashboard.json',
+  './activation-simulator-fixtures.json',
   './user-journeys.json',
   './gui-parity-matrix.json',
   './mmir-api-routes.json'

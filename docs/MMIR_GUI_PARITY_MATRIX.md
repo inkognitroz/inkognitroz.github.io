@@ -58,6 +58,7 @@ Current priority after the matrix is:
 48. D175 installer-return repair resume.
 49. D176 repair resume status banner.
 50. D177 end-to-end activation simulator.
+51. D178 safe activation replay controls.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -107,6 +108,7 @@ D173 is now beta: repair-card fixtures prove offline connector, pairing, Ollama,
 D174 is now beta: repair-card clicks carry users to the exact next flow and record that choice.
 D175 is now beta: returning from installer/repair links resumes verification automatically.
 D176 is now beta: last repair resume result is visible near the first screen and Node Dashboard.
-D177 is next: prove the full free-first activation loop with end-to-end state fixtures.
+D177 is now beta: public-safe activation fixtures prove the full free-first activation loop across core surfaces.
+D178 is next: replay those fixtures safely in browser-local demo mode.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

@@ -1,9 +1,10 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 const root = process.cwd();
 const backlogPath = resolve(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md');
 const outputPath = resolve(root, 'public', 'progress-dashboard.json');
+const activationSimulatorPath = resolve(root, 'public', 'activation-simulator-fixtures.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -55,7 +56,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 177).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 178).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -113,7 +114,8 @@ const overrides = new Map([
   ['D174', { status: 'beta', evidence: 'Guided repair-card links now carry data-device-repair-action metadata, trigger internal follow-through where needed and record selected paths in activation telemetry.' }],
   ['D175', { status: 'beta', evidence: 'Repair-card selections now store a browser-local repair resume object; post-install returns resume checking, refresh runtime models and emit repair resume telemetry/results.' }],
   ['D176', { status: 'beta', evidence: 'First screen and Node Dashboard now show the last repair resume result with verified/needs-model/needs-action state and a safe next action.' }],
-  ['D177', { status: 'next', evidence: 'Next activation QA slice: simulate the complete free-first activation loop across first screen, chat, Node Dashboard, telemetry and progress surfaces.' }]
+  ['D177', { status: 'beta', evidence: 'Activation simulator fixtures now cover first visit, missing connector, installer return, connector-online/no-model and verified local model across first screen, chat, Node Dashboard, telemetry and progress surfaces.' }],
+  ['D178', { status: 'next', evidence: 'Next activation slice: add safe replay controls that can load simulator states into browser-local demo mode without secrets, paid routes or real connector mutation.' }]
 ]);
 
 const repoMeta = [
@@ -217,6 +219,11 @@ function estimateFor(priority, status) {
   return 'Validate first';
 }
 
+function readActivationSimulator() {
+  if (!existsSync(activationSimulatorPath)) return null;
+  return JSON.parse(readFileSync(activationSimulatorPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -241,7 +248,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D177', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D178', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -260,6 +267,7 @@ const data = {
   ],
   status_legend: statusNotes,
   summary: summarize(tasks),
+  activation_simulator: readActivationSimulator(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

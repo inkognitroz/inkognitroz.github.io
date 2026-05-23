@@ -31,6 +31,7 @@ jobs:
           node scripts/smoke-check-pages.js
           node scripts/smoke-check-user-journeys.js
           node scripts/smoke-check-ui-actions.js
+          node scripts/smoke-check-activation-simulator.js
 
       - name: Commit migrated assets
         run: |

@@ -26,7 +26,9 @@
 .progress-decision-card,
 .progress-receipt-card,
 .progress-activation-card,
-.progress-activation-event {
+.progress-activation-event,
+.progress-simulator-card,
+.progress-simulator-scenario {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 8px;
   background: #fff;
@@ -38,7 +40,8 @@
 .progress-repo-card span,
 .progress-next-card span,
 .progress-decision-card span,
-.progress-activation-event span {
+.progress-activation-event span,
+.progress-simulator-scenario span {
   color: var(--mimir-muted, #6b7280);
   display: block;
   font-size: 0.76rem;
@@ -67,7 +70,8 @@
 .progress-phase-card h3,
 .progress-repo-card h3,
 .progress-next-card h3,
-.progress-decision-card h3 {
+.progress-decision-card h3,
+.progress-simulator-scenario h3 {
   color: var(--mimir-text, #111827);
   font-size: 0.95rem;
   margin: 5px 0;
@@ -243,6 +247,46 @@
 .progress-activation-card {
   display: grid;
   gap: 10px;
+}
+
+.progress-simulator-card {
+  display: grid;
+  gap: 10px;
+  border-color: rgba(16, 163, 127, 0.24);
+}
+
+.progress-simulator-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.progress-simulator-scenario {
+  display: grid;
+  gap: 7px;
+}
+
+.progress-simulator-scenario p {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.progress-simulator-surfaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.progress-simulator-surfaces em {
+  background: #eef2f7;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 750;
+  padding: 3px 7px;
 }
 
 .progress-activation-card[data-state="ready"] {

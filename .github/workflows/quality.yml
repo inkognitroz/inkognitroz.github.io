@@ -111,3 +111,6 @@ jobs:
 
       - name: Smoke-check local install return
         run: node scripts/smoke-check-local-install-return.js
+
+      - name: Smoke-check activation simulator
+        run: node scripts/smoke-check-activation-simulator.js

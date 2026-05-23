@@ -142,6 +142,26 @@
     '</section>';
   }
 
+  function renderActivationSimulator(data){
+    const simulator=data.activation_simulator||{};
+    const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
+    if(!scenarios.length)return '';
+    const surfaces=Array.isArray(simulator.required_surfaces)?simulator.required_surfaces:[];
+    return '<section id="progress-activation-simulator" class="progress-simulator-card">'+
+      '<div class="progress-activation-head"><div><p class="eyebrow">Activation simulator</p><h2>'+safe(simulator.title||'Activation simulator')+'</h2><small>'+safe(simulator.principle||'Public-safe free-first activation fixtures.')+'</small></div>'+
+      '<div class="progress-activation-counts"><span>'+safe(scenarios.length)+' scenarios</span><span>'+safe(surfaces.length)+' surfaces</span><span>no spend</span></div></div>'+
+      '<div class="progress-simulator-grid">'+scenarios.map((scenario)=>
+        '<article class="progress-simulator-scenario" data-state="'+safe(scenario.state||scenario.id)+'">'+
+          '<span>'+safe(scenario.id)+'</span><h3>'+safe(scenario.label)+'</h3>'+
+          '<p>'+safe(scenario.expected_next_action)+'</p>'+
+          '<small>'+safe(scenario.user_goal)+' / '+safe(scenario.cost||'free')+'</small>'+
+          '<div class="progress-simulator-surfaces">'+(Array.isArray(scenario.surfaces)?scenario.surfaces.map((surface)=>'<em>'+safe(surface.surface)+'</em>').join(''):'')+'</div>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(simulator.public_repo_rule||'Fixtures store no provider secrets, raw prompts or raw responses.')+'</small>'+
+    '</section>';
+  }
+
   function renderSummary(data){
     const summaryData=data.summary||{};
     return '<div class="progress-summary-grid">'+
@@ -280,7 +300,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderActivationSimulator(dashboard)+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindActivationTelemetry();
     bindFilters();
