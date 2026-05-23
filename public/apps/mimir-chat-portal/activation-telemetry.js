@@ -152,6 +152,8 @@
   window.addEventListener('mmir-first-screen-cockpit-updated',(event)=>record('cockpit',event.detail));
   window.addEventListener('mmir-local-doctor-updated',(event)=>record('doctor',event.detail));
   window.addEventListener('mmir-local-connector-refreshed',()=>record('connector-refresh',{status:'checked',note:'Local connector refresh completed.'}));
+  window.addEventListener('mmir-repair-resume-started',(event)=>record('repair-resume',event.detail));
+  window.addEventListener('mmir-repair-resume-checked',(event)=>record('repair-resume',event.detail));
 
   try{
     if(sessionStorage.getItem(SESSION_KEY)!==workspaceId()){

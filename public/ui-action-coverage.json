@@ -66,7 +66,7 @@
       "status": "live",
       "user_result": "Users can see active node health, hardware, models, tunnel state, cross-device pairing code, exact next repair action and one device-specific repair card from one local-first dashboard.",
       "selectors": ["#node-dashboard", "#node-dashboard-root", "node-repair-card", "[data-device-repair-action]", "#refresh-node-dashboard", "#node-use-free-local", "#node-refresh-inline", "#node-create-pairing-code", "#node-pairing-code-status"],
-      "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "/doctor", "/pairing/sessions", "Local Node Doctor", "model-pull", "guidedDeviceRepair", "detectDevice", "Raspberry Pi / Linux ARM", "data-device-repair-action", "device-repair-action", "Connector install", "Model availability"]
+      "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "/doctor", "/pairing/sessions", "Local Node Doctor", "model-pull", "guidedDeviceRepair", "detectDevice", "Raspberry Pi / Linux ARM", "data-device-repair-action", "device-repair-action", "mimir-repair-resume-v1:", "Connector install", "Model availability"]
     },
     {
       "id": "pwa-mobile-install",
@@ -104,9 +104,9 @@
       "id": "workspace-memory-knowledge",
       "surface": "Workspace, memory, knowledge and privacy controls",
       "status": "beta",
-      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, see first-chat receipts, activation telemetry and autopilot state, and export/delete local data.",
+      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, see first-chat receipts, activation telemetry, autopilot and repair resume state, and export/delete local data.",
       "selectors": ["#workspace-new", "#memory-save", "#knowledge-dropzone", "#knowledge-collection-name", "[data-collection-toggle]", "#knowledge-save", "#privacy-export", "#privacy-delete"],
-      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "First chat receipt", "Activation telemetry", "Activation autopilot", "privacy-delete"]
+      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "First chat receipt", "Activation telemetry", "Activation autopilot", "Repair resume state", "privacy-delete"]
     },
     {
       "id": "explicit-web-search",

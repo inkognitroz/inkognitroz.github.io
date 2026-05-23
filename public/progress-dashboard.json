@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:18:01.476Z",
+  "updated_at": "2026-05-23T12:23:22.824Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 175,
+    "total": 176,
     "done": 51,
-    "beta": 99,
+    "beta": 100,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,9 +288,9 @@
       },
       {
         "phase": "Activation UX",
-        "total": 7,
+        "total": 8,
         "done": 4,
-        "beta": 2,
+        "beta": 3,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -808,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D175"
+    "D176"
   ],
   "watchlist": [
     "D082",
@@ -3435,9 +3435,24 @@
       "best_practice": "Setup should continue automatically after an install step",
       "done_when": "User returns from installer and MMIR automatically verifies connector, model and first-chat readiness",
       "covers": "activation, install, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Repair-card selections now store a browser-local repair resume object; post-install returns resume checking, refresh runtime models and emit repair resume telemetry/results.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D176",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "Repair resume status banner",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Show the repair resume result near the first screen and node dashboard so users know whether the last install/repair succeeded or what remains",
+      "best_practice": "Automatic repair needs visible closure, not silent background checks",
+      "done_when": "User sees last repair state, verified/needs-model/needs-action, and the next safest action without opening storage or logs",
+      "covers": "activation, support, user feedback",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: resume the same activation path after a user returns from installer or repair-card links and automatically verify whether repair succeeded.",
+      "evidence": "Next activation slice: show last repair resume result near first screen and Node Dashboard so users see verified/needs-model/needs-action without reading logs.",
       "estimate": "2-6h"
     }
   ]

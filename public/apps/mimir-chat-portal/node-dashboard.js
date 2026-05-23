@@ -4,6 +4,9 @@
   const summary=document.getElementById('node-dashboard-summary');
   const refreshButton=document.getElementById('refresh-node-dashboard');
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let remotePairingCode=null;
 
   if(!root||!api)return;
@@ -11,6 +14,21 @@
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function setSummary(message,state){if(summary){summary.textContent=message||'';summary.dataset.state=state||'idle';}}
   function activeProfile(){return api.activeProfile?.()||null;}
+  function activeWorkspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
+  function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
+  function storeRepairResume(payload){
+    try{
+      localStorage.setItem(repairResumeKey(),JSON.stringify({
+        ...payload,
+        status:'pending',
+        at:new Date().toISOString(),
+        no_paid_routes_started:true,
+        provider_secrets_stored:false,
+        raw_prompt_stored:false,
+        raw_response_stored:false
+      }));
+    }catch(error){}
+  }
   function cleanUrl(value){return api.cleanUrl(value);}
   function joinUrl(base,path){return api.joinUrl(base,path);}
   function statusText(value){return String(value||'unknown').replaceAll('-',' ');}
@@ -219,6 +237,12 @@
       link.addEventListener('click',(event)=>{
         const action=link.getAttribute('data-device-repair-action')||'repair';
         const targetHref=link.getAttribute('href')||'';
+        storeRepairResume({
+          action,
+          target:targetHref,
+          device:link.getAttribute('data-repair-device')||'device',
+          model:link.getAttribute('data-repair-model')||''
+        });
         window.MimirActivationTelemetry?.record?.('device-repair-action',{
           status:'selected',
           model:link.getAttribute('data-repair-model')||'',

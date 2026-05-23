@@ -381,6 +381,9 @@ requireText(nodeDashboardPath, 'detectDevice', 'D172 node dashboard must detect 
 requireText(nodeDashboardPath, 'Raspberry Pi / Linux ARM', 'D172 repair card must support Raspberry Pi/Linux ARM.');
 requireText(nodeDashboardPath, 'data-device-repair-action', 'D174 repair card must expose actionable repair links.');
 requireText(nodeDashboardPath, 'device-repair-action', 'D174 repair-card clicks must be logged to activation telemetry.');
+requireText(nodeDashboardPath, 'mimir-repair-resume-v1:', 'D175 repair-card clicks must store installer-return resume state.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), 'mmir-repair-resume-checked', 'D175 local connector must verify repair resume after return.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'mmir-repair-resume-checked', 'D175 repair resume results must feed activation telemetry.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-repair-card', 'D172 guided repair card needs visible styling.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'offline-connector', 'D173 repair harness must cover offline connector state.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'failed-model-pull', 'D173 repair harness must cover failed model pull state.');

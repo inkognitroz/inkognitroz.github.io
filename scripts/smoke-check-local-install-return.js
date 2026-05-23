@@ -37,6 +37,9 @@ requireIncludes(files.mmir, 'local-connector.js?v=20260523-post-install-return',
 requireIncludes(files.localConnector, 'function isPostInstallReturn()', 'Local connector UI must detect installer return URLs.');
 requireIncludes(files.localConnector, "mmir_local_return')==='1'", 'Local connector UI must honor the mmir_local_return flag.');
 requireIncludes(files.localConnector, 'schedulePostInstallRefresh', 'Local connector UI must schedule repeated post-install refresh attempts.');
+requireIncludes(files.localConnector, 'mimir-repair-resume-v1:', 'D175 local connector must store installer-return repair resume state.');
+requireIncludes(files.localConnector, 'mmir-repair-resume-started', 'D175 local connector must emit repair resume start events.');
+requireIncludes(files.localConnector, 'mmir-repair-resume-checked', 'D175 local connector must emit repair resume verification events.');
 requireIncludes(files.localConnector, "document.getElementById('runtime-refresh')?.click()", 'Post-install return must refresh the chat runtime model list.');
 requireIncludes(files.localConnector, 'mmir-local-install-returned', 'Post-install return must emit an event for other modules.');
 requireIncludes(files.connectOptions, 'returns to MMIR after install', 'Connect options must describe the post-install return flow.');

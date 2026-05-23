@@ -406,6 +406,9 @@ requireIncludes(files.nodeDashboard, 'Raspberry Pi / Linux ARM', 'D172 needs Ras
 requireIncludes(files.nodeDashboard, 'node-repair-card', 'D172 needs the guided repair card rendered in Node Dashboard.');
 requireIncludes(files.nodeDashboard, 'data-device-repair-action', 'D174 needs repair-card action links.');
 requireIncludes(files.nodeDashboard, 'device-repair-action', 'D174 needs repair-card telemetry events.');
+requireIncludes(files.nodeDashboard, 'mimir-repair-resume-v1:', 'D175 needs repair-card clicks to store resume state.');
+requireIncludes(files.localConnector, 'mmir-repair-resume-checked', 'D175 needs local connector to verify repair resume after return.');
+requireIncludes(files.activationTelemetry, 'mmir-repair-resume-checked', 'D175 needs repair resume verification in activation telemetry.');
 requireIncludes(files.repairCardHarness, 'offline-connector', 'D173 repair harness must cover offline connector.');
 requireIncludes(files.repairCardHarness, 'offline-ollama', 'D173 repair harness must cover offline Ollama.');
 requireIncludes(files.repairCardHarness, 'failed-model-pull', 'D173 repair harness must cover failed model pull.');
@@ -420,6 +423,7 @@ requireIncludes(files.privacyControls, 'MMIR managed session token', 'D161 priva
 requireIncludes(files.privacyControls, 'First chat receipt', 'D166 privacy inventory must disclose browser-local first-chat receipts.');
 requireIncludes(files.privacyControls, 'Activation telemetry', 'D170 privacy inventory must disclose browser-local activation telemetry.');
 requireIncludes(files.privacyControls, 'Activation autopilot', 'D171 privacy inventory must disclose browser-local autopilot state.');
+requireIncludes(files.privacyControls, 'Repair resume state', 'D175 privacy inventory must disclose repair resume state.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');

@@ -3,6 +3,9 @@
   const grid=document.getElementById('local-connector-grid');
   const main=document.querySelector('.mimir-chat-main');
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let guideSteps=[];
   let liveState={status:'idle',message:'Checking local node...',models:[],tunnel:null,url:DEFAULT_LOCAL_URL};
 
@@ -44,6 +47,35 @@
     return '';
   }
   function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+  function activeWorkspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
+  function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
+  function readRepairResume(){
+    try{
+      const value=JSON.parse(localStorage.getItem(repairResumeKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+  function writeRepairResume(patch){
+    const current=readRepairResume()||{};
+    const next={...current,...patch,updated_at:new Date().toISOString()};
+    try{localStorage.setItem(repairResumeKey(),JSON.stringify(next));}catch(error){}
+    return next;
+  }
+  function updateRepairResumeAfterCheck(state){
+    const resume=readRepairResume();
+    if(!resume||!['pending','checking'].includes(String(resume.status||'')))return;
+    const status=state.status==='online'?'verified':(state.status==='degraded'?'needs-model':'needs-action');
+    const next=writeRepairResume({
+      status,
+      checked_at:new Date().toISOString(),
+      node_status:state.status,
+      model_count:Array.isArray(state.models)?state.models.length:0,
+      note:status==='verified'?'Repair succeeded; local live models are available.':(status==='needs-model'?'Connector is back; install or expose one free local model next.':'Repair still needs attention.')
+    });
+    window.dispatchEvent(new CustomEvent('mmir-repair-resume-checked',{detail:next}));
+  }
   function openPanel(target){
     const targetEl=document.querySelector(target);
     if(targetEl&&'open' in targetEl)targetEl.open=true;
@@ -72,6 +104,13 @@
     const panel=document.getElementById('local-connector');
     if(panel&&'open' in panel)panel.open=true;
     if(panel)setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),50);
+    const resume=writeRepairResume({
+      ...(readRepairResume()||{action:'installer-return',target:window.location.href}),
+      status:'checking',
+      returned_at:new Date().toISOString(),
+      note:'Returned from installer or repair-card path. MMIR is verifying connector, models and proof automatically.'
+    });
+    window.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
     liveState={
       status:'checking',
       message:'Installer returned to MMIR. Checking the local node and refreshing live models automatically...',
@@ -151,6 +190,7 @@
     }
     render(guideSteps);
     window.dispatchEvent(new CustomEvent('mmir-local-connector-refreshed',{detail:liveState}));
+    updateRepairResumeAfterCheck(liveState);
   }
 
   async function startTunnel(){

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d174-20260523-repair-action-followthrough';
+const CACHE_NAME='mmir-pwa-d175-20260523-repair-resume';
 const SHELL_ASSETS=[
   './',
   './index.html',
