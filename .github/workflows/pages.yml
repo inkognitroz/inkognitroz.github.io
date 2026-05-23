@@ -52,6 +52,8 @@ jobs:
         run: node scripts/smoke-check-activation-route-map.js
       - name: Smoke check activation closure
         run: node scripts/smoke-check-activation-closure.js
+      - name: Smoke check first screen activation closure
+        run: node scripts/smoke-check-first-screen-activation-closure.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

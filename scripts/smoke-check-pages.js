@@ -448,6 +448,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css
 requireText(join(root, 'scripts', 'smoke-check-activation-closure.js'), 'Activation closure smoke check passed.', 'D183 live activation gap closure checklist must have a dedicated smoke harness.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'renderLiveGapChecklist', 'D183 Progress Dashboard must render the live activation closure checklist.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-live-gap-checklist', 'D183 live activation closure checklist needs visible styling.');
+requireText(join(root, 'scripts', 'smoke-check-first-screen-activation-closure.js'), 'First-screen activation closure smoke check passed.', 'D184 first-screen activation closure strip must have a dedicated smoke harness.');
+requireText(firstImpressionPath, 'renderActivationClosureStrip', 'D184 first screen must render the live activation closure strip.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.activation-closure-strip', 'D184 first-screen activation closure strip needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

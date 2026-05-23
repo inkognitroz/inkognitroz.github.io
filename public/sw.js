@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d183-20260523-live-gap-checklist';
+const CACHE_NAME='mmir-pwa-d184-20260523-first-screen-closure';
 const SHELL_ASSETS=[
   './',
   './index.html',

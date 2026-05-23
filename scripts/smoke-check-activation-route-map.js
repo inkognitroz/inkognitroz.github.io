@@ -122,8 +122,13 @@ if (!d183 || !['beta', 'next'].includes(d183.status)) {
 }
 
 const d184 = progressTasks.find((task) => task.seq === 'D184');
-if (!d184 || d184.status !== 'next') {
-  fail('Progress dashboard must expose D184 as the next activation work item after D183 ships.');
+if (!d184 || !['beta', 'next'].includes(d184.status)) {
+  fail('Progress dashboard must expose D184 as beta or next after D183 ships.');
+}
+
+const d185 = progressTasks.find((task) => task.seq === 'D185');
+if (!d185 || d185.status !== 'next') {
+  fail('Progress dashboard must expose D185 as the next activation work item after D184 ships.');
 }
 
 if (!process.exitCode) {

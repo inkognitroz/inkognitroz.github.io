@@ -123,3 +123,6 @@ jobs:
 
       - name: Smoke-check activation closure
         run: node scripts/smoke-check-activation-closure.js
+
+      - name: Smoke-check first screen activation closure
+        run: node scripts/smoke-check-first-screen-activation-closure.js

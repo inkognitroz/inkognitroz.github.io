@@ -32,7 +32,7 @@ if (!html.includes('workflow-builder.css?v=20260523-mobile-chat')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d183-20260523-live-gap-checklist'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d184-20260523-first-screen-closure'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

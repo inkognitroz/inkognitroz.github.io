@@ -14,6 +14,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
+  const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const cockpit=document.getElementById('activation-cockpit');
   const activationCards={
     answer:document.getElementById('activation-answer-card'),
@@ -44,6 +45,7 @@
   let lastRailSignature='';
   let lastRepairResumeSignature='';
   let lastActivationReplaySignature='';
+  let lastActivationClosureSignature='';
 
   function ensureActivationCockpitShell(){
     if(!document.querySelector('link[href*="activation-cockpit.css"]')){
@@ -138,6 +140,20 @@
     }catch(error){
       return null;
     }
+  }
+
+  function readFirstChatReceipt(){
+    try{
+      const value=JSON.parse(localStorage.getItem(FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+
+  function runtimeProofState(){
+    const proof=document.getElementById('runtime-live-proof');
+    return String(proof?.dataset?.state||'idle');
   }
 
   function clearActivationReplay(){
@@ -259,6 +275,82 @@
       event.preventDefault();
       openPanel('#progress-dashboard');
     });
+  }
+
+  function firstScreenClosureState(){
+    const profile=activeProfile();
+    const receipt=readFirstChatReceipt();
+    const proofState=runtimeProofState();
+    const proofReady=proofState==='ready'||profile?.liveness==='chat-probed'||Boolean(profile?.lastProofModel)||receipt?.status==='success';
+    const profileReady=Boolean(profile?.url&&profile?.provider==='local-node');
+    const nodeHealth=String(profile?.health||'unknown').toLowerCase();
+    const nodeReady=['ready','degraded','testing'].includes(nodeHealth)||proofReady;
+    if(!profileReady){
+      return {state:'watch',title:'Create the free local profile',detail:'MMIR can prepare 127.0.0.1 Local Node automatically. Configure later only if needed.',action:'Create local profile',target:'#connect-options',kind:'local-profile'};
+    }
+    if(!nodeReady){
+      return {state:nodeHealth==='offline'?'error':'watch',title:'Connect this device',detail:'Local Node is not proven in this browser yet. Open node health for the one safe next step.',action:'Open node health',target:'#node-dashboard',kind:'node-health'};
+    }
+    if(!proofReady){
+      return {state:'watch',title:'Prove one free model',detail:'Run the free live-model proof after node/model setup. Paid providers stay blocked.',action:'Retry free proof',target:'#mimir-chat-runtime',kind:'retry-proof'};
+    }
+    if(receipt?.status!=='success'){
+      return {state:receipt?.status==='failed'?'error':'watch',title:'Get the first useful answer',detail:'A live model is ready; send the first chat and save a privacy-safe receipt.',action:'Start first chat',target:'#mimir-prompt',kind:'first-chat'};
+    }
+    return {state:'ready',title:'Activation path is closed',detail:'Browser guide, local profile, live proof and first-chat receipt are all ready for this workspace.',action:'Chat now',target:'#mimir-prompt',kind:'chat-now'};
+  }
+
+  function ensureActivationClosureStrip(){
+    let strip=document.getElementById('activation-closure-strip');
+    if(strip||!instantStart)return strip;
+    ensureRepairResumeStyles();
+    strip=document.createElement('aside');
+    strip.id='activation-closure-strip';
+    strip.className='activation-closure-strip';
+    strip.setAttribute('aria-live','polite');
+    const replay=document.getElementById('activation-replay-banner');
+    const repair=document.getElementById('repair-resume-banner');
+    const rail=document.getElementById('mimir-readiness-rail');
+    (replay||repair||rail||instantStart).insertAdjacentElement('afterend',strip);
+    return strip;
+  }
+
+  function handleActivationClosureAction(copy){
+    if(copy.kind==='local-profile'){
+      window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+      openPanel('#connect-options');
+      return;
+    }
+    if(copy.kind==='retry-proof'){
+      const retry=document.querySelector('#runtime-live-proof [data-proof-action="retry"]')||document.getElementById('runtime-refresh');
+      retry?.click?.();
+      openPanel('#mimir-chat-runtime');
+      return;
+    }
+    if(copy.kind==='first-chat'){
+      if(promptEl&&!String(promptEl.value||'').trim()){
+        promptEl.value='Give me my first useful MMIR answer and the next safe setup step.';
+        promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      promptEl?.focus();
+      window.setTimeout(()=>primaryLink?.click(),40);
+      return;
+    }
+    openPanel(copy.target||'#mimir-prompt');
+    if(copy.target==='#mimir-prompt')promptEl?.focus();
+  }
+
+  function renderActivationClosureStrip(){
+    const strip=ensureActivationClosureStrip();
+    if(!strip)return;
+    const copy=firstScreenClosureState();
+    const signature=[copy.state,copy.title,copy.detail,copy.action,copy.target].join('|');
+    if(signature===lastActivationClosureSignature)return;
+    lastActivationClosureSignature=signature;
+    strip.hidden=false;
+    strip.dataset.state=copy.state;
+    strip.innerHTML='<div><span>Next safe step</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>no_paid_routes_started:true / provider_secrets_stored:false</small></div><button type="button" data-activation-closure-action="'+safe(copy.kind)+'">'+safe(copy.action)+'</button>';
+    strip.querySelector('[data-activation-closure-action]')?.addEventListener('click',()=>handleActivationClosureAction(copy));
   }
 
   function setBodyState(add,removeA,removeB){
@@ -494,6 +586,7 @@
     renderReadinessRail();
     renderRepairResumeBanner();
     renderActivationReplayBanner();
+    renderActivationClosureStrip();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
@@ -513,6 +606,8 @@
   window.addEventListener('mmir-repair-resume-checked',run);
   window.addEventListener('mmir-activation-replay-updated',run);
   window.addEventListener('mmir-chat-modes-updated',run);
+  window.addEventListener('mmir-live-model-proof-updated',run);
+  window.addEventListener('mmir-first-chat-receipt-updated',run);
   window.addEventListener('storage',run);
   window.addEventListener('focus',run);
 })();

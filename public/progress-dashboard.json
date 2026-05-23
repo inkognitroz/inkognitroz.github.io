@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:27:43.285Z",
+  "updated_at": "2026-05-23T13:33:28.914Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 184,
+    "total": 185,
     "done": 51,
-    "beta": 108,
+    "beta": 109,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,9 +288,9 @@
       },
       {
         "phase": "Activation UX",
-        "total": 10,
+        "total": 11,
         "done": 4,
-        "beta": 5,
+        "beta": 6,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1038,7 +1038,7 @@
     }
   ],
   "next_queue": [
-    "D184"
+    "D185"
   ],
   "watchlist": [
     "D082",
@@ -3800,9 +3800,24 @@
       "best_practice": "Activation help belongs where the user starts, with dashboard detail only as backup",
       "done_when": "First screen shows the remaining activation gap and one safe action, using the same local-only state as Progress Dashboard",
       "covers": "activation, UX, first impression",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First screen now shows the same live activation closure state with one safe next action, using local-only profile/proof/receipt signals.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D185",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "Device-aware starter model recommendation",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Use local device class, hardware hints and known free model catalog to recommend the smallest useful starter model inside activation closure actions",
+      "best_practice": "Users should not need to understand RAM/CPU/GPU before choosing a free model",
+      "done_when": "First-screen closure recommends one safe free starter model per device class and links directly to install/model flow",
+      "covers": "activation, model UX, device onboarding",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation UX slice: surface the live activation closure checklist on the first screen so users do not need the owner dashboard to finish setup.",
+      "evidence": "Next activation UX slice: make the first-screen closure action recommend the best free starter model for the detected device class.",
       "estimate": "2-6h"
     }
   ]

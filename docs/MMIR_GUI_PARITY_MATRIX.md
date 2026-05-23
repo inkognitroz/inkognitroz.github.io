@@ -65,6 +65,7 @@ Current priority after the matrix is:
 55. D182 replay route map report.
 56. D183 live activation gap closure checklist.
 57. D184 first-screen activation closure strip.
+58. D185 device-aware starter model recommendation.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -121,6 +122,7 @@ D180 is now beta: first-screen controls can reset replay or jump to the simulate
 D181 is now beta: replay render controls are guarded across all simulator scenarios.
 D182 is now beta: the Progress Dashboard shows scenario targets, evidence and remaining live-proof gaps.
 D183 is now beta: Progress Dashboard turns those gaps into a live closure checklist with one safe free action per gap.
-D184 is next: surface the same closure state on the first screen.
+D184 is now beta: the same closure state appears on the first screen.
+D185 is next: recommend one best free starter model for the detected device class.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.
