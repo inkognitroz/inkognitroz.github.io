@@ -1,0 +1,40 @@
+{
+  "title": "Answer Context Source Correction QA",
+  "status": "ready",
+  "principle": "Answer audit should lead to a safe correction path, not only passive inspection.",
+  "public_repo_rule": "Correction actions store only local metadata and source state. They never store raw prompts, raw responses, provider secrets or paid-route approvals in the public frontend.",
+  "scenarios": [
+    {
+      "id": "memory-correction-actions",
+      "status": "ready",
+      "target": "#memory-receipt-filter-actions",
+      "expected": "A receipt-focused memory source exposes review, edit, disable and clear-focus actions from the Memory panel.",
+      "selector": "[data-receipt-correction]",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "knowledge-correction-actions",
+      "status": "ready",
+      "target": "#knowledge-receipt-filter-actions",
+      "expected": "A receipt-focused knowledge source exposes review, disable-source and clear-focus actions from the Knowledge panel.",
+      "selector": "[data-receipt-correction]",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "non-destructive-context-correction",
+      "status": "ready",
+      "target": "local memory and knowledge state",
+      "expected": "Correction disables memory items, knowledge documents or collections for future chat context instead of deleting user content by default.",
+      "storage_key": "mimir-memory-v1 / mimir-knowledge-v1 / mimir-knowledge-collections-v1",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "clear-receipt-focus",
+      "status": "ready",
+      "target": "mmir-answer-context-source-filter-cleared",
+      "expected": "Users can clear selected-answer source focus and remove panel highlights without deleting receipts or source data.",
+      "selector": "Clear focus",
+      "no_paid_routes_started": true
+    }
+  ]
+}

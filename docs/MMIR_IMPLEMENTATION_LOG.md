@@ -220,14 +220,15 @@ Updated: 2026-05-23
 - D226 is now beta: receipt highlights now carry safe source filters, including memory-use IDs/counts/sources and selected model labels on the target panel dataset.
 - D227 is now beta: Memory and Knowledge panels consume receipt source filters, show visible filter state, mark matching source IDs where available and explain when exact Knowledge IDs are not available yet.
 - D228 is now beta: chat runtime writes metadata-only knowledge-use entries, answer receipts carry knowledge source IDs/counts/sources, and Knowledge drill-downs can mark exact local documents or collections.
-- D229 is now next: add correction actions from receipt-focused Memory/Knowledge sources so users can disable, review or clear source focus without hunting through panels.
+- D229 is now beta: receipt-focused Memory and Knowledge sources now expose safe correction actions to review, edit or disable used context and clear source focus without deleting source data.
+- D230 is now next: add a metadata-only context correction audit trail and undo path so source changes stay transparent and reversible.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D229` receipt source correction actions.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D230` context correction audit trail and undo.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

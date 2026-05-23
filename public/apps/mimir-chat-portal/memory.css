@@ -42,6 +42,32 @@
   border-radius: 8px !important;
 }
 
+.receipt-correction-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.receipt-correction-actions[hidden] {
+  display: none;
+}
+
+.receipt-correction-actions button {
+  min-height: 32px;
+  border-color: rgba(16, 163, 127, 0.28) !important;
+  background: #fff !important;
+}
+
+.receipt-correction-actions button[data-receipt-correction="disable"] {
+  border-color: rgba(245, 158, 11, 0.42) !important;
+  color: #92400e !important;
+}
+
+.receipt-correction-actions button:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
 .memory-panel textarea:focus-visible,
 .memory-panel input:focus-visible,
 .memory-panel select:focus-visible,

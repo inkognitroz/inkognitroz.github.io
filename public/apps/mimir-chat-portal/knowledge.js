@@ -19,6 +19,7 @@
   let statusEl=null;
   let selectedFiles=[];
   let receiptFilterEl=null;
+  let receiptActionsEl=null;
   let receiptEventFilter=null;
 
   if(!host)return;
@@ -204,9 +205,121 @@
     return [item?.id,item?.backendId,item?.collection_id].some(value=>filter.idSet.has(String(value||'')));
   }
 
+  function receiptMatches(items,filter){
+    const active=filter||activeReceiptFilter();
+    return (Array.isArray(items)?items:readKnowledge()).filter(item=>matchesReceiptFilter(item,active));
+  }
+
   function saveKnowledge(items){
     localStorage.setItem(key(),JSON.stringify(items.slice(-MAX_DOCUMENTS)));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:workspaceId()}}));
+  }
+
+  function clearReceiptDataset(){
+    const panel=document.getElementById('knowledge-panel');
+    if(!panel)return;
+    delete panel.dataset.receiptFilterMessage;
+    delete panel.dataset.receiptFilterModel;
+    delete panel.dataset.receiptFilterKnowledgeIds;
+  }
+
+  function clearReceiptFilter(){
+    receiptEventFilter=null;
+    clearReceiptDataset();
+    try{
+      const highlight=readReceiptHighlight();
+      if(highlight?.target==='#knowledge-panel')localStorage.removeItem(highlightKey());
+    }catch(error){}
+    document.querySelector('#knowledge-panel .runtime-answer-context-highlight')?.remove();
+    renderCollections();
+    render();
+    setStatus('Receipt knowledge focus cleared.');
+    window.dispatchEvent(new CustomEvent('mmir-answer-context-source-filter-cleared',{detail:{target:'#knowledge-panel'}}));
+  }
+
+  function focusedCollectionIds(items,filter){
+    const active=filter||activeReceiptFilter();
+    const saved=Array.isArray(items)?items:readKnowledge();
+    const ids=new Set(saved.filter(item=>matchesReceiptFilter(item,active)).map(item=>item.collection_id));
+    readCollections().forEach(collection=>{
+      if(active.idSet.has(collection.id))ids.add(collection.id);
+      const sourceHit=active.sources.some(source=>source.toLowerCase()===collection.name.toLowerCase()||source.toLowerCase()===collection.id.toLowerCase());
+      if(sourceHit)ids.add(collection.id);
+    });
+    return ids;
+  }
+
+  function focusReceiptMatch(){
+    const target=document.querySelector('.knowledge-item[data-receipt-match="true"], .knowledge-collection-card[data-receipt-match="true"]');
+    if(!target){setStatus('No matching knowledge source is available in this workspace.');return;}
+    target.scrollIntoView({behavior:'smooth',block:'center'});
+    (target.querySelector('button,input')||target).focus?.({preventScroll:true});
+    setStatus('Focused the knowledge source used by the selected answer.');
+  }
+
+  function toggleKnowledgeItem(id){
+    const items=readKnowledge();
+    const index=items.findIndex(item=>item.id===id);
+    if(index<0)return;
+    items[index]={...items[index],enabled:items[index].enabled===false,updatedAt:new Date().toISOString()};
+    saveKnowledge(items);
+    render();
+    setStatus(items[index].name+' '+(items[index].enabled?'enabled for chat context.':'disabled for chat context.'));
+  }
+
+  function disableReceiptMatches(){
+    const filter=activeReceiptFilter();
+    const items=readKnowledge();
+    const exactDocIds=new Set(filter.ids.filter(id=>items.some(item=>String(item.id)===id||String(item.backendId||'')===id)));
+    const collectionIds=focusedCollectionIds(items,filter);
+    let docChanges=0;
+    const next=items.map(item=>{
+      if(!exactDocIds.has(String(item.id))&&!exactDocIds.has(String(item.backendId||'')))return item;
+      if(item.enabled===false)return item;
+      docChanges+=1;
+      return {...item,enabled:false,updatedAt:new Date().toISOString()};
+    });
+    if(docChanges)saveKnowledge(next);
+    let collectionChanges=0;
+    if(collectionIds.size){
+      const collections=readCollections().map(collection=>{
+        if(!collectionIds.has(collection.id)||collection.enabled===false)return collection;
+        collectionChanges+=1;
+        return {...collection,enabled:false,updatedAt:new Date().toISOString()};
+      });
+      if(collectionChanges)saveCollections(collections);
+    }
+    renderCollections();
+    render();
+    const total=docChanges+collectionChanges;
+    setStatus(total?('Disabled '+String(total)+' receipt-focused knowledge source(s) for chat context.'):('Receipt-focused knowledge was already disabled or not available locally.'));
+  }
+
+  function renderReceiptActions(filter,items){
+    if(!receiptActionsEl)return;
+    const active=filter||activeReceiptFilter();
+    const saved=Array.isArray(items)?items:readKnowledge();
+    const matches=receiptMatches(saved,active);
+    const collections=focusedCollectionIds(saved,active);
+    receiptActionsEl.hidden=!active.active;
+    receiptActionsEl.innerHTML='';
+    if(!active.active)return;
+    const canDisableDocs=matches.some(item=>item.enabled!==false&&(active.idSet.has(String(item.id))||active.idSet.has(String(item.backendId||''))));
+    const canDisableCollections=readCollections().some(collection=>collections.has(collection.id)&&collection.enabled!==false);
+    const actions=[
+      {id:'review',label:'Review source',run:focusReceiptMatch,disabled:!matches.length&&!collections.size},
+      {id:'disable',label:'Disable source',run:disableReceiptMatches,disabled:!canDisableDocs&&!canDisableCollections},
+      {id:'clear',label:'Clear focus',run:clearReceiptFilter,disabled:false}
+    ];
+    actions.forEach(action=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.dataset.receiptCorrection=action.id;
+      button.textContent=action.label;
+      button.disabled=Boolean(action.disabled);
+      button.addEventListener('click',action.run);
+      receiptActionsEl.appendChild(button);
+    });
   }
 
   function collectionCounts(){
@@ -232,10 +345,13 @@
     if(!collectionListEl)return;
     const state=collectionState();
     const counts=collectionCounts();
+    const filter=activeReceiptFilter();
+    const focused=focusedCollectionIds(readKnowledge(),filter);
     collectionListEl.innerHTML='';
     state.collections.forEach(collection=>{
       const article=document.createElement('article');
       article.className='knowledge-collection-card '+(collection.enabled?'':'is-disabled');
+      if(focused.has(collection.id))article.setAttribute('data-receipt-match','true');
       const body=document.createElement('div');
       const title=document.createElement('strong');
       title.textContent=collection.name;
@@ -248,6 +364,12 @@
       button.textContent=collection.enabled?'Disable':'Enable';
       button.addEventListener('click',()=>toggleCollection(collection.id));
       article.append(body,button);
+      if(focused.has(collection.id)){
+        const marker=document.createElement('small');
+        marker.className='knowledge-receipt-match';
+        marker.textContent='Used by selected answer';
+        body.appendChild(marker);
+      }
       collectionListEl.appendChild(article);
     });
   }
@@ -259,6 +381,7 @@
     const matches=saved.filter(item=>matchesReceiptFilter(item,active)).length;
     receiptFilterEl.hidden=!active.active;
     receiptFilterEl.dataset.state=active.ids.length?(matches?'ready':'watch'):(active.active?'watch':'idle');
+    renderReceiptActions(active,saved);
     if(!active.active){
       receiptFilterEl.textContent='';
       return;
@@ -296,8 +419,10 @@
       const chunks=item.chunkCount?(' - '+String(item.chunkCount)+' chunk(s)'):'';
       const collectionName=state.names.get(item.collection_id)||item.collection||'General';
       const scope=state.disabled.has(item.collection_id)?' - disabled collection':'';
-      meta.textContent=String(Math.round((item.size||item.text.length)/1024))+' KB - '+collectionName+' - '+sync+chunks+scope;
+      const itemScope=item.enabled===false?' - disabled document':'';
+      meta.textContent=String(Math.round((item.size||item.text.length)/1024))+' KB - '+collectionName+' - '+sync+chunks+scope+itemScope;
       body.append(title,meta);
+      if(item.enabled===false)article.dataset.state='disabled';
       if(item.preview){
         const preview=document.createElement('p');
         preview.className='knowledge-preview';
@@ -310,6 +435,12 @@
         marker.textContent='Used in selected answer';
         body.appendChild(marker);
       }
+      const actions=document.createElement('div');
+      actions.className='knowledge-item-actions';
+      const toggle=document.createElement('button');
+      toggle.type='button';
+      toggle.textContent=item.enabled===false?'Enable':'Disable';
+      toggle.addEventListener('click',()=>toggleKnowledgeItem(item.id));
       const button=document.createElement('button');
       button.type='button';
       button.textContent='Remove';
@@ -319,7 +450,8 @@
         render();
         setStatus('Knowledge removed.');
       });
-      article.append(body,button);
+      actions.append(toggle,button);
+      article.append(body,actions);
       listEl.appendChild(article);
     }
   }
@@ -460,6 +592,7 @@
         '<button id="knowledge-save" type="button">Add knowledge</button>'+
         '<p id="knowledge-status" class="dashboard-note" aria-live="polite"></p>'+
         '<p id="knowledge-receipt-filter-status" class="dashboard-note knowledge-receipt-filter" aria-live="polite" hidden></p>'+
+        '<div id="knowledge-receipt-filter-actions" class="receipt-correction-actions" role="group" aria-label="Receipt knowledge correction actions" hidden></div>'+
         '<div id="knowledge-list" class="knowledge-list" aria-live="polite"></div>'+
       '</div>';
     host.appendChild(details);
@@ -471,6 +604,7 @@
     listEl=document.getElementById('knowledge-list');
     statusEl=document.getElementById('knowledge-status');
     receiptFilterEl=document.getElementById('knowledge-receipt-filter-status');
+    receiptActionsEl=document.getElementById('knowledge-receipt-filter-actions');
     fileInput?.addEventListener('change',()=>setSelectedFiles(fileInput.files||[]));
     ['dragenter','dragover'].forEach(type=>dropzoneEl?.addEventListener(type,handleDrag));
     ['dragleave','drop'].forEach(type=>dropzoneEl?.addEventListener(type,type==='drop'?handleDrop:handleDrag));

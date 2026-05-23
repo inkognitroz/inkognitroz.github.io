@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T21:56:38.562Z",
+  "updated_at": "2026-05-23T22:15:58.629Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 229,
+    "total": 230,
     "done": 51,
-    "beta": 153,
+    "beta": 154,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -970,8 +970,8 @@
         "phase": "Memory / Knowledge UX",
         "total": 3,
         "done": 0,
-        "beta": 2,
-        "next": 1,
+        "beta": 3,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1012,6 +1012,16 @@
         "done": 0,
         "beta": 1,
         "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Memory / Knowledge Audit",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -2319,6 +2329,46 @@
       }
     ]
   },
+  "answer_context_source_correction_report": {
+    "title": "Answer Context Source Correction QA",
+    "status": "ready",
+    "principle": "Answer audit should lead to a safe correction path, not only passive inspection.",
+    "public_repo_rule": "Correction actions store only local metadata and source state. They never store raw prompts, raw responses, provider secrets or paid-route approvals in the public frontend.",
+    "scenarios": [
+      {
+        "id": "memory-correction-actions",
+        "status": "ready",
+        "target": "#memory-receipt-filter-actions",
+        "expected": "A receipt-focused memory source exposes review, edit, disable and clear-focus actions from the Memory panel.",
+        "selector": "[data-receipt-correction]",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "knowledge-correction-actions",
+        "status": "ready",
+        "target": "#knowledge-receipt-filter-actions",
+        "expected": "A receipt-focused knowledge source exposes review, disable-source and clear-focus actions from the Knowledge panel.",
+        "selector": "[data-receipt-correction]",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "non-destructive-context-correction",
+        "status": "ready",
+        "target": "local memory and knowledge state",
+        "expected": "Correction disables memory items, knowledge documents or collections for future chat context instead of deleting user content by default.",
+        "storage_key": "mimir-memory-v1 / mimir-knowledge-v1 / mimir-knowledge-collections-v1",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "clear-receipt-focus",
+        "status": "ready",
+        "target": "mmir-answer-context-source-filter-cleared",
+        "expected": "Users can clear selected-answer source focus and remove panel highlights without deleting receipts or source data.",
+        "selector": "Clear focus",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2369,7 +2419,7 @@
     }
   ],
   "next_queue": [
-    "D229"
+    "D230"
   ],
   "watchlist": [
     "D082",
@@ -5806,9 +5856,24 @@
       "best_practice": "Audit should lead to correction, not only inspection",
       "done_when": "User can correct or clear a receipt-focused source without hunting through panels, with no prompt/snippet/secret leakage",
       "covers": "memory, knowledge, audit, correction",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Memory and Knowledge panels now expose receipt-focused correction actions to review, edit or disable used sources and clear source focus without deleting content.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D230",
+      "phase": "Memory / Knowledge Audit",
+      "priority": "P0",
+      "work_package": "Context correction audit trail and undo",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Record metadata-only correction events when users disable or clear receipt-focused sources, show the latest corrections in the dashboard, and provide a safe undo path for local changes",
+      "best_practice": "Corrections should be transparent, reversible and team-safe without storing raw prompts or secrets",
+      "done_when": "User can see what context was corrected, undo accidental disables and keep a trustworthy audit trail",
+      "covers": "memory, knowledge, audit, undo",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add correction actions from receipt-focused Memory/Knowledge sources so users can disable, review or clear source focus without hunting through panels.",
+      "evidence": "Next activation slice: add a context-correction audit trail and undo path so source changes stay transparent, reversible and safe for teams.",
       "estimate": "2-6h"
     }
   ]

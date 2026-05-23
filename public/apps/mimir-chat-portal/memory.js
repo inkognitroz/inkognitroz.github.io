@@ -19,6 +19,7 @@
   let usedEl=null;
   let statusEl=null;
   let receiptFilterEl=null;
+  let receiptActionsEl=null;
   let editingId='';
   let receiptEventFilter=null;
 
@@ -162,6 +163,11 @@
     return [item?.id,item?.backendId,item?.memoryId].some(value=>filter.idSet.has(String(value||'')));
   }
 
+  function receiptMatches(items,filter){
+    const active=filter||activeReceiptFilter();
+    return (Array.isArray(items)?items:readMemory()).filter(item=>matchesReceiptFilter(item,active));
+  }
+
   function saveMemory(items){
     localStorage.setItem(key(),JSON.stringify(items.map(normalize).filter(Boolean).slice(-MAX_LOCAL_ITEMS)));
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:workspaceId()}}));
@@ -172,6 +178,85 @@
       statusEl.textContent=message||'';
       statusEl.dataset.state=state||'idle';
     }
+  }
+
+  function clearReceiptDataset(){
+    const panel=document.getElementById('memory-panel');
+    if(!panel)return;
+    delete panel.dataset.receiptFilterMessage;
+    delete panel.dataset.receiptFilterModel;
+    delete panel.dataset.receiptFilterMemoryIds;
+  }
+
+  function clearReceiptFilter(){
+    receiptEventFilter=null;
+    clearReceiptDataset();
+    try{
+      const highlight=readReceiptHighlight();
+      if(highlight?.target==='#memory-panel')localStorage.removeItem(highlightKey());
+    }catch(error){}
+    document.querySelector('#memory-panel .runtime-answer-context-highlight')?.remove();
+    render();
+    setStatus('Receipt source focus cleared.','ready');
+    window.dispatchEvent(new CustomEvent('mmir-answer-context-source-filter-cleared',{detail:{target:'#memory-panel'}}));
+  }
+
+  function focusReceiptMatch(){
+    const target=document.querySelector('.memory-item[data-receipt-match="true"], .memory-used-item[data-receipt-match="true"]');
+    if(!target){setStatus('No matching memory source is available in this workspace.','error');return;}
+    target.scrollIntoView({behavior:'smooth',block:'center'});
+    (target.querySelector('button,input,textarea,select')||target).focus?.({preventScroll:true});
+    setStatus('Focused the memory source used by the selected answer.','ready');
+  }
+
+  function editReceiptMatch(){
+    const match=receiptMatches(readMemory(),activeReceiptFilter()).find(item=>item.enabled!==false)||receiptMatches(readMemory(),activeReceiptFilter())[0];
+    if(!match){focusReceiptMatch();return;}
+    editingId=match.id;
+    applyForm(match);
+    inputEl?.scrollIntoView({behavior:'smooth',block:'center'});
+    inputEl?.focus({preventScroll:true});
+    setStatus('Editing the memory source used by the selected answer. Save to update it.','idle');
+  }
+
+  function disableReceiptMatches(){
+    const filter=activeReceiptFilter();
+    const items=readMemory();
+    const ids=new Set(receiptMatches(items,filter).map(item=>item.id));
+    if(!ids.size){setStatus('No matching memory source can be disabled from this receipt.','error');return;}
+    let changed=0;
+    const next=items.map(item=>{
+      if(!ids.has(item.id)||item.enabled===false)return item;
+      changed+=1;
+      return {...item,enabled:false,updatedAt:new Date().toISOString(),syncState:'local',syncError:''};
+    });
+    saveMemory(next);
+    render();
+    setStatus(changed?('Disabled '+String(changed)+' receipt-focused memory item(s) locally. Sync when ready.'):('Receipt-focused memory was already disabled.'),changed?'ready':'idle');
+  }
+
+  function renderReceiptActions(filter,items){
+    if(!receiptActionsEl)return;
+    const active=filter||activeReceiptFilter();
+    const matches=receiptMatches(Array.isArray(items)?items:readMemory(),active);
+    receiptActionsEl.hidden=!active.active;
+    receiptActionsEl.innerHTML='';
+    if(!active.active)return;
+    const actions=[
+      {id:'review',label:'Review source',run:focusReceiptMatch,disabled:!matches.length},
+      {id:'edit',label:'Edit memory',run:editReceiptMatch,disabled:!matches.length},
+      {id:'disable',label:'Disable match',run:disableReceiptMatches,disabled:!matches.some(item=>item.enabled!==false)},
+      {id:'clear',label:'Clear focus',run:clearReceiptFilter,disabled:false}
+    ];
+    actions.forEach(action=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.dataset.receiptCorrection=action.id;
+      button.textContent=action.label;
+      button.disabled=Boolean(action.disabled);
+      button.addEventListener('click',action.run);
+      receiptActionsEl.appendChild(button);
+    });
   }
 
   function activeConnection(){
@@ -303,6 +388,7 @@
     const matches=saved.filter(item=>matchesReceiptFilter(item,active)).length;
     receiptFilterEl.hidden=!active.active;
     receiptFilterEl.dataset.state=active.ids.length?(matches?'ready':'watch'):(active.active?'watch':'idle');
+    renderReceiptActions(active,saved);
     if(!active.active){
       receiptFilterEl.textContent='';
       return;
@@ -556,6 +642,7 @@
         '</div>'+
         '<p id="memory-status" class="dashboard-note" aria-live="polite"></p>'+
         '<p id="memory-receipt-filter-status" class="dashboard-note memory-receipt-filter" aria-live="polite" hidden></p>'+
+        '<div id="memory-receipt-filter-actions" class="receipt-correction-actions" role="group" aria-label="Receipt memory correction actions" hidden></div>'+
         '<div class="memory-use-review">'+
           '<strong>Used in last message</strong>'+
           '<div id="memory-use-list" class="memory-use-list" aria-live="polite"></div>'+
@@ -574,6 +661,7 @@
     usedEl=document.getElementById('memory-use-list');
     statusEl=document.getElementById('memory-status');
     receiptFilterEl=document.getElementById('memory-receipt-filter-status');
+    receiptActionsEl=document.getElementById('memory-receipt-filter-actions');
     document.getElementById('memory-save')?.addEventListener('click',saveInput);
     document.getElementById('memory-sync')?.addEventListener('click',syncAll);
     document.getElementById('memory-refresh')?.addEventListener('click',loadBackendMemory);
