@@ -227,14 +227,15 @@ Updated: 2026-05-23
 - D233 is now beta: managed backend commit `df9fefb` adds protected `/context/corrections` list/sync/undo routes, metadata-only owner-scoped storage, portable data coverage, OpenAPI/route docs and tests that reject raw prompts, raw responses, transcripts and secrets.
 - D234 is now beta: public UI loads a protected correction sync handoff, previews sanitized correction metadata, checks active backend `/status` for `context.corrections`, posts only allowed metadata to `/context/corrections`, supports keep-local/defer status and keeps session tokens out of localStorage.
 - D235 is now beta: backend commit `8b61243` and public UI now expose protected `/context/corrections/review`, owner-safe memory/knowledge/include-undone filters, prioritized raw-content-free review items and safe panel handoff actions.
-- D236 is now next: turn correction review items into explicit remediation plans for memory scope, knowledge collection split, undo/action follow-through and context policy tuning without hidden destructive execution.
+- D236 is now beta: backend commit `5d44915` and public UI now create explicit non-executing correction remediation plan drafts from review items, with local approve/defer notes, plan steps and `execution_allowed:false`.
+- D237 is now next: add protected apply gates for approved memory/knowledge remediation steps with audit, rollback hints and no public frontend authority.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D236` correction remediation plan handoff.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D237` correction remediation execution gates.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

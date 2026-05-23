@@ -5,6 +5,7 @@
   const CORRECTION_PREFIX='mimir-context-corrections-v1:';
   const SYNC_PREFIX='mimir-context-correction-sync-v1:';
   const REVIEW_PREFIX='mimir-context-correction-review-v1:';
+  const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -13,6 +14,7 @@
   function correctionKey(){return CORRECTION_PREFIX+workspaceId();}
   function syncKey(){return SYNC_PREFIX+workspaceId();}
   function reviewKey(){return REVIEW_PREFIX+workspaceId();}
+  function planKey(){return PLAN_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -65,6 +67,26 @@
   }
   function readReviewState(){
     const value=readJson(reviewKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writePlanState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      execution_allowed:false,
+      ...value
+    };
+    try{localStorage.setItem(planKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-plan-updated',{detail:state}));
+    return state;
+  }
+  function readPlanState(){
+    const value=readJson(planKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -239,6 +261,66 @@
       return state;
     }
   }
+  async function createRemediationPlan(filters={}){
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writePlanState({status:'needs-backend',message:'Choose an active protected backend before creating a remediation plan.',plan:null});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      limit:filters.limit||5,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false
+    };
+    if(filters.correction_id)body.correction_id=cleanString(filters.correction_id,120);
+    if(filters.target&&filters.target!=='all')body.target=cleanString(filters.target,40);
+    if(filters.action&&filters.action!=='all')body.action=cleanString(filters.action,60);
+    if(filters.include_undone===true)body.include_undone=true;
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-plans'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const plan=response?.data||null;
+      const stepCount=Array.isArray(plan?.steps)?plan.steps.length:0;
+      const state=writePlanState({
+        status:'draft',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        plan,
+        message:'Draft remediation plan created with '+stepCount+' explicit step'+(stepCount===1?'':'s')+'. Execution remains blocked.'
+      });
+      render();
+      return state;
+    }catch(error){
+      const state=writePlanState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        plan:null,
+        message:api.friendlyError?.(error)||error.message||'Could not create remediation plan.'
+      });
+      render();
+      return state;
+    }
+  }
+  function approvePlan(){
+    const state=readPlanState();
+    if(!state?.plan)return;
+    writePlanState({...state,status:'approved-local',message:'Plan approval note stored locally. Backend execution is still disabled until an explicit apply route exists.'});
+    render();
+  }
+  function deferPlan(){
+    const state=readPlanState();
+    writePlanState({...state,status:'deferred',message:'Remediation plan deferred. No backend change or paid route was started.'});
+    render();
+  }
   function deferSync(){
     writeSyncState({status:'deferred',message:'Correction trails remain browser-local. You can sync later when a protected backend is active.',event_count:syncPreview().length});
     render();
@@ -284,10 +366,31 @@
           '<div><strong>'+safe((item.target||'context')+' / '+(item.action||'correction'))+'</strong><small>priority '+safe(item.review_priority||0)+' / '+safe(item.id||'metadata')+'</small></div>'+
           '<p>'+safe(item.review_reason||'Correction metadata is ready for review.')+'</p>'+
           '<small>'+safe((Array.isArray(item.next_actions)?item.next_actions:[]).map((action)=>action.label).join(' / ')||'Open the related MMIR panel and review manually.')+'</small>'+
-          '<button type="button" data-correction-review="open" data-review-target="'+safe(item.target||'context')+'">Open '+safe(item.target||'context')+'</button>'+
+          '<div class="context-correction-review-row-actions"><button type="button" data-correction-review="open" data-review-target="'+safe(item.target||'context')+'">Open '+safe(item.target||'context')+'</button><button type="button" data-correction-plan="create" data-correction-id="'+safe(item.id||'')+'">Plan repair</button></div>'+
         '</article>'
       ).join(''):'<article><div><strong>No protected review queue loaded</strong><small>Sync metadata, then load review.</small></div><p>The public client only renders backend-owned metadata.</p></article>')+'</div>'+
       '<small class="context-correction-review-policy">public_frontend_authority:false / no_paid_routes_started:true / raw_prompt_stored:false / raw_response_stored:false / provider_secrets_stored:false</small>'+
+    '</div>';
+  }
+  function remediationPlanHtml(){
+    const state=readPlanState();
+    const plan=state?.plan&&typeof state.plan==='object'?state.plan:null;
+    const steps=Array.isArray(plan?.steps)?plan.steps.slice(0,6):[];
+    const status=state?.status||'idle';
+    return '<div class="context-correction-plan-panel" data-state="'+safe(status)+'">'+
+      '<div><p class="eyebrow">Remediation plan</p><h4>'+safe(plan?.status?('Plan '+plan.status):'No draft plan yet')+'</h4>'+
+      '<small>'+safe(state?.message||'Create an explicit repair plan from the protected review queue. Plans do not execute changes from GitHub Pages.')+'</small></div>'+
+      '<div class="context-correction-plan-actions">'+
+        '<button type="button" data-correction-plan="create" data-target-filter="all">Plan all</button>'+
+        '<button type="button" data-correction-plan="create" data-target-filter="memory">Plan memory</button>'+
+        '<button type="button" data-correction-plan="create" data-target-filter="knowledge">Plan knowledge</button>'+
+        '<button type="button" data-correction-plan="approve" '+(!plan?'disabled':'')+'>Approve note</button>'+
+        '<button type="button" data-correction-plan="defer">Defer</button>'+
+      '</div>'+
+      '<div class="context-correction-plan-steps">'+(steps.length?steps.map((step)=>
+        '<article><strong>'+safe(step.title||step.id)+'</strong><p>'+safe(step.detail||'Review this step manually before any mutation.')+'</p><small>target:'+safe(step.target||'context')+' / execution_allowed:'+safe(Boolean(step.execution_allowed))+' / confirmation:'+safe(Boolean(step.requires_confirmation))+'</small></article>'
+      ).join(''):'<article><strong>No plan steps</strong><p>Create a draft plan after loading correction review items.</p><small>execution_allowed:false / destructive_execution_allowed:false</small></article>')+'</div>'+
+      '<small class="context-correction-review-policy">execution_allowed:false / destructive_execution_allowed:false / automatic_mutation_allowed:false / public_frontend_authority:false</small>'+
     '</div>';
   }
   function surfaceHtml(surface){
@@ -305,6 +408,7 @@
         '<article><strong>'+safe(event.target+' '+event.action)+'</strong><small>'+safe(event.source_count)+' source(s) / '+safe(event.undo.length)+' undo step(s) / '+safe(event.id)+'</small></article>'
       ).join(''):'<article><strong>No local correction metadata</strong><small>Use Memory or Knowledge source correction actions first.</small></article>')+'</div>'+
       reviewQueueHtml()+
+      remediationPlanHtml()+
       '<div class="context-correction-sync-actions">'+
         '<button type="button" data-correction-sync="check">Check backend</button>'+
         '<button type="button" data-correction-sync="sync" '+(!events.length?'disabled':'')+'>Sync metadata</button>'+
@@ -355,10 +459,24 @@
     }
     if(action==='open')openReviewTarget(button.dataset.reviewTarget||'context');
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-plan]');
+    if(!button)return;
+    const action=button.dataset.correctionPlan;
+    if(action==='create'){
+      createRemediationPlan({
+        correction_id:button.dataset.correctionId||'',
+        target:button.dataset.targetFilter||'all',
+        limit:button.dataset.correctionId?1:5
+      });
+    }
+    if(action==='approve')approvePlan();
+    if(action==='defer')deferPlan();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,readSyncState,readReviewState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,readSyncState,readReviewState,readPlanState};
 })();

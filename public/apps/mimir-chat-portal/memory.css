@@ -286,8 +286,63 @@
   min-height: 30px;
 }
 
+.context-correction-review-row-actions,
+.context-correction-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .context-correction-review-policy {
   color: #64748b;
+}
+
+.context-correction-plan-panel {
+  display: grid;
+  gap: 0.6rem;
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f8fbff;
+}
+
+.context-correction-plan-panel[data-state="draft"],
+.context-correction-plan-panel[data-state="approved-local"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-plan-panel[data-state="error"],
+.context-correction-plan-panel[data-state="needs-backend"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-plan-panel h4,
+.context-correction-plan-panel p {
+  margin: 0;
+}
+
+.context-correction-plan-actions button {
+  min-height: 32px;
+  padding: 0.4rem 0.65rem;
+}
+
+.context-correction-plan-steps {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.context-correction-plan-steps article {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #fff;
+}
+
+.context-correction-plan-steps strong,
+.context-correction-plan-steps small {
+  display: block;
 }
 
 .memory-panel textarea:focus-visible,

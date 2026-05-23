@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T23:31:16.706Z",
+  "updated_at": "2026-05-23T23:50:01.466Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 236,
+    "total": 237,
     "done": 51,
-    "beta": 160,
+    "beta": 161,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -2915,6 +2915,117 @@
       "reason": "After owners can inspect review items, MMIR should generate explicit repair plans for memory scope, knowledge collection split and undo/remediation actions."
     }
   },
+  "correction_remediation_plan_report": {
+    "title": "Correction Remediation Plan Handoff",
+    "task": "D236",
+    "status": "beta",
+    "backend_commit": "5d44915",
+    "principle": "Correction remediation must be explicit, reversible and approval-gated. Public UI may request and display plan drafts, but it must not execute hidden mutations.",
+    "public_repo_rule": "GitHub Pages may store remediation draft metadata and local approval notes only; it must never store raw prompts, raw responses, transcripts, provider keys, session tokens or document text.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-plans",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Create non-executing remediation plan drafts for owner-scoped correction review items."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "review_state": "mimir-context-correction-review-v1:{workspace}",
+      "plan_state": "mimir-context-correction-remediation-plan-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_contract": {
+      "panel": ".context-correction-plan-panel",
+      "actions": ".context-correction-plan-actions",
+      "steps": ".context-correction-plan-steps",
+      "create_selector": "[data-correction-plan=\"create\"]",
+      "approve_selector": "[data-correction-plan=\"approve\"]",
+      "defer_selector": "[data-correction-plan=\"defer\"]"
+    },
+    "plan_policy": {
+      "execution_allowed": false,
+      "destructive_execution_allowed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "no_paid_routes_started": true,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "provider_secrets_stored": false
+    },
+    "safe_steps": [
+      "Inspect receipt metadata",
+      "Review memory scope and expiry",
+      "Review knowledge source health",
+      "Plan knowledge collection split",
+      "Tune context source policy",
+      "Prepare undo follow-through"
+    ],
+    "blocked_fields": [
+      "prompt",
+      "raw_prompt",
+      "response",
+      "raw_response",
+      "messages",
+      "transcript",
+      "api_key",
+      "access_token",
+      "refresh_token",
+      "secret",
+      "document_text"
+    ],
+    "scenarios": [
+      {
+        "id": "plan-single-review-item",
+        "status": "ready",
+        "expected": "Users can create a draft plan from one protected review item.",
+        "selector": "[data-correction-plan=\"create\"][data-correction-id]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "execution_allowed": false
+      },
+      {
+        "id": "plan-memory",
+        "status": "ready",
+        "expected": "Users can ask for a memory remediation plan without executing memory edits.",
+        "selector": "[data-correction-plan=\"create\"][data-target-filter=\"memory\"]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "execution_allowed": false
+      },
+      {
+        "id": "plan-knowledge",
+        "status": "ready",
+        "expected": "Users can ask for a knowledge remediation plan without splitting or re-enabling collections automatically.",
+        "selector": "[data-correction-plan=\"create\"][data-target-filter=\"knowledge\"]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "execution_allowed": false
+      },
+      {
+        "id": "approve-or-defer-note",
+        "status": "ready",
+        "expected": "Approve and defer controls only store local notes; execution remains blocked.",
+        "selector": "[data-correction-plan=\"approve\"], [data-correction-plan=\"defer\"]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "execution_allowed": false
+      }
+    ],
+    "next": {
+      "task": "D237",
+      "label": "Correction remediation execution gates",
+      "reason": "After draft plans exist, MMIR needs protected apply gates for specific approved memory/knowledge changes with audit and rollback."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2965,7 +3076,7 @@
     }
   ],
   "next_queue": [
-    "D236"
+    "D237"
   ],
   "watchlist": [
     "D082",
@@ -6507,9 +6618,24 @@
       "best_practice": "Review queues become useful only when they produce concrete, reversible repair plans",
       "done_when": "Owners can generate, inspect, approve or defer safe correction remediation plans with audit metadata and no raw prompt/response leakage",
       "covers": "backend, frontend, memory, knowledge, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now create explicit non-executing correction remediation plans from review items, with local approve/defer notes and execution_allowed:false safety gates.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D237",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Correction remediation execution gates",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add protected apply gates for approved remediation steps such as memory scope changes, knowledge split proposals and undo follow-through, with explicit confirmation and rollback metadata",
+      "best_practice": "Plans must remain useful without becoming hidden automation",
+      "done_when": "Owners can apply one approved remediation step at a time through protected routes with audit, rollback hints and no public frontend authority",
+      "covers": "backend, frontend, memory, knowledge, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: turn correction review items into explicit remediation plans for memory scope, knowledge collection split and undo/action follow-through.",
+      "evidence": "Next activation slice: add protected apply gates for approved memory/knowledge remediation steps with audit and rollback.",
       "estimate": "0.5-2d"
     }
   ]

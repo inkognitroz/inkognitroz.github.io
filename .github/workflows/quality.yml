@@ -211,6 +211,9 @@ jobs:
       - name: Smoke-check protected correction review queue
         run: node scripts/smoke-check-protected-correction-review-queue.js
 
+      - name: Smoke-check correction remediation plan
+        run: node scripts/smoke-check-correction-remediation-plan.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 
