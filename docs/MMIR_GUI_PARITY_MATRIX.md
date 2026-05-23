@@ -42,6 +42,7 @@ Current priority after the matrix is:
 32. D159 share recipient onboarding handoff.
 33. D160 one-click team share packet.
 34. D161 in-memory session backend profile.
+35. D162 team share activity and revocation cues.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -75,6 +76,7 @@ D157 is now beta across frontend/backend: protected shares can be scoped to orga
 D158 is now beta across frontend/backend: share owners can inspect audience summaries, viewer decisions, next-safe actions and recent share-specific audit state from Safe Sharing.
 D159 is now beta across frontend/backend: recipients can accept an invite/session handoff, open the intended share only when policy allows it, and see session tokens once without public storage.
 D160 is now beta in the public UI: owners can create team-share packets that copy non-secret share/invite details, prefill recipient fields and keep one-time codes separate.
-D161 is next: returned MMIR session tokens should be activatable for the current tab only, so follow-on protected backend calls work without localStorage persistence.
+D161 is now beta in the public UI: returned MMIR session tokens can be activated for current-tab protected backend calls without localStorage or sessionStorage persistence.
+D162 is next: owners and recipients need clearer share activity, stale-session and revocation cues after the first handoff.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

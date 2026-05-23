@@ -158,6 +158,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'sharing-create-team-packet', 'D160 needs team share packet creation control.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'invite_code_included:false', 'D160 team share packets must exclude one-time invite codes.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-team-packet', 'D160 needs team share packet styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'setManagedSessionToken', 'D161 needs in-memory managed session activation.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'), 'x-mmir-session-token', 'D161 needs protected backend session token headers.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'sharing-activate-recipient-token', 'D161 needs recipient session activation control.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), 'identity-activate-session', 'D161 needs identity session activation control.');
 requireText(mmirPath, './apps/mimir-chat-portal/identity-org.js', 'D155 needs identity/organization UI loaded on the product page.');
 requireText(mmirPath, './apps/mimir-chat-portal/identity-org.css', 'D155 needs identity/organization styling loaded on the product page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/me', 'D155 needs protected identity principal route support.');
@@ -357,6 +361,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'voice settings', 'Privacy inventory must include browser-local voice settings.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'runtime settings', 'Privacy inventory must include browser-local runtime settings.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'MMIR managed session token', 'D161 privacy inventory must disclose current-tab managed session tokens.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, session tokens, invite codes, provider keys and backend data.');

@@ -3,6 +3,7 @@
   const ACTIVE_KEY='mimir-chat-active-backend';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const PAIRING_CODE_PREFIX='mimir-local-node-pairing-code:';
+  const managedSessionTokens=new Map();
 
   function readProfiles(){
     try{
@@ -40,6 +41,48 @@
 
   function pairingCodeKey(url){
     return PAIRING_CODE_PREFIX+cleanUrl(url);
+  }
+
+  function managedSessionFor(url){
+    const key=cleanUrl(url);
+    const record=managedSessionTokens.get(key);
+    if(!record)return null;
+    return {
+      url:key,
+      source:record.source||'manual',
+      created_at:record.created_at,
+      expires_at:record.expires_at||'',
+      token_available:Boolean(record.token),
+      public_frontend_persisted:false
+    };
+  }
+
+  function activeManagedSession(){
+    const profile=activeProfile();
+    const url=cleanUrl(profile?.url);
+    return url?managedSessionFor(url):null;
+  }
+
+  function setManagedSessionToken(url,token,meta={}){
+    const key=cleanUrl(url);
+    const value=String(token||'').trim();
+    if(!key||!value)return null;
+    managedSessionTokens.set(key,{
+      token:value,
+      source:String(meta.source||'manual').slice(0,80),
+      created_at:new Date().toISOString(),
+      expires_at:String(meta.expires_at||'').slice(0,80)
+    });
+    window.dispatchEvent(new CustomEvent('mmir-managed-session-updated',{detail:{url:key,active:true,public_frontend_persisted:false}}));
+    return managedSessionFor(key);
+  }
+
+  function clearManagedSessionToken(url){
+    const key=cleanUrl(url||activeProfile()?.url);
+    if(!key)return false;
+    const removed=managedSessionTokens.delete(key);
+    window.dispatchEvent(new CustomEvent('mmir-managed-session-updated',{detail:{url:key,active:false,public_frontend_persisted:false}}));
+    return removed;
   }
 
   function isRemotePairingCodeRequired(error){
@@ -126,6 +169,8 @@
   function authHeaders(token){
     const headers={'Content-Type':'application/json'};
     if(token)headers['x-mmir-local-token']=token;
+    const session=managedSessionTokens.get(cleanUrl(activeProfile()?.url));
+    if(session?.token)headers['x-mmir-session-token']=session.token;
     return headers;
   }
 
@@ -151,6 +196,10 @@
     isLocal,
     tokenKey,
     pairingCodeKey,
+    managedSessionFor,
+    activeManagedSession,
+    setManagedSessionToken,
+    clearManagedSessionToken,
     fetchJson,
     pairIfNeeded,
     authHeaders,

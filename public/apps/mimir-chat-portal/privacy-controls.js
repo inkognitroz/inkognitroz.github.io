@@ -34,6 +34,7 @@
   const VOICE_SETTINGS_KEY='mimir-voice-settings-v1';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const PAIRING_CODE_PREFIX='mimir-local-node-pairing-code:';
+  const api=window.MimirApiClient;
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   let statusEl=null;
   let summaryEl=null;
@@ -269,6 +270,7 @@
       ...keysByPrefix(session,PAIRING_CODE_PREFIX)
     ];
     const transientSessionKeys=keysByExact(session,[GROWTH_SESSION_KEY]);
+    const managedSession=api?.activeManagedSession?.();
 
     return [
       {
@@ -480,6 +482,16 @@
         retention:'Temporary for this browser tab/session.',
         action:'Use Clear pairing tokens after changing trusted node access.',
         keys:pairingKeys
+      },
+      {
+        id:'managed-session-token',
+        label:'MMIR managed session token',
+        location:'Current tab memory only',
+        count:managedSession?.token_available?1:0,
+        size:'Not persisted',
+        retention:'Only until page refresh, tab close or explicit clear.',
+        action:'Activate from Identity or Safe Sharing when needed; clear from Safe Sharing. It is never exported.',
+        keys:[]
       },
       {
         id:'session-state',
@@ -745,6 +757,7 @@
   window.addEventListener('mmir-knowledge-collections-updated',refresh);
   window.addEventListener('mmir-connector-plans-updated',refresh);
   window.addEventListener('mmir-backend-profiles-updated',refresh);
+  window.addEventListener('mmir-managed-session-updated',refresh);
   window.addEventListener('mmir-active-model-changed',refresh);
   window.addEventListener('mimir-growth-event',refresh);
   window.addEventListener('storage',refresh);

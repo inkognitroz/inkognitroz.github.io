@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d160-20260523-team-share-packet';
+const CACHE_NAME='mmir-pwa-d161-20260523-memory-session-profile';
 const SHELL_ASSETS=[
   './',
   './index.html',

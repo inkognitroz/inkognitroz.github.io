@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:06:54.900Z",
+  "updated_at": "2026-05-23T10:16:13.614Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 161,
+    "total": 162,
     "done": 51,
-    "beta": 85,
+    "beta": 86,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -710,18 +710,18 @@
         "phase": "Identity/Security",
         "total": 2,
         "done": 0,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
       },
       {
         "phase": "Sharing/Security",
-        "total": 4,
+        "total": 5,
         "done": 0,
         "beta": 4,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -778,7 +778,7 @@
     }
   ],
   "next_queue": [
-    "D161"
+    "D162"
   ],
   "watchlist": [
     "D082",
@@ -3195,9 +3195,24 @@
       "best_practice": "Team recipients need follow-on protected actions without pasting session tokens repeatedly or storing them permanently",
       "done_when": "User can activate a returned session token for the current tab, call protected routes, clear it, and see that it is never exported or persisted",
       "covers": "team adoption",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Returned MMIR session tokens can now be activated for current-tab protected backend calls through api-client memory only, with clear actions in Identity and Safe Sharing plus privacy inventory disclosure.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D162",
+      "phase": "Sharing/Security",
+      "priority": "P1",
+      "work_package": "Team share activity and revocation cues",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add clearer owner/recipient activity indicators for share reads, handoffs, active sessions and revocation state using existing audit and identity data",
+      "best_practice": "Team sharing must remain understandable after the first handoff, especially when revoking access",
+      "done_when": "Owner can see recent handoff/read state next to a share, recipient can see when a share is revoked or session is stale, and next action is explicit",
+      "covers": "team governance",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next identity/security slice: allow returned MMIR session tokens to be activated in current-tab memory for protected backend calls without localStorage persistence.",
+      "evidence": "Next sharing/security slice: make share activity, handoff/read state and revocation cues more obvious for owners and recipients using protected audit/identity data.",
       "estimate": "0.5-2d"
     }
   ]

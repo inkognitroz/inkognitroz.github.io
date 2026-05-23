@@ -152,14 +152,15 @@ Updated: 2026-05-23
 - D158 is now beta across frontend/backend: share access review exposes protected audience summaries, viewer decisions, next-safe actions and recent share-specific audit state inside Safe Sharing.
 - D159 is now beta across frontend/backend: recipient handoff accepts invite/session onboarding, opens the intended protected share only after backend policy allows it and shows session tokens once without public storage.
 - D160 is now beta in the public UI: owner-side team-share packets create invite codes, copy non-secret share/invite details, prefill recipient handoff fields and keep one-time codes separate from packet text.
-- D161 is now the next identity/security slice: returned MMIR session tokens should be activatable in current-tab memory for protected backend calls without localStorage persistence.
+- D161 is now beta in the public UI: returned MMIR session tokens can be activated for current-tab protected backend calls through api-client memory only, with Identity/Safe Sharing controls and privacy inventory disclosure.
+- D162 is now the next sharing/security slice: add clearer owner/recipient activity, stale-session and revocation cues around team shares.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D161` in-memory session backend profile.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D162` team share activity and revocation cues.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

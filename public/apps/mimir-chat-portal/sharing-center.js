@@ -341,6 +341,7 @@
     const error=payload.error||null;
     const token=payload.token||'';
     const actions=array(handoff.next_actions);
+    const activeSession=api?.activeManagedSession?.();
     recipientEl.innerHTML=''+
       '<article class="sharing-recipient-result" data-share-recipient="recipient-handoff">'+
         '<header><div><strong>Recipient handoff</strong><span>'+safe(handoff.share_id||'Protected share')+'</span></div><small>'+safe(handoff.status||'ready')+'</small></header>'+
@@ -351,11 +352,15 @@
           '<div><dt>Organization</dt><dd>'+safe(handoff.org?.name||handoff.accepted_invite?.org_id||'not confirmed')+'</dd><small>'+safe(handoff.member?.role?('role '+handoff.member.role):'role decided by backend')+'</small></div>'+
           '<div><dt>Share</dt><dd>'+safe(handoff.share?.status||'not opened')+'</dd><small>'+safe(handoff.access_review?.audience_summary?.visibility||'server-side policy')+'</small></div>'+
         '</div>'+
-        (token?'<section class="sharing-one-time"><div><span>Shown once</span><strong>Session token</strong><small>Use only with a protected backend profile. This public page does not store it.</small></div><input id="sharing-recipient-token" type="text" readonly value="'+safe(token)+'" /><div class="sharing-backend-actions"><button id="sharing-copy-recipient-token" type="button">Copy token</button><button id="sharing-hide-recipient-token" type="button">Hide</button></div></section>':'')+
+        '<p class="dashboard-note">Current-tab managed session: '+safe(activeSession?.token_available?'active in memory only':'not active')+'</p>'+
+        (token?'<section class="sharing-one-time"><div><span>Shown once</span><strong>Session token</strong><small>Use only with a protected backend profile. This public page does not store it in localStorage or sessionStorage.</small></div><input id="sharing-recipient-token" type="text" readonly value="'+safe(token)+'" /><div class="sharing-backend-actions"><button id="sharing-copy-recipient-token" type="button">Copy token</button><button id="sharing-activate-recipient-token" type="button">Activate for this tab</button><button id="sharing-hide-recipient-token" type="button">Hide</button></div></section>':'')+
+        '<div class="sharing-backend-actions"><button id="sharing-clear-tab-session" type="button">Clear tab session</button></div>'+
         '<section class="sharing-review-actions"><strong>Next safe action</strong><ul>'+actions.map(action=>'<li>'+safe(action)+'</li>').join('')+'</ul></section>'+
       '</article>';
     document.getElementById('sharing-copy-recipient-token')?.addEventListener('click',copyRecipientToken);
+    document.getElementById('sharing-activate-recipient-token')?.addEventListener('click',activateRecipientSession);
     document.getElementById('sharing-hide-recipient-token')?.addEventListener('click',hideRecipientToken);
+    document.getElementById('sharing-clear-tab-session')?.addEventListener('click',clearRecipientSession);
   }
 
   function packetText(packet){
@@ -619,6 +624,26 @@
     }
   }
 
+  function activateRecipientSession(){
+    const connection=activeConnection();
+    const value=document.getElementById('sharing-recipient-token')?.value||currentRecipientHandoff?.token||'';
+    if(!connection){setStatus('Activate a protected backend profile before using this session token.','error');return;}
+    if(!value){setStatus('No one-time session token is visible.','error');return;}
+    const session=api?.setManagedSessionToken?.(connection.url,value,{
+      source:'share-recipient-handoff',
+      expires_at:currentRecipientHandoff?.handoff?.session?.expires_at||''
+    });
+    renderRecipientHandoff(currentRecipientHandoff);
+    setStatus(session?'Session token activated for this tab only. It was not persisted.':'Session token could not be activated.','ready');
+  }
+
+  function clearRecipientSession(){
+    const connection=activeConnection();
+    const removed=api?.clearManagedSessionToken?.(connection?.url);
+    renderRecipientHandoff(currentRecipientHandoff);
+    setStatus(removed?'Current-tab managed session cleared.':'No current-tab managed session was active.','ready');
+  }
+
   function hideRecipientToken(){
     if(currentRecipientHandoff)currentRecipientHandoff.token='';
     renderRecipientHandoff(currentRecipientHandoff);
@@ -764,5 +789,6 @@
   window.addEventListener('mmir-conversations-updated',renderOptions);
   window.addEventListener('mmir-artifacts-updated',renderOptions);
   window.addEventListener('mmir-knowledge-collections-updated',renderOptions);
+  window.addEventListener('mmir-managed-session-updated',()=>renderRecipientHandoff(currentRecipientHandoff));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();

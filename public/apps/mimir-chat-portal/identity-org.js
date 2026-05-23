@@ -106,10 +106,11 @@
   }
   function credentialPanel(){
     if(!lastOneTimeCredential)return '';
+    const sessionAction=lastOneTimeCredential.label==='Session token'?'<button id="identity-activate-session" type="button">Activate for this tab</button>':'';
     return '<article class="identity-one-time" aria-live="polite">'+
       '<div><span>Shown once</span><strong>'+escapeHtml(lastOneTimeCredential.label)+'</strong><small>'+escapeHtml(lastOneTimeCredential.detail||'Copy now. It is not stored in the browser after refresh.').replace(/\n/g,'<br>')+'</small></div>'+
       '<input id="identity-one-time-value" type="text" readonly value="'+escapeHtml(lastOneTimeCredential.value||'')+'" />'+
-      '<div class="identity-inline-actions"><button id="identity-copy-credential" type="button">Copy</button><button id="identity-clear-credential" type="button">Hide</button></div>'+
+      '<div class="identity-inline-actions"><button id="identity-copy-credential" type="button">Copy</button>'+sessionAction+'<button id="identity-clear-credential" type="button">Hide</button></div>'+
     '</article>';
   }
   function updateOrgSelect(){
@@ -360,6 +361,14 @@
     lastOneTimeCredential=null;
     refreshIdentity();
   }
+  function activateCredentialSession(){
+    const connection=activeConnection();
+    const value=document.getElementById('identity-one-time-value')?.value||'';
+    if(!connection){setStatus('Activate a protected backend profile before using this session token.','error');return;}
+    if(!value){setStatus('No one-time session token is visible.','error');return;}
+    const session=api?.setManagedSessionToken?.(connection.url,value,{source:'identity-session-token'});
+    setStatus(session?'Session token activated for this tab only. It was not persisted.':'Session token could not be activated.','ready');
+  }
   function useInvite(id){
     const field=document.getElementById('identity-accept-invite-id');
     if(field)field.value=id||'';
@@ -382,6 +391,7 @@
     document.getElementById('identity-accept-invite')?.addEventListener('click',acceptInvite);
     document.getElementById('identity-open-share')?.addEventListener('click',openSharing);
     document.getElementById('identity-copy-credential')?.addEventListener('click',copyCredential);
+    document.getElementById('identity-activate-session')?.addEventListener('click',activateCredentialSession);
     document.getElementById('identity-clear-credential')?.addEventListener('click',clearCredential);
     rootEl?.querySelectorAll('[data-identity-action]').forEach((button)=>{
       button.addEventListener('click',()=>{

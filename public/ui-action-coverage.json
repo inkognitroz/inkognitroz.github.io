@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T11:15:00+02:00",
+  "updated_at": "2026-05-23T11:35:00+02:00",
   "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
   "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
   "groups": [
@@ -152,9 +152,9 @@
       "id": "safe-sharing",
       "surface": "Safe Sharing",
       "status": "beta",
-      "user_result": "Users can build redacted browser-local share previews, save/load/revoke protected backend shares, choose organization audience/minimum role, review audience_summary plus share audit state, accept invite/session recipient handoff, and create owner-side team share packets without storing codes or session tokens.",
-      "selectors": ["#sharing-center", "#sharing-type", "#sharing-item", "#sharing-visibility", "#sharing-org-id", "#sharing-min-role", "#sharing-build", "#sharing-copy-text", "#sharing-copy-link", "#sharing-save-backend", "#sharing-load-backend", "#sharing-access-review", "#sharing-recipient-share-id", "#sharing-recipient-invite-id", "#sharing-recipient-code", "#sharing-recipient-open", "#sharing-recipient-handoff", "#sharing-team-share-id", "#sharing-team-org-id", "#sharing-create-team-packet", "#sharing-team-packet", "#sharing-export", "#sharing-clear-hash"],
-      "evidence": ["mmir.safe_share_bundle", "redactShareSecrets", "MAX_LINK_CHARS", "decodeShareHash", "server_side_enforcement_required:true", "organization_membership_required", "audience_summary", "access-review", "recipient-handoff", "session_token_returned_once", "mmir.team_share_packet", "invite_code_included:false", "Team packet", "Review access", "Accept and open", "mimir-share-bundles-v1:", "/shares", "revokeProtectedShare"]
+      "user_result": "Users can build redacted browser-local share previews, save/load/revoke protected backend shares, choose organization audience/minimum role, review audience_summary plus share audit state, accept invite/session recipient handoff, create owner-side team share packets, and activate returned session tokens in current-tab memory only.",
+      "selectors": ["#sharing-center", "#sharing-type", "#sharing-item", "#sharing-visibility", "#sharing-org-id", "#sharing-min-role", "#sharing-build", "#sharing-copy-text", "#sharing-copy-link", "#sharing-save-backend", "#sharing-load-backend", "#sharing-access-review", "#sharing-recipient-share-id", "#sharing-recipient-invite-id", "#sharing-recipient-code", "#sharing-recipient-open", "#sharing-recipient-handoff", "#sharing-activate-recipient-token", "#sharing-clear-tab-session", "#sharing-team-share-id", "#sharing-team-org-id", "#sharing-create-team-packet", "#sharing-team-packet", "#sharing-export", "#sharing-clear-hash"],
+      "evidence": ["mmir.safe_share_bundle", "redactShareSecrets", "MAX_LINK_CHARS", "decodeShareHash", "server_side_enforcement_required:true", "organization_membership_required", "audience_summary", "access-review", "recipient-handoff", "session_token_returned_once", "mmir.team_share_packet", "invite_code_included:false", "setManagedSessionToken", "clearManagedSessionToken", "public_frontend_persisted:false", "Team packet", "Review access", "Accept and open", "mimir-share-bundles-v1:", "/shares", "revokeProtectedShare"]
     },
     {
       "id": "code-sandbox-preflight",
@@ -216,9 +216,9 @@
       "id": "identity-orgs",
       "surface": "Identity / Organizations",
       "status": "beta",
-      "user_result": "Owner can load protected identity, create a free organization, save/remove members, create/revoke short-lived session tokens, create/accept/revoke invites and keep owner/admin role changes behind backend enforcement.",
-      "selectors": ["#identity-orgs", "#identity-refresh", "#identity-create-org", "#identity-add-member", "#identity-remove-member", "#identity-disable-org", "#identity-create-session", "#identity-create-invite", "#identity-accept-invite", "#identity-open-share"],
-      "evidence": ["/identity/me", "/identity/orgs", "/identity/sessions", "/identity/invites", "owner/admin", "Shown once", "Protected identity, sessions and invites loaded"]
+      "user_result": "Owner can load protected identity, create a free organization, save/remove members, create/revoke short-lived session tokens, activate a returned session for the current tab, create/accept/revoke invites and keep owner/admin role changes behind backend enforcement.",
+      "selectors": ["#identity-orgs", "#identity-refresh", "#identity-create-org", "#identity-add-member", "#identity-remove-member", "#identity-disable-org", "#identity-create-session", "#identity-activate-session", "#identity-create-invite", "#identity-accept-invite", "#identity-open-share"],
+      "evidence": ["/identity/me", "/identity/orgs", "/identity/sessions", "/identity/invites", "owner/admin", "Shown once", "setManagedSessionToken", "Protected identity, sessions and invites loaded"]
     },
     {
       "id": "runtime-settings",

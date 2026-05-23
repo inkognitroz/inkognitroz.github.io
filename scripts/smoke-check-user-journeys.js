@@ -331,6 +331,10 @@ requireIncludes(files.sharing, 'session_token_returned_once', 'D159 needs one-ti
 requireIncludes(files.sharing, 'mmir.team_share_packet', 'D160 needs owner-side team share packet schema.');
 requireIncludes(files.sharing, 'sharing-create-team-packet', 'D160 needs team share packet creation control.');
 requireIncludes(files.sharing, 'invite_code_included:false', 'D160 team share packets must exclude one-time invite codes.');
+requireIncludes(files.apiClient, 'setManagedSessionToken', 'D161 needs in-memory managed session activation.');
+requireIncludes(files.apiClient, 'x-mmir-session-token', 'D161 needs protected backend session token headers.');
+requireIncludes(files.sharing, 'sharing-activate-recipient-token', 'D161 needs recipient session activation control.');
+requireIncludes(files.identityOrg, 'identity-activate-session', 'D161 needs identity session activation control.');
 requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
@@ -358,6 +362,7 @@ requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 need
 requireIncludes(files.privacyControls, 'Provider keys and cloud credentials', 'J005/D118 must make the public frontend secrecy boundary visible.');
 requireIncludes(files.privacyControls, 'Clear pairing tokens', 'J009/D118 needs a safe way to clear temporary local node pairing tokens.');
 requireIncludes(files.privacyControls, 'Safe share bundles', 'D152 privacy inventory must include browser-local safe share bundles.');
+requireIncludes(files.privacyControls, 'MMIR managed session token', 'D161 privacy inventory must disclose current-tab managed session tokens.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
@@ -398,7 +403,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153', 'D154', 'D155', 'D156', 'D157', 'D158', 'D159', 'D160', 'D161']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153', 'D154', 'D155', 'D156', 'D157', 'D158', 'D159', 'D160', 'D161', 'D162']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }
