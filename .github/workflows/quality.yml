@@ -126,3 +126,6 @@ jobs:
 
       - name: Smoke-check first screen activation closure
         run: node scripts/smoke-check-first-screen-activation-closure.js
+
+      - name: Smoke-check device starter recommendation
+        run: node scripts/smoke-check-device-starter-recommendation.js

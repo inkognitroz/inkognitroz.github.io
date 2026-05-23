@@ -54,6 +54,8 @@ jobs:
         run: node scripts/smoke-check-activation-closure.js
       - name: Smoke check first screen activation closure
         run: node scripts/smoke-check-first-screen-activation-closure.js
+      - name: Smoke check device starter recommendation
+        run: node scripts/smoke-check-device-starter-recommendation.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

@@ -47,7 +47,8 @@ for (const needle of [
   'data-activation-closure-action',
   'Create the free local profile',
   'Connect this device',
-  'Prove one free model',
+  "kind:'install-starter'",
+  "title:'Install '+starter.label",
   'Get the first useful answer',
   'no_paid_routes_started:true / provider_secrets_stored:false',
   'window.MimirBackendProfiles?.ensureFreeLocalProfile?.()',
@@ -83,8 +84,13 @@ if (!d184 || d184.status !== 'beta') {
 }
 
 const d185 = tasks.find((task) => task.seq === 'D185');
-if (!d185 || d185.status !== 'next') {
-  fail('Progress dashboard must expose D185 as the next activation work item.');
+if (!d185 || !['beta', 'next'].includes(d185.status)) {
+  fail('Progress dashboard must expose D185 as beta or next after D184 ships.');
+}
+
+const d186 = tasks.find((task) => task.seq === 'D186');
+if (!d186 || d186.status !== 'next') {
+  fail('Progress dashboard must expose D186 as the next activation work item after D185 ships.');
 }
 
 if (!process.exitCode) {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:33:28.914Z",
+  "updated_at": "2026-05-23T13:40:46.034Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 185,
+    "total": 186,
     "done": 51,
-    "beta": 109,
+    "beta": 110,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -290,8 +290,8 @@
         "phase": "Activation UX",
         "total": 11,
         "done": 4,
-        "beta": 6,
-        "next": 1,
+        "beta": 7,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -758,10 +758,10 @@
       },
       {
         "phase": "Activation QA/UX",
-        "total": 4,
+        "total": 5,
         "done": 0,
         "beta": 4,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1038,7 +1038,7 @@
     }
   ],
   "next_queue": [
-    "D185"
+    "D186"
   ],
   "watchlist": [
     "D082",
@@ -3815,9 +3815,24 @@
       "best_practice": "Users should not need to understand RAM/CPU/GPU before choosing a free model",
       "done_when": "First-screen closure recommends one safe free starter model per device class and links directly to install/model flow",
       "covers": "activation, model UX, device onboarding",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-screen activation closure now recommends one free installable starter model by detected device class and can preselect it in the runtime model flow.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D186",
+      "phase": "Activation QA/UX",
+      "priority": "P0",
+      "work_package": "Recommended starter telemetry",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Record recommended-starter selections as public-safe activation telemetry and show them in progress evidence without storing prompts, responses, provider keys or paid routes",
+      "best_practice": "Owner should know whether users follow the recommended free model path without invasive tracking",
+      "done_when": "Progress Dashboard shows recommended-starter selection events and the first screen emits no-spend telemetry",
+      "covers": "activation, analytics, model UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation UX slice: make the first-screen closure action recommend the best free starter model for the detected device class.",
+      "evidence": "Next activation UX slice: record recommended-starter selections in activation telemetry and progress dashboard evidence without raw prompts or secrets.",
       "estimate": "2-6h"
     }
   ]

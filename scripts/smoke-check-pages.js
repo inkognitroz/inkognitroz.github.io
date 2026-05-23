@@ -451,6 +451,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css
 requireText(join(root, 'scripts', 'smoke-check-first-screen-activation-closure.js'), 'First-screen activation closure smoke check passed.', 'D184 first-screen activation closure strip must have a dedicated smoke harness.');
 requireText(firstImpressionPath, 'renderActivationClosureStrip', 'D184 first screen must render the live activation closure strip.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.activation-closure-strip', 'D184 first-screen activation closure strip needs visible styling.');
+requireText(join(root, 'scripts', 'smoke-check-device-starter-recommendation.js'), 'Device starter recommendation smoke check passed.', 'D185 device-aware starter recommendation must have a dedicated smoke harness.');
+requireText(firstImpressionPath, 'deviceStarterRecommendation', 'D185 first screen must recommend a starter model from detected device class.');
+requireText(firstImpressionPath, 'recommended_starter:', 'D185 first screen must render the recommended starter evidence.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d184-20260523-first-screen-closure';
+const CACHE_NAME='mmir-pwa-d185-20260523-device-starter';
 const SHELL_ASSETS=[
   './',
   './index.html',

@@ -60,10 +60,10 @@
     section.className='activation-cockpit';
     section.setAttribute('aria-label','MMIR activation status');
     section.innerHTML=[
-      '<article id="activation-answer-card" class="activation-card is-checking"><div><span class="activation-label">Answer</span><strong id="activation-answer-state">Checking</strong></div><p id="activation-answer-detail">MMIR is finding the safest free route.</p><button id="activation-chat-now" type="button">Chat now</button></article>',
-      '<article id="activation-local-card" class="activation-card is-checking"><div><span class="activation-label">Local AI</span><strong id="activation-local-state">Local-first</strong></div><p id="activation-local-detail">Connect one local node to unlock private models.</p><button id="activation-connect-local" type="button">Connect local AI</button></article>',
-      '<article id="activation-model-card" class="activation-card is-checking"><div><span class="activation-label">Model</span><strong id="activation-model-state">Selecting</strong></div><p id="activation-model-detail">MMIR is checking live, browser and installable routes.</p><button id="activation-open-models" type="button">Models</button></article>',
-      '<article id="activation-trust-card" class="activation-card is-ready"><div><span class="activation-label">Trust</span><strong id="activation-trust-state">Private</strong></div><p id="activation-trust-detail">Local-first routing stays the default boundary.</p><button id="activation-open-node-dashboard" type="button">Node health</button></article>'
+      '<article id="activation-answer-card" class="activation-card is-checking"><div><span class="activation-label">Answer</span><strong id="activation-answer-state">Checking</strong></div><p id="activation-answer-detail">Finding a safe free route.</p><button id="activation-chat-now" type="button">Chat now</button></article>',
+      '<article id="activation-local-card" class="activation-card is-checking"><div><span class="activation-label">Local AI</span><strong id="activation-local-state">Local-first</strong></div><p id="activation-local-detail">Connect one private node.</p><button id="activation-connect-local" type="button">Connect local AI</button></article>',
+      '<article id="activation-model-card" class="activation-card is-checking"><div><span class="activation-label">Model</span><strong id="activation-model-state">Selecting</strong></div><p id="activation-model-detail">Checking free routes.</p><button id="activation-open-models" type="button">Models</button></article>',
+      '<article id="activation-trust-card" class="activation-card is-ready"><div><span class="activation-label">Trust</span><strong id="activation-trust-state">Private</strong></div><p id="activation-trust-detail">Local-first by default.</p><button id="activation-open-node-dashboard" type="button">Node health</button></article>'
     ].join('');
     instantStart.insertAdjacentElement('afterend',section);
   }
@@ -156,6 +156,32 @@
     return String(proof?.dataset?.state||'idle');
   }
 
+  function starter(device,id,label,model,note){
+    return {device,id,label,model,note};
+  }
+
+  function deviceStarterRecommendation(){
+    const p=String(localConnectorState?.platform||navigator.platform||navigator.userAgent||'').toLowerCase();
+    const a=String(localConnectorState?.arch||navigator.userAgent||'').toLowerCase();
+    const u=String(navigator.userAgent||'').toLowerCase();
+    if(/mobile|android|iphone|ipad/.test(u)){
+      return starter('mobile client','ollama-gemma3-270m','Gemma 3 270M','gemma3:270m','Tiny proof via node/VM.');
+    }
+    if(p.includes('raspberry')||(a.includes('arm')&&p.includes('linux'))){
+      return starter('Raspberry Pi / Linux ARM','ollama-qwen3-06b','Qwen3 0.6B','qwen3:0.6b','ARM edge starter.');
+    }
+    if(p.includes('linux')){
+      return starter('Linux / VM','ollama-qwen3-06b','Qwen3 0.6B','qwen3:0.6b','Small VM starter.');
+    }
+    if(p.includes('mac')){
+      return starter('macOS','ollama-llama32-1b','Llama 3.2 1B','llama3.2:1b','Free Mac starter.');
+    }
+    if(p.includes('win')){
+      return starter('Windows','ollama-llama32-1b','Llama 3.2 1B','llama3.2:1b','Free Windows starter.');
+    }
+    return starter('this device','ollama-gemma3-1b','Gemma 3 1B','gemma3:1b','Free fallback.');
+  }
+
   function clearActivationReplay(){
     try{localStorage.removeItem(ACTIVATION_REPLAY_PREFIX+activeWorkspaceId());}catch(error){}
     window.dispatchEvent(new CustomEvent('mmir-activation-replay-updated',{detail:{cleared:true,workspaceId:activeWorkspaceId()}}));
@@ -166,18 +192,18 @@
     const model=String(resume?.model||'').trim();
     if(status==='verified'){
       const modelCount=Number(resume?.model_count||0);
-      return {state:'verified',title:'Repair verified',detail:modelCount?'Local node is back and '+String(modelCount)+' live model'+(modelCount===1?'':'s')+' are visible.':'Connector is back; MMIR can continue the local path.',action:'Chat now',target:'#mimir-prompt'};
+      return {state:'verified',title:'Repair verified',detail:modelCount?'Node sees '+String(modelCount)+' live model'+(modelCount===1?'':'s')+'.':'Connector is back.',action:'Chat now',target:'#mimir-prompt'};
     }
     if(status==='needs-model'){
-      return {state:'needs-model',title:'Connector is back',detail:'Install or expose one free local model next'+(model?' such as '+model:'')+'. MMIR will verify it automatically.',action:'Open models',target:'#model-library'};
+      return {state:'needs-model',title:'Connector is back',detail:'Install one free model'+(model?' like '+model:'')+'. MMIR verifies it.',action:'Open models',target:'#model-library'};
     }
     if(status==='needs-action'){
-      return {state:'needs-action',title:'Repair still needs attention',detail:String(resume?.note||'MMIR could not verify the local node yet. Continue with the safest repair path.'),action:'Open node health',target:'#node-dashboard'};
+      return {state:'needs-action',title:'Repair still needs attention',detail:String(resume?.note||'MMIR could not verify the node yet.'),action:'Open node health',target:'#node-dashboard'};
     }
     if(status==='checking'){
-      return {state:'checking',title:'Checking repair',detail:'MMIR is verifying connector, runtime and model readiness automatically.',action:'Open local connector',target:'#local-connector'};
+      return {state:'checking',title:'Checking repair',detail:'Verifying connector, runtime and model.',action:'Open local connector',target:'#local-connector'};
     }
-    return {state:'pending',title:'Repair started',detail:'Return here after the installer or repair step. MMIR will continue checking automatically.',action:'Resume repair',target:String(resume?.target||'#node-dashboard')};
+    return {state:'pending',title:'Repair started',detail:'Return after install; MMIR keeps checking.',action:'Resume repair',target:String(resume?.target||'#node-dashboard')};
   }
 
   function ensureRepairResumeStyles(){
@@ -258,7 +284,7 @@
     banner.hidden=false;
     banner.dataset.state=String(replay.state||'demo');
     const target=String(replay.next_target||'#progress-dashboard');
-    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review this simulated activation state.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#progress-dashboard" data-activation-replay-open>Open replay</a></div>';
+    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#progress-dashboard" data-activation-replay-open>Open replay</a></div>';
     banner.querySelector('[data-activation-replay-jump]')?.addEventListener('click',(event)=>{
       if(target.startsWith('#')){
         event.preventDefault();
@@ -280,19 +306,20 @@
   function firstScreenClosureState(){
     const profile=activeProfile();
     const receipt=readFirstChatReceipt();
+    const starter=deviceStarterRecommendation();
     const proofState=runtimeProofState();
     const proofReady=proofState==='ready'||profile?.liveness==='chat-probed'||Boolean(profile?.lastProofModel)||receipt?.status==='success';
     const profileReady=Boolean(profile?.url&&profile?.provider==='local-node');
     const nodeHealth=String(profile?.health||'unknown').toLowerCase();
     const nodeReady=['ready','degraded','testing'].includes(nodeHealth)||proofReady;
     if(!profileReady){
-      return {state:'watch',title:'Create the free local profile',detail:'MMIR can prepare 127.0.0.1 Local Node automatically. Configure later only if needed.',action:'Create local profile',target:'#connect-options',kind:'local-profile'};
+      return {state:'watch',title:'Create the free local profile',detail:'Prepares 127.0.0.1. Starter: '+starter.label+' for '+starter.device+'.',action:'Create local profile',target:'#connect-options',kind:'local-profile',starter};
     }
     if(!nodeReady){
-      return {state:nodeHealth==='offline'?'error':'watch',title:'Connect this device',detail:'Local Node is not proven in this browser yet. Open node health for the one safe next step.',action:'Open node health',target:'#node-dashboard',kind:'node-health'};
+      return {state:nodeHealth==='offline'?'error':'watch',title:'Connect this device',detail:'Node not proven. '+starter.note+' Starter: '+starter.model+'.',action:'Open node health',target:'#node-dashboard',kind:'node-health',starter};
     }
     if(!proofReady){
-      return {state:'watch',title:'Prove one free model',detail:'Run the free live-model proof after node/model setup. Paid providers stay blocked.',action:'Retry free proof',target:'#mimir-chat-runtime',kind:'retry-proof'};
+      return {state:'watch',title:'Install '+starter.label,detail:'Use '+starter.model+' for '+starter.device+'; then free proof.',action:'Use '+starter.label,target:'#model-library',kind:'install-starter',starter};
     }
     if(receipt?.status!=='success'){
       return {state:receipt?.status==='failed'?'error':'watch',title:'Get the first useful answer',detail:'A live model is ready; send the first chat and save a privacy-safe receipt.',action:'Start first chat',target:'#mimir-prompt',kind:'first-chat'};
@@ -327,6 +354,17 @@
       openPanel('#mimir-chat-runtime');
       return;
     }
+    if(copy.kind==='install-starter'){
+      const select=document.getElementById('runtime-model');
+      const starterId=copy.starter?.id||'';
+      if(select&&starterId&&Array.from(select.options||[]).some(option=>option.value==='starter:'+starterId)){
+        select.value='starter:'+starterId;
+        select.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      openPanel('#model-library');
+      openPanel('#mimir-chat-runtime');
+      return;
+    }
     if(copy.kind==='first-chat'){
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.value='Give me my first useful MMIR answer and the next safe setup step.';
@@ -349,7 +387,11 @@
     lastActivationClosureSignature=signature;
     strip.hidden=false;
     strip.dataset.state=copy.state;
-    strip.innerHTML='<div><span>Next safe step</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>no_paid_routes_started:true / provider_secrets_stored:false</small></div><button type="button" data-activation-closure-action="'+safe(copy.kind)+'">'+safe(copy.action)+'</button>';
+    if(copy.starter?.model)strip.dataset.starterModel=copy.starter.model;
+    else delete strip.dataset.starterModel;
+    if(copy.starter?.device)strip.dataset.deviceClass=copy.starter.device;
+    else delete strip.dataset.deviceClass;
+    strip.innerHTML='<div><span>Next safe step</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>recommended_starter:'+safe(copy.starter?.model||'none')+' / no_paid_routes_started:true / provider_secrets_stored:false</small></div><button type="button" data-activation-closure-action="'+safe(copy.kind)+'">'+safe(copy.action)+'</button>';
     strip.querySelector('[data-activation-closure-action]')?.addEventListener('click',()=>handleActivationClosureAction(copy));
   }
 
@@ -403,35 +445,35 @@
     const tunnel=localConnectorState?.tunnel||null;
 
     if(kind.live){
-      setCard('answer','Live','Chat is routed through '+label+'.','is-ready');
-      setCard('model','Live',label+' is the active MMIR route.','is-ready');
+      setCard('answer','Live','Routed through '+label+'.','is-ready');
+      setCard('model','Live',label+' is active.','is-ready');
     }else if(kind.browser||kind.webgpu){
-      setCard('answer','Ready',kind.webgpu?'Browser WebGPU route is selected.':'Free browser route is available before setup.','is-ready');
-      setCard('model',kind.webgpu?'Browser':'Guide',label+' is active until local models appear.','is-ready');
+      setCard('answer','Ready',kind.webgpu?'Browser WebGPU route selected.':'Free browser route ready.','is-ready');
+      setCard('model',kind.webgpu?'Browser':'Guide',label+' is active.','is-ready');
     }else if(kind.installable){
-      setCard('answer','Install','Start with guidance, then install '+label+'.','is-warning');
-      setCard('model','Installable',label+' can become a live local model.','is-warning');
+      setCard('answer','Install','Install '+label+' when ready.','is-warning');
+      setCard('model','Installable',label+' can go live locally.','is-warning');
     }else{
-      setCard('answer','Ready','MMIR can answer with the safest available route.','is-ready');
-      setCard('model','Selecting','MMIR is checking live, browser and installable routes.','is-checking');
+      setCard('answer','Ready','Safest route is available.','is-ready');
+      setCard('model','Selecting','Checking free routes.','is-checking');
     }
 
     if(localStatus==='online'){
-      setCard('local','Online',localModels.length?'Local node sees '+String(localModels.length)+' model'+(localModels.length===1?'':'s')+'.':'Local node is online.','is-ready');
+      setCard('local','Online',localModels.length?'Node sees '+String(localModels.length)+' model'+(localModels.length===1?'':'s')+'.':'Local node is online.','is-ready');
     }else if(localStatus==='degraded'){
-      setCard('local','Needs model','Connector is online; install or expose a local model.','is-warning');
+      setCard('local','Needs model','Install or expose a local model.','is-warning');
     }else if(localStatus==='checking'){
-      setCard('local','Checking','Local node discovery is running now.','is-checking');
+      setCard('local','Checking','Local discovery is running.','is-checking');
     }else if(localStatus==='error'){
       setCard('local','Offline',String(localConnectorState?.message||'Open Connect to install the local node.'),'is-offline');
     }else{
-      setCard('local','Local-first','Connect one local node to unlock private live models.','is-checking');
+      setCard('local','Local-first','Connect one node for private models.','is-checking');
     }
 
     if(modes.private){
-      setCard('trust',tunnel?.public_url?'Paired tunnel':'Private','Local-first routing stays the default boundary.','is-ready');
+      setCard('trust',tunnel?.public_url?'Paired tunnel':'Private','Local-first by default.','is-ready');
     }else{
-      setCard('trust','Review','Private mode is off; verify routing before sensitive data.','is-warning');
+      setCard('trust','Review','Private mode is off.','is-warning');
     }
 
     const detail={
@@ -454,7 +496,7 @@
 
     if(kind.live){
       setText(statusEl,'Your local AI is ready in MMIR.');
-      setText(detailEl,model.text.replace(/\s+-\s+live$/i,'')+' is connected through the trusted MMIR control plane. Type anything, or use a smart start below.');
+      setText(detailEl,model.text.replace(/\s+-\s+live$/i,'')+' is connected through MMIR. Type anything or use a smart start.');
       setNode(backendNode,'Local node',true);
       setNode(modelNode,model.text.replace(/\s+-\s+live$/i,''),true);
       setBodyState('mimir-first-ready','mimir-first-guide','mimir-first-install');
@@ -464,7 +506,7 @@
 
     if(kind.browser||kind.webgpu){
       setText(statusEl,kind.webgpu?'Free browser model is ready.':'Ask now. MMIR will pick the safest route.');
-      setText(detailEl,kind.webgpu?'Runs in this browser when WebGPU is available. No paid provider or account required.':'Free browser help is available immediately. Connect local AI only when you want real private local models.');
+      setText(detailEl,kind.webgpu?'Runs in this browser with WebGPU. No paid account.':'Free browser help is ready. Connect local AI for private models.');
       setNode(backendNode,'Browser',true);
       setNode(modelNode,model.text||'MMIR guide',true);
       setBodyState('mimir-first-guide','mimir-first-ready','mimir-first-install');
@@ -474,7 +516,7 @@
 
     if(kind.installable){
       setText(statusEl,'Install local AI to finish activation.');
-      setText(detailEl,'MMIR can guide the one-file local install and move to live chat when the local node reports the model.');
+      setText(detailEl,'MMIR guides install, then moves to live chat when the node reports the model.');
       setNode(backendNode,'Installer',true);
       setNode(modelNode,model.text||'Free model',true);
       setBodyState('mimir-first-install','mimir-first-ready','mimir-first-guide');
@@ -484,7 +526,7 @@
 
     const loadingDefault=state==='Select a backend to start.'||state==='Loading free model routes...';
     setText(statusEl,state&&!loadingDefault?state:'Open. Connect local AI. Ready.');
-    setText(detailEl,'Local node, browser helpers and installable free models are checked automatically through the MMIR control plane.');
+    setText(detailEl,'Local node, browser help and free model routes are checked automatically.');
     setNode(backendNode,'Checking',false);
     setNode(modelNode,'Model',false);
     syncActivationCockpit(model,kind);

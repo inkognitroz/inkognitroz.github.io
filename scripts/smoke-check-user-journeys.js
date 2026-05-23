@@ -71,6 +71,7 @@ const files = {
   routeMapHarness: join(root, 'scripts', 'smoke-check-activation-route-map.js'),
   activationClosureHarness: join(root, 'scripts', 'smoke-check-activation-closure.js'),
   firstScreenClosureHarness: join(root, 'scripts', 'smoke-check-first-screen-activation-closure.js'),
+  deviceStarterHarness: join(root, 'scripts', 'smoke-check-device-starter-recommendation.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -426,6 +427,9 @@ requireIncludes(files.progressDashboardCss, '.progress-live-gap-checklist', 'D18
 requireIncludes(files.firstScreenClosureHarness, 'First-screen activation closure smoke check passed.', 'D184 first-screen activation closure needs dedicated CI fixture coverage.');
 requireIncludes(files.firstImpression, 'renderActivationClosureStrip', 'D184 first screen must render the live activation closure strip.');
 requireIncludes(files.repairResumeCss, '.activation-closure-strip', 'D184 first-screen activation closure strip needs visible styling.');
+requireIncludes(files.deviceStarterHarness, 'Device starter recommendation smoke check passed.', 'D185 device starter recommendation needs dedicated CI fixture coverage.');
+requireIncludes(files.firstImpression, 'deviceStarterRecommendation', 'D185 first screen must recommend a starter model from detected device class.');
+requireIncludes(files.firstImpression, 'recommended_starter:', 'D185 first screen must render recommended starter evidence.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

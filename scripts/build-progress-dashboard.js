@@ -56,7 +56,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 185).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 186).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -122,7 +122,8 @@ const overrides = new Map([
   ['D182', { status: 'beta', evidence: 'Progress Dashboard now renders a replay route map for every activation simulator scenario, showing simulated signal, next target, covered surfaces and remaining live-proof gap.' }],
   ['D183', { status: 'beta', evidence: 'Progress Dashboard now compares current browser/local/proof/first-chat state against activation gaps and exposes one safe free action per gap.' }],
   ['D184', { status: 'beta', evidence: 'First screen now shows the same live activation closure state with one safe next action, using local-only profile/proof/receipt signals.' }],
-  ['D185', { status: 'next', evidence: 'Next activation UX slice: make the first-screen closure action recommend the best free starter model for the detected device class.' }]
+  ['D185', { status: 'beta', evidence: 'First-screen activation closure now recommends one free installable starter model by detected device class and can preselect it in the runtime model flow.' }],
+  ['D186', { status: 'next', evidence: 'Next activation UX slice: record recommended-starter selections in activation telemetry and progress dashboard evidence without raw prompts or secrets.' }]
 ]);
 
 const repoMeta = [
@@ -255,7 +256,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D185', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D186', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
