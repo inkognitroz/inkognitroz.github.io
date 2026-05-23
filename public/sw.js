@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d170-20260523-activation-telemetry';
+const CACHE_NAME='mmir-pwa-d171-20260523-activation-autopilot';
 const SHELL_ASSETS=[
   './',
   './index.html',

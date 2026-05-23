@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T11:55:10.921Z",
+  "updated_at": "2026-05-23T12:03:27.274Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 171,
+    "total": 172,
     "done": 51,
-    "beta": 95,
+    "beta": 96,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -748,9 +748,9 @@
       },
       {
         "phase": "Activation Automation",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -808,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D171"
+    "D172"
   ],
   "watchlist": [
     "D082",
@@ -3375,9 +3375,24 @@
       "best_practice": "MMIR should fix everything safe and free by default before asking for configuration",
       "done_when": "User lands on the next useful action automatically, with no paid route, provider secret or raw model runtime exposed",
       "covers": "activation, automation, free-first",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Activation Autopilot now runs safe free repairs only: automatic defaults, Private mode, model refresh and proof retry, with no paid routes, provider secrets, raw prompts or raw responses.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D172",
+      "phase": "Activation Automation",
+      "priority": "P0",
+      "work_package": "Guided OS/device repair cards",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "When autopilot cannot fix a missing connector, Ollama runtime, model or pairing step, render the exact OS/device repair card with installer, starter model and tunnel/pairing guidance",
+      "best_practice": "Only unavoidable user/device actions should be shown, and they should be specific",
+      "done_when": "User sees one concrete install/repair card for their device and never gets a generic troubleshooting list",
+      "covers": "activation, support, device onboarding",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: use telemetry to run safe, free automatic repairs before asking users for OS/device steps.",
+      "evidence": "Next activation slice: when autopilot cannot fix a device/runtime gap, show one exact OS/device repair card instead of generic troubleshooting.",
       "estimate": "2-6h"
     }
   ]

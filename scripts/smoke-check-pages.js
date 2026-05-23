@@ -396,9 +396,15 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry recorder.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'raw_prompt_stored:false', 'D170 telemetry must prove raw prompts are not stored.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'secrets_stored:false', 'D170 telemetry must prove secrets are not stored.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-autopilot.js'), 'MimirActivationAutopilot', 'D171 needs a safe activation autopilot API.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-autopilot.js'), 'no_paid_routes_started:true', 'D171 autopilot must not start paid routes.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-autopilot.js'), 'provider_secrets_stored:false', 'D171 autopilot must not store provider secrets.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-autopilot.js'), 'retry-live-proof', 'D171 autopilot must retry safe live proof states.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-activation-clear', 'D170 dashboard must expose activation telemetry controls.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-activation-autopilot', 'D171 dashboard must expose manual safe autopilot run.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
+requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, session tokens, invite codes, provider keys and backend data.');

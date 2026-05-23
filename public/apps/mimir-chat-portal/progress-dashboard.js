@@ -7,6 +7,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
+  const AUTOPILOT_PREFIX='mimir-activation-autopilot-v1:';
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
@@ -18,6 +19,7 @@
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
   function activationEventsStorageKey(){return ACTIVATION_EVENTS_PREFIX+activeWorkspaceId();}
+  function autopilotStorageKey(){return AUTOPILOT_PREFIX+activeWorkspaceId();}
   function readFirstChatReceipt(){
     try{
       const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
@@ -59,8 +61,17 @@
       return [];
     }
   }
+  function readAutopilotState(){
+    try{
+      const value=JSON.parse(localStorage.getItem(autopilotStorageKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
   function activationSummary(){
     const events=readActivationEvents();
+    const autopilot=readAutopilotState();
     const latest=events[events.length-1]||null;
     const verified=events.filter((event)=>event.status==='verified'||event.first_chat_ready||event.status==='ready').length;
     const failed=events.filter((event)=>event.status==='failed'||event.status==='error').length;
@@ -71,7 +82,8 @@
       label:latest?label(latest.type):'No local events yet',
       detail:latest?latest.note:'Activation telemetry starts when MMIR checks defaults, proof, installs, doctor state or first chat.',
       verified,
-      failed
+      failed,
+      autopilot
     };
   }
   function pct(done,beta,total){
@@ -115,6 +127,7 @@
         '<span>'+safe(state.events.length)+' events</span>'+
         '<span>'+safe(state.verified)+' ready</span>'+
         '<span>'+safe(state.failed)+' repair</span>'+
+        '<span>'+safe(state.autopilot?.runs||0)+' autopilot</span>'+
       '</div></div>'+
       '<div class="progress-activation-list">'+(events.length?events.map((event)=>
         '<article class="progress-activation-event" data-state="'+safe(event.status||'idle')+'">'+
@@ -124,7 +137,7 @@
           '<p>'+safe(event.note||'Activation event recorded.')+'</p>'+
         '</article>'
       ).join(''):'<p class="dashboard-note">No activation events have been recorded in this browser workspace yet.</p>')+'</div>'+
-      '<div class="progress-activation-actions"><button id="progress-activation-refresh" type="button">Refresh activation</button><button id="progress-activation-clear" type="button">Clear local events</button></div>'+
+      '<div class="progress-activation-actions"><button id="progress-activation-autopilot" type="button">Run autopilot</button><button id="progress-activation-refresh" type="button">Refresh activation</button><button id="progress-activation-clear" type="button">Clear local events</button></div>'+
       '<small class="progress-activation-privacy">Local only: raw_prompt_stored:false, raw_response_stored:false, secrets_stored:false.</small>'+
     '</section>';
   }
@@ -246,6 +259,10 @@
   }
 
   function bindActivationTelemetry(){
+    document.getElementById('progress-activation-autopilot')?.addEventListener('click',()=>{
+      window.MimirActivationAutopilot?.run?.('manual');
+      render();
+    });
     document.getElementById('progress-activation-refresh')?.addEventListener('click',render);
     document.getElementById('progress-activation-clear')?.addEventListener('click',()=>{
       window.MimirActivationTelemetry?.clear?.();
@@ -290,6 +307,7 @@
   window.addEventListener('hashchange',openHashDetails);
   window.addEventListener('mmir-first-chat-receipt-updated',render);
   window.addEventListener('mmir-activation-telemetry-updated',render);
+  window.addEventListener('mmir-activation-autopilot-updated',render);
   window.addEventListener('mmir-chat-history-updated',render);
   window.addEventListener('storage',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

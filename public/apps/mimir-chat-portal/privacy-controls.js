@@ -29,6 +29,7 @@
   const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
+  const AUTOPILOT_PREFIX='mimir-activation-autopilot-v1:';
   const DEMO_KEY='mimir-demo-mode-v1';
   const WELCOME_KEY='mimir-demo-welcome-shown-v1';
   const GROWTH_EVENTS_KEY='mimir-growth-events-v1';
@@ -63,7 +64,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX,SHARE_PREFIX,FIRST_CHAT_RECEIPT_PREFIX,ACTIVATION_EVENTS_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX,SHARE_PREFIX,FIRST_CHAT_RECEIPT_PREFIX,ACTIVATION_EVENTS_PREFIX,AUTOPILOT_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -263,6 +264,7 @@
     const shareBundleKeys=keysByPrefix(local,SHARE_PREFIX);
     const firstChatReceiptKeys=keysByPrefix(local,FIRST_CHAT_RECEIPT_PREFIX);
     const activationEventKeys=keysByPrefix(local,ACTIVATION_EVENTS_PREFIX);
+    const autopilotKeys=keysByPrefix(local,AUTOPILOT_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -409,6 +411,16 @@
         retention:'Bounded local timeline per workspace until cleared with workspace/all MMIR browser data.',
         action:'Stores activation event type, status, model label, route label and character counts only; raw_prompt_stored:false, raw_response_stored:false, secrets_stored:false.',
         keys:activationEventKeys
+      },
+      {
+        id:'activation-autopilot',
+        label:'Activation autopilot',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,autopilotKeys),
+        size:formatBytes(storageSize(localStorage,autopilotKeys)),
+        retention:'Latest safe automatic activation repair state per workspace until cleared.',
+        action:'Stores run counts and safe action names only; no paid routes, provider secrets, raw prompts or raw responses.',
+        keys:autopilotKeys
       },
       {
         id:'workspace-memory',
@@ -700,6 +712,7 @@
     localStorage.removeItem(SHARE_PREFIX+workspaceId());
     localStorage.removeItem(FIRST_CHAT_RECEIPT_PREFIX+workspaceId());
     localStorage.removeItem(ACTIVATION_EVENTS_PREFIX+workspaceId());
+    localStorage.removeItem(AUTOPILOT_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());

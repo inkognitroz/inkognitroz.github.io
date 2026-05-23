@@ -50,6 +50,7 @@ const files = {
   progressDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'),
   progressDashboardCss: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'),
   activationTelemetry: join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'),
+  activationAutopilot: join(publicDir, 'apps', 'mimir-chat-portal', 'activation-autopilot.js'),
   migration: join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'),
   sharing: join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'),
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
@@ -379,11 +380,16 @@ requireIncludes(files.chatRuntime, 'mmir-local-connector-refreshed', 'D168 needs
 requireIncludes(files.progressDashboard, 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
 requireIncludes(files.progressDashboard, 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
 requireIncludes(files.progressDashboard, 'progress-activation-clear', 'D170 dashboard must expose activation telemetry controls.');
+requireIncludes(files.progressDashboard, 'progress-activation-autopilot', 'D171 dashboard must expose a manual safe autopilot run.');
 requireIncludes(files.progressDashboard, 'activationSummary', 'D170 dashboard must summarize activation telemetry.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');
 requireIncludes(files.activationTelemetry, 'raw_prompt_stored:false', 'D170 telemetry must not store raw prompts.');
 requireIncludes(files.activationTelemetry, 'secrets_stored:false', 'D170 telemetry must not store secrets.');
+requireIncludes(files.activationAutopilot, 'MimirActivationAutopilot', 'D171 needs a safe activation autopilot API.');
+requireIncludes(files.activationAutopilot, 'ensureAutomaticDefaults', 'D171 autopilot must run free-first defaults before asking users to configure.');
+requireIncludes(files.activationAutopilot, 'retry-live-proof', 'D171 autopilot must retry safe proof states.');
+requireIncludes(files.activationAutopilot, 'no_paid_routes_started:true', 'D171 autopilot must preserve the no-spend rule.');
 requireIncludes(files.progressDashboardCss, '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');
 requireIncludes(files.progressDashboardCss, '.progress-activation-card', 'D170 dashboard needs activation telemetry styling.');
 requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 'Pairing requests must send explicit JSON content type.');
@@ -402,6 +408,7 @@ requireIncludes(files.privacyControls, 'Safe share bundles', 'D152 privacy inven
 requireIncludes(files.privacyControls, 'MMIR managed session token', 'D161 privacy inventory must disclose current-tab managed session tokens.');
 requireIncludes(files.privacyControls, 'First chat receipt', 'D166 privacy inventory must disclose browser-local first-chat receipts.');
 requireIncludes(files.privacyControls, 'Activation telemetry', 'D170 privacy inventory must disclose browser-local activation telemetry.');
+requireIncludes(files.privacyControls, 'Activation autopilot', 'D171 privacy inventory must disclose browser-local autopilot state.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
