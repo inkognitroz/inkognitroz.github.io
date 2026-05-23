@@ -165,6 +165,8 @@
   function backendPayload(bundle=currentBundle){
     const visibility=document.getElementById('sharing-visibility')?.value||'private';
     const audience=String(document.getElementById('sharing-audience')?.value||'').split(',').map(item=>item.trim()).filter(Boolean);
+    const orgId=clean(document.getElementById('sharing-org-id')?.value||'',160);
+    const minRole=document.getElementById('sharing-min-role')?.value||'member';
     return {
       workspace_id:workspaceId(),
       content_type:bundle.content.type,
@@ -172,6 +174,8 @@
       summary:bundle.content.summary,
       visibility,
       audience,
+      org_id:visibility==='organization'?orgId:undefined,
+      min_role:visibility==='organization'?minRole:undefined,
       payload:bundle.content.payload
     };
   }
@@ -244,7 +248,7 @@
         '<dl>'+
           '<div><dt>Secrets</dt><dd>Redacted</dd></div>'+
           '<div><dt>Backend</dt><dd>Not required</dd></div>'+
-          '<div><dt>Access</dt><dd>Preview link holder</dd></div>'+
+          '<div><dt>Access</dt><dd>'+safe(bundle.access_policy?.visibility==='organization'?'Org '+(bundle.access_policy?.org_id||'required')+' / '+(bundle.access_policy?.min_role||'member'):'Preview link holder')+'</dd></div>'+
         '</dl>'+
         '<pre><code>'+safe(payload)+'</code></pre>'+
       '</article>';
@@ -279,7 +283,7 @@
     }
     backendListEl.innerHTML=backendShares.map(share=>''+
       '<article class="sharing-backend-card">'+
-        '<div><strong>'+safe(share.title||'Protected share')+'</strong><span>'+safe(share.content_type)+' - '+safe(share.status)+' - '+safe(share.access?.visibility||'private')+'</span></div>'+
+        '<div><strong>'+safe(share.title||'Protected share')+'</strong><span>'+safe(share.content_type)+' - '+safe(share.status)+' - '+safe(share.access?.visibility||'private')+'</span><small>'+safe(share.access?.visibility==='organization'?'Org '+(share.access?.org_id||'required')+' / min '+(share.access?.min_role||'member')+' / organization_membership_required':'Owner scoped or backend-auth scoped')+'</small></div>'+
         '<div class="sharing-backend-actions">'+
           '<button type="button" data-share-action="load" data-share-id="'+safe(share.id)+'" '+(share.payload_available===false?'disabled':'')+'>Preview</button>'+
           '<button type="button" data-share-action="revoke" data-share-id="'+safe(share.id)+'" '+(share.status==='revoked'?'disabled':'')+'>Revoke</button>'+
@@ -322,6 +326,9 @@
   async function saveProtectedShare(){
     const bundle=currentBundle||buildBundle();
     if(!bundle)return;
+    const visibility=document.getElementById('sharing-visibility')?.value||'private';
+    const orgId=clean(document.getElementById('sharing-org-id')?.value||'',160);
+    if(visibility==='organization'&&!orgId){setStatus('Organization visibility needs an org id from Identity / Organizations.','error');return;}
     try{
       setStatus('Saving protected share...','loading');
       const data=await request('/shares',{method:'POST',body:JSON.stringify(backendPayload(bundle))});
@@ -396,7 +403,9 @@
         '<button id="sharing-refresh" type="button">Refresh</button>'+
       '</div>'+
       '<div class="sharing-toolbar sharing-backend-policy">'+
-        '<label for="sharing-visibility">Protected visibility<select id="sharing-visibility"><option value="private">Private</option><option value="workspace">Workspace</option><option value="link">Link holder after auth</option></select></label>'+
+        '<label for="sharing-visibility">Protected visibility<select id="sharing-visibility"><option value="private">Private</option><option value="workspace">Workspace</option><option value="organization">Organization</option><option value="link">Link holder after auth</option></select></label>'+
+        '<label for="sharing-org-id">Org id<input id="sharing-org-id" type="text" maxlength="160" placeholder="org_..." /></label>'+
+        '<label for="sharing-min-role">Minimum role<select id="sharing-min-role"><option value="viewer">viewer</option><option value="member" selected>member</option><option value="admin">admin</option><option value="owner">owner</option></select></label>'+
         '<label for="sharing-audience">Audience<input id="sharing-audience" type="text" maxlength="240" placeholder="team-a, user@example.com" /></label>'+
         '<button id="sharing-load-backend" type="button">Load protected</button>'+
       '</div>'+
@@ -411,7 +420,7 @@
       '<div class="sharing-policy-grid">'+
         '<article><strong>Redacted first</strong><span>Token-like strings, private-key blocks and sensitive fields are removed before output.</span></article>'+
         '<article><strong>Free/local</strong><span>Preview links are generated in the browser and do not require a backend.</span></article>'+
-        '<article><strong>Backend later</strong><span>Real team permissions require authenticated protected sharing before production use.</span></article>'+
+        '<article><strong>Backend enforced</strong><span>Organization shares require protected identity, membership and role checks. Preview links are not authority.</span></article>'+
       '</div>'+
       '<div id="sharing-preview" class="sharing-preview" aria-live="polite"></div>'+
       '<div id="sharing-backend-list" class="sharing-backend-list" aria-live="polite"></div>'+

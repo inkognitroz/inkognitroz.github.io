@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T09:20:07.888Z",
+  "updated_at": "2026-05-23T09:37:24.617Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 157,
+    "total": 158,
     "done": 51,
-    "beta": 81,
+    "beta": 82,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -718,9 +718,9 @@
       },
       {
         "phase": "Sharing/Security",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -778,7 +778,7 @@
     }
   ],
   "next_queue": [
-    "D157"
+    "D158"
   ],
   "watchlist": [
     "D082",
@@ -3135,9 +3135,24 @@
       "best_practice": "Team sharing should enforce audience server-side, not through public link secrecy",
       "done_when": "Owner can create org/member/viewer scoped shares and non-members are blocked by protected backend policy",
       "covers": "team sharing",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Protected shares now support organization visibility, org id and minimum-role audiences; backend identity policy enforces owner/admin creation and member-role read access while public preview links remain non-authoritative.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D158",
+      "phase": "Sharing/Security",
+      "priority": "P1",
+      "work_package": "Share access review and audit trail",
+      "repos": "mimir-backend-template, inkognitroz.github.io",
+      "concrete_work": "Add share access review views, audience summaries and share-specific audit events so owners can see who can access what and why",
+      "best_practice": "Revocation and trust require inspectable access state, not hidden policy",
+      "done_when": "Owner can inspect share audience, recent reads, revoked state and next-safe action from the UI",
+      "covers": "team governance",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sharing/security slice: tie protected shares to organization audiences, roles and membership checks before real cross-user publishing.",
+      "evidence": "Next sharing/security slice: show share access review, audience summaries and share-specific audit state so owners can inspect who can access what and why.",
       "estimate": "0.5-2d"
     }
   ]
