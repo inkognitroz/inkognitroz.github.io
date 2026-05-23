@@ -3,10 +3,12 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const RECEIPT_PREFIX='mimir-answer-context-receipts-v1:';
   const HIGHLIGHT_PREFIX='mimir-answer-context-highlight-v1:';
+  const MEMORY_USE_PREFIX='mimir-memory-use-v1:';
 
   function workspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function key(){return RECEIPT_PREFIX+workspaceId();}
   function highlightKey(){return HIGHLIGHT_PREFIX+workspaceId();}
+  function memoryUseKey(){return MEMORY_USE_PREFIX+workspaceId();}
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function selector(value){return window.CSS?.escape?CSS.escape(String(value||'')):String(value||'').replace(/[^a-zA-Z0-9_-]/g,'-');}
   function receipts(){
@@ -18,6 +20,8 @@
     }
   }
   function normalize(raw){
+    const memoryIds=Array.isArray(raw?.memory_use_ids)?raw.memory_use_ids.map(item=>String(item||'').slice(0,120)).filter(Boolean).slice(0,8):[];
+    const memorySources=Array.isArray(raw?.memory_sources)?raw.memory_sources.map(item=>String(item||'').slice(0,40)).filter(Boolean).slice(0,4):[];
     return {
       object:'mmir.answer_context_receipt',
       version:1,
@@ -33,6 +37,9 @@
       runtime_settings_used:Boolean(raw?.runtime_settings_used||raw?.runtime),
       mode_summary:String(raw?.mode_summary||raw?.modes||'').slice(0,120),
       cost_guard:String(raw?.cost_guard||raw?.cost||'free/local/default').slice(0,80),
+      memory_use_ids:memoryIds,
+      memory_use_count:Math.max(memoryIds.length,Math.round(Number(raw?.memory_use_count)||0)),
+      memory_sources:memorySources,
       created_at:new Date().toISOString(),
       local_only:true,
       no_paid_routes_started:raw?.no_paid_routes_started!==false&&raw?.noPaid!==false,
@@ -41,6 +48,17 @@
       raw_response_stored_in_receipt:false,
       public_frontend_secrets_allowed:false
     };
+  }
+  function memoryUseSummary(){
+    try{
+      const items=JSON.parse(localStorage.getItem(memoryUseKey())||'[]');
+      const safeItems=Array.isArray(items)?items:[];
+      const ids=safeItems.map(item=>String(item?.memoryId||'').slice(0,120)).filter(Boolean).slice(0,8);
+      const sources=[...new Set(safeItems.map(item=>String(item?.source||'local')).filter(Boolean))].slice(0,4);
+      return {memory_use_ids:ids,memory_use_count:safeItems.length,memory_sources:sources};
+    }catch(error){
+      return {memory_use_ids:[],memory_use_count:0,memory_sources:[]};
+    }
   }
   function write(raw){
     const receipt=normalize(raw);
@@ -56,7 +74,7 @@
   function status(value){return String(value||'none').replace('+',' + ');}
   function row(label,value){return '<dt>'+safe(label)+'</dt><dd>'+safe(value||'none')+'</dd>';}
   function writeHighlight(receipt,target){
-    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:receipt.route,memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
+    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:receipt.route,memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,memory_sources:receipt.memory_sources||[],created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
     try{localStorage.setItem(highlightKey(),JSON.stringify(highlight));}catch(error){}
     window.dispatchEvent(new CustomEvent('mmir-answer-context-highlight-updated',{detail:highlight}));
     return highlight;
@@ -64,12 +82,17 @@
   function renderHighlight(target,receipt){
     const el=document.querySelector(target);
     if(!el)return;
+    el.dataset.receiptFilterMessage=receipt.message_id||'';
+    el.dataset.receiptFilterModel=receipt.model||'';
+    el.dataset.receiptFilterMemoryIds=(receipt.memory_use_ids||[]).join(',');
+    window.dispatchEvent(new CustomEvent('mmir-answer-context-source-filter',{detail:{target,message_id:receipt.message_id,model:receipt.model,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,no_paid_routes_started:true}}));
     el.querySelector('.runtime-answer-context-highlight')?.remove();
     const note=document.createElement('p');
     note.className='dashboard-note runtime-answer-context-highlight';
     note.dataset.state='ready';
     note.dataset.receiptHighlight=target;
-    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+(receipt.route||'browser')+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+'.';
+    const memoryFilter=receipt.memory_use_count?(', memory matches '+receipt.memory_use_count+' '+((receipt.memory_sources||[]).join('/')||'local')):'';
+    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+(receipt.route||'browser')+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+memoryFilter+'.';
     const summary=el.matches('details')?el.querySelector('summary'):null;
     if(summary)summary.after(note);
     else el.prepend(note);
@@ -146,6 +169,7 @@
         runtime_settings_used:Boolean(ctx.runtime_settings_used),
         mode_summary:ctx.mode_summary||'',
         cost_guard:'free/local/default',
+        ...memoryUseSummary(),
         no_paid_routes_started:true
       });
     });

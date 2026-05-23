@@ -1,0 +1,43 @@
+{
+  "title": "Answer Context Source Filter QA",
+  "principle": "Receipt highlights should carry source-level metadata when it is safe and available, while keeping raw chat and knowledge content out of public/frontend receipts.",
+  "public_repo_rule": "Source filters store only IDs, counts, source labels, model labels and target panel names. They store no prompt text, response text, memory text, knowledge snippets or provider secrets.",
+  "scenarios": [
+    {
+      "id": "memory-use-ids",
+      "status": "ready",
+      "target": "#memory-panel",
+      "expected": "Latest memory-use review IDs are copied into the receipt and panel filter metadata.",
+      "storage_key": "memory_use_ids",
+      "event": "mmir-answer-context-source-filter",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "memory-use-count",
+      "status": "ready",
+      "target": "#memory-panel",
+      "expected": "Panel highlight shows the number and source labels of memory matches without showing memory text.",
+      "storage_key": "memory_use_count",
+      "event": "mmir-answer-context-highlight-updated",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "model-filter",
+      "status": "ready",
+      "target": "#model-library",
+      "expected": "Model drill-down carries the selected receipt model into panel dataset metadata.",
+      "storage_key": "data-receipt-filter-model",
+      "event": "mmir-answer-context-source-filter",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "safe-filter-boundary",
+      "status": "ready",
+      "target": "public frontend",
+      "expected": "Filter and highlight metadata explicitly exclude raw prompts, raw responses, memory text, knowledge snippets and provider secrets.",
+      "storage_key": "raw_prompt_stored_in_highlight:false",
+      "event": "public-safety-audit",
+      "no_paid_routes_started": true
+    }
+  ]
+}

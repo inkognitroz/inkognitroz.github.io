@@ -94,7 +94,7 @@ const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d212 = tasks.find((task) => task.seq === 'D212');
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d226 = tasks.find((task) => task.seq === 'D226');
+const d227 = tasks.find((task) => task.seq === 'D227');
 if (!d212 || d212.status !== 'beta') {
   fail('Progress dashboard task D212 must be beta after first free chat response QA ships.');
 }
@@ -104,11 +104,11 @@ if (!d213 || d213.status !== 'beta') {
 if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
-if (!d226 || d226.status !== 'next') {
-  fail('Progress dashboard task D226 must become the next work item after D225 ships.');
+if (!d227 || d227.status !== 'next') {
+  fail('Progress dashboard task D227 must become the next work item after D226 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D226') {
-  fail('Progress dashboard next queue must prioritize D226 after D225 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D227') {
+  fail('Progress dashboard next queue must prioritize D227 after D226 ships.');
 }
 
 if (!process.exitCode) {

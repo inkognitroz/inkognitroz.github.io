@@ -29,6 +29,7 @@ const files = {
   answerContextReceiptReport: join(publicDir, 'answer-context-receipt-report.json'),
   answerContextDrilldownReport: join(publicDir, 'answer-context-drilldown-report.json'),
   answerContextHighlightReport: join(publicDir, 'answer-context-highlight-report.json'),
+  answerContextSourceFilterReport: join(publicDir, 'answer-context-source-filter-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -113,6 +114,7 @@ const files = {
   answerContextReceiptHarness: join(root, 'scripts', 'smoke-check-answer-context-receipt.js'),
   answerContextDrilldownHarness: join(root, 'scripts', 'smoke-check-answer-context-drilldown.js'),
   answerContextHighlightHarness: join(root, 'scripts', 'smoke-check-answer-context-highlight.js'),
+  answerContextSourceFilterHarness: join(root, 'scripts', 'smoke-check-answer-context-source-filter.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -665,6 +667,9 @@ requireIncludes(files.progressDashboard, 'renderAnswerContextDrilldownReport', '
 requireIncludes(files.answerContextHighlightHarness, 'Answer context highlight smoke check passed.', 'D225 answer context highlight must have dedicated CI coverage.');
 requireIncludes(files.answerContextHighlightReport, 'highlight-memory', 'D225 answer context highlight report must cover memory highlight behavior.');
 requireIncludes(files.progressDashboard, 'renderAnswerContextHighlightReport', 'D225 Progress Dashboard must render answer context highlight evidence.');
+requireIncludes(files.answerContextSourceFilterHarness, 'Answer context source-filter smoke check passed.', 'D226 answer context source filter must have dedicated CI coverage.');
+requireIncludes(files.answerContextSourceFilterReport, 'memory-use-ids', 'D226 answer context source filter report must cover memory-use ID behavior.');
+requireIncludes(files.progressDashboard, 'renderAnswerContextSourceFilterReport', 'D226 Progress Dashboard must render answer context source-filter evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T21:19:21.279Z",
+  "updated_at": "2026-05-23T21:26:13.848Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 226,
+    "total": 227,
     "done": 51,
-    "beta": 150,
+    "beta": 151,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -968,10 +968,10 @@
       },
       {
         "phase": "Memory / Knowledge UX",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1000,8 +1000,8 @@
         "phase": "Chat UX / Context Audit",
         "total": 4,
         "done": 0,
-        "beta": 3,
-        "next": 1,
+        "beta": 4,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -2188,6 +2188,49 @@
       }
     ]
   },
+  "answer_context_source_filter_report": {
+    "title": "Answer Context Source Filter QA",
+    "principle": "Receipt highlights should carry source-level metadata when it is safe and available, while keeping raw chat and knowledge content out of public/frontend receipts.",
+    "public_repo_rule": "Source filters store only IDs, counts, source labels, model labels and target panel names. They store no prompt text, response text, memory text, knowledge snippets or provider secrets.",
+    "scenarios": [
+      {
+        "id": "memory-use-ids",
+        "status": "ready",
+        "target": "#memory-panel",
+        "expected": "Latest memory-use review IDs are copied into the receipt and panel filter metadata.",
+        "storage_key": "memory_use_ids",
+        "event": "mmir-answer-context-source-filter",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "memory-use-count",
+        "status": "ready",
+        "target": "#memory-panel",
+        "expected": "Panel highlight shows the number and source labels of memory matches without showing memory text.",
+        "storage_key": "memory_use_count",
+        "event": "mmir-answer-context-highlight-updated",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "model-filter",
+        "status": "ready",
+        "target": "#model-library",
+        "expected": "Model drill-down carries the selected receipt model into panel dataset metadata.",
+        "storage_key": "data-receipt-filter-model",
+        "event": "mmir-answer-context-source-filter",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "safe-filter-boundary",
+        "status": "ready",
+        "target": "public frontend",
+        "expected": "Filter and highlight metadata explicitly exclude raw prompts, raw responses, memory text, knowledge snippets and provider secrets.",
+        "storage_key": "raw_prompt_stored_in_highlight:false",
+        "event": "public-safety-audit",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2238,7 +2281,7 @@
     }
   ],
   "next_queue": [
-    "D226"
+    "D227"
   ],
   "watchlist": [
     "D082",
@@ -5630,9 +5673,24 @@
       "best_practice": "Source audit should become precise as the context pipeline gains IDs",
       "done_when": "User can filter to the exact used memory, collection or model route when metadata exists",
       "covers": "chat UX, audit, memory, knowledge",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Receipt highlights now carry safe source filters: memory-use IDs/counts/sources and selected model labels are attached to target panels.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D227",
+      "phase": "Memory / Knowledge UX",
+      "priority": "P0",
+      "work_package": "Consume receipt source filters",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make Memory and Knowledge panels read receipt filter metadata and visibly mark matching items or explain when exact IDs are unavailable",
+      "best_practice": "Source filters should become visible source focus, not only stored metadata",
+      "done_when": "Memory/Knowledge panels show receipt-linked filter state and matching source badges",
+      "covers": "memory, knowledge, audit, usability",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add source-level receipt filters where IDs are available, so Memory/Knowledge panels can focus the exact source item.",
+      "evidence": "Next activation slice: make Memory and Knowledge panels consume receipt source filters with visible filtered lists or badges.",
       "estimate": "2-6h"
     }
   ]
