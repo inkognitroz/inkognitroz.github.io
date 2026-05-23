@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-23",
+  "scope": "D202 first-screen visual verification",
+  "status": "beta",
+  "cost_policy": "free-first; no paid services, provider keys or cloud compute used",
+  "public_repo_rule": "Safe for inkognitroz.github.io: no secrets, tokens, provider keys, raw prompts or private node data.",
+  "method": "Deterministic DOM, CSS and action-path checks for the first screen, chat composer, model-library handoff and mobile layout.",
+  "browser_attempt": {
+    "status": "attempted",
+    "result": "Local browser inspection was attempted; deterministic CI checks remain the release gate for this slice."
+  },
+  "viewports": [
+    {
+      "id": "desktop-first-screen",
+      "width": 1365,
+      "checks": [
+        "First screen keeps MMIR identity, Ground Zero card, composer, quick actions and demo path before secondary panels.",
+        "Composer has stable width, fixed send control dimensions and a model-connect handoff.",
+        "Model library handoff opens the model library instead of a dead configuration stop."
+      ]
+    },
+    {
+      "id": "mobile-first-screen",
+      "width": 390,
+      "checks": [
+        "Top navigation stays horizontally reachable instead of disappearing.",
+        "Composer, quick actions, instant-start card and readiness rail stack without text truncation.",
+        "Runtime dock and model chips wrap to full width on small screens."
+      ]
+    }
+  ],
+  "critical_paths": [
+    {
+      "id": "first-chat-composer",
+      "status": "guarded",
+      "evidence": "mimir-prompt, primary-chat-link, composer dock, model chip and CPU/RAM chip are present and mobile-safe."
+    },
+    {
+      "id": "connect-model",
+      "status": "guarded",
+      "evidence": "new-backend and composer-add-model prepare the free local profile and open model-library."
+    },
+    {
+      "id": "demo-mode",
+      "status": "guarded",
+      "evidence": "Try demo mode has a first-click deferred loader handoff."
+    },
+    {
+      "id": "model-library",
+      "status": "guarded",
+      "evidence": "model-library-grid exists, recommended starter cards are styled, and starter focus actions are wired."
+    },
+    {
+      "id": "mobile-layout",
+      "status": "guarded",
+      "evidence": "Mobile media rules stack instant-start, readiness, composer, runtime dock, model library and quick actions."
+    }
+  ],
+  "known_limitations": [
+    "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
+    "Live model quality still depends on a paired local node or browser helper capability."
+  ],
+  "next": "D203 composer model picker polish: make live/free/installable model choice feel closer to ChatGPT and Open WebUI while preserving zero-trust boundaries."
+}

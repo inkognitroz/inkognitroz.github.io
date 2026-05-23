@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T16:00:51.637Z",
+  "updated_at": "2026-05-23T16:14:04.752Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 202,
+    "total": 203,
     "done": 51,
-    "beta": 126,
+    "beta": 127,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -860,6 +860,16 @@
         "phase": "Visual QA / First Impression",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Model Activation",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1138,7 +1148,7 @@
     }
   ],
   "next_queue": [
-    "D202"
+    "D203"
   ],
   "watchlist": [
     "D082",
@@ -4170,9 +4180,24 @@
       "best_practice": "The first 10 seconds must feel polished and trustworthy",
       "done_when": "Screenshots or deterministic browser checks prove first screen and mobile layout are coherent after the recent UX changes",
       "covers": "visual QA, mobile, first impression",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-screen visual QA now has a public-safe report and deterministic smoke gate for the composer, activation banners, model-library handoff and mobile layout after the recent UX changes.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D203",
+      "phase": "Chat UX / Model Activation",
+      "priority": "P0",
+      "work_package": "Composer model picker polish",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the composer plus/model controls open a compact free model picker with install, connect and proof actions, keep live/free/installable model states visible and mobile-safe, and remove any remaining hidden or ambiguous connect-model affordance",
+      "best_practice": "First chat should feel as simple as ChatGPT while giving Open WebUI-level model control under zero-trust boundaries",
+      "done_when": "User can open model picker from the composer, see live/browser/installable choices, launch a free install/proof path and return to chat with no dead state, secrets or paid route",
+      "covers": "chat UX, model UX, activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next visual QA slice: verify first-screen and mobile layout after the recent activation and performance changes.",
+      "evidence": "Next composer model picker slice: make live/free/installable model choice feel closer to ChatGPT and Open WebUI while preserving zero-trust boundaries.",
       "estimate": "2-6h"
     }
   ]

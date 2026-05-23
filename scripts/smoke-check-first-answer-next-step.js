@@ -97,12 +97,17 @@ if (!d201 || d201.status !== 'beta') {
 }
 
 const d202 = tasks.find((task) => task.seq === 'D202');
-if (!d202 || d202.status !== 'next') {
-  fail('Progress dashboard must expose D202 as the next visual QA work item.');
+if (!d202 || d202.status !== 'beta') {
+  fail('Progress dashboard task D202 must stay beta after first-screen visual QA ships.');
 }
 
-if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D202') {
-  fail('Progress dashboard next queue must prioritize D202 after D201 ships.');
+const d203 = tasks.find((task) => task.seq === 'D203');
+if (!d203 || d203.status !== 'next') {
+  fail('Progress dashboard must expose D203 as the next composer model picker work item.');
+}
+
+if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D203') {
+  fail('Progress dashboard next queue must prioritize D203 after D202 ships.');
 }
 
 if (!process.exitCode) {

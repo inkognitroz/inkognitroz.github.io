@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d201-20260523-deploy-check';
+const CACHE_NAME='mmir-pwa-d202-20260523-visual-qa';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -20,6 +20,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/identity-org.css',
   './apps/mimir-chat-portal/identity-org.js',
   './progress-dashboard.json',
+  './visual-qa-report.json',
   './activation-simulator-fixtures.json',
   './user-journeys.json',
   './gui-parity-matrix.json',

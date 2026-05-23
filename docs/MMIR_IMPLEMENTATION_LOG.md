@@ -193,14 +193,15 @@ Updated: 2026-05-23
 - D199 is now beta: visible-control audit proves key first-screen, composer, runtime proof, model library, node repair and progress controls are wired or gated, and Connect Model opens the model library instead of a dead configuration stop.
 - D200 is now beta: demo growth instrumentation loads through the deferred queue with a first-click handoff, restoring meaningful critical-shell JS headroom while preserving Try demo mode.
 - D201 is now beta: deploy verification manifest records green Static quality, branding migration and Pages deploy for db9cee4, plus public URL health evidence and the local-network 503 watch state.
-- D202 is now the next visual QA slice: verify first-screen and mobile layout after the recent activation and performance changes.
+- D202 is now beta: first-screen visual QA has a public-safe report plus a deterministic smoke gate for the chat composer, activation banners, model-library handoff and mobile layout after the recent UX changes.
+- D203 is now the next composer model picker slice: make live, free and installable model choice feel closer to ChatGPT and Open WebUI while preserving zero-trust boundaries.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D202` first-screen visual verification pass.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D203` composer model picker polish.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
