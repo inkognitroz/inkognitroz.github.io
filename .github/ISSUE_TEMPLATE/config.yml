@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: MMIR platform architecture context
+    url: https://github.com/inkognitroz/inkognitroz.github.io/blob/main/README.md
+    about: Read the public MMIR architecture and repo context before opening cross-repo platform work.
