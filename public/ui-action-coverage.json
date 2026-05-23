@@ -101,6 +101,14 @@
       "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mmir-workspace-changed", "workspace-create", "privacy-delete"]
     },
     {
+      "id": "conversation-management",
+      "surface": "Conversation manager",
+      "status": "beta",
+      "user_result": "Users can save, rename, pin, archive, search, load, fork, export and safe-share local conversations per workspace.",
+      "selectors": ["#conversation-manager-panel", "#conversation-save", "#conversation-new", "#conversation-search", "[data-conversation-action]"],
+      "evidence": ["Save / rename", "Search saved chats", "dataset.conversationAction", "forkConversation", "safeShare", "exportConversation"]
+    },
+    {
       "id": "workflow-data-training",
       "surface": "Workflow, datasets and training panels",
       "status": "beta",

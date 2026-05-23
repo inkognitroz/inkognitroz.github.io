@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T02:31:52.933Z",
+  "updated_at": "2026-05-23T02:40:12.128Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 51,
+    "beta": 52,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 47,
+    "planned": 46,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -60,11 +60,11 @@
         "phase": "Chat UX",
         "total": 5,
         "done": 1,
-        "beta": 3,
+        "beta": 4,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Model UX",
@@ -2655,10 +2655,10 @@
       "best_practice": "Mature chat tools need strong conversation lifecycle controls",
       "done_when": "User can manage many chats without losing context",
       "covers": "ChatGPT/Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Conversation manager now provides local save/rename, pin, archive/restore, search, load, fork, JSON export and redacted safe-share controls per workspace.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D128",

@@ -120,6 +120,7 @@ requireText(mmirPath, 'id="model-library"', 'MMIR product page must expose model
 requireText(mmirPath, 'id="workflow-builder"', 'MMIR product page must expose workflow orchestration.');
 requireText(mmirPath, 'id="gui-parity"', 'MMIR product page must expose the ChatGPT/Open WebUI parity matrix.');
 requireText(mmirPath, './apps/mimir-chat-portal/gui-parity-matrix.js', 'MMIR product page must load GUI parity matrix script.');
+requireText(mmirPath, './apps/mimir-chat-portal/conversation-manager.js', 'MMIR product page must load conversation manager script.');
 requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
@@ -139,6 +140,14 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'free-value-loops.css')
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'gui-parity-matrix.js'), 'gui-parity-matrix.json', 'GUI parity matrix script must load the public-safe matrix data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'gui-parity-matrix.js'), 'statusClass', 'GUI parity matrix must render truthful status classes.');
 requireText(join(root, 'docs', 'MMIR_GUI_PARITY_MATRIX.md'), 'Source of truth', 'GUI parity matrix docs must point to the public JSON source of truth.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'CONVERSATION_PREFIX', 'Conversation manager must persist saved conversations per workspace.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Save / rename', 'Conversation manager must expose rename/save.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Archive', 'Conversation manager must expose archive.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Pin', 'Conversation manager must expose pin.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Search saved chats', 'Conversation manager must expose search.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Fork', 'Conversation manager must expose fork.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Export', 'Conversation manager must expose export.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Safe share', 'Conversation manager must expose redacted safe-share.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -162,6 +171,7 @@ requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model 
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
 requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:auto', 'Mobile navigation must remain accessible instead of disappearing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'privacy-data-inventory', 'Privacy controls must expose a full browser data inventory.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Conversation library', 'Privacy controls must include saved conversation library data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Clear pairing tokens', 'Privacy controls must let users clear temporary local node pairing tokens.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Delete all local MMIR data', 'Privacy controls must let users reset only MMIR browser data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');

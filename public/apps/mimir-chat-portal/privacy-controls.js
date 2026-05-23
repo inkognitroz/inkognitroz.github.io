@@ -4,6 +4,8 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const CHAT_PREFIX='mimir-chat-current-session-v1:';
   const LEGACY_CHAT_KEY='mimir-chat-current-session-v1';
+  const CONVERSATION_PREFIX='mimir-conversations-v1:';
+  const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
@@ -42,7 +44,7 @@
     WELCOME_KEY,
     GROWTH_EVENTS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -143,6 +145,7 @@
     const chat=readJson(chatKey(id),id===DEFAULT_WORKSPACE_ID?readJson(LEGACY_CHAT_KEY,[]):[]);
     const memory=readJson(MEMORY_PREFIX+id,[]);
     const knowledge=readJson(KNOWLEDGE_PREFIX+id,[]);
+    const conversations=readJson(CONVERSATION_PREFIX+id,[]);
 
     return {
       exported_at:new Date().toISOString(),
@@ -150,6 +153,7 @@
       local_only:true,
       excludes:['pairing tokens','provider keys','managed backend data'],
       chat:Array.isArray(chat)?chat:[],
+      conversations:Array.isArray(conversations)?conversations:[],
       memory:Array.isArray(memory)?memory:[],
       knowledge:Array.isArray(knowledge)?knowledge:[]
     };
@@ -185,6 +189,10 @@
     ];
     const memoryKeys=keysByPrefix(local,MEMORY_PREFIX);
     const knowledgeKeys=keysByPrefix(local,KNOWLEDGE_PREFIX);
+    const conversationKeys=[
+      ...keysByPrefix(local,CONVERSATION_PREFIX),
+      ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
+    ];
     const workspaceKeys=keysByExact(local,[WORKSPACES_KEY,ACTIVE_WORKSPACE_KEY]);
     const backendProfileKeys=keysByExact(local,[PROFILE_KEY,ACTIVE_BACKEND_KEY]);
     const preferenceKeys=keysByExact(local,[MODE_KEY,ROLE_KEY,SELECTED_MODEL_KEY]);
@@ -206,6 +214,16 @@
         retention:'Until the user exports or deletes it.',
         action:'Export/delete active workspace or clear all MMIR local data.',
         keys:chatKeys
+      },
+      {
+        id:'conversation-library',
+        label:'Conversation library',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,conversationKeys),
+        size:formatBytes(storageSize(localStorage,conversationKeys)),
+        retention:'Until exported, archived, deleted by browser reset or cleared with all MMIR data.',
+        action:'Manage saved chats in Conversations or clear all MMIR local data.',
+        keys:conversationKeys
       },
       {
         id:'workspace-memory',
@@ -423,6 +441,8 @@
     clearDeleteArm();
     localStorage.removeItem(chatKey());
     if(workspaceId()===DEFAULT_WORKSPACE_ID)localStorage.removeItem(LEGACY_CHAT_KEY);
+    localStorage.removeItem(CONVERSATION_PREFIX+workspaceId());
+    localStorage.removeItem(ACTIVE_CONVERSATION_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
     button.textContent=button.dataset.originalLabel||'Delete workspace data';

@@ -1,0 +1,295 @@
+(function(){
+  const ACTIVE_WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const CHAT_KEY='mimir-chat-current-session-v1';
+  const CONVERSATION_PREFIX='mimir-conversations-v1:';
+  const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
+  const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
+  let titleEl=null;
+  let searchEl=null;
+  let archivedEl=null;
+  let listEl=null;
+  let statusEl=null;
+
+  if(!host)return;
+
+  function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+  function conversationKey(){return CONVERSATION_PREFIX+workspaceId();}
+  function activeConversationKey(){return ACTIVE_CONVERSATION_PREFIX+workspaceId();}
+  function chatStorageKey(){return CHAT_KEY+':'+workspaceId();}
+  function safeId(){return 'conversation-'+Date.now().toString(36)+'-'+Math.random().toString(16).slice(2,7);}
+
+  function readJson(key,fallback){
+    try{
+      const value=JSON.parse(localStorage.getItem(key)||'null');
+      return value ?? fallback;
+    }catch(error){
+      return fallback;
+    }
+  }
+
+  function writeJson(key,value){
+    localStorage.setItem(key,JSON.stringify(value));
+  }
+
+  function readMessages(){
+    const scoped=readJson(chatStorageKey(),null);
+    const legacy=workspaceId()===DEFAULT_WORKSPACE_ID?readJson(CHAT_KEY,[]):[];
+    return Array.isArray(scoped)?scoped:(Array.isArray(legacy)?legacy:[]);
+  }
+
+  function writeMessages(messages){
+    writeJson(chatStorageKey(),Array.isArray(messages)?messages:[]);
+    window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id:workspaceId()}}));
+    window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:workspaceId()}}));
+  }
+
+  function readConversations(){
+    const items=readJson(conversationKey(),[]);
+    return Array.isArray(items)?items.filter(item=>item&&item.id&&Array.isArray(item.messages)):[];
+  }
+
+  function saveConversations(items){
+    writeJson(conversationKey(),items.slice(0,80));
+    window.dispatchEvent(new CustomEvent('mmir-conversations-updated',{detail:{workspaceId:workspaceId()}}));
+  }
+
+  function setStatus(message,state){
+    if(statusEl){
+      statusEl.textContent=message||'';
+      statusEl.dataset.state=state||'idle';
+    }
+  }
+
+  function titleFromMessages(messages){
+    const first=messages.find(message=>message?.role==='user'&&String(message.content||'').trim())||
+      messages.find(message=>String(message?.content||'').trim());
+    const value=String(first?.content||'Conversation').replace(/\s+/g,' ').trim();
+    return value.slice(0,64)||'Conversation';
+  }
+
+  function activeConversationId(){
+    return localStorage.getItem(activeConversationKey())||'';
+  }
+
+  function saveCurrentConversation(){
+    const messages=readMessages();
+    if(!messages.length){setStatus('No current chat to save yet.','error');return;}
+    const now=new Date().toISOString();
+    const id=activeConversationId()||safeId();
+    const title=String(titleEl?.value||'').trim()||titleFromMessages(messages);
+    const items=readConversations();
+    const existing=items.find(item=>item.id===id);
+    const next={
+      id,
+      title,
+      messages,
+      pinned:Boolean(existing?.pinned),
+      archived:Boolean(existing?.archived),
+      created_at:existing?.created_at||now,
+      updated_at:now
+    };
+    const updated=existing?items.map(item=>item.id===id?next:item):[next,...items];
+    localStorage.setItem(activeConversationKey(),id);
+    saveConversations(updated);
+    if(titleEl)titleEl.value=title;
+    render();
+    setStatus('Conversation saved.','ready');
+  }
+
+  function clearCurrentChat(){
+    localStorage.removeItem(activeConversationKey());
+    writeMessages([]);
+    if(titleEl)titleEl.value='';
+    render();
+    setStatus('New local chat started.','ready');
+  }
+
+  function loadConversation(id){
+    const item=readConversations().find(entry=>entry.id===id);
+    if(!item)return;
+    localStorage.setItem(activeConversationKey(),id);
+    writeMessages(item.messages);
+    if(titleEl)titleEl.value=item.title||'Conversation';
+    render();
+    setStatus('Conversation loaded.','ready');
+  }
+
+  function forkConversation(id){
+    const item=readConversations().find(entry=>entry.id===id);
+    if(!item)return;
+    const now=new Date().toISOString();
+    const fork={...item,id:safeId(),title:'Fork of '+(item.title||'Conversation'),pinned:false,archived:false,created_at:now,updated_at:now};
+    saveConversations([fork,...readConversations()]);
+    localStorage.setItem(activeConversationKey(),fork.id);
+    writeMessages(fork.messages);
+    if(titleEl)titleEl.value=fork.title;
+    render();
+    setStatus('Conversation forked.','ready');
+  }
+
+  function toggleField(id,field){
+    const items=readConversations().map(item=>item.id===id?{...item,[field]:!item[field],updated_at:new Date().toISOString()}:item);
+    saveConversations(items);
+    render();
+    setStatus(field==='pinned'?'Pin state updated.':'Archive state updated.','ready');
+  }
+
+  function exportConversation(id){
+    const item=readConversations().find(entry=>entry.id===id);
+    if(!item)return;
+    const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),workspace_id:workspaceId(),conversation:item},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='mmir-conversation-'+id+'.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus('Conversation exported.','ready');
+  }
+
+  function redact(value){
+    return String(value||'')
+      .replace(/(?:sk|pk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_=-]{12,}/g,'[redacted token]')
+      .replace(/Bearer\s+[A-Za-z0-9._=-]{12,}/gi,'Bearer [redacted]')
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[redacted email]');
+  }
+
+  async function safeShare(id){
+    const item=readConversations().find(entry=>entry.id===id);
+    if(!item)return;
+    const lines=[
+      '# MMIR conversation share',
+      '',
+      'Workspace: '+workspaceId(),
+      'Title: '+redact(item.title||'Conversation'),
+      'Shared with local redaction. Review before posting publicly.',
+      ''
+    ];
+    item.messages.slice(-24).forEach(message=>{
+      lines.push('## '+(message.role==='user'?'User':'MMIR'));
+      lines.push(redact(message.content||''));
+      lines.push('');
+    });
+    try{
+      await navigator.clipboard.writeText(lines.join('\n'));
+      setStatus('Safe-share text copied. Review before posting.','ready');
+    }catch(error){
+      setStatus('Clipboard blocked. Export JSON instead.','error');
+    }
+  }
+
+  function matchesSearch(item,query){
+    if(!query)return true;
+    const haystack=[item.title].concat(item.messages.map(message=>message.content)).join(' ').toLowerCase();
+    return haystack.includes(query.toLowerCase());
+  }
+
+  function sortedConversations(){
+    const query=String(searchEl?.value||'').trim();
+    const showArchived=archivedEl?.checked===true;
+    return readConversations()
+      .filter(item=>showArchived||!item.archived)
+      .filter(item=>matchesSearch(item,query))
+      .sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned))||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
+  }
+
+  function render(){
+    if(!listEl)return;
+    const items=sortedConversations();
+    const activeId=activeConversationId();
+    if(titleEl&&!titleEl.value){
+      const active=readConversations().find(item=>item.id===activeId);
+      if(active)titleEl.value=active.title||'';
+    }
+    listEl.innerHTML='';
+    if(!items.length){
+      listEl.innerHTML='<p class="empty-backends">No saved conversations match this view.</p>';
+      return;
+    }
+    items.forEach(item=>{
+      const article=document.createElement('article');
+      article.className='conversation-item '+(item.id===activeId?'is-active':'');
+      const body=document.createElement('div');
+      const title=document.createElement('strong');
+      title.textContent=(item.pinned?'Pinned: ':'')+(item.title||'Conversation');
+      const meta=document.createElement('small');
+      meta.textContent=String(item.messages.length)+' messages - '+(item.archived?'archived':'active')+' - '+String(item.updated_at||'').slice(0,10);
+      body.append(title,meta);
+      const actions=document.createElement('div');
+      actions.className='conversation-actions';
+      [
+        ['load','Load'],
+        ['pin',item.pinned?'Unpin':'Pin'],
+        ['archive',item.archived?'Restore':'Archive'],
+        ['fork','Fork'],
+        ['export','Export'],
+        ['share','Safe share']
+      ].forEach(([action,label])=>{
+        const button=document.createElement('button');
+        button.type='button';
+        button.dataset.conversationAction=action;
+        button.dataset.id=item.id;
+        button.textContent=label;
+        actions.appendChild(button);
+      });
+      article.append(body,actions);
+      listEl.appendChild(article);
+    });
+  }
+
+  function handleAction(event){
+    const button=event.target?.closest?.('[data-conversation-action]');
+    if(!button)return;
+    const id=button.dataset.id||'';
+    const action=button.dataset.conversationAction;
+    if(action==='load')loadConversation(id);
+    if(action==='pin')toggleField(id,'pinned');
+    if(action==='archive')toggleField(id,'archived');
+    if(action==='fork')forkConversation(id);
+    if(action==='export')exportConversation(id);
+    if(action==='share')safeShare(id);
+  }
+
+  function install(){
+    if(document.getElementById('conversation-manager-panel'))return;
+    const details=document.createElement('details');
+    details.id='conversation-manager-panel';
+    details.className='model-catalog-hint conversation-manager-panel';
+    details.innerHTML=''+
+      '<summary>+ Conversations</summary>'+
+      '<div class="conversation-manager-body">'+
+        '<div class="conversation-save-row">'+
+          '<label for="conversation-title">Title<input id="conversation-title" type="text" maxlength="80" placeholder="Conversation title" /></label>'+
+          '<button id="conversation-save" type="button">Save / rename</button>'+
+          '<button id="conversation-new" type="button">New chat</button>'+
+        '</div>'+
+        '<div class="conversation-filter-row">'+
+          '<label for="conversation-search">Search<input id="conversation-search" type="search" placeholder="Search saved chats" /></label>'+
+          '<label class="conversation-archive-toggle"><input id="conversation-show-archived" type="checkbox" /> Show archived</label>'+
+        '</div>'+
+        '<p id="conversation-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>'+
+        '<div id="conversation-list" class="conversation-list" aria-live="polite"></div>'+
+      '</div>';
+    host.appendChild(details);
+    titleEl=document.getElementById('conversation-title');
+    searchEl=document.getElementById('conversation-search');
+    archivedEl=document.getElementById('conversation-show-archived');
+    listEl=document.getElementById('conversation-list');
+    statusEl=document.getElementById('conversation-status');
+    document.getElementById('conversation-save')?.addEventListener('click',saveCurrentConversation);
+    document.getElementById('conversation-new')?.addEventListener('click',clearCurrentChat);
+    searchEl?.addEventListener('input',render);
+    archivedEl?.addEventListener('change',render);
+    listEl?.addEventListener('click',handleAction);
+    render();
+  }
+
+  window.addEventListener('mmir-chat-history-updated',render);
+  window.addEventListener('mmir-workspace-changed',()=>{if(titleEl)titleEl.value='';render();});
+  window.addEventListener('mmir-conversations-updated',render);
+  window.addEventListener('storage',render);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
