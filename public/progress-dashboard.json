@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T02:15:08.816Z",
+  "updated_at": "2026-05-23T02:19:22.073Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 50,
-    "beta": 49,
+    "beta": 50,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 50,
+    "planned": 49,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -420,11 +420,11 @@
         "phase": "Templates",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Enterprise Prep",
@@ -2550,10 +2550,10 @@
       "best_practice": "Templates create immediate value loops",
       "done_when": "User can start useful workflows without building from scratch",
       "covers": "activation, workflows",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First screen now includes free-first use-case templates for repo analysis, product planning, security review, model comparison and workflow planning that start chat prompts and open the right MMIR panels.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D121",

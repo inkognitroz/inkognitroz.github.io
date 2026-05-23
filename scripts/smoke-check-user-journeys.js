@@ -15,6 +15,7 @@ const files = {
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
   onboarding: join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'),
+  templates: join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'),
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
   privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
@@ -135,6 +136,11 @@ requireIncludes(files.onboarding, 'Developer', 'D119 needs a developer path.');
 requireIncludes(files.onboarding, 'Business owner', 'D119 needs a business owner path.');
 requireIncludes(files.onboarding, 'Power user', 'D119 needs an AI power-user path.');
 requireIncludes(files.onboarding, 'Privacy / local', 'D119 needs a privacy/local path.');
+requireIncludes(files.templates, 'repo-analysis', 'D120 needs a repo analysis use-case template.');
+requireIncludes(files.templates, 'product-plan', 'D120 needs a product planning use-case template.');
+requireIncludes(files.templates, 'security-review', 'D120 needs a security review use-case template.');
+requireIncludes(files.templates, 'model-comparison', 'D120 needs a model comparison use-case template.');
+requireIncludes(files.templates, 'workflow-planning', 'D120 needs a workflow planning use-case template.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -165,7 +171,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

@@ -117,6 +117,14 @@ requireText(mmirPath, 'id="node-dashboard-root"', 'MMIR product page must expose
 requireText(mmirPath, './apps/mimir-chat-portal/node-dashboard.js', 'MMIR product page must load the node dashboard script.');
 requireText(mmirPath, 'id="model-library"', 'MMIR product page must expose model-agnostic routing.');
 requireText(mmirPath, 'id="workflow-builder"', 'MMIR product page must expose workflow orchestration.');
+requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'security-review', 'Use-case templates must include security review.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'model-comparison', 'Use-case templates must include model comparison.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'workflow-planning', 'Use-case templates must include workflow planning.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.css'), '.use-case-template-grid', 'Use-case templates need a responsive card layout.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
