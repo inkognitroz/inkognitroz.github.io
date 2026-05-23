@@ -298,6 +298,7 @@
         fetchSafe(joinUrl(connection.url,'/doctor'),{headers:connection.headers,timeoutMs:7000})
       ]);
       if(!statusRes.ok)throw statusRes.error;
+      if(doctorRes.ok)window.dispatchEvent(new CustomEvent('mmir-local-doctor-updated',{detail:doctorRes.data}));
       renderReady(
         connection,
         statusRes.data,

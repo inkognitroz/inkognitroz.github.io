@@ -392,6 +392,13 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'MMIR managed session token', 'D161 privacy inventory must disclose current-tab managed session tokens.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'First chat receipt', 'D166 privacy inventory must disclose the browser-local first-chat receipt.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Activation telemetry', 'D170 privacy inventory must disclose browser-local activation telemetry.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry recorder.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'raw_prompt_stored:false', 'D170 telemetry must prove raw prompts are not stored.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'secrets_stored:false', 'D170 telemetry must prove secrets are not stored.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-activation-clear', 'D170 dashboard must expose activation telemetry controls.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
+requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, session tokens, invite codes, provider keys and backend data.');

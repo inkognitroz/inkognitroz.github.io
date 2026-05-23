@@ -96,17 +96,17 @@
       "id": "operator-dashboards",
       "surface": "Status, progress, parity and journeys",
       "status": "live",
-      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity, first-chat receipt state and user journey state from the site.",
-      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#progress-first-chat-recovery", "#refresh-gui-parity", "#refresh-user-journeys"],
-      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "progress-first-chat-recovery", "firstChatReceiptState", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
+      "user_result": "The owner can refresh public-safe platform status, backlog progress, GUI parity, first-chat receipt state, activation telemetry and user journey state from the site.",
+      "selectors": ["#refresh-platform-status", "#refresh-progress-dashboard", "#progress-first-chat-recovery", "#progress-activation-clear", "#refresh-gui-parity", "#refresh-user-journeys"],
+      "evidence": ["refresh-platform-status", "refresh-progress-dashboard", "progress-first-chat-recovery", "firstChatReceiptState", "progress-activation-clear", "activationSummary", "mimir-activation-events-v1:", "refresh-gui-parity", "refresh-user-journeys", "refreshButton.addEventListener('click',init)", "refreshButton?.addEventListener('click',load)"]
     },
     {
       "id": "workspace-memory-knowledge",
       "surface": "Workspace, memory, knowledge and privacy controls",
       "status": "beta",
-      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, see first-chat receipts, and export/delete local data.",
+      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, see first-chat receipts and activation telemetry, and export/delete local data.",
       "selectors": ["#workspace-new", "#memory-save", "#knowledge-dropzone", "#knowledge-collection-name", "[data-collection-toggle]", "#knowledge-save", "#privacy-export", "#privacy-delete"],
-      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "First chat receipt", "privacy-delete"]
+      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "First chat receipt", "Activation telemetry", "privacy-delete"]
     },
     {
       "id": "explicit-web-search",

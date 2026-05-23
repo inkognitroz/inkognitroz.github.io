@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d169-20260523-local-doctor-loop';
+const CACHE_NAME='mmir-pwa-d170-20260523-activation-telemetry';
 const SHELL_ASSETS=[
   './',
   './index.html',

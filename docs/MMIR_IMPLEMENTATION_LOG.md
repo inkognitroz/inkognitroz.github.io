@@ -161,14 +161,15 @@ Updated: 2026-05-23
 - D167 is now beta in the public UI: first-chat receipt state appears in the progress dashboard and first-run gates, with free-first repair/start actions and no hidden paid route execution.
 - D168 is now beta in the public UI: model install completion and local-node refreshed events prefer the installed/live model, rerun free proof, select it and prepare the first verified chat prompt without auto-spend.
 - D169 is now beta across local node and public connector: protected `/doctor` returns one health report for connector, pairing, Ollama, model-pull state, model availability, hardware and tunnel, and Node Dashboard consumes it with fallback checks.
-- D170 is now the next activation slice: a public-safe activation telemetry panel should show defaults, proof, install, doctor and first-chat state without raw prompts, secrets or paid routes.
+- D170 is now beta: progress dashboard renders browser-local activation telemetry from automatic defaults, live proof, model install, local doctor and first-chat receipt events, with raw_prompt_stored:false, raw_response_stored:false and secrets_stored:false.
+- D171 is now the next activation slice: safe activation autopilot should use that timeline to run free repairs automatically before asking users for OS/device steps.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D170` activation telemetry panel.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D171` safe activation autopilot.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

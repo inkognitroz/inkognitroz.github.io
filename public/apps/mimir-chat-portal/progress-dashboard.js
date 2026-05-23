@@ -6,6 +6,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
+  const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
@@ -16,6 +17,7 @@
   function label(value){return String(value||'unknown').replaceAll('-', ' ');}
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
+  function activationEventsStorageKey(){return ACTIVATION_EVENTS_PREFIX+activeWorkspaceId();}
   function readFirstChatReceipt(){
     try{
       const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
@@ -49,6 +51,29 @@
       action:'Start free path'
     };
   }
+  function readActivationEvents(){
+    try{
+      const value=JSON.parse(localStorage.getItem(activationEventsStorageKey())||'[]');
+      return Array.isArray(value)?value:[];
+    }catch(error){
+      return [];
+    }
+  }
+  function activationSummary(){
+    const events=readActivationEvents();
+    const latest=events[events.length-1]||null;
+    const verified=events.filter((event)=>event.status==='verified'||event.first_chat_ready||event.status==='ready').length;
+    const failed=events.filter((event)=>event.status==='failed'||event.status==='error').length;
+    return {
+      events,
+      latest,
+      state:failed&&latest?.status!=='ready'&&latest?.status!=='verified'?'error':(verified?'ready':'idle'),
+      label:latest?label(latest.type):'No local events yet',
+      detail:latest?latest.note:'Activation telemetry starts when MMIR checks defaults, proof, installs, doctor state or first chat.',
+      verified,
+      failed
+    };
+  }
   function pct(done,beta,total){
     if(!total)return 0;
     return Math.round(((done||0)+(beta||0)*0.55)/total*100);
@@ -78,6 +103,29 @@
     return '<section class="progress-receipt-card" data-state="'+safe(state.status)+'">'+
       '<div><p class="eyebrow">Activation receipt</p><h2>First chat receipt: '+safe(state.label)+'</h2><small>'+safe(state.detail)+'</small></div>'+
       '<button id="progress-first-chat-recovery" type="button">'+safe(state.action)+'</button>'+
+    '</section>';
+  }
+
+  function renderActivationTelemetry(){
+    const state=activationSummary();
+    const events=state.events.slice(-6).reverse();
+    return '<section class="progress-activation-card" data-state="'+safe(state.state)+'">'+
+      '<div class="progress-activation-head"><div><p class="eyebrow">Activation telemetry</p><h2>Latest activation: '+safe(state.label)+'</h2><small>'+safe(state.detail)+'</small></div>'+
+      '<div class="progress-activation-counts">'+
+        '<span>'+safe(state.events.length)+' events</span>'+
+        '<span>'+safe(state.verified)+' ready</span>'+
+        '<span>'+safe(state.failed)+' repair</span>'+
+      '</div></div>'+
+      '<div class="progress-activation-list">'+(events.length?events.map((event)=>
+        '<article class="progress-activation-event" data-state="'+safe(event.status||'idle')+'">'+
+          '<span>'+safe(label(event.type))+'</span>'+
+          '<strong>'+safe(label(event.status))+'</strong>'+
+          '<small>'+safe(new Date(event.at||Date.now()).toLocaleString())+' / '+safe(event.route||'local-first')+(event.model?' / '+safe(event.model):'')+'</small>'+
+          '<p>'+safe(event.note||'Activation event recorded.')+'</p>'+
+        '</article>'
+      ).join(''):'<p class="dashboard-note">No activation events have been recorded in this browser workspace yet.</p>')+'</div>'+
+      '<div class="progress-activation-actions"><button id="progress-activation-refresh" type="button">Refresh activation</button><button id="progress-activation-clear" type="button">Clear local events</button></div>'+
+      '<small class="progress-activation-privacy">Local only: raw_prompt_stored:false, raw_response_stored:false, secrets_stored:false.</small>'+
     '</section>';
   }
 
@@ -197,6 +245,15 @@
     document.getElementById('progress-first-chat-recovery')?.addEventListener('click',runFirstChatRecovery);
   }
 
+  function bindActivationTelemetry(){
+    document.getElementById('progress-activation-refresh')?.addEventListener('click',render);
+    document.getElementById('progress-activation-clear')?.addEventListener('click',()=>{
+      window.MimirActivationTelemetry?.clear?.();
+      try{localStorage.removeItem(activationEventsStorageKey());}catch(error){}
+      render();
+    });
+  }
+
   function openHashDetails(){
     const id=window.location.hash?window.location.hash.slice(1):'';
     if(!id)return;
@@ -206,8 +263,9 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
+    bindActivationTelemetry();
     bindFilters();
     openHashDetails();
   }
@@ -231,6 +289,7 @@
   if(refreshButton)refreshButton.addEventListener('click',init);
   window.addEventListener('hashchange',openHashDetails);
   window.addEventListener('mmir-first-chat-receipt-updated',render);
+  window.addEventListener('mmir-activation-telemetry-updated',render);
   window.addEventListener('mmir-chat-history-updated',render);
   window.addEventListener('storage',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

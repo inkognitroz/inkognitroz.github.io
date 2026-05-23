@@ -24,7 +24,9 @@
 .progress-repo-card,
 .progress-next-card,
 .progress-decision-card,
-.progress-receipt-card {
+.progress-receipt-card,
+.progress-activation-card,
+.progress-activation-event {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 8px;
   background: #fff;
@@ -35,7 +37,8 @@
 .progress-phase-card span,
 .progress-repo-card span,
 .progress-next-card span,
-.progress-decision-card span {
+.progress-decision-card span,
+.progress-activation-event span {
   color: var(--mimir-muted, #6b7280);
   display: block;
   font-size: 0.76rem;
@@ -56,7 +59,8 @@
 .progress-phase-card small,
 .progress-repo-card small,
 .progress-next-card small,
-.progress-decision-card small {
+.progress-decision-card small,
+.progress-activation-event small {
   color: var(--mimir-muted, #6b7280);
 }
 
@@ -236,6 +240,94 @@
   white-space: nowrap;
 }
 
+.progress-activation-card {
+  display: grid;
+  gap: 10px;
+}
+
+.progress-activation-card[data-state="ready"] {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.progress-activation-card[data-state="error"] {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.progress-activation-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.progress-activation-head h2 {
+  color: var(--mimir-text, #111827);
+  font-size: 1rem;
+  margin: 2px 0 4px;
+}
+
+.progress-activation-head small,
+.progress-activation-privacy {
+  color: var(--mimir-muted, #6b7280);
+}
+
+.progress-activation-counts,
+.progress-activation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.progress-activation-counts span {
+  background: #eef2f7;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 750;
+  padding: 4px 8px;
+}
+
+.progress-activation-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.progress-activation-event strong {
+  color: var(--mimir-text, #111827);
+  display: block;
+  font-size: 0.95rem;
+  margin: 4px 0;
+}
+
+.progress-activation-event p {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.84rem;
+  margin: 7px 0 0;
+}
+
+.progress-activation-event[data-state="failed"],
+.progress-activation-event[data-state="error"] {
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.progress-activation-event[data-state="ready"],
+.progress-activation-event[data-state="verified"] {
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.progress-activation-actions button {
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 999px;
+  color: var(--mimir-text, #111827);
+  cursor: pointer;
+  font-weight: 750;
+  min-height: 34px;
+  padding: 7px 12px;
+}
+
 @media (max-width: 860px) {
   .progress-columns {
     grid-template-columns: 1fr;
@@ -243,7 +335,13 @@
 
   .progress-task-head,
   .progress-toolbar,
-  .progress-receipt-card {
+  .progress-receipt-card,
+  .progress-activation-head {
     display: grid;
+  }
+
+  .progress-activation-counts,
+  .progress-activation-actions {
+    justify-content: flex-start;
   }
 }

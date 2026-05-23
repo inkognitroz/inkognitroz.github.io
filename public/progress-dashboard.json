@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T11:39:04.988Z",
+  "updated_at": "2026-05-23T11:55:10.921Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 170,
+    "total": 171,
     "done": 51,
-    "beta": 94,
+    "beta": 95,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -740,7 +740,17 @@
         "phase": "Activation QA",
         "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Activation Automation",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -798,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D170"
+    "D171"
   ],
   "watchlist": [
     "D082",
@@ -3350,9 +3360,24 @@
       "best_practice": "The owner should see where users fall out of activation without invasive tracking",
       "done_when": "Progress dashboard shows the latest local activation events and next automatic repair path from one panel",
       "covers": "activation, analytics, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress dashboard now renders a browser-local activation telemetry timeline fed by defaults, proof, model install, doctor and first-chat events with raw_prompt_stored:false/raw_response_stored:false/secrets_stored:false.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D171",
+      "phase": "Activation Automation",
+      "priority": "P0",
+      "work_package": "Safe activation autopilot",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Use activation telemetry to automatically run free safe repairs such as free profile setup, proof retry and first-chat recovery, while only asking users for OS/device steps that cannot be automated",
+      "best_practice": "MMIR should fix everything safe and free by default before asking for configuration",
+      "done_when": "User lands on the next useful action automatically, with no paid route, provider secret or raw model runtime exposed",
+      "covers": "activation, automation, free-first",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: show a public-safe activation telemetry timeline for defaults, proof, install, doctor and first chat without raw prompts or secrets.",
+      "evidence": "Next activation slice: use telemetry to run safe, free automatic repairs before asking users for OS/device steps.",
       "estimate": "2-6h"
     }
   ]

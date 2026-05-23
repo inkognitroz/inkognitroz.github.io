@@ -51,6 +51,7 @@ Current priority after the matrix is:
 41. D168 install-to-first-chat bridge.
 42. D169 local install repair loop.
 43. D170 activation telemetry panel.
+44. D171 safe activation autopilot.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -93,6 +94,7 @@ D166 is now beta in the public UI: first backend chat success/failure writes a b
 D167 is now beta in the public UI: first-chat receipt state appears in progress dashboard and first-run gates with repair/start actions that stay free-first and do not auto-spend.
 D168 is now beta in the public UI: model install completion and local-node online events prefer the installed/live model, rerun free proof, select it and prepare the first verified chat prompt.
 D169 is now beta: local node and downloadable connector expose `/doctor`, and Node Dashboard uses that health report for connector, Ollama, pairing, model pull, model, hardware and tunnel repair actions.
-D170 is next: activation telemetry should show defaults, proof, install, doctor and first-chat state without raw prompts, secrets or paid routes.
+D170 is now beta: activation telemetry shows defaults, proof, install, doctor and first-chat state without raw prompts, secrets or paid routes.
+D171 is next: safe activation autopilot should run free repairs automatically before asking users for OS/device steps.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.
