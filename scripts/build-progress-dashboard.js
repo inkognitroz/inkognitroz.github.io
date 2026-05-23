@@ -6,6 +6,7 @@ const backlogPath = resolve(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md')
 const outputPath = resolve(root, 'public', 'progress-dashboard.json');
 const activationSimulatorPath = resolve(root, 'public', 'activation-simulator-fixtures.json');
 const noModelDeadEndReportPath = resolve(root, 'public', 'no-model-dead-end-report.json');
+const noModelPublicDeployVerificationPath = resolve(root, 'public', 'no-model-public-deploy-verification.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -139,7 +140,7 @@ const overrides = new Map([
   ['D198', { status: 'beta', evidence: 'After a verified first answer, chat proof, first-screen closure and Progress Dashboard now offer one receipt-driven next step such as save chat, connect node or add memory without storing raw prompts or starting paid routes.' }],
   ['D199', { status: 'beta', evidence: 'Visible-control audit now proves key first-screen, composer, runtime proof, model library, node repair and progress controls are wired or gated; Connect Model opens the model library instead of a dead configuration stop.' }],
   ['D200', { status: 'beta', evidence: 'Demo growth instrumentation now loads through the deferred queue with a click handoff, restoring meaningful critical-shell JS headroom while preserving Try demo mode.' }],
-  ['D201', { status: 'beta', evidence: 'Deploy verification manifest records green Static quality, branding migration and Pages deploy for db9cee4, plus public URL health evidence and the local-network 503 watch state.' }],
+  ['D201', { status: 'beta', evidence: 'Deploy verification manifest records green Static quality, branding migration and Pages deploy for c140ad6, plus public URL health evidence and the local newly-registered-domain network watch state.' }],
   ['D202', { status: 'beta', evidence: 'First-screen visual QA now has a public-safe report and deterministic smoke gate for the composer, activation banners, model-library handoff and mobile layout after the recent UX changes.' }],
   ['D203', { status: 'beta', evidence: 'The chat composer now has a compact model picker from the plus/model chip, showing live, browser-helper, WebGPU and installable free local model routes with no paid-route side effects.' }],
   ['D204', { status: 'beta', evidence: 'Node Dashboard now renders an automatic node/tunnel handoff from installer to pairing, model install, proof/chat and optional outbound tunnel across desktop, VM and Raspberry Pi/Linux ARM paths.' }],
@@ -149,7 +150,8 @@ const overrides = new Map([
   ['D208', { status: 'beta', evidence: 'Chat send flow now falls back to a useful free starter when no live model route is selected, and CI guards the first chat/model DOM against empty no-model dead ends.' }],
   ['D209', { status: 'beta', evidence: 'Progress Dashboard now renders a no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios plus one free primary action for each.' }],
   ['D210', { status: 'beta', evidence: 'No-model visual pass now publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and progress fixture.' }],
-  ['D211', { status: 'next', evidence: 'Next activation slice: verify the deployed public page exposes the no-model fixture and free route floor after GitHub Pages propagation.' }]
+  ['D211', { status: 'beta', evidence: 'Public no-model deploy verification now records green D210 GitHub Actions/Pages evidence, artifact contracts for the no-model fixture and route floor, plus the local newly-registered-domain network watch.' }],
+  ['D212', { status: 'next', evidence: 'Next activation slice: make the no-backend first prompt produce a useful, truthful free MMIR Guide response with one obvious next action.' }]
 ]);
 
 const repoMeta = [
@@ -263,6 +265,11 @@ function readNoModelDeadEndReport() {
   return JSON.parse(readFileSync(noModelDeadEndReportPath, 'utf8'));
 }
 
+function readNoModelPublicDeployVerification() {
+  if (!existsSync(noModelPublicDeployVerificationPath)) return null;
+  return JSON.parse(readFileSync(noModelPublicDeployVerificationPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -287,7 +294,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D211', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D212', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -308,6 +315,7 @@ const data = {
   summary: summarize(tasks),
   activation_simulator: readActivationSimulator(),
   no_model_dead_end_report: readNoModelDeadEndReport(),
+  no_model_public_deploy_verification: readNoModelPublicDeployVerification(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

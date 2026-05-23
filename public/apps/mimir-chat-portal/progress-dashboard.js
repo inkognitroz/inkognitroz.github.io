@@ -349,6 +349,27 @@
     '</section>';
   }
 
+  function renderNoModelPublicDeployVerification(data){
+    const report=data.no_model_public_deploy_verification||{};
+    const artifacts=Array.isArray(report.public_artifact_contract)?report.public_artifact_contract:[];
+    if(!artifacts.length)return '';
+    const ci=Array.isArray(report.ci)?report.ci:[];
+    const checks=Array.isArray(report.public_url_checks)?report.public_url_checks:[];
+    const green=report.result==='green_with_network_watch'&&ci.every((run)=>run.conclusion==='success');
+    return '<section id="progress-no-model-public-deploy" class="progress-no-model-fixture" data-state="'+(green?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Public deploy proof</p><h2>No-model route is deployed</h2></div><small>'+safe(report.verified_commit_short||'verified commit')+' / '+safe(report.result||'watch')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+artifacts.map((artifact)=>
+        '<article class="progress-no-model-scenario" data-artifact="'+safe(artifact.id)+'">'+
+          '<span>'+safe(label('ready'))+'</span><h3>'+safe(artifact.id)+'</h3>'+
+          '<p>'+safe(artifact.public_url||artifact.source_path||'')+'</p>'+
+          '<strong>'+safe((artifact.required_evidence||[]).slice(0,2).join(' + '))+'</strong>'+
+          '<small>blob:'+safe(String(artifact.github_blob_sha||'').slice(0,12))+' / public-safe artifact</small>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.summary||'Public-safe deploy evidence only.')+' '+safe(checks.find((check)=>check.status==='watch')?.evidence||'')+'</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -604,7 +625,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();

@@ -192,7 +192,7 @@ Updated: 2026-05-23
 - D198 is now beta: after first verified answer, chat proof, first-screen closure and Progress Dashboard show one receipt-driven next step such as save chat, connect node or add memory without raw prompt storage, provider secrets or paid routes.
 - D199 is now beta: visible-control audit proves key first-screen, composer, runtime proof, model library, node repair and progress controls are wired or gated, and Connect Model opens the model library instead of a dead configuration stop.
 - D200 is now beta: demo growth instrumentation loads through the deferred queue with a first-click handoff, restoring meaningful critical-shell JS headroom while preserving Try demo mode.
-- D201 is now beta: deploy verification manifest records green Static quality, branding migration and Pages deploy for db9cee4, plus public URL health evidence and the local-network 503 watch state.
+- D201 is now beta: deploy verification manifest records green Static quality, branding migration and Pages deploy for c140ad6, plus public URL health evidence and the local newly-registered-domain network watch state.
 - D202 is now beta: first-screen visual QA has a public-safe report plus a deterministic smoke gate for the chat composer, activation banners, model-library handoff and mobile layout after the recent UX changes.
 - D203 is now beta: the chat composer plus/model chip opens a compact model picker with live backend, browser helper, WebGPU and installable free local model choices, with install/proof handoff and no paid-route side effects.
 - D204 is now beta: Node Dashboard renders one automatic node/tunnel handoff from installer to pairing, model install, proof/chat and optional outbound tunnel across desktop, VM and Raspberry Pi/Linux ARM paths.
@@ -202,14 +202,15 @@ Updated: 2026-05-23
 - D208 is now beta: chat send flow falls back to a useful free starter when no live model route is selected, and CI guards first chat/model DOM against empty no-model dead ends.
 - D209 is now beta: Progress Dashboard renders a public-safe no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios, each with one free primary action.
 - D210 is now beta: no-model visual pass publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and Progress Dashboard fixture.
-- D211 is now next: verify the deployed public page exposes the no-model fixture and free route floor after GitHub Pages propagation.
+- D211 is now beta: public no-model deploy verification records green D210 GitHub Actions/Pages evidence, public artifact contracts for the no-model fixture and free route floor, plus sanitized local network-filter watch state.
+- D212 is now next: polish and test the no-backend first prompt so it returns a useful, truthful free MMIR Guide response and one obvious next action.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D211` public no-model fixture deploy verification.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D212` first useful free chat response QA.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

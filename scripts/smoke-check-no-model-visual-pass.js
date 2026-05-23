@@ -84,19 +84,24 @@ requireIncludes(files.visualQa, 'D210 no-model fixture visual pass', 'D210 visua
 requireIncludes(files.qualityWorkflow, 'smoke-check-no-model-visual-pass.js', 'D210 quality workflow must run no-model visual pass.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-no-model-visual-pass.js', 'D210 Pages workflow must run no-model visual pass.');
 requireIncludes(files.backlog, '| D211 |', 'Backlog must keep a next sequential work item after D210.');
+requireIncludes(files.backlog, '| D212 |', 'Backlog must keep a next sequential work item after D211.');
 
 const progress = json(files.progressData);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d210 = tasks.find((task) => task.seq === 'D210');
 const d211 = tasks.find((task) => task.seq === 'D211');
+const d212 = tasks.find((task) => task.seq === 'D212');
 if (!d210 || d210.status !== 'beta') {
   fail('Progress dashboard task D210 must be beta after no-model visual pass ships.');
 }
-if (!d211 || d211.status !== 'next') {
-  fail('Progress dashboard task D211 must become the next work item after D210 ships.');
+if (!d211 || d211.status !== 'beta') {
+  fail('Progress dashboard task D211 must be beta after public no-model deploy verification ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D211') {
-  fail('Progress dashboard next queue must prioritize D211 after D210 ships.');
+if (!d212 || d212.status !== 'next') {
+  fail('Progress dashboard task D212 must become the next work item after D211 ships.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D212') {
+  fail('Progress dashboard next queue must prioritize D212 after D211 ships.');
 }
 
 if (!process.exitCode) {

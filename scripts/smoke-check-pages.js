@@ -511,7 +511,7 @@ requireText(join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.
 requireText(mmirPath, './apps/mimir-chat-portal/demo-growth.js', 'D200 demo growth script must remain available through deferred loading.');
 forbidText(mmirPath, '<script src="./apps/mimir-chat-portal/demo-growth.js" defer></script>', 'D200 demo growth script must not block the initial critical shell.');
 requireText(join(root, 'scripts', 'smoke-check-deploy-verification.js'), 'Deploy verification smoke check passed.', 'D201 deploy verification must have a dedicated smoke harness.');
-requireText(join(publicDir, 'deploy-verification.json'), 'db9cee4', 'D201 deploy verification must record latest verified commit.');
+requireText(join(publicDir, 'deploy-verification.json'), 'c140ad6', 'D201 deploy verification must record latest verified commit.');
 requireText(join(publicDir, 'platform-status.json'), 'latest-deploy-verification', 'D201 platform status must expose latest deploy verification.');
 requireText(join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'), 'First-screen visual QA smoke check passed.', 'D202 first-screen visual QA must have a dedicated smoke harness.');
 requireText(join(publicDir, 'visual-qa-report.json'), 'D202 first-screen visual verification', 'D202 first-screen visual QA must publish a public-safe report.');
@@ -536,6 +536,9 @@ requireText(join(root, 'scripts', 'smoke-check-first-chat-no-model-dom-fixture.j
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D210 |', 'Backlog must keep a next sequential work item after D209.');
 requireText(join(root, 'scripts', 'smoke-check-no-model-visual-pass.js'), 'No-model visual pass smoke check passed.', 'D210 no-model visual pass must have a dedicated smoke harness.');
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D211 |', 'Backlog must keep a next sequential work item after D210.');
+requireText(join(root, 'scripts', 'smoke-check-public-no-model-deploy-verification.js'), 'Public no-model deploy verification smoke check passed.', 'D211 public no-model deploy verification must have a dedicated smoke harness.');
+requireText(join(publicDir, 'no-model-public-deploy-verification.json'), 'c140ad6', 'D211 public no-model deploy verification must record the deployed D210 commit.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D212 |', 'Backlog must keep a next sequential work item after D211.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

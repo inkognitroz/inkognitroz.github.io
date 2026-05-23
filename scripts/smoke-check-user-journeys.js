@@ -14,6 +14,7 @@ const files = {
   progress: join(publicDir, 'progress-dashboard.json'),
   visibleControlAudit: join(publicDir, 'visible-control-audit.json'),
   deployVerification: join(publicDir, 'deploy-verification.json'),
+  noModelPublicDeployVerification: join(publicDir, 'no-model-public-deploy-verification.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -83,6 +84,7 @@ const files = {
   criticalShellHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom.js'),
   criticalShellRecoveryHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.js'),
   deployVerificationHarness: join(root, 'scripts', 'smoke-check-deploy-verification.js'),
+  publicNoModelDeployHarness: join(root, 'scripts', 'smoke-check-public-no-model-deploy-verification.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -463,7 +465,7 @@ requireIncludes(files.criticalShellHarness, 'Critical shell headroom smoke check
 requireIncludes(files.criticalShellRecoveryHarness, 'Critical-shell headroom recovery smoke check passed', 'D200 critical-shell headroom recovery needs dedicated CI fixture coverage.');
 requireIncludes(files.mmir, "event.target.closest('#try-demo-mode')", 'D200 Try demo mode needs a deferred first-click handoff.');
 requireIncludes(files.deployVerificationHarness, 'Deploy verification smoke check passed.', 'D201 deploy verification needs dedicated CI fixture coverage.');
-requireIncludes(files.deployVerification, 'db9cee4', 'D201 deploy verification must record latest verified commit.');
+requireIncludes(files.deployVerification, 'c140ad6', 'D201 deploy verification must record latest verified commit.');
 requireIncludes(files.visualQaHarness, 'First-screen visual QA smoke check passed.', 'D202 first-screen visual QA needs dedicated CI fixture coverage.');
 requireIncludes(files.visualQaReport, 'D202 first-screen visual verification', 'D202 visual QA report must publish the first-screen scope.');
 requireIncludes(files.visualQaReport, 'desktop-first-screen', 'D202 visual QA report must include desktop evidence.');
@@ -589,6 +591,10 @@ requireIncludes(join(root, 'scripts', 'smoke-check-first-chat-no-model-dom-fixtu
 requireIncludes(files.progressDashboard, 'renderNoModelDeadEndReport', 'D209 Progress Dashboard must expose no-model fixture evidence.');
 requireIncludes(join(root, 'scripts', 'smoke-check-no-model-visual-pass.js'), 'No-model visual pass smoke check passed.', 'D210 no-model visual pass must have dedicated CI coverage.');
 requireIncludes(files.visualQaReport, 'D210 no-model fixture visual pass', 'D210 visual QA report must expose no-model visual evidence.');
+requireIncludes(files.publicNoModelDeployHarness, 'Public no-model deploy verification smoke check passed.', 'D211 public no-model deploy verification must have dedicated CI coverage.');
+requireIncludes(files.noModelPublicDeployVerification, 'green_with_network_watch', 'D211 public no-model deploy verification must keep deploy green while showing network watch state.');
+requireIncludes(files.noModelPublicDeployVerification, 'composer-route-floor', 'D211 public no-model deploy verification must cover the composer free route floor.');
+requireIncludes(files.progressDashboard, 'renderNoModelPublicDeployVerification', 'D211 Progress Dashboard must render public deploy verification evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

@@ -35,7 +35,7 @@ const deploy = json(files.deploy);
 const platform = json(files.platform);
 const progress = json(files.progress);
 
-if (deploy.commit_short !== 'db9cee4') fail('Deploy verification must record latest verified commit db9cee4.');
+if (deploy.commit_short !== 'c140ad6') fail('Deploy verification must record latest verified commit c140ad6.');
 if (!String(deploy.public_repo_rule || '').includes('No secrets')) fail('Deploy verification must state the public no-secrets boundary.');
 
 const runs = Array.isArray(deploy.ci) ? deploy.ci : [];
@@ -51,11 +51,11 @@ const checks = Array.isArray(deploy.public_url_checks) ? deploy.public_url_check
 if (!checks.some((check) => check.source === 'external web fetch' && check.status === 'online' && /MMIR/.test(check.evidence || ''))) {
   fail('Deploy verification must record an external online mmir.ai content check.');
 }
-if (!checks.some((check) => check.source === 'local PowerShell network' && check.status === 'watch' && /503/.test(check.evidence || ''))) {
-  fail('Deploy verification must record the local 503 watch state without treating it as a code failure.');
+if (!checks.some((check) => check.source === 'local PowerShell network' && check.status === 'watch' && /newly-registered-domain/.test(check.evidence || ''))) {
+  fail('Deploy verification must record the local URL-filter watch state without treating it as a code failure.');
 }
 
-if (platform.latest_verified_commit !== 'db9cee4') fail('Platform status must expose latest verified commit db9cee4.');
+if (platform.latest_verified_commit !== 'c140ad6') fail('Platform status must expose latest verified commit c140ad6.');
 if (platform.deploy_verification !== './deploy-verification.json') fail('Platform status must link deploy-verification.json.');
 const components = Array.isArray(platform.components) ? platform.components : [];
 for (const id of ['latest-deploy-verification', 'public-url-health']) {

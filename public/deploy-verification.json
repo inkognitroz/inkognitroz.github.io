@@ -1,30 +1,30 @@
 {
   "version": 1,
-  "checked_at": "2026-05-23T17:58:00+02:00",
-  "commit": "db9cee4b1acf47409192faa67ec900c162e6ae67",
-  "commit_short": "db9cee4",
+  "checked_at": "2026-05-23T20:02:32+02:00",
+  "commit": "c140ad6103de2995b8d2beb9b2709c47957d5c4f",
+  "commit_short": "c140ad6",
   "public_repo_rule": "Public-safe deploy evidence only. No secrets, tokens, private logs, provider keys or user data belong here.",
   "ci": [
     {
       "name": "Static quality gates",
       "status": "completed",
       "conclusion": "success",
-      "url": "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26337119770",
-      "updated_at": "2026-05-23T15:54:52Z"
+      "url": "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26339665855",
+      "updated_at": "2026-05-23T17:59:52Z"
     },
     {
       "name": "MMIR public branding migration",
       "status": "completed",
       "conclusion": "success",
-      "url": "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26337119760",
-      "updated_at": "2026-05-23T15:54:48Z"
+      "url": "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26339665859",
+      "updated_at": "2026-05-23T17:59:11Z"
     },
     {
       "name": "Deploy GitHub Pages",
       "status": "completed",
       "conclusion": "success",
-      "url": "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26337119761",
-      "updated_at": "2026-05-23T15:55:00Z"
+      "url": "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26339665858",
+      "updated_at": "2026-05-23T17:59:24Z"
     }
   ],
   "public_url_checks": [
@@ -32,20 +32,20 @@
       "source": "external web fetch",
       "url": "https://mmir.ai/",
       "status": "online",
-      "evidence": "MMIR root returned public text including Trusted AI Control Plane and Open MMIR."
+      "evidence": "MMIR root returned public text including Trusted AI Control Plane and MMIR orchestration copy."
     },
     {
       "source": "local PowerShell network",
       "url": "https://mmir.ai/",
       "status": "watch",
-      "evidence": "Local Invoke-WebRequest returned 503 Server unavailable from this environment."
+      "evidence": "Local Invoke-WebRequest is blocked by a URL filter as newly-registered-domain from this environment."
     },
     {
       "source": "local PowerShell network",
       "url": "https://inkognitroz.github.io/",
       "status": "watch",
-      "evidence": "Local Invoke-WebRequest returned 503 Server unavailable from this environment."
+      "evidence": "Local Invoke-WebRequest remains a network/domain reputation watch in this environment."
     }
   ],
-  "summary": "Latest pushed commit has green GitHub Actions and Pages deploy. Public external fetch sees MMIR content. Local shell network still sees 503, so treat local 503 as network/edge watch until confirmed from another network."
+  "summary": "Latest verified activation commit has green GitHub Actions and Pages deploy. Public external fetch sees MMIR content. Local shell network is blocked by a newly-registered-domain URL filter, so treat local failures as network/domain reputation watch until confirmed from another network."
 }
