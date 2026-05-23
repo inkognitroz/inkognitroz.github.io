@@ -154,6 +154,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'recipient-handoff', 'D159 needs protected recipient handoff route support.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'session_token_returned_once', 'D159 needs one-time session token handling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-recipient-result', 'D159 needs recipient handoff styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'mmir.team_share_packet', 'D160 needs owner-side team share packet schema.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'sharing-create-team-packet', 'D160 needs team share packet creation control.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'invite_code_included:false', 'D160 team share packets must exclude one-time invite codes.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-team-packet', 'D160 needs team share packet styling.');
 requireText(mmirPath, './apps/mimir-chat-portal/identity-org.js', 'D155 needs identity/organization UI loaded on the product page.');
 requireText(mmirPath, './apps/mimir-chat-portal/identity-org.css', 'D155 needs identity/organization styling loaded on the product page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/me', 'D155 needs protected identity principal route support.');

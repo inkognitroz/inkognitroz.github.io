@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:01:36.316Z",
+  "updated_at": "2026-05-23T10:06:54.900Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 160,
+    "total": 161,
     "done": 51,
-    "beta": 84,
+    "beta": 85,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -708,10 +708,10 @@
       },
       {
         "phase": "Identity/Security",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -720,8 +720,8 @@
         "phase": "Sharing/Security",
         "total": 4,
         "done": 0,
-        "beta": 3,
-        "next": 1,
+        "beta": 4,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -778,7 +778,7 @@
     }
   ],
   "next_queue": [
-    "D160"
+    "D161"
   ],
   "watchlist": [
     "D082",
@@ -3180,9 +3180,24 @@
       "best_practice": "Team sharing should be easy enough to use without asking recipients to assemble ids manually",
       "done_when": "Owner can create/copy a safe team-share packet; recipient flow can prefill non-secret ids and still require the one-time code",
       "covers": "team adoption",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Owner-side team share packets now create invite codes, copy non-secret share/invite details, prefill recipient handoff fields and keep one-time codes separate from packet text.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D161",
+      "phase": "Identity/Security",
+      "priority": "P1",
+      "work_package": "In-memory session backend profile",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Let users temporarily activate returned MMIR session tokens for protected backend calls in session memory only, with clear expiry/revoke UX and no localStorage persistence",
+      "best_practice": "Team recipients need follow-on protected actions without pasting session tokens repeatedly or storing them permanently",
+      "done_when": "User can activate a returned session token for the current tab, call protected routes, clear it, and see that it is never exported or persisted",
+      "covers": "team adoption",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sharing/security slice: make owner-side team sharing easier with a safe handoff packet that pre-fills non-secret recipient fields while one-time codes remain one-time.",
+      "evidence": "Next identity/security slice: allow returned MMIR session tokens to be activated in current-tab memory for protected backend calls without localStorage persistence.",
       "estimate": "0.5-2d"
     }
   ]

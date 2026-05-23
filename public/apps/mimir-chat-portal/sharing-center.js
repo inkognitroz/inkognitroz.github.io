@@ -16,10 +16,12 @@
   let backendListEl=null;
   let accessReviewEl=null;
   let recipientEl=null;
+  let packetEl=null;
   let statusEl=null;
   let currentBundle=null;
   let currentAccessReview=null;
   let currentRecipientHandoff=null;
+  let currentTeamPacket=null;
   let backendShares=[];
 
   if(!root)return;
@@ -291,6 +293,7 @@
         '<div class="sharing-backend-actions">'+
           '<button type="button" data-share-action="load" data-share-id="'+safe(share.id)+'" '+(share.payload_available===false?'disabled':'')+'>Preview</button>'+
           '<button type="button" data-share-action="review" data-share-id="'+safe(share.id)+'">Review access</button>'+
+          '<button type="button" data-share-action="packet" data-share-id="'+safe(share.id)+'">Team packet</button>'+
           '<button type="button" data-share-action="handoff" data-share-id="'+safe(share.id)+'">Use for handoff</button>'+
           '<button type="button" data-share-action="revoke" data-share-id="'+safe(share.id)+'" '+(share.status==='revoked'?'disabled':'')+'>Revoke</button>'+
         '</div>'+
@@ -353,6 +356,49 @@
       '</article>';
     document.getElementById('sharing-copy-recipient-token')?.addEventListener('click',copyRecipientToken);
     document.getElementById('sharing-hide-recipient-token')?.addEventListener('click',hideRecipientToken);
+  }
+
+  function packetText(packet){
+    if(!packet)return '';
+    return [
+      'MMIR team share packet',
+      'Share id: '+packet.share_id,
+      'Invite id: '+packet.invite_id,
+      'Organization: '+packet.org_id,
+      'Role: '+packet.role,
+      'Open: '+packet.recipient_url,
+      '',
+      'Paste the one-time invite code separately in Safe Sharing. The code is not included in this packet.',
+      'public_frontend_secrets_allowed: false',
+      'invite_code_included: false'
+    ].join('\n');
+  }
+
+  function renderTeamPacket(payload=currentTeamPacket){
+    if(!packetEl)return;
+    if(!payload){
+      packetEl.innerHTML='<p class="dashboard-note">No team share packet yet. Choose a protected organization share, then create a packet for the recipient.</p>';
+      return;
+    }
+    const packet=payload.packet||payload;
+    const code=payload.code||'';
+    packetEl.innerHTML=''+
+      '<article class="sharing-team-packet" data-team-share="team-share-packet">'+
+        '<header><div><strong>Team share packet</strong><span>'+safe(packet.share_id||'Protected share')+'</span></div><small>invite_code_included: false</small></header>'+
+        '<textarea id="sharing-team-packet-text" readonly>'+safe(packetText(packet))+'</textarea>'+
+        '<div class="sharing-review-grid">'+
+          '<div><dt>Share</dt><dd>'+safe(packet.share_id||'missing')+'</dd><small>prefills recipient share id</small></div>'+
+          '<div><dt>Invite</dt><dd>'+safe(packet.invite_id||'missing')+'</dd><small>prefills recipient invite id</small></div>'+
+          '<div><dt>Role</dt><dd>'+safe(packet.role||'member')+'</dd><small>'+safe(packet.org_id||'organization required')+'</small></div>'+
+          '<div><dt>Secret</dt><dd>'+safe(code?'Shown once':'Hidden')+'</dd><small>code must be sent separately</small></div>'+
+        '</div>'+
+        (code?'<section class="sharing-one-time"><div><span>Shown once</span><strong>Invite code</strong><small>Send separately to the intended recipient. This public page does not store it.</small></div><input id="sharing-team-code" type="text" readonly value="'+safe(code)+'" /><div class="sharing-backend-actions"><button id="sharing-copy-team-code" type="button">Copy code</button><button id="sharing-hide-team-code" type="button">Hide</button></div></section>':'')+
+        '<div class="sharing-backend-actions"><button id="sharing-copy-team-packet" type="button">Copy packet</button><button id="sharing-fill-recipient-from-packet" type="button">Fill recipient fields</button></div>'+
+      '</article>';
+    document.getElementById('sharing-copy-team-packet')?.addEventListener('click',copyTeamPacket);
+    document.getElementById('sharing-copy-team-code')?.addEventListener('click',copyTeamCode);
+    document.getElementById('sharing-hide-team-code')?.addEventListener('click',hideTeamCode);
+    document.getElementById('sharing-fill-recipient-from-packet')?.addEventListener('click',()=>fillRecipientFromPacket(packet));
   }
 
   async function copyText(){
@@ -466,6 +512,99 @@
     }
   }
 
+  function selectedShare(id){
+    return backendShares.find(item=>item.id===id)||null;
+  }
+
+  function fillPacketFromShare(id){
+    const share=selectedShare(id);
+    document.getElementById('sharing-team-share-id')?.setAttribute('value',id||'');
+    const shareField=document.getElementById('sharing-team-share-id');
+    const orgField=document.getElementById('sharing-team-org-id');
+    const roleField=document.getElementById('sharing-team-role');
+    if(shareField)shareField.value=id||'';
+    if(orgField&&share?.access?.org_id)orgField.value=share.access.org_id;
+    if(roleField&&share?.access?.min_role)roleField.value=share.access.min_role;
+    setStatus('Team packet fields filled from protected share. Create the invite code when ready.','ready');
+  }
+
+  function fillRecipientFromPacket(packet=currentTeamPacket?.packet){
+    if(!packet)return;
+    const shareField=document.getElementById('sharing-recipient-share-id');
+    const inviteField=document.getElementById('sharing-recipient-invite-id');
+    if(shareField)shareField.value=packet.share_id||'';
+    if(inviteField)inviteField.value=packet.invite_id||'';
+    setStatus('Recipient fields filled with non-secret packet values. Paste the one-time code separately.','ready');
+  }
+
+  async function createTeamPacket(){
+    const shareId=clean(document.getElementById('sharing-team-share-id')?.value||'',180);
+    const orgId=clean(document.getElementById('sharing-team-org-id')?.value||'',180);
+    const role=document.getElementById('sharing-team-role')?.value||'member';
+    const ttlMinutes=Number(document.getElementById('sharing-team-ttl')?.value||1440);
+    if(!shareId||!orgId){setStatus('Choose a protected share and organization id before creating a team packet.','error');return;}
+    try{
+      setStatus('Creating team share invite packet...','loading');
+      const data=await request('/identity/invites',{
+        method:'POST',
+        body:JSON.stringify({org_id:orgId,role,ttl_minutes:ttlMinutes,max_uses:1,note:'Team share '+shareId}),
+        timeoutMs:12000
+      });
+      const packet={
+        object:'mmir.team_share_packet',
+        share_id:shareId,
+        invite_id:data.data?.id||'',
+        org_id:orgId,
+        role,
+        recipient_url:location.origin+location.pathname+location.search+'#sharing-center',
+        public_frontend_secrets_allowed:false,
+        invite_code_included:false,
+        created_at:now(),
+        instructions:['Open the URL, paste share id and invite id from this packet, then paste the one-time code sent separately.']
+      };
+      currentTeamPacket={packet,code:data.code||''};
+      fillRecipientFromPacket(packet);
+      renderTeamPacket(currentTeamPacket);
+      setStatus('Team share packet created. Copy packet and send the one-time code separately.','ready');
+    }catch(error){
+      setStatus(error.message||'Team share packet could not be created.','error');
+    }
+  }
+
+  async function copyTeamPacket(){
+    const packet=currentTeamPacket?.packet;
+    if(!packet){setStatus('No team share packet is visible.','error');return;}
+    try{
+      await navigator.clipboard.writeText(packetText(packet));
+      setStatus('Team share packet copied without the invite code.','ready');
+    }catch(error){
+      const field=document.getElementById('sharing-team-packet-text');
+      field?.focus();
+      field?.select();
+      setStatus('Select and copy the visible team share packet. Clipboard access was blocked.','ready');
+    }
+  }
+
+  async function copyTeamCode(){
+    const value=document.getElementById('sharing-team-code')?.value||'';
+    if(!value){setStatus('No one-time invite code is visible.','error');return;}
+    try{
+      await navigator.clipboard.writeText(value);
+      setStatus('One-time invite code copied. It is still not stored by this public page.','ready');
+    }catch(error){
+      const field=document.getElementById('sharing-team-code');
+      field?.focus();
+      field?.select();
+      setStatus('Select and copy the visible invite code. Clipboard access was blocked.','ready');
+    }
+  }
+
+  function hideTeamCode(){
+    if(currentTeamPacket)currentTeamPacket.code='';
+    renderTeamPacket(currentTeamPacket);
+    setStatus('One-time invite code hidden from the page.','ready');
+  }
+
   async function copyRecipientToken(){
     const value=document.getElementById('sharing-recipient-token')?.value||'';
     if(!value){setStatus('No one-time session token is visible.','error');return;}
@@ -549,6 +688,13 @@
         '<label class="sharing-check" for="sharing-recipient-create-session"><input id="sharing-recipient-create-session" type="checkbox" checked /> Session</label>'+
         '<button id="sharing-recipient-open" type="button">Accept and open</button>'+
       '</div>'+
+      '<div class="sharing-toolbar sharing-team-policy">'+
+        '<label for="sharing-team-share-id">Team share id<input id="sharing-team-share-id" type="text" maxlength="180" autocomplete="off" /></label>'+
+        '<label for="sharing-team-org-id">Team org id<input id="sharing-team-org-id" type="text" maxlength="180" autocomplete="off" /></label>'+
+        '<label for="sharing-team-role">Role<select id="sharing-team-role"><option value="member">member</option><option value="viewer">viewer</option><option value="admin">admin</option></select></label>'+
+        '<label for="sharing-team-ttl">Minutes<input id="sharing-team-ttl" type="number" min="5" max="10080" value="1440" /></label>'+
+        '<button id="sharing-create-team-packet" type="button">Create packet</button>'+
+      '</div>'+
       '<div class="sharing-actions">'+
         '<button id="sharing-build" type="button">Build safe preview</button>'+
         '<button id="sharing-copy-text" type="button">Copy text</button>'+
@@ -566,6 +712,7 @@
       '<div id="sharing-backend-list" class="sharing-backend-list" aria-live="polite"></div>'+
       '<div id="sharing-access-review" class="sharing-access-review" aria-live="polite"></div>'+
       '<div id="sharing-recipient-handoff" class="sharing-recipient-handoff" aria-live="polite"></div>'+
+      '<div id="sharing-team-packet" class="sharing-team-packet-root" aria-live="polite"></div>'+
       '<p id="sharing-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>';
     typeEl=document.getElementById('sharing-type');
     itemEl=document.getElementById('sharing-item');
@@ -573,6 +720,7 @@
     backendListEl=document.getElementById('sharing-backend-list');
     accessReviewEl=document.getElementById('sharing-access-review');
     recipientEl=document.getElementById('sharing-recipient-handoff');
+    packetEl=document.getElementById('sharing-team-packet');
     statusEl=document.getElementById('sharing-status');
     typeEl?.addEventListener('change',()=>{currentBundle=null;renderOptions();renderPreview();});
     document.getElementById('sharing-refresh')?.addEventListener('click',()=>{renderOptions();setStatus('Shareable items refreshed.','ready');});
@@ -582,6 +730,7 @@
     document.getElementById('sharing-save-backend')?.addEventListener('click',saveProtectedShare);
     document.getElementById('sharing-load-backend')?.addEventListener('click',()=>loadProtectedShares(true));
     document.getElementById('sharing-recipient-open')?.addEventListener('click',recipientHandoff);
+    document.getElementById('sharing-create-team-packet')?.addEventListener('click',createTeamPacket);
     document.getElementById('sharing-export')?.addEventListener('click',exportJson);
     document.getElementById('sharing-clear-hash')?.addEventListener('click',clearHash);
     backendListEl?.addEventListener('click',(event)=>{
@@ -595,6 +744,7 @@
         setStatus('Protected share preview loaded.','ready');
       }
       if(button.dataset.shareAction==='review')reviewProtectedShare(id);
+      if(button.dataset.shareAction==='packet')fillPacketFromShare(id);
       if(button.dataset.shareAction==='handoff'){
         const field=document.getElementById('sharing-recipient-share-id');
         if(field)field.value=id;
@@ -606,6 +756,7 @@
     renderBackendShares();
     renderAccessReview();
     renderRecipientHandoff();
+    renderTeamPacket();
     if(!loadSharedHash())renderPreview();
   }
 
