@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T07:21:52.324Z",
+  "updated_at": "2026-05-23T07:30:20.933Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 74,
+    "beta": 75,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 24,
+    "planned": 23,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -660,8 +660,8 @@
         "phase": "Mobile/PWA",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -671,10 +671,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Model Admin",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D149"
+    "D150"
   ],
   "watchlist": [
     "D082",
@@ -2985,10 +2985,10 @@
       "best_practice": "Mobile should feel like a client, not a cramped desktop page",
       "done_when": "User can install MMIR as a phone/tablet client",
       "covers": "mobile activation",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sequential GUI parity slice: mobile/PWA installable shell with offline-safe public assets and node handoff.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Mobile/PWA shell now has a manifest, service worker, offline fallback, install panel, mobile touch targets and local-node handoff without paid services.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D150",
@@ -3000,9 +3000,9 @@
       "best_practice": "Users should not feel locked in",
       "done_when": "User can move useful workspace data in or out",
       "covers": "openness",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next sequential GUI parity slice: portable Chat/Open WebUI import-export for chats, prompts, model profiles and knowledge manifests.",
       "estimate": "0.5-2d"
     },
     {

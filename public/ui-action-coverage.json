@@ -69,6 +69,14 @@
       "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "/pairing/sessions", "Connector install", "Model availability"]
     },
     {
+      "id": "pwa-mobile-install",
+      "surface": "Install App / Mobile",
+      "status": "beta",
+      "user_result": "Users can install MMIR as a free mobile/desktop app shell, verify offline fallback and jump from the installed shell to chat or local-node handoff.",
+      "selectors": ["#pwa-install", "#pwa-install-button", "#pwa-check-offline", "#pwa-open-node", "#pwa-open-chat"],
+      "evidence": ["manifest.webmanifest", "navigator.serviceWorker.register", "beforeinstallprompt", "offline.html", "openNode"]
+    },
+    {
       "id": "model-library",
       "surface": "Model selector and catalog",
       "status": "live",

@@ -85,7 +85,8 @@ const overrides = new Map([
   ['D146', { status: 'beta', evidence: 'Safe data analysis now runs in the browser with CSV/TSV/JSON parsing, summaries, SVG charts, local snapshots, JSON export and chat-summary handoff without arbitrary code execution.' }],
   ['D147', { status: 'beta', evidence: 'Scheduled task UI now supports visible browser-local reminders with owner, due/repeat schedule, free/local cost policy, run log, pause/cancel/export and chat handoff.' }],
   ['D148', { status: 'beta', evidence: 'External connector catalog now covers manual docs, local folders, GitHub, Drive/Docs, Gmail, Notion, Slack and Open WebUI with protected OAuth boundaries, sync planning, revocation metadata and no public frontend secrets.' }],
-  ['D149', { status: 'next', evidence: 'Next sequential GUI parity slice: mobile/PWA installable shell with offline-safe public assets and node handoff.' }],
+  ['D149', { status: 'beta', evidence: 'Mobile/PWA shell now has a manifest, service worker, offline fallback, install panel, mobile touch targets and local-node handoff without paid services.' }],
+  ['D150', { status: 'next', evidence: 'Next sequential GUI parity slice: portable Chat/Open WebUI import-export for chats, prompts, model profiles and knowledge manifests.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

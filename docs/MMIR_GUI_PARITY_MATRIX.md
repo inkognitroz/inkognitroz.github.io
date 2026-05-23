@@ -31,6 +31,7 @@ Current priority after the matrix is:
 21. D147 scheduled task/reminder UI.
 22. D148 external app connectors.
 23. D149 mobile/PWA installable shell.
+24. D150 Chat/Open WebUI import-export.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -53,5 +54,6 @@ D042 is now beta in the public UI: the first screen is calmer, core navigation i
 D146 is now beta in the public UI: CSV, TSV and JSON analysis runs browser-only with summaries, charts, local snapshots, export and chat handoff while arbitrary code execution remains blocked.
 D147 is now beta in the public UI: browser-local reminders expose owner, due/repeat schedule, free/local cost policy, run log, pause/cancel/export and chat handoff while protected backend scheduling remains planned.
 D148 is now beta across frontend/backend: external connectors have a public-safe catalog, free/manual paths, protected OAuth/sync planning, local revocation metadata and explicit no-public-secrets policy for GitHub, Drive/Docs, Gmail, Notion, Slack, Open WebUI, local folders and manual documents.
+D149 is now beta in the public UI: MMIR has a free PWA manifest, service worker, offline fallback shell, install panel, mobile touch targets and local-node handoff without caching secrets or private data.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

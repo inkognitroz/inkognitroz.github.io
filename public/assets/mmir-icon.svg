@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MMIR">
+  <rect width="512" height="512" rx="96" fill="#0f172a"/>
+  <circle cx="360" cy="152" r="72" fill="#14b8a6" opacity=".9"/>
+  <path d="M104 336V168h58l65 92 65-92h58v168h-58v-83l-48 67h-34l-48-67v83h-58z" fill="#f8fafc"/>
+  <path d="M104 374h304" stroke="#14b8a6" stroke-width="28" stroke-linecap="round"/>
+</svg>

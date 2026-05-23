@@ -6,12 +6,19 @@
   <title>MMIR.ai</title>
   <meta name="description" content="MMIR.ai is the orchestration layer for trusted AI: a local-first AI control plane for connecting models, workflows, memory and trusted runtimes." />
   <meta name="mimir-growth-endpoint" content="/api/growth/events" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="MMIR" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/mmir-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./assets/mmir-maskable-icon.svg" />
   <link rel="stylesheet" href="./assets/styles.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workspaces.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/memory.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/knowledge.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/connector-catalog.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/pwa.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/web-search.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/research-planner.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/tool-runner.css" />
@@ -66,6 +73,7 @@
           <a href="#image-boundary">Images</a>
           <a href="#voice-controls">Voice</a>
           <a href="#vision-input">Vision</a>
+          <a href="#pwa-install">Install</a>
           <a href="#admin-governance">Admin</a>
           <a href="#access-control">Access</a>
           <a href="#runtime-settings-panel">Settings</a>
@@ -176,6 +184,15 @@
         </div>
         <p id="node-dashboard-summary" class="dashboard-note" data-state="idle" aria-live="polite">MMIR checks the browser, free local profile, paired local node, Ollama, models, hardware and tunnel support automatically.</p>
         <div id="node-dashboard-root" class="node-dashboard-root" aria-live="polite"></div>
+      </section>
+    </details>
+
+    <details id="pwa-install" class="mimir-provider-drawer">
+      <summary>+ Install App / Mobile</summary>
+      <section class="mimir-dashboard" aria-labelledby="pwa-install-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Mobile client</p><h2 id="pwa-install-title">Install MMIR and hand off to nodes</h2></div></div>
+        <p class="dashboard-note">The PWA shell is free and public-safe. It caches only the app shell and public manifests; live models, private files and secrets stay in paired local node or protected backend routes.</p>
+        <div id="pwa-install-root" class="pwa-install-root" aria-live="polite"></div>
       </section>
     </details>
 
@@ -350,6 +367,7 @@
   <script src="./apps/mimir-chat-portal/knowledge.js"></script>
   <script src="./apps/mimir-chat-portal/knowledge-connectors.js"></script>
   <script src="./apps/mimir-chat-portal/connector-catalog.js"></script>
+  <script src="./apps/mimir-chat-portal/pwa.js"></script>
   <script src="./apps/mimir-chat-portal/web-search.js"></script>
   <script src="./apps/mimir-chat-portal/research-planner.js"></script>
   <script src="./apps/mimir-chat-portal/tool-runner.js"></script>

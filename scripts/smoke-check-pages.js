@@ -7,12 +7,15 @@ const publicDir = resolve(root, 'public');
 const indexPath = join(publicDir, 'index.html');
 const mmirPath = join(publicDir, 'mmir.html');
 const contentPath = join(publicDir, 'content.json');
+const manifestPath = join(publicDir, 'manifest.webmanifest');
 const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
 const chatPortalPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js');
 const firstImpressionPath = join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js');
 const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
 const mimirCssPath = join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css');
 const guiParityPath = join(publicDir, 'gui-parity-matrix.json');
+const serviceWorkerPath = join(publicDir, 'sw.js');
+const offlinePath = join(publicDir, 'offline.html');
 
 function fail(message) {
   console.error(message);
@@ -78,7 +81,7 @@ checkHtmlAssetRefs(mmirPath, 'public/mmir.html');
 for (const file of walk(publicDir)) {
   const rel = relative(root, file);
   const ext = extname(file);
-  if (ext === '.json') {
+  if (ext === '.json' || ext === '.webmanifest') {
     try {
       JSON.parse(text(file));
     } catch {
@@ -108,6 +111,20 @@ if (!String(content?.site?.subtitle || '').includes('orchestration layer for tru
 forbidText(contentPath, 'SaaS Fabric', 'content.json must not include retired SaaS Fabric branding.');
 
 requireText(mmirPath, 'id="mimir-instant-start"', 'MMIR product page must expose the redirect target for the first journey.');
+requireText(indexPath, './manifest.webmanifest', 'D149 root redirect must expose the PWA manifest.');
+requireText(mmirPath, './manifest.webmanifest', 'D149 product page must expose the PWA manifest.');
+requireText(mmirPath, 'id="pwa-install"', 'D149 needs a visible mobile/PWA install panel.');
+requireText(mmirPath, './apps/mimir-chat-portal/pwa.js', 'D149 needs PWA install script loaded.');
+requireText(mmirPath, './apps/mimir-chat-portal/pwa.css', 'D149 needs PWA install styling loaded.');
+requireText(manifestPath, '"display": "standalone"', 'D149 PWA manifest must be installable standalone.');
+requireText(manifestPath, '"start_url": "./mmir.html#mimir-instant-start"', 'D149 PWA manifest must start in the MMIR first journey.');
+requireText(serviceWorkerPath, 'CACHE_NAME', 'D149 service worker must define a cache name.');
+requireText(serviceWorkerPath, './offline.html', 'D149 service worker must cache the offline shell.');
+requireText(serviceWorkerPath, "request.mode==='navigate'", 'D149 service worker must handle navigation fallback.');
+requireText(offlinePath, 'MMIR is offline-ready', 'D149 needs a public-safe offline fallback page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'), 'beforeinstallprompt', 'D149 needs install prompt handling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'), 'navigator.serviceWorker.register', 'D149 needs service worker registration.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'), 'openNode', 'D149 needs mobile node handoff.');
 requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
 requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');

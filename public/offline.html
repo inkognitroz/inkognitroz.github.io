@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>MMIR offline</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/mmir-icon.svg" type="image/svg+xml" />
+  <style>
+    :root{color-scheme:light dark;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f8fafc;color:#0f172a}
+    body{min-height:100vh;margin:0;display:grid;place-items:center;background:linear-gradient(145deg,#f8fafc,#eefaf6)}
+    main{width:min(620px,calc(100vw - 32px));display:grid;gap:1rem;border:1px solid #dbe3ef;background:#fff;border-radius:12px;padding:1.25rem;box-shadow:0 24px 80px rgba(15,23,42,.10)}
+    img{width:54px;height:54px}
+    h1{margin:0;font-size:2rem;letter-spacing:0;line-height:1.08}
+    p{margin:0;color:#475569;line-height:1.5}
+    a{display:inline-flex;align-items:center;justify-content:center;width:max-content;min-height:2.5rem;border:1px solid #cbd5e1;border-radius:999px;padding:.55rem .9rem;color:#0f172a;text-decoration:none;font-weight:800}
+  </style>
+</head>
+<body>
+  <main>
+    <img src="./assets/mmir-icon.svg" alt="MMIR" />
+    <h1>MMIR is offline-ready.</h1>
+    <p>The app shell is available, but live models, local nodes and protected backend routes need network or localhost access. Reconnect, then refresh the app.</p>
+    <a href="./mmir.html#mimir-instant-start">Open MMIR shell</a>
+  </main>
+</body>
+</html>

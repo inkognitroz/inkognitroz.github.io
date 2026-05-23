@@ -13,6 +13,9 @@ const files = {
   journeys: join(publicDir, 'user-journeys.json'),
   progress: join(publicDir, 'progress-dashboard.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
+  webManifest: join(publicDir, 'manifest.webmanifest'),
+  serviceWorker: join(publicDir, 'sw.js'),
+  offline: join(publicDir, 'offline.html'),
   starters: join(publicDir, 'free-model-starters.json'),
   catalog: join(publicDir, 'ai-model-catalog.json'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
@@ -42,6 +45,7 @@ const files = {
   dataAnalysis: join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'),
   scheduledTasks: join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'),
   connectorCatalog: join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'),
+  pwa: join(publicDir, 'apps', 'mimir-chat-portal', 'pwa.js'),
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
@@ -277,6 +281,18 @@ requireIncludes(files.connectorCatalog, '/connectors/sync-plans', 'D148 needs pr
 requireIncludes(files.connectorCatalog, 'connectorCatalogFallback', 'D148 needs a free/manual fallback connector catalog.');
 requireIncludes(files.connectorCatalog, 'revocation_supported', 'D148 needs connector revocation metadata.');
 requireIncludes(files.connectorCatalog, 'public_frontend_secrets_allowed:false', 'D148 must block public frontend connector secrets.');
+requireIncludes(files.mmir, './manifest.webmanifest', 'D149 needs a PWA manifest on the product page.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/pwa.js', 'D149 needs PWA install flow loaded on the product page.');
+requireIncludes(files.mmir, 'id="pwa-install"', 'D149 needs visible install/mobile panel.');
+requireIncludes(files.webManifest, '"display": "standalone"', 'D149 manifest must be standalone-installable.');
+requireIncludes(files.webManifest, '"start_url": "./mmir.html#mimir-instant-start"', 'D149 manifest must start at the MMIR first journey.');
+requireIncludes(files.serviceWorker, 'CACHE_NAME', 'D149 service worker must define versioned cache.');
+requireIncludes(files.serviceWorker, './offline.html', 'D149 service worker must cache offline fallback.');
+requireIncludes(files.serviceWorker, "request.mode==='navigate'", 'D149 service worker must handle navigation fallback.');
+requireIncludes(files.offline, 'MMIR is offline-ready', 'D149 needs an offline shell page.');
+requireIncludes(files.pwa, 'beforeinstallprompt', 'D149 needs browser install prompt handling.');
+requireIncludes(files.pwa, 'navigator.serviceWorker.register', 'D149 needs service worker registration.');
+requireIncludes(files.pwa, 'openNode', 'D149 needs local-node handoff from mobile app shell.');
 requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
@@ -343,7 +359,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }
