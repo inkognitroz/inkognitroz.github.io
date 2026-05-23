@@ -19,6 +19,7 @@
     { "path": "/connectors/catalog", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "List external app connector catalog and protected OAuth/sync boundaries." },
     { "path": "/connectors/ingestions", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Ingest consented external source text into protected knowledge." },
     { "path": "/connectors/sync-plans", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Plan connector sync without fetching data, storing secrets or starting paid/background jobs." },
+    { "path": "/context/corrections", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Sync metadata-only context correction trails to a protected backend." },
     { "path": "/datasets", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Dataset registry root." },
     { "path": "/datasets/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Dataset dynamic route fragment." },
     { "path": "/doctor", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "Protected local activation health report with one next repair action." },
