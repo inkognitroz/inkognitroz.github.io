@@ -3,7 +3,11 @@ import { join, resolve } from 'node:path';
 
 const root = process.cwd();
 const cssPath = join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workflow-builder.css');
+const htmlPath = join(resolve(root, 'public'), 'mmir.html');
+const swPath = join(resolve(root, 'public'), 'sw.js');
 const css = readFileSync(cssPath, 'utf8');
+const html = readFileSync(htmlPath, 'utf8');
+const sw = readFileSync(swPath, 'utf8');
 
 function fail(message) {
   console.error(message);
@@ -23,6 +27,14 @@ requireCss('.mimir-chat-runtime{order:3', 'Mobile live chat runtime must stay di
 requireCss('.quick-suggestions{order:4', 'Mobile quick actions must stay above secondary content.');
 requireCss('.mimir-instant-start{order:5', 'Ground Zero card must not push the chat below the first mobile screen.');
 requireCss('env(safe-area-inset-bottom)', 'Mobile layout must respect browser/device bottom safe area.');
+
+if (!html.includes('workflow-builder.css?v=20260523-mobile-chat')) {
+  fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
+}
+
+if (!sw.includes("CACHE_NAME='mmir-pwa-d151-20260523-mobile-chat'")) {
+  fail('Service worker cache must be bumped when the mobile chat shell changes.');
+}
 
 if (!process.exitCode) {
   console.log('Mobile chat smoke check passed.');
