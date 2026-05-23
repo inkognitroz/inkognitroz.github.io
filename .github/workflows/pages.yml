@@ -40,6 +40,8 @@ jobs:
         run: node scripts/smoke-check-mobile-chat.js
       - name: Smoke check performance budget
         run: node scripts/smoke-check-performance-budget.js
+      - name: Smoke check first journey with mock local connector
+        run: node scripts/smoke-check-first-journey-mock-local.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

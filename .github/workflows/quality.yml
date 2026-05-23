@@ -105,3 +105,6 @@ jobs:
 
       - name: Smoke-check MMIR performance budget
         run: node scripts/smoke-check-performance-budget.js
+
+      - name: Smoke-check first journey with mock local connector
+        run: node scripts/smoke-check-first-journey-mock-local.js
