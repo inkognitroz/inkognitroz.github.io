@@ -276,6 +276,10 @@ requireIncludes(files.privacyControls, 'Provider keys and cloud credentials', 'J
 requireIncludes(files.privacyControls, 'Clear pairing tokens', 'J009/D118 needs a safe way to clear temporary local node pairing tokens.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
+requireIncludes(files.connectorServer, 'isLoopbackAddress', 'Standalone connector server must distinguish local loopback pairing from remote pairing.');
+requireIncludes(files.connectorServer, "pairing_mode: 'remote-code'", 'Standalone connector server must enforce remote code pairing before returning a token.');
+requireIncludes(files.connectorServer, 'remotePairingSession.used = true', 'Standalone connector server must consume remote pairing codes after successful use.');
+requireIncludes(files.connectorServer, 'Pairing sessions can only be created from the device running MMIR Local Connector.', 'Standalone connector server must prevent remote creation of approval codes.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');
 requireIncludes(files.connectorServer, '/models/delete', 'Standalone connector server must support local model removal.');
