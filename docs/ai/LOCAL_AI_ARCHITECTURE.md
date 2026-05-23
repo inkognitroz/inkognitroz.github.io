@@ -1,7 +1,7 @@
 # Local AI architecture
 
 ## Goal
-Turn SaaS Fabric into a static public hub that can connect to one or more local or virtual AI backends without exposing secrets in browser code.
+Turn MMIR into a static public hub that can connect to one or more local or virtual AI backends without exposing secrets in browser code.
 
 ## Target architecture
 
