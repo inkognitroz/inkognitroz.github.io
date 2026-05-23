@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1",
+  "release_id": "mmir-local-connector-2026-05-23",
+  "connector_version": "0.1.0",
+  "contract_version": "0.1",
+  "published_at": "2026-05-23T05:59:00Z",
+  "default_port": 3000,
+  "default_host": "127.0.0.1",
+  "cost_policy": "zero-cost local install only; no paid cloud or provider route is started by these artifacts",
+  "security_notes": [
+    "Provider keys and cloud credentials must stay server-side or local-node-side, never in the public frontend.",
+    "The local connector binds to localhost by default.",
+    "Tunnel control is disabled by default unless explicitly enabled by local policy.",
+    "Legacy mmir-local-node entrypoints are compatibility shims that delegate to MMIR Local Connector."
+  ],
+  "artifacts": [
+    {
+      "id": "connector-server",
+      "platform": "shared",
+      "kind": "node-server",
+      "path": "/downloads/mmir-local-connector-server.mjs",
+      "sha256": "91dc52164343a8cb0cb58f9493ba15be51856b469639ae7f646aa55665d90753",
+      "contract_version": "0.1",
+      "required": true
+    },
+    {
+      "id": "mac-command",
+      "platform": "macos",
+      "kind": "command-installer",
+      "path": "/downloads/mmir-local-connector-mac.command",
+      "sha256": "781e1470b35061c0434de812c5abfba2bcbb73a66eb579b35e8ea4f441954e35",
+      "recommended": true
+    },
+    {
+      "id": "mac-zip-page",
+      "platform": "macos",
+      "kind": "browser-generated-zip",
+      "path": "/downloads/mmir-local-connector-mac.zip.html",
+      "sha256": "61676feeec3cb518191844c26e8a580fadeb399878d7ad28d8a61003813ae18b",
+      "recommended": true
+    },
+    {
+      "id": "windows-cmd",
+      "platform": "windows",
+      "kind": "cmd-bootstrap",
+      "path": "/downloads/mmir-local-connector-windows.cmd",
+      "sha256": "1017b9708590ed81239567e9b3798349586ddbb6c4d3921910130c8e254f5436",
+      "recommended": true
+    },
+    {
+      "id": "windows-powershell",
+      "platform": "windows",
+      "kind": "powershell-installer",
+      "path": "/downloads/mmir-local-connector-windows.ps1",
+      "sha256": "a4265200fd084b03112145c9feb64a8972f4086c062f64e7ccaf260c0676b320",
+      "recommended": false
+    },
+    {
+      "id": "linux-shell",
+      "platform": "linux",
+      "kind": "shell-installer",
+      "path": "/downloads/mmir-local-connector-linux.sh",
+      "sha256": "69224853df62c26b41a25149f06f034166e2a20ac18afba94adc04b875f916d6",
+      "recommended": true,
+      "device_classes": ["linux-x64", "linux-arm64", "raspberry-pi", "nvidia-jetson"]
+    },
+    {
+      "id": "universal-installer-page",
+      "platform": "browser",
+      "kind": "installer-selector",
+      "path": "/downloads/mmir-local-connector-install.html",
+      "sha256": "4fc4e98922cd7be4292e1ac1a150fc632a29f8501fc48d2e850c0558f7b5dacb",
+      "recommended": true
+    },
+    {
+      "id": "mobile-client-mode",
+      "platform": "mobile",
+      "kind": "client-mode",
+      "path": "/mmir.html#mimir-instant-start",
+      "sha256": null,
+      "recommended": true,
+      "note": "Mobile devices act as MMIR clients for now; native on-device runtime is not part of this release."
+    },
+    {
+      "id": "legacy-windows-local-node",
+      "platform": "windows",
+      "kind": "compatibility-shim",
+      "path": "/downloads/mmir-local-node-windows.ps1",
+      "sha256": "df8c343900c01cd38947fc5c66154abc7dd30effdbb1b52d86744e33194322f4",
+      "recommended": false
+    },
+    {
+      "id": "legacy-macos-linux-local-node",
+      "platform": "macos-linux",
+      "kind": "compatibility-shim",
+      "path": "/downloads/mmir-local-node-macos-linux.sh",
+      "sha256": "cd47c770c7916cef7bae9bd56e8a089e772eacf65b4c9691bb544eff48320267",
+      "recommended": false
+    }
+  ]
+}
