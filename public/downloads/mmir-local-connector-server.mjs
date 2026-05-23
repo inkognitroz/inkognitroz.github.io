@@ -11,6 +11,7 @@ const TOKEN = fs.readFileSync(process.env.MMIR_PAIRING_TOKEN_FILE, 'utf8').trim(
 const MODEL = fs.readFileSync(process.env.MMIR_DEFAULT_MODEL_FILE, 'utf8').trim() || 'llama3.2:1b';
 const PLATFORM = process.env.MMIR_CONNECTOR_PLATFORM || os.platform();
 const VERSION = '0.1.0-standalone-device';
+const CONTRACT_VERSION = '0.1';
 const TUNNEL_CONTROL_ENABLED = process.env.MMIR_ENABLE_TUNNEL_CONTROL === 'true';
 const TUNNEL_LOCAL_URL = `http://127.0.0.1:${PORT}`;
 
@@ -23,6 +24,8 @@ const tunnelState = {
   process: null,
   logs: [],
 };
+const modelPulls = new Map();
+let remotePairingSession = null;
 
 const allowed = new Set([
   'https://mmir.ai',
@@ -55,13 +58,58 @@ function send(res, code, payload, origin, type = 'application/json; charset=utf-
   res.end(type.startsWith('application/json') ? JSON.stringify(payload) : payload);
 }
 
+function errorCode(status) {
+  if (status === 400) return 'invalid_request';
+  if (status === 401) return 'unauthorized';
+  if (status === 403) return 'forbidden';
+  if (status === 404) return 'not_found';
+  if (status === 409) return 'conflict';
+  return 'runtime_unavailable';
+}
+
 function fail(res, code, message, origin) {
   send(res, code, {
     error: {
-      code: code === 401 ? 'unauthorized' : 'runtime_unavailable',
+      code: errorCode(code),
       message,
     },
   }, origin);
+}
+
+function nodeCapabilities() {
+  return [
+    'health',
+    'status',
+    'node.identity',
+    'pairing',
+    'pairing.remote-code',
+    'hardware',
+    'models',
+    'models.pull',
+    'models.pull.status',
+    'models.delete',
+    'chat.completions',
+    'tunnels.status',
+    'tunnels.trycloudflare',
+    'tunnels.stop',
+  ];
+}
+
+function nodeIdentity() {
+  const profile = hardware();
+  return {
+    id: `mmir-local-${PLATFORM}`,
+    name: 'MMIR Local Connector',
+    type: 'local',
+    device_class: profile.memory_tier,
+    platform: os.platform(),
+    arch: os.arch(),
+    runtime: 'ollama',
+    trust_level: 'paired-local',
+    registration: PLATFORM,
+    contract_version: CONTRACT_VERSION,
+    capabilities: nodeCapabilities(),
+  };
 }
 
 function appendTunnelLog(message) {
@@ -168,6 +216,83 @@ async function ollama(path, options = {}) {
   return response.json();
 }
 
+function modelJobId(model) {
+  return Buffer.from(String(model), 'utf8').toString('base64url').slice(0, 180);
+}
+
+function publicPullState(state) {
+  if (!state) return null;
+  return {
+    id: state.id,
+    model: state.model,
+    status: state.status,
+    phase: state.phase,
+    completed: state.completed,
+    total: state.total,
+    percent: state.percent,
+    started_at: state.started_at,
+    updated_at: state.updated_at,
+    finished_at: state.finished_at,
+    error: state.error,
+    last_event: state.last_event,
+  };
+}
+
+function updatePullState(state, patch) {
+  Object.assign(state, patch, { updated_at: new Date().toISOString() });
+  if (typeof state.completed === 'number' && typeof state.total === 'number' && state.total > 0) {
+    state.percent = Math.max(0, Math.min(100, Math.round((state.completed / state.total) * 100)));
+  }
+  modelPulls.set(state.id, state);
+}
+
+function modelFromPayload(payload) {
+  const model = String(payload?.model || payload?.name || '').trim();
+  if (!/^[a-zA-Z0-9._:/-]{1,120}$/.test(model)) {
+    return '';
+  }
+  return model;
+}
+
+async function runModelPull(state) {
+  try {
+    await ollama('/api/pull', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: state.model, stream: false }),
+      timeoutMs: 15 * 60 * 1000,
+    });
+    updatePullState(state, {
+      status: 'ready',
+      phase: 'ready',
+      percent: 100,
+      finished_at: new Date().toISOString(),
+      error: null,
+    });
+  } catch (error) {
+    updatePullState(state, {
+      status: 'failed',
+      phase: 'failed',
+      finished_at: new Date().toISOString(),
+      error: error.message || 'Model pull failed.',
+    });
+  }
+}
+
+function createPairingCodeSession() {
+  const code = String(crypto.randomInt(100000, 999999));
+  const now = Date.now();
+  const ttlMs = 10 * 60 * 1000;
+  return {
+    code,
+    created_at: new Date(now).toISOString(),
+    expires_at: new Date(now + ttlMs).toISOString(),
+    expires_at_ms: now + ttlMs,
+    ttl_seconds: Math.round(ttlMs / 1000),
+    used: false,
+  };
+}
+
 function completion(model, content, raw = {}) {
   return {
     id: `chatcmpl_mmir_${Date.now()}`,
@@ -250,34 +375,36 @@ http.createServer(async (req, res) => {
         service: 'mmir-local-node',
         version: VERSION,
         provider: 'local-node',
+        contract_version: CONTRACT_VERSION,
         runtime,
         pairing: { required: true, configured: true },
-        node: {
-          id: `mmir-local-${PLATFORM}`,
-          name: 'MMIR Local Connector',
-          type: 'local',
-          registration: PLATFORM,
-        },
+        node: nodeIdentity(),
         tunnel: {
           provider: tunnelState.provider,
           status: tunnelState.status,
           control_enabled: TUNNEL_CONTROL_ENABLED,
           public_url: tunnelState.public_url,
         },
-        capabilities: ['health', 'status', 'pairing', 'hardware', 'models', 'chat.completions', 'tunnels.status', 'tunnels.trycloudflare'],
+        capabilities: nodeCapabilities(),
+        limits: {
+          max_messages: 64,
+          max_prompt_chars: 24000,
+          streaming: false,
+          model_pull_idle_timeout_ms: 15 * 60 * 1000,
+        },
+        readiness: {
+          node_online: true,
+          ollama_online: runtime.status === 'online',
+          paired_required: true,
+          models_available: modelPulls.size > 0 || runtime.status === 'online',
+          chat_ready: runtime.status === 'online',
+        },
       }, origin);
       return;
     }
 
     if (req.method === 'GET' && url.pathname === '/node/identity') {
-      send(res, 200, {
-        id: `mmir-local-${PLATFORM}`,
-        name: 'MMIR Local Connector',
-        type: 'local',
-        trust_level: 'paired-local',
-        registration: PLATFORM,
-        capabilities: ['health', 'status', 'pairing', 'hardware', 'models', 'chat.completions', 'tunnels.status', 'tunnels.trycloudflare'],
-      }, origin);
+      send(res, 200, nodeIdentity(), origin);
       return;
     }
 
@@ -345,6 +472,24 @@ http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === 'POST' && url.pathname === '/pairing/sessions') {
+      const session = createPairingCodeSession();
+      remotePairingSession = session;
+      send(res, 200, {
+        created: true,
+        code: session.code,
+        expires_at: session.expires_at,
+        ttl_seconds: session.ttl_seconds,
+        use_with: 'POST /pair with {"code":"<code>"} on a trusted tunnel or future control-plane URL.',
+        security: [
+          'Code is one-time and short-lived.',
+          'Only create it on the device running MMIR Local Connector.',
+          'Do not paste pairing codes into public issues or chats.',
+        ],
+      }, origin);
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/hardware') {
       if (paired(req, res, origin)) send(res, 200, hardware(), origin);
       return;
@@ -366,6 +511,86 @@ http.createServer(async (req, res) => {
           source: 'local',
           capabilities: ['chat'],
         })),
+      }, origin);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/models/pulls') {
+      if (!paired(req, res, origin)) return;
+      send(res, 200, {
+        object: 'list',
+        provider: 'local-node',
+        source: 'ollama',
+        data: Array.from(modelPulls.values()).map(publicPullState),
+      }, origin);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname.startsWith('/models/pulls/')) {
+      if (!paired(req, res, origin)) return;
+      const id = decodeURIComponent(url.pathname.slice('/models/pulls/'.length));
+      const state = modelPulls.get(id);
+      if (!state) {
+        fail(res, 404, 'Model pull job was not found.', origin);
+        return;
+      }
+      send(res, 200, publicPullState(state), origin);
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/models/pull') {
+      if (!paired(req, res, origin)) return;
+      const payload = await body(req);
+      const model = modelFromPayload(payload);
+      if (!model) {
+        fail(res, 400, 'A valid Ollama model name is required.', origin);
+        return;
+      }
+      const id = modelJobId(model);
+      const existing = modelPulls.get(id);
+      if (existing && existing.status === 'running') {
+        send(res, 202, publicPullState(existing), origin);
+        return;
+      }
+      const state = {
+        id,
+        model,
+        status: 'running',
+        phase: 'queued',
+        completed: null,
+        total: null,
+        percent: null,
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        finished_at: null,
+        error: null,
+        last_event: null,
+      };
+      modelPulls.set(id, state);
+      runModelPull(state);
+      send(res, 202, publicPullState(state), origin);
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/models/delete') {
+      if (!paired(req, res, origin)) return;
+      const payload = await body(req);
+      const model = modelFromPayload(payload);
+      if (!model) {
+        fail(res, 400, 'A valid Ollama model name is required.', origin);
+        return;
+      }
+      await ollama('/api/delete', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: model }),
+        timeoutMs: 30000,
+      });
+      send(res, 200, {
+        deleted: true,
+        model,
+        provider: 'local-node',
+        source: 'ollama',
       }, origin);
       return;
     }
