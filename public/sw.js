@@ -1,4 +1,5 @@
-const CACHE_NAME='mmir-pwa-d203-20260523-model-picker';
+const CACHE_NAME='mmir-pwa-d216-20260523-runtime-hotfix';
+const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -29,6 +30,22 @@ const SHELL_ASSETS=[
   './mmir-api-routes.json'
 ];
 
+function shouldUseNetworkFirst(request,url){
+  if(request.mode==='navigate')return true;
+  const path=url.pathname.toLowerCase();
+  const lastDot=path.lastIndexOf('.');
+  const extension=lastDot>=0?path.slice(lastDot):'';
+  return NETWORK_FIRST_EXTENSIONS.has(extension);
+}
+
+function cacheResponse(request,response){
+  if(response&&response.ok){
+    const copy=response.clone();
+    caches.open(CACHE_NAME).then((cache)=>cache.put(request,copy));
+  }
+  return response;
+}
+
 self.addEventListener('install',(event)=>{
   event.waitUntil(caches.open(CACHE_NAME).then((cache)=>cache.addAll(SHELL_ASSETS)).then(()=>self.skipWaiting()));
 });
@@ -47,23 +64,13 @@ self.addEventListener('fetch',(event)=>{
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
 
-  if(request.mode==='navigate'){
-    event.respondWith(fetch(request).then((response)=>{
-      const copy=response.clone();
-      caches.open(CACHE_NAME).then((cache)=>cache.put(request,copy));
-      return response;
-    }).catch(()=>caches.match('./offline.html')));
+  if(shouldUseNetworkFirst(request,url)){
+    event.respondWith(fetch(request,{cache:'no-cache'}).then((response)=>cacheResponse(request,response)).catch(()=>caches.match(request).then((cached)=>cached||caches.match('./offline.html'))));
     return;
   }
 
   event.respondWith(caches.match(request).then((cached)=>{
-    const network=fetch(request).then((response)=>{
-      if(response&&response.ok){
-        const copy=response.clone();
-        caches.open(CACHE_NAME).then((cache)=>cache.put(request,copy));
-      }
-      return response;
-    }).catch(()=>cached);
+    const network=fetch(request).then((response)=>cacheResponse(request,response)).catch(()=>cached);
     return cached||network;
   }));
 });
