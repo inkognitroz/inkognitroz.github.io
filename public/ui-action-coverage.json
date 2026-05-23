@@ -125,6 +125,14 @@
       "evidence": ["/tools", "/connectors", "/tools/execute", "tool-runner-consent", "mimir-tool-gallery-v1:", "renderTrace", "Tool trace ready"]
     },
     {
+      "id": "external-connectors",
+      "surface": "Connector catalog",
+      "status": "beta",
+      "user_result": "Users can see which external systems can be connected now, create a safe sync plan, revoke local connector metadata and use manual/free paths without public frontend secrets.",
+      "selectors": ["#connector-catalog", "#connector-catalog-refresh", "[data-connector-use]", "[data-connector-plan]", "[data-connector-revoke]"],
+      "evidence": ["/connectors/catalog", "/connectors/sync-plans", "mimir-connector-plans-v1:", "connectorCatalogFallback", "public_frontend_secrets_allowed:false", "revocation_supported"]
+    },
+    {
       "id": "code-sandbox-preflight",
       "surface": "Code interpreter",
       "status": "beta",

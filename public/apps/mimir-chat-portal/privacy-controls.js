@@ -18,6 +18,7 @@
   const RESEARCH_PREFIX='mimir-research-plans-v1:';
   const DATA_ANALYSIS_PREFIX='mimir-data-analysis-v1:';
   const SCHEDULED_TASKS_PREFIX='mimir-scheduled-tasks-v1:';
+  const CONNECTOR_PLANS_PREFIX='mimir-connector-plans-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
@@ -58,7 +59,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -170,6 +171,7 @@
     const researchPlans=readJson(RESEARCH_PREFIX+id,[]);
     const dataAnalyses=readJson(DATA_ANALYSIS_PREFIX+id,[]);
     const scheduledTasks=readJson(SCHEDULED_TASKS_PREFIX+id,[]);
+    const connectorPlans=readJson(CONNECTOR_PLANS_PREFIX+id,[]);
 
     return {
       exported_at:new Date().toISOString(),
@@ -186,6 +188,7 @@
       research_plans:Array.isArray(researchPlans)?researchPlans:[],
       data_analyses:Array.isArray(dataAnalyses)?dataAnalyses:[],
       scheduled_tasks:Array.isArray(scheduledTasks)?scheduledTasks:[],
+      connector_plans:Array.isArray(connectorPlans)?connectorPlans:[],
       memory:Array.isArray(memory)?memory:[],
       memory_use:Array.isArray(memoryUse)?memoryUse:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
@@ -204,6 +207,7 @@
       research_plans:snapshot.research_plans.length,
       data_analyses:snapshot.data_analyses.length,
       scheduled_tasks:snapshot.scheduled_tasks.length,
+      connector_plans:snapshot.connector_plans.length,
       memory:snapshot.memory.length,
       memory_use:snapshot.memory_use.length,
       knowledge:snapshot.knowledge.length,
@@ -245,6 +249,7 @@
     const researchKeys=keysByPrefix(local,RESEARCH_PREFIX);
     const dataAnalysisKeys=keysByPrefix(local,DATA_ANALYSIS_PREFIX);
     const scheduledTaskKeys=keysByPrefix(local,SCHEDULED_TASKS_PREFIX);
+    const connectorPlanKeys=keysByPrefix(local,CONNECTOR_PLANS_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -350,6 +355,16 @@
         retention:'Visible reminders, schedules and run logs stay local until cancelled, exported or cleared.',
         action:'Manage reminders in Scheduled Tasks or export/delete active workspace data.',
         keys:scheduledTaskKeys
+      },
+      {
+        id:'connector-plans',
+        label:'Connector sync plans',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,connectorPlanKeys),
+        size:formatBytes(storageSize(localStorage,connectorPlanKeys)),
+        retention:'Connector catalog plans and revocation records stay local until exported, revoked or cleared.',
+        action:'Use Connectors to plan/revoke local connector metadata or export/delete active workspace data.',
+        keys:connectorPlanKeys
       },
       {
         id:'workspace-memory',
@@ -496,6 +511,7 @@
       ['Research plans',activeCounts.research_plans],
       ['Data analyses',activeCounts.data_analyses],
       ['Tasks',activeCounts.scheduled_tasks],
+      ['Connector plans',activeCounts.connector_plans],
       ['Memory items',activeCounts.memory],
       ['Memory use',activeCounts.memory_use],
       ['Knowledge files',activeCounts.knowledge],
@@ -586,6 +602,7 @@
     window.dispatchEvent(new CustomEvent('mmir-research-plans-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-data-analysis-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-scheduled-tasks-updated',{detail:{workspaceId:id,count:0}}));
+    window.dispatchEvent(new CustomEvent('mmir-connector-plans-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
@@ -611,6 +628,7 @@
     localStorage.removeItem(TOOL_GALLERY_PREFIX+workspaceId());
     localStorage.removeItem(DATA_ANALYSIS_PREFIX+workspaceId());
     localStorage.removeItem(SCHEDULED_TASKS_PREFIX+workspaceId());
+    localStorage.removeItem(CONNECTOR_PLANS_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
@@ -697,6 +715,7 @@
   window.addEventListener('mmir-memory-updated',refresh);
   window.addEventListener('mmir-knowledge-updated',refresh);
   window.addEventListener('mmir-knowledge-collections-updated',refresh);
+  window.addEventListener('mmir-connector-plans-updated',refresh);
   window.addEventListener('mmir-backend-profiles-updated',refresh);
   window.addEventListener('mmir-active-model-changed',refresh);
   window.addEventListener('mimir-growth-event',refresh);

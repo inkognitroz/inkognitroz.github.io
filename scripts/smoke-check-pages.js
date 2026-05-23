@@ -152,6 +152,13 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'), 
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'), 'cost_policy:\'free/local-only\'', 'D147 needs explicit free/local-only cost policy.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'), 'function checkDue()', 'D147 needs due-task checking.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.css'), '.scheduled-task-card', 'D147 needs task card styling.');
+requireText(mmirPath, 'id="connector-catalog"', 'D148 needs a visible external connector catalog panel.');
+requireText(mmirPath, './apps/mimir-chat-portal/connector-catalog.js', 'D148 needs connector catalog loaded on the product page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'), 'mimir-connector-plans-v1:', 'D148 needs workspace-local connector plan storage.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'), '/connectors/catalog', 'D148 needs protected connector catalog route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'), '/connectors/sync-plans', 'D148 needs protected connector sync planning route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'), 'public_frontend_secrets_allowed:false', 'D148 must keep public frontend connector secrets blocked.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.css'), '.connector-card', 'D148 needs connector catalog card styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');

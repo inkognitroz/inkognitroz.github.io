@@ -41,6 +41,7 @@ const files = {
   runtimeSettings: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'),
   dataAnalysis: join(publicDir, 'apps', 'mimir-chat-portal', 'data-analysis.js'),
   scheduledTasks: join(publicDir, 'apps', 'mimir-chat-portal', 'scheduled-tasks.js'),
+  connectorCatalog: join(publicDir, 'apps', 'mimir-chat-portal', 'connector-catalog.js'),
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
@@ -269,6 +270,13 @@ requireIncludes(files.scheduledTasks, 'mimir-scheduled-tasks-v1:', 'D147 needs l
 requireIncludes(files.scheduledTasks, "cost_policy:'free/local-only'", 'D147 needs explicit free/local-only cost policy.');
 requireIncludes(files.scheduledTasks, 'function checkDue()', 'D147 needs due-task checks.');
 requireIncludes(files.scheduledTasks, 'sendTaskToChat', 'D147 needs task-to-chat handoff.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/connector-catalog.js', 'D148 needs connector catalog loaded on the product page.');
+requireIncludes(files.connectorCatalog, 'mimir-connector-plans-v1:', 'D148 needs local connector plan storage.');
+requireIncludes(files.connectorCatalog, '/connectors/catalog', 'D148 needs protected connector catalog route support.');
+requireIncludes(files.connectorCatalog, '/connectors/sync-plans', 'D148 needs protected connector sync planning route support.');
+requireIncludes(files.connectorCatalog, 'connectorCatalogFallback', 'D148 needs a free/manual fallback connector catalog.');
+requireIncludes(files.connectorCatalog, 'revocation_supported', 'D148 needs connector revocation metadata.');
+requireIncludes(files.connectorCatalog, 'public_frontend_secrets_allowed:false', 'D148 must block public frontend connector secrets.');
 requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
@@ -335,7 +343,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

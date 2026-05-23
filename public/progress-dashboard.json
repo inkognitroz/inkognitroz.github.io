@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T07:02:58.813Z",
+  "updated_at": "2026-05-23T07:21:52.324Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 73,
+    "beta": 74,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 25,
+    "planned": 24,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -650,8 +650,8 @@
         "phase": "Connectors",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -661,10 +661,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Migration",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D148"
+    "D149"
   ],
   "watchlist": [
     "D082",
@@ -2970,10 +2970,10 @@
       "best_practice": "External data requires consent, revocation and least privilege",
       "done_when": "User can connect external systems without public secrets",
       "covers": "ChatGPT/Open WebUI parity",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sequential GUI parity slice: external app connector catalog and protected OAuth/sync boundaries.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "External connector catalog now covers manual docs, local folders, GitHub, Drive/Docs, Gmail, Notion, Slack and Open WebUI with protected OAuth boundaries, sync planning, revocation metadata and no public frontend secrets.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D149",
@@ -2985,9 +2985,9 @@
       "best_practice": "Mobile should feel like a client, not a cramped desktop page",
       "done_when": "User can install MMIR as a phone/tablet client",
       "covers": "mobile activation",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next sequential GUI parity slice: mobile/PWA installable shell with offline-safe public assets and node handoff.",
       "estimate": "0.5-2d"
     },
     {

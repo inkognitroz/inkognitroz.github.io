@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workspaces.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/memory.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/knowledge.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/connector-catalog.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/web-search.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/research-planner.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/tool-runner.css" />
@@ -69,6 +70,7 @@
           <a href="#access-control">Access</a>
           <a href="#runtime-settings-panel">Settings</a>
           <a href="#assistant-builder-panel">Assistants</a>
+          <a href="#connector-catalog">Connectors</a>
           <a href="#use-case-templates">Templates</a>
           <a href="#free-value-loops">Free</a>
           <a href="#dataset-manager">Data</a>
@@ -279,6 +281,15 @@
       </section>
     </details>
 
+    <details id="connector-catalog" class="mimir-provider-drawer">
+      <summary>+ External Connectors</summary>
+      <section class="mimir-dashboard" aria-labelledby="connector-catalog-title">
+        <div class="dashboard-heading"><div><p class="eyebrow">Free-first source layer</p><h2 id="connector-catalog-title">Connectors, OAuth boundaries and sync plans</h2></div></div>
+        <p class="dashboard-note">Manual knowledge import works now. GitHub, Drive, Gmail, Notion, Slack and Open WebUI sync must use protected backend or paired local-node routes; no connector secrets belong in this public site.</p>
+        <div id="connector-catalog-root" class="connector-catalog-root" aria-live="polite"></div>
+      </section>
+    </details>
+
     <details id="data-analysis" class="mimir-provider-drawer">
       <summary>+ Data Analysis / Charts</summary>
       <section class="mimir-dashboard" aria-labelledby="data-analysis-title">
@@ -338,6 +349,7 @@
   <script src="./apps/mimir-chat-portal/memory.js"></script>
   <script src="./apps/mimir-chat-portal/knowledge.js"></script>
   <script src="./apps/mimir-chat-portal/knowledge-connectors.js"></script>
+  <script src="./apps/mimir-chat-portal/connector-catalog.js"></script>
   <script src="./apps/mimir-chat-portal/web-search.js"></script>
   <script src="./apps/mimir-chat-portal/research-planner.js"></script>
   <script src="./apps/mimir-chat-portal/tool-runner.js"></script>

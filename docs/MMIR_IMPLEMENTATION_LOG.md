@@ -140,13 +140,14 @@ Updated: 2026-05-23
 - D042 is now beta in the public UI: first screen navigation is calmer, chat remains the primary surface, free browser/local routes load before local node checks, and model/node empty states now point users to the automatic free path instead of looking broken.
 - D146 is now beta in the public UI: safe data analysis runs locally in the browser for CSV/TSV/JSON with summaries, SVG charts, local snapshots, JSON export and chat-summary handoff without arbitrary public-code execution or paid backend cost.
 - D147 is now beta in the public UI: scheduled tasks/reminders are visible, browser-local and free/local-first with owner, due/repeat schedule, cost policy, run log, pause/cancel/export and chat handoff while protected backend scheduling remains planned.
+- D148 is now beta across frontend/backend: external connectors are cataloged with free/manual paths, protected OAuth/sync planning, local revocation metadata and explicit no-public-secrets policy for GitHub, Drive/Docs, Gmail, Notion, Slack, Open WebUI, local folders and manual documents.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D148` external app connector catalog and protected sync boundaries.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D149` mobile/PWA installable shell.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
