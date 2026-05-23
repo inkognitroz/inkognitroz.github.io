@@ -1,6 +1,6 @@
-# Monetization (SaaS Fabric)
+# Monetization (MMIR)
 
-SaaS Fabric is designed to support many revenue paths over time:
+MMIR is designed to support many revenue paths over time:
 
 - Subscription micro-SaaS tools
 - Paid dashboards and internal workflow apps
