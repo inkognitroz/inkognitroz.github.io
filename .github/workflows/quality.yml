@@ -166,6 +166,9 @@ jobs:
       - name: Smoke-check saved chat memory handoff
         run: node scripts/smoke-check-saved-chat-memory-handoff.js
 
+      - name: Smoke-check promoted context next answer
+        run: node scripts/smoke-check-promoted-context-next-answer.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

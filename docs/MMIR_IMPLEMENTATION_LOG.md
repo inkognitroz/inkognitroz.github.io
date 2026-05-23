@@ -212,14 +212,15 @@ Updated: 2026-05-23
 - D218 is now beta: transcript action accessibility now has grouped controls, described status feedback, aria labels and focus-visible contracts.
 - D219 is now beta: message Save/Fork now writes metadata-only conversation handoff state, opens Conversations, highlights the active saved branch and surfaces Continue/Rename/Safe share/Dismiss actions.
 - D220 is now beta: saved chat handoff can promote useful conversations into local Memory or Saved chats Knowledge with redaction, review notes, metadata receipts and no backend spend by default.
-- D221 is now next: prove promoted memory/knowledge is actually used in the next free chat answer with visible memory-use review.
+- D221 is now beta: promoted context next-answer QA evaluates the real runtime memory/knowledge selectors against synthetic saved-chat data, proves enabled context is injected and disabled collections are skipped, and verifies visible memory-use review state.
+- D222 is now next: add simple per-message controls so users can see and disable local Memory/Knowledge before sending the next prompt.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D221` promoted context next-answer proof.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D222` per-message context controls.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

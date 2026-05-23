@@ -133,8 +133,8 @@ const d207 = tasks.find((task) => task.seq === 'D207');
 if (!d207 || d207.status !== 'beta') {
   fail('Progress dashboard task D207 must be beta after free live-route hardening ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D221') {
-  fail('Progress dashboard next queue must prioritize D221 after D220 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D222') {
+  fail('Progress dashboard next queue must prioritize D222 after D221 ships.');
 }
 
 if (!process.exitCode) {

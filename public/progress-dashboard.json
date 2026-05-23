@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:04:48.374Z",
+  "updated_at": "2026-05-23T20:27:24.919Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 221,
+    "total": 222,
     "done": 51,
-    "beta": 145,
+    "beta": 146,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -978,6 +978,16 @@
       },
       {
         "phase": "Memory / Chat Runtime",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Context Controls",
         "total": 1,
         "done": 0,
         "beta": 0,
@@ -1947,6 +1957,52 @@
     ],
     "result": "ready"
   },
+  "promoted_context_next_answer_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T23:45:00+02:00",
+    "title": "Promoted Context Next Answer QA",
+    "principle": "Promoted memory and Saved chats knowledge must improve the next answer only when relevant and with visible review.",
+    "public_repo_rule": "QA evidence is synthetic metadata only. It contains no real prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "scenarios": [
+      {
+        "id": "local-memory-injection",
+        "target": "memory",
+        "expected": "Promoted local memory is selected when the next prompt matches it and writes memory-use review state.",
+        "runtime_function": "activeMemoryInstruction",
+        "visible_review": "mimir-memory-use-v1:<workspace>",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "saved-chat-knowledge-injection",
+        "target": "knowledge",
+        "expected": "Saved chats knowledge from an enabled collection is included in the next relevant local chat context.",
+        "runtime_function": "relevantKnowledgeInstruction",
+        "visible_review": "collection/file citation",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "disabled-collection-boundary",
+        "target": "knowledge",
+        "expected": "Disabled knowledge collections are skipped even when their text matches the next prompt.",
+        "runtime_function": "readKnowledgeCollections",
+        "visible_review": "enabled collection only",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "chat-context-order",
+        "target": "chat-runtime",
+        "expected": "Next chat context orders system, role/runtime, memory, backend memory, local knowledge and backend knowledge before the user prompt.",
+        "runtime_function": "contextMessages",
+        "visible_review": "Memory panel Used in last message",
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1997,7 +2053,7 @@
     }
   ],
   "next_queue": [
-    "D221"
+    "D222"
   ],
   "watchlist": [
     "D082",
@@ -5314,9 +5370,24 @@
       "best_practice": "Promotion is only valuable if it improves the next answer without surprising the user",
       "done_when": "CI proves the next chat request can include promoted local memory/knowledge and the UI shows what memory was used",
       "covers": "memory, knowledge, chat runtime",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Promoted context next-answer proof now evaluates the real chat-runtime memory/knowledge functions against synthetic saved-chat data and proves visible memory-use review.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D222",
+      "phase": "Chat UX / Context Controls",
+      "priority": "P0",
+      "work_package": "Per-message context controls",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add simple controls that show whether Memory and Knowledge are enabled for the next answer and allow disabling them per message",
+      "best_practice": "Context must be powerful without feeling hidden or creepy",
+      "done_when": "User can see and toggle local memory/knowledge before sending the next prompt",
+      "covers": "chat UX, memory, knowledge, trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: prove promoted memory/knowledge is actually used in the next free chat answer with visible memory-use review.",
+      "evidence": "Next activation slice: add simple per-message context controls so users can see and disable memory/knowledge for the next answer.",
       "estimate": "2-6h"
     }
   ]
