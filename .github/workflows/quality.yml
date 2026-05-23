@@ -69,6 +69,9 @@ jobs:
           test -f public/apps/app-template-generator/index.html
           test -f public/apps/football-evolution-matrix/index.html
 
+      - name: Check MMIR API route manifest
+        run: node scripts/check-api-route-manifest.js
+
       - name: Smoke-check MMIR route references
         run: |
           set -euo pipefail
