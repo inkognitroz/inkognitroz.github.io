@@ -207,11 +207,15 @@ if (!d202 || d202.status !== 'beta') {
   fail('Progress dashboard task D202 must be beta after first-screen visual QA ships.');
 }
 const d203 = tasks.find((task) => task.seq === 'D203');
-if (!d203 || d203.status !== 'next') {
-  fail('Progress dashboard task D203 must be the next composer model picker work item.');
+if (!d203 || d203.status !== 'beta') {
+  fail('Progress dashboard task D203 must stay beta after composer model picker ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D203') {
-  fail('Progress dashboard next queue must prioritize D203 after D202 ships.');
+const d204 = tasks.find((task) => task.seq === 'D204');
+if (!d204 || d204.status !== 'next') {
+  fail('Progress dashboard task D204 must be the next node/tunnel activation work item.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D204') {
+  fail('Progress dashboard next queue must prioritize D204 after D203 ships.');
 }
 
 if (!process.exitCode) {

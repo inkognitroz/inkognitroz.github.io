@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d202-20260523-visual-qa';
+const CACHE_NAME='mmir-pwa-d203-20260523-model-picker';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -10,6 +10,8 @@ const SHELL_ASSETS=[
   './assets/mmir-maskable-icon.svg',
   './apps/mimir-chat-portal/mimir-chat-portal.css',
   './apps/mimir-chat-portal/chat-runtime.css',
+  './apps/mimir-chat-portal/composer-model-picker.css',
+  './apps/mimir-chat-portal/composer-model-picker.js',
   './apps/mimir-chat-portal/repair-resume.css',
   './apps/mimir-chat-portal/pwa.css',
   './apps/mimir-chat-portal/pwa.js',

@@ -180,3 +180,6 @@ jobs:
 
       - name: Smoke-check first-screen visual QA
         run: node scripts/smoke-check-first-screen-visual-qa.js
+
+      - name: Smoke-check composer model picker
+        run: node scripts/smoke-check-composer-model-picker.js

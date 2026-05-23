@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T16:14:04.752Z",
+  "updated_at": "2026-05-23T16:23:07.589Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 203,
+    "total": 204,
     "done": 51,
-    "beta": 127,
+    "beta": 128,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -870,6 +870,16 @@
         "phase": "Chat UX / Model Activation",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Node Activation / Tunnels",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1148,7 +1158,7 @@
     }
   ],
   "next_queue": [
-    "D203"
+    "D204"
   ],
   "watchlist": [
     "D082",
@@ -4195,9 +4205,24 @@
       "best_practice": "First chat should feel as simple as ChatGPT while giving Open WebUI-level model control under zero-trust boundaries",
       "done_when": "User can open model picker from the composer, see live/browser/installable choices, launch a free install/proof path and return to chat with no dead state, secrets or paid route",
       "covers": "chat UX, model UX, activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The chat composer now has a compact model picker from the plus/model chip, showing live, browser-helper, WebGPU and installable free local model routes with no paid-route side effects.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D204",
+      "phase": "Node Activation / Tunnels",
+      "priority": "P0",
+      "work_package": "Local-node and tunnel handoff polish",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Carry users from no node to installer, pairing, tunnel status/start and model proof across desktop, VM and Raspberry Pi/Linux ARM paths, with one safe next action in chat and Node Dashboard",
+      "best_practice": "Cross-device node setup must stay outbound, private by default and free unless the user explicitly chooses paid capacity",
+      "done_when": "User can choose local or remote node path, see tunnel readiness/start/retry status and return to model proof without dead steps, secrets or exposed inbound ports",
+      "covers": "nodes, tunnels, activation, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next composer model picker slice: make live/free/installable model choice feel closer to ChatGPT and Open WebUI while preserving zero-trust boundaries.",
+      "evidence": "Next node/tunnel activation slice: make local-node, pairing and tunnel handoff feel automatic across desktop, VM and Raspberry Pi paths.",
       "estimate": "2-6h"
     }
   ]

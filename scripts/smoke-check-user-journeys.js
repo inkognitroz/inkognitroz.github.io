@@ -25,6 +25,8 @@ const files = {
   modelCatalogUi: join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   chatRuntimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
+  composerModelPicker: join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.js'),
+  composerModelPickerCss: join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
   onboarding: join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'),
   templates: join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'),
@@ -82,6 +84,7 @@ const files = {
   criticalShellRecoveryHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.js'),
   deployVerificationHarness: join(root, 'scripts', 'smoke-check-deploy-verification.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
+  composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
   starterFunnelContinueHarness: join(root, 'scripts', 'smoke-check-starter-funnel-continue.js'),
   firstScreenStarterFunnelHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel.js'),
@@ -466,6 +469,10 @@ requireIncludes(files.visualQaHarness, 'First-screen visual QA smoke check passe
 requireIncludes(files.visualQaReport, 'D202 first-screen visual verification', 'D202 visual QA report must publish the first-screen scope.');
 requireIncludes(files.visualQaReport, 'desktop-first-screen', 'D202 visual QA report must include desktop evidence.');
 requireIncludes(files.visualQaReport, 'mobile-first-screen', 'D202 visual QA report must include mobile evidence.');
+requireIncludes(files.composerModelPickerHarness, 'Composer model picker smoke check passed.', 'D203 composer model picker needs dedicated CI fixture coverage.');
+requireIncludes(files.chatRuntime, 'openComposerModelPicker', 'D203 chat runtime must trigger the compact composer model picker.');
+requireIncludes(files.composerModelPicker, 'composer-model-picker', 'D203 composer model picker module must render the compact model picker.');
+requireIncludes(files.composerModelPickerCss, '.composer-model-picker', 'D203 composer model picker needs visible styling.');
 requireIncludes(files.firstScreenHydration, 'MimirFirstScreenActivationHydration', 'D187 deferred hydration module must own non-critical first-screen activation banners.');
 requireIncludes(files.starterFunnelHarness, 'Starter-to-proof funnel smoke check passed.', 'D188 starter-to-proof funnel needs dedicated CI fixture coverage.');
 requireIncludes(files.progressDashboard, 'renderStarterFunnel', 'D188 Progress Dashboard must render starter-to-proof funnel.');

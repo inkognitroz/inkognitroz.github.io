@@ -186,6 +186,16 @@
     if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
   }
 
+  function openComposerModelPicker(){
+    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    if(window.MimirComposerModelPicker?.toggle){window.MimirComposerModelPicker.toggle();return;}
+    if(window.MimirLoadDeferred){
+      window.MimirLoadDeferred().then(()=>{if(window.MimirComposerModelPicker?.toggle)window.MimirComposerModelPicker.toggle();else openPanel('#model-library');});
+      return;
+    }
+    openPanel('#model-library');
+  }
+
   function readFirstChatReceipt(){
     try{
       const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
@@ -655,14 +665,14 @@
     dock.className='composer-mode-dock';
     dock.innerHTML=''+
       '<div class="composer-tool-cluster" aria-label="Chat tools">'+
-        '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" title="Add model">+</button>'+
+        '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true">Private</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false">Boost 5.5</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false">MMIR++</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false">Vision</button>'+
       '</div>'+
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
-        '<span id="runtime-model-chip" class="composer-live-chip">Model checking</span>'+
+        '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
         '<span id="runtime-resource-chip" class="composer-live-chip">CPU/RAM checking</span>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+
       '</div>';
@@ -670,10 +680,8 @@
     if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
     modelChipEl=document.getElementById('runtime-model-chip');
     resourceChipEl=document.getElementById('runtime-resource-chip');
-    document.getElementById('composer-add-model')?.addEventListener('click',()=>{
-      window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
-      openPanel('#model-library');
-    });
+    document.getElementById('composer-add-model')?.addEventListener('click',openComposerModelPicker);
+    modelChipEl?.addEventListener?.('click',openComposerModelPicker);
     document.querySelectorAll('[data-chat-mode]').forEach(button=>{
       button.addEventListener('click',()=>{
         const mode=button.getAttribute('data-chat-mode');
@@ -744,7 +752,7 @@
     deleteModelBtn=document.getElementById('runtime-delete-model');
     clearBtn=document.getElementById('runtime-clear');
     if(modelSelect)modelSelect.setAttribute('aria-label','Active chat model');
-    if(modelSelect)modelSelect.addEventListener('change',()=>{renderModelHelper();updateRuntimeChips();updateRuntimeModelActions();});
+    if(modelSelect)modelSelect.addEventListener('change',()=>{renderModelHelper();updateRuntimeChips();updateRuntimeModelActions();window.MimirComposerModelPicker?.render?.();});
     refreshBtn.addEventListener('click',()=>refreshState(true));
     stopBtn.addEventListener('click',stopCurrentResponse);
     deleteModelBtn.addEventListener('click',deleteSelectedLiveModel);
@@ -1030,6 +1038,7 @@
     renderModelHelper();
     updateRuntimeChips();
     updateRuntimeModelActions();
+    window.MimirComposerModelPicker?.render?.();
     setStatus('Prepared '+(starter.model||starter.label)+' for install/proof. No paid route.','ready');
     return starter;
   }

@@ -27,8 +27,17 @@
       "surface": "Chat composer",
       "selector": "#composer-add-model",
       "status": "wired",
-      "result": "Creates or reuses the free local-node profile and opens the model library from the plus button.",
-      "source_evidence": ["composer-add-model", "openPanel('#model-library')"],
+      "result": "Creates or reuses the free local-node profile and opens the compact composer model picker from the plus button.",
+      "source_evidence": ["composer-add-model", "openComposerModelPicker", "composer-model-picker"],
+      "no_spend": true
+    },
+    {
+      "id": "composer-model-picker",
+      "surface": "Chat composer",
+      "selector": "#composer-model-picker",
+      "status": "wired",
+      "result": "Lets users choose live backend, browser helper, WebGPU or installable free local models from the chat composer without starting paid routes.",
+      "source_evidence": ["MimirComposerModelPicker", "selectModel(value,action)", "data-picker-model-value", "no_paid_routes_started:true"],
       "no_spend": true
     },
     {

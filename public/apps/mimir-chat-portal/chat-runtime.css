@@ -328,11 +328,16 @@
 .composer-live-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 10px;
   background: rgba(248, 250, 252, 0.86);
+}
+
+.composer-chip-button {
+  cursor: pointer;
 }
 
 #runtime-model-chip {

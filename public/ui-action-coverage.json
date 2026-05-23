@@ -24,9 +24,9 @@
       "id": "connect-model",
       "surface": "First screen and backend settings",
       "status": "live",
-      "user_result": "The + Connect Model controls create or reuse the free local-node profile, make it active and open the model library/setup path instead of a dead configuration stop.",
-      "selectors": ["#new-backend", "#composer-add-model", "#model-library", "#connect-options", "#backend-settings"],
-      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openPanel('#model-library')", "document.getElementById('model-library')", "section.id='connect-options'"]
+      "user_result": "The + Connect Model controls create or reuse the free local-node profile, make it active and open the composer model picker or model library/setup path instead of a dead configuration stop.",
+      "selectors": ["#new-backend", "#composer-add-model", "#composer-model-picker", "#model-library", "#connect-options", "#backend-settings"],
+      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openComposerModelPicker", "MimirComposerModelPicker", "composer-model-picker", "document.getElementById('model-library')", "section.id='connect-options'"]
     },
     {
       "id": "first-run-checklist",
@@ -81,8 +81,8 @@
       "surface": "Model selector and catalog",
       "status": "live",
       "user_result": "Live backend models are preferred automatically; browser helpers, WebGPU models and installable free Ollama models remain visible with license/source guidance.",
-      "selectors": ["#runtime-model", "#model-library-grid", "[data-recommended-starter]", "[data-starter-id]"],
-      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "no_paid_routes_started:true"]
+      "selectors": ["#runtime-model", "#runtime-model-chip", "#composer-model-picker", "[data-picker-model-value]", "#model-library-grid", "[data-recommended-starter]", "[data-starter-id]"],
+      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "MimirComposerModelPicker", "selectModel(value,action)", "composer-model-picker", "data-picker-model-value", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "no_paid_routes_started:true"]
     },
     {
       "id": "one-click-model-install",

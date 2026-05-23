@@ -511,6 +511,10 @@ requireText(join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'), 'Fir
 requireText(join(publicDir, 'visual-qa-report.json'), 'D202 first-screen visual verification', 'D202 first-screen visual QA must publish a public-safe report.');
 requireText(join(publicDir, 'visual-qa-report.json'), 'desktop-first-screen', 'D202 visual QA report must include desktop evidence.');
 requireText(join(publicDir, 'visual-qa-report.json'), 'mobile-first-screen', 'D202 visual QA report must include mobile evidence.');
+requireText(join(root, 'scripts', 'smoke-check-composer-model-picker.js'), 'Composer model picker smoke check passed.', 'D203 composer model picker must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'openComposerModelPicker', 'D203 chat runtime must trigger the composer model picker.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.js'), 'composer-model-picker', 'D203 composer model picker module must render the picker.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.css'), '.composer-model-picker', 'D203 composer model picker needs styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');
