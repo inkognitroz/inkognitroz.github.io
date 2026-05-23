@@ -82,7 +82,7 @@ This report is the short execution snapshot for the first MMIR delivery goal:
 - `node scripts/smoke-check-pages.js`
 - `node scripts/smoke-check-user-journeys.js`
 - `node scripts/smoke-check-ui-actions.js`
-- `node scripts/smoke-check-public-safety.js`
+- `node scripts/public-safety-audit.js`
 - Live check: `curl -sL https://mmir.ai/` must contain MMIR identity and must not contain SaaS Fabric/App Factory copy.
 - Connector release check: `https://mmir.ai/downloads/mmir-local-connector-release.json` must return contract `0.1`, default host `127.0.0.1` and matching artifact checksums.
 - Browser E2E when runner/browser is available: desktop and mobile first screen, connect local AI, mock pair, mock models, mock chat.
