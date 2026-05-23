@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:32:15.676Z",
+  "updated_at": "2026-05-23T14:37:50.378Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 191,
+    "total": 192,
     "done": 51,
-    "beta": 115,
+    "beta": 116,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -68,10 +68,10 @@
       },
       {
         "phase": "Model UX",
-        "total": 4,
+        "total": 5,
         "done": 2,
         "beta": 2,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -290,8 +290,8 @@
         "phase": "Activation UX",
         "total": 13,
         "done": 4,
-        "beta": 8,
-        "next": 1,
+        "beta": 9,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1068,7 +1068,7 @@
     }
   ],
   "next_queue": [
-    "D191"
+    "D192"
   ],
   "watchlist": [
     "D082",
@@ -3935,9 +3935,24 @@
       "best_practice": "Users should continue from the first screen without understanding the dashboard",
       "done_when": "First-screen starter progress has a contextual Continue button that never starts paid routes or stores secrets",
       "covers": "activation, first impression, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-screen starter progress now exposes one safe action for install, live proof or first chat and records no-spend telemetry.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D192",
+      "phase": "Model UX",
+      "priority": "P0",
+      "work_package": "Recommended starter model-library focus",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "When a starter action opens Model Library, focus and highlight the recommended free starter so the user does not search manually",
+      "best_practice": "Model onboarding should feel one-click, not catalog browsing",
+      "done_when": "Model Library visibly lands on the recommended free starter with no paid route enabled",
+      "covers": "activation, model UX, onboarding",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next first-screen UX slice: add one safe continue action from the first-screen starter progress strip to the exact missing step.",
+      "evidence": "Next model UX slice: focus or highlight the recommended starter inside Model Library when the user follows starter actions.",
       "estimate": "2-6h"
     }
   ]

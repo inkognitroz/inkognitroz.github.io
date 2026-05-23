@@ -72,6 +72,7 @@ Current priority after the matrix is:
 62. D189 starter funnel continue action.
 63. D190 first-screen starter funnel summary.
 64. D191 first-screen starter funnel continue action.
+65. D192 recommended starter model-library focus.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -135,6 +136,7 @@ D187 is now beta: non-essential first-screen QA/repair hydration is deferred out
 D188 is now beta: Progress Dashboard shows whether recommended starter selections become install, live proof and first-chat receipts.
 D189 is now beta: one safe Continue action opens the exact missing starter funnel step without auto-spend.
 D190 is now beta: first-screen deferred hydration shows selected starter progress without increasing critical JS.
-D191 is next: add one safe Continue action from that first-screen starter progress strip.
+D191 is now beta: first-screen starter progress has one safe Continue action for install, proof or first chat.
+D192 is next: focus/highlight the recommended starter in Model Library after starter actions.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

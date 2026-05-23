@@ -71,7 +71,8 @@
 .activation-replay-banner a,
 .activation-replay-banner button,
 .activation-closure-strip button,
-.first-screen-starter-funnel a {
+.first-screen-starter-funnel a,
+.first-screen-starter-funnel button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -161,6 +162,7 @@
   .activation-replay-banner button,
   .activation-closure-strip button,
   .first-screen-starter-funnel a,
+  .first-screen-starter-funnel button,
   .activation-replay-actions {
     width: 100%;
   }

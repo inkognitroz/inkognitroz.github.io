@@ -56,7 +56,7 @@ for (const needle of [
   '.first-screen-starter-funnel',
   '.first-screen-starter-funnel[hidden]',
   '.first-screen-starter-funnel[data-state="ready"]',
-  '.first-screen-starter-funnel a'
+  '.first-screen-starter-funnel button'
 ]) {
   if (!css.includes(needle)) fail(`First-screen starter funnel styling missing: ${needle}`);
 }
@@ -77,8 +77,8 @@ if (!d190 || d190.status !== 'beta') {
 }
 
 const d191 = tasks.find((task) => task.seq === 'D191');
-if (!d191 || d191.status !== 'next') {
-  fail('Progress dashboard must expose D191 as the next first-screen starter funnel action work item.');
+if (!d191 || !['beta', 'next'].includes(d191.status)) {
+  fail('Progress dashboard must expose D191 as beta or next after first-screen starter funnel ships.');
 }
 
 if (!process.exitCode) {

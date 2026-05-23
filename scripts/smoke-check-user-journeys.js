@@ -78,6 +78,7 @@ const files = {
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
   starterFunnelContinueHarness: join(root, 'scripts', 'smoke-check-starter-funnel-continue.js'),
   firstScreenStarterFunnelHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel.js'),
+  firstScreenStarterContinueHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel-continue.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -451,6 +452,8 @@ requireIncludes(files.progressDashboard, 'runStarterFunnelContinue', 'D189 Progr
 requireIncludes(files.firstScreenStarterFunnelHarness, 'First-screen starter funnel smoke check passed.', 'D190 first-screen starter funnel needs dedicated CI fixture coverage.');
 requireIncludes(files.firstScreenHydration, 'renderFirstScreenStarterFunnel', 'D190 deferred first-screen hydration must render starter funnel progress.');
 requireIncludes(files.repairResumeCss, '.first-screen-starter-funnel', 'D190 first-screen starter funnel needs visible styling.');
+requireIncludes(files.firstScreenStarterContinueHarness, 'First-screen starter funnel continue smoke check passed.', 'D191 first-screen starter funnel continue needs dedicated CI fixture coverage.');
+requireIncludes(files.firstScreenHydration, 'runFirstScreenStarterFunnelAction', 'D191 deferred first-screen hydration must run starter funnel actions.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

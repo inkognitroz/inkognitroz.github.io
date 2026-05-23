@@ -149,8 +149,12 @@
     const chat=after.find((event)=>event.type==='first-chat-receipt'&&(event.status==='success'||event.first_chat_ready));
     const ready=Boolean(chat);
     const next=!install?'Install model':!proof?'Run free proof':!chat?'First answer':'Ready';
+    const action=!install?{kind:'install',label:'Open models',target:'#model-library'}:
+      !proof?{kind:'live-proof',label:'Run proof',target:'#mimir-chat-runtime'}:
+      !chat?{kind:'first-chat',label:'Start chat',target:'#mimir-prompt'}:
+      {kind:'chat-now',label:'Chat now',target:'#mimir-prompt'};
     const done=[selected,install,proof,chat].filter(Boolean).length;
-    return {state:ready?'ready':'watch',model:selected.model||selected.route||'recommended starter',next,done};
+    return {state:ready?'ready':'watch',model:selected.model||selected.route||'recommended starter',next,done,action};
   }
 
   function ensureFirstScreenStarterFunnel(){
@@ -183,11 +187,27 @@
     lastStarterFunnelSignature=signature;
     banner.hidden=false;
     banner.dataset.state=state.state;
-    banner.innerHTML='<div><span>Starter progress</span><strong>'+safe(state.model)+'</strong><p>'+safe(state.done)+'/4 complete - next: '+safe(state.next)+'</p><small>local_only:true / no_paid_routes_started:true / raw_prompt_stored:false / secrets_stored:false</small></div><a href="#progress-dashboard" data-first-screen-starter-funnel>Open progress</a>';
-    banner.querySelector('[data-first-screen-starter-funnel]')?.addEventListener('click',(event)=>{
-      event.preventDefault();
-      openPanel('#progress-dashboard');
-    });
+    banner.innerHTML='<div><span>Starter progress</span><strong>'+safe(state.model)+'</strong><p>'+safe(state.done)+'/4 complete - next: '+safe(state.next)+'</p><small>local_only:true / no_paid_routes_started:true / raw_prompt_stored:false / secrets_stored:false</small></div><button type="button" data-first-screen-starter-funnel="'+safe(state.action.kind)+'" data-target="'+safe(state.action.target)+'">'+safe(state.action.label)+'</button>';
+    banner.querySelector('[data-first-screen-starter-funnel]')?.addEventListener('click',()=>runFirstScreenStarterFunnelAction(state.action));
+  }
+
+  function runFirstScreenStarterFunnelAction(action){
+    window.MimirActivationTelemetry?.record?.('first-screen-starter-funnel-action',{status:action.kind,route:action.target,free:true,note:'First-screen starter funnel opened '+action.target+'. no_paid_routes_started:true.'});
+    if(action.kind==='live-proof'){
+      const retry=document.querySelector('#runtime-live-proof [data-proof-action="retry"]')||document.getElementById('runtime-refresh');
+      retry?.click?.();
+    }
+    if(action.kind==='first-chat'){
+      const prompt=document.getElementById('mimir-prompt');
+      if(prompt&&!String(prompt.value||'').trim()){
+        prompt.value='Give me my first useful MMIR answer and the next safe setup step.';
+        prompt.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      prompt?.focus();
+      window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
+      return;
+    }
+    if(action.target.startsWith('#'))openPanel(action.target);
   }
 
   function renderActivationReplayBanner(){
