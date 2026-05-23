@@ -149,6 +149,14 @@
       "evidence": ["startDictation", "speechSynthesis", "mimir-voice-settings-v1", "Voice route checked"]
     },
     {
+      "id": "vision-input",
+      "surface": "Vision / Screenshots",
+      "status": "beta",
+      "user_result": "Users can preview an image or pasted screenshot locally, check multimodal route gates, and send only metadata to chat until a trusted vision model route is active.",
+      "selectors": ["#vision-input", "#vision-image-file", "#vision-check-route", "#vision-send-metadata", "#vision-clear-image"],
+      "evidence": ["handlePasteImage", "looksVisionCapable", "raw_image_sent:false", "Vision route checked"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

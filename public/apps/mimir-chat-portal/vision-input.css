@@ -1,0 +1,142 @@
+.vision-input-body {
+  display: grid;
+  gap: 10px;
+}
+
+.vision-input-body label {
+  display: grid;
+  gap: 5px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.vision-input-body input {
+  width: 100%;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  padding: 8px;
+  font: inherit;
+}
+
+.vision-preview {
+  display: grid;
+  grid-template-columns: minmax(120px, 220px) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 110px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.vision-preview img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.vision-preview p,
+.vision-preview span {
+  margin: 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+.vision-preview strong {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--mimir-text, #111827);
+  font-size: 0.88rem;
+}
+
+.vision-input button {
+  min-height: 36px;
+  border-radius: 8px !important;
+}
+
+.vision-route-result {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(20, 184, 166, 0.22);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.vision-route-result h3,
+.vision-route-result p {
+  margin: 0;
+}
+
+.vision-route-result p,
+.vision-next-actions {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.vision-gate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.vision-gate {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.vision-gate span,
+.vision-gate small {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.vision-gate strong {
+  color: #0f766e;
+  font-size: 0.78rem;
+}
+
+.vision-gate[data-state="needs_review"] strong {
+  color: #92400e;
+}
+
+.vision-gate[data-state="blocked"] strong {
+  color: #b91c1c;
+}
+
+.vision-next-actions {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.vision-input-body input:focus-visible,
+.vision-input button:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+@media (max-width: 640px) {
+  .vision-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .vision-input button {
+    width: 100%;
+  }
+}

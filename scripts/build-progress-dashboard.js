@@ -72,6 +72,7 @@ const overrides = new Map([
   ['D133', { status: 'beta', evidence: 'Canvas/artifacts now has a local workspace for documents, code, plans and workflow drafts with automatic first artifact, edit/preview, duplicate, copy, export and chat handoff.' }],
   ['D134', { status: 'beta', evidence: 'Image generation/editing now has a visible zero-cost route planner with consent, local/protected route labels, safety/cost gates and disabled execution until a trusted image backend exists.' }],
   ['D135', { status: 'beta', evidence: 'Voice now has browser-local push-to-talk, read-aloud, stop speech, voice route/device checks, language/voice/rate/pitch settings and local privacy inventory coverage.' }],
+  ['D136', { status: 'beta', evidence: 'Vision now has local image/screenshot preview, model capability gating, metadata-only chat handoff and explicit raw-image blocking until a trusted multimodal route exists.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

@@ -30,6 +30,7 @@ Updated: 2026-05-23
 - Canvas/artifacts now has a local workspace for documents, code, plans and workflow drafts with an automatic first artifact, preview, copy, export, duplicate and chat handoff.
 - Image generation/editing now has a truthful route planner: local/free image nodes and protected paid/provider routes are visible, cost-gated and blocked from execution until a trusted backend exists.
 - Voice now has browser-local push-to-talk, route/device checks, read-aloud, stop speech and local language/voice/rate/pitch preferences covered by privacy inventory.
+- Vision/screenshot input now previews images locally, checks selected model capability, supports pasted screenshots and sends only metadata to chat until a trusted multimodal route exists.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T03:54:18.143Z",
+  "updated_at": "2026-05-23T04:00:07.117Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 60,
+    "beta": 61,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 38,
+    "planned": 37,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -530,11 +530,11 @@
         "phase": "Multimodal",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Admin",
@@ -2790,10 +2790,10 @@
       "best_practice": "Multimodal input should only route to capable trusted models",
       "done_when": "User can ask about images with clear privacy boundary",
       "covers": "ChatGPT/Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Vision now has local image/screenshot preview, model capability gating, metadata-only chat handoff and explicit raw-image blocking until a trusted multimodal route exists.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D137",

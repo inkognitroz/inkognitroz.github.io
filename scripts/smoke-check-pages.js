@@ -129,6 +129,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product 
 requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR product page must load artifact workspace script.');
 requireText(mmirPath, './apps/mimir-chat-portal/image-boundary.js', 'MMIR product page must load image boundary script.');
 requireText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'MMIR product page must load voice controls script.');
+requireText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'MMIR product page must load vision input script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -189,6 +190,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'), 'speechSynthesis', 'Voice controls must expose browser read-aloud.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'), 'mimir-voice-settings-v1', 'Voice settings must persist locally.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.css'), '.voice-device-list', 'Voice controls need visible route/device status styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'), 'handlePasteImage', 'Vision input must support pasted screenshots.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'), 'looksVisionCapable', 'Vision input must gate by model capability.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'), 'raw_image_sent:false', 'Vision input must not send raw images from the public page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.css'), '.vision-gate-grid', 'Vision input needs visible gate styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');

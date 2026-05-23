@@ -29,6 +29,7 @@ const files = {
   artifactWorkspace: join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'),
   imageBoundary: join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'),
   voiceControls: join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'),
+  visionInput: join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -201,6 +202,10 @@ requireIncludes(files.mmir, './apps/mimir-chat-portal/voice-controls.js', 'D135 
 requireIncludes(files.voiceControls, 'startDictation', 'D135 needs push-to-talk dictation.');
 requireIncludes(files.voiceControls, 'speechSynthesis', 'D135 needs read-aloud.');
 requireIncludes(files.voiceControls, 'mimir-voice-settings-v1', 'D135 needs local voice settings.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/vision-input.js', 'D136 needs vision input loaded on the product page.');
+requireIncludes(files.visionInput, 'handlePasteImage', 'D136 needs pasted screenshot support.');
+requireIncludes(files.visionInput, 'looksVisionCapable', 'D136 needs model capability gating.');
+requireIncludes(files.visionInput, 'raw_image_sent:false', 'D136 must not send raw images from the public page.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -231,7 +236,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }
