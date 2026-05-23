@@ -86,6 +86,7 @@
       label:String(scenario.label||'Activation replay'),
       simulated_signal:String(scenario.simulated_signal||'Public-safe activation fixture.'),
       expected_next_action:String(scenario.expected_next_action||'Review the next safe action.'),
+      next_target:String(scenario.next_target||'#progress-dashboard'),
       applied_at:new Date().toISOString(),
       demo_only:true,
       no_paid_routes_started:true,

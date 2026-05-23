@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d179-20260523-replay-handoff';
+const CACHE_NAME='mmir-pwa-d180-20260523-replay-controls';
 const SHELL_ASSETS=[
   './',
   './index.html',

@@ -140,6 +140,11 @@
     }
   }
 
+  function clearActivationReplay(){
+    try{localStorage.removeItem(ACTIVATION_REPLAY_PREFIX+activeWorkspaceId());}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-activation-replay-updated',{detail:{cleared:true,workspaceId:activeWorkspaceId()}}));
+  }
+
   function repairResumeCopy(resume){
     const status=String(resume?.status||'pending');
     const model=String(resume?.model||'').trim();
@@ -236,7 +241,20 @@
     lastActivationReplaySignature=signature;
     banner.hidden=false;
     banner.dataset.state=String(replay.state||'demo');
-    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review this simulated activation state.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><a href="#progress-dashboard" data-activation-replay-open>Open replay</a>';
+    const target=String(replay.next_target||'#progress-dashboard');
+    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review this simulated activation state.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#progress-dashboard" data-activation-replay-open>Open replay</a></div>';
+    banner.querySelector('[data-activation-replay-jump]')?.addEventListener('click',(event)=>{
+      if(target.startsWith('#')){
+        event.preventDefault();
+        openPanel(target);
+        if(target==='#mimir-prompt')promptEl?.focus();
+      }
+    });
+    banner.querySelector('[data-activation-replay-reset]')?.addEventListener('click',()=>{
+      clearActivationReplay();
+      lastActivationReplaySignature='';
+      renderActivationReplayBanner();
+    });
     banner.querySelector('[data-activation-replay-open]')?.addEventListener('click',(event)=>{
       event.preventDefault();
       openPanel('#progress-dashboard');

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:00:20.977Z",
+  "updated_at": "2026-05-23T13:05:09.689Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 180,
+    "total": 181,
     "done": 51,
-    "beta": 104,
+    "beta": 105,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -738,10 +738,10 @@
       },
       {
         "phase": "Activation QA",
-        "total": 5,
+        "total": 6,
         "done": 0,
         "beta": 5,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -760,8 +760,8 @@
         "phase": "Activation QA/UX",
         "total": 3,
         "done": 0,
-        "beta": 2,
-        "next": 1,
+        "beta": 3,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -788,6 +788,7 @@
         "user_goal": "Land on MMIR and get immediate value before installing anything.",
         "simulated_signal": "No backend profile, no local node, no first-chat receipt.",
         "expected_next_action": "Use the free browser guide or start a local install only when needed.",
+        "next_target": "#mimir-prompt",
         "cost": "free",
         "no_paid_routes_started": true,
         "provider_secrets_stored": false,
@@ -828,6 +829,7 @@
         "user_goal": "Understand exactly what to install on this device.",
         "simulated_signal": "Local node is unreachable on localhost.",
         "expected_next_action": "Show one OS/device-specific connector repair card.",
+        "next_target": "#node-dashboard",
         "cost": "free",
         "no_paid_routes_started": true,
         "provider_secrets_stored": false,
@@ -868,6 +870,7 @@
         "user_goal": "Return from installer and have MMIR continue automatically.",
         "simulated_signal": "mmir_local_return=1 and stored repair resume state.",
         "expected_next_action": "Refresh connector, model discovery, proof and repair resume status.",
+        "next_target": "#local-connector",
         "cost": "free",
         "no_paid_routes_started": true,
         "provider_secrets_stored": false,
@@ -908,6 +911,7 @@
         "user_goal": "Install a model that fits the current device without terminal work.",
         "simulated_signal": "Connector is reachable, runtime exists, model count is zero.",
         "expected_next_action": "Open model library with an installable free starter model.",
+        "next_target": "#model-library",
         "cost": "free",
         "no_paid_routes_started": true,
         "provider_secrets_stored": false,
@@ -948,6 +952,7 @@
         "user_goal": "Use the newly live local model for a useful first answer.",
         "simulated_signal": "Live local model proof succeeded and first_chat_ready is true.",
         "expected_next_action": "Select the verified route and show Chat with verified model.",
+        "next_target": "#mimir-prompt",
         "cost": "free",
         "no_paid_routes_started": true,
         "provider_secrets_stored": false,
@@ -1033,7 +1038,7 @@
     }
   ],
   "next_queue": [
-    "D180"
+    "D181"
   ],
   "watchlist": [
     "D082",
@@ -3735,9 +3740,24 @@
       "best_practice": "Demo QA should be easy to exit and should lead to the exact user surface under test",
       "done_when": "Owner can clear replay from first screen or jump to the scenario target with demo-only labeling preserved",
       "covers": "activation, QA, demo",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First-screen replay banners now expose Go to next step and Reset replay controls while only clearing the workspace-local demo replay key.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D181",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "Replay render regression harness",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add source-level and fixture-level checks that every replay scenario renders first-screen controls, runtime replay gate, reset path and next-target jump evidence",
+      "best_practice": "Replay QA should not regress when first-screen or chat runtime code changes",
+      "done_when": "CI proves replay controls exist for every scenario and remain demo-only",
+      "covers": "activation, QA, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation QA/UX slice: add first-screen reset and scenario jump controls for active replay states.",
+      "evidence": "Next activation QA slice: add a replay render regression harness for every simulator scenario and next-target control.",
       "estimate": "2-6h"
     }
   ]

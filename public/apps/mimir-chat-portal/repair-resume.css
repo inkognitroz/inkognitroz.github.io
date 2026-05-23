@@ -48,8 +48,16 @@
   font-size: 0.76rem;
 }
 
+.activation-replay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
 .repair-resume-banner a,
-.activation-replay-banner a {
+.activation-replay-banner a,
+.activation-replay-banner button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -60,9 +68,16 @@
   color: #fff !important;
   font-size: 0.82rem;
   font-weight: 750;
+  font-family: inherit;
   padding: 0.45rem 0.75rem;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.activation-replay-banner button {
+  background: #fff;
+  color: #1d4ed8 !important;
 }
 
 .repair-resume-banner[data-state="verified"] {
@@ -95,7 +110,9 @@
   }
 
   .repair-resume-banner a,
-  .activation-replay-banner a {
+  .activation-replay-banner a,
+  .activation-replay-banner button,
+  .activation-replay-actions {
     width: 100%;
   }
 }

@@ -390,10 +390,14 @@ requireIncludes(files.progressDashboard, 'progress-activation-autopilot', 'D171 
 requireIncludes(files.progressDashboard, 'activationSummary', 'D170 dashboard must summarize activation telemetry.');
 requireIncludes(files.firstImpression, 'activation-replay-banner', 'D179 first screen must show active replay state.');
 requireIncludes(files.firstImpression, 'mutated_real_connector:false', 'D179 first screen replay state must be demo-only.');
+requireIncludes(files.firstImpression, 'data-activation-replay-jump', 'D180 first screen must jump to replay next target.');
+requireIncludes(files.firstImpression, 'data-activation-replay-reset', 'D180 first screen must reset active replay state.');
+requireIncludes(files.firstImpression, 'clearActivationReplay', 'D180 replay reset must only clear the demo replay key.');
 requireIncludes(files.chatRuntime, 'runtime-activation-replay', 'D179 chat runtime must show active replay near live proof.');
 requireIncludes(files.chatRuntime, 'real live proof unchanged', 'D179 replay handoff must not replace real proof.');
 requireIncludes(files.chatRuntimeCss, '.runtime-activation-replay', 'D179 chat runtime replay state needs styling.');
 requireIncludes(files.repairResumeCss, '.activation-replay-banner', 'D179 first-screen replay state needs styling.');
+requireIncludes(files.repairResumeCss, '.activation-replay-actions', 'D180 first-screen replay controls need styling.');
 requireIncludes(files.progressDashboard, 'renderActivationSimulator', 'D177 dashboard must render activation simulator fixtures.');
 requireIncludes(files.progressDashboard, 'progress-activation-simulator', 'D177 dashboard must expose activation simulator panel.');
 requireIncludes(files.progressDashboard, 'data-activation-replay', 'D178 dashboard must expose safe replay controls.');

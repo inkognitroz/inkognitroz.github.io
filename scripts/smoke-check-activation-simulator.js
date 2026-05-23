@@ -102,6 +102,9 @@ for (const scenario of scenarios) {
   if (!scenario.user_goal || !scenario.expected_next_action || !scenario.simulated_signal) {
     fail(`Activation simulator scenario ${scenario.id} must describe goal, signal and next action.`);
   }
+  if (!String(scenario.next_target || '').startsWith('#')) {
+    fail(`Activation simulator scenario ${scenario.id} must define a public-safe hash next_target.`);
+  }
 
   const surfaces = Array.isArray(scenario.surfaces) ? scenario.surfaces : [];
   for (const required of requiredSurfaces) {
@@ -165,6 +168,16 @@ for (const needle of ['activation-replay-banner', 'mimir-activation-replay-v1:',
   }
 }
 
+for (const needle of ['data-activation-replay-jump', 'data-activation-replay-reset', 'clearActivationReplay', 'Go to next step', 'Reset replay']) {
+  if (!text(files.firstScreen).includes(needle)) {
+    fail(`D180 first-screen replay controls need evidence: ${needle}`);
+  }
+}
+
+if (!text(files.progressDashboard).includes('next_target')) {
+  fail('D180 replay state must store the scenario next_target.');
+}
+
 for (const needle of ['runtime-activation-replay', 'real live proof unchanged', 'mimir-activation-replay-v1:', 'renderActivationReplayGate']) {
   if (!text(files.chatRuntime).includes(needle)) {
     fail(`D179 chat runtime replay handoff needs evidence: ${needle}`);
@@ -177,6 +190,10 @@ if (!text(files.chatRuntimeCss).includes('.runtime-activation-replay')) {
 
 if (!text(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css')).includes('.activation-replay-banner')) {
   fail('D179 first-screen replay handoff needs visible first-screen styling.');
+}
+
+if (!text(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css')).includes('.activation-replay-actions')) {
+  fail('D180 first-screen replay reset/jump controls need visible styling.');
 }
 
 if (!process.exitCode) {

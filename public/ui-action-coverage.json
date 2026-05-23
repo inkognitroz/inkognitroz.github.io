@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:35:00+02:00",
+  "updated_at": "2026-05-23T13:50:00+02:00",
   "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
   "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
   "groups": [
@@ -9,8 +9,8 @@
       "surface": "First screen chat",
       "status": "live",
       "user_result": "A new visitor can type or choose a starter prompt and get a useful free browser answer before setup.",
-      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "#repair-resume-banner", "#activation-replay-banner", "[data-prompt-action]", "[data-repair-resume-action]", "[data-activation-replay-open]", "#try-demo-mode"],
-      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "renderRepairResumeBanner", "renderActivationReplayBanner", "Repair resume", "Demo replay active", "mutated_real_connector:false", "repair-resume-action", "demo_start_click"]
+      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "#repair-resume-banner", "#activation-replay-banner", "[data-prompt-action]", "[data-repair-resume-action]", "[data-activation-replay-jump]", "[data-activation-replay-reset]", "[data-activation-replay-open]", "#try-demo-mode"],
+      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "renderRepairResumeBanner", "renderActivationReplayBanner", "clearActivationReplay", "Go to next step", "Reset replay", "Repair resume", "Demo replay active", "mutated_real_connector:false", "repair-resume-action", "demo_start_click"]
     },
     {
       "id": "mmir-local-analytics",

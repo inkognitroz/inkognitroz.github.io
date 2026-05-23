@@ -375,11 +375,15 @@ requireText(firstImpressionPath, 'repair-resume-banner', 'D176 first screen must
 requireText(firstImpressionPath, 'activation-replay-banner', 'D179 first screen must expose active replay state as demo-only.');
 requireText(firstImpressionPath, 'mimir-activation-replay-v1:', 'D179 first screen must read workspace-local activation replay state.');
 requireText(firstImpressionPath, 'mutated_real_connector:false', 'D179 first screen replay state must not look like real proof.');
+requireText(firstImpressionPath, 'data-activation-replay-jump', 'D180 first screen must jump to replay next target.');
+requireText(firstImpressionPath, 'data-activation-replay-reset', 'D180 first screen must reset active replay state.');
+requireText(firstImpressionPath, 'clearActivationReplay', 'D180 first screen replay reset must only clear the demo replay key.');
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(chatRuntimePath, 'runtime-activation-replay', 'D179 chat runtime must show active replay state near live proof.');
 requireText(chatRuntimePath, 'real live proof unchanged', 'D179 replay handoff must not replace real live proof.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'), '.runtime-activation-replay', 'D179 chat runtime replay state needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.activation-replay-banner', 'D179 first-screen replay state needs visible styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.activation-replay-actions', 'D180 first-screen replay controls need visible styling.');
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
 requireText(nodeDashboardPath, '/doctor', 'D169 node dashboard must use the local health doctor route when available.');
