@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d187-20260523-shell-headroom';
+const CACHE_NAME='mmir-pwa-d188-20260523-starter-funnel';
 const SHELL_ASSETS=[
   './',
   './index.html',

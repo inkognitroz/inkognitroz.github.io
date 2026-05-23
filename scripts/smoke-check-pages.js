@@ -462,6 +462,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.j
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'starterSelected', 'D186 Progress Dashboard must count recommended starter selections.');
 requireText(join(root, 'scripts', 'smoke-check-critical-shell-headroom.js'), 'Critical shell headroom smoke check passed.', 'D187 critical-shell headroom must have a dedicated smoke harness.');
 requireText(firstScreenHydrationPath, 'MimirFirstScreenActivationHydration', 'D187 deferred hydration module must expose first-screen activation hydration.');
+requireText(join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'), 'Starter-to-proof funnel smoke check passed.', 'D188 starter-to-proof funnel must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'renderStarterFunnel', 'D188 Progress Dashboard must render the starter-to-proof funnel.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-starter-funnel', 'D188 starter-to-proof funnel needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

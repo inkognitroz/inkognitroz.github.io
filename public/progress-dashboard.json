@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:12:48.318Z",
+  "updated_at": "2026-05-23T14:20:08.493Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 188,
+    "total": 189,
     "done": 51,
-    "beta": 112,
+    "beta": 113,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,10 +288,10 @@
       },
       {
         "phase": "Activation UX",
-        "total": 11,
+        "total": 12,
         "done": 4,
         "beta": 7,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -780,8 +780,8 @@
         "phase": "Activation Analytics",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1058,7 +1058,7 @@
     }
   ],
   "next_queue": [
-    "D188"
+    "D189"
   ],
   "watchlist": [
     "D082",
@@ -3880,9 +3880,24 @@
       "best_practice": "Owner should see whether free starter recommendations actually lead to working models",
       "done_when": "Progress Dashboard shows a privacy-safe starter funnel from selected starter to install/proof/first answer",
       "covers": "activation, analytics, model UX",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress Dashboard now shows a local-only starter funnel from recommended-starter selection to install, live proof and first-chat receipt.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D189",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "Starter funnel continue action",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add one safe continue action to the starter funnel that opens the exact next install, proof or first-chat surface based on the missing step",
+      "best_practice": "Users should not have to interpret funnel state; MMIR should carry them to the next safe action",
+      "done_when": "Progress Dashboard funnel has a contextual Continue button that never starts paid routes or stores secrets",
+      "covers": "activation, automation, model UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation funnel slice: show whether recommended starter selections become install, live proof and first-chat receipts without invasive tracking.",
+      "evidence": "Next starter funnel slice: add one safe continue action from the funnel to the exact install/proof/chat step without auto-spend.",
       "estimate": "2-6h"
     }
   ]

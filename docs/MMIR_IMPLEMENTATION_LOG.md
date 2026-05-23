@@ -179,14 +179,15 @@ Updated: 2026-05-23
 - D185 is now beta: first-screen activation closure recommends one free installable starter model by detected device class and can preselect it in the runtime model flow.
 - D186 is now beta: recommended-starter selections record privacy-safe activation telemetry and Progress Dashboard counts starter-selected events without storing prompts, responses, secrets or paid routes.
 - D187 is now beta: non-essential repair/replay first-screen QA banners hydrate from a deferred module, preserving the immediate first action while improving critical-shell JS headroom.
-- D188 is now the next activation funnel slice: show whether recommended starter selections become install, live proof and first-chat receipts without invasive tracking.
+- D188 is now beta: Progress Dashboard shows a local-only starter funnel from recommended-starter selection to install, live proof and first-chat receipt.
+- D189 is now the next starter funnel slice: add one safe continue action to the exact install/proof/chat step without auto-spend.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D188` starter-to-proof funnel.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D189` starter funnel continue action.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

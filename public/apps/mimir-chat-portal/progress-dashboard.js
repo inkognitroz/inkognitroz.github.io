@@ -198,6 +198,43 @@
     '</section>';
   }
 
+  function starterFunnelState(){
+    const events=readActivationEvents();
+    const selected=[...events].reverse().find((event)=>event.type==='recommended-starter')||null;
+    if(!selected){
+      return {state:'idle',selected:null,steps:[]};
+    }
+    const after=events.filter((event)=>Number(event.at_ms||0)>=Number(selected.at_ms||0));
+    const sameModel=(event)=>!selected.model||!event.model||event.model===selected.model;
+    const install=after.find((event)=>event.type==='model-install'&&sameModel(event))||null;
+    const proof=after.find((event)=>event.type==='live-proof'&&sameModel(event)&&(event.status==='ready'||event.status==='verified'||event.first_chat_ready))||null;
+    const chat=after.find((event)=>event.type==='first-chat-receipt'&&(event.status==='success'||event.first_chat_ready))||null;
+    const steps=[
+      {id:'selected',label:'Starter selected',event:selected,empty:'Choose a recommended free starter.'},
+      {id:'installed',label:'Model installed',event:install,empty:'Install or expose the starter model.'},
+      {id:'proved',label:'Live proof',event:proof,empty:'Run the tiny free proof.'},
+      {id:'answered',label:'First answer',event:chat,empty:'Send the first verified chat.'}
+    ];
+    return {state:chat?'ready':'watch',selected,steps};
+  }
+
+  function renderStarterFunnel(){
+    const funnel=starterFunnelState();
+    const selected=funnel.selected;
+    return '<section id="progress-starter-funnel" class="progress-starter-funnel" data-state="'+safe(funnel.state)+'">'+
+      '<div class="progress-activation-head"><div><p class="eyebrow">Starter funnel</p><h2>'+safe(selected?'From '+(selected.model||'recommended starter'):'No starter selected yet')+'</h2><small>'+safe(selected?'Tracks the free path from recommendation to first answer.':'Use the first-screen recommended starter action to begin the free path.')+'</small></div>'+
+      '<div class="progress-activation-counts"><span>recommended-starter</span><span>no spend</span><span>local only</span></div></div>'+
+      '<div class="progress-starter-steps">'+(funnel.steps.length?funnel.steps.map((step)=>
+        '<article class="progress-starter-step" data-state="'+safe(step.event?'ready':'watch')+'">'+
+          '<span>'+safe(step.label)+'</span>'+
+          '<strong>'+safe(step.event?label(step.event.status||step.event.type):'Pending')+'</strong>'+
+          '<small>'+safe(step.event?new Date(step.event.at||Date.now()).toLocaleString()+' / '+(step.event.model||step.event.route||'local-first'):step.empty)+'</small>'+
+        '</article>'
+      ).join(''):'<p class="dashboard-note">No recommended-starter event exists in this browser workspace yet.</p>')+'</div>'+
+      '<small class="progress-activation-privacy">Local only: raw_prompt_stored:false, raw_response_stored:false, secrets_stored:false, no_paid_routes_started:true.</small>'+
+    '</section>';
+  }
+
   function scenarioLiveProofGap(scenario){
     const state=String(scenario?.state||scenario?.id||'');
     if(state==='first_visit')return 'Real browser guide works now; local live proof starts after connector pairing.';
@@ -470,7 +507,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderActivationSimulator(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindActivationTelemetry();
     bindActivationSimulator();

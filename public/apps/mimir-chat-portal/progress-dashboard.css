@@ -27,6 +27,8 @@
 .progress-receipt-card,
 .progress-activation-card,
 .progress-activation-event,
+.progress-starter-funnel,
+.progress-starter-step,
 .progress-simulator-card,
 .progress-simulator-scenario {
   border: 1px solid rgba(148, 163, 184, 0.24);
@@ -41,6 +43,7 @@
 .progress-next-card span,
 .progress-decision-card span,
 .progress-activation-event span,
+.progress-starter-step span,
 .progress-simulator-scenario span {
   color: var(--mimir-muted, #6b7280);
   display: block;
@@ -63,7 +66,8 @@
 .progress-repo-card small,
 .progress-next-card small,
 .progress-decision-card small,
-.progress-activation-event small {
+.progress-activation-event small,
+.progress-starter-step small {
   color: var(--mimir-muted, #6b7280);
 }
 
@@ -529,7 +533,14 @@
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
-.progress-activation-event strong {
+.progress-starter-steps {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.progress-activation-event strong,
+.progress-starter-step strong {
   color: var(--mimir-text, #111827);
   display: block;
   font-size: 0.95rem;
@@ -548,7 +559,8 @@
 }
 
 .progress-activation-event[data-state="ready"],
-.progress-activation-event[data-state="verified"] {
+.progress-activation-event[data-state="verified"],
+.progress-starter-step[data-state="ready"] {
   border-color: rgba(16, 185, 129, 0.28);
 }
 

@@ -95,8 +95,8 @@ if (!d187 || d187.status !== 'beta') {
 }
 
 const d188 = tasks.find((task) => task.seq === 'D188');
-if (!d188 || d188.status !== 'next') {
-  fail('Progress dashboard must expose D188 as the next activation funnel work item.');
+if (!d188 || !['beta', 'next'].includes(d188.status)) {
+  fail('Progress dashboard must expose D188 as beta or next after critical-shell headroom ships.');
 }
 
 if (!process.exitCode) {

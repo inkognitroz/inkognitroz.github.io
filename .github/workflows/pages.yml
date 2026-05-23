@@ -60,6 +60,8 @@ jobs:
         run: node scripts/smoke-check-recommended-starter-telemetry.js
       - name: Smoke check critical shell headroom
         run: node scripts/smoke-check-critical-shell-headroom.js
+      - name: Smoke check starter to proof funnel
+        run: node scripts/smoke-check-starter-to-proof-funnel.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages
