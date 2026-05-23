@@ -1,7 +1,7 @@
 # Football Evolution Matrix
 
 ## Hva appen er
-Football Evolution Matrix er den første praktiske appen i SaaS Fabric. Den er en statisk, GitHub Pages-kompatibel matrise for å sammenligne fotballutvikling på tvers av perioder, kategorier, indikatorer og datakvalitet.
+Football Evolution Matrix er den første praktiske appen i MMIR. Den er en statisk, GitHub Pages-kompatibel matrise for å sammenligne fotballutvikling på tvers av perioder, kategorier, indikatorer og datakvalitet.
 
 ## Hvordan komme i gang
 1. Velg en mal (Spillerutvikling, Kampanalyse, Scouting eller Historisk sammenligning), eller behold standarddatasettet.
