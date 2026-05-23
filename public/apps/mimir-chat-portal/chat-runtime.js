@@ -50,6 +50,7 @@
   let lastProofSignature='';
   let verifiedLiveModel=null;
   let preferredProofModel='';
+  let pendingStarterHandoff=null;
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -988,6 +989,41 @@
     return modelSelect?starterFromValue(modelSelect.value):null;
   }
 
+  function selectStarterModelById(starterId){
+    const id=String(starterId||'').trim();
+    const starter=starterModels.find(model=>model.id===id)||null;
+    const value=starter?starterValue(starter):STARTER_PREFIX+id;
+    const optionReady=Boolean(modelSelect&&Array.from(modelSelect.options||[]).some(option=>option.value===value));
+    if(!starter||!optionReady){
+      pendingStarterHandoff={...(pendingStarterHandoff||{}),starter_id:id};
+      return null;
+    }
+    modelSelect.value=value;
+    modelSelect.dispatchEvent(new Event('change',{bubbles:true}));
+    if(starter.model)preferProofModel(starter.model);
+    renderModelHelper();
+    updateRuntimeChips();
+    updateRuntimeModelActions();
+    setStatus('Prepared '+(starter.model||starter.label)+' for install and proof. No paid route started.','ready');
+    return starter;
+  }
+
+  function runStarterHandoff(detail){
+    const starterId=String(detail?.starter_id||detail?.id||'').trim();
+    if(!starterId)return;
+    pendingStarterHandoff={...detail,starter_id:starterId};
+    const starter=selectStarterModelById(starterId);
+    openPanel('#mimir-chat-runtime');
+    if(!starter)return;
+    pendingStarterHandoff=null;
+    window.MimirActivationTelemetry?.record?.('runtime-starter-handoff',{status:detail?.action||'select',model:starter.model||starter.id,route:'chat runtime',free:true,note:'Runtime selected '+(starter.model||starter.id)+' from Model Library. no_paid_routes_started:true.'});
+    if(detail?.action==='install'&&starter.runtime==='ollama'){
+      window.setTimeout(()=>installSelectedStarterModel(),120);
+    }else if(detail?.action==='proof'){
+      window.setTimeout(()=>refreshState(true),120);
+    }
+  }
+
   function starterAvailabilityLabel(model){
     if(model?.runtime==='browser-guide')return 'ready now - browser helper';
     if(model?.runtime==='webllm')return 'ready now - browser WebGPU';
@@ -1231,6 +1267,11 @@
     renderModelHelper();
     updateRuntimeChips();
     updateRuntimeModelActions();
+    if(pendingStarterHandoff){
+      const handoff=pendingStarterHandoff;
+      pendingStarterHandoff=null;
+      window.setTimeout(()=>runStarterHandoff(handoff),0);
+    }
   }
 
   async function fetchJson(url,options={}){
@@ -1767,6 +1808,7 @@
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
+    window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));
     window.addEventListener('storage',()=>{renderActivationReplayGate();refreshState(true);});
     loadStarterModels().then(()=>refreshState(true));
     setInterval(()=>refreshState(false),3000);

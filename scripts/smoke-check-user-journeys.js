@@ -81,6 +81,7 @@ const files = {
   firstScreenStarterFunnelHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel.js'),
   firstScreenStarterContinueHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel-continue.js'),
   recommendedStarterFocusHarness: join(root, 'scripts', 'smoke-check-recommended-starter-model-focus.js'),
+  recommendedStarterHandoffHarness: join(root, 'scripts', 'smoke-check-recommended-starter-install-handoff.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -462,6 +463,12 @@ requireIncludes(files.modelCatalogUi, 'data-recommended-starter', 'D192 Model Li
 requireIncludes(files.modelCatalogUi, 'mmir-model-library-focus-recommended', 'D192 starter actions must focus the recommended model card.');
 requireIncludes(files.firstImpression, 'mmir-model-library-focus-recommended', 'D192 first-screen closure action must trigger recommended starter focus.');
 requireIncludes(files.progressDashboard, 'mmir-model-library-focus-recommended', 'D192 dashboard starter funnel must trigger recommended starter focus.');
+requireIncludes(files.recommendedStarterHandoffHarness, 'Recommended starter install handoff smoke check passed.', 'D193 recommended starter install handoff needs dedicated CI fixture coverage.');
+requireIncludes(files.modelCatalogUi, 'data-starter-action', 'D193 Model Library must expose install/select actions on starter cards.');
+requireIncludes(files.modelCatalogUi, 'model-library-starter-handoff', 'D193 Model Library must record no-spend handoff telemetry.');
+requireIncludes(files.chatRuntime, 'runStarterHandoff', 'D193 chat runtime must receive Model Library starter handoff events.');
+requireIncludes(files.chatRuntime, 'selectStarterModelById', 'D193 chat runtime must select the exact starter model without user reselection.');
+requireIncludes(files.chatRuntime, 'runtime-starter-handoff', 'D193 chat runtime must record no-spend handoff telemetry.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

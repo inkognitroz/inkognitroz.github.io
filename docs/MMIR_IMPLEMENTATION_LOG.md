@@ -184,14 +184,15 @@ Updated: 2026-05-23
 - D190 is now beta: first-screen deferred hydration shows selected starter progress toward install, proof and first answer without increasing critical JS.
 - D191 is now beta: first-screen starter progress has one contextual action for install, live proof or first chat and records no-spend telemetry.
 - D192 is now beta: Model Library imports exact free starter models, highlights the recommended starter and focuses it from first-screen/dashboard starter actions without enabling paid routes.
-- D193 is now the next model UX slice: make the highlighted starter card hand the exact model tag into install, proof and first-chat preparation.
+- D193 is now beta: recommended starter cards hand exact starter ids/model tags into chat runtime selection, Local Node install, proof preference and no-spend telemetry.
+- D194 is now the next repair slice: failed starter install should open the exact local repair/installer path while preserving the selected model.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D193` recommended starter install handoff.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D194` starter install repair fallback.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

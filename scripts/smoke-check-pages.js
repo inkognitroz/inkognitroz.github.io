@@ -476,6 +476,10 @@ requireText(join(root, 'scripts', 'smoke-check-recommended-starter-model-focus.j
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'starterModelToCatalog', 'D192 Model Library must import exact free starter models.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'mmir-model-library-focus-recommended', 'D192 Model Library must focus the recommended starter from starter actions.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'), '.model-card.is-recommended-starter', 'D192 recommended starter focus needs visible styling.');
+requireText(join(root, 'scripts', 'smoke-check-recommended-starter-install-handoff.js'), 'Recommended starter install handoff smoke check passed.', 'D193 recommended starter install handoff must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'data-starter-action', 'D193 Model Library starter cards must expose install/select handoff actions.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'runStarterHandoff', 'D193 chat runtime must accept starter handoff events.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'selectStarterModelById', 'D193 chat runtime must select the exact starter model for install/proof.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

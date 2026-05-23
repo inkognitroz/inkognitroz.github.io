@@ -79,8 +79,13 @@ if (!d192 || d192.status !== 'beta') {
 }
 
 const d193 = tasks.find((task) => task.seq === 'D193');
-if (!d193 || d193.status !== 'next') {
-  fail('Progress dashboard must expose D193 as the next recommended starter install handoff work item.');
+if (!d193 || d193.status !== 'beta') {
+  fail('Progress dashboard task D193 must stay beta after recommended starter install handoff ships.');
+}
+
+const d194 = tasks.find((task) => task.seq === 'D194');
+if (!d194 || d194.status !== 'next') {
+  fail('Progress dashboard must expose D194 as the next starter install repair fallback work item.');
 }
 
 if (!process.exitCode) {

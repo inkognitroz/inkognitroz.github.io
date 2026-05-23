@@ -95,6 +95,8 @@
       category:model.runtime==='browser-guide'?'ready browser helper':'free starter model',
       access:model.runtime==='browser-guide'?'free browser':(model.runtime==='webllm'?'free browser WebGPU':'Ollama-compatible local'),
       status:model.status||'installable-free',
+      runtime:model.runtime||'starter',
+      cost:model.cost||'free',
       license_name:model.license||model.commercial_use||'check-required',
       commercial_use:model.commercial_use||'check-required',
       best_for:model.best_for||model.install_note||'Free starter model for MMIR activation.',
@@ -203,17 +205,33 @@
     if(backendSettings)backendSettings.open=true;
   }
 
+  function handoffStarter(id,action){
+    const model=(catalog.models||[]).find(item=>item.id===id);
+    if(!model)return;
+    const target=document.getElementById('mimir-chat-runtime');
+    if(target&&'open' in target)target.open=true;
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    window.MimirActivationTelemetry?.record?.('model-library-starter-handoff',{status:action||'select',model:model.model||model.id,route:'model library',free:true,note:'Model Library handed '+(model.model||model.id)+' to chat runtime. no_paid_routes_started:true.'});
+    window.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:model.id,model:model.model||'',runtime:model.runtime||'',action:action||'select',source:'model-library',free:true,no_paid_routes_started:true}}));
+  }
+
   function cardForModel(model){
     const disabled=isUnavailable(model);
     const live=isRegistryLive(model);
     const recommended=isRecommendedStarter(model);
+    const starter=model.registry_source==='free-starter-catalog';
     const buttonLabel=live?'Use live backend model':(disabled?'Requires protected backend':'Use as suggestion');
+    const starterAction=model.runtime==='ollama'?'install':'select';
+    const starterLabel=model.runtime==='ollama'?'Install / prove in chat':'Use in chat';
     return '<article class="model-card '+safe(statusClass(model.status))+(recommended?' is-recommended-starter':'')+'" data-model-id="'+safe(model.id)+'" data-model-tag="'+safe(model.model||'')+'" data-recommended-starter="'+safe(recommended?'true':'false')+'">'+
       '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span>'+safe(recommended?'recommended starter':(live?'live backend':statusLabel(model.status||model.access||'model')))+'</span></div>'+
       (recommended?'<small class="model-recommended-note">Recommended for this device. Free/local path; no paid route starts here.</small>':'')+
       '<p>'+safe(model.best_for||model.notes||'Model option for a compatible backend.')+'</p>'+
       '<dl><div><dt>Category</dt><dd>'+safe(model.category||'general')+'</dd></div><div><dt>Capacity</dt><dd>'+safe(model.capacity_hint||'backend')+'</dd></div><div><dt>License</dt><dd>'+safe(modelLicense(model))+'</dd></div><div><dt>Commercial</dt><dd>'+safe(commercialUse(model))+'</dd></div><div><dt>RAM</dt><dd>'+safe(model.ram_hint||'varies')+'</dd></div><div><dt>GPU</dt><dd>'+safe(model.gpu_hint||'varies')+'</dd></div></dl>'+
-      '<button type="button" data-id="'+safe(model.id)+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+safe(buttonLabel)+'</button>'+
+      '<div class="model-card-actions">'+
+        (starter&&!disabled?'<button type="button" data-starter-id="'+safe(model.id)+'" data-starter-action="'+safe(starterAction)+'">'+safe(starterLabel)+'</button>':'')+
+        '<button type="button" data-id="'+safe(model.id)+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+safe(buttonLabel)+'</button>'+
+      '</div>'+
     '</article>';
   }
 
@@ -227,6 +245,7 @@
         '<div class="model-library-section-grid">'+group.items.map(cardForModel).join('')+'</div>'+
       '</section>';
     }).join('');
+    libraryGrid.querySelectorAll('button[data-starter-id]:not([disabled])').forEach(button=>button.addEventListener('click',()=>handoffStarter(button.getAttribute('data-starter-id'),button.getAttribute('data-starter-action'))));
     libraryGrid.querySelectorAll('button[data-id]:not([disabled])').forEach(button=>button.addEventListener('click',()=>chooseModel(button.getAttribute('data-id'))));
     if(pendingRecommendedFocus)window.setTimeout(()=>{if(focusRecommendedStarter({}))pendingRecommendedFocus=false;},80);
     else focusRecommendedStarter({silent:true});

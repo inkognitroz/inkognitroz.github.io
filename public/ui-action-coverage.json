@@ -50,7 +50,7 @@
       "status": "live",
       "user_result": "Users can refresh models, prove the selected free route is live, repair failed proof states, hand a verified model into first chat, save a privacy-safe first-chat receipt, stop a running response, clear local chat history, copy/retry answers and switch functional modes.",
       "selectors": ["#runtime-refresh", "#runtime-live-proof", "#runtime-activation-replay", "[data-proof-action]", "[data-runtime-replay-open]", "#runtime-stop", "#runtime-clear", "[data-chat-mode]", "#composer-voice-input"],
-      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "tinyChatProbe", "skipped to avoid hidden provider cost", "proofRepairActions", "data-proof-action", "Chat with verified model", "first_chat_ready:true", "mimir-first-chat-receipt-v1:", "raw_prompt_stored:false", "raw_response_stored:false", "mmir-first-chat-receipt-updated", "mmir-live-model-proof-updated", "renderActivationReplayGate", "real live proof unchanged", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
+      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "tinyChatProbe", "skipped to avoid hidden provider cost", "proofRepairActions", "data-proof-action", "Chat with verified model", "first_chat_ready:true", "mimir-first-chat-receipt-v1:", "raw_prompt_stored:false", "raw_response_stored:false", "mmir-first-chat-receipt-updated", "mmir-live-model-proof-updated", "renderActivationReplayGate", "real live proof unchanged", "mmir-runtime-starter-handoff", "selectStarterModelById", "runtime-starter-handoff", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
     },
     {
       "id": "local-node-actions",
@@ -81,8 +81,8 @@
       "surface": "Model selector and catalog",
       "status": "live",
       "user_result": "Live backend models are preferred automatically; browser helpers, WebGPU models and installable free Ollama models remain visible with license/source guidance.",
-      "selectors": ["#runtime-model", "#model-library-grid", "[data-recommended-starter]"],
-      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "no_paid_routes_started:true"]
+      "selectors": ["#runtime-model", "#model-library-grid", "[data-recommended-starter]", "[data-starter-id]"],
+      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "no_paid_routes_started:true"]
     },
     {
       "id": "one-click-model-install",

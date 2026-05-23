@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:48:11.852Z",
+  "updated_at": "2026-05-23T14:57:55.557Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 193,
+    "total": 194,
     "done": 51,
-    "beta": 117,
+    "beta": 118,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -70,8 +70,8 @@
         "phase": "Model UX",
         "total": 6,
         "done": 2,
-        "beta": 3,
-        "next": 1,
+        "beta": 4,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -795,6 +795,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Activation Repair",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1068,7 +1078,7 @@
     }
   ],
   "next_queue": [
-    "D193"
+    "D194"
   ],
   "watchlist": [
     "D082",
@@ -3965,9 +3975,24 @@
       "best_practice": "A recommended model should move from card to live proof with one obvious action",
       "done_when": "Recommended starter card can start or hand off install and selects the model for proof without paid routes or public secrets",
       "covers": "activation, model install, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Recommended starter cards now hand exact starter ids/model tags into chat runtime selection, Local Node install, proof preference and no-spend telemetry.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D194",
+      "phase": "Activation Repair",
+      "priority": "P0",
+      "work_package": "Starter install repair fallback",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "If starter install cannot start because the local node, pairing or Ollama is missing, route the user to the exact repair card/installer while preserving the selected starter",
+      "best_practice": "Failed one-click install should become a guided repair, not a dead error",
+      "done_when": "Install failure opens the right local repair path and keeps the model selection ready for retry",
+      "covers": "activation, install, repair",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next model UX slice: make the highlighted starter card hand the exact model tag into install, proof and first-chat preparation.",
+      "evidence": "Next repair slice: failed starter install should open the exact local repair/installer path while preserving the selected model.",
       "estimate": "2-6h"
     }
   ]

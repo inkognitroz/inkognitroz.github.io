@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d192-20260523-starter-focus';
+const CACHE_NAME='mmir-pwa-d193-20260523-starter-handoff';
 const SHELL_ASSETS=[
   './',
   './index.html',

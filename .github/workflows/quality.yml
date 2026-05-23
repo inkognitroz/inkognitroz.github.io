@@ -150,3 +150,6 @@ jobs:
 
       - name: Smoke-check recommended starter model focus
         run: node scripts/smoke-check-recommended-starter-model-focus.js
+
+      - name: Smoke-check recommended starter install handoff
+        run: node scripts/smoke-check-recommended-starter-install-handoff.js
