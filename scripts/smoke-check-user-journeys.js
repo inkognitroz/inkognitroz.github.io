@@ -25,6 +25,7 @@ const files = {
   conversationHandoffReport: join(publicDir, 'conversation-handoff-report.json'),
   savedChatMemoryHandoffReport: join(publicDir, 'saved-chat-memory-handoff-report.json'),
   promotedContextNextAnswerReport: join(publicDir, 'promoted-context-next-answer-report.json'),
+  contextControlsReport: join(publicDir, 'context-controls-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -105,6 +106,7 @@ const files = {
   conversationHandoffHarness: join(root, 'scripts', 'smoke-check-conversation-handoff.js'),
   savedChatMemoryHandoffHarness: join(root, 'scripts', 'smoke-check-saved-chat-memory-handoff.js'),
   promotedContextNextAnswerHarness: join(root, 'scripts', 'smoke-check-promoted-context-next-answer.js'),
+  contextControlsHarness: join(root, 'scripts', 'smoke-check-context-controls.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -645,6 +647,9 @@ requireIncludes(files.progressDashboard, 'renderSavedChatMemoryHandoffReport', '
 requireIncludes(files.promotedContextNextAnswerHarness, 'Promoted context next-answer smoke check passed.', 'D221 promoted context next-answer proof must have dedicated CI coverage.');
 requireIncludes(files.promotedContextNextAnswerReport, 'local-memory-injection', 'D221 promoted context report must cover local memory injection behavior.');
 requireIncludes(files.progressDashboard, 'renderPromotedContextNextAnswerReport', 'D221 Progress Dashboard must render promoted context evidence.');
+requireIncludes(files.contextControlsHarness, 'Context controls smoke check passed.', 'D222 context controls must have dedicated CI coverage.');
+requireIncludes(files.contextControlsReport, 'memory-toggle', 'D222 context controls report must cover memory toggle behavior.');
+requireIncludes(files.progressDashboard, 'renderContextControlsReport', 'D222 Progress Dashboard must render context controls evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

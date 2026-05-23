@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-24T00:05:00+02:00",
+  "title": "Per-Message Context Controls QA",
+  "principle": "Memory and Knowledge should be powerful but never hidden; users can turn them off before the next answer.",
+  "public_repo_rule": "Control evidence is synthetic metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+  "scenarios": [
+    {
+      "id": "memory-toggle",
+      "control": "Memory",
+      "expected": "Turning Memory off prevents local memory injection and clears local memory-use records for the next answer.",
+      "storage_key": "mimir-context-controls-v1:<workspace>",
+      "runtime_guard": "contextControls().memory===false",
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "knowledge-toggle",
+      "control": "Knowledge",
+      "expected": "Turning Knowledge off prevents local knowledge injection for the next answer.",
+      "storage_key": "mimir-context-controls-v1:<workspace>",
+      "runtime_guard": "contextControls().knowledge===false",
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "visible-controls",
+      "control": "composer",
+      "expected": "The composer shows compact Memory and Knowledge controls with a live status label.",
+      "selector": "#runtime-context-controls",
+      "runtime_guard": "mmir-context-controls-updated",
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "deferred-ui",
+      "control": "performance",
+      "expected": "The controls load through the deferred queue while the tiny runtime guard in chat-runtime enforces them.",
+      "selector": "mimir-deferred-scripts",
+      "runtime_guard": "CONTEXT_CONTROLS_PREFIX",
+      "status": "ready",
+      "no_paid_routes_started": true
+    }
+  ],
+  "result": "ready"
+}

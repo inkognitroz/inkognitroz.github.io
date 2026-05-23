@@ -17,6 +17,7 @@ const messageActionAccessibilityReportPath = resolve(root, 'public', 'message-ac
 const conversationHandoffReportPath = resolve(root, 'public', 'conversation-handoff-report.json');
 const savedChatMemoryHandoffReportPath = resolve(root, 'public', 'saved-chat-memory-handoff-report.json');
 const promotedContextNextAnswerReportPath = resolve(root, 'public', 'promoted-context-next-answer-report.json');
+const contextControlsReportPath = resolve(root, 'public', 'context-controls-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -171,7 +172,8 @@ const overrides = new Map([
   ['D219', { status: 'beta', evidence: 'Conversation handoff polish now turns message Save/Fork into visible Conversations callouts with active badges, continue actions and metadata-only local handoff state.' }],
   ['D220', { status: 'beta', evidence: 'Saved chat handoff now promotes useful conversations into local memory or Saved chats knowledge with review notes, redaction and no backend spend by default.' }],
   ['D221', { status: 'beta', evidence: 'Promoted context next-answer proof now evaluates the real chat-runtime memory/knowledge functions against synthetic saved-chat data and proves visible memory-use review.' }],
-  ['D222', { status: 'next', evidence: 'Next activation slice: add simple per-message context controls so users can see and disable memory/knowledge for the next answer.' }]
+  ['D222', { status: 'beta', evidence: 'Per-message context controls now let users see and turn local Memory/Knowledge on or off for the next answer, enforced by chat-runtime guards.' }],
+  ['D223', { status: 'next', evidence: 'Next activation slice: make context status visible in the transcript after each answer so users can audit what was used.' }]
 ]);
 
 const repoMeta = [
@@ -340,6 +342,11 @@ function readPromotedContextNextAnswerReport() {
   return JSON.parse(readFileSync(promotedContextNextAnswerReportPath, 'utf8'));
 }
 
+function readContextControlsReport() {
+  if (!existsSync(contextControlsReportPath)) return null;
+  return JSON.parse(readFileSync(contextControlsReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -364,7 +371,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D222', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D223', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -396,6 +403,7 @@ const data = {
   conversation_handoff_report: readConversationHandoffReport(),
   saved_chat_memory_handoff_report: readSavedChatMemoryHandoffReport(),
   promoted_context_next_answer_report: readPromotedContextNextAnswerReport(),
+  context_controls_report: readContextControlsReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

@@ -8,6 +8,7 @@
   const MEMORY_USE_PREFIX='mimir-memory-use-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
+  const CONTEXT_CONTROLS_PREFIX='mimir-context-controls-v1:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
   const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
@@ -79,6 +80,8 @@
   function memoryUseStorageKey(){return MEMORY_USE_PREFIX+activeWorkspaceId();}
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function knowledgeCollectionsStorageKey(){return COLLECTIONS_PREFIX+activeWorkspaceId();}
+  function contextControlsKey(){return CONTEXT_CONTROLS_PREFIX+activeWorkspaceId();}
+  function contextControls(){try{return JSON.parse(localStorage.getItem(contextControlsKey())||'{}')||{};}catch(error){return {};}}
   function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
   function activationReplayStorageKey(){return ACTIVATION_REPLAY_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
@@ -517,6 +520,7 @@
 
   function activeMemoryInstruction(prompt=''){
     try{
+      if(contextControls().memory===false){writeMemoryUse(lastBackendMemoryUses);return '';}
       const value=JSON.parse(localStorage.getItem(memoryStorageKey())||'[]');
       if(!Array.isArray(value)){
         writeMemoryUse(lastBackendMemoryUses);
@@ -566,6 +570,7 @@
 
   function relevantKnowledgeInstruction(prompt){
     try{
+      if(contextControls().knowledge===false)return '';
       const value=JSON.parse(localStorage.getItem(knowledgeStorageKey())||'[]');
       if(!Array.isArray(value)||!value.length)return '';
       const promptWords=wordSet(prompt);

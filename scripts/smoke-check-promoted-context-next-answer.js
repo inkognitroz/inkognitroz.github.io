@@ -175,6 +175,7 @@ function runRuntimeContextFixture() {
     function memoryUseStorageKey(){return '${MEMORY_USE_KEY}';}
     function knowledgeStorageKey(){return '${KNOWLEDGE_KEY}';}
     function knowledgeCollectionsStorageKey(){return '${COLLECTIONS_KEY}';}
+    function contextControls(){return {};}
     ${functions}
     globalThis.__memory=activeMemoryInstruction('launch local node saved chats onboarding memory review');
     globalThis.__knowledge=relevantKnowledgeInstruction('free local node saved chats onboarding memory review');
@@ -242,10 +243,10 @@ const progress = json(files.progressData);
 requireTrue(progress.promoted_context_next_answer_report?.title === report.title, 'Progress dashboard data must embed D221 promoted context report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d221 = tasks.find((task) => task.seq === 'D221');
-const d222 = tasks.find((task) => task.seq === 'D222');
+const d223 = tasks.find((task) => task.seq === 'D223');
 requireTrue(d221?.status === 'beta', 'Progress dashboard task D221 must be beta after promoted context proof ships.');
-requireTrue(d222?.status === 'next', 'Progress dashboard task D222 must become next after D221 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D222', 'Progress dashboard next queue must prioritize D222 after D221 ships.');
+requireTrue(d223?.status === 'next', 'Progress dashboard task D223 must become next after D222 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D223', 'Progress dashboard next queue must prioritize D223 after D222 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

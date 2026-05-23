@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:27:24.919Z",
+  "updated_at": "2026-05-23T20:39:03.421Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 222,
+    "total": 223,
     "done": 51,
-    "beta": 146,
+    "beta": 147,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -988,6 +988,16 @@
       },
       {
         "phase": "Chat UX / Context Controls",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Context Audit",
         "total": 1,
         "done": 0,
         "beta": 0,
@@ -2003,6 +2013,52 @@
     ],
     "result": "ready"
   },
+  "context_controls_report": {
+    "version": 1,
+    "updated_at": "2026-05-24T00:05:00+02:00",
+    "title": "Per-Message Context Controls QA",
+    "principle": "Memory and Knowledge should be powerful but never hidden; users can turn them off before the next answer.",
+    "public_repo_rule": "Control evidence is synthetic metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "scenarios": [
+      {
+        "id": "memory-toggle",
+        "control": "Memory",
+        "expected": "Turning Memory off prevents local memory injection and clears local memory-use records for the next answer.",
+        "storage_key": "mimir-context-controls-v1:<workspace>",
+        "runtime_guard": "contextControls().memory===false",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "knowledge-toggle",
+        "control": "Knowledge",
+        "expected": "Turning Knowledge off prevents local knowledge injection for the next answer.",
+        "storage_key": "mimir-context-controls-v1:<workspace>",
+        "runtime_guard": "contextControls().knowledge===false",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "visible-controls",
+        "control": "composer",
+        "expected": "The composer shows compact Memory and Knowledge controls with a live status label.",
+        "selector": "#runtime-context-controls",
+        "runtime_guard": "mmir-context-controls-updated",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "deferred-ui",
+        "control": "performance",
+        "expected": "The controls load through the deferred queue while the tiny runtime guard in chat-runtime enforces them.",
+        "selector": "mimir-deferred-scripts",
+        "runtime_guard": "CONTEXT_CONTROLS_PREFIX",
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2053,7 +2109,7 @@
     }
   ],
   "next_queue": [
-    "D222"
+    "D223"
   ],
   "watchlist": [
     "D082",
@@ -5385,9 +5441,24 @@
       "best_practice": "Context must be powerful without feeling hidden or creepy",
       "done_when": "User can see and toggle local memory/knowledge before sending the next prompt",
       "covers": "chat UX, memory, knowledge, trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Per-message context controls now let users see and turn local Memory/Knowledge on or off for the next answer, enforced by chat-runtime guards.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D223",
+      "phase": "Chat UX / Context Audit",
+      "priority": "P0",
+      "work_package": "Answer context receipt",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Show a compact transcript receipt after each answer listing whether local memory, backend memory, local knowledge or backend knowledge was used",
+      "best_practice": "Users need to trust the orchestration layer and understand why answers changed",
+      "done_when": "Each answer exposes a safe, non-secret context receipt with no raw hidden data",
+      "covers": "chat UX, audit, context",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add simple per-message context controls so users can see and disable memory/knowledge for the next answer.",
+      "evidence": "Next activation slice: make context status visible in the transcript after each answer so users can audit what was used.",
       "estimate": "2-6h"
     }
   ]

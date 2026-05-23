@@ -66,6 +66,27 @@
   opacity: 0.48;
 }
 
+.runtime-context-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.runtime-context-controls label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-weight: 750;
+}
+
+.runtime-context-controls input:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+}
+
 .runtime-live-proof {
   display: grid;
   gap: 8px;

@@ -84,6 +84,8 @@ jobs:
         run: node scripts/smoke-check-saved-chat-memory-handoff.js
       - name: Smoke check promoted context next answer
         run: node scripts/smoke-check-promoted-context-next-answer.js
+      - name: Smoke check context controls
+        run: node scripts/smoke-check-context-controls.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render
