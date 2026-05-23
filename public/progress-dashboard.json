@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:49:12.645Z",
+  "updated_at": "2026-05-23T10:53:16.103Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 165,
+    "total": 166,
     "done": 51,
-    "beta": 89,
+    "beta": 90,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -730,7 +730,17 @@
         "phase": "Model Activation",
         "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Activation QA",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -788,7 +798,7 @@
     }
   ],
   "next_queue": [
-    "D165"
+    "D166"
   ],
   "watchlist": [
     "D082",
@@ -3265,9 +3275,24 @@
       "best_practice": "First value should happen immediately after proof succeeds",
       "done_when": "User can go from verified model to useful first answer without changing controls manually",
       "covers": "activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Verified live-model proof now selects the verified model, updates the prompt placeholder and exposes a Chat with verified model action plus first_chat_ready signal.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D166",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "First-chat success receipt",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Record a browser-local, privacy-safe receipt when first verified chat succeeds, and expose recovery when it fails",
+      "best_practice": "Activation should be measured by first useful answer, not only model proof",
+      "done_when": "User and owner can see whether first chat succeeded without logging raw prompts",
+      "covers": "activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: after a route is verified, hand the user into first chat with the verified model selected and fallback guide preserved.",
+      "evidence": "Next activation slice: record a browser-local, privacy-safe first-chat success receipt and show recovery if first verified chat fails.",
       "estimate": "2-6h"
     }
   ]

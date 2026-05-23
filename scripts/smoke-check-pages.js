@@ -347,6 +347,8 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'), '.
 requireText(chatRuntimePath, 'proofRepairActions', 'D164 needs proof-driven repair actions.');
 requireText(chatRuntimePath, 'data-proof-action', 'D164 needs visible repair controls from proof states.');
 requireText(chatRuntimePath, 'mmir-local-connector-install.html', 'D164 needs installer repair path from failed proof.');
+requireText(chatRuntimePath, 'Chat with verified model', 'D165 needs first-chat handoff from verified model proof.');
+requireText(chatRuntimePath, 'first_chat_ready:true', 'D165 needs a testable first-chat-ready signal.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
 requireText(chatRuntimePath, 'COLLECTIONS_PREFIX', 'Chat runtime must scope local knowledge to enabled collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'), 'COLLECTIONS_PREFIX', 'Model comparison must scope local knowledge to enabled collections.');

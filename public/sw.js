@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d164-20260523-proof-repair';
+const CACHE_NAME='mmir-pwa-d165-20260523-verified-chat-handoff';
 const SHELL_ASSETS=[
   './',
   './index.html',

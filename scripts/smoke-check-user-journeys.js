@@ -360,6 +360,8 @@ requireIncludes(files.chatRuntime, 'tinyChatProbe', 'D163 needs tiny free route 
 requireIncludes(files.chatRuntime, 'skipped to avoid hidden provider cost', 'D163 needs a cost guard for automatic proof.');
 requireIncludes(files.chatRuntime, 'proofRepairActions', 'D164 needs failed-proof repair actions.');
 requireIncludes(files.chatRuntime, 'data-proof-action', 'D164 needs repair controls rendered from proof state.');
+requireIncludes(files.chatRuntime, 'Chat with verified model', 'D165 needs first-chat handoff from verified model proof.');
+requireIncludes(files.chatRuntime, 'first_chat_ready:true', 'D165 needs a testable first-chat-ready signal.');
 requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 'Pairing requests must send explicit JSON content type.');
 requireIncludes(files.localConnector, '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(files.localConnector, '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route.');
