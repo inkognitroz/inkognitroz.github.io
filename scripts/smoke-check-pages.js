@@ -472,6 +472,10 @@ requireText(firstScreenHydrationPath, 'renderFirstScreenStarterFunnel', 'D190 de
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.first-screen-starter-funnel', 'D190 first-screen starter funnel needs visible styling.');
 requireText(join(root, 'scripts', 'smoke-check-first-screen-starter-funnel-continue.js'), 'First-screen starter funnel continue smoke check passed.', 'D191 first-screen starter funnel continue must have a dedicated smoke harness.');
 requireText(firstScreenHydrationPath, 'runFirstScreenStarterFunnelAction', 'D191 deferred first-screen hydration must run starter funnel actions.');
+requireText(join(root, 'scripts', 'smoke-check-recommended-starter-model-focus.js'), 'Recommended starter model-library focus smoke check passed.', 'D192 recommended starter model-library focus must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'starterModelToCatalog', 'D192 Model Library must import exact free starter models.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'), 'mmir-model-library-focus-recommended', 'D192 Model Library must focus the recommended starter from starter actions.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'), '.model-card.is-recommended-starter', 'D192 recommended starter focus needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

@@ -19,6 +19,7 @@ const files = {
   offline: join(publicDir, 'offline.html'),
   starters: join(publicDir, 'free-model-starters.json'),
   catalog: join(publicDir, 'ai-model-catalog.json'),
+  modelCatalogUi: join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   chatRuntimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
@@ -79,6 +80,7 @@ const files = {
   starterFunnelContinueHarness: join(root, 'scripts', 'smoke-check-starter-funnel-continue.js'),
   firstScreenStarterFunnelHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel.js'),
   firstScreenStarterContinueHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel-continue.js'),
+  recommendedStarterFocusHarness: join(root, 'scripts', 'smoke-check-recommended-starter-model-focus.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -454,6 +456,12 @@ requireIncludes(files.firstScreenHydration, 'renderFirstScreenStarterFunnel', 'D
 requireIncludes(files.repairResumeCss, '.first-screen-starter-funnel', 'D190 first-screen starter funnel needs visible styling.');
 requireIncludes(files.firstScreenStarterContinueHarness, 'First-screen starter funnel continue smoke check passed.', 'D191 first-screen starter funnel continue needs dedicated CI fixture coverage.');
 requireIncludes(files.firstScreenHydration, 'runFirstScreenStarterFunnelAction', 'D191 deferred first-screen hydration must run starter funnel actions.');
+requireIncludes(files.recommendedStarterFocusHarness, 'Recommended starter model-library focus smoke check passed.', 'D192 recommended starter model-library focus needs dedicated CI fixture coverage.');
+requireIncludes(files.modelCatalogUi, 'starterModelToCatalog', 'D192 Model Library must import exact free starter models.');
+requireIncludes(files.modelCatalogUi, 'data-recommended-starter', 'D192 Model Library must mark the recommended starter card.');
+requireIncludes(files.modelCatalogUi, 'mmir-model-library-focus-recommended', 'D192 starter actions must focus the recommended model card.');
+requireIncludes(files.firstImpression, 'mmir-model-library-focus-recommended', 'D192 first-screen closure action must trigger recommended starter focus.');
+requireIncludes(files.progressDashboard, 'mmir-model-library-focus-recommended', 'D192 dashboard starter funnel must trigger recommended starter focus.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

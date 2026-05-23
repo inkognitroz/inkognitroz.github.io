@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T14:37:50.378Z",
+  "updated_at": "2026-05-23T14:48:11.852Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 192,
+    "total": 193,
     "done": 51,
-    "beta": 116,
+    "beta": 117,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -68,9 +68,9 @@
       },
       {
         "phase": "Model UX",
-        "total": 5,
+        "total": 6,
         "done": 2,
-        "beta": 2,
+        "beta": 3,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1068,7 +1068,7 @@
     }
   ],
   "next_queue": [
-    "D192"
+    "D193"
   ],
   "watchlist": [
     "D082",
@@ -3950,9 +3950,24 @@
       "best_practice": "Model onboarding should feel one-click, not catalog browsing",
       "done_when": "Model Library visibly lands on the recommended free starter with no paid route enabled",
       "covers": "activation, model UX, onboarding",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Model Library now imports exact free starter models, highlights the recommended starter and focuses it from first-screen/dashboard starter actions without enabling paid routes.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D193",
+      "phase": "Model UX",
+      "priority": "P0",
+      "work_package": "Recommended starter install handoff",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Make the highlighted starter card hand the exact model tag into install, runtime selection, proof and first-chat preparation without asking users to reselect it",
+      "best_practice": "A recommended model should move from card to live proof with one obvious action",
+      "done_when": "Recommended starter card can start or hand off install and selects the model for proof without paid routes or public secrets",
+      "covers": "activation, model install, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next model UX slice: focus or highlight the recommended starter inside Model Library when the user follows starter actions.",
+      "evidence": "Next model UX slice: make the highlighted starter card hand the exact model tag into install, proof and first-chat preparation.",
       "estimate": "2-6h"
     }
   ]

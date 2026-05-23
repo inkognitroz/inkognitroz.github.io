@@ -467,6 +467,7 @@
       return;
     }
     if(action.target.startsWith('#'))openTarget(action.target);
+    if(action.kind==='install')window.dispatchEvent(new CustomEvent('mmir-model-library-focus-recommended',{detail:{source:'progress-starter-funnel',no_paid_routes_started:true}}));
     setSummary('Starter funnel opened '+label(action.kind)+'. No paid route, provider key or secret was used.','ready');
   }
 

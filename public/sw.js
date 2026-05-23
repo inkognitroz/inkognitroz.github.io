@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d191-20260523-first-screen-continue';
+const CACHE_NAME='mmir-pwa-d192-20260523-starter-focus';
 const SHELL_ASSETS=[
   './',
   './index.html',

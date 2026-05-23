@@ -7,7 +7,11 @@
   const description=document.getElementById('model-catalog-description');
   const libraryGrid=document.getElementById('model-library-grid');
   const backendSettings=document.getElementById('backend-settings');
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const ACTIVATION_PREFIX='mimir-activation-events-v1:';
   let catalog={models:[],capacity_profiles:[],registry_models:[]};
+  let pendingRecommendedFocus=false;
 
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function selectedModel(){return catalog.models.find(item=>item.id===modelSelect.value)||catalog.models[0]||null;}
@@ -18,6 +22,33 @@
   function commercialUse(model){return model.commercial_use||'check-required';}
   function isUnavailable(model){return ['planned','future','disabled','deprecated','requires-backend-router','requires-paid-provider','requires-paid-capacity'].includes(String(model.status||''));}
   function isRegistryLive(model){return model.registry_source==='active-provider'||model.source==='active-provider'||String(model.access||'').includes('active backend');}
+  function workspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
+  function readActivationEvents(){try{const events=JSON.parse(localStorage.getItem(ACTIVATION_PREFIX+workspaceId())||'[]');return Array.isArray(events)?events:[];}catch(error){return [];}}
+  function latestRecommendedStarter(){return [...readActivationEvents()].reverse().find(event=>event.type==='recommended-starter')||null;}
+  function isRecommendedStarter(model){
+    const starter=latestRecommendedStarter();
+    if(!starter)return false;
+    const modelTag=String(model.model||'');
+    const id=String(model.id||'');
+    const label=String(model.label||'');
+    const starterModel=String(starter.model||'');
+    return Boolean(starterModel&&(modelTag===starterModel||id.includes(starterModel.replace(/[^a-z0-9]+/gi,'-').toLowerCase())||label.includes(starterModel)));
+  }
+  function focusRecommendedStarter(detail){
+    const starter=detail?.starter||latestRecommendedStarter();
+    const model=String(starter?.model||'');
+    const card=libraryGrid?.querySelector('[data-recommended-starter="true"]')||Array.from(libraryGrid?.querySelectorAll('.model-card')||[]).find(item=>model&&item.getAttribute('data-model-tag')===model);
+    if(!card)return false;
+    if(detail?.silent)return true;
+    const section=document.getElementById('model-library');
+    if(section)section.open=true;
+    card.classList.add('is-focus-pulse');
+    card.setAttribute('tabindex','-1');
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    card.focus({preventScroll:true});
+    window.setTimeout(()=>card.classList.remove('is-focus-pulse'),2200);
+    return true;
+  }
   function modelLibraryGroups(models){
     const groups=[
       {id:'live',title:'Active backend models',hint:'Real models reported by the connected trusted backend.',items:[]},
@@ -55,6 +86,41 @@
     };
   }
 
+  function starterModelToCatalog(model){
+    return {
+      id:model.id,
+      label:model.label||model.model||model.id,
+      family:model.runtime==='webllm'?'Browser WebGPU':(model.runtime==='browser-guide'?'MMIR Guide':'Ollama'),
+      provider_family:model.runtime||'starter',
+      category:model.runtime==='browser-guide'?'ready browser helper':'free starter model',
+      access:model.runtime==='browser-guide'?'free browser':(model.runtime==='webllm'?'free browser WebGPU':'Ollama-compatible local'),
+      status:model.status||'installable-free',
+      license_name:model.license||model.commercial_use||'check-required',
+      commercial_use:model.commercial_use||'check-required',
+      best_for:model.best_for||model.install_note||'Free starter model for MMIR activation.',
+      capacity_hint:model.runtime==='browser-guide'?'browser-ready':'low-to-standard',
+      size_hint:model.size||'varies',
+      ram_hint:model.runtime==='browser-guide'?'browser only':'device dependent',
+      gpu_hint:model.runtime==='webllm'?'WebGPU required':'optional for small local starters',
+      cpu_hint:model.runtime==='ollama'?'CPU works for small quantized starters':'browser/backend dependent',
+      context_hint:model.context||'varies',
+      notes:model.install_note||'Install or activate this free starter before production use.',
+      model:model.model||'',
+      model_card_url:model.source_url||'',
+      registry_source:'free-starter-catalog'
+    };
+  }
+
+  function mergeStarterModels(baseModels,starterModels){
+    const seen=new Set((baseModels||[]).map(model=>model.id));
+    const mapped=(starterModels||[]).map(starterModelToCatalog).filter(model=>{
+      if(!model.id||seen.has(model.id))return false;
+      seen.add(model.id);
+      return true;
+    });
+    return (baseModels||[]).concat(mapped);
+  }
+
   function mergeRegistryModels(baseModels,registryModels){
     const seen=new Set((baseModels||[]).map(model=>model.id));
     const mapped=(registryModels||[]).map(registryModelToCatalog).filter(model=>{
@@ -78,6 +144,17 @@
         timeoutMs:5000
       });
       return Array.isArray(data?.data)?data.data:[];
+    }catch(error){
+      return [];
+    }
+  }
+
+  async function fetchStarterModels(){
+    try{
+      const response=await fetch('./free-model-starters.json',{cache:'default'});
+      if(!response.ok)throw new Error('starter catalog unavailable');
+      const data=await response.json();
+      return Array.isArray(data.models)?data.models:[];
     }catch(error){
       return [];
     }
@@ -129,9 +206,11 @@
   function cardForModel(model){
     const disabled=isUnavailable(model);
     const live=isRegistryLive(model);
+    const recommended=isRecommendedStarter(model);
     const buttonLabel=live?'Use live backend model':(disabled?'Requires protected backend':'Use as suggestion');
-    return '<article class="model-card '+safe(statusClass(model.status))+'">'+
-      '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span>'+safe(live?'live backend':statusLabel(model.status||model.access||'model'))+'</span></div>'+
+    return '<article class="model-card '+safe(statusClass(model.status))+(recommended?' is-recommended-starter':'')+'" data-model-id="'+safe(model.id)+'" data-model-tag="'+safe(model.model||'')+'" data-recommended-starter="'+safe(recommended?'true':'false')+'">'+
+      '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span>'+safe(recommended?'recommended starter':(live?'live backend':statusLabel(model.status||model.access||'model')))+'</span></div>'+
+      (recommended?'<small class="model-recommended-note">Recommended for this device. Free/local path; no paid route starts here.</small>':'')+
       '<p>'+safe(model.best_for||model.notes||'Model option for a compatible backend.')+'</p>'+
       '<dl><div><dt>Category</dt><dd>'+safe(model.category||'general')+'</dd></div><div><dt>Capacity</dt><dd>'+safe(model.capacity_hint||'backend')+'</dd></div><div><dt>License</dt><dd>'+safe(modelLicense(model))+'</dd></div><div><dt>Commercial</dt><dd>'+safe(commercialUse(model))+'</dd></div><div><dt>RAM</dt><dd>'+safe(model.ram_hint||'varies')+'</dd></div><div><dt>GPU</dt><dd>'+safe(model.gpu_hint||'varies')+'</dd></div></dl>'+
       '<button type="button" data-id="'+safe(model.id)+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+safe(buttonLabel)+'</button>'+
@@ -149,6 +228,8 @@
       '</section>';
     }).join('');
     libraryGrid.querySelectorAll('button[data-id]:not([disabled])').forEach(button=>button.addEventListener('click',()=>chooseModel(button.getAttribute('data-id'))));
+    if(pendingRecommendedFocus)window.setTimeout(()=>{if(focusRecommendedStarter({}))pendingRecommendedFocus=false;},80);
+    else focusRecommendedStarter({silent:true});
   }
 
   function populate(){
@@ -169,17 +250,17 @@
       const response=await fetch('./ai-model-catalog.json',{cache:'default'});
       if(!response.ok)throw new Error('catalog unavailable');
       const data=await response.json();
-      const registryModels=await fetchRegistryModels();
+      const [registryModels,starterModels]=await Promise.all([fetchRegistryModels(),fetchStarterModels()]);
       const staticModels=Array.isArray(data.models)?data.models:[];
       catalog={
-        models:mergeRegistryModels(staticModels,registryModels),
+        models:mergeRegistryModels(mergeStarterModels(staticModels,starterModels),registryModels),
         capacity_profiles:Array.isArray(data.capacity_profiles)?data.capacity_profiles:[],
         registry_models:registryModels
       };
     }catch(error){
-      const registryModels=await fetchRegistryModels();
+      const [registryModels,starterModels]=await Promise.all([fetchRegistryModels(),fetchStarterModels()]);
       catalog={
-        models:mergeRegistryModels([{id:'custom',label:'Custom / user supplied',best_for:'Use whatever the backend provides.'}],registryModels),
+        models:mergeRegistryModels(mergeStarterModels([{id:'custom',label:'Custom / user supplied',best_for:'Use whatever the backend provides.'}],starterModels),registryModels),
         capacity_profiles:[],
         registry_models:registryModels
       };
@@ -191,4 +272,11 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();
+  window.addEventListener('mmir-model-library-focus-recommended',(event)=>{
+    pendingRecommendedFocus=true;
+    renderLibrary();
+    window.setTimeout(()=>{if(focusRecommendedStarter(event.detail||{}))pendingRecommendedFocus=false;},80);
+    window.setTimeout(()=>{if(pendingRecommendedFocus&&focusRecommendedStarter(event.detail||{}))pendingRecommendedFocus=false;},420);
+  });
+  window.addEventListener('mmir-activation-telemetry-updated',()=>renderLibrary());
 })();

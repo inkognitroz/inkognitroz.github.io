@@ -229,6 +229,7 @@
       }
       openPanel('#model-library');
       openPanel('#mimir-chat-runtime');
+      window.dispatchEvent(new CustomEvent('mmir-model-library-focus-recommended',{detail:{starter:copy.starter,source:'activation-closure',no_paid_routes_started:true}}));
       return;
     }
     if(copy.kind==='first-chat'){

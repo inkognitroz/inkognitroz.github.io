@@ -74,8 +74,13 @@ if (!d191 || d191.status !== 'beta') {
 }
 
 const d192 = tasks.find((task) => task.seq === 'D192');
-if (!d192 || d192.status !== 'next') {
-  fail('Progress dashboard must expose D192 as the next model-library starter focus work item.');
+if (!d192 || d192.status !== 'beta') {
+  fail('Progress dashboard task D192 must stay beta after model-library starter focus ships.');
+}
+
+const d193 = tasks.find((task) => task.seq === 'D193');
+if (!d193 || d193.status !== 'next') {
+  fail('Progress dashboard must expose D193 as the next recommended starter install handoff work item.');
 }
 
 if (!process.exitCode) {

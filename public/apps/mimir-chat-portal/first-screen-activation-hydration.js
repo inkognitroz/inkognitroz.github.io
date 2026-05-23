@@ -208,6 +208,7 @@
       return;
     }
     if(action.target.startsWith('#'))openPanel(action.target);
+    if(action.kind==='install')window.dispatchEvent(new CustomEvent('mmir-model-library-focus-recommended',{detail:{source:'first-screen-starter-funnel',no_paid_routes_started:true}}));
   }
 
   function renderActivationReplayBanner(){

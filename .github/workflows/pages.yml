@@ -68,6 +68,8 @@ jobs:
         run: node scripts/smoke-check-first-screen-starter-funnel.js
       - name: Smoke check first screen starter funnel continue
         run: node scripts/smoke-check-first-screen-starter-funnel-continue.js
+      - name: Smoke check recommended starter model focus
+        run: node scripts/smoke-check-recommended-starter-model-focus.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages
