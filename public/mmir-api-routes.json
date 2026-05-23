@@ -33,6 +33,7 @@
     { "path": "/pairing/sessions", "owner": "local-node", "auth": "public-safe", "status": "beta", "purpose": "Create local one-time cross-device pairing code." },
     { "path": "/prompts", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected prompt registry root." },
     { "path": "/prompts/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Prompt dynamic route fragment." },
+    { "path": "/research/plans", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Planning-only research runs with sources, citations and approval gates before browsing." },
     { "path": "/registry/models", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected model registry." },
     { "path": "/runs", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Workflow run dynamic route fragment." },
     { "path": "/status", "owner": "local-node", "auth": "public-safe", "status": "live", "purpose": "Node/runtime status and capability inventory." },

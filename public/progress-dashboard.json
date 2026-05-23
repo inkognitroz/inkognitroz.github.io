@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T05:40:34.299Z",
+  "updated_at": "2026-05-23T05:59:42.092Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 68,
+    "beta": 69,
     "next": 2,
     "watch": 1,
     "blocked": 1,
-    "planned": 29,
+    "planned": 28,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -610,8 +610,8 @@
         "phase": "Research",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -621,10 +621,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Data Analysis",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D144",
+    "D145",
     "D042"
   ],
   "watchlist": [
@@ -2911,10 +2911,10 @@
       "best_practice": "Research agents should be transparent and revocable",
       "done_when": "User can run sourced research plans safely",
       "covers": "ChatGPT parity",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next slice: agentic research planning with source steps, citation expectations and approval gates before autonomous browsing.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Research planning now creates source-aware, citation-gated plans with manual/free discovery links, ordered steps, local plan storage and approval gates while keeping autonomous browsing disabled.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D145",
@@ -2926,9 +2926,9 @@
       "best_practice": "Custom assistants should be portable and permissioned",
       "done_when": "User can create MMIR assistants without leaking secrets",
       "covers": "ChatGPT/Open WebUI parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next slice: custom assistant builder with instructions, model, tools, knowledge scope and sharing rules.",
       "estimate": "1-3d"
     },
     {

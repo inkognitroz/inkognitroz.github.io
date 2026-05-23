@@ -124,6 +124,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/conversation-manager.js', 'MMIR 
 requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
 requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product page must load explicit web search script.');
+requireText(mmirPath, './apps/mimir-chat-portal/research-planner.js', 'MMIR product page must load research planning script.');
 requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product page must load permissioned tool runner script.');
 requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product page must load code sandbox preflight script.');
 requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR product page must load artifact workspace script.');
@@ -185,6 +186,11 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'manu
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'web-search-consent', 'Web search UI must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'saveLocalSources', 'Web search UI must save selected sources to local knowledge.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.css'), '.web-search-result', 'Web search needs visible result/source styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'), '/research/plans', 'Research planning UI must call the protected research plan route when a backend is active.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'), 'mimir-research-plans-v1:', 'Research planning UI must persist local plans per workspace.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'), 'research-consent', 'Research planning UI must require explicit planning consent.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'), 'execution_allowed:false', 'Research planning UI must keep public execution disabled.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.css'), '.research-gate-grid', 'Research planning needs visible approval gate styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), '/tools/execute', 'Tool runner must use the protected tool execution route.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'tool-runner-consent', 'Tool runner must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'), 'renderTrace', 'Tool runner must show visible traces.');

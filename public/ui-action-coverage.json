@@ -109,6 +109,14 @@
       "evidence": ["/web/search", "/web/search/providers", "manualSearchUrls", "saveLocalSources", "Manual free search"]
     },
     {
+      "id": "research-planning",
+      "surface": "Research planning",
+      "status": "beta",
+      "user_result": "Users can create transparent research plans with selected sources, citation rules, ordered steps and approval gates before any autonomous browsing.",
+      "selectors": ["#research-planner-panel", "#research-question", "#research-consent", "#research-create-plan", "#research-plan-output"],
+      "evidence": ["/research/plans", "mimir-research-plans-v1:", "approval_gates", "citation_rule", "execution_allowed:false"]
+    },
+    {
       "id": "permissioned-tools",
       "surface": "Tool runner",
       "status": "beta",

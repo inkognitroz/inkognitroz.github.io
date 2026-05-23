@@ -13,6 +13,7 @@
   const ARTIFACT_PREFIX='mimir-artifacts-v1:';
   const PROMPT_PREFIX='mimir-prompts-v1:';
   const TOOL_GALLERY_PREFIX='mimir-tool-gallery-v1:';
+  const RESEARCH_PREFIX='mimir-research-plans-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
@@ -53,7 +54,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,TOOL_GALLERY_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -160,6 +161,7 @@
     const artifacts=readJson(ARTIFACT_PREFIX+id,[]);
     const prompts=readJson(PROMPT_PREFIX+id,[]);
     const toolGallery=readJson(TOOL_GALLERY_PREFIX+id,{});
+    const researchPlans=readJson(RESEARCH_PREFIX+id,[]);
 
     return {
       exported_at:new Date().toISOString(),
@@ -171,6 +173,7 @@
       artifacts:Array.isArray(artifacts)?artifacts:[],
       prompts:Array.isArray(prompts)?prompts:[],
       tool_gallery:toolGallery&&typeof toolGallery==='object'&&!Array.isArray(toolGallery)?toolGallery:{},
+      research_plans:Array.isArray(researchPlans)?researchPlans:[],
       memory:Array.isArray(memory)?memory:[],
       memory_use:Array.isArray(memoryUse)?memoryUse:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
@@ -184,6 +187,7 @@
       artifacts:snapshot.artifacts.length,
       prompts:snapshot.prompts.length,
       tool_gallery:Object.keys(snapshot.tool_gallery).length,
+      research_plans:snapshot.research_plans.length,
       memory:snapshot.memory.length,
       memory_use:snapshot.memory_use.length,
       knowledge:snapshot.knowledge.length,
@@ -218,6 +222,7 @@
     const artifactKeys=keysByPrefix(local,ARTIFACT_PREFIX);
     const promptKeys=keysByPrefix(local,PROMPT_PREFIX);
     const toolGalleryKeys=keysByPrefix(local,TOOL_GALLERY_PREFIX);
+    const researchKeys=keysByPrefix(local,RESEARCH_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -283,6 +288,16 @@
         retention:'Workspace-level enable/disable preferences for approved tools and connectors.',
         action:'Use Tools gallery or clear workspace/all local data.',
         keys:toolGalleryKeys
+      },
+      {
+        id:'research-plans',
+        label:'Research plans',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,researchKeys),
+        size:formatBytes(storageSize(localStorage,researchKeys)),
+        retention:'Planning-only research steps, gates and citation labels stay local until exported or cleared.',
+        action:'Use Research planning or export/delete active workspace data.',
+        keys:researchKeys
       },
       {
         id:'workspace-memory',
@@ -425,6 +440,7 @@
       ['Chat messages',activeCounts.chat],
       ['Prompts',activeCounts.prompts],
       ['Tool toggles',activeCounts.tool_gallery],
+      ['Research plans',activeCounts.research_plans],
       ['Memory items',activeCounts.memory],
       ['Memory use',activeCounts.memory_use],
       ['Knowledge files',activeCounts.knowledge],
@@ -511,6 +527,7 @@
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-use-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-tool-gallery-updated',{detail:{workspaceId:id}}));
+    window.dispatchEvent(new CustomEvent('mmir-research-plans-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));

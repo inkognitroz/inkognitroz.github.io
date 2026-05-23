@@ -27,6 +27,7 @@ const files = {
   knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   comparison: join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'),
   webSearch: join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'),
+  researchPlanner: join(publicDir, 'apps', 'mimir-chat-portal', 'research-planner.js'),
   toolRunner: join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'),
   codeSandbox: join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'),
   artifactWorkspace: join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'),
@@ -195,6 +196,12 @@ requireIncludes(files.webSearch, 'web-search-consent', 'D130 needs consent befor
 requireIncludes(files.webSearch, 'manualSearchUrls', 'D130 needs a free manual search path.');
 requireIncludes(files.webSearch, '/web/search', 'D130 needs protected backend search route support.');
 requireIncludes(files.webSearch, 'saveLocalSources', 'D130 needs selected sources saved into local knowledge.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/research-planner.js', 'D144 needs research planning loaded on the product page.');
+requireIncludes(files.researchPlanner, '/research/plans', 'D144 needs protected research plan route support.');
+requireIncludes(files.researchPlanner, 'mimir-research-plans-v1:', 'D144 needs workspace-local research plan storage.');
+requireIncludes(files.researchPlanner, 'research-consent', 'D144 needs explicit planning consent.');
+requireIncludes(files.researchPlanner, 'approval_gates', 'D144 needs visible approval gates before browsing.');
+requireIncludes(files.researchPlanner, 'citation_rule', 'D144 needs citation requirements in the plan.');
 requireIncludes(files.mmir, './apps/mimir-chat-portal/tool-runner.js', 'D131 needs permissioned tool runner loaded on the product page.');
 requireIncludes(files.toolRunner, '/tools/execute', 'D131 needs protected backend tool execution route support.');
 requireIncludes(files.toolRunner, 'tool-runner-consent', 'D131 needs explicit tool consent.');
@@ -301,7 +308,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D143']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

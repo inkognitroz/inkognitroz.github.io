@@ -80,7 +80,8 @@ const overrides = new Map([
   ['D141', { status: 'beta', evidence: 'Managed backend and Local Node now have OpenAI-compatible conformance tests and contract support for model list metadata, chat completions, SSE terminal chunks, safe errors and function tool-call shapes without implicit tool execution.' }],
   ['D142', { status: 'beta', evidence: 'Tool/plugin gallery now lists approved tools and connectors with permissions, trust labels, install state, public-secret boundaries and workspace enable/disable controls.' }],
   ['D143', { status: 'beta', evidence: 'Memory governance now exposes local scope, tags, expiration, review notes, import notes, backend search reasons and visible last-message memory-use review data.' }],
-  ['D144', { status: 'next', evidence: 'Next slice: agentic research planning with source steps, citation expectations and approval gates before autonomous browsing.' }],
+  ['D144', { status: 'beta', evidence: 'Research planning now creates source-aware, citation-gated plans with manual/free discovery links, ordered steps, local plan storage and approval gates while keeping autonomous browsing disabled.' }],
+  ['D145', { status: 'next', evidence: 'Next slice: custom assistant builder with instructions, model, tools, knowledge scope and sharing rules.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 
@@ -209,7 +210,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D144', 'D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D145', 'D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
