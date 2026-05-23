@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T08:09:06.053Z",
+  "updated_at": "2026-05-23T08:36:33.338Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 153,
+    "total": 155,
     "done": 51,
-    "beta": 77,
+    "beta": 79,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -688,9 +688,19 @@
       },
       {
         "phase": "Sharing",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 3,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Identity",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -748,7 +758,7 @@
     }
   ],
   "next_queue": [
-    "D153"
+    "D155"
   ],
   "watchlist": [
     "D082",
@@ -3045,9 +3055,39 @@
       "best_practice": "Local preview links are useful, but real teams need protected enforcement",
       "done_when": "Owner can create, revoke and inspect access-controlled shares without public frontend secrets",
       "covers": "team sharing",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Managed backend now has protected owner-scoped share objects with redaction before storage, list/get/create/revoke/delete routes, portable export/import/delete coverage and sanitized audit events.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D154",
+      "phase": "Sharing",
+      "priority": "P1",
+      "work_package": "Protected share sync UI",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Connect Safe Sharing UI to protected /shares save/list/revoke routes while keeping browser previews free/local-first",
+      "best_practice": "Frontend and backend sharing must be one coherent journey",
+      "done_when": "User can save a safe share to backend, reload it and revoke it from the UI",
+      "covers": "team sharing",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Safe Sharing UI now saves redacted bundles to protected /shares, loads protected share metadata and revokes owned shares through the active backend profile.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D155",
+      "phase": "Identity",
+      "priority": "P1",
+      "work_package": "Account and organization identity foundation",
+      "repos": "managed API + frontend",
+      "concrete_work": "Add free-first account/session model, organization membership, role assignment and owner/admin/member/viewer enforcement plan before marketplace or team publishing",
+      "best_practice": "Team sharing, marketplace and premium routes need real identity before trust",
+      "done_when": "Owner can create an org workspace and assign roles without exposing provider secrets",
+      "covers": "enterprise readiness",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sequential sharing slice: protected authenticated share objects, revocation, audit and audience controls in the managed backend after identity/access control gates.",
+      "evidence": "Next platform-readiness slice: account/session and organization identity foundation for real team sharing, marketplace and premium routes.",
       "estimate": "0.5-2d"
     }
   ]

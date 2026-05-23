@@ -140,6 +140,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'decodeShareHash', 'D152 needs preview-link decoding.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'server_side_enforcement_required:true', 'D152 needs server-side enforcement boundary.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-preview-card', 'D152 needs share preview styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), '/shares', 'D154 needs protected share route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'revokeProtectedShare', 'D154 needs protected share revocation support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-backend-card', 'D154 needs protected share list styling.');
 requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
 requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');

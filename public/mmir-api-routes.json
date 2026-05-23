@@ -40,6 +40,8 @@
     { "path": "/research/plans", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Planning-only research runs with sources, citations and approval gates before browsing." },
     { "path": "/registry/models", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected model registry." },
     { "path": "/runs", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Workflow run dynamic route fragment." },
+    { "path": "/shares", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected share registry root." },
+    { "path": "/shares/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Protected share dynamic route fragment." },
     { "path": "/status", "owner": "local-node", "auth": "public-safe", "status": "live", "purpose": "Node/runtime status and capability inventory." },
     { "path": "/tools", "owner": "managed-api", "auth": "protected-backend-auth", "status": "planned", "purpose": "Protected tool capability list." },
     { "path": "/tools/execute", "owner": "managed-api", "auth": "protected-backend-auth", "status": "planned", "purpose": "Protected tool execution route." },

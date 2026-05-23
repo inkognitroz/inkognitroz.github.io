@@ -1,8 +1,13 @@
 .sharing-center-root{display:grid;gap:.85rem}
 .sharing-toolbar{display:grid;grid-template-columns:minmax(0,.55fr) minmax(0,1fr) max-content;gap:.6rem;align-items:end}
 .sharing-toolbar label{display:grid;gap:.28rem;color:var(--mimir-muted);font-size:.86rem;font-weight:700}
-.sharing-toolbar select{width:100%;border:1px solid var(--mimir-line);border-radius:8px;background:#fff;color:var(--mimir-text);padding:.54rem}
+.sharing-toolbar select,.sharing-toolbar input{width:100%;border:1px solid var(--mimir-line);border-radius:8px;background:#fff;color:var(--mimir-text);padding:.54rem}
 .sharing-actions{display:flex;flex-wrap:wrap;gap:.55rem}
+.sharing-backend-list{display:grid;gap:.55rem}
+.sharing-backend-card{border:1px solid var(--mimir-line);background:#fff;border-radius:8px;padding:.7rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.65rem}
+.sharing-backend-card strong,.sharing-backend-card span{display:block}
+.sharing-backend-card span{color:var(--mimir-muted);font-size:.82rem;margin-top:.1rem}
+.sharing-backend-actions{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
 .sharing-policy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem}
 .sharing-policy-grid article,.sharing-preview-card{border:1px solid var(--mimir-line);background:#f8fafc;border-radius:8px;padding:.72rem;display:grid;gap:.25rem}
 .sharing-policy-grid strong,.sharing-preview-card strong{color:var(--mimir-text);font-size:.92rem}
@@ -18,5 +23,7 @@
 @media(max-width:760px){
   .sharing-toolbar,.sharing-policy-grid,.sharing-preview-card dl{grid-template-columns:1fr}
   .sharing-actions button,.sharing-toolbar button{width:100%;min-height:2.5rem}
+  .sharing-backend-card{display:grid}
+  .sharing-backend-actions{justify-content:stretch}.sharing-backend-actions button{flex:1}
   .sharing-preview-card header{display:grid}
 }

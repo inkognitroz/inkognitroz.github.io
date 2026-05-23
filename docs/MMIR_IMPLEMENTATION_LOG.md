@@ -144,14 +144,16 @@ Updated: 2026-05-23
 - D149 is now beta in the public UI: MMIR is installable as a free PWA shell with manifest metadata, service worker caching, offline fallback, mobile touch target polish and local-node handoff without caching private data or secrets.
 - D150 is now beta in the public UI: portable migration exports redacted MMIR workspace JSON, includes an Open WebUI-style chat preview and imports ChatGPT/Open WebUI/MMIR-style JSON locally with bounded file size and no public frontend secrets.
 - D152 is now beta in the public UI: Safe Sharing creates redacted browser-local bundles, copyable text, preview links and JSON exports for selected chats, artifacts, workflow drafts and knowledge collection manifests while keeping authenticated sharing planned for the protected backend.
-- D153 was added as the next sharing task: protected backend share objects with identity, revocation, audit and audience controls.
+- D153 is now beta in the managed backend: protected share objects are owner-scoped, redacted before storage, revocable, audit-safe and covered by backend portable export/import/delete.
+- D154 is now beta in the public UI: Safe Sharing can save redacted bundles to protected `/shares`, load protected share metadata and revoke owned shares through the active backend profile.
+- D155 was added as the next identity task because team sharing, marketplace and premium routes need real account/session and organization boundaries.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D153` authenticated protected sharing backend.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D155` account and organization identity foundation.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

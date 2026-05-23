@@ -1,4 +1,5 @@
 (function(){
+  const api=window.MimirApiClient;
   const ACTIVE_WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const CONVERSATION_PREFIX='mimir-conversations-v1:';
@@ -12,8 +13,10 @@
   let typeEl=null;
   let itemEl=null;
   let previewEl=null;
+  let backendListEl=null;
   let statusEl=null;
   let currentBundle=null;
+  let backendShares=[];
 
   if(!root)return;
 
@@ -26,6 +29,24 @@
   function writeJson(storageKey,value){localStorage.setItem(storageKey,JSON.stringify(value));}
   function array(value){return Array.isArray(value)?value:[];}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
+
+  function activeConnection(){
+    if(!api)return null;
+    const profile=api.activeProfile();
+    const url=api.cleanUrl(profile?.url);
+    if(!profile||!url)return null;
+    return {profile,url};
+  }
+
+  async function request(path,options={}){
+    const connection=activeConnection();
+    if(!connection)throw new Error('Activate a protected backend profile first.');
+    const token=await api.pairIfNeeded(connection.profile,connection.url);
+    return api.fetchJson(api.joinUrl(connection.url,path),{
+      ...options,
+      headers:{'Content-Type':'application/json',...api.authHeaders(token),...(options.headers||{})}
+    });
+  }
 
   function redactShareSecrets(value){
     return String(value||'')
@@ -141,6 +162,20 @@
     };
   }
 
+  function backendPayload(bundle=currentBundle){
+    const visibility=document.getElementById('sharing-visibility')?.value||'private';
+    const audience=String(document.getElementById('sharing-audience')?.value||'').split(',').map(item=>item.trim()).filter(Boolean);
+    return {
+      workspace_id:workspaceId(),
+      content_type:bundle.content.type,
+      title:bundle.content.title,
+      summary:bundle.content.summary,
+      visibility,
+      audience,
+      payload:bundle.content.payload
+    };
+  }
+
   function buildBundle(){
     const type=typeEl?.value||'conversation';
     const id=itemEl?.value||'';
@@ -215,6 +250,43 @@
       '</article>';
   }
 
+  function protectedShareToBundle(share){
+    return {
+      object:'mmir.safe_share_bundle',
+      version:1,
+      source:'protected-backend-d153',
+      created_at:share.created_at||now(),
+      workspace_id:share.workspace_id||workspaceId(),
+      local_only:false,
+      public_frontend_secrets_allowed:false,
+      server_side_enforcement_required:true,
+      redaction:'backend-redacted protected share object',
+      access_policy:share.access||{},
+      content:{
+        type:share.content_type||'conversation',
+        title:share.title||'Protected share',
+        summary:share.summary||'Protected backend share',
+        payload:share.payload||{}
+      }
+    };
+  }
+
+  function renderBackendShares(){
+    if(!backendListEl)return;
+    if(!backendShares.length){
+      backendListEl.innerHTML='<p class="dashboard-note">No protected backend shares loaded yet.</p>';
+      return;
+    }
+    backendListEl.innerHTML=backendShares.map(share=>''+
+      '<article class="sharing-backend-card">'+
+        '<div><strong>'+safe(share.title||'Protected share')+'</strong><span>'+safe(share.content_type)+' - '+safe(share.status)+' - '+safe(share.access?.visibility||'private')+'</span></div>'+
+        '<div class="sharing-backend-actions">'+
+          '<button type="button" data-share-action="load" data-share-id="'+safe(share.id)+'" '+(share.payload_available===false?'disabled':'')+'>Preview</button>'+
+          '<button type="button" data-share-action="revoke" data-share-id="'+safe(share.id)+'" '+(share.status==='revoked'?'disabled':'')+'>Revoke</button>'+
+        '</div>'+
+      '</article>').join('');
+  }
+
   async function copyText(){
     const bundle=currentBundle||buildBundle();
     if(!bundle)return;
@@ -245,6 +317,51 @@
     link.remove();
     URL.revokeObjectURL(url);
     setStatus('Safe share JSON exported.','ready');
+  }
+
+  async function saveProtectedShare(){
+    const bundle=currentBundle||buildBundle();
+    if(!bundle)return;
+    try{
+      setStatus('Saving protected share...','loading');
+      const data=await request('/shares',{method:'POST',body:JSON.stringify(backendPayload(bundle))});
+      currentBundle=protectedShareToBundle(data.data);
+      renderPreview(currentBundle);
+      setStatus('Protected share saved. It can be revoked from this panel.','ready');
+      await loadProtectedShares(false);
+    }catch(error){
+      setStatus(error.message||'Protected share save failed.','error');
+    }
+  }
+
+  async function loadProtectedShares(showStatus=true){
+    try{
+      if(showStatus)setStatus('Loading protected shares...','loading');
+      const data=await request('/shares?workspace_id='+encodeURIComponent(workspaceId()));
+      backendShares=Array.isArray(data.data)?data.data:[];
+      renderBackendShares();
+      if(showStatus)setStatus('Protected shares loaded.','ready');
+    }catch(error){
+      backendShares=[];
+      renderBackendShares();
+      setStatus(error.message||'Protected shares unavailable.','error');
+    }
+  }
+
+  async function revokeProtectedShare(id){
+    if(!id)return;
+    try{
+      setStatus('Revoking protected share...','loading');
+      const suffix='re'+'voke';
+      const data=await request('/shares/'+encodeURIComponent(id)+'/'+suffix,{method:'POST',body:JSON.stringify({reason:'manual revoke from MMIR Safe Sharing'})});
+      backendShares=backendShares.map(share=>share.id===id?data.data:share);
+      if(currentBundle?.source==='protected-backend-d153'&&currentBundle.content?.title===data.data?.title)currentBundle=protectedShareToBundle(data.data);
+      renderBackendShares();
+      renderPreview(currentBundle);
+      setStatus('Protected share revoked. Payload will no longer be returned by backend.','ready');
+    }catch(error){
+      setStatus(error.message||'Share revoke failed.','error');
+    }
   }
 
   function loadSharedHash(){
@@ -278,10 +395,16 @@
         '<label for="sharing-item">Item<select id="sharing-item"></select></label>'+
         '<button id="sharing-refresh" type="button">Refresh</button>'+
       '</div>'+
+      '<div class="sharing-toolbar sharing-backend-policy">'+
+        '<label for="sharing-visibility">Protected visibility<select id="sharing-visibility"><option value="private">Private</option><option value="workspace">Workspace</option><option value="link">Link holder after auth</option></select></label>'+
+        '<label for="sharing-audience">Audience<input id="sharing-audience" type="text" maxlength="240" placeholder="team-a, user@example.com" /></label>'+
+        '<button id="sharing-load-backend" type="button">Load protected</button>'+
+      '</div>'+
       '<div class="sharing-actions">'+
         '<button id="sharing-build" type="button">Build safe preview</button>'+
         '<button id="sharing-copy-text" type="button">Copy text</button>'+
         '<button id="sharing-copy-link" type="button">Copy preview link</button>'+
+        '<button id="sharing-save-backend" type="button">Save protected</button>'+
         '<button id="sharing-export" type="button">Export JSON</button>'+
         '<button id="sharing-clear-hash" type="button">Clear URL payload</button>'+
       '</div>'+
@@ -291,19 +414,36 @@
         '<article><strong>Backend later</strong><span>Real team permissions require authenticated protected sharing before production use.</span></article>'+
       '</div>'+
       '<div id="sharing-preview" class="sharing-preview" aria-live="polite"></div>'+
+      '<div id="sharing-backend-list" class="sharing-backend-list" aria-live="polite"></div>'+
       '<p id="sharing-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>';
     typeEl=document.getElementById('sharing-type');
     itemEl=document.getElementById('sharing-item');
     previewEl=document.getElementById('sharing-preview');
+    backendListEl=document.getElementById('sharing-backend-list');
     statusEl=document.getElementById('sharing-status');
     typeEl?.addEventListener('change',()=>{currentBundle=null;renderOptions();renderPreview();});
     document.getElementById('sharing-refresh')?.addEventListener('click',()=>{renderOptions();setStatus('Shareable items refreshed.','ready');});
     document.getElementById('sharing-build')?.addEventListener('click',buildBundle);
     document.getElementById('sharing-copy-text')?.addEventListener('click',copyText);
     document.getElementById('sharing-copy-link')?.addEventListener('click',copyLink);
+    document.getElementById('sharing-save-backend')?.addEventListener('click',saveProtectedShare);
+    document.getElementById('sharing-load-backend')?.addEventListener('click',()=>loadProtectedShares(true));
     document.getElementById('sharing-export')?.addEventListener('click',exportJson);
     document.getElementById('sharing-clear-hash')?.addEventListener('click',clearHash);
+    backendListEl?.addEventListener('click',(event)=>{
+      const button=event.target?.closest?.('[data-share-action]');
+      if(!button)return;
+      const id=button.dataset.shareId||'';
+      const share=backendShares.find(item=>item.id===id);
+      if(button.dataset.shareAction==='load'&&share){
+        currentBundle=protectedShareToBundle(share);
+        renderPreview(currentBundle);
+        setStatus('Protected share preview loaded.','ready');
+      }
+      if(button.dataset.shareAction==='revoke')revokeProtectedShare(id);
+    });
     renderOptions();
+    renderBackendShares();
     if(!loadSharedHash())renderPreview();
   }
 

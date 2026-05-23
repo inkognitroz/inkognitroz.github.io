@@ -308,6 +308,9 @@ requireIncludes(files.sharing, 'redactShareSecrets', 'D152 needs share redaction
 requireIncludes(files.sharing, 'decodeShareHash', 'D152 needs preview-link decoding.');
 requireIncludes(files.sharing, 'server_side_enforcement_required:true', 'D152 needs protected backend enforcement boundary.');
 requireIncludes(files.sharing, 'mimir-share-bundles-v1:', 'D152 needs local share bundle inventory.');
+requireIncludes(files.sharing, '/shares', 'D154 needs protected share save/list route support.');
+requireIncludes(files.sharing, 'revokeProtectedShare', 'D154 needs protected share revocation from the UI.');
+requireIncludes(files.sharing, 'sharing-save-backend', 'D154 needs save-to-protected-backend control.');
 requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
 requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
@@ -375,7 +378,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153', 'D154', 'D155']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

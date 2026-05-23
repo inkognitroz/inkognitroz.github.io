@@ -34,6 +34,8 @@ Current priority after the matrix is:
 24. D150 Chat/Open WebUI import-export.
 25. D152 team sharing and public-safe links.
 26. D153 authenticated protected sharing backend.
+27. D154 protected share sync UI.
+28. D155 account and organization identity foundation.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -59,6 +61,8 @@ D148 is now beta across frontend/backend: external connectors have a public-safe
 D149 is now beta in the public UI: MMIR has a free PWA manifest, service worker, offline fallback shell, install panel, mobile touch targets and local-node handoff without caching secrets or private data.
 D150 is now beta in the public UI: MMIR can export a redacted portable workspace bundle, provide an Open WebUI-style chat preview and import ChatGPT/Open WebUI/MMIR-style JSON locally with bounded file size and no public frontend secrets.
 D152 is now beta in the public UI: Safe Sharing creates redacted browser-local bundles, text copies, preview links and JSON exports for selected chats, artifacts, workflow drafts and knowledge collection manifests.
-D153 is next: authenticated team sharing, revocation, audience controls and audit must move to the protected backend before production team links are trusted.
+D153 is now beta in the managed backend: protected share objects are owner-scoped, redacted before storage, revocable, audit-safe and included in portable backend export/import/delete.
+D154 is now beta in the public UI: Safe Sharing can save/load/revoke protected backend shares through the active backend profile.
+D155 is next: account/session and organization identity must exist before real team publishing, marketplace and premium sharing can be trusted.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.
