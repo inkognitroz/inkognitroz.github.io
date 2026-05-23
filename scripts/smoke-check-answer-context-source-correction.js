@@ -106,16 +106,16 @@ for (const needle of [
 requireIncludes(files.progressDashboard, 'renderAnswerContextSourceCorrectionReport', 'Progress Dashboard must render D229 source correction evidence.');
 requireIncludes(files.qualityWorkflow, 'smoke-check-answer-context-source-correction.js', 'Quality workflow must run D229 source correction QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-answer-context-source-correction.js', 'Pages workflow must run D229 source correction QA.');
-requireIncludes(files.backlog, '| D232 |', 'Backlog must keep a next sequential work item after D231.');
+requireIncludes(files.backlog, '| D233 |', 'Backlog must keep a next sequential work item after D232.');
 
 const progress = json(files.progressData);
 requireTrue(progress.answer_context_source_correction_report?.title === report.title, 'Progress dashboard data must embed D229 source correction report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d229 = tasks.find((task) => task.seq === 'D229');
-const d232 = tasks.find((task) => task.seq === 'D232');
+const d233 = tasks.find((task) => task.seq === 'D233');
 requireTrue(d229?.status === 'beta', 'Progress dashboard task D229 must be beta after source correction actions ship.');
-requireTrue(d232?.status === 'next', 'Progress dashboard task D232 must become next after D231 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D232', 'Progress dashboard next queue must prioritize D232 after D231 ships.');
+requireTrue(d233?.status === 'next', 'Progress dashboard task D233 must become next after D232 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D233', 'Progress dashboard next queue must prioritize D233 after D232 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

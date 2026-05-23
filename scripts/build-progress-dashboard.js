@@ -27,6 +27,7 @@ const answerContextKnowledgeSourceReportPath = resolve(root, 'public', 'answer-c
 const answerContextSourceCorrectionReportPath = resolve(root, 'public', 'answer-context-source-correction-report.json');
 const contextCorrectionAuditReportPath = resolve(root, 'public', 'context-correction-audit-report.json');
 const contextCorrectionRetryReportPath = resolve(root, 'public', 'context-correction-retry-report.json');
+const contextCorrectionSuggestionsReportPath = resolve(root, 'public', 'context-correction-suggestions-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -191,7 +192,8 @@ const overrides = new Map([
   ['D229', { status: 'beta', evidence: 'Memory and Knowledge panels now expose receipt-focused correction actions to review, edit or disable used sources and clear source focus without deleting content.' }],
   ['D230', { status: 'beta', evidence: 'Context corrections now write browser-local metadata-only audit events, render recent correction trails and expose undo for disabled memory/knowledge sources.' }],
   ['D231', { status: 'beta', evidence: 'A deferred retry-after-correction module now adds Retry fixed actions to corrected answers, derives prompts from visible chat state and marks retried answers with metadata-only receipts.' }],
-  ['D232', { status: 'next', evidence: 'Next activation slice: add context correction learning suggestions so MMIR can recommend safer memory/knowledge hygiene after repeated corrections.' }]
+  ['D232', { status: 'beta', evidence: 'Context correction suggestions now derive local memory/knowledge hygiene recommendations from correction metadata and open review panels without mutating user data.' }],
+  ['D233', { status: 'next', evidence: 'Next activation slice: define protected context correction sync so teams can review correction trails through a private backend without exposing public secrets.' }]
 ]);
 
 const repoMeta = [
@@ -410,6 +412,11 @@ function readContextCorrectionRetryReport() {
   return JSON.parse(readFileSync(contextCorrectionRetryReportPath, 'utf8'));
 }
 
+function readContextCorrectionSuggestionsReport() {
+  if (!existsSync(contextCorrectionSuggestionsReportPath)) return null;
+  return JSON.parse(readFileSync(contextCorrectionSuggestionsReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -434,7 +441,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D232', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D233', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -476,6 +483,7 @@ const data = {
   answer_context_source_correction_report: readAnswerContextSourceCorrectionReport(),
   context_correction_audit_report: readContextCorrectionAuditReport(),
   context_correction_retry_report: readContextCorrectionRetryReport(),
+  context_correction_suggestions_report: readContextCorrectionSuggestionsReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

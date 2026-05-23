@@ -91,6 +91,25 @@
       return [];
     }
   }
+  function contextCorrectionSuggestions(){
+    const items=readContextCorrections().filter((item)=>!item.undone_at);
+    const counts=items.reduce((acc,item)=>{
+      const target=String(item.target||'context');
+      const action=String(item.action||'correction');
+      acc[target] ||= {target,total:0,disabled:0,cleared:0,sources:0};
+      acc[target].total += 1;
+      if(action==='disable-source')acc[target].disabled += 1;
+      if(action==='clear-focus')acc[target].cleared += 1;
+      acc[target].sources += Math.max(0,Math.round(Number(item.source_count)||0));
+      return acc;
+    },{});
+    const suggestions=[];
+    if(counts.memory?.disabled)suggestions.push({id:'memory-scope-expiry',label:'Narrow memory scope',detail:'Memory corrections suggest expiry, scope or import-review cleanup.',target:'#memory-panel'});
+    if(counts.knowledge?.disabled)suggestions.push({id:'knowledge-source-review',label:'Review knowledge sources',detail:'Knowledge corrections suggest collection review or stale-file cleanup.',target:'#knowledge-panel'});
+    if((counts.knowledge?.sources||0)>=3)suggestions.push({id:'knowledge-collection-split',label:'Split broad collection',detail:'Several corrected sources point to a broad collection.',target:'#knowledge-panel'});
+    if((counts.memory?.cleared||0)+(counts.knowledge?.cleared||0)>=3)suggestions.push({id:'receipt-focus-tuning',label:'Tune source focus',detail:'Frequent clear-focus actions suggest tighter receipt filters.',target:'#progress-answer-context-source-filter'});
+    return suggestions.slice(0,4);
+  }
   function readAutopilotState(){
     try{
       const value=JSON.parse(localStorage.getItem(autopilotStorageKey())||'null');
@@ -768,6 +787,33 @@
     '</section>';
   }
 
+  function renderContextCorrectionSuggestionsReport(data){
+    const report=data.context_correction_suggestions_report||{};
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    if(!scenarios.length)return '';
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&scenario.no_paid_routes_started===true);
+    const suggestions=contextCorrectionSuggestions();
+    const current=suggestions.length?'<div id="progress-context-correction-suggestions" class="progress-no-model-grid">'+suggestions.map((suggestion)=>
+      '<article class="progress-no-model-scenario" data-scenario="'+safe(suggestion.id)+'">'+
+        '<span>suggested</span><h3>'+safe(suggestion.label)+'</h3><p>'+safe(suggestion.detail)+'</p>'+
+        '<strong>'+safe(suggestion.target)+'</strong><small>local metadata / manual review only</small>'+
+      '</article>'
+    ).join('')+'</div>':'<p id="progress-context-correction-suggestions" class="dashboard-note">No correction-learning suggestions yet. They appear after local memory or knowledge corrections.</p>';
+    return '<section id="progress-context-correction-suggestions-report" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Correction learning</p><h2>'+safe(report.title||'Context correction suggestions QA')+'</h2></div><small>'+safe(report.principle||'Learn from explicit corrections only.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+scenarios.map((scenario)=>
+        '<article class="progress-no-model-scenario" data-scenario="'+safe(scenario.id)+'">'+
+          '<span>'+safe(label(scenario.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(scenario.target||scenario.id)+'</h3>'+
+          '<p>'+safe(scenario.expected||'')+'</p>'+
+          '<strong>'+safe(scenario.selector||report.source_storage_key||'suggestion metadata')+'</strong>'+
+          '<small>no mutation / no spend</small>'+
+        '</article>'
+      ).join('')+'</div>'+
+      current+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe correction suggestions only.')+'</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -1023,7 +1069,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();
