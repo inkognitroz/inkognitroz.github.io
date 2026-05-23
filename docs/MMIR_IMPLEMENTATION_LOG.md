@@ -132,6 +132,7 @@ Updated: 2026-05-23
 - D116 is now beta: `docs/MMIR_CONTROL_PLANE_BOUNDARY.md` documents current/target architecture, trust zones, route ownership, public/private rules and Codex work rules for future agents.
 - Public repo handoff docs (`AGENTS.md`, `START_HERE.md`, `README.md`) now describe MMIR, the current backlog sequence, free/local-first guardrails and validation commands instead of the retired legacy workflow.
 - Docs now describe frontend/local/managed boundaries, security posture, environment contract, key management and local install path.
+- D142 is now beta across frontend/backend: the Tools panel includes an approved tool/plugin gallery with permissions, trust labels, install state, public-secret boundaries and workspace-level enable/disable controls for tools and connectors.
 - D143 is now beta across frontend/backend: memory governance exposes scope, tags, expiration, review notes, import notes, backend matched-term reasons and a visible "used in last message" review panel while keeping disabled/expired memory out of model context.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.

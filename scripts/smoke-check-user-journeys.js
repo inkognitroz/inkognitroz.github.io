@@ -191,6 +191,9 @@ requireIncludes(files.mmir, './apps/mimir-chat-portal/tool-runner.js', 'D131 nee
 requireIncludes(files.toolRunner, '/tools/execute', 'D131 needs protected backend tool execution route support.');
 requireIncludes(files.toolRunner, 'tool-runner-consent', 'D131 needs explicit tool consent.');
 requireIncludes(files.toolRunner, 'renderTrace', 'D131 needs visible tool traces.');
+requireIncludes(files.toolRunner, 'mimir-tool-gallery-v1:', 'D142 needs workspace-level tool/plugin enable and disable state.');
+requireIncludes(files.toolRunner, 'tool-gallery-grid', 'D142 needs an approved tools/connectors gallery.');
+requireIncludes(files.toolRunner, 'public_frontend_secrets_allowed', 'D142 needs public frontend secret boundaries for plugins/tools.');
 requireIncludes(files.mmir, './apps/mimir-chat-portal/code-sandbox.js', 'D132 needs code sandbox preflight loaded on the product page.');
 requireIncludes(files.codeSandbox, '/code/sandbox/plan', 'D132 needs protected sandbox planning route support.');
 requireIncludes(files.codeSandbox, 'localPlan', 'D132 needs a free browser preflight fallback.');
@@ -267,7 +270,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D143']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

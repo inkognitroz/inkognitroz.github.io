@@ -12,6 +12,7 @@
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const ARTIFACT_PREFIX='mimir-artifacts-v1:';
   const PROMPT_PREFIX='mimir-prompts-v1:';
+  const TOOL_GALLERY_PREFIX='mimir-tool-gallery-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
@@ -52,7 +53,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,TOOL_GALLERY_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -158,6 +159,7 @@
     const conversations=readJson(CONVERSATION_PREFIX+id,[]);
     const artifacts=readJson(ARTIFACT_PREFIX+id,[]);
     const prompts=readJson(PROMPT_PREFIX+id,[]);
+    const toolGallery=readJson(TOOL_GALLERY_PREFIX+id,{});
 
     return {
       exported_at:new Date().toISOString(),
@@ -168,6 +170,7 @@
       conversations:Array.isArray(conversations)?conversations:[],
       artifacts:Array.isArray(artifacts)?artifacts:[],
       prompts:Array.isArray(prompts)?prompts:[],
+      tool_gallery:toolGallery&&typeof toolGallery==='object'&&!Array.isArray(toolGallery)?toolGallery:{},
       memory:Array.isArray(memory)?memory:[],
       memory_use:Array.isArray(memoryUse)?memoryUse:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
@@ -180,6 +183,7 @@
       chat:snapshot.chat.length,
       artifacts:snapshot.artifacts.length,
       prompts:snapshot.prompts.length,
+      tool_gallery:Object.keys(snapshot.tool_gallery).length,
       memory:snapshot.memory.length,
       memory_use:snapshot.memory_use.length,
       knowledge:snapshot.knowledge.length,
@@ -213,6 +217,7 @@
     const knowledgeCollectionKeys=keysByPrefix(local,COLLECTIONS_PREFIX);
     const artifactKeys=keysByPrefix(local,ARTIFACT_PREFIX);
     const promptKeys=keysByPrefix(local,PROMPT_PREFIX);
+    const toolGalleryKeys=keysByPrefix(local,TOOL_GALLERY_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -268,6 +273,16 @@
         retention:'Until exported, deleted by workspace reset or cleared with all MMIR data.',
         action:'Manage prompts in the Prompts panel or export/delete active workspace data.',
         keys:promptKeys
+      },
+      {
+        id:'tool-gallery',
+        label:'Tool/plugin gallery',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,toolGalleryKeys),
+        size:formatBytes(storageSize(localStorage,toolGalleryKeys)),
+        retention:'Workspace-level enable/disable preferences for approved tools and connectors.',
+        action:'Use Tools gallery or clear workspace/all local data.',
+        keys:toolGalleryKeys
       },
       {
         id:'workspace-memory',
@@ -409,6 +424,7 @@
     [
       ['Chat messages',activeCounts.chat],
       ['Prompts',activeCounts.prompts],
+      ['Tool toggles',activeCounts.tool_gallery],
       ['Memory items',activeCounts.memory],
       ['Memory use',activeCounts.memory_use],
       ['Knowledge files',activeCounts.knowledge],
@@ -494,6 +510,7 @@
     window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-use-updated',{detail:{workspaceId:id,count:0}}));
+    window.dispatchEvent(new CustomEvent('mmir-tool-gallery-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
@@ -514,6 +531,7 @@
     localStorage.removeItem(ACTIVE_CONVERSATION_PREFIX+workspaceId());
     localStorage.removeItem(ARTIFACT_PREFIX+workspaceId());
     localStorage.removeItem(PROMPT_PREFIX+workspaceId());
+    localStorage.removeItem(TOOL_GALLERY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());

@@ -112,9 +112,9 @@
       "id": "permissioned-tools",
       "surface": "Tool runner",
       "status": "beta",
-      "user_result": "Users can inspect approved backend tools, approve a tool call for the active workspace, run it and see a trace/result without frontend secrets.",
-      "selectors": ["#tool-runner-panel", "#tool-runner-tool", "#tool-runner-consent", "#tool-runner-load", "#tool-runner-run"],
-      "evidence": ["/tools", "/tools/execute", "tool-runner-consent", "renderTrace", "Tool trace ready"]
+      "user_result": "Users can inspect approved backend tools/connectors, see permissions/trust labels, disable or enable them per workspace, approve a tool call, run it and see a trace/result without frontend secrets.",
+      "selectors": ["#tool-runner-panel", "#tool-gallery-grid", "#tool-runner-tool", "#tool-runner-consent", "#tool-runner-load", "#tool-runner-run"],
+      "evidence": ["/tools", "/connectors", "/tools/execute", "tool-runner-consent", "mimir-tool-gallery-v1:", "renderTrace", "Tool trace ready"]
     },
     {
       "id": "code-sandbox-preflight",

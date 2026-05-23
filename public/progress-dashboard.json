@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T05:19:42.361Z",
+  "updated_at": "2026-05-23T05:40:34.299Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 67,
+    "beta": 68,
     "next": 2,
     "watch": 1,
     "blocked": 1,
-    "planned": 30,
+    "planned": 29,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -590,8 +590,8 @@
         "phase": "Plugins",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -611,10 +611,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Assistants",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D142",
+    "D144",
     "D042"
   ],
   "watchlist": [
@@ -2881,10 +2881,10 @@
       "best_practice": "Plugin ecosystems need review and revocation",
       "done_when": "User can add/remove safe tools without secrets in public frontend",
       "covers": "Open WebUI parity",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next slice: approved tool/plugin install gallery with permissions, trust labels and revocation controls.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Tool/plugin gallery now lists approved tools and connectors with permissions, trust labels, install state, public-secret boundaries and workspace enable/disable controls.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D143",
@@ -2911,9 +2911,9 @@
       "best_practice": "Research agents should be transparent and revocable",
       "done_when": "User can run sourced research plans safely",
       "covers": "ChatGPT parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next slice: agentic research planning with source steps, citation expectations and approval gates before autonomous browsing.",
       "estimate": "1-3d"
     },
     {

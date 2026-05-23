@@ -23,7 +23,8 @@ Current priority after the matrix is:
 13. D139 model/runtime settings panel.
 14. D140 prompt library and quick actions polish.
 15. D141 OpenAI-compatible API conformance.
-16. D143 memory and notes governance.
+16. D142 tool/plugin gallery.
+17. D143 memory and notes governance.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -38,6 +39,7 @@ D138 is now beta across backend/frontend: access policy and access decision rout
 D139 is now beta across frontend/backend/local-node: users can tune bounded runtime settings and a workspace system prompt, the chat runtime sends those settings through `/chat/completions`, the managed backend validates them, and Local Node maps them to Ollama options.
 D140 is now beta in the public UI: prompt reuse works free/local-first with backend prompt loading, starter patterns, tags, variables, search, insert, copy and version flows, plus privacy inventory/export coverage for local prompts.
 D141 is now beta across backend/local-node: OpenAI-compatible clients get tested model metadata, chat completion, SSE terminal chunk, safe error and function tool-call shapes, while actual tool execution remains separated behind consent-gated `/tools` routes.
+D142 is now beta across frontend/backend: approved tools and connectors expose permissions, trust labels, install state, public-secret boundaries and workspace-level enable/disable controls.
 D143 is now beta across frontend/backend: memory has user-controlled scope, tags, expiration, review notes, import notes, protected backend search reasons and a visible "used in last message" review panel.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

@@ -4,6 +4,115 @@
   margin-top: 10px;
 }
 
+.tool-gallery-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.tool-gallery-head strong {
+  color: var(--mimir-text, #111827);
+  font-size: 0.92rem;
+}
+
+.tool-gallery-head span {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.tool-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tool-gallery-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tool-gallery-card[data-state="disabled"] {
+  opacity: 0.74;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.tool-gallery-card header {
+  display: grid;
+  gap: 6px;
+}
+
+.tool-gallery-card strong {
+  color: var(--mimir-text, #111827);
+  font-size: 0.9rem;
+}
+
+.tool-gallery-card p,
+.tool-gallery-card small {
+  margin: 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.tool-gallery-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tool-gallery-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tool-gallery-badge[data-state="ready"] {
+  background: rgba(16, 163, 127, 0.12);
+  color: #047857;
+}
+
+.tool-gallery-badge[data-state="warning"] {
+  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+}
+
+.tool-gallery-badge[data-state="error"] {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.tool-permission-list {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--mimir-text, #111827);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.tool-gallery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .tool-runner-body label {
   display: grid;
   gap: 5px;
@@ -82,6 +191,14 @@
 }
 
 @media (max-width: 640px) {
+  .tool-gallery-head {
+    display: grid;
+  }
+
+  .tool-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
   .tool-runner-panel button {
     width: 100%;
   }
