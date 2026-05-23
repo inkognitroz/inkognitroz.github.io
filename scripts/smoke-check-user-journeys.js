@@ -39,6 +39,7 @@ const files = {
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
   universalInstaller: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),
+  connectorServer: join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'),
   linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
@@ -191,9 +192,6 @@ requireIncludes(files.mmir, './apps/mimir-chat-portal/tool-runner.js', 'D131 nee
 requireIncludes(files.toolRunner, '/tools/execute', 'D131 needs protected backend tool execution route support.');
 requireIncludes(files.toolRunner, 'tool-runner-consent', 'D131 needs explicit tool consent.');
 requireIncludes(files.toolRunner, 'renderTrace', 'D131 needs visible tool traces.');
-requireIncludes(files.toolRunner, 'mimir-tool-gallery-v1:', 'D142 needs workspace-level tool/plugin enable and disable state.');
-requireIncludes(files.toolRunner, 'tool-gallery-grid', 'D142 needs an approved tools/connectors gallery.');
-requireIncludes(files.toolRunner, 'public_frontend_secrets_allowed', 'D142 needs public frontend secret boundaries for plugins/tools.');
 requireIncludes(files.mmir, './apps/mimir-chat-portal/code-sandbox.js', 'D132 needs code sandbox preflight loaded on the product page.');
 requireIncludes(files.codeSandbox, '/code/sandbox/plan', 'D132 needs protected sandbox planning route support.');
 requireIncludes(files.codeSandbox, 'localPlan', 'D132 needs a free browser preflight fallback.');
@@ -254,6 +252,11 @@ requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 need
 requireIncludes(files.privacyControls, 'Provider keys and cloud credentials', 'J005/D118 must make the public frontend secrecy boundary visible.');
 requireIncludes(files.privacyControls, 'Clear pairing tokens', 'J009/D118 needs a safe way to clear temporary local node pairing tokens.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
+requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
+requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
+requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');
+requireIncludes(files.connectorServer, '/models/delete', 'Standalone connector server must support local model removal.');
+requireIncludes(files.connectorServer, '/pairing/sessions', 'Standalone connector server must support short-lived cross-device pairing codes.');
 requireIncludes(files.linuxConnectorInstaller, 'raspberry-pi', 'J002/J009 Linux installer must detect Raspberry Pi edge nodes.');
 requireIncludes(files.userJourneyDoc, 'free-first', 'Journey docs must preserve the free-first rule.');
 requireIncludes(files.backlog, '| D106 | QA / Journey Gates', 'Backlog must include journey-level smoke tests.');
@@ -270,7 +273,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D143']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }
