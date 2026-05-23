@@ -1,60 +1,85 @@
 # inkognitroz.github.io
 
-Public home of **SaaS Fabric by Inkognitroz**.
+Public home of **MMIR.ai**.
 
 ## Brand
-- **Name:** SaaS Fabric
-- **Subtitle:** Build, publish and monetize apps, tools and SaaS products.
 
-## What this is
-A simple, stable, GitHub Pages-compatible v1 platform built with HTML/CSS/JS. It renders dynamically from one file: `/public/content.json`.
+- **Name:** MMIR
+- **Category:** Trusted AI control plane
+- **Positioning:** The orchestration layer for trusted AI.
 
-SaaS Fabric is positioned as a platform for creating, organizing, publishing and eventually monetizing many apps, websites, SaaS products, dashboards, tools, templates, Excel/CSV-based tools, AI-assisted apps, client portals and internal tools.
+## What This Is
 
-## Quick start
-1. Edit `/public/content.json`.
-2. Optional: open `/public/admin.html` locally for card editing, draft/publish status, validation, browser backups, CSV import, JSON export, and structured backup bundle export.
-3. Publish safely by exporting `content.json` and committing it in a PR.
-4. GitHub Actions deploys `/public` to `https://inkognitroz.github.io/`.
+This repository publishes the static public MMIR.ai experience through GitHub Pages. It is the public product surface for the first user journey:
 
-## Safe publishing
-- **Current path:** use `/public/admin.html`, export `/public/content.json` or a structured backup bundle, and publish through a normal PR review + merge flow.
-- **Future path:** add a backend or serverless publishing/export endpoint (for example server-side ZIP bundles) that uses a GitHub App or another server-side secret. Never place GitHub tokens or other secrets in frontend code.
+```text
+Open mmir.ai
+-> Connect local AI
+-> Install MMIR Local Node
+-> See local models
+-> Chat through the MMIR control plane
+```
 
-## Privacy-friendly usage analytics (v1)
-- v1 includes a **local-only dashboard** on the homepage (`#dashboards`) that tracks section views and card link clicks **in browser storage only**.
-- No tracking cookies are used.
-- No personal data is collected or sent to a server.
-- Users can reset local analytics with **Reset local analytics** in the dashboard.
+The frontend can explain, configure, visualize and initiate trusted AI routes. It must not own secrets, provider keys, paid execution authority, private organization data or raw model runtime exposure.
 
-### Future hosted analytics path
-- Keep v1 local-only by default.
-- If hosted analytics is added later (for example Plausible or Umami), keep it opt-in and privacy-friendly:
-  - do not collect personal identifiers
-  - avoid cookies when possible
-  - document exactly what events are sent and why
+## Product Direction
 
-## Main sections
-Home, App Factory, SaaS Ideas, Projects, Templates, Tools, Dashboards, Uploads / Files, Prompt Inbox, Monetization, Roadmap, About.
+MMIR is not a chatbot wrapper or a single-model UI. It is the control plane above models and runtimes:
+
+- local-first AI through MMIR Local Node
+- model-agnostic provider routing
+- workflow orchestration
+- persistent project/workspace memory
+- trusted node and runtime management
+- security, governance, audit and future billing hooks
+
+## Quick Start
+
+1. Open `public/mmir.html` for the main MMIR product page.
+2. Edit public-safe content and manifests only.
+3. Run the smoke checks before publishing.
+4. GitHub Actions deploys `/public` to `https://mmir.ai` / GitHub Pages.
+
+```bash
+node scripts/ensure-mmir-public-branding.js --check
+node scripts/smoke-check-pages.js
+node scripts/smoke-check-user-journeys.js
+node scripts/smoke-check-ui-actions.js
+```
+
+## Safe Publishing
+
+- Use pull requests or connector-backed commits for reviewed changes.
+- Keep GitHub tokens, provider keys, billing credentials and backend secrets out of `public/`.
+- Put protected runtime behavior in the backend/local-node repos, not the static frontend.
+- Keep cost-incurring routes disabled unless the owner explicitly approves the cost.
 
 ## Structure
-- `public/index.html` - public platform hub
-- `public/admin.html` - local browser content editor
-- `public/content.json` - single source of content
-- `public/assets/` - CSS and JS
-- `.github/workflows/pages.yml` - Pages deployment (publishes `/public`)
-- `docs/` - operations and platform docs
+
+- `public/index.html` - MMIR root redirect/fallback
+- `public/mmir.html` - main public MMIR control-plane experience
+- `public/apps/mimir-chat-portal/` - chat, local connector, models, workflows, memory, privacy and status UI
+- `public/downloads/` - public local connector installer entrypoints
+- `public/content.json` - public-safe homepage/content manifest
+- `docs/` - MMIR architecture, security, roadmap and delivery docs
+- `.github/workflows/` - Pages deploy and static quality gates
 
 ## Security
-Read `docs/SECURITY.md` before adding any integrations.
-Never commit API keys or frontend secrets.
 
-## Product boundaries
-SaaS Fabric is the public hub for the portfolio and app-factory experience.
-MMIR is an AI orchestration product track inside the broader portfolio and must not replace the top-level SaaS Fabric identity without an intentional repo/domain split.
+Read `docs/MMIR_SECURITY_BASELINE.md`, `docs/MMIR_CONTROL_PLANE_BOUNDARY.md` and `docs/SECURITY.md` before adding integrations.
 
-See `docs/PRODUCT_BOUNDARIES.md`.
+Core rule: public frontend never stores provider secrets. Local model control goes through a paired local node on `127.0.0.1` by default. Managed provider routes belong behind protected backend auth, policy, rate limits, audit and cost gates.
 
-## Post-merge checklist
-After every merge, run the live checklist.
-See `docs/LIVE_TEST_CHECKLIST.md`.
+## Current Priority
+
+The highest-priority milestone is one perfect first experience:
+
+```text
+Open mmir.ai
+-> Connect local AI
+-> Install
+-> Ready
+-> Chat works
+```
+
+Everything else is secondary until this path is reliable, understandable and safe.
