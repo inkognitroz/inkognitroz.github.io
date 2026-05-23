@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T19:20:11.094Z",
+  "updated_at": "2026-05-23T19:29:18.878Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 217,
+    "total": 218,
     "done": 51,
-    "beta": 141,
+    "beta": 142,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -940,7 +940,17 @@
         "phase": "Chat UX / Transcript",
         "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Accessibility",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1713,6 +1723,55 @@
     ],
     "result": "ready"
   },
+  "message_action_browser_fixture_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T22:05:00+02:00",
+    "title": "Message Action Browser Fixture",
+    "principle": "Critical transcript actions must be proven against browser-local state, not only static selectors.",
+    "public_repo_rule": "Fixture evidence is synthetic and public-safe. It contains no real prompts, real responses, provider keys, tokens, pairing codes, billing data or private telemetry.",
+    "scenarios": [
+      {
+        "id": "save-conversation",
+        "action": "save",
+        "expected": "Writes one browser-local conversation, keeps active conversation id and opens the conversation manager.",
+        "storage_key": "mimir-conversations-v1:fixture-workspace",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "fork-at-answer",
+        "action": "fork",
+        "expected": "Creates a new local fork ending at the selected answer and replaces only local runtime messages.",
+        "storage_key": "mimir-active-conversation-v1:fixture-workspace",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "safe-share-redaction",
+        "action": "share-safe",
+        "expected": "Stores and copies a redacted share draft while opening Safe Sharing.",
+        "storage_key": "mimir-message-share-draft-v1:fixture-workspace",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "next-step-routing",
+        "action": "next-step",
+        "expected": "Opens model picker before a usable live model and conversation manager after a usable live model.",
+        "storage_key": "bridge.opened",
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "fixture_contract": [
+      "synthetic_messages_only",
+      "localStorage_only",
+      "clipboard_stub_only",
+      "no_network",
+      "no_paid_route"
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1763,7 +1822,7 @@
     }
   ],
   "next_queue": [
-    "D217"
+    "D218"
   ],
   "watchlist": [
     "D082",
@@ -5020,9 +5079,24 @@
       "best_practice": "Static wiring is not enough; key chat actions need end-to-end local behavior proof",
       "done_when": "CI proves message actions update local conversations/share drafts and preserve no-secret/no-spend boundaries",
       "covers": "chat UX, transcript, local storage",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Message action browser fixture now proves save, fork, safe share and next-step behavior against synthetic localStorage, clipboard and bridge state.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D218",
+      "phase": "Chat UX / Accessibility",
+      "priority": "P0",
+      "work_package": "Message action accessibility pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Harden keyboard flow, focus feedback, aria labels and screen-reader status for transcript action controls",
+      "best_practice": "Working controls still fail users if keyboard and assistive tech paths are weak",
+      "done_when": "CI proves each message action has accessible labels, focus-visible styling and status announcements",
+      "covers": "chat UX, accessibility, keyboard",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add a browser/storage fixture for message actions so save, fork, safe share and next-step effects are proven end to end.",
+      "evidence": "Next activation slice: improve message action accessibility, keyboard flow and screen-reader labeling after the local behavior fixture.",
       "estimate": "2-6h"
     }
   ]

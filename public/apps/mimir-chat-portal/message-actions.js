@@ -146,10 +146,11 @@
     record(bridge,'next-step',message,{target:'#conversation-manager-panel',conversation_id:saved?.id||''});
   }
   function run(action,message,bridge){
-    if(action==='save')save(message,bridge);
-    if(action==='fork')fork(message,bridge);
-    if(action==='share-safe')shareSafe(message,bridge);
-    if(action==='next-step')nextStep(message,bridge);
+    if(action==='save')return save(message,bridge);
+    if(action==='fork')return fork(message,bridge);
+    if(action==='share-safe')return shareSafe(message,bridge);
+    if(action==='next-step')return nextStep(message,bridge);
+    return null;
   }
 
   window.MimirMessageActions={run,redactShareText};
