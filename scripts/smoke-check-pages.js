@@ -149,6 +149,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/i
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/orgs', 'D155 needs protected organization list/create route support.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), 'owner/admin', 'D155 needs visible owner/admin organization role boundaries.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.css'), '.identity-org-card', 'D155 needs organization card styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/sessions', 'D156 needs protected session token route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/invites', 'D156 needs protected invite route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), 'Shown once', 'D156 needs one-time token/code display without public storage.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.css'), '.identity-one-time', 'D156 needs one-time credential styling.');
 requireText(mmirPath, 'mimir-nav-more', 'D042 calm UX pass must keep secondary navigation behind the More menu.');
 requireText(mmirPath, 'Ask now. MMIR chooses the safest free route automatically', 'D042 first screen must communicate automatic free routing.');
 requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');
@@ -340,7 +344,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, provider keys and backend data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, session tokens, invite codes, provider keys and backend data.');
 
 const parity = JSON.parse(text(guiParityPath));
 const parityGroups = Array.isArray(parity.groups) ? parity.groups : [];

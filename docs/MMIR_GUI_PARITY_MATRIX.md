@@ -37,6 +37,7 @@ Current priority after the matrix is:
 27. D154 protected share sync UI.
 28. D155 account and organization identity foundation.
 29. D156 session and invite foundation.
+30. D157 organization-scoped share audiences.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -65,6 +66,7 @@ D152 is now beta in the public UI: Safe Sharing creates redacted browser-local b
 D153 is now beta in the managed backend: protected share objects are owner-scoped, redacted before storage, revocable, audit-safe and included in portable backend export/import/delete.
 D154 is now beta in the public UI: Safe Sharing can save/load/revoke protected backend shares through the active backend profile.
 D155 is now beta across frontend/backend: protected principal/org routes and a public Identity panel can create free-first organizations, manage members and preserve owner/admin guardrails without public frontend secrets.
-D156 is next: short-lived session-token and invite flows must exist before real cross-user publishing, marketplace and premium sharing can be trusted.
+D156 is now beta across frontend/backend: short-lived session tokens and invite create/accept/revoke flows exist, with one-time tokens/codes shown without public frontend storage.
+D157 is next: protected shares need organization audiences, role checks and membership enforcement before real cross-user publishing, marketplace and premium sharing can be trusted.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

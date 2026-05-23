@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T08:58:27.828Z",
+  "updated_at": "2026-05-23T09:20:07.888Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 156,
+    "total": 157,
     "done": 51,
-    "beta": 80,
+    "beta": 81,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -710,6 +710,16 @@
         "phase": "Identity/Security",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Sharing/Security",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -768,7 +778,7 @@
     }
   ],
   "next_queue": [
-    "D156"
+    "D157"
   ],
   "watchlist": [
     "D082",
@@ -3110,9 +3120,24 @@
       "best_practice": "Multi-user sharing needs revocable identity handoff before public links or marketplace",
       "done_when": "Owner can create a revocable invite/session plan and the UI shows exactly what is active, expired or blocked",
       "covers": "team identity",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Managed backend and public UI now support short-lived session-token and invite create/accept/revoke flows tied to organizations; tokens and codes are returned once and not stored in GitHub Pages.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D157",
+      "phase": "Sharing/Security",
+      "priority": "P1",
+      "work_package": "Organization-scoped share audiences",
+      "repos": "mimir-backend-template, inkognitroz.github.io",
+      "concrete_work": "Tie protected shares to organization audiences, roles and membership checks while keeping browser preview links redacted and non-authoritative",
+      "best_practice": "Team sharing should enforce audience server-side, not through public link secrecy",
+      "done_when": "Owner can create org/member/viewer scoped shares and non-members are blocked by protected backend policy",
+      "covers": "team sharing",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next identity/security slice: short-lived session-token and invite planning/acceptance contracts tied to organizations before real cross-user sharing or marketplace routes.",
+      "evidence": "Next sharing/security slice: tie protected shares to organization audiences, roles and membership checks before real cross-user publishing.",
       "estimate": "0.5-2d"
     }
   ]

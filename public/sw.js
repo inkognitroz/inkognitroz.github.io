@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d155-20260523-mobile-chat-identity-org';
+const CACHE_NAME='mmir-pwa-d156-20260523-mobile-chat-identity-session-invites';
 const SHELL_ASSETS=[
   './',
   './index.html',

@@ -55,7 +55,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 156).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 157).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -92,7 +92,8 @@ const overrides = new Map([
   ['D153', { status: 'beta', evidence: 'Managed backend now has protected owner-scoped share objects with redaction before storage, list/get/create/revoke/delete routes, portable export/import/delete coverage and sanitized audit events.' }],
   ['D154', { status: 'beta', evidence: 'Safe Sharing UI now saves redacted bundles to protected /shares, loads protected share metadata and revokes owned shares through the active backend profile.' }],
   ['D155', { status: 'beta', evidence: 'Managed backend now exposes protected principal and organization routes with owner/admin/member/viewer guardrails, and the public UI can load identity, create a free org, save/remove members and disable owned orgs through the active protected backend.' }],
-  ['D156', { status: 'next', evidence: 'Next identity/security slice: short-lived session-token and invite planning/acceptance contracts tied to organizations before real cross-user sharing or marketplace routes.' }]
+  ['D156', { status: 'beta', evidence: 'Managed backend and public UI now support short-lived session-token and invite create/accept/revoke flows tied to organizations; tokens and codes are returned once and not stored in GitHub Pages.' }],
+  ['D157', { status: 'next', evidence: 'Next sharing/security slice: tie protected shares to organization audiences, roles and membership checks before real cross-user publishing.' }]
 ]);
 
 const repoMeta = [
@@ -220,7 +221,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D156', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D157', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

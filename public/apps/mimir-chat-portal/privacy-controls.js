@@ -179,7 +179,7 @@
       exported_at:new Date().toISOString(),
       workspace:{id,name:workspaceName(id)},
       local_only:true,
-      excludes:['pairing tokens','provider keys','managed backend data'],
+      excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data'],
       chat:Array.isArray(chat)?chat:[],
       conversations:Array.isArray(conversations)?conversations:[],
       artifacts:Array.isArray(artifacts)?artifacts:[],
@@ -503,12 +503,12 @@
       },
       {
         id:'organization-identity',
-        label:'Organization identity',
+        label:'Organization identity, sessions and invites',
         location:'Protected backend only',
         count:activeBackendCount(),
         size:'Not stored here',
-        retention:'Organization membership, roles and owner/admin actions stay behind /identity/*.',
-        action:'Manage Identity / Organizations through a protected backend profile; nothing is exported from local workspace JSON.',
+        retention:'Organization membership, roles, hashed session tokens and hashed invite codes stay behind /identity/*.',
+        action:'Manage Identity / Organizations through a protected backend profile; one-time tokens/codes are shown only in memory and are not exported from local workspace JSON.',
         keys:[]
       },
       {

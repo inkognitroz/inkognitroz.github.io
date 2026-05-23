@@ -264,6 +264,9 @@ requireIncludes(files.mmir, './apps/mimir-chat-portal/identity-org.js', 'D155 ne
 requireIncludes(files.identityOrg, '/identity/me', 'D155 needs protected identity principal route support.');
 requireIncludes(files.identityOrg, '/identity/orgs', 'D155 needs protected organization list/create route support.');
 requireIncludes(files.identityOrg, 'owner/admin', 'D155 needs owner/admin organization boundaries visible.');
+requireIncludes(files.identityOrg, '/identity/sessions', 'D156 needs protected session token route support.');
+requireIncludes(files.identityOrg, '/identity/invites', 'D156 needs protected invite route support.');
+requireIncludes(files.identityOrg, 'Shown once', 'D156 needs one-time token/code display without public storage.');
 requireIncludes(files.mmir, './apps/mimir-chat-portal/runtime-settings.js', 'D139 needs runtime settings loaded on the product page.');
 requireIncludes(files.runtimeSettings, 'mimir-runtime-settings-v1', 'D139 needs persisted safe runtime settings.');
 requireIncludes(files.runtimeSettings, 'runtime-max-tokens', 'D139 needs max token controls.');
@@ -383,7 +386,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153', 'D154', 'D155', 'D156']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153', 'D154', 'D155', 'D156', 'D157']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }
