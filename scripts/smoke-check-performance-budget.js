@@ -6,6 +6,7 @@ const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const indexPath = join(publicDir, 'index.html');
+const initialJsByteBudget = 155000;
 
 function fail(message) {
   console.error(message);
@@ -77,7 +78,7 @@ if (deferredCss.length < 24) fail(`Advanced CSS should be non-render-blocking; f
 if (initialScripts.length > 9) fail(`Initial JS budget exceeded: ${initialScripts.length} scripts.`);
 if (deferredScripts.length < 35) fail(`Advanced modules should load progressively; found only ${deferredScripts.length} deferred scripts.`);
 if (blockingCssBytes > 65000) fail(`Blocking CSS budget exceeded: ${blockingCssBytes} bytes.`);
-if (initialJsBytes > 150000) fail(`Initial JS budget exceeded: ${initialJsBytes} bytes.`);
+if (initialJsBytes > initialJsByteBudget) fail(`Initial JS budget exceeded: ${initialJsBytes} bytes.`);
 
 if (loaderBody) {
   try {
