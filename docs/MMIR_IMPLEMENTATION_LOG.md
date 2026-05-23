@@ -173,14 +173,15 @@ Updated: 2026-05-23
 - D179 is now beta: active replay state appears near first screen and chat/runtime proof gates as clearly demo-only, with real live proof explicitly unchanged.
 - D180 is now beta: first-screen replay banners expose Go to next step and Reset replay controls while only clearing the workspace-local demo replay key.
 - D181 is now beta: a dedicated replay render smoke harness checks every simulator scenario, required surface, next-target jump, reset path, runtime gate and demo-only invariant.
-- D182 is now the next activation QA slice: add an owner-facing replay route map report across all simulator scenarios and live-proof gaps.
+- D182 is now beta: Progress Dashboard renders a replay route map for every activation simulator scenario with simulated signal, next target, covered surfaces and remaining live-proof gap.
+- D183 is now the next activation UX slice: convert route-map gaps into a live activation closure checklist with one safe free action per gap.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D182` replay route map report.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D183` live activation gap closure checklist.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

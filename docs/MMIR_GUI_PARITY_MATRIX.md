@@ -63,6 +63,7 @@ Current priority after the matrix is:
 53. D180 first-screen replay reset/jump controls.
 54. D181 replay render regression harness.
 55. D182 replay route map report.
+56. D183 live activation gap closure checklist.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -117,6 +118,7 @@ D178 is now beta: simulator states can be replayed safely in browser-local demo 
 D179 is now beta: active replay state is visible near first-screen/chat gates without replacing real proof.
 D180 is now beta: first-screen controls can reset replay or jump to the simulated next action.
 D181 is now beta: replay render controls are guarded across all simulator scenarios.
-D182 is next: add an owner-facing replay route map that shows scenario targets, evidence and remaining live-proof gaps.
+D182 is now beta: the Progress Dashboard shows scenario targets, evidence and remaining live-proof gaps.
+D183 is next: turn those gaps into a live activation closure checklist with one safe free action per gap.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

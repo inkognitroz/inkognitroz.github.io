@@ -56,7 +56,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 182).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 183).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -119,7 +119,8 @@ const overrides = new Map([
   ['D179', { status: 'beta', evidence: 'Active replay state now appears near the first screen and chat runtime proof gate as demo-only, with real live proof explicitly unchanged.' }],
   ['D180', { status: 'beta', evidence: 'First-screen replay banners now expose Go to next step and Reset replay controls while only clearing the workspace-local demo replay key.' }],
   ['D181', { status: 'beta', evidence: 'A dedicated replay render smoke harness now checks every activation simulator scenario, required surface, next-target jump, reset path, runtime gate and demo-only invariant.' }],
-  ['D182', { status: 'next', evidence: 'Next activation QA slice: add a replay route map that shows each simulator scenario, tested surface, target and remaining live proof gap in one owner-facing report.' }]
+  ['D182', { status: 'beta', evidence: 'Progress Dashboard now renders a replay route map for every activation simulator scenario, showing simulated signal, next target, covered surfaces and remaining live-proof gap.' }],
+  ['D183', { status: 'next', evidence: 'Next activation UX slice: convert replay route-map gaps into a live activation closure checklist with one safe action per gap.' }]
 ]);
 
 const repoMeta = [
@@ -252,7 +253,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D182', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D183', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

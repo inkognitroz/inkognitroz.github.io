@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d181-20260523-replay-render-harness';
+const CACHE_NAME='mmir-pwa-d182-20260523-replay-route-map';
 const SHELL_ASSETS=[
   './',
   './index.html',

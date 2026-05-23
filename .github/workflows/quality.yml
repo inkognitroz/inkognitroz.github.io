@@ -117,3 +117,6 @@ jobs:
 
       - name: Smoke-check activation replay render
         run: node scripts/smoke-check-activation-replay-render.js
+
+      - name: Smoke-check activation route map
+        run: node scripts/smoke-check-activation-route-map.js

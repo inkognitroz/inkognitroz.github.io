@@ -177,6 +177,32 @@
     '</section>';
   }
 
+  function scenarioLiveProofGap(scenario){
+    const state=String(scenario?.state||scenario?.id||'');
+    if(state==='first_visit')return 'Real browser guide works now; local live proof starts after connector pairing.';
+    if(state==='missing_connector')return 'Needs a real local-node /doctor response before this becomes live proof.';
+    if(state==='installer_return_checking')return 'Needs post-install /health, /models and proof refresh to verify the repair.';
+    if(state==='connector_online_no_model')return 'Needs one pulled local chat model and a tiny free chat proof.';
+    if(state==='verified_local_model')return 'Needs an actual first-chat receipt before the route is counted as complete.';
+    return 'Needs measured live proof before it can move beyond replay QA.';
+  }
+
+  function renderReplayRouteMap(scenarios){
+    return '<div id="progress-replay-route-map" class="progress-replay-route-map" aria-label="Activation replay route map">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Replay route map</p><h3>What is simulated, what is real, and where the user goes next</h3></div><small>Public-safe report from activation-simulator-fixtures.json. demo_only:true / no_paid_routes_started:true.</small></div>'+
+      '<div class="progress-route-map-table">'+scenarios.map((scenario)=>{
+        const target=String(scenario.next_target||'#progress-dashboard');
+        const surfaceText=Array.isArray(scenario.surfaces)?scenario.surfaces.map((surface)=>surface.surface).join(', '):'not mapped';
+        return '<article class="progress-replay-route-row" data-scenario="'+safe(scenario.id)+'">'+
+          '<div><span>Scenario</span><strong>'+safe(scenario.label||scenario.id)+'</strong><small>'+safe(scenario.simulated_signal||'Public-safe fixture.')+'</small></div>'+
+          '<div><span>Next target</span><a href="'+safe(target)+'" data-replay-route-target="'+safe(scenario.id)+'">'+safe(target)+'</a><small>'+safe(scenario.expected_next_action||'Review next action.')+'</small></div>'+
+          '<div><span>Surfaces</span><small>'+safe(surfaceText)+'</small></div>'+
+          '<div><span>Live proof gap</span><small>'+safe(scenarioLiveProofGap(scenario))+'</small></div>'+
+        '</article>';
+      }).join('')+'</div>'+
+    '</div>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -196,6 +222,7 @@
           '<button type="button" data-activation-replay="'+safe(scenario.id)+'">Replay safely</button>'+
         '</article>'
       ).join('')+'</div>'+
+      renderReplayRouteMap(scenarios)+
       '<small class="progress-activation-privacy">'+safe(simulator.public_repo_rule||'Fixtures store no provider secrets, raw prompts or raw responses.')+'</small>'+
     '</section>';
   }
@@ -344,6 +371,16 @@
       clearActivationReplay();
       setSummary('Activation replay cleared. Real workspace data was not touched.','ready');
       render();
+    });
+    root.querySelectorAll('[data-replay-route-target]').forEach(link=>{
+      link.addEventListener('click',(event)=>{
+        const target=link.getAttribute('href')||'#progress-dashboard';
+        if(target.startsWith('#')){
+          event.preventDefault();
+          openTarget(target);
+          setSummary('Opened replay route target '+target+'. This did not mutate connector, token or provider state.','ready');
+        }
+      });
     });
   }
 

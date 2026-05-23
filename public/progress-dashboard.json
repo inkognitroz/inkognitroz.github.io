@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:12:57.417Z",
+  "updated_at": "2026-05-23T13:19:25.639Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 182,
+    "total": 183,
     "done": 51,
-    "beta": 106,
+    "beta": 107,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,10 +288,10 @@
       },
       {
         "phase": "Activation UX",
-        "total": 8,
+        "total": 9,
         "done": 4,
         "beta": 4,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -760,8 +760,8 @@
         "phase": "Activation QA/UX",
         "total": 4,
         "done": 0,
-        "beta": 3,
-        "next": 1,
+        "beta": 4,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1038,7 +1038,7 @@
     }
   ],
   "next_queue": [
-    "D182"
+    "D183"
   ],
   "watchlist": [
     "D082",
@@ -3770,9 +3770,24 @@
       "best_practice": "The owner should see exactly what is simulated, what is real and what still needs live infrastructure without reading code",
       "done_when": "Progress Dashboard shows a route map for all replay scenarios and keeps demo-only/no-spend boundaries visible",
       "covers": "activation, QA, owner dashboard",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress Dashboard now renders a replay route map for every activation simulator scenario, showing simulated signal, next target, covered surfaces and remaining live-proof gap.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D183",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "Live activation gap closure checklist",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Convert replay route-map gaps into a current-browser checklist that compares actual browser guide, local node, model proof and first-chat receipt state, then exposes one safe free action per gap",
+      "best_practice": "Users and owner should see the shortest path from simulated QA to real working activation",
+      "done_when": "Progress Dashboard shows live gap state and one next action without starting paid routes or storing secrets",
+      "covers": "activation, UX, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation QA slice: add a replay route map that shows each simulator scenario, tested surface, target and remaining live proof gap in one owner-facing report.",
+      "evidence": "Next activation UX slice: convert replay route-map gaps into a live activation closure checklist with one safe action per gap.",
       "estimate": "2-6h"
     }
   ]

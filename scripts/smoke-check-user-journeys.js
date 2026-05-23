@@ -68,6 +68,7 @@ const files = {
   repairCardHarness: join(root, 'scripts', 'smoke-check-node-repair-cards.js'),
   simulatorHarness: join(root, 'scripts', 'smoke-check-activation-simulator.js'),
   replayRenderHarness: join(root, 'scripts', 'smoke-check-activation-replay-render.js'),
+  routeMapHarness: join(root, 'scripts', 'smoke-check-activation-route-map.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -414,6 +415,9 @@ requireIncludes(files.activationSimulator, 'verified-local-model', 'D177 simulat
 requireIncludes(files.simulatorHarness, 'expectedScenarioIds', 'D177 simulator needs dedicated CI fixture coverage.');
 requireIncludes(files.replayRenderHarness, 'expectedScenarioIds', 'D181 replay render harness must cover every activation simulator scenario.');
 requireIncludes(files.replayRenderHarness, 'Activation replay render smoke check passed.', 'D181 replay render harness must have a dedicated success signal.');
+requireIncludes(files.routeMapHarness, 'Activation route map smoke check passed.', 'D182 route map needs dedicated CI fixture coverage.');
+requireIncludes(files.progressDashboard, 'renderReplayRouteMap', 'D182 dashboard must render the replay route map.');
+requireIncludes(files.progressDashboardCss, '.progress-replay-route-map', 'D182 route map needs visible styling.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');
