@@ -1,4 +1,4 @@
-# Supabase setup (future SaaS Fabric apps)
+# Supabase setup (future MMIR apps)
 
 Use Supabase when moving from static hub to product backends:
 - PostgreSQL database
@@ -6,7 +6,7 @@ Use Supabase when moving from static hub to product backends:
 - Storage
 - Row Level Security (RLS)
 
-For the SaaS Fabric public hub (v1), no backend is required.
+For the MMIR public hub (v1), no backend is required.
 
 Architecture decision, schema, RLS, hosting tradeoffs, and migration path:
 - `docs/SUPABASE_ARCHITECTURE.md`
