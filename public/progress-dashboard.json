@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T04:00:07.117Z",
+  "updated_at": "2026-05-23T04:07:39.147Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 61,
+    "beta": 62,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 37,
+    "planned": 36,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -540,11 +540,11 @@
         "phase": "Admin",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Access Control",
@@ -2805,10 +2805,10 @@
       "best_practice": "Multi-user systems need governance before growth",
       "done_when": "Admin can manage access without editing config files",
       "covers": "Open WebUI parity, enterprise",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Admin governance now has a protected backend overview plus public panel for users, planned roles, provider/tool state, policies and sanitized audit metadata while multi-user writes fail closed.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D138",

@@ -157,6 +157,14 @@
       "evidence": ["handlePasteImage", "looksVisionCapable", "raw_image_sent:false", "Vision route checked"]
     },
     {
+      "id": "admin-governance",
+      "surface": "Admin / Governance",
+      "status": "beta",
+      "user_result": "Owner can view protected or fallback admin state for users, roles, policies and audit metadata while multi-user writes remain fail-closed.",
+      "selectors": ["#admin-governance", "#admin-refresh", "#admin-load-audit", "#admin-open-policies", "#admin-root"],
+      "evidence": ["/admin/overview", "browser-local-fallback", "provider_keys_browser_allowed:false", "Protected admin overview loaded"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

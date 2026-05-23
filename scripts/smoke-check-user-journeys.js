@@ -30,6 +30,7 @@ const files = {
   imageBoundary: join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'),
   voiceControls: join(publicDir, 'apps', 'mimir-chat-portal', 'voice-controls.js'),
   visionInput: join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'),
+  adminGovernance: join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -206,6 +207,10 @@ requireIncludes(files.mmir, './apps/mimir-chat-portal/vision-input.js', 'D136 ne
 requireIncludes(files.visionInput, 'handlePasteImage', 'D136 needs pasted screenshot support.');
 requireIncludes(files.visionInput, 'looksVisionCapable', 'D136 needs model capability gating.');
 requireIncludes(files.visionInput, 'raw_image_sent:false', 'D136 must not send raw images from the public page.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/admin-governance.js', 'D137 needs admin governance loaded on the product page.');
+requireIncludes(files.adminGovernance, '/admin/overview', 'D137 needs protected admin overview support.');
+requireIncludes(files.adminGovernance, 'browser-local-fallback', 'D137 needs browser-local admin fallback.');
+requireIncludes(files.adminGovernance, 'provider_keys_browser_allowed:false', 'D137 must keep provider keys blocked in browser.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -236,7 +241,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

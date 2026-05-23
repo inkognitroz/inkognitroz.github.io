@@ -130,6 +130,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR pr
 requireText(mmirPath, './apps/mimir-chat-portal/image-boundary.js', 'MMIR product page must load image boundary script.');
 requireText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'MMIR product page must load voice controls script.');
 requireText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'MMIR product page must load vision input script.');
+requireText(mmirPath, './apps/mimir-chat-portal/admin-governance.js', 'MMIR product page must load admin governance script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -194,6 +195,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'), 'ha
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'), 'looksVisionCapable', 'Vision input must gate by model capability.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'), 'raw_image_sent:false', 'Vision input must not send raw images from the public page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.css'), '.vision-gate-grid', 'Vision input needs visible gate styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'), '/admin/overview', 'Admin governance must call the protected admin overview route.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'), 'browser-local-fallback', 'Admin governance must keep a browser-local fallback.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'), 'provider_keys_browser_allowed:false', 'Admin governance must show provider keys are blocked in browser.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.css'), '.admin-policy-grid', 'Admin governance needs visible policy styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
