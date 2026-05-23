@@ -572,6 +572,9 @@ requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D222 |
 requireText(join(root, 'scripts', 'smoke-check-context-controls.js'), 'Context controls smoke check passed.', 'D222 context controls must have a dedicated smoke harness.');
 requireText(join(publicDir, 'context-controls-report.json'), 'memory-toggle', 'D222 context controls report must publish memory toggle evidence.');
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D223 |', 'Backlog must keep a next sequential work item after D222.');
+requireText(join(root, 'scripts', 'smoke-check-answer-context-receipt.js'), 'Answer context receipt smoke check passed.', 'D223 answer context receipt must have a dedicated smoke harness.');
+requireText(join(publicDir, 'answer-context-receipt-report.json'), 'backend-context-receipt', 'D223 answer context receipt report must publish backend context evidence.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D224 |', 'Backlog must keep a next sequential work item after D223.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

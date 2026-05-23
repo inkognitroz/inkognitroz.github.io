@@ -172,6 +172,9 @@ jobs:
       - name: Smoke-check context controls
         run: node scripts/smoke-check-context-controls.js
 
+      - name: Smoke-check answer context receipt
+        run: node scripts/smoke-check-answer-context-receipt.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

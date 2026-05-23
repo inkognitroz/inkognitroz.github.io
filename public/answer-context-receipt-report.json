@@ -1,0 +1,43 @@
+{
+  "title": "Answer Context Receipt QA",
+  "principle": "Every answer should make context use visible without exposing raw prompts, responses, provider secrets or paid routes.",
+  "public_repo_rule": "Receipts are metadata-only browser-local records: no prompts, no responses, no provider keys, no public secrets.",
+  "scenarios": [
+    {
+      "id": "backend-context-receipt",
+      "status": "ready",
+      "target": "Backend answer",
+      "expected": "A backend answer records model, route, role, history count and whether local/backend memory or knowledge was used.",
+      "storage_key": "mimir-answer-context-receipts-v1:<workspace>",
+      "event": "mmir-answer-context-receipt-updated",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "starter-context-receipt",
+      "status": "ready",
+      "target": "Free starter answer",
+      "expected": "Browser guide and install-path answers receive a receipt that marks memory and knowledge as none.",
+      "storage_key": "mimir-answer-context-receipts-v1:<workspace>",
+      "event": "mmir-answer-context-receipt-updated",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "visible-transcript-receipt",
+      "status": "ready",
+      "target": "Transcript UI",
+      "expected": "A compact Context summary is injected under each assistant answer and can expand into safe metadata.",
+      "selector": ".runtime-answer-context-receipt",
+      "event": "DOMContentLoaded",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "public-safe-metadata",
+      "status": "ready",
+      "target": "Zero-trust receipt boundary",
+      "expected": "Receipt fields explicitly state local-only, no provider secrets, no raw prompt stored and no raw response stored.",
+      "storage_key": "raw_prompt_stored_in_receipt:false",
+      "event": "public-safety-audit",
+      "no_paid_routes_started": true
+    }
+  ]
+}

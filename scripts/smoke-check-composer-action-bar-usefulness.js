@@ -94,18 +94,18 @@ if (!progress.composer_action_bar_report || progress.composer_action_bar_report.
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d223 = tasks.find((task) => task.seq === 'D223');
+const d224 = tasks.find((task) => task.seq === 'D224');
 if (!d213 || d213.status !== 'beta') {
   fail('Progress dashboard task D213 must be beta after composer action bar usefulness ships.');
 }
 if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
-if (!d223 || d223.status !== 'next') {
-  fail('Progress dashboard task D223 must become the next work item after D222 ships.');
+if (!d224 || d224.status !== 'next') {
+  fail('Progress dashboard task D224 must become the next work item after D223 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D223') {
-  fail('Progress dashboard next queue must prioritize D223 after D222 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D224') {
+  fail('Progress dashboard next queue must prioritize D224 after D223 ships.');
 }
 
 if (!process.exitCode) {

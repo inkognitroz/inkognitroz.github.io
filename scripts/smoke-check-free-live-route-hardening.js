@@ -104,7 +104,7 @@ const d211 = tasks.find((task) => task.seq === 'D211');
 const d212 = tasks.find((task) => task.seq === 'D212');
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d223 = tasks.find((task) => task.seq === 'D223');
+const d224 = tasks.find((task) => task.seq === 'D224');
 if (!d207 || d207.status !== 'beta') {
   fail('Progress dashboard task D207 must be beta after free live-model route hardening ships.');
 }
@@ -129,11 +129,11 @@ if (!d213 || d213.status !== 'beta') {
 if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
-if (!d223 || d223.status !== 'next') {
-  fail('Progress dashboard task D223 must become the next work item after D222 ships.');
+if (!d224 || d224.status !== 'next') {
+  fail('Progress dashboard task D224 must become the next work item after D223 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D223') {
-  fail('Progress dashboard next queue must prioritize D223 after D222 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D224') {
+  fail('Progress dashboard next queue must prioritize D224 after D223 ships.');
 }
 
 if (!process.exitCode) {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:39:03.421Z",
+  "updated_at": "2026-05-23T20:56:34.975Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 223,
+    "total": 224,
     "done": 51,
-    "beta": 147,
+    "beta": 148,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -998,9 +998,9 @@
       },
       {
         "phase": "Chat UX / Context Audit",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -2059,6 +2059,49 @@
     ],
     "result": "ready"
   },
+  "answer_context_receipt_report": {
+    "title": "Answer Context Receipt QA",
+    "principle": "Every answer should make context use visible without exposing raw prompts, responses, provider secrets or paid routes.",
+    "public_repo_rule": "Receipts are metadata-only browser-local records: no prompts, no responses, no provider keys, no public secrets.",
+    "scenarios": [
+      {
+        "id": "backend-context-receipt",
+        "status": "ready",
+        "target": "Backend answer",
+        "expected": "A backend answer records model, route, role, history count and whether local/backend memory or knowledge was used.",
+        "storage_key": "mimir-answer-context-receipts-v1:<workspace>",
+        "event": "mmir-answer-context-receipt-updated",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "starter-context-receipt",
+        "status": "ready",
+        "target": "Free starter answer",
+        "expected": "Browser guide and install-path answers receive a receipt that marks memory and knowledge as none.",
+        "storage_key": "mimir-answer-context-receipts-v1:<workspace>",
+        "event": "mmir-answer-context-receipt-updated",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "visible-transcript-receipt",
+        "status": "ready",
+        "target": "Transcript UI",
+        "expected": "A compact Context summary is injected under each assistant answer and can expand into safe metadata.",
+        "selector": ".runtime-answer-context-receipt",
+        "event": "DOMContentLoaded",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "public-safe-metadata",
+        "status": "ready",
+        "target": "Zero-trust receipt boundary",
+        "expected": "Receipt fields explicitly state local-only, no provider secrets, no raw prompt stored and no raw response stored.",
+        "storage_key": "raw_prompt_stored_in_receipt:false",
+        "event": "public-safety-audit",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2109,7 +2152,7 @@
     }
   ],
   "next_queue": [
-    "D223"
+    "D224"
   ],
   "watchlist": [
     "D082",
@@ -5456,9 +5499,24 @@
       "best_practice": "Users need to trust the orchestration layer and understand why answers changed",
       "done_when": "Each answer exposes a safe, non-secret context receipt with no raw hidden data",
       "covers": "chat UX, audit, context",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Answer context receipts now record and render safe per-answer metadata for model, route, memory, knowledge, history, role, modes and cost guard.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D224",
+      "phase": "Chat UX / Context Audit",
+      "priority": "P0",
+      "work_package": "Context receipt drill-down actions",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add direct receipt actions to open Memory, Knowledge, model route and privacy controls from the answer receipt",
+      "best_practice": "Audit should lead to simple correction, not just passive transparency",
+      "done_when": "User can adjust the context source behind an answer in one safe click",
+      "covers": "chat UX, audit, context, trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: make context status visible in the transcript after each answer so users can audit what was used.",
+      "evidence": "Next activation slice: turn answer context receipts into direct edit/open actions for Memory, Knowledge, model route and privacy controls.",
       "estimate": "2-6h"
     }
   ]

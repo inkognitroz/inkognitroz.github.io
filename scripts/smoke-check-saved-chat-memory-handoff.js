@@ -169,10 +169,10 @@ const progress = json(files.progressData);
 requireTrue(progress.saved_chat_memory_handoff_report?.title === report.title, 'Progress dashboard data must embed D220 saved chat memory handoff report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d220 = tasks.find((task) => task.seq === 'D220');
-const d223 = tasks.find((task) => task.seq === 'D223');
+const d224 = tasks.find((task) => task.seq === 'D224');
 requireTrue(d220?.status === 'beta', 'Progress dashboard task D220 must be beta after saved chat memory handoff ships.');
-requireTrue(d223?.status === 'next', 'Progress dashboard task D223 must become next after D222 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D223', 'Progress dashboard next queue must prioritize D223 after D222 ships.');
+requireTrue(d224?.status === 'next', 'Progress dashboard task D224 must become next after D223 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D224', 'Progress dashboard next queue must prioritize D224 after D223 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

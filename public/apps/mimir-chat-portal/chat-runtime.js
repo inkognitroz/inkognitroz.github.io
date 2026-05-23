@@ -293,6 +293,8 @@
     return receipt;
   }
 
+  function contextState(local,backend,off){return off?'off':local&&backend?'local+backend':local?'local':backend?'backend':'none';}
+
   function firstChatReceiptItem(){
     const receipt=readFirstChatReceipt();
     if(receipt?.status==='success'){
@@ -1098,6 +1100,8 @@
     const next=historyMessages.concat([{role:'user',content:prompt}]);
     const system=[{role:'system',content:defaultMmirInstruction()}];
     const modes=modeInstruction();
+    const controls=contextControls();
+    window.__MimirLastAnswerContext={memory:contextState(Boolean(memory),Boolean(backendMemory),controls.memory===false),knowledge:contextState(Boolean(knowledge),Boolean(backendKnowledge),controls.knowledge===false),history_messages:historyMessages.length,runtime_settings_used:Boolean(runtime),mode_summary:modes.split('\n').filter(Boolean).map(item=>item.split(':')[0]).join(', '),role_preset:role?.label||''};
     if(modes)system.push({role:'system',content:modes});
     if(role)system.push({role:'system',content:role.instruction});
     if(runtime)system.push({role:'system',content:runtime});

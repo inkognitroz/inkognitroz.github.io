@@ -87,6 +87,23 @@
   outline-offset: 2px;
 }
 
+.runtime-answer-context-receipt {
+  margin: 6px 0 0;
+  color: #4b5563;
+  font-size: 0.78rem;
+}
+
+.runtime-answer-context-receipt summary {
+  cursor: pointer;
+}
+
+.runtime-answer-context-receipt dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 8px;
+  margin: 5px 0;
+}
+
 .runtime-live-proof {
   display: grid;
   gap: 8px;
