@@ -44,6 +44,8 @@ jobs:
         run: node scripts/smoke-check-first-journey-mock-local.js
       - name: Smoke check local install return
         run: node scripts/smoke-check-local-install-return.js
+      - name: Smoke check installer release QA
+        run: node scripts/smoke-check-installer-release-qa.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

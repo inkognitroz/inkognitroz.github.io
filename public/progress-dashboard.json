@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T16:42:08.598Z",
+  "updated_at": "2026-05-23T16:56:39.309Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 205,
+    "total": 206,
     "done": 51,
-    "beta": 129,
+    "beta": 130,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -890,6 +890,16 @@
         "phase": "Installer / Node Activation",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Activation Proof / Local Chat",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1168,7 +1178,7 @@
     }
   ],
   "next_queue": [
-    "D205"
+    "D206"
   ],
   "watchlist": [
     "D082",
@@ -4245,9 +4255,24 @@
       "best_practice": "Installers are product UX and security-critical: they must be truthful, reproducible, local-first and never hide paid/cloud work",
       "done_when": "User downloads or opens the correct free installer for their device, returns to MMIR, sees health/model proof resume automatically and no public secret or paid route is introduced",
       "covers": "installers, activation, QA, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Universal installer release QA now verifies artifact checksums against the public manifest, keeps fake DMG links blocked, shows installer trust boundaries and records no-spend installer QA metadata.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D206",
+      "phase": "Activation Proof / Local Chat",
+      "priority": "P0",
+      "work_package": "Installer-to-live-model proof gate",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Add a deterministic end-to-end gate that starts from installer return state, mock local-node health, model inventory and first chat proof, then verifies MMIR selects a live free model and shows the next useful action",
+      "best_practice": "Release confidence should come from a user-shaped proof path, not only file checksums and source assertions",
+      "done_when": "CI proves the installer return flow can close into live model proof and first-chat readiness with no provider keys, public secrets or paid routes",
+      "covers": "activation, proof, local chat, QA",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: verify and harden the universal installer release artifacts, checksums, OS/device copy and post-install return loop.",
+      "evidence": "Next activation slice: prove installer-return-to-live-model and first-chat readiness with deterministic local-node fixtures.",
       "estimate": "2-6h"
     }
   ]

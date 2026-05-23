@@ -31,7 +31,7 @@
       "platform": "shared",
       "kind": "node-server",
       "path": "/downloads/mmir-local-connector-server.mjs",
-      "sha256": "3524af63c4dfa171a56e50058cfc4a91b3dd37483e33684c45b268a8c43eaa6f",
+      "sha256": "87a3a6986ef8961a1f2ad35446b18384013c462518d6871120458a35144ff821",
       "contract_version": "0.1",
       "required": true
     },
@@ -40,7 +40,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "6cc2d4949da69b25b9a49ed537ab8645971f2da0b104f894eef99a202a05f2bc",
+      "sha256": "51e1932b4fd301b1f75fdec38f07c996250fa7685cef440c9555c459e63197b8",
       "recommended": true
     },
     {
@@ -48,7 +48,7 @@
       "platform": "macos",
       "kind": "browser-generated-zip",
       "path": "/downloads/mmir-local-connector-mac.zip.html",
-      "sha256": "61676feeec3cb518191844c26e8a580fadeb399878d7ad28d8a61003813ae18b",
+      "sha256": "5bad78b4c14a2a97212936ccdd0b25f00fa28517dfdf1940cd1807640d2ea3a8",
       "recommended": true
     },
     {
@@ -67,7 +67,7 @@
       "platform": "windows",
       "kind": "cmd-bootstrap",
       "path": "/downloads/mmir-local-connector-windows.cmd",
-      "sha256": "1017b9708590ed81239567e9b3798349586ddbb6c4d3921910130c8e254f5436",
+      "sha256": "33f0c23a95d8bdbd650642900d5a9d54d2359ef44363c5939fe32a824fc1012a",
       "recommended": true
     },
     {
@@ -75,7 +75,7 @@
       "platform": "windows",
       "kind": "powershell-installer",
       "path": "/downloads/mmir-local-connector-windows.ps1",
-      "sha256": "c1a28e9beeb9b862f139a3773b12d220959fe92b9025e3f9826d4991ad10a63c",
+      "sha256": "9c93f053c28e5c719462975d688320f769af8a5a977d33edea766c90890b91f2",
       "recommended": false
     },
     {
@@ -83,16 +83,21 @@
       "platform": "linux",
       "kind": "shell-installer",
       "path": "/downloads/mmir-local-connector-linux.sh",
-      "sha256": "b3c21428b83bd05341ef1a65427351d2f7b98a5a84009dd76e4abbdb28abc552",
+      "sha256": "b08da33e5203a2609a1a769d9adf68d5ff1d1400aa653327bf5289df6dbe85b5",
       "recommended": true,
-      "device_classes": ["linux-x64", "linux-arm64", "raspberry-pi", "nvidia-jetson"]
+      "device_classes": [
+        "linux-x64",
+        "linux-arm64",
+        "raspberry-pi",
+        "nvidia-jetson"
+      ]
     },
     {
       "id": "universal-installer-page",
       "platform": "browser",
       "kind": "installer-selector",
       "path": "/downloads/mmir-local-connector-install.html",
-      "sha256": "f54112916f12f40cb27fbd4ecba50fe6cbb97ece938a16d2c928cee124419398",
+      "sha256": "35636e8112a29bdcd07d49bf23689fe2c0b3c1d647164be8e778370e34a7ff7d",
       "recommended": true
     },
     {
@@ -109,7 +114,7 @@
       "platform": "windows",
       "kind": "compatibility-shim",
       "path": "/downloads/mmir-local-node-windows.ps1",
-      "sha256": "df8c343900c01cd38947fc5c66154abc7dd30effdbb1b52d86744e33194322f4",
+      "sha256": "7f2330a7933d2d13d533d5161cfa1508e726c258be384eacee8fca834b80de5f",
       "recommended": false
     },
     {
@@ -117,8 +122,18 @@
       "platform": "macos-linux",
       "kind": "compatibility-shim",
       "path": "/downloads/mmir-local-node-macos-linux.sh",
-      "sha256": "cd47c770c7916cef7bae9bd56e8a089e772eacf65b4c9691bb544eff48320267",
+      "sha256": "a6e6f416c59437d7ef6ed43f88d06103ecf823168692f008f41c9b26c0a8bfe5",
       "recommended": false
     }
-  ]
+  ],
+  "installer_qa": {
+    "verified_at": "2026-05-23T17:04:05.708Z",
+    "checksum_algorithm": "sha256",
+    "artifacts_with_checksums": 9,
+    "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",
+    "default_host_verified": true,
+    "post_install_return_url": "https://mmir.ai/mmir.html?mmir_local_return=1#local-connector",
+    "public_frontend_secrets_allowed": false,
+    "paid_routes_started": false
+  }
 }

@@ -16,6 +16,7 @@
       --accent: #7ed957;
       --accent-text: #101510;
       --warn: #ffcf5a;
+      --ok: #8ff0c6;
     }
     * { box-sizing: border-box; }
     body {
@@ -96,6 +97,48 @@
       font-size: .86rem;
       margin: 12px 0 0;
     }
+    .trust-strip,
+    .release-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 18px 0;
+      padding: 16px;
+    }
+    .trust-strip {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .trust-item {
+      border-left: 3px solid var(--ok);
+      padding-left: 10px;
+    }
+    .trust-item strong,
+    .release-panel strong {
+      display: block;
+    }
+    .trust-item span,
+    .release-panel li {
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.4;
+    }
+    .release-panel h2 {
+      font-size: 1.1rem;
+      margin: 0 0 6px;
+    }
+    .release-panel ul {
+      display: grid;
+      gap: 8px;
+      list-style: none;
+      margin: 12px 0 0;
+      padding: 0;
+    }
+    .release-panel code {
+      color: var(--ok);
+      word-break: break-all;
+    }
     code { color: #e9f0f5; }
   </style>
 </head>
@@ -105,6 +148,19 @@
     <p id="detected">Detecting this device...</p>
     <a class="primary" id="primary" href="./mmir-local-connector-mac.zip.html">Install Connector</a>
     <p>The connector turns Mac, Windows, Linux, Raspberry Pi, VMs and edge machines into private MMIR nodes. It runs on <code>127.0.0.1:3000</code>, connects to Ollama on the same machine, and lets mmir.ai chat with local models through the MMIR API contract. This page reads the release manifest before promoting platform artifacts, so it never links a fake DMG.</p>
+
+    <section class="trust-strip" aria-label="Installer trust boundaries">
+      <div class="trust-item"><strong>Free by default</strong><span>No paid cloud, provider route or managed compute starts from these installers.</span></div>
+      <div class="trust-item"><strong>Private node</strong><span>The connector binds to <code>127.0.0.1</code> unless the local owner changes policy.</span></div>
+      <div class="trust-item"><strong>Pair before control</strong><span>Model, chat and tunnel routes require local pairing before use.</span></div>
+      <div class="trust-item"><strong>Return to proof</strong><span>Installers reopen MMIR with <code>mmir_local_return=1</code> so health and model proof resume automatically.</span></div>
+    </section>
+
+    <section class="release-panel" aria-label="Release verification">
+      <h2>Release verification</h2>
+      <p id="release-summary">Loading release manifest and installer checksums...</p>
+      <ul id="release-artifacts"></ul>
+    </section>
 
     <section class="grid" aria-label="Installer choices">
       <article class="card" data-platform="mac">
@@ -172,6 +228,22 @@
       else element.removeAttribute('download');
     }
 
+    function safe(value) {
+      return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function renderReleaseSummary(data) {
+      const summary = document.getElementById('release-summary');
+      const list = document.getElementById('release-artifacts');
+      const artifacts = Array.isArray(data.artifacts) ? data.artifacts : [];
+      const downloadable = artifacts.filter((artifact) => artifact && artifact.path && artifact.sha256);
+      summary.textContent = `${data.release_id || 'MMIR Local Connector'} lists ${downloadable.length} checksum-protected public artifact(s). Cost policy: ${data.cost_policy || 'free local only'}.`;
+      list.innerHTML = downloadable
+        .filter((artifact) => artifact.recommended || artifact.required)
+        .map((artifact) => `<li><strong>${safe(artifact.id)}</strong><span>${safe(artifact.platform)} / ${safe(artifact.kind)}</span><code>sha256 ${safe(artifact.sha256)}</code></li>`)
+        .join('');
+    }
+
     function applyPrimary(key) {
       const picked = targets[key] || targets.unknown;
       primary.textContent = picked.label;
@@ -188,6 +260,7 @@
         const response = await fetch(releaseManifest, { cache: 'no-store' });
         if (!response.ok) throw new Error('Release manifest unavailable');
         const data = await response.json();
+        renderReleaseSummary(data);
         const artifacts = Array.isArray(data.artifacts) ? data.artifacts : [];
         const dmg = artifacts.find((artifact) => artifact && artifact.id === 'mac-dmg-release-build');
         if (dmg && dmg.path) {
@@ -210,6 +283,8 @@
       } catch (error) {
         badge.textContent = 'Manifest offline';
         status.textContent = 'Release manifest could not be loaded. Use the current Mac command package.';
+        document.getElementById('release-summary').textContent = 'Release manifest could not be loaded. Installer links still stay local/free and avoid fake DMG claims.';
+        document.getElementById('release-artifacts').innerHTML = '';
         setDownload(macLink, false);
       }
       applyPrimary(pickedKey);

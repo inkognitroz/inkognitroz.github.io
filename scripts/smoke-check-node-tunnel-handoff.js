@@ -114,19 +114,24 @@ const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
   'no provider secrets, pairing tokens, raw prompts, raw responses or paid routes'
 ].forEach((needle) => requireIncludes(privacyControls, needle, `D204 privacy inventory missing node handoff disclosure: ${needle}`));
 
-requireIncludes(backlog, '| D205 |', 'Backlog must add D205 as the next sequential work item after D204.');
+requireIncludes(backlog, '| D205 |', 'Backlog must keep D205 as the installer release QA work item after D204.');
 requireIncludes(backlog, 'Universal installer release QA', 'D205 should continue the free installer/node activation path.');
+requireIncludes(backlog, '| D206 |', 'Backlog must add D206 as the next sequential work item after D205.');
 
 const d204 = tasks.find((task) => task.seq === 'D204');
 if (!d204 || d204.status !== 'beta') {
   fail('Progress dashboard task D204 must be beta after node/tunnel handoff ships.');
 }
 const d205 = tasks.find((task) => task.seq === 'D205');
-if (!d205 || d205.status !== 'next') {
-  fail('Progress dashboard task D205 must be the next installer/node activation work item.');
+if (!d205 || d205.status !== 'beta') {
+  fail('Progress dashboard task D205 must be beta after installer release QA ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D205') {
-  fail('Progress dashboard next queue must prioritize D205 after D204 ships.');
+const d206 = tasks.find((task) => task.seq === 'D206');
+if (!d206 || d206.status !== 'next') {
+  fail('Progress dashboard task D206 must be the next activation proof work item.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D206') {
+  fail('Progress dashboard next queue must prioritize D206 after D205 ships.');
 }
 
 if (!process.exitCode) {

@@ -142,7 +142,8 @@ const overrides = new Map([
   ['D202', { status: 'beta', evidence: 'First-screen visual QA now has a public-safe report and deterministic smoke gate for the composer, activation banners, model-library handoff and mobile layout after the recent UX changes.' }],
   ['D203', { status: 'beta', evidence: 'The chat composer now has a compact model picker from the plus/model chip, showing live, browser-helper, WebGPU and installable free local model routes with no paid-route side effects.' }],
   ['D204', { status: 'beta', evidence: 'Node Dashboard now renders an automatic node/tunnel handoff from installer to pairing, model install, proof/chat and optional outbound tunnel across desktop, VM and Raspberry Pi/Linux ARM paths.' }],
-  ['D205', { status: 'next', evidence: 'Next activation slice: verify and harden the universal installer release artifacts, checksums, OS/device copy and post-install return loop.' }]
+  ['D205', { status: 'beta', evidence: 'Universal installer release QA now verifies artifact checksums against the public manifest, keeps fake DMG links blocked, shows installer trust boundaries and records no-spend installer QA metadata.' }],
+  ['D206', { status: 'next', evidence: 'Next activation slice: prove installer-return-to-live-model and first-chat readiness with deterministic local-node fixtures.' }]
 ]);
 
 const repoMeta = [
@@ -275,7 +276,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D205', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D206', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

@@ -196,14 +196,15 @@ Updated: 2026-05-23
 - D202 is now beta: first-screen visual QA has a public-safe report plus a deterministic smoke gate for the chat composer, activation banners, model-library handoff and mobile layout after the recent UX changes.
 - D203 is now beta: the chat composer plus/model chip opens a compact model picker with live backend, browser helper, WebGPU and installable free local model choices, with install/proof handoff and no paid-route side effects.
 - D204 is now beta: Node Dashboard renders one automatic node/tunnel handoff from installer to pairing, model install, proof/chat and optional outbound tunnel across desktop, VM and Raspberry Pi/Linux ARM paths.
-- D205 is now next: verify and harden the universal installer release artifacts, checksums, OS/device copy and post-install return loop.
+- D205 is now beta: universal installer release QA verifies artifact checksums against the public manifest, keeps fake DMG links blocked, shows installer trust boundaries and records no-spend installer QA metadata.
+- D206 is now next: prove installer-return-to-live-model and first-chat readiness with deterministic local-node fixtures.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D205` universal installer release QA.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D206` installer-return-to-live-model proof gates.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

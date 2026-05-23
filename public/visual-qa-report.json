@@ -61,5 +61,5 @@
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D205 universal installer release QA: verify free installer artifacts, OS/device copy, Raspberry Pi/Linux ARM path and post-install return loop."
+  "next": "D206 installer-to-live-model proof gate: verify installer return closes into live local model proof and first-chat readiness."
 }

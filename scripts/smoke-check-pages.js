@@ -521,6 +521,11 @@ requireText(join(root, 'scripts', 'smoke-check-composer-model-picker.js'), 'Comp
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'openComposerModelPicker', 'D203 chat runtime must trigger the composer model picker.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.js'), 'composer-model-picker', 'D203 composer model picker module must render the picker.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.css'), '.composer-model-picker', 'D203 composer model picker needs styling.');
+requireText(join(root, 'scripts', 'smoke-check-installer-release-qa.js'), 'Installer release QA smoke check passed.', 'D205 installer release QA must have a dedicated smoke harness.');
+requireText(join(root, 'scripts', 'update-installer-release-hashes.js'), 'installer_qa', 'D205 installer release checksum refresh must be repeatable.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-release.json'), '"installer_qa"', 'D205 release manifest must publish public-safe installer QA metadata.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Release verification', 'D205 installer page must show release verification.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Installer trust boundaries', 'D205 installer page must show trust boundaries.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 const root = process.cwd();
@@ -160,11 +159,6 @@ function requireModel(models, id, predicate, message) {
 }
 
 function sha256File(file) {
-  const rel = relative(root, file).replace(/\\/g, '/');
-  const blob = spawnSync('git', ['show', `HEAD:${rel}`], { encoding: null });
-  if (blob.status === 0 && blob.stdout?.length) {
-    return createHash('sha256').update(blob.stdout).digest('hex');
-  }
   return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
@@ -576,6 +570,10 @@ requireIncludes(files.privacyControls, 'Activation autopilot', 'D171 privacy inv
 requireIncludes(files.privacyControls, 'Repair resume state', 'D175 privacy inventory must disclose repair resume state.');
 requireIncludes(files.privacyControls, 'Node handoff state', 'D204 privacy inventory must disclose browser-local node handoff state.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
+requireIncludes(files.universalInstaller, 'Release verification', 'D205 installer page must expose release verification.');
+requireIncludes(files.universalInstaller, 'Installer trust boundaries', 'D205 installer page must expose trust boundaries.');
+requireIncludes(files.connectorRelease, '"installer_qa"', 'D205 release manifest must include public-safe installer QA metadata.');
+requireIncludes(join(root, 'scripts', 'smoke-check-installer-release-qa.js'), 'Installer release QA smoke check passed.', 'D205 installer release QA must have dedicated CI coverage.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

@@ -56,6 +56,7 @@ jobs:
           node scripts/smoke-check-first-screen-visual-qa.js
           node scripts/smoke-check-composer-model-picker.js
           node scripts/smoke-check-node-tunnel-handoff.js
+          node scripts/smoke-check-installer-release-qa.js
 
       - name: Commit migrated assets
         run: |
