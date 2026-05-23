@@ -852,6 +852,23 @@
     '</section>';
   }
 
+  function renderProtectedCorrectionSyncUiReport(data){
+    const report=data.protected_correction_sync_ui_report||{};
+    const surfaces=Array.isArray(report.ui_surfaces)?report.ui_surfaces:[];
+    const actions=Array.isArray(report.actions)?report.actions:[];
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    if(!surfaces.length&&!actions.length)return '';
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&scenario.no_paid_routes_started===true&&scenario.provider_secrets_stored===false&&scenario.raw_prompt_stored===false&&scenario.raw_response_stored===false);
+    return '<section id="progress-protected-correction-sync-ui" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Sync handoff</p><h2>'+safe(report.title||'Protected Correction Sync UI Handoff')+'</h2></div><small>'+safe(report.principle||'Public UI previews metadata and protected backend does the trusted work.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+
+        surfaces.map((surface)=>'<article class="progress-no-model-scenario" data-surface="'+safe(surface.id)+'"><span>surface</span><h3>'+safe(surface.anchor||surface.id)+'</h3><p>'+safe(surface.purpose||'Protected sync surface.')+'</p><strong>'+safe(surface.id)+'</strong><small>metadata preview only</small></article>').join('')+
+        actions.map((action)=>'<article class="progress-no-model-scenario" data-action="'+safe(action.id)+'"><span>action</span><h3>'+safe(action.selector||action.id)+'</h3><p>'+safe(action.behavior||'Protected sync action.')+'</p><strong>'+safe(action.id)+'</strong><small>no frontend secrets</small></article>').join('')+
+      '</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe sync UI evidence only.')+' Next: '+safe(report.next?.task||'D235')+' '+safe(report.next?.label||'review queue')+'.</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -1107,7 +1124,8 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    window.dispatchEvent(new CustomEvent('mmir-progress-dashboard-rendered',{detail:{task_count:Array.isArray(dashboard.tasks)?dashboard.tasks.length:0}}));
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();

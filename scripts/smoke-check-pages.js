@@ -589,7 +589,7 @@ requireText(join(publicDir, 'answer-context-filter-consumption-report.json'), 'k
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D228 |', 'Backlog must keep a next sequential work item after D227.');
 requireText(join(root, 'scripts', 'smoke-check-answer-context-knowledge-source.js'), 'Answer context knowledge source smoke check passed.', 'D228 answer context knowledge source must have a dedicated smoke harness.');
 requireText(join(publicDir, 'answer-context-knowledge-source-report.json'), 'knowledge_use_ids', 'D228 answer context knowledge source report must publish knowledge-use ID evidence.');
-requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D234 |', 'Backlog must keep a next sequential work item after D233.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D235 |', 'Backlog must keep a next sequential work item after D234.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

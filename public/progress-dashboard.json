@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T23:03:11.991Z",
+  "updated_at": "2026-05-23T23:12:44.612Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 234,
+    "total": 235,
     "done": 51,
-    "beta": 158,
+    "beta": 159,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,10 +1038,10 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1050,8 +1050,8 @@
         "phase": "Frontend / Team Trust",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -2648,6 +2648,142 @@
       "reason": "The backend contract exists; the next slice should let the public UI detect protected sync availability and hand off browser-local correction trails without exposing secrets."
     }
   },
+  "protected_correction_sync_ui_report": {
+    "title": "Protected Correction Sync UI Handoff",
+    "task": "D234",
+    "status": "beta",
+    "principle": "The public UI is a zero-trust handoff client: it previews metadata, checks protected backend capability and syncs only after an explicit user action.",
+    "public_repo_rule": "The UI must never store backend API keys, provider secrets, raw prompts, raw responses, chat transcripts or document text in GitHub Pages.",
+    "module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "source": "mimir-context-corrections-v1:{workspace}",
+      "sync_state": "mimir-context-correction-sync-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_surfaces": [
+      {
+        "id": "memory",
+        "anchor": "#memory-correction-trail",
+        "purpose": "Show correction metadata count, sync preview and actions after Memory correction trails."
+      },
+      {
+        "id": "knowledge",
+        "anchor": "#knowledge-correction-trail",
+        "purpose": "Show correction metadata count, sync preview and actions after Knowledge correction trails."
+      },
+      {
+        "id": "progress",
+        "anchor": "#progress-protected-context-correction-sync",
+        "purpose": "Show protected backend contract evidence and current sync status in the Progress Dashboard."
+      }
+    ],
+    "actions": [
+      {
+        "id": "check-backend",
+        "selector": "[data-correction-sync=\"check\"]",
+        "behavior": "Calls protected /status on the active backend profile and requires context.corrections capability."
+      },
+      {
+        "id": "sync-metadata",
+        "selector": "[data-correction-sync=\"sync\"]",
+        "behavior": "POSTs sanitized events to /context/corrections with raw_prompt_stored:false and raw_response_stored:false."
+      },
+      {
+        "id": "keep-local",
+        "selector": "[data-correction-sync=\"defer\"]",
+        "behavior": "Marks correction trails as deferred and keeps them browser-local."
+      },
+      {
+        "id": "backend-settings",
+        "selector": "[data-correction-sync=\"backend\"]",
+        "behavior": "Opens backend settings without creating paid routes."
+      },
+      {
+        "id": "session-token",
+        "selector": "[data-correction-sync=\"identity\"]",
+        "behavior": "Opens identity/session tools so protected backend auth can be activated without storing tokens in localStorage."
+      }
+    ],
+    "payload_contract": {
+      "endpoint": "POST /context/corrections",
+      "allowed_fields": [
+        "id",
+        "workspace_id",
+        "target",
+        "action",
+        "message_id",
+        "answer_message_id",
+        "correction_id",
+        "model",
+        "source_ids",
+        "source_count",
+        "undo",
+        "suggestions",
+        "created_at",
+        "updated_at",
+        "undone_at"
+      ],
+      "blocked_fields": [
+        "prompt",
+        "raw_prompt",
+        "response",
+        "raw_response",
+        "messages",
+        "transcript",
+        "api_key",
+        "access_token",
+        "refresh_token",
+        "secret"
+      ]
+    },
+    "scenarios": [
+      {
+        "id": "metadata-preview",
+        "status": "ready",
+        "expected": "Users see count and sample metadata before sync.",
+        "selector": ".context-correction-sync-preview",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "capability-check",
+        "status": "ready",
+        "expected": "Check backend verifies /status and context.corrections before users trust sync availability.",
+        "selector": "[data-correction-sync=\"check\"]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "protected-post",
+        "status": "ready",
+        "expected": "Sync metadata posts sanitized events to /context/corrections through the shared API client.",
+        "selector": "[data-correction-sync=\"sync\"]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "defer-local",
+        "status": "ready",
+        "expected": "Users can keep correction trails browser-local and sync later.",
+        "selector": "[data-correction-sync=\"defer\"]",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      }
+    ],
+    "next": {
+      "task": "D235",
+      "label": "Protected correction review queue",
+      "reason": "After sync works, team users need an owner-safe review queue for corrected memory and knowledge sources."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2698,7 +2834,7 @@
     }
   ],
   "next_queue": [
-    "D234"
+    "D235"
   ],
   "watchlist": [
     "D082",
@@ -6210,9 +6346,24 @@
       "best_practice": "Public UI should be a zero-trust client; backend remains source of authority for team correction review",
       "done_when": "Users can sync or defer local correction trails with visible status, raw-prompt/response rejection evidence and no paid/provider route side effects",
       "covers": "frontend, backend, teams, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Public UI now previews correction metadata, checks active backend context.corrections capability, syncs sanitized events to /context/corrections and lets users keep trails local without storing secrets.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D235",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Protected correction review queue",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add an owner-safe review queue for synced correction trails with filters for memory, knowledge, undone items and hygiene suggestions, keeping raw prompts/responses out of responses",
+      "best_practice": "Team review needs observable correction state without leaking source content or browser secrets",
+      "done_when": "Owners can inspect synced correction metadata, filter by target/action and choose next review actions through protected routes/UI",
+      "covers": "backend, frontend, teams, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: connect the public UI to the protected correction sync contract with availability checks, handoff state and explicit no-secret boundaries.",
+      "evidence": "Next activation slice: build a protected correction review queue so owners can inspect synced memory/knowledge correction trails safely.",
       "estimate": "0.5-2d"
     }
   ]

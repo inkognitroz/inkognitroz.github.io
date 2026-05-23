@@ -29,6 +29,7 @@ const contextCorrectionAuditReportPath = resolve(root, 'public', 'context-correc
 const contextCorrectionRetryReportPath = resolve(root, 'public', 'context-correction-retry-report.json');
 const contextCorrectionSuggestionsReportPath = resolve(root, 'public', 'context-correction-suggestions-report.json');
 const protectedContextCorrectionSyncReportPath = resolve(root, 'public', 'protected-context-correction-sync-report.json');
+const protectedCorrectionSyncUiReportPath = resolve(root, 'public', 'protected-correction-sync-ui-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -195,7 +196,8 @@ const overrides = new Map([
   ['D231', { status: 'beta', evidence: 'A deferred retry-after-correction module now adds Retry fixed actions to corrected answers, derives prompts from visible chat state and marks retried answers with metadata-only receipts.' }],
   ['D232', { status: 'beta', evidence: 'Context correction suggestions now derive local memory/knowledge hygiene recommendations from correction metadata and open review panels without mutating user data.' }],
   ['D233', { status: 'beta', evidence: 'Managed backend now has protected /context/corrections sync, list and undo routes, metadata-only storage, owner-scoped export/import/delete coverage and tests for raw prompt/response/secret rejection.' }],
-  ['D234', { status: 'next', evidence: 'Next activation slice: connect the public UI to the protected correction sync contract with availability checks, handoff state and explicit no-secret boundaries.' }]
+  ['D234', { status: 'beta', evidence: 'Public UI now previews correction metadata, checks active backend context.corrections capability, syncs sanitized events to /context/corrections and lets users keep trails local without storing secrets.' }],
+  ['D235', { status: 'next', evidence: 'Next activation slice: build a protected correction review queue so owners can inspect synced memory/knowledge correction trails safely.' }]
 ]);
 
 const repoMeta = [
@@ -424,6 +426,11 @@ function readProtectedContextCorrectionSyncReport() {
   return JSON.parse(readFileSync(protectedContextCorrectionSyncReportPath, 'utf8'));
 }
 
+function readProtectedCorrectionSyncUiReport() {
+  if (!existsSync(protectedCorrectionSyncUiReportPath)) return null;
+  return JSON.parse(readFileSync(protectedCorrectionSyncUiReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -448,7 +455,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D234', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D235', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -492,6 +499,7 @@ const data = {
   context_correction_retry_report: readContextCorrectionRetryReport(),
   context_correction_suggestions_report: readContextCorrectionSuggestionsReport(),
   protected_context_correction_sync_report: readProtectedContextCorrectionSyncReport(),
+  protected_correction_sync_ui_report: readProtectedCorrectionSyncUiReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

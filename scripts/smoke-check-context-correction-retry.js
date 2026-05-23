@@ -87,16 +87,16 @@ requireIncludes(files.progressDashboard, 'renderContextCorrectionRetryReport', '
 requireIncludes(files.progressDashboard, 'context_correction_retry_report', 'Progress dashboard must read D231 retry report data.');
 requireIncludes(files.qualityWorkflow, 'smoke-check-context-correction-retry.js', 'Quality workflow must run D231 context correction retry QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-context-correction-retry.js', 'Pages workflow must run D231 context correction retry QA.');
-requireIncludes(files.backlog, '| D234 |', 'Backlog must keep a next sequential work item after D233.');
+requireIncludes(files.backlog, '| D235 |', 'Backlog must keep a next sequential work item after D234.');
 
 const progress = json(files.progressData);
 requireTrue(progress.context_correction_retry_report?.title === report.title, 'Progress dashboard data must embed D231 context correction retry report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d231 = tasks.find((task) => task.seq === 'D231');
-const d234 = tasks.find((task) => task.seq === 'D234');
+const d235 = tasks.find((task) => task.seq === 'D235');
 requireTrue(d231?.status === 'beta', 'Progress dashboard task D231 must be beta after correction retry ships.');
-requireTrue(d234?.status === 'next', 'Progress dashboard task D234 must become next after D233 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D234', 'Progress dashboard next queue must prioritize D234 after D233 ships.');
+requireTrue(d235?.status === 'next', 'Progress dashboard task D235 must become next after D234 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D235', 'Progress dashboard next queue must prioritize D235 after D234 ships.');
 
 if (failures.length) {
   process.exitCode = 1;
