@@ -7,6 +7,7 @@ const outputPath = resolve(root, 'public', 'progress-dashboard.json');
 const activationSimulatorPath = resolve(root, 'public', 'activation-simulator-fixtures.json');
 const noModelDeadEndReportPath = resolve(root, 'public', 'no-model-dead-end-report.json');
 const noModelPublicDeployVerificationPath = resolve(root, 'public', 'no-model-public-deploy-verification.json');
+const firstFreeChatResponseReportPath = resolve(root, 'public', 'first-free-chat-response-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -151,7 +152,8 @@ const overrides = new Map([
   ['D209', { status: 'beta', evidence: 'Progress Dashboard now renders a no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios plus one free primary action for each.' }],
   ['D210', { status: 'beta', evidence: 'No-model visual pass now publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and progress fixture.' }],
   ['D211', { status: 'beta', evidence: 'Public no-model deploy verification now records green D210 GitHub Actions/Pages evidence, artifact contracts for the no-model fixture and route floor, plus the local newly-registered-domain network watch.' }],
-  ['D212', { status: 'next', evidence: 'Next activation slice: make the no-backend first prompt produce a useful, truthful free MMIR Guide response with one obvious next action.' }]
+  ['D212', { status: 'beta', evidence: 'First free chat response QA now proves MMIR Guide is truthful about the browser fallback, gives useful setup/model/growth guidance and exposes one no-spend next action.' }],
+  ['D213', { status: 'next', evidence: 'Next activation slice: harden the composer action bar so Add model, boost/private/voice/resource controls are either useful or clearly gated.' }]
 ]);
 
 const repoMeta = [
@@ -270,6 +272,11 @@ function readNoModelPublicDeployVerification() {
   return JSON.parse(readFileSync(noModelPublicDeployVerificationPath, 'utf8'));
 }
 
+function readFirstFreeChatResponseReport() {
+  if (!existsSync(firstFreeChatResponseReportPath)) return null;
+  return JSON.parse(readFileSync(firstFreeChatResponseReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -294,7 +301,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D212', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D213', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -316,6 +323,7 @@ const data = {
   activation_simulator: readActivationSimulator(),
   no_model_dead_end_report: readNoModelDeadEndReport(),
   no_model_public_deploy_verification: readNoModelPublicDeployVerification(),
+  first_free_chat_response_report: readFirstFreeChatResponseReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

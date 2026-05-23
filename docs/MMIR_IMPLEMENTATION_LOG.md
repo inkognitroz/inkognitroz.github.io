@@ -203,14 +203,15 @@ Updated: 2026-05-23
 - D209 is now beta: Progress Dashboard renders a public-safe no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios, each with one free primary action.
 - D210 is now beta: no-model visual pass publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and Progress Dashboard fixture.
 - D211 is now beta: public no-model deploy verification records green D210 GitHub Actions/Pages evidence, public artifact contracts for the no-model fixture and free route floor, plus sanitized local network-filter watch state.
-- D212 is now next: polish and test the no-backend first prompt so it returns a useful, truthful free MMIR Guide response and one obvious next action.
+- D212 is now beta: first free chat response QA proves MMIR Guide is truthful about the browser fallback, gives useful setup/model/growth guidance and exposes one no-spend next action.
+- D213 is now next: harden the composer action bar so Add model, boost/private/voice/resource controls are either useful or clearly gated.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D212` first useful free chat response QA.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D213` composer action bar usefulness pass.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

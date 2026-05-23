@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T18:10:57.963Z",
+  "updated_at": "2026-05-23T18:21:20.179Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 212,
+    "total": 213,
     "done": 51,
-    "beta": 136,
+    "beta": 137,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -910,6 +910,16 @@
         "phase": "Chat UX / First Impression",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Controls",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1311,6 +1321,73 @@
     "result": "green_with_network_watch",
     "summary": "D210 was deployed successfully to GitHub Pages. Public-safe artifact evidence proves the no-model fixture, visual pass, free route floor and no-model chat fallback are in the Pages artifact for commit c140ad6. Local direct URL checks remain blocked by the current network URL filter, not by an MMIR app error."
   },
+  "first_free_chat_response_report": {
+    "version": 1,
+    "title": "First Free Chat Response QA",
+    "principle": "The first prompt must be useful without backend setup, honest about the fallback, and lead to one safe next action.",
+    "public_repo_rule": "This report stores only response contracts and UI evidence. It contains no prompts, responses from users, provider keys, pairing codes, billing data or private content.",
+    "scenarios": [
+      {
+        "id": "empty-first-prompt",
+        "intent": "User opens chat and sends a first prompt before choosing a model.",
+        "expected_response_evidence": [
+          "free guidance, not a remote LLM call",
+          "Useful now",
+          "Primary next action",
+          "No paid route starts here"
+        ],
+        "next_action": "Press + Add model and run the free Local Node installer.",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "connect-local-model",
+        "intent": "User asks how to connect or install a model.",
+        "expected_response_evidence": [
+          "Setup path",
+          "installable-free Ollama model",
+          "Raspberry Pi/Linux ARM or VM",
+          "http://127.0.0.1:3000"
+        ],
+        "next_action": "Open + Add model, then install/prove a local starter model.",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "choose-free-model",
+        "intent": "User asks which free model to use first.",
+        "expected_response_evidence": [
+          "Best free model path",
+          "Gemma 3 270M",
+          "SmolLM2 135M",
+          "Llama 3.2 1B"
+        ],
+        "next_action": "Choose a free starter model from the model picker.",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "business-growth",
+        "intent": "User asks how MMIR can earn money or scale to paying users.",
+        "expected_response_evidence": [
+          "Growth ladder",
+          "managed VM/GPU nodes",
+          "premium provider routing",
+          "team governance"
+        ],
+        "next_action": "Keep the free local chat loop green before enabling premium routes.",
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "response_contract": [
+      "truthful_fallback",
+      "useful_immediate_guidance",
+      "one_primary_next_action",
+      "zero_public_secrets",
+      "no_paid_route_started"
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1361,7 +1438,7 @@
     }
   ],
   "next_queue": [
-    "D212"
+    "D213"
   ],
   "watchlist": [
     "D082",
@@ -4543,9 +4620,24 @@
       "best_practice": "Free starter chat should be helpful and honest, never a fake live model or a dead setup prompt",
       "done_when": "User can send a first prompt with no backend model, receive useful MMIR Guide output, and continue to local install/model proof with no paid route or public secret",
       "covers": "chat UX, activation, free-first",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First free chat response QA now proves MMIR Guide is truthful about the browser fallback, gives useful setup/model/growth guidance and exposes one no-spend next action.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D213",
+      "phase": "Chat UX / Controls",
+      "priority": "P0",
+      "work_package": "Composer action bar usefulness pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Harden the Open WebUI/ChatGPT-style composer action bar so Add model, boost/private mode, voice, resource/model status and advanced controls either perform useful free work or are clearly gated with one next action",
+      "best_practice": "A polished chat surface cannot contain decorative or dead controls",
+      "done_when": "Every visible composer control is wired, useful or explicitly gated with no public secrets, no paid route and mobile-safe layout",
+      "covers": "chat UX, controls, reliability",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: make the no-backend first prompt produce a useful, truthful free MMIR Guide response with one obvious next action.",
+      "evidence": "Next activation slice: harden the composer action bar so Add model, boost/private/voice/resource controls are either useful or clearly gated.",
       "estimate": "2-6h"
     }
   ]

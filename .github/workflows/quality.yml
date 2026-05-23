@@ -133,6 +133,9 @@ jobs:
       - name: Smoke-check public no-model deploy verification
         run: node scripts/smoke-check-public-no-model-deploy-verification.js
 
+      - name: Smoke-check first free chat response QA
+        run: node scripts/smoke-check-first-free-chat-response-qa.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

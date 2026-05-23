@@ -345,6 +345,7 @@ async function run() {
   requireIncludes(files.backlog, '| D210 |', 'Backlog must keep D210 as the no-model visual pass after D209.');
   requireIncludes(files.backlog, '| D211 |', 'Backlog must keep a next sequential work item after D210.');
   requireIncludes(files.backlog, '| D212 |', 'Backlog must keep a next sequential work item after D211.');
+  requireIncludes(files.backlog, '| D213 |', 'Backlog must keep a next sequential work item after D212.');
   requireIncludes(files.mmir, 'local-connector.js?v=20260523-post-install-return', 'D206 product page must load the post-install return local connector code.');
 
   await proveInstallerReturnToFirstChat();
@@ -358,14 +359,16 @@ async function run() {
   const d210 = tasks.find((task) => task.seq === 'D210');
   const d211 = tasks.find((task) => task.seq === 'D211');
   const d212 = tasks.find((task) => task.seq === 'D212');
+  const d213 = tasks.find((task) => task.seq === 'D213');
   requireTrue(d206?.status === 'beta', 'Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
   requireTrue(d207?.status === 'beta', 'Progress dashboard task D207 must be beta after free live-route hardening ships.');
   requireTrue(d208?.status === 'beta', 'Progress dashboard task D208 must be beta after no-model dead-end browser gate ships.');
   requireTrue(d209?.status === 'beta', 'Progress dashboard task D209 must be beta after first-chat no-model DOM fixture ships.');
   requireTrue(d210?.status === 'beta', 'Progress dashboard task D210 must be beta after no-model visual pass ships.');
   requireTrue(d211?.status === 'beta', 'Progress dashboard task D211 must be beta after public no-model deploy verification ships.');
-  requireTrue(d212?.status === 'next', 'Progress dashboard task D212 must become the next work item after D211 ships.');
-  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D212', 'Progress dashboard next queue must prioritize D212 after D211 ships.');
+  requireTrue(d212?.status === 'beta', 'Progress dashboard task D212 must be beta after first free chat response QA ships.');
+  requireTrue(d213?.status === 'next', 'Progress dashboard task D213 must become the next work item after D212 ships.');
+  requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D213', 'Progress dashboard next queue must prioritize D213 after D212 ships.');
 
   if (failures.length) {
     process.exitCode = 1;

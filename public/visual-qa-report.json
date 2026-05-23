@@ -66,5 +66,5 @@
     "This slice proves layout and control-path safety from source; it does not replace future human visual screenshots.",
     "Live model quality still depends on a paired local node or browser helper capability."
   ],
-  "next": "D212 first useful free chat response QA: verify the no-backend first prompt gives a useful truthful MMIR Guide response and one next action."
+  "next": "D213 composer action bar usefulness pass: verify visible chat controls are useful or clearly gated with mobile-safe layout."
 }

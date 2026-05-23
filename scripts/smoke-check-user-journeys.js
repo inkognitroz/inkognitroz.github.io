@@ -15,6 +15,7 @@ const files = {
   visibleControlAudit: join(publicDir, 'visible-control-audit.json'),
   deployVerification: join(publicDir, 'deploy-verification.json'),
   noModelPublicDeployVerification: join(publicDir, 'no-model-public-deploy-verification.json'),
+  firstFreeChatResponseReport: join(publicDir, 'first-free-chat-response-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -85,6 +86,7 @@ const files = {
   criticalShellRecoveryHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.js'),
   deployVerificationHarness: join(root, 'scripts', 'smoke-check-deploy-verification.js'),
   publicNoModelDeployHarness: join(root, 'scripts', 'smoke-check-public-no-model-deploy-verification.js'),
+  firstFreeChatResponseHarness: join(root, 'scripts', 'smoke-check-first-free-chat-response-qa.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -595,6 +597,9 @@ requireIncludes(files.publicNoModelDeployHarness, 'Public no-model deploy verifi
 requireIncludes(files.noModelPublicDeployVerification, 'green_with_network_watch', 'D211 public no-model deploy verification must keep deploy green while showing network watch state.');
 requireIncludes(files.noModelPublicDeployVerification, 'composer-route-floor', 'D211 public no-model deploy verification must cover the composer free route floor.');
 requireIncludes(files.progressDashboard, 'renderNoModelPublicDeployVerification', 'D211 Progress Dashboard must render public deploy verification evidence.');
+requireIncludes(files.firstFreeChatResponseHarness, 'First free chat response QA smoke check passed.', 'D212 first free chat response QA must have dedicated CI coverage.');
+requireIncludes(files.firstFreeChatResponseReport, 'Primary next action', 'D212 first free chat response report must expose one next action.');
+requireIncludes(files.progressDashboard, 'renderFirstFreeChatResponseReport', 'D212 Progress Dashboard must render first free chat response evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

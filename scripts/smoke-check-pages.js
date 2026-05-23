@@ -539,6 +539,9 @@ requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D211 |
 requireText(join(root, 'scripts', 'smoke-check-public-no-model-deploy-verification.js'), 'Public no-model deploy verification smoke check passed.', 'D211 public no-model deploy verification must have a dedicated smoke harness.');
 requireText(join(publicDir, 'no-model-public-deploy-verification.json'), 'c140ad6', 'D211 public no-model deploy verification must record the deployed D210 commit.');
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D212 |', 'Backlog must keep a next sequential work item after D211.');
+requireText(join(root, 'scripts', 'smoke-check-first-free-chat-response-qa.js'), 'First free chat response QA smoke check passed.', 'D212 first free chat response QA must have a dedicated smoke harness.');
+requireText(join(publicDir, 'first-free-chat-response-report.json'), 'Primary next action', 'D212 first free chat response QA must publish public-safe response evidence.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D213 |', 'Backlog must keep a next sequential work item after D212.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

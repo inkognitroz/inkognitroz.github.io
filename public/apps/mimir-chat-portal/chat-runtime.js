@@ -1555,31 +1555,26 @@
   }
 
   function guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,emptyPrompt){
+    const guideName=starter.label||'MMIR Guide';
     const parts=[
-      'I am '+(starter.label||'MMIR Guide')+', a free browser helper that works before backend setup. I am not a full LLM, but I can get the user to the first real local model quickly.'
+      guideName+' is active locally in this browser. This is free guidance, not a remote LLM call, and it does not send provider keys, prompts or billing data to MMIR cloud.',
+      'Useful now: MMIR can help you choose a free route, install a local model, and move from browser guidance to a real live model proof.'
     ];
-    if(helperId==='mmir-model-picker'){
-      parts.push('Best free start: use Qwen2.5 0.5B WebGPU if the browser supports WebGPU. Otherwise install Gemma 3 270M or SmolLM2 135M through Ollama for the fastest local activation, then move to Llama 3.2 1B or Phi-4 Mini when the machine can handle more.');
+    if(helperId==='mmir-model-picker'||wantsModel||emptyPrompt){
+      parts.push('Best free model path: start with Gemma 3 270M or SmolLM2 135M on weak machines, Gemma 3 1B or Llama 3.2 1B on normal laptops, and DeepSeek-R1 1.5B or Phi-4 Mini when you want stronger reasoning.');
     }
-    if(helperId==='mmir-setup-coach'){
-      parts.push('Shortest setup: choose an installable-free model, download the Windows or Mac/Linux installer, run DryRun first, run install, then press Refresh. When Local Node reports the model, chat moves to the real live backend route.');
+    if(helperId==='mmir-setup-coach'||wantsConnect||emptyPrompt){
+      parts.push('Setup path: press + Add model, choose an installable-free Ollama model, run the free Local Node installer for Windows, Mac, Linux, Raspberry Pi/Linux ARM or VM, then let MMIR verify /health, /models and first-chat readiness on http://127.0.0.1:3000.');
     }
     if(helperId==='mmir-security-coach'){
-      parts.push('Security rule: the public frontend stores no secrets. Local models route through 127.0.0.1 and pairing. Provider keys and paid models must go through a protected backend with auth, rate limit, audit and cost policy.');
+      parts.push('Security rule: the public frontend stays secret-free. Local models use 127.0.0.1 plus pairing. Provider keys, paid models, teams and billing must go through a protected backend with auth, rate limits, audit logs and cost policy.');
     }
-    if(helperId==='mmir-growth-coach'){
-      parts.push('Smart revenue ladder: free browser helpers and free local chat first, then paid managed VM/GPU, premium provider routing, team/admin, marketplace listing, evals and supported enterprise governance.');
+    if(helperId==='mmir-growth-coach'||wantsBusiness){
+      parts.push('Growth ladder: keep the free product useful first, then sell managed VM/GPU nodes, premium provider routing, team governance, marketplace listings, evaluations and supported enterprise deployment.');
     }
-    if(wantsModel||emptyPrompt){
-      parts.push('Recommended free local models: Gemma 3 270M or SmolLM2 135M for weak machines, Gemma 3 1B or Llama 3.2 1B for normal laptops, and DeepSeek-R1 1.5B or Phi-4 Mini for more reasoning.');
-    }
-    if(wantsConnect||emptyPrompt){
-      parts.push('Flow: choose an installable-free model in the list, download the Windows or Mac/Linux installer, run DryRun first, run install, and let MMIR activate Local Node on http://127.0.0.1:3000. After that, the model appears as a live active-backend model.');
-    }
-    if(wantsBusiness){
-      parts.push('Smart freemium: free local chat and installation first; paid layers later should be managed VM/GPU, premium provider routing, team governance, marketplace listing and supported one-click deployment. No paid route should start without explicit cost policy.');
-    }
-    parts.push('Next action here: choose a free Ollama model in the model list, or press + Add model to create the local profile.');
+    const primary=wantsBusiness?'Open the progress dashboard, then keep the free local chat loop green before enabling premium routes.':(wantsConnect||emptyPrompt?'Press + Add model and run the free Local Node installer.':'Choose a free starter model from the model picker.');
+    parts.push('Primary next action: '+primary);
+    parts.push('No paid route starts here. To use SaaS/provider models later, connect them through a protected backend, never by pasting keys into the public page.');
     return parts.join('\n\n');
   }
 
@@ -1659,7 +1654,7 @@
     promptEl.value='';
     const answer=starter.runtime==='browser-guide'?guideResponse(prompt,starter):installResponse(starter);
     appendMessage('assistant',answer,meta,{retryPrompt:prompt,model:starter.label});
-    setStatus(starter.runtime==='browser-guide'?'Guide answered locally.':'Install path generated.','ready');
+    setStatus(starter.runtime==='browser-guide'?'Guide answered locally. Choose + Add model to activate a real model.':'Install path generated.','ready');
     setBusy(false);
   }
 
