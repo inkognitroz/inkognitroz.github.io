@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T04:36:47.094Z",
+  "updated_at": "2026-05-23T04:49:44.923Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 64,
+    "beta": 65,
     "next": 2,
     "watch": 1,
     "blocked": 1,
-    "planned": 33,
+    "planned": 32,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -570,8 +570,8 @@
         "phase": "Prompt UX",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -581,10 +581,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Plugins",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D140",
+    "D141",
     "D042"
   ],
   "watchlist": [
@@ -2851,10 +2851,10 @@
       "best_practice": "Prompt reuse should feel native in chat",
       "done_when": "User can store and reuse prompt patterns quickly",
       "covers": "Open WebUI parity",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next slice: prompt library and quick actions polish with tags, variables, starters and quick insert actions.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Prompt library now works free/local-first with starters, tags, variables, search, insert, copy and version flows, while still loading protected backend prompts when available.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D141",
@@ -2866,9 +2866,9 @@
       "best_practice": "Compatibility claims should be testable",
       "done_when": "OpenAI-compatible clients can target MMIR routes safely",
       "covers": "Open WebUI/API parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next slice: OpenAI-compatible proxy conformance tests for chat completions, streaming, errors, model listing and tool-call shapes.",
       "estimate": "0.5-2d"
     },
     {

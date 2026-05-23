@@ -34,5 +34,6 @@ D136 is now beta in the public UI: images and pasted screenshots can be previewe
 D137 is now beta across backend/frontend: admin overview shows current owner, planned roles, provider/tool state, fail-closed policy and audit metadata without enabling multi-user writes.
 D138 is now beta across backend/frontend: access policy and access decision routes expose a deny-by-default RBAC matrix, and the public UI can simulate model, tool, knowledge, node, workflow and admin decisions while making server-side enforcement explicit.
 D139 is now beta across frontend/backend/local-node: users can tune bounded runtime settings and a workspace system prompt, the chat runtime sends those settings through `/chat/completions`, the managed backend validates them, and Local Node maps them to Ollama options.
+D140 is now beta in the public UI: prompt reuse works free/local-first with backend prompt loading, starter patterns, tags, variables, search, insert, copy and version flows, plus privacy inventory/export coverage for local prompts.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

@@ -10,6 +10,7 @@
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const ARTIFACT_PREFIX='mimir-artifacts-v1:';
+  const PROMPT_PREFIX='mimir-prompts-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
@@ -50,7 +51,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -154,6 +155,7 @@
     const knowledgeCollections=readJson(COLLECTIONS_PREFIX+id,[]);
     const conversations=readJson(CONVERSATION_PREFIX+id,[]);
     const artifacts=readJson(ARTIFACT_PREFIX+id,[]);
+    const prompts=readJson(PROMPT_PREFIX+id,[]);
 
     return {
       exported_at:new Date().toISOString(),
@@ -163,6 +165,7 @@
       chat:Array.isArray(chat)?chat:[],
       conversations:Array.isArray(conversations)?conversations:[],
       artifacts:Array.isArray(artifacts)?artifacts:[],
+      prompts:Array.isArray(prompts)?prompts:[],
       memory:Array.isArray(memory)?memory:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
       knowledge_collections:Array.isArray(knowledgeCollections)?knowledgeCollections:[]
@@ -173,6 +176,7 @@
     return {
       chat:snapshot.chat.length,
       artifacts:snapshot.artifacts.length,
+      prompts:snapshot.prompts.length,
       memory:snapshot.memory.length,
       knowledge:snapshot.knowledge.length,
       knowledge_collections:snapshot.knowledge_collections.length
@@ -203,6 +207,7 @@
     const knowledgeKeys=keysByPrefix(local,KNOWLEDGE_PREFIX);
     const knowledgeCollectionKeys=keysByPrefix(local,COLLECTIONS_PREFIX);
     const artifactKeys=keysByPrefix(local,ARTIFACT_PREFIX);
+    const promptKeys=keysByPrefix(local,PROMPT_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -248,6 +253,16 @@
         retention:'Until exported, deleted by workspace reset or cleared with all MMIR data.',
         action:'Manage artifacts in Canvas or export/delete active workspace data.',
         keys:artifactKeys
+      },
+      {
+        id:'prompt-library',
+        label:'Prompt library',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,promptKeys),
+        size:formatBytes(storageSize(localStorage,promptKeys)),
+        retention:'Until exported, deleted by workspace reset or cleared with all MMIR data.',
+        action:'Manage prompts in the Prompts panel or export/delete active workspace data.',
+        keys:promptKeys
       },
       {
         id:'workspace-memory',
@@ -378,6 +393,7 @@
     summaryEl.innerHTML='';
     [
       ['Chat messages',activeCounts.chat],
+      ['Prompts',activeCounts.prompts],
       ['Memory items',activeCounts.memory],
       ['Knowledge files',activeCounts.knowledge],
       ['Collections',activeCounts.knowledge_collections]
@@ -480,6 +496,7 @@
     localStorage.removeItem(CONVERSATION_PREFIX+workspaceId());
     localStorage.removeItem(ACTIVE_CONVERSATION_PREFIX+workspaceId());
     localStorage.removeItem(ARTIFACT_PREFIX+workspaceId());
+    localStorage.removeItem(PROMPT_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
     localStorage.removeItem(COLLECTIONS_PREFIX+workspaceId());

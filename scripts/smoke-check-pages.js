@@ -158,6 +158,12 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.j
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Fork', 'Conversation manager must expose fork.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Export', 'Conversation manager must expose export.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'), 'Safe share', 'Conversation manager must expose redacted safe-share.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'mimir-prompts-v1:', 'Prompt registry must keep a free local prompt library fallback.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'starter-repo-review', 'Prompt registry must include reusable starter prompts.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'prompt-registry-tags', 'Prompt registry must expose prompt tags.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'prompt-registry-variables', 'Prompt registry must expose prompt variables.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'applyVariables', 'Prompt registry must support quick variable insertion.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.css'), '.prompt-starter-grid', 'Prompt registry needs starter prompt styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowledge-dropzone', 'Knowledge upload must expose drag/drop staging.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'MAX_FILE_BYTES', 'Knowledge upload must enforce file size bounds.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'fileIssue(file)', 'Knowledge upload must validate file type and size before indexing.');
@@ -240,6 +246,7 @@ requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'privacy-data-inventory', 'Privacy controls must expose a full browser data inventory.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Conversation library', 'Privacy controls must include saved conversation library data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Artifact workspace', 'Privacy controls must include artifact workspace data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Prompt library', 'Privacy controls must include local prompt library data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Clear pairing tokens', 'Privacy controls must let users clear temporary local node pairing tokens.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Delete all local MMIR data', 'Privacy controls must let users reset only MMIR browser data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');

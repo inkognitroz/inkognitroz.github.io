@@ -21,6 +21,7 @@ const files = {
   conversationManager: join(publicDir, 'apps', 'mimir-chat-portal', 'conversation-manager.js'),
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
   privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
+  promptRegistry: join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'),
   knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   comparison: join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'),
   webSearch: join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'),
@@ -225,6 +226,11 @@ requireIncludes(files.runtimeSettings, 'runtime-context-length', 'D139 needs con
 requireIncludes(files.runtimeSettings, 'runtime-system-prompt', 'D139 needs bounded system prompt controls.');
 requireIncludes(files.chatRuntime, 'runtimePayload', 'D139 needs chat runtime to send settings to backend/local node routes.');
 requireIncludes(files.chatRuntime, 'runtimeInstruction', 'D139 needs custom system prompt injection through safe system context.');
+requireIncludes(files.promptRegistry, 'mimir-prompts-v1:', 'D140 needs free local prompt library fallback.');
+requireIncludes(files.promptRegistry, 'starter-repo-review', 'D140 needs reusable prompt starters.');
+requireIncludes(files.promptRegistry, 'prompt-registry-tags', 'D140 needs prompt tags.');
+requireIncludes(files.promptRegistry, 'prompt-registry-variables', 'D140 needs prompt variables.');
+requireIncludes(files.promptRegistry, 'applyVariables', 'D140 needs variable quick insertion.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -255,7 +261,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

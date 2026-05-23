@@ -76,7 +76,8 @@ const overrides = new Map([
   ['D137', { status: 'beta', evidence: 'Admin governance now has a protected backend overview plus public panel for users, planned roles, provider/tool state, policies and sanitized audit metadata while multi-user writes fail closed.' }],
   ['D138', { status: 'beta', evidence: 'Access control now has protected backend policy/decision routes and a public RBAC panel for fail-closed model, tool, knowledge, node, workflow and admin simulations; runtime enforcement remains server-side.' }],
   ['D139', { status: 'beta', evidence: 'Model/runtime settings now expose safe defaults for temperature, max tokens, context length, top-p, repeat penalty, seed and bounded system prompt; chat sends them through shared backend/local-node contracts.' }],
-  ['D140', { status: 'next', evidence: 'Next slice: prompt library and quick actions polish with tags, variables, starters and quick insert actions.' }],
+  ['D140', { status: 'beta', evidence: 'Prompt library now works free/local-first with starters, tags, variables, search, insert, copy and version flows, while still loading protected backend prompts when available.' }],
+  ['D141', { status: 'next', evidence: 'Next slice: OpenAI-compatible proxy conformance tests for chat completions, streaming, errors, model listing and tool-call shapes.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 
@@ -205,7 +206,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D140', 'D141', 'D143', 'D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D141', 'D143', 'D142', 'D042', 'D151', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

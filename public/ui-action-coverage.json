@@ -181,6 +181,14 @@
       "evidence": ["mimir-runtime-settings-v1", "runtimePayload", "runtimeInstruction", "/chat/completions"]
     },
     {
+      "id": "prompt-library",
+      "surface": "Prompt library",
+      "status": "beta",
+      "user_result": "Users can save prompts locally for free, load backend prompts when available, use starters, tag prompts, add variables, search, insert, version and copy reusable prompt patterns.",
+      "selectors": ["#prompt-registry-panel", "#prompt-registry-save", "#prompt-registry-refresh", "#prompt-registry-load-local", "#prompt-registry-search"],
+      "evidence": ["mimir-prompts-v1:", "starter-repo-review", "prompt-registry-variables", "applyVariables"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

@@ -1,0 +1,117 @@
+.prompt-registry-body {
+  display: grid;
+  gap: 12px;
+}
+
+.prompt-starter-grid,
+.prompt-list {
+  display: grid;
+  gap: 10px;
+}
+
+.prompt-starter-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.prompt-starter-card {
+  display: grid;
+  gap: 5px;
+  min-height: 112px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  text-align: left;
+}
+
+.prompt-starter-card strong,
+.prompt-starter-card span,
+.prompt-starter-card small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.prompt-starter-card span,
+.prompt-starter-card small {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.prompt-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.prompt-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.prompt-card strong,
+.prompt-card small,
+.prompt-card p,
+.prompt-meta {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.prompt-card p {
+  margin: 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.prompt-card small,
+.prompt-meta {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.74rem;
+}
+
+.prompt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.prompt-tags span {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+}
+
+.prompt-registry-panel input,
+.prompt-registry-panel select,
+.prompt-registry-panel textarea {
+  border-radius: 8px !important;
+}
+
+.prompt-registry-panel button {
+  border-radius: 8px !important;
+}
+
+@media (max-width: 1000px) {
+  .prompt-starter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .prompt-starter-grid {
+    grid-template-columns: 1fr;
+  }
+}
