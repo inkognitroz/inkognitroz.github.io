@@ -133,6 +133,14 @@
       "evidence": ["ARTIFACT_PREFIX", "defaultArtifact", "saveCurrent", "exportArtifacts", "sendToChat"]
     },
     {
+      "id": "image-boundary",
+      "surface": "Images / Media",
+      "status": "disabled",
+      "user_result": "Image generation and editing controls are visible as safe route planning only; execution is blocked until local/protected routes, policy and cost gates exist.",
+      "selectors": ["#image-boundary", "#image-boundary-action", "#image-boundary-plan", "#image-boundary-consent", "#image-boundary-output"],
+      "evidence": ["generation_enabled:false", "estimated_cost_usd:0", "Protected paid provider", "Image route plan ready"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

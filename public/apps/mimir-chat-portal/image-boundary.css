@@ -1,0 +1,130 @@
+.image-boundary-body {
+  display: grid;
+  gap: 10px;
+}
+
+.image-boundary-body label {
+  display: grid;
+  gap: 5px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.image-boundary-body select,
+.image-boundary-body textarea {
+  width: 100%;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  padding: 8px;
+  font: inherit;
+}
+
+.image-boundary-body textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.image-boundary-body .memory-consent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-boundary-body .memory-consent input {
+  width: auto;
+}
+
+.image-boundary button {
+  min-height: 36px;
+  border-radius: 8px !important;
+}
+
+.image-boundary-output {
+  display: grid;
+  gap: 10px;
+}
+
+.image-boundary-result {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.image-boundary-result h3,
+.image-boundary-result p {
+  margin: 0;
+}
+
+.image-boundary-result h3 {
+  color: var(--mimir-text, #111827);
+  font-size: 0.94rem;
+}
+
+.image-boundary-result p,
+.image-next-actions {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.image-gate-grid,
+.image-route-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.image-gate,
+.image-route-grid div {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.image-gate span,
+.image-gate small,
+.image-route-grid span {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.image-gate strong,
+.image-route-grid strong {
+  color: #0f766e;
+  font-size: 0.78rem;
+}
+
+.image-gate[data-state="blocked"] strong {
+  color: #b91c1c;
+}
+
+.image-next-actions {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.image-boundary-body select:focus-visible,
+.image-boundary-body textarea:focus-visible,
+.image-boundary button:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+@media (max-width: 640px) {
+  .image-boundary button {
+    width: 100%;
+  }
+}

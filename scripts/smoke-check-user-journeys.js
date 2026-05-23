@@ -27,6 +27,7 @@ const files = {
   toolRunner: join(publicDir, 'apps', 'mimir-chat-portal', 'tool-runner.js'),
   codeSandbox: join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'),
   artifactWorkspace: join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'),
+  imageBoundary: join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -191,6 +192,10 @@ requireIncludes(files.mmir, './apps/mimir-chat-portal/artifact-workspace.js', 'D
 requireIncludes(files.artifactWorkspace, 'ARTIFACT_PREFIX', 'D133 needs local artifact persistence per workspace.');
 requireIncludes(files.artifactWorkspace, 'defaultArtifact', 'D133 needs an automatic first artifact.');
 requireIncludes(files.artifactWorkspace, 'sendToChat', 'D133 needs artifact-to-chat handoff.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/image-boundary.js', 'D134 needs image boundary loaded on the product page.');
+requireIncludes(files.imageBoundary, 'generation_enabled:false', 'D134 must keep public image generation disabled.');
+requireIncludes(files.imageBoundary, 'estimated_cost_usd:0', 'D134 must keep image route planning free by default.');
+requireIncludes(files.imageBoundary, 'Protected paid provider', 'D134 must label protected paid-provider routes.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -221,7 +226,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

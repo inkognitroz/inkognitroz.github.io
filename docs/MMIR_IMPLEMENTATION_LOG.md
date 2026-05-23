@@ -28,6 +28,7 @@ Updated: 2026-05-23
 - Permissioned tools now have a backend runtime and public Tool Runner: allowlisted knowledge, memory and web search tools require explicit consent and return visible traces/results through protected routes.
 - Code interpreter now has a planning-only sandbox policy and public preflight panel: users can inspect gates, plan a free local run and see that execution stays disabled until a disposable sandbox worker exists.
 - Canvas/artifacts now has a local workspace for documents, code, plans and workflow drafts with an automatic first artifact, preview, copy, export, duplicate and chat handoff.
+- Image generation/editing now has a truthful route planner: local/free image nodes and protected paid/provider routes are visible, cost-gated and blocked from execution until a trusted backend exists.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.

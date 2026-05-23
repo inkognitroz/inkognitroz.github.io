@@ -127,6 +127,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product pa
 requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product page must load permissioned tool runner script.');
 requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product page must load code sandbox preflight script.');
 requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR product page must load artifact workspace script.');
+requireText(mmirPath, './apps/mimir-chat-portal/image-boundary.js', 'MMIR product page must load image boundary script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -179,6 +180,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'), 'defaultArtifact', 'Artifact workspace must create a useful automatic first artifact.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'), 'sendToChat', 'Artifact workspace must send artifacts back to chat.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.css'), '.artifact-shell', 'Artifact workspace needs a responsive canvas layout.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'), 'generation_enabled:false', 'Image boundary must keep public image generation disabled.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'), 'estimated_cost_usd:0', 'Image boundary must keep the default route free.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.js'), 'Protected paid provider', 'Image boundary must label protected paid-provider routes.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'image-boundary.css'), '.image-gate-grid', 'Image boundary needs visible gate styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');

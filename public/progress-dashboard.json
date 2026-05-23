@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T03:42:27.520Z",
+  "updated_at": "2026-05-23T03:48:11.195Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 58,
+    "beta": 59,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 40,
+    "planned": 39,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -510,11 +510,11 @@
         "phase": "Images",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Voice",
@@ -2760,10 +2760,10 @@
       "best_practice": "Visual generation can be useful but must not imply free paid providers",
       "done_when": "Image actions are visible but blocked until safe route exists",
       "covers": "ChatGPT parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Image generation/editing now has a visible zero-cost route planner with consent, local/protected route labels, safety/cost gates and disabled execution until a trusted image backend exists.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D135",

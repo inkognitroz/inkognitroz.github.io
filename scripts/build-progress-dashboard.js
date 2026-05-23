@@ -70,6 +70,7 @@ const overrides = new Map([
   ['D131', { status: 'beta', evidence: 'Permissioned tool runtime now exposes allowlisted tools, consent-gated execution and visible traces through the protected backend, with a public Tool Runner UI for approved knowledge, memory and web search tool calls.' }],
   ['D132', { status: 'beta', evidence: 'Code interpreter now has planning-only sandbox policy, consented preflight, visible gates and a free browser fallback; code execution remains disabled until a disposable local sandbox worker is available.' }],
   ['D133', { status: 'beta', evidence: 'Canvas/artifacts now has a local workspace for documents, code, plans and workflow drafts with automatic first artifact, edit/preview, duplicate, copy, export and chat handoff.' }],
+  ['D134', { status: 'beta', evidence: 'Image generation/editing now has a visible zero-cost route planner with consent, local/protected route labels, safety/cost gates and disabled execution until a trusted image backend exists.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 
