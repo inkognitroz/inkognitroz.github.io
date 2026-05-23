@@ -95,12 +95,17 @@ if (!d199 || d199.status !== 'beta') {
 }
 
 const d200 = tasks.find((task) => task.seq === 'D200');
-if (!d200 || d200.status !== 'next') {
-  fail('Progress dashboard must expose D200 as the next critical-shell headroom work item.');
+if (!d200 || d200.status !== 'beta') {
+  fail('Progress dashboard task D200 must stay beta after critical-shell headroom recovery ships.');
 }
 
-if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D200') {
-  fail('Progress dashboard next queue must prioritize D200 after D199 ships.');
+const d201 = tasks.find((task) => task.seq === 'D201');
+if (!d201 || d201.status !== 'next') {
+  fail('Progress dashboard must expose D201 as the next deploy QA work item.');
+}
+
+if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D201') {
+  fail('Progress dashboard next queue must prioritize D201 after D200 ships.');
 }
 
 if (!process.exitCode) {

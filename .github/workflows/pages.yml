@@ -84,6 +84,8 @@ jobs:
         run: node scripts/smoke-check-first-answer-next-step.js
       - name: Smoke check visible-control dead ends
         run: node scripts/smoke-check-visible-control-dead-ends.js
+      - name: Smoke check critical-shell headroom recovery
+        run: node scripts/smoke-check-critical-shell-headroom-recovery.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

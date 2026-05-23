@@ -56,7 +56,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 200).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 201).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -137,7 +137,8 @@ const overrides = new Map([
   ['D197', { status: 'beta', evidence: 'Verified starter/proof states now expose Send first answer and carry the prompt through to an automatic first verified chat send from first screen, runtime and progress surfaces.' }],
   ['D198', { status: 'beta', evidence: 'After a verified first answer, chat proof, first-screen closure and Progress Dashboard now offer one receipt-driven next step such as save chat, connect node or add memory without storing raw prompts or starting paid routes.' }],
   ['D199', { status: 'beta', evidence: 'Visible-control audit now proves key first-screen, composer, runtime proof, model library, node repair and progress controls are wired or gated; Connect Model opens the model library instead of a dead configuration stop.' }],
-  ['D200', { status: 'next', evidence: 'Next performance slice: recover meaningful critical-shell JS headroom before more first-load UX is added.' }]
+  ['D200', { status: 'beta', evidence: 'Demo growth instrumentation now loads through the deferred queue with a click handoff, restoring meaningful critical-shell JS headroom while preserving Try demo mode.' }],
+  ['D201', { status: 'next', evidence: 'Next deploy QA slice: verify latest GitHub Pages checks and public site health after the activation/control commits.' }]
 ]);
 
 const repoMeta = [
@@ -270,7 +271,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D200', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D201', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

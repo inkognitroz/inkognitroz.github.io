@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:47:33.013Z",
+  "updated_at": "2026-05-23T15:52:57.178Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 200,
+    "total": 201,
     "done": 51,
-    "beta": 124,
+    "beta": 125,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -840,6 +840,16 @@
         "phase": "Performance / UX Reliability",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Deploy / QA",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1118,7 +1128,7 @@
     }
   ],
   "next_queue": [
-    "D200"
+    "D201"
   ],
   "watchlist": [
     "D082",
@@ -4120,9 +4130,24 @@
       "best_practice": "The first impression must stay fast while functionality grows",
       "done_when": "Performance budget has meaningful headroom, not just a barely passing threshold",
       "covers": "performance, first impression, QA",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Demo growth instrumentation now loads through the deferred queue with a click handoff, restoring meaningful critical-shell JS headroom while preserving Try demo mode.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D201",
+      "phase": "Deploy / QA",
+      "priority": "P0",
+      "work_package": "Post-push CI and public deploy verification",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Verify the latest GitHub Pages deployment, static gates and public URL health after the activation/control commits, then surface status clearly in the progress dashboard",
+      "best_practice": "Users only trust the product when deployed reality matches local checks",
+      "done_when": "Latest pushed commit has green checks or a documented repair task, and the site status is visible",
+      "covers": "deploy, QA, reliability",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next performance slice: recover meaningful critical-shell JS headroom before more first-load UX is added.",
+      "evidence": "Next deploy QA slice: verify latest GitHub Pages checks and public site health after the activation/control commits.",
       "estimate": "2-6h"
     }
   ]

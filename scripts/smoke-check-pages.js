@@ -501,6 +501,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'
 requireText(join(root, 'scripts', 'smoke-check-visible-control-dead-ends.js'), 'Visible-control dead-end smoke check passed.', 'D199 visible-control dead-end pass must have a dedicated smoke harness.');
 requireText(join(publicDir, 'visible-control-audit.json'), 'composer-add-model', 'D199 public control audit must cover the composer Add Model control.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "openPanel('#model-library')", 'D199 composer Add Model must open the model library, not a dead setup stop.');
+requireText(join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.js'), 'Critical-shell headroom recovery smoke check passed', 'D200 critical-shell headroom recovery must have a dedicated smoke harness.');
+requireText(mmirPath, './apps/mimir-chat-portal/demo-growth.js', 'D200 demo growth script must remain available through deferred loading.');
+forbidText(mmirPath, '<script src="./apps/mimir-chat-portal/demo-growth.js" defer></script>', 'D200 demo growth script must not block the initial critical shell.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

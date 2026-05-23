@@ -51,6 +51,7 @@ jobs:
           node scripts/smoke-check-first-answer-send-handoff.js
           node scripts/smoke-check-first-answer-next-step.js
           node scripts/smoke-check-visible-control-dead-ends.js
+          node scripts/smoke-check-critical-shell-headroom-recovery.js
 
       - name: Commit migrated assets
         run: |

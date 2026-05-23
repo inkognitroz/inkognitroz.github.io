@@ -389,8 +389,8 @@
   <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260522-doctrine" defer></script>
   <script src="./apps/mimir-chat-portal/first-impression.js?v=20260522-doctrine" defer></script>
   <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260522-doctrine" defer></script>
-  <script src="./apps/mimir-chat-portal/demo-growth.js" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[
+    "./apps/mimir-chat-portal/demo-growth.js",
     "./apps/mimir-chat-portal/local-connector.js?v=20260523-post-install-return",
     "./apps/mimir-chat-portal/beta-signup.js",
     "./apps/mimir-chat-portal/workspaces.js",
@@ -470,6 +470,8 @@
       }
       window.MimirLoadDeferred=loadDeferred;
       document.addEventListener('click',function(event){
+        var demo=event.target.closest('#try-demo-mode');
+        if(demo&&!started){event.preventDefault();loadDeferred().then(function(){demo.click();});return;}
         if(event.target.closest('.mimir-topbar a,.mimir-nav-menu a,details>summary,[data-open-target]'))loadDeferred();
       },true);
       document.addEventListener('toggle',function(event){
