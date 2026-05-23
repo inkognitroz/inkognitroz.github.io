@@ -48,7 +48,7 @@
     {
       "name": "Knowledge, memory and files",
       "items": [
-        {"feature": "Workspace memory", "status": "beta", "mmir": "Local-first memory with optional protected backend sync and edit/delete controls.", "benchmark": "ChatGPT memory", "next": "Add scope, expiration and usage explanation in D143."},
+        {"feature": "Workspace memory", "status": "beta", "mmir": "Local-first and protected memory now includes edit/delete, enable/disable, scope, tags, expiration, review notes, import notes and visible last-message usage reasons.", "benchmark": "ChatGPT memory", "next": "Add user-facing memory suggestions and richer project-scoped memory review after identity/policy is ready."},
         {"feature": "Document upload/RAG", "status": "beta", "mmir": "Text-like local uploads and protected backend indexing/search contracts exist.", "benchmark": "ChatGPT files / Open WebUI documents", "next": "Add previews, richer types and collection scope."},
         {"feature": "Knowledge collections", "status": "beta", "mmir": "Named local collections now group uploaded knowledge and can be enabled/disabled before chat or comparison context uses them.", "benchmark": "Open WebUI knowledge", "next": "Add backend collection IDs and per-assistant scope."},
         {"feature": "Rich attachments and previews", "status": "beta", "mmir": "Text-like files can be staged with drag/drop, size/type checks and previews before local-first knowledge indexing.", "benchmark": "ChatGPT file upload", "next": "Add richer binary previews and local/protected multimodal routes."},

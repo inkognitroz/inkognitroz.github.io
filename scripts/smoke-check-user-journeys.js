@@ -22,6 +22,7 @@ const files = {
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
   privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
   promptRegistry: join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'),
+  memory: join(publicDir, 'apps', 'mimir-chat-portal', 'memory.js'),
   knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   comparison: join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'),
   webSearch: join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'),
@@ -231,6 +232,11 @@ requireIncludes(files.promptRegistry, 'starter-repo-review', 'D140 needs reusabl
 requireIncludes(files.promptRegistry, 'prompt-registry-tags', 'D140 needs prompt tags.');
 requireIncludes(files.promptRegistry, 'prompt-registry-variables', 'D140 needs prompt variables.');
 requireIncludes(files.promptRegistry, 'applyVariables', 'D140 needs variable quick insertion.');
+requireIncludes(files.memory, 'memory-scope', 'D143 needs user-controlled memory scope.');
+requireIncludes(files.memory, 'memory-expires', 'D143 needs memory expiration controls.');
+requireIncludes(files.memory, 'memory-import-notes', 'D143 needs notes/import controls.');
+requireIncludes(files.memory, 'mimir-memory-use-v1:', 'D143 needs visible memory-use review data.');
+requireIncludes(files.chatRuntime, 'why_used', 'D143 needs backend memory-use reasons preserved in chat context.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -261,7 +267,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141', 'D143']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

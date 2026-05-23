@@ -164,6 +164,13 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'prompt-registry-variables', 'Prompt registry must expose prompt variables.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.js'), 'applyVariables', 'Prompt registry must support quick variable insertion.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'prompt-registry.css'), '.prompt-starter-grid', 'Prompt registry needs starter prompt styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'memory.js'), 'memory-scope', 'Memory governance must expose user-controlled scope.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'memory.js'), 'memory-expires', 'Memory governance must expose expiration controls.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'memory.js'), 'memory-import-notes', 'Memory governance must expose notes import.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'memory.js'), 'mimir-memory-use-v1:', 'Memory governance must track why memory was used.');
+requireText(chatRuntimePath, 'why_used', 'Chat runtime must preserve backend memory-use reasons.');
+requireText(chatRuntimePath, 'memoryUseStorageKey', 'Chat runtime must write visible memory-use review data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'memory.css'), '.memory-use-review', 'Memory governance needs visible memory-use review styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowledge-dropzone', 'Knowledge upload must expose drag/drop staging.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'MAX_FILE_BYTES', 'Knowledge upload must enforce file size bounds.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'fileIssue(file)', 'Knowledge upload must validate file type and size before indexing.');

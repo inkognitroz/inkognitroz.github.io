@@ -7,6 +7,7 @@
   const CONVERSATION_PREFIX='mimir-conversations-v1:';
   const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
   const MEMORY_PREFIX='mimir-memory-v1:';
+  const MEMORY_USE_PREFIX='mimir-memory-use-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const ARTIFACT_PREFIX='mimir-artifacts-v1:';
@@ -51,7 +52,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -151,6 +152,7 @@
   function workspaceSnapshot(id=workspaceId()){
     const chat=readJson(chatKey(id),id===DEFAULT_WORKSPACE_ID?readJson(LEGACY_CHAT_KEY,[]):[]);
     const memory=readJson(MEMORY_PREFIX+id,[]);
+    const memoryUse=readJson(MEMORY_USE_PREFIX+id,[]);
     const knowledge=readJson(KNOWLEDGE_PREFIX+id,[]);
     const knowledgeCollections=readJson(COLLECTIONS_PREFIX+id,[]);
     const conversations=readJson(CONVERSATION_PREFIX+id,[]);
@@ -167,6 +169,7 @@
       artifacts:Array.isArray(artifacts)?artifacts:[],
       prompts:Array.isArray(prompts)?prompts:[],
       memory:Array.isArray(memory)?memory:[],
+      memory_use:Array.isArray(memoryUse)?memoryUse:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
       knowledge_collections:Array.isArray(knowledgeCollections)?knowledgeCollections:[]
     };
@@ -178,6 +181,7 @@
       artifacts:snapshot.artifacts.length,
       prompts:snapshot.prompts.length,
       memory:snapshot.memory.length,
+      memory_use:snapshot.memory_use.length,
       knowledge:snapshot.knowledge.length,
       knowledge_collections:snapshot.knowledge_collections.length
     };
@@ -204,6 +208,7 @@
       ...(local.includes(LEGACY_CHAT_KEY)?[LEGACY_CHAT_KEY]:[])
     ];
     const memoryKeys=keysByPrefix(local,MEMORY_PREFIX);
+    const memoryUseKeys=keysByPrefix(local,MEMORY_USE_PREFIX);
     const knowledgeKeys=keysByPrefix(local,KNOWLEDGE_PREFIX);
     const knowledgeCollectionKeys=keysByPrefix(local,COLLECTIONS_PREFIX);
     const artifactKeys=keysByPrefix(local,ARTIFACT_PREFIX);
@@ -270,9 +275,19 @@
         location:'Browser localStorage',
         count:countArrayKeys(localStorage,memoryKeys),
         size:formatBytes(storageSize(localStorage,memoryKeys)),
-        retention:'Until disabled, edited, exported or deleted.',
-        action:'Export/delete active workspace or clear all MMIR local data.',
+        retention:'Until disabled, scoped, expired, edited, exported or deleted.',
+        action:'Manage memory review, scope, expiration and notes from Memory.',
         keys:memoryKeys
+      },
+      {
+        id:'memory-use-review',
+        label:'Memory use review',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,memoryUseKeys),
+        size:formatBytes(storageSize(localStorage,memoryUseKeys)),
+        retention:'Last-message transparency only; overwritten by the next chat context build.',
+        action:'Review why memory was used in Memory or delete workspace/all local data.',
+        keys:memoryUseKeys
       },
       {
         id:'workspace-knowledge',
@@ -395,6 +410,7 @@
       ['Chat messages',activeCounts.chat],
       ['Prompts',activeCounts.prompts],
       ['Memory items',activeCounts.memory],
+      ['Memory use',activeCounts.memory_use],
       ['Knowledge files',activeCounts.knowledge],
       ['Collections',activeCounts.knowledge_collections]
     ].forEach(([label,value])=>{
@@ -477,6 +493,7 @@
     const id=workspaceId();
     window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:id}}));
+    window.dispatchEvent(new CustomEvent('mmir-memory-use-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
@@ -498,6 +515,7 @@
     localStorage.removeItem(ARTIFACT_PREFIX+workspaceId());
     localStorage.removeItem(PROMPT_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
+    localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
     localStorage.removeItem(COLLECTIONS_PREFIX+workspaceId());
     button.textContent=button.dataset.originalLabel||'Delete workspace data';

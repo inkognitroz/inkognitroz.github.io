@@ -30,13 +30,32 @@
     }catch(error){return null;}
   }
 
-  function activeMemoryInstruction(){
+  function cleanMemoryScope(value){
+    const scope=String(value||'workspace').trim().toLowerCase();
+    return ['workspace','project','chat','session','private'].includes(scope)?scope:'workspace';
+  }
+
+  function memoryExpired(item){
+    const raw=String(item?.expiresAt||item?.expires_at||'').trim();
+    if(!raw)return false;
+    const date=new Date(raw);
+    return !Number.isNaN(date.getTime())&&date.getTime()<=Date.now();
+  }
+
+  function activeMemoryInstruction(prompt=''){
     try{
       const value=JSON.parse(localStorage.getItem(MEMORY_PREFIX+workspaceId())||'[]');
       if(!Array.isArray(value))return '';
-      const items=value.filter(item=>item?.enabled!==false).map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
+      const promptWords=wordSet(prompt);
+      const items=value.filter(item=>item?.enabled!==false&&String(item?.text||'').trim()&&!memoryExpired(item)).map(item=>{
+        const tags=Array.isArray(item?.tags)?item.tags.join(' '):'';
+        const sourceWords=wordSet([item?.type,item?.scope,tags,item?.notes,item?.text].join(' '));
+        const matched=[];
+        promptWords.forEach(word=>{if(sourceWords.has(word))matched.push(word);});
+        return {item,score:matched.length,matched};
+      }).filter(entry=>promptWords.size?entry.score>0:true).sort((a,b)=>b.score-a.score).slice(0,8);
       if(!items.length)return '';
-      return 'Workspace memory for this task. Use only when relevant:\n'+items.map(item=>'- '+item).join('\n');
+      return 'User-governed workspace memory for this task. Use only when relevant and respect disabled/expired memory:\n'+items.map(entry=>'- ['+String(entry.item?.type||'note')+' / '+cleanMemoryScope(entry.item?.scope)+'; why: '+(entry.matched.length?'matched '+entry.matched.slice(0,5).join(', '):'recent enabled memory')+'] '+String(entry.item?.text||'').trim().slice(0,500)).join('\n');
     }catch(error){return '';}
   }
 
@@ -176,15 +195,18 @@
         body:JSON.stringify({workspace_id:workspaceId(),query:prompt,limit:6})
       });
       const results=Array.isArray(data?.data)?data.data:[];
-      const items=results.filter(item=>item?.enabled!==false&&item?.text).slice(0,6);
+      const items=results.filter(item=>item?.enabled!==false&&item?.expired!==true&&item?.text).slice(0,6);
       if(!items.length)return '';
-      return 'Relevant protected backend memory. Use only when relevant:\n'+items.map(item=>'- '+String(item.text).slice(0,500)).join('\n');
+      return 'Relevant protected backend memory. Use only when relevant:\n'+items.map(item=>{
+        const reason=Array.isArray(item.why_used)&&item.why_used.length?item.why_used.join(', '):(item.reason||'backend memory search');
+        return '- ['+String(item.type||'note')+' / '+cleanMemoryScope(item.scope)+'; why: '+reason+'] '+String(item.text).slice(0,500);
+      }).join('\n');
     }catch(error){return '';}
   }
 
   function messagesFor(prompt,backendMemory=''){
     const role=activeRole();
-    const memory=activeMemoryInstruction();
+    const memory=activeMemoryInstruction(prompt);
     const knowledge=relevantKnowledgeInstruction(prompt);
     const messages=[];
     if(role)messages.push({role:'system',content:role.instruction});

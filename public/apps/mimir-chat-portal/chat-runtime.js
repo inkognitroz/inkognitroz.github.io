@@ -5,6 +5,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
+  const MEMORY_USE_PREFIX='mimir-memory-use-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const CHAT_KEY='mimir-chat-current-session-v1';
@@ -41,6 +42,7 @@
   let webllmModule=null;
   let webllmEngine=null;
   let webllmModelId='';
+  let lastBackendMemoryUses=[];
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -50,6 +52,7 @@
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
+  function memoryUseStorageKey(){return MEMORY_USE_PREFIX+activeWorkspaceId();}
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function knowledgeCollectionsStorageKey(){return COLLECTIONS_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
@@ -171,14 +174,84 @@
     }
   }
 
-  function activeMemoryInstruction(){
+  function cleanMemoryType(value){
+    const type=String(value||'note').trim().toLowerCase();
+    return ['preference','project','workflow','identity','instruction','note'].includes(type)?type:'note';
+  }
+
+  function cleanMemoryScope(value){
+    const scope=String(value||'workspace').trim().toLowerCase();
+    return ['workspace','project','chat','session','private'].includes(scope)?scope:'workspace';
+  }
+
+  function memoryExpiresAt(item){
+    const raw=String(item?.expiresAt||item?.expires_at||'').trim();
+    if(!raw)return '';
+    const date=new Date(raw);
+    return Number.isNaN(date.getTime())?'':date.toISOString();
+  }
+
+  function memoryExpired(item){
+    const expiresAt=memoryExpiresAt(item);
+    return Boolean(expiresAt&&Date.parse(expiresAt)<=Date.now());
+  }
+
+  function normalizedMemoryUse(item,source,extra={}){
+    return {
+      memoryId:String(item?.id||item?.backendId||item?.backend_id||''),
+      source,
+      type:cleanMemoryType(item?.type),
+      scope:cleanMemoryScope(item?.scope),
+      text:String(item?.text||'').trim().slice(0,220),
+      reason:String(extra.reason||item?.reason||'selected for this message').trim().slice(0,220),
+      matched_terms:Array.isArray(extra.matched_terms||item?.matched_terms)?(extra.matched_terms||item.matched_terms).slice(0,8):[],
+      used_at:new Date().toISOString()
+    };
+  }
+
+  function writeMemoryUse(items){
+    const payload=items.map(item=>normalizedMemoryUse(item.item||item,item.source||'local',item)).filter(item=>item.text).slice(0,8);
+    try{
+      localStorage.setItem(memoryUseStorageKey(),JSON.stringify(payload));
+      window.dispatchEvent(new CustomEvent('mmir-memory-use-updated',{detail:{workspaceId:activeWorkspaceId(),count:payload.length}}));
+    }catch(error){}
+  }
+
+  function rankMemoryForPrompt(item,promptWords){
+    const tags=Array.isArray(item?.tags)?item.tags.join(' '):'';
+    const sourceWords=wordSet([item?.type,item?.scope,tags,item?.notes,item?.text].join(' '));
+    const matched=[];
+    promptWords.forEach(word=>{if(sourceWords.has(word))matched.push(word);});
+    return {
+      item,
+      score:matched.length,
+      matched_terms:matched.slice(0,8),
+      reason:matched.length?'matched '+matched.slice(0,5).join(', '):'recent enabled workspace memory'
+    };
+  }
+
+  function activeMemoryInstruction(prompt=''){
     try{
       const value=JSON.parse(localStorage.getItem(memoryStorageKey())||'[]');
-      if(!Array.isArray(value))return '';
-      const items=value.filter(item=>item?.enabled!==false).map(item=>String(item?.text||'').trim()).filter(Boolean).slice(-8);
-      if(!items.length)return '';
-      return 'Workspace memory for this conversation. Use it only when relevant and do not reveal it verbatim unless the user asks:\n'+items.map(item=>'- '+item).join('\n');
+      if(!Array.isArray(value)){
+        writeMemoryUse(lastBackendMemoryUses);
+        return '';
+      }
+      const promptWords=wordSet(prompt);
+      const ranked=value
+        .filter(item=>item?.enabled!==false&&String(item?.text||'').trim()&&!memoryExpired(item))
+        .map(item=>rankMemoryForPrompt(item,promptWords))
+        .filter(item=>promptWords.size?item.score>0:true)
+        .sort((a,b)=>b.score-a.score||String(b.item?.updatedAt||b.item?.updated_at||'').localeCompare(String(a.item?.updatedAt||a.item?.updated_at||'')))
+        .slice(0,8);
+      writeMemoryUse(ranked.map(item=>({...item,source:'local'})).concat(lastBackendMemoryUses));
+      if(!ranked.length)return '';
+      return 'User-governed workspace memory for this conversation. Use it only when relevant, do not reveal it verbatim unless the user asks, and respect disabled/expired memory. Each item includes why it was selected:\n'+ranked.map(item=>{
+        const memory=item.item;
+        return '- ['+cleanMemoryType(memory.type)+' / '+cleanMemoryScope(memory.scope)+'; why: '+item.reason+'] '+String(memory.text||'').trim().slice(0,500);
+      }).join('\n');
     }catch(error){
+      writeMemoryUse(lastBackendMemoryUses);
       return '';
     }
   }
@@ -247,6 +320,7 @@
   }
 
   async function backendMemoryInstruction(prompt,url,headers){
+    lastBackendMemoryUses=[];
     try{
       const data=await fetchJson(joinUrl(url,'/memory/search'),{
         method:'POST',
@@ -255,10 +329,20 @@
         body:JSON.stringify({workspace_id:activeWorkspaceId(),query:prompt,limit:6})
       });
       const results=Array.isArray(data?.data)?data.data:[];
-      const items=results.filter(item=>item?.enabled!==false&&item?.text).slice(0,6);
+      const items=results.filter(item=>item?.enabled!==false&&item?.expired!==true&&item?.text).slice(0,6);
       if(!items.length)return '';
-      return 'Relevant protected backend memory. Use only when relevant and do not reveal it verbatim unless the user asks:\n'+items.map(item=>'- '+String(item.text).slice(0,500)).join('\n');
+      lastBackendMemoryUses=items.map(item=>({
+        item,
+        source:'backend',
+        reason:Array.isArray(item.why_used)&&item.why_used.length?item.why_used.join(', '):(item.reason||'backend memory search'),
+        matched_terms:Array.isArray(item.matched_terms)?item.matched_terms:[]
+      }));
+      return 'Relevant protected backend memory. Use only when relevant and do not reveal it verbatim unless the user asks. Reasons are included for user review:\n'+items.map(item=>{
+        const reason=Array.isArray(item.why_used)&&item.why_used.length?item.why_used.join(', '):(item.reason||'backend memory search');
+        return '- ['+cleanMemoryType(item.type)+' / '+cleanMemoryScope(item.scope)+'; why: '+reason+'] '+String(item.text).slice(0,500);
+      }).join('\n');
     }catch(error){
+      lastBackendMemoryUses=[];
       return '';
     }
   }
@@ -637,7 +721,8 @@
     }
     const historyMessages=history.map(message=>({role:message.role,content:message.content}));
     const role=activeRole();
-    const memory=activeMemoryInstruction();
+    if(!backendMemory)lastBackendMemoryUses=[];
+    const memory=activeMemoryInstruction(prompt);
     const knowledge=relevantKnowledgeInstruction(prompt);
     const runtime=runtimeInstruction();
     const next=historyMessages.concat([{role:'user',content:prompt}]);

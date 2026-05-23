@@ -78,7 +78,8 @@ const overrides = new Map([
   ['D139', { status: 'beta', evidence: 'Model/runtime settings now expose safe defaults for temperature, max tokens, context length, top-p, repeat penalty, seed and bounded system prompt; chat sends them through shared backend/local-node contracts.' }],
   ['D140', { status: 'beta', evidence: 'Prompt library now works free/local-first with starters, tags, variables, search, insert, copy and version flows, while still loading protected backend prompts when available.' }],
   ['D141', { status: 'beta', evidence: 'Managed backend and Local Node now have OpenAI-compatible conformance tests and contract support for model list metadata, chat completions, SSE terminal chunks, safe errors and function tool-call shapes without implicit tool execution.' }],
-  ['D143', { status: 'next', evidence: 'Next slice: memory and notes governance with review, edit, disable, scoping, expiration and visible memory-use reasons.' }],
+  ['D142', { status: 'next', evidence: 'Next slice: approved tool/plugin install gallery with permissions, trust labels and revocation controls.' }],
+  ['D143', { status: 'beta', evidence: 'Memory governance now exposes local scope, tags, expiration, review notes, import notes, backend search reasons and visible last-message memory-use review data.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 
