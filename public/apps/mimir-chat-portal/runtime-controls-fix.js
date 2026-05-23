@@ -6,10 +6,15 @@
     if(!link)return;
     const href=link.getAttribute('href')||'';
     const label=String(link.textContent||'').trim().toLowerCase();
-    if(href!=='#mimir-chat-runtime'&&label!=='send')return;
-    const disabled=link.getAttribute('aria-disabled')==='true';
+    if(link.id!=='primary-chat-link'&&href!=='#mimir-chat-runtime'&&label!=='send')return;
+    const busy=document.querySelector('.mimir-chat-center')?.getAttribute('aria-busy')==='true';
+    link.setAttribute('href','#mimir-chat-runtime');
+    link.setAttribute('role','button');
+    link.removeAttribute('target');
+    link.removeAttribute('rel');
+    link.setAttribute('aria-disabled',busy?'true':'false');
+    const disabled=busy;
     if(link.classList.contains('disabled')!==disabled)link.classList.toggle('disabled',disabled);
-    if(!disabled&&link.getAttribute('aria-disabled')!=='false')link.setAttribute('aria-disabled','false');
   }
 
   function openTarget(target){
