@@ -16,6 +16,7 @@
   const ROLE_KEY='mimir-chat-active-role';
   const SELECTED_MODEL_KEY='mimir-chat-selected-model';
   const LIVE_MODELS_KEY='mimir-chat-live-models';
+  const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
   const DEMO_KEY='mimir-demo-mode-v1';
   const WELCOME_KEY='mimir-demo-welcome-shown-v1';
   const GROWTH_EVENTS_KEY='mimir-growth-events-v1';
@@ -42,6 +43,7 @@
     MODE_KEY,
     ROLE_KEY,
     SELECTED_MODEL_KEY,
+    RUNTIME_SETTINGS_KEY,
     LIVE_MODELS_KEY,
     DEMO_KEY,
     WELCOME_KEY,
@@ -207,7 +209,7 @@
     ];
     const workspaceKeys=keysByExact(local,[WORKSPACES_KEY,ACTIVE_WORKSPACE_KEY]);
     const backendProfileKeys=keysByExact(local,[PROFILE_KEY,ACTIVE_BACKEND_KEY]);
-    const preferenceKeys=keysByExact(local,[MODE_KEY,ROLE_KEY,SELECTED_MODEL_KEY,VOICE_SETTINGS_KEY]);
+    const preferenceKeys=keysByExact(local,[MODE_KEY,ROLE_KEY,SELECTED_MODEL_KEY,RUNTIME_SETTINGS_KEY,VOICE_SETTINGS_KEY]);
     const modelCacheKeys=keysByExact(local,[LIVE_MODELS_KEY]);
     const growthKeys=keysByExact(local,[DEMO_KEY,WELCOME_KEY,GROWTH_EVENTS_KEY]);
     const pairingKeys=[
@@ -299,7 +301,7 @@
       },
       {
         id:'preferences',
-        label:'Modes, role, selected model and voice settings',
+        label:'Modes, role, selected model, runtime settings and voice settings',
         location:'Browser localStorage',
         count:countArrayKeys(localStorage,preferenceKeys),
         size:formatBytes(storageSize(localStorage,preferenceKeys)),

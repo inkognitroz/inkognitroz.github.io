@@ -1,0 +1,83 @@
+.runtime-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.runtime-settings-grid label,
+.runtime-system-label {
+  display: grid;
+  gap: 6px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+.runtime-settings-grid input,
+.runtime-system-label textarea {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+}
+
+.runtime-system-label textarea {
+  min-height: 94px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.runtime-settings-summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.runtime-settings-summary div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.runtime-settings-summary span,
+.runtime-settings-summary p {
+  margin: 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.runtime-settings-summary strong {
+  color: var(--mimir-text, #111827);
+  font-size: 0.84rem;
+  overflow-wrap: anywhere;
+}
+
+.runtime-settings-summary p {
+  grid-column: 1 / -1;
+}
+
+.runtime-settings-panel button {
+  min-height: 36px;
+  border-radius: 8px !important;
+}
+
+.runtime-settings-panel button:focus-visible,
+.runtime-settings-grid input:focus-visible,
+.runtime-system-label textarea:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .runtime-settings-grid,
+  .runtime-settings-summary {
+    grid-template-columns: 1fr;
+  }
+}

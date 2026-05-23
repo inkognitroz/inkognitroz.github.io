@@ -21,6 +21,7 @@ Current priority after the matrix is:
 11. D137 admin governance overview.
 12. D138 access control / RBAC.
 13. D139 model/runtime settings panel.
+14. D140 prompt library and quick actions polish.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -32,5 +33,6 @@ D135 is now beta in the public UI: browser-local push-to-talk, read-aloud, route
 D136 is now beta in the public UI: images and pasted screenshots can be previewed locally, checked against model capability gates and handed to chat as metadata only until a trusted multimodal route exists.
 D137 is now beta across backend/frontend: admin overview shows current owner, planned roles, provider/tool state, fail-closed policy and audit metadata without enabling multi-user writes.
 D138 is now beta across backend/frontend: access policy and access decision routes expose a deny-by-default RBAC matrix, and the public UI can simulate model, tool, knowledge, node, workflow and admin decisions while making server-side enforcement explicit.
+D139 is now beta across frontend/backend/local-node: users can tune bounded runtime settings and a workspace system prompt, the chat runtime sends those settings through `/chat/completions`, the managed backend validates them, and Local Node maps them to Ollama options.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

@@ -132,6 +132,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'MMIR produc
 requireText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'MMIR product page must load vision input script.');
 requireText(mmirPath, './apps/mimir-chat-portal/admin-governance.js', 'MMIR product page must load admin governance script.');
 requireText(mmirPath, './apps/mimir-chat-portal/access-control.js', 'MMIR product page must load access control script.');
+requireText(mmirPath, './apps/mimir-chat-portal/runtime-settings.js', 'MMIR product page must load runtime settings script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -205,6 +206,13 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), 'rbac-beta-fail-closed', 'Access control must keep the fail-closed RBAC mode visible.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'), 'server_side_enforcement_required:true', 'Access control must show server-side enforcement is required.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.css'), '.access-table', 'Access control needs visible policy matrix styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'), 'mimir-runtime-settings-v1', 'Runtime settings must persist safe local preferences.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'), 'runtime-max-tokens', 'Runtime settings must expose max token controls.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'), 'runtime-context-length', 'Runtime settings must expose context length controls.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'), 'runtime-system-prompt', 'Runtime settings must expose a bounded system prompt override.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.css'), '.runtime-settings-grid', 'Runtime settings need responsive control styling.');
+requireText(chatRuntimePath, 'runtimePayload', 'Chat runtime must send bounded runtime settings to active backends.');
+requireText(chatRuntimePath, 'runtimeInstruction', 'Chat runtime must inject bounded user system instructions safely.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -236,6 +244,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Delete all local MMIR data', 'Privacy controls must let users reset only MMIR browser data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'voice settings', 'Privacy inventory must include browser-local voice settings.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'runtime settings', 'Privacy inventory must include browser-local runtime settings.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, provider keys and backend data.');
@@ -251,7 +260,7 @@ for (const status of ['live', 'beta', 'planned', 'blocked', 'premium planned']) 
     fail(`GUI parity matrix must include status: ${status}.`);
   }
 }
-for (const feature of ['Model selector', 'Workflow builder', 'Knowledge collections', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Access Control / RBAC', 'Marketplace and premium routes']) {
+for (const feature of ['Model selector', 'Model/runtime settings', 'Workflow builder', 'Knowledge collections', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Access Control / RBAC', 'Marketplace and premium routes']) {
   if (!parityItems.some((item) => item.feature === feature)) {
     fail(`GUI parity matrix is missing ${feature}.`);
   }

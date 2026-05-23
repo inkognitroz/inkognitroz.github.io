@@ -33,6 +33,7 @@ Updated: 2026-05-23
 - Vision/screenshot input now previews images locally, checks selected model capability, supports pasted screenshots and sends only metadata to chat until a trusted multimodal route exists.
 - Admin governance now has a protected backend overview and public panel for current owner, planned roles, provider/tool state, security policy and sanitized audit metadata while multi-user writes stay fail-closed.
 - Access control now has a protected backend RBAC policy/decision contract and public panel for fail-closed simulations across models, tools, knowledge, nodes, workflows and admin resources, while real runtime enforcement remains server-side.
+- Runtime settings now have safe defaults and optional controls for temperature, max tokens, context length, top-p, repeat penalty, seed and bounded system prompt; frontend, managed backend and Local Node share the validated chat contract.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.

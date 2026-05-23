@@ -173,6 +173,14 @@
       "evidence": ["/access/policies", "/access/check", "rbac-beta-fail-closed", "server_side_enforcement_required:true"]
     },
     {
+      "id": "runtime-settings",
+      "surface": "Runtime Settings",
+      "status": "beta",
+      "user_result": "Users can tune temperature, max tokens, context length, top-p, repeat penalty, seed and a bounded system prompt while safe defaults remain automatic.",
+      "selectors": ["#runtime-settings-panel", "#runtime-settings-save", "#runtime-settings-reset", "#runtime-settings-open-chat", "#runtime-settings-summary"],
+      "evidence": ["mimir-runtime-settings-v1", "runtimePayload", "runtimeInstruction", "/chat/completions"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

@@ -25,6 +25,7 @@
       "name": "Open WebUI-like model control",
       "items": [
         {"feature": "Model selector", "status": "beta", "mmir": "Live backend models, browser helpers and installable free local models are separated.", "benchmark": "Open WebUI", "next": "Keep license and fit warnings visible."},
+        {"feature": "Model/runtime settings", "status": "beta", "mmir": "D139 adds safe defaults and advanced controls for temperature, max tokens, context length, top-p, repeat penalty, seed and bounded system prompt, routed through the shared chat contract.", "benchmark": "ChatGPT / Open WebUI", "next": "Add per-assistant/per-workspace presets after assistant objects are stable."},
         {"feature": "Ollama/local node connection", "status": "beta", "mmir": "MMIR Local Node, pairing, health, hardware and model discovery exist.", "benchmark": "Open WebUI / Ollama", "next": "Package smoother installers for every OS/device."},
         {"feature": "One-click local model install", "status": "beta", "mmir": "Local-node model pull jobs, progress polling and install helper copy are present.", "benchmark": "Open WebUI", "next": "Improve post-install detection and error recovery."},
         {"feature": "Local model delete/storage view", "status": "beta", "mmir": "Node Dashboard shows installed models with disk/RAM impact and removal.", "benchmark": "Open WebUI", "next": "Add update and bulk cleanup flows."},

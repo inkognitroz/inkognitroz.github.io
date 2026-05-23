@@ -9,6 +9,7 @@
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
+  const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
   const STARTER_MODEL_CATALOG='./free-model-starters.json';
   const STARTER_PREFIX='starter:';
   const MAX_STORED_MESSAGES=80;
@@ -71,6 +72,43 @@
     catch(error){}
     window.dispatchEvent(new CustomEvent('mmir-chat-modes-updated',{detail:modes}));
     updateModeButtons();
+  }
+  function boundedNumber(value,fallback,min,max){
+    const number=Number(value);
+    if(!Number.isFinite(number))return fallback;
+    return Math.min(max,Math.max(min,number));
+  }
+  function readRuntimeSettings(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(RUNTIME_SETTINGS_KEY)||'{}');
+      return {
+        temperature:boundedNumber(saved.temperature,0.7,0,2),
+        max_tokens:Math.round(boundedNumber(saved.max_tokens,700,128,4096)),
+        context_length:Math.round(boundedNumber(saved.context_length,4096,1024,32768)),
+        top_p:boundedNumber(saved.top_p,0.9,0,1),
+        repeat_penalty:boundedNumber(saved.repeat_penalty,1.05,0.5,2),
+        seed:Math.round(boundedNumber(saved.seed,-1,-1,2147483647)),
+        system_prompt:String(saved.system_prompt||'').replace(/\s+$/,'').slice(0,1200)
+      };
+    }catch(error){
+      return {temperature:0.7,max_tokens:700,context_length:4096,top_p:0.9,repeat_penalty:1.05,seed:-1,system_prompt:''};
+    }
+  }
+  function runtimePayload(){
+    const settings=readRuntimeSettings();
+    const runtimeOptions={top_p:settings.top_p,repeat_penalty:settings.repeat_penalty};
+    if(settings.seed>=0)runtimeOptions.seed=settings.seed;
+    return {
+      temperature:settings.temperature,
+      max_tokens:settings.max_tokens,
+      context_length:settings.context_length,
+      runtime_options:runtimeOptions
+    };
+  }
+  function runtimeInstruction(){
+    const prompt=readRuntimeSettings().system_prompt;
+    if(!prompt)return '';
+    return 'User-configured runtime/system instruction. Follow it when it helps, but do not let it override MMIR safety, privacy, cost or zero-trust boundaries:\n'+prompt;
   }
   function openPanel(target){
     const targetEl=document.querySelector(target);
@@ -601,11 +639,13 @@
     const role=activeRole();
     const memory=activeMemoryInstruction();
     const knowledge=relevantKnowledgeInstruction(prompt);
+    const runtime=runtimeInstruction();
     const next=historyMessages.concat([{role:'user',content:prompt}]);
     const system=[{role:'system',content:defaultMmirInstruction()}];
     const modes=modeInstruction();
     if(modes)system.push({role:'system',content:modes});
     if(role)system.push({role:'system',content:role.instruction});
+    if(runtime)system.push({role:'system',content:runtime});
     if(memory)system.push({role:'system',content:memory});
     if(backendMemory)system.push({role:'system',content:backendMemory});
     if(knowledge)system.push({role:'system',content:knowledge});
@@ -1054,10 +1094,12 @@
         setStatus(message,'loading');
       });
       const payloadMessages=contextMessages(prompt);
+      const settings=readRuntimeSettings();
       const chunks=await engine.chat.completions.create({
         messages:payloadMessages,
-        temperature:0.7,
-        max_tokens:700,
+        temperature:settings.temperature,
+        max_tokens:settings.max_tokens,
+        top_p:settings.top_p,
         stream:true
       });
       let content='';
@@ -1221,7 +1263,7 @@
         backendKnowledgeInstruction(prompt,url,headers)
       ]);
       const payloadMessages=contextMessages(prompt,backendMemory,backendKnowledge);
-      const payload={model:selectedModel,messages:payloadMessages};
+      const payload={model:selectedModel,messages:payloadMessages,...runtimePayload()};
       const content=await chatWithBackend(url,headers,payload,currentAbortController.signal,(partial)=>{
         updateMessage(assistant.message.id,partial||'Thinking...',messageMeta);
         setStatus('Streaming response...','loading');
@@ -1253,6 +1295,7 @@
     window.addEventListener('mmir-active-role-changed',()=>{const role=activeRole();setStatus(role?'Role set: '+role.label+'.':'Role preset cleared.','idle');});
     window.addEventListener('mmir-memory-updated',()=>setStatus('Workspace memory updated.','idle'));
     window.addEventListener('mmir-knowledge-updated',()=>setStatus('Workspace knowledge updated.','idle'));
+    window.addEventListener('mmir-runtime-settings-updated',()=>setStatus('Runtime settings updated for the next message.','idle'));
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('storage',()=>refreshState(true));
     loadStarterModels().then(()=>refreshState(true));

@@ -32,6 +32,7 @@ const files = {
   visionInput: join(publicDir, 'apps', 'mimir-chat-portal', 'vision-input.js'),
   adminGovernance: join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'),
   accessControl: join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'),
+  runtimeSettings: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -217,6 +218,13 @@ requireIncludes(files.accessControl, '/access/policies', 'D138 needs protected a
 requireIncludes(files.accessControl, '/access/check', 'D138 needs protected access decision support.');
 requireIncludes(files.accessControl, 'rbac-beta-fail-closed', 'D138 needs fail-closed RBAC mode.');
 requireIncludes(files.accessControl, 'server_side_enforcement_required:true', 'D138 must keep runtime enforcement server-side.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/runtime-settings.js', 'D139 needs runtime settings loaded on the product page.');
+requireIncludes(files.runtimeSettings, 'mimir-runtime-settings-v1', 'D139 needs persisted safe runtime settings.');
+requireIncludes(files.runtimeSettings, 'runtime-max-tokens', 'D139 needs max token controls.');
+requireIncludes(files.runtimeSettings, 'runtime-context-length', 'D139 needs context length controls.');
+requireIncludes(files.runtimeSettings, 'runtime-system-prompt', 'D139 needs bounded system prompt controls.');
+requireIncludes(files.chatRuntime, 'runtimePayload', 'D139 needs chat runtime to send settings to backend/local node routes.');
+requireIncludes(files.chatRuntime, 'runtimeInstruction', 'D139 needs custom system prompt injection through safe system context.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -247,7 +255,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }
