@@ -35,6 +35,7 @@ const files = {
   adminGovernance: join(publicDir, 'apps', 'mimir-chat-portal', 'admin-governance.js'),
   accessControl: join(publicDir, 'apps', 'mimir-chat-portal', 'access-control.js'),
   runtimeSettings: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-settings.js'),
+  runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -228,6 +229,9 @@ requireIncludes(files.runtimeSettings, 'runtime-context-length', 'D139 needs con
 requireIncludes(files.runtimeSettings, 'runtime-system-prompt', 'D139 needs bounded system prompt controls.');
 requireIncludes(files.chatRuntime, 'runtimePayload', 'D139 needs chat runtime to send settings to backend/local node routes.');
 requireIncludes(files.chatRuntime, 'runtimeInstruction', 'D139 needs custom system prompt injection through safe system context.');
+requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
+requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
+requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
 requireIncludes(files.promptRegistry, 'mimir-prompts-v1:', 'D140 needs free local prompt library fallback.');
 requireIncludes(files.promptRegistry, 'starter-repo-review', 'D140 needs reusable prompt starters.');
 requireIncludes(files.promptRegistry, 'prompt-registry-tags', 'D140 needs prompt tags.');
