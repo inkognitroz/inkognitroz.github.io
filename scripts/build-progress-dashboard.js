@@ -8,6 +8,7 @@ const activationSimulatorPath = resolve(root, 'public', 'activation-simulator-fi
 const noModelDeadEndReportPath = resolve(root, 'public', 'no-model-dead-end-report.json');
 const noModelPublicDeployVerificationPath = resolve(root, 'public', 'no-model-public-deploy-verification.json');
 const firstFreeChatResponseReportPath = resolve(root, 'public', 'first-free-chat-response-report.json');
+const composerActionBarReportPath = resolve(root, 'public', 'composer-action-bar-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -153,7 +154,8 @@ const overrides = new Map([
   ['D210', { status: 'beta', evidence: 'No-model visual pass now publishes desktop/mobile selector evidence for the composer route floor, first-chat fallback and progress fixture.' }],
   ['D211', { status: 'beta', evidence: 'Public no-model deploy verification now records green D210 GitHub Actions/Pages evidence, artifact contracts for the no-model fixture and route floor, plus the local newly-registered-domain network watch.' }],
   ['D212', { status: 'beta', evidence: 'First free chat response QA now proves MMIR Guide is truthful about the browser fallback, gives useful setup/model/growth guidance and exposes one no-spend next action.' }],
-  ['D213', { status: 'next', evidence: 'Next activation slice: harden the composer action bar so Add model, boost/private/voice/resource controls are either useful or clearly gated.' }]
+  ['D213', { status: 'beta', evidence: 'Composer action bar usefulness pass now wires Add model, mode toggles, model/resource chips, voice fallback and feedback copy to useful free/gated outcomes.' }],
+  ['D214', { status: 'next', evidence: 'Next activation slice: verify the composer action bar visually on mobile/desktop and keep the first chat controls compact, readable and non-overlapping.' }]
 ]);
 
 const repoMeta = [
@@ -277,6 +279,11 @@ function readFirstFreeChatResponseReport() {
   return JSON.parse(readFileSync(firstFreeChatResponseReportPath, 'utf8'));
 }
 
+function readComposerActionBarReport() {
+  if (!existsSync(composerActionBarReportPath)) return null;
+  return JSON.parse(readFileSync(composerActionBarReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -301,7 +308,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D213', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D214', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -324,6 +331,7 @@ const data = {
   no_model_dead_end_report: readNoModelDeadEndReport(),
   no_model_public_deploy_verification: readNoModelPublicDeployVerification(),
   first_free_chat_response_report: readFirstFreeChatResponseReport(),
+  composer_action_bar_report: readComposerActionBarReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

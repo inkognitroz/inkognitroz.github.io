@@ -83,6 +83,7 @@ requireIncludes(files.progressDashboard, 'renderFirstFreeChatResponseReport', 'P
 requireIncludes(files.qualityWorkflow, 'smoke-check-first-free-chat-response-qa.js', 'Quality workflow must run D212 first free chat response QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-first-free-chat-response-qa.js', 'Pages workflow must run D212 first free chat response QA.');
 requireIncludes(files.backlog, '| D213 |', 'Backlog must keep a next sequential work item after D212.');
+requireIncludes(files.backlog, '| D214 |', 'Backlog must keep a next sequential work item after D213.');
 
 const progress = json(files.progressData);
 if (!progress.first_free_chat_response_report || progress.first_free_chat_response_report.title !== report.title) {
@@ -91,14 +92,18 @@ if (!progress.first_free_chat_response_report || progress.first_free_chat_respon
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d212 = tasks.find((task) => task.seq === 'D212');
 const d213 = tasks.find((task) => task.seq === 'D213');
+const d214 = tasks.find((task) => task.seq === 'D214');
 if (!d212 || d212.status !== 'beta') {
   fail('Progress dashboard task D212 must be beta after first free chat response QA ships.');
 }
-if (!d213 || d213.status !== 'next') {
-  fail('Progress dashboard task D213 must become the next work item after D212 ships.');
+if (!d213 || d213.status !== 'beta') {
+  fail('Progress dashboard task D213 must be beta after composer action bar usefulness ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D213') {
-  fail('Progress dashboard next queue must prioritize D213 after D212 ships.');
+if (!d214 || d214.status !== 'next') {
+  fail('Progress dashboard task D214 must become the next work item after D213 ships.');
+}
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D214') {
+  fail('Progress dashboard next queue must prioritize D214 after D213 ships.');
 }
 
 if (!process.exitCode) {

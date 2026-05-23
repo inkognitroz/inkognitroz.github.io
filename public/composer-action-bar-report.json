@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "title": "Composer Action Bar Usefulness Pass",
+  "principle": "Every visible chat control must either do useful free work, open the exact next surface, or explain its zero-trust boundary.",
+  "public_repo_rule": "This report stores only control labels, selectors and public-safe outcomes. It contains no prompts, responses, provider keys, pairing tokens, billing data or private telemetry.",
+  "controls": [
+    {
+      "id": "composer-add-model",
+      "selector": "#composer-add-model",
+      "expected": "Opens compact model picker and ensures the free local profile exists.",
+      "evidence": ["openComposerModelPicker", "Model picker opened", "ensureFreeLocalProfile"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "mode-buttons",
+      "selector": "[data-chat-mode]",
+      "expected": "Private, Boost, MMIR++ and Vision toggle locally and show feedback.",
+      "evidence": ["afterComposerModeToggle", "composer-action-feedback", "modeInstruction"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "runtime-model-chip",
+      "selector": "#runtime-model-chip",
+      "expected": "Opens the same model picker as Add model.",
+      "evidence": ["runtime-model-chip", "openComposerModelPicker"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "runtime-resource-chip",
+      "selector": "#runtime-resource-chip",
+      "expected": "Opens Node Dashboard for CPU/RAM, local model and node health.",
+      "evidence": ["Open node resource status", "openPanel('#node-dashboard')", "CPU/RAM and model health"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-voice-input",
+      "selector": "#composer-voice-input",
+      "expected": "Starts browser-local speech recognition or opens browser-local voice controls when unsupported.",
+      "evidence": ["startVoiceInput", "openPanel('#voice-controls')", "browser-local fallback controls"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-action-feedback",
+      "selector": "#composer-action-feedback",
+      "expected": "Explains what the last composer action did without hiding cost, local or trust boundaries.",
+      "evidence": ["aria-live=\"polite\"", "Ready: free browser helper first", "No paid route"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    }
+  ],
+  "mobile_contract": [
+    ".composer-mode-dock",
+    ".composer-tool-cluster",
+    ".composer-live-cluster",
+    ".composer-mode-button",
+    ".composer-live-chip",
+    ".composer-action-feedback"
+  ]
+}

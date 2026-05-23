@@ -188,12 +188,49 @@
 
   function openComposerModelPicker(){
     window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    setComposerActionFeedback('Model picker opened. Free/browser/local routes stay first.','ready');
     if(window.MimirComposerModelPicker?.toggle){window.MimirComposerModelPicker.toggle();return;}
     if(window.MimirLoadDeferred){
       window.MimirLoadDeferred().then(()=>{if(window.MimirComposerModelPicker?.toggle)window.MimirComposerModelPicker.toggle();else openPanel('#model-library');});
       return;
     }
     openPanel('#model-library');
+  }
+
+  function setComposerActionFeedback(message,state='idle'){
+    const feedback=document.getElementById('composer-action-feedback');
+    if(!feedback)return;
+    feedback.dataset.state=state;
+    feedback.textContent=message;
+  }
+
+  function composerModeLabel(mode){
+    if(mode==='private')return 'Private';
+    if(mode==='boost')return 'Boost 5.5';
+    if(mode==='super')return 'MMIR++';
+    if(mode==='vision')return 'Vision';
+    return mode;
+  }
+
+  function afterComposerModeToggle(mode,enabled){
+    if(mode==='vision'&&enabled){
+      openPanel('#vision-input');
+      setComposerActionFeedback('Vision mode on. Image metadata stays gated until a trusted local/protected route is ready.','ready');
+      return;
+    }
+    if(mode==='private'&&enabled){
+      setComposerActionFeedback('Private mode on. MMIR prefers local/private routes and keeps provider keys out of this page.','ready');
+      return;
+    }
+    if(mode==='boost'&&enabled){
+      setComposerActionFeedback('Boost 5.5 on. Next answer prioritizes the highest-leverage action without starting paid routes.','ready');
+      return;
+    }
+    if(mode==='super'&&enabled){
+      setComposerActionFeedback('MMIR++ on. Next answer blends product, architecture, security and implementation.','ready');
+      return;
+    }
+    setComposerActionFeedback(composerModeLabel(mode)+' off. Settings are stored locally in this browser.','idle');
   }
 
   function readFirstChatReceipt(){
@@ -666,22 +703,27 @@
     dock.innerHTML=''+
       '<div class="composer-tool-cluster" aria-label="Chat tools">'+
         '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true">Private</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false">Boost 5.5</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false">MMIR++</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false">Vision</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true" title="Prefer private/local routing">Private</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Prioritize the highest-leverage next action">Boost 5.5</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false" title="Combine product, architecture, security and implementation">MMIR++</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false" title="Open image/screenshot boundary controls">Vision</button>'+
       '</div>'+
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
         '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
-        '<span id="runtime-resource-chip" class="composer-live-chip">CPU/RAM checking</span>'+
+        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">CPU/RAM checking</button>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+
-      '</div>';
+      '</div>'+
+      '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: free browser helper first, local model when connected.</small>';
     const bar=formEl.querySelector('.composer-bar');
     if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
     modelChipEl=document.getElementById('runtime-model-chip');
     resourceChipEl=document.getElementById('runtime-resource-chip');
     document.getElementById('composer-add-model')?.addEventListener('click',openComposerModelPicker);
     modelChipEl?.addEventListener?.('click',openComposerModelPicker);
+    resourceChipEl?.addEventListener?.('click',()=>{
+      openPanel('#node-dashboard');
+      setComposerActionFeedback('Node dashboard opened. CPU/RAM and model health come only from a paired local node.','ready');
+    });
     document.querySelectorAll('[data-chat-mode]').forEach(button=>{
       button.addEventListener('click',()=>{
         const mode=button.getAttribute('data-chat-mode');
@@ -689,6 +731,7 @@
         modes[mode]=!modes[mode];
         writeModes(modes);
         setStatus(mode+' mode '+(modes[mode]?'enabled.':'disabled.'),'idle');
+        afterComposerModeToggle(mode,modes[mode]);
       });
     });
     document.getElementById('composer-voice-input')?.addEventListener('click',startVoiceInput);
@@ -699,6 +742,8 @@
   function startVoiceInput(){
     const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SpeechRecognition){
+      openPanel('#voice-controls');
+      setComposerActionFeedback('Voice input is not available here. Voice settings opened with browser-local fallback controls.','error');
       setStatus('Voice input is not available in this browser.','error');
       return;
     }
@@ -706,13 +751,20 @@
     recognition.lang=document.documentElement.lang||navigator.language||'en-US';
     recognition.interimResults=false;
     recognition.maxAlternatives=1;
-    recognition.onstart=()=>setStatus('Listening...','loading');
-    recognition.onerror=()=>setStatus('Voice input failed or was cancelled.','error');
+    recognition.onstart=()=>{
+      setComposerActionFeedback('Listening locally through browser speech recognition.','ready');
+      setStatus('Listening...','loading');
+    };
+    recognition.onerror=()=>{
+      setComposerActionFeedback('Voice input failed or was cancelled. Use typing or voice settings.','error');
+      setStatus('Voice input failed or was cancelled.','error');
+    };
     recognition.onresult=(event)=>{
       const text=String(event.results?.[0]?.[0]?.transcript||'').trim();
       if(text&&promptEl){
         promptEl.value=(promptEl.value?promptEl.value+' ':'')+text;
         promptEl.focus();
+        setComposerActionFeedback('Voice text added to the prompt. Review before sending.','ready');
         setStatus('Voice added to prompt.','ready');
       }
     };

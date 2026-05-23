@@ -277,6 +277,23 @@
   border-top: 1px solid rgba(148, 163, 184, 0.18);
 }
 
+.composer-action-feedback {
+  flex: 1 1 100%;
+  min-width: 100%;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  padding: 0 4px;
+}
+
+.composer-action-feedback[data-state="ready"] {
+  color: #047857;
+}
+
+.composer-action-feedback[data-state="error"] {
+  color: #b91c1c;
+}
+
 .composer-tool-cluster,
 .composer-live-cluster {
   display: flex;
@@ -504,6 +521,11 @@
   .composer-tool-cluster,
   .composer-live-cluster {
     justify-content: flex-start;
+  }
+
+  .composer-mode-button,
+  .composer-live-chip {
+    flex: 1 1 auto;
   }
 
   .composer-live-chip {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T18:21:20.179Z",
+  "updated_at": "2026-05-23T18:30:33.810Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 213,
+    "total": 214,
     "done": 51,
-    "beta": 137,
+    "beta": 138,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -920,6 +920,16 @@
         "phase": "Chat UX / Controls",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Visual QA / Chat UX",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1388,6 +1398,93 @@
       "no_paid_route_started"
     ]
   },
+  "composer_action_bar_report": {
+    "version": 1,
+    "title": "Composer Action Bar Usefulness Pass",
+    "principle": "Every visible chat control must either do useful free work, open the exact next surface, or explain its zero-trust boundary.",
+    "public_repo_rule": "This report stores only control labels, selectors and public-safe outcomes. It contains no prompts, responses, provider keys, pairing tokens, billing data or private telemetry.",
+    "controls": [
+      {
+        "id": "composer-add-model",
+        "selector": "#composer-add-model",
+        "expected": "Opens compact model picker and ensures the free local profile exists.",
+        "evidence": [
+          "openComposerModelPicker",
+          "Model picker opened",
+          "ensureFreeLocalProfile"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "mode-buttons",
+        "selector": "[data-chat-mode]",
+        "expected": "Private, Boost, MMIR++ and Vision toggle locally and show feedback.",
+        "evidence": [
+          "afterComposerModeToggle",
+          "composer-action-feedback",
+          "modeInstruction"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "runtime-model-chip",
+        "selector": "#runtime-model-chip",
+        "expected": "Opens the same model picker as Add model.",
+        "evidence": [
+          "runtime-model-chip",
+          "openComposerModelPicker"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "runtime-resource-chip",
+        "selector": "#runtime-resource-chip",
+        "expected": "Opens Node Dashboard for CPU/RAM, local model and node health.",
+        "evidence": [
+          "Open node resource status",
+          "openPanel('#node-dashboard')",
+          "CPU/RAM and model health"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "composer-voice-input",
+        "selector": "#composer-voice-input",
+        "expected": "Starts browser-local speech recognition or opens browser-local voice controls when unsupported.",
+        "evidence": [
+          "startVoiceInput",
+          "openPanel('#voice-controls')",
+          "browser-local fallback controls"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "composer-action-feedback",
+        "selector": "#composer-action-feedback",
+        "expected": "Explains what the last composer action did without hiding cost, local or trust boundaries.",
+        "evidence": [
+          "aria-live=\"polite\"",
+          "Ready: free browser helper first",
+          "No paid route"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "mobile_contract": [
+      ".composer-mode-dock",
+      ".composer-tool-cluster",
+      ".composer-live-cluster",
+      ".composer-mode-button",
+      ".composer-live-chip",
+      ".composer-action-feedback"
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1438,7 +1535,7 @@
     }
   ],
   "next_queue": [
-    "D213"
+    "D214"
   ],
   "watchlist": [
     "D082",
@@ -4635,9 +4732,24 @@
       "best_practice": "A polished chat surface cannot contain decorative or dead controls",
       "done_when": "Every visible composer control is wired, useful or explicitly gated with no public secrets, no paid route and mobile-safe layout",
       "covers": "chat UX, controls, reliability",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Composer action bar usefulness pass now wires Add model, mode toggles, model/resource chips, voice fallback and feedback copy to useful free/gated outcomes.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D214",
+      "phase": "Visual QA / Chat UX",
+      "priority": "P0",
+      "work_package": "Composer action bar visual/mobile verification",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Verify the composer action bar on mobile and desktop so the added controls stay compact, readable, non-overlapping and first-chat friendly",
+      "best_practice": "Useful controls still fail if they crowd the first impression",
+      "done_when": "CI/local visual contract proves composer controls wrap cleanly, feedback text is readable and primary send remains visible",
+      "covers": "visual QA, mobile, chat UX",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: harden the composer action bar so Add model, boost/private/voice/resource controls are either useful or clearly gated.",
+      "evidence": "Next activation slice: verify the composer action bar visually on mobile/desktop and keep the first chat controls compact, readable and non-overlapping.",
       "estimate": "2-6h"
     }
   ]

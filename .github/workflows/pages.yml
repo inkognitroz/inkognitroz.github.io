@@ -62,6 +62,9 @@ jobs:
 
       - name: Smoke check first free chat response QA
         run: node scripts/smoke-check-first-free-chat-response-qa.js
+
+      - name: Smoke check composer action bar usefulness
+        run: node scripts/smoke-check-composer-action-bar-usefulness.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render
