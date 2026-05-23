@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:23:22.824Z",
+  "updated_at": "2026-05-23T12:34:53.531Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 176,
+    "total": 177,
     "done": 51,
-    "beta": 100,
+    "beta": 101,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -290,8 +290,8 @@
         "phase": "Activation UX",
         "total": 8,
         "done": 4,
-        "beta": 3,
-        "next": 1,
+        "beta": 4,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -738,10 +738,10 @@
       },
       {
         "phase": "Activation QA",
-        "total": 4,
+        "total": 5,
         "done": 0,
         "beta": 4,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -808,7 +808,7 @@
     }
   ],
   "next_queue": [
-    "D176"
+    "D177"
   ],
   "watchlist": [
     "D082",
@@ -3450,9 +3450,24 @@
       "best_practice": "Automatic repair needs visible closure, not silent background checks",
       "done_when": "User sees last repair state, verified/needs-model/needs-action, and the next safest action without opening storage or logs",
       "covers": "activation, support, user feedback",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First screen and Node Dashboard now show the last repair resume result with verified/needs-model/needs-action state and a safe next action.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D177",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "End-to-end activation simulator",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add public-safe fixtures that simulate first visit, missing connector, installer return, connector-online/no-model and verified-local-model states across first screen, chat runtime, Node Dashboard, telemetry and backlog dashboard",
+      "best_practice": "The launch journey should be tested as one product flow, not separate widgets",
+      "done_when": "CI can prove the free-first activation loop reaches a useful next action in every simulated state",
+      "covers": "activation, QA, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: show last repair resume result near first screen and Node Dashboard so users see verified/needs-model/needs-action without reading logs.",
+      "evidence": "Next activation QA slice: simulate the complete free-first activation loop across first screen, chat, Node Dashboard, telemetry and progress surfaces.",
       "estimate": "2-6h"
     }
   ]

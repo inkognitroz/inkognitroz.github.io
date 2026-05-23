@@ -16,6 +16,14 @@
   function activeProfile(){return api.activeProfile?.()||null;}
   function activeWorkspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
   function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
+  function readRepairResume(){
+    try{
+      const value=JSON.parse(localStorage.getItem(repairResumeKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
   function storeRepairResume(payload){
     try{
       localStorage.setItem(repairResumeKey(),JSON.stringify({
@@ -28,6 +36,35 @@
         raw_response_stored:false
       }));
     }catch(error){}
+  }
+  function repairResumeCopy(resume){
+    const status=String(resume?.status||'pending');
+    const model=String(resume?.model||'').trim();
+    if(status==='verified'){
+      const count=Number(resume?.model_count||0);
+      return {state:'verified',title:'Last repair verified',detail:count?'Connector is online and '+String(count)+' local model'+(count===1?'':'s')+' are visible.':'Connector is online; continue with local model activation.',primary:'Chat now',target:'#mimir-prompt'};
+    }
+    if(status==='needs-model'){
+      return {state:'needs-model',title:'Connector is back, model needed',detail:'Install or expose one free local model'+(model?' such as '+model:'')+', then MMIR will verify live chat automatically.',primary:'Open model library',target:'#model-library'};
+    }
+    if(status==='needs-action'){
+      return {state:'needs-action',title:'Repair still needs action',detail:String(resume?.note||'The last repair did not make the local node fully ready yet.'),primary:'Continue repair',target:String(resume?.target||'#local-connector')};
+    }
+    if(status==='checking'){
+      return {state:'checking',title:'Repair check running',detail:'MMIR is checking connector, pairing, runtime and models after the install/repair return.',primary:'Refresh node health',target:'#node-dashboard'};
+    }
+    return {state:'pending',title:'Repair path selected',detail:'Return after the installer or repair action; MMIR will resume this path and verify it automatically.',primary:'Resume repair',target:String(resume?.target||'#node-dashboard')};
+  }
+  function renderRepairResumeBanner(){
+    const resume=readRepairResume();
+    if(!resume)return '';
+    const copy=repairResumeCopy(resume);
+    const target=copy.target||'#node-dashboard';
+    const isHash=target.startsWith('#');
+    return '<article class="node-resume-banner" data-state="'+safe(copy.state)+'">'+
+      '<div><span>Repair resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p></div>'+
+      '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
+    '</article>';
   }
   function cleanUrl(value){return api.cleanUrl(value);}
   function joinUrl(base,path){return api.joinUrl(base,path);}
@@ -256,6 +293,16 @@
         }
       });
     });
+    root.querySelectorAll('[data-repair-resume-action]').forEach(link=>{
+      link.addEventListener('click',()=>{
+        window.MimirActivationTelemetry?.record?.('repair-resume-action',{
+          status:link.getAttribute('data-repair-resume-action')||'selected',
+          route:link.getAttribute('href')||'#node-dashboard',
+          free:true,
+          note:'Node Dashboard repair resume action selected.'
+        });
+      });
+    });
     root.querySelectorAll('[data-delete-model]').forEach(button=>{
       button.addEventListener('click',async()=>{
         if(!connection)return;
@@ -288,6 +335,7 @@
     const action=nextAction(checks);
     const guide=guidedDeviceRepair(checks,null,null);
     root.innerHTML=
+      renderRepairResumeBanner()+
       '<div class="node-dashboard-grid">'+
         card('Browser client','ready','This page is loaded and can prepare the free local profile.')+
         card('Active node','offline',DEFAULT_LOCAL_URL)+
@@ -356,6 +404,7 @@
     const guide=guidedDeviceRepair(checks,hardware,tunnel);
     const canStartTunnel=Boolean(tunnel&&tunnel.control_enabled!==false&&!tunnel.public_url);
     root.innerHTML=
+      renderRepairResumeBanner()+
       '<div class="node-dashboard-grid">'+
         card('Browser client','ready','Public frontend with local-first controls.')+
         card('Active node',nodeLabel(identity,status),nodeType(identity,status,hardware)+' / '+statusText(status?.status))+

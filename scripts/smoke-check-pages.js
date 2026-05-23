@@ -370,6 +370,8 @@ requireText(firstImpressionPath, 'if(current!==tone)', 'Activation cockpit class
 requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
 requireText(firstImpressionPath, 'mimir-readiness-rail', 'First impression must expose a live readiness rail on the first screen.');
 requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readiness rail must update automatically.');
+requireText(firstImpressionPath, 'renderRepairResumeBanner', 'D176 first screen must render the last repair resume result.');
+requireText(firstImpressionPath, 'repair-resume-banner', 'D176 first screen must expose a repair resume banner.');
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
@@ -382,9 +384,13 @@ requireText(nodeDashboardPath, 'Raspberry Pi / Linux ARM', 'D172 repair card mus
 requireText(nodeDashboardPath, 'data-device-repair-action', 'D174 repair card must expose actionable repair links.');
 requireText(nodeDashboardPath, 'device-repair-action', 'D174 repair-card clicks must be logged to activation telemetry.');
 requireText(nodeDashboardPath, 'mimir-repair-resume-v1:', 'D175 repair-card clicks must store installer-return resume state.');
+requireText(nodeDashboardPath, 'renderRepairResumeBanner', 'D176 Node Dashboard must render the last repair resume result.');
+requireText(nodeDashboardPath, 'data-repair-resume-action', 'D176 repair resume banner must offer a next safe action.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'), 'mmir-repair-resume-checked', 'D175 local connector must verify repair resume after return.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), 'mmir-repair-resume-checked', 'D175 repair resume results must feed activation telemetry.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-repair-card', 'D172 guided repair card needs visible styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'), '.node-resume-banner', 'D176 Node Dashboard needs repair resume banner styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '.repair-resume-banner', 'D176 first screen needs repair resume banner styling.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'offline-connector', 'D173 repair harness must cover offline connector state.');
 requireText(join(root, 'scripts', 'smoke-check-node-repair-cards.js'), 'failed-model-pull', 'D173 repair harness must cover failed model pull state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');

@@ -10,6 +10,9 @@
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const cockpit=document.getElementById('activation-cockpit');
   const activationCards={
     answer:document.getElementById('activation-answer-card'),
@@ -37,6 +40,8 @@
   };
   let localConnectorState=null;
   let lastCockpitSignature='';
+  let lastRailSignature='';
+  let lastRepairResumeSignature='';
 
   function ensureActivationCockpitShell(){
     if(!document.querySelector('link[href*="activation-cockpit.css"]')){
@@ -105,6 +110,90 @@
 
   function setText(el,text){
     if(el&&el.textContent!==text)el.textContent=text;
+  }
+
+  function safe(value){
+    return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  }
+
+  function activeWorkspaceId(){
+    try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}
+  }
+
+  function readRepairResume(){
+    try{
+      const value=JSON.parse(localStorage.getItem(REPAIR_RESUME_PREFIX+activeWorkspaceId())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+
+  function repairResumeCopy(resume){
+    const status=String(resume?.status||'pending');
+    const model=String(resume?.model||'').trim();
+    if(status==='verified'){
+      const modelCount=Number(resume?.model_count||0);
+      return {state:'verified',title:'Repair verified',detail:modelCount?'Local node is back and '+String(modelCount)+' live model'+(modelCount===1?'':'s')+' are visible.':'Connector is back; MMIR can continue the local path.',action:'Chat now',target:'#mimir-prompt'};
+    }
+    if(status==='needs-model'){
+      return {state:'needs-model',title:'Connector is back',detail:'Install or expose one free local model next'+(model?' such as '+model:'')+'. MMIR will verify it automatically.',action:'Open models',target:'#model-library'};
+    }
+    if(status==='needs-action'){
+      return {state:'needs-action',title:'Repair still needs attention',detail:String(resume?.note||'MMIR could not verify the local node yet. Continue with the safest repair path.'),action:'Open node health',target:'#node-dashboard'};
+    }
+    if(status==='checking'){
+      return {state:'checking',title:'Checking repair',detail:'MMIR is verifying connector, runtime and model readiness automatically.',action:'Open local connector',target:'#local-connector'};
+    }
+    return {state:'pending',title:'Repair started',detail:'Return here after the installer or repair step. MMIR will continue checking automatically.',action:'Resume repair',target:String(resume?.target||'#node-dashboard')};
+  }
+
+  function ensureRepairResumeStyles(){
+    if(document.querySelector('link[href*="repair-resume.css"]'))return;
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='./apps/mimir-chat-portal/repair-resume.css?v=20260523-d176';
+    document.head.appendChild(link);
+  }
+
+  function ensureRepairResumeBanner(){
+    let banner=document.getElementById('repair-resume-banner');
+    if(banner||!instantStart)return banner;
+    ensureRepairResumeStyles();
+    banner=document.createElement('aside');
+    banner.id='repair-resume-banner';
+    banner.className='repair-resume-banner';
+    banner.setAttribute('aria-live','polite');
+    const rail=document.getElementById('mimir-readiness-rail');
+    (rail||instantStart).insertAdjacentElement('afterend',banner);
+    return banner;
+  }
+
+  function renderRepairResumeBanner(){
+    const banner=ensureRepairResumeBanner();
+    if(!banner)return;
+    const resume=readRepairResume();
+    if(!resume){
+      if(lastRepairResumeSignature==='hidden')return;
+      lastRepairResumeSignature='hidden';
+      banner.hidden=true;
+      return;
+    }
+    const copy=repairResumeCopy(resume);
+    const signature=[copy.state,copy.title,copy.detail,copy.action,copy.target].join('|');
+    if(signature===lastRepairResumeSignature)return;
+    lastRepairResumeSignature=signature;
+    banner.hidden=false;
+    banner.dataset.state=copy.state;
+    banner.innerHTML='<div><span>Repair resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p></div><a href="'+safe(copy.target)+'" data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.action)+'</a>';
+    banner.querySelector('[data-repair-resume-action]')?.addEventListener('click',(event)=>{
+      const target=copy.target||'#node-dashboard';
+      window.MimirActivationTelemetry?.record?.('repair-resume-action',{status:copy.state,route:target,free:true,note:'First-screen repair resume action selected.'});
+      if(target.startsWith('#')){
+        event.preventDefault();
+        openPanel(target);
+      }
+    });
   }
 
   function setBodyState(add,removeA,removeB){
@@ -283,13 +372,17 @@
     const health=String(profile?.health||'unknown').toLowerCase();
     const nodeReady=['ready','degraded','testing'].includes(health);
     const modelLabel=(model.text||'MMIR Guide').replace(/\s+-\s+live$/i,'');
+    const pills=[
+      {label:'Free start',value:browser?'Guide ready':webgpu?'Browser model':'Guide available',state:'ready',target:'#mimir-prompt'},
+      {label:'Privacy',value:modes.private?'Private on':'Turn on',state:'ready',target:'#composer-mode-dock'},
+      {label:'Node',value:nodeReady?(profile.name||'Local node'):'Auto-checking',state:nodeReady?'ready':'watch',target:'#node-dashboard'},
+      {label:'Model',value:live?modelLabel:modelLabel||'Installable free',state:live?'ready':'watch',target:'#model-library'}
+    ];
+    const signature=JSON.stringify(pills);
+    if(signature===lastRailSignature)return;
+    lastRailSignature=signature;
     rail.innerHTML='';
-    rail.append(
-      readinessPill('Free start',browser?'Guide ready':webgpu?'Browser model':'Guide available','ready','#mimir-prompt'),
-      readinessPill('Privacy',modes.private?'Private on':'Turn on','ready','#composer-mode-dock'),
-      readinessPill('Node',nodeReady?(profile.name||'Local node'):'Auto-checking',nodeReady?'ready':'watch','#node-dashboard'),
-      readinessPill('Model',live?modelLabel:modelLabel||'Installable free',live?'ready':'watch','#model-library')
-    );
+    rail.append(...pills.map(pill=>readinessPill(pill.label,pill.value,pill.state,pill.target)));
   }
 
   function sendPrompt(value){
@@ -334,6 +427,7 @@
     bindActivationActions();
     syncReadyState();
     renderReadinessRail();
+    renderRepairResumeBanner();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
@@ -349,6 +443,8 @@
     localConnectorState=event.detail||null;
     run();
   });
+  window.addEventListener('mmir-repair-resume-started',run);
+  window.addEventListener('mmir-repair-resume-checked',run);
   window.addEventListener('mmir-chat-modes-updated',run);
   window.addEventListener('storage',run);
   window.addEventListener('focus',run);

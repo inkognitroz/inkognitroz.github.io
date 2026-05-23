@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d175-20260523-repair-resume';
+const CACHE_NAME='mmir-pwa-d176-20260523-repair-resume-banner';
 const SHELL_ASSETS=[
   './',
   './index.html',
@@ -10,6 +10,7 @@ const SHELL_ASSETS=[
   './assets/mmir-maskable-icon.svg',
   './apps/mimir-chat-portal/mimir-chat-portal.css',
   './apps/mimir-chat-portal/chat-runtime.css',
+  './apps/mimir-chat-portal/repair-resume.css',
   './apps/mimir-chat-portal/pwa.css',
   './apps/mimir-chat-portal/pwa.js',
   './apps/mimir-chat-portal/migration-portability.css',

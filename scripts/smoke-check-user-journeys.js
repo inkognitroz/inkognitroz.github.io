@@ -56,6 +56,8 @@ const files = {
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
+  nodeDashboardCss: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'),
+  repairResumeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
   universalInstaller: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),
   connectorRelease: join(publicDir, 'downloads', 'mmir-local-connector-release.json'),
@@ -409,6 +411,12 @@ requireIncludes(files.nodeDashboard, 'device-repair-action', 'D174 needs repair-
 requireIncludes(files.nodeDashboard, 'mimir-repair-resume-v1:', 'D175 needs repair-card clicks to store resume state.');
 requireIncludes(files.localConnector, 'mmir-repair-resume-checked', 'D175 needs local connector to verify repair resume after return.');
 requireIncludes(files.activationTelemetry, 'mmir-repair-resume-checked', 'D175 needs repair resume verification in activation telemetry.');
+requireIncludes(files.firstImpression, 'renderRepairResumeBanner', 'D176 needs first-screen repair resume result visibility.');
+requireIncludes(files.firstImpression, 'mmir-repair-resume-checked', 'D176 first-screen banner must refresh after repair resume checks.');
+requireIncludes(files.nodeDashboard, 'renderRepairResumeBanner', 'D176 needs Node Dashboard repair resume result visibility.');
+requireIncludes(files.nodeDashboard, 'data-repair-resume-action', 'D176 repair resume banner needs a concrete next action.');
+requireIncludes(files.nodeDashboardCss, '.node-resume-banner', 'D176 needs Node Dashboard repair resume styling.');
+requireIncludes(files.repairResumeCss, '.repair-resume-banner', 'D176 needs first-screen repair resume styling.');
 requireIncludes(files.repairCardHarness, 'offline-connector', 'D173 repair harness must cover offline connector.');
 requireIncludes(files.repairCardHarness, 'offline-ollama', 'D173 repair harness must cover offline Ollama.');
 requireIncludes(files.repairCardHarness, 'failed-model-pull', 'D173 repair harness must cover failed model pull.');

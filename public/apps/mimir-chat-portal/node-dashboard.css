@@ -16,6 +16,7 @@
 .node-next-action,
 .node-model-manager,
 .node-model-card,
+.node-resume-banner,
 .node-repair-card {
   border: 1px solid var(--mimir-line);
   border-radius: 8px;
@@ -33,6 +34,7 @@
 .node-next-action span,
 .node-model-manager span,
 .node-model-card span,
+.node-resume-banner span,
 .node-repair-card span {
   color: var(--mimir-muted);
   font-size: 0.75rem;
@@ -51,10 +53,47 @@
 .node-doctor-card small,
 .node-next-action p,
 .node-model-manager p,
+.node-resume-banner p,
 .node-repair-card p,
 .node-repair-card small {
   color: var(--mimir-muted);
   line-height: 1.4;
+}
+
+.node-resume-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-left: 4px solid #0f766e;
+  background: #f8fffc;
+}
+
+.node-resume-banner strong {
+  display: block;
+  color: var(--mimir-text);
+  margin-top: 4px;
+}
+
+.node-resume-banner p {
+  margin: 4px 0 0;
+}
+
+.node-resume-banner[data-state="verified"] {
+  border-left-color: #10a37f;
+  background: #f0fdf9;
+}
+
+.node-resume-banner[data-state="needs-model"],
+.node-resume-banner[data-state="checking"],
+.node-resume-banner[data-state="pending"] {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.node-resume-banner[data-state="needs-action"] {
+  border-left-color: #dc2626;
+  background: #fff7f7;
 }
 
 .node-doctor-card {
@@ -228,6 +267,10 @@
 @media (max-width: 560px) {
   .node-next-action {
     align-items: stretch;
+  }
+
+  .node-resume-banner {
+    display: grid;
   }
 
   .node-dashboard-actions,

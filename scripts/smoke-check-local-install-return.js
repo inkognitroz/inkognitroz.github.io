@@ -8,6 +8,9 @@ const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector
 const files = {
   mmir: join(publicDir, 'mmir.html'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
+  firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
+  nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
+  repairResumeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'),
   connectOptions: join(publicDir, 'connect-options.json'),
   guide: join(publicDir, 'local-connector-guide.json'),
   mac: join(publicDir, 'downloads', 'mmir-local-connector-mac.command'),
@@ -40,6 +43,10 @@ requireIncludes(files.localConnector, 'schedulePostInstallRefresh', 'Local conne
 requireIncludes(files.localConnector, 'mimir-repair-resume-v1:', 'D175 local connector must store installer-return repair resume state.');
 requireIncludes(files.localConnector, 'mmir-repair-resume-started', 'D175 local connector must emit repair resume start events.');
 requireIncludes(files.localConnector, 'mmir-repair-resume-checked', 'D175 local connector must emit repair resume verification events.');
+requireIncludes(files.firstImpression, 'renderRepairResumeBanner', 'D176 first screen must show repair resume results after installer return.');
+requireIncludes(files.nodeDashboard, 'renderRepairResumeBanner', 'D176 node dashboard must show repair resume results after installer return.');
+requireIncludes(files.nodeDashboard, 'data-repair-resume-action', 'D176 repair resume status needs a concrete next action.');
+requireIncludes(files.repairResumeCss, '.repair-resume-banner', 'D176 repair resume status must have first-screen styling.');
 requireIncludes(files.localConnector, "document.getElementById('runtime-refresh')?.click()", 'Post-install return must refresh the chat runtime model list.');
 requireIncludes(files.localConnector, 'mmir-local-install-returned', 'Post-install return must emit an event for other modules.');
 requireIncludes(files.connectOptions, 'returns to MMIR after install', 'Connect options must describe the post-install return flow.');

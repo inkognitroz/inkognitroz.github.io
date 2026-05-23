@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T11:35:00+02:00",
+  "updated_at": "2026-05-23T12:20:00+02:00",
   "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
   "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
   "groups": [
@@ -9,8 +9,8 @@
       "surface": "First screen chat",
       "status": "live",
       "user_result": "A new visitor can type or choose a starter prompt and get a useful free browser answer before setup.",
-      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "[data-prompt-action]", "#try-demo-mode"],
-      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "demo_start_click"]
+      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "#repair-resume-banner", "[data-prompt-action]", "[data-repair-resume-action]", "#try-demo-mode"],
+      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "renderRepairResumeBanner", "Repair resume", "repair-resume-action", "demo_start_click"]
     },
     {
       "id": "mmir-local-analytics",
@@ -64,9 +64,9 @@
       "id": "node-dashboard",
       "surface": "Node Dashboard",
       "status": "live",
-      "user_result": "Users can see active node health, hardware, models, tunnel state, cross-device pairing code, exact next repair action and one device-specific repair card from one local-first dashboard.",
-      "selectors": ["#node-dashboard", "#node-dashboard-root", "node-repair-card", "[data-device-repair-action]", "#refresh-node-dashboard", "#node-use-free-local", "#node-refresh-inline", "#node-create-pairing-code", "#node-pairing-code-status"],
-      "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "/doctor", "/pairing/sessions", "Local Node Doctor", "model-pull", "guidedDeviceRepair", "detectDevice", "Raspberry Pi / Linux ARM", "data-device-repair-action", "device-repair-action", "mimir-repair-resume-v1:", "Connector install", "Model availability"]
+      "user_result": "Users can see active node health, hardware, models, tunnel state, cross-device pairing code, exact next repair action, last repair resume state and one device-specific repair card from one local-first dashboard.",
+      "selectors": ["#node-dashboard", "#node-dashboard-root", "node-repair-card", "node-resume-banner", "[data-device-repair-action]", "[data-repair-resume-action]", "#refresh-node-dashboard", "#node-use-free-local", "#node-refresh-inline", "#node-create-pairing-code", "#node-pairing-code-status"],
+      "evidence": ["Install Health Doctor", "/node/identity", "/hardware", "/models", "/tunnels/status", "/doctor", "/pairing/sessions", "Local Node Doctor", "model-pull", "guidedDeviceRepair", "detectDevice", "Raspberry Pi / Linux ARM", "data-device-repair-action", "device-repair-action", "renderRepairResumeBanner", "data-repair-resume-action", "mimir-repair-resume-v1:", "Connector install", "Model availability"]
     },
     {
       "id": "pwa-mobile-install",

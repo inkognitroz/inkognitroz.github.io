@@ -167,14 +167,15 @@ Updated: 2026-05-23
 - D173 is now beta: a dedicated repair-card smoke harness verifies offline connector, pairing-required, offline Ollama, failed model pull, no-model and device fixtures against Node Dashboard source and UI coverage.
 - D174 is now beta: repair-card links carry `data-device-repair-action`, trigger internal follow-through where needed and record selected paths in activation telemetry.
 - D175 is now beta: repair-card selections store a browser-local resume object, post-install returns continue checking the same path, refresh runtime models and emit repair resume telemetry/results.
-- D176 is now the next activation slice: show the last repair resume result near first screen and Node Dashboard so users see verified/needs-model/needs-action without reading logs.
+- D176 is now beta: first screen and Node Dashboard show the last repair resume result with verified/needs-model/needs-action state and a safe next action.
+- D177 is now the next activation QA slice: simulate the complete free-first activation loop across first screen, chat runtime, Node Dashboard, telemetry and progress surfaces.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D176` repair resume status banner.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D177` end-to-end activation simulator.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
