@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path';
 
 const root = process.cwd();
 const cssPath = join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workflow-builder.css');
-const htmlPath = join(resolve(root, 'public'), 'mmir.html');
+const htmlPath = join(resolve(root, 'public', 'mmir.html'));
 const swPath = join(resolve(root, 'public'), 'sw.js');
 const css = readFileSync(cssPath, 'utf8');
 const html = readFileSync(htmlPath, 'utf8');
@@ -32,8 +32,12 @@ if (!html.includes('workflow-builder.css?v=20260523-mobile-chat')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d203-20260523-model-picker'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d216-20260523-runtime-hotfix'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
+}
+
+if (!sw.includes('NETWORK_FIRST_EXTENSIONS') || !sw.includes("fetch(request,{cache:'no-cache'})")) {
+  fail('Service worker must fetch app shell HTML/CSS/JS/JSON network-first so mobile users do not stay pinned to stale broken controls.');
 }
 
 if (!process.exitCode) {
