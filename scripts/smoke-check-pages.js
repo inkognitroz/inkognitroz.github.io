@@ -126,6 +126,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR prod
 requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product page must load explicit web search script.');
 requireText(mmirPath, './apps/mimir-chat-portal/tool-runner.js', 'MMIR product page must load permissioned tool runner script.');
 requireText(mmirPath, './apps/mimir-chat-portal/code-sandbox.js', 'MMIR product page must load code sandbox preflight script.');
+requireText(mmirPath, './apps/mimir-chat-portal/artifact-workspace.js', 'MMIR product page must load artifact workspace script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -174,6 +175,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'lo
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'code-sandbox-consent', 'Code sandbox UI must require explicit consent.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.js'), 'execution_allowed:false', 'Code sandbox UI must keep public execution disabled.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'code-sandbox.css'), '.code-gate-grid', 'Code sandbox needs visible gate styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'), 'ARTIFACT_PREFIX', 'Artifact workspace must persist artifacts per workspace.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'), 'defaultArtifact', 'Artifact workspace must create a useful automatic first artifact.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.js'), 'sendToChat', 'Artifact workspace must send artifacts back to chat.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'artifact-workspace.css'), '.artifact-shell', 'Artifact workspace needs a responsive canvas layout.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -200,6 +205,7 @@ requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tun
 requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:auto', 'Mobile navigation must remain accessible instead of disappearing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'privacy-data-inventory', 'Privacy controls must expose a full browser data inventory.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Conversation library', 'Privacy controls must include saved conversation library data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Artifact workspace', 'Privacy controls must include artifact workspace data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Clear pairing tokens', 'Privacy controls must let users clear temporary local node pairing tokens.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Delete all local MMIR data', 'Privacy controls must let users reset only MMIR browser data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');

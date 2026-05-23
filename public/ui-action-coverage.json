@@ -125,6 +125,14 @@
       "evidence": ["/code/sandbox/policy", "/code/sandbox/plan", "localPlan", "execution_allowed:false", "Sandbox plan ready"]
     },
     {
+      "id": "artifact-workspace",
+      "surface": "Artifacts / Canvas",
+      "status": "beta",
+      "user_result": "Users can create, edit, preview, duplicate, copy, export and send workspace artifacts back into chat without backend cost or public secrets.",
+      "selectors": ["#artifact-workspace", "#artifact-new", "#artifact-save", "#artifact-content", "#artifact-preview", "#artifact-send-chat"],
+      "evidence": ["ARTIFACT_PREFIX", "defaultArtifact", "saveCurrent", "exportArtifacts", "sendToChat"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",

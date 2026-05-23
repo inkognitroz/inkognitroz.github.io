@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T03:34:48.602Z",
+  "updated_at": "2026-05-23T03:42:27.520Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 57,
+    "beta": 58,
     "next": 1,
     "watch": 1,
     "blocked": 1,
-    "planned": 41,
+    "planned": 40,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -500,11 +500,11 @@
         "phase": "Canvas",
         "total": 1,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Images",
@@ -2745,10 +2745,10 @@
       "best_practice": "Long-form work needs more than chat bubbles",
       "done_when": "User can create and revise artifacts from chat",
       "covers": "ChatGPT parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
-      "estimate": "1-3d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Canvas/artifacts now has a local workspace for documents, code, plans and workflow drafts with automatic first artifact, edit/preview, duplicate, copy, export and chat handoff.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D134",
