@@ -13,6 +13,7 @@ const files = {
   journeys: join(publicDir, 'user-journeys.json'),
   progress: join(publicDir, 'progress-dashboard.json'),
   visibleControlAudit: join(publicDir, 'visible-control-audit.json'),
+  deployVerification: join(publicDir, 'deploy-verification.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
   webManifest: join(publicDir, 'manifest.webmanifest'),
@@ -78,6 +79,7 @@ const files = {
   starterTelemetryHarness: join(root, 'scripts', 'smoke-check-recommended-starter-telemetry.js'),
   criticalShellHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom.js'),
   criticalShellRecoveryHarness: join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.js'),
+  deployVerificationHarness: join(root, 'scripts', 'smoke-check-deploy-verification.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
   starterFunnelContinueHarness: join(root, 'scripts', 'smoke-check-starter-funnel-continue.js'),
   firstScreenStarterFunnelHarness: join(root, 'scripts', 'smoke-check-first-screen-starter-funnel.js'),
@@ -456,6 +458,8 @@ requireIncludes(files.progressDashboard, 'starterSelected', 'D186 Progress Dashb
 requireIncludes(files.criticalShellHarness, 'Critical shell headroom smoke check passed.', 'D187 critical-shell headroom needs dedicated CI fixture coverage.');
 requireIncludes(files.criticalShellRecoveryHarness, 'Critical-shell headroom recovery smoke check passed', 'D200 critical-shell headroom recovery needs dedicated CI fixture coverage.');
 requireIncludes(files.mmir, "event.target.closest('#try-demo-mode')", 'D200 Try demo mode needs a deferred first-click handoff.');
+requireIncludes(files.deployVerificationHarness, 'Deploy verification smoke check passed.', 'D201 deploy verification needs dedicated CI fixture coverage.');
+requireIncludes(files.deployVerification, 'db9cee4', 'D201 deploy verification must record latest verified commit.');
 requireIncludes(files.firstScreenHydration, 'MimirFirstScreenActivationHydration', 'D187 deferred hydration module must own non-critical first-screen activation banners.');
 requireIncludes(files.starterFunnelHarness, 'Starter-to-proof funnel smoke check passed.', 'D188 starter-to-proof funnel needs dedicated CI fixture coverage.');
 requireIncludes(files.progressDashboard, 'renderStarterFunnel', 'D188 Progress Dashboard must render starter-to-proof funnel.');

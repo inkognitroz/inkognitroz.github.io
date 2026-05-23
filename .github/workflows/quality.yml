@@ -174,3 +174,6 @@ jobs:
 
       - name: Smoke-check critical-shell headroom recovery
         run: node scripts/smoke-check-critical-shell-headroom-recovery.js
+
+      - name: Smoke-check deploy verification
+        run: node scripts/smoke-check-deploy-verification.js

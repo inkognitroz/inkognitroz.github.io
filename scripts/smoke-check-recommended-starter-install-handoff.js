@@ -125,8 +125,13 @@ if (!d200 || d200.status !== 'beta') {
 }
 
 const d201 = tasks.find((task) => task.seq === 'D201');
-if (!d201 || d201.status !== 'next') {
-  fail('Progress dashboard must expose D201 as the next deploy QA work item.');
+if (!d201 || d201.status !== 'beta') {
+  fail('Progress dashboard task D201 must stay beta after deploy QA verification ships.');
+}
+
+const d202 = tasks.find((task) => task.seq === 'D202');
+if (!d202 || d202.status !== 'next') {
+  fail('Progress dashboard must expose D202 as the next visual QA work item.');
 }
 
 if (!process.exitCode) {

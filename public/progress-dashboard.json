@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:52:57.178Z",
+  "updated_at": "2026-05-23T16:00:51.637Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 201,
+    "total": 202,
     "done": 51,
-    "beta": 125,
+    "beta": 126,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -850,6 +850,16 @@
         "phase": "Deploy / QA",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Visual QA / First Impression",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1128,7 +1138,7 @@
     }
   ],
   "next_queue": [
-    "D201"
+    "D202"
   ],
   "watchlist": [
     "D082",
@@ -4145,9 +4155,24 @@
       "best_practice": "Users only trust the product when deployed reality matches local checks",
       "done_when": "Latest pushed commit has green checks or a documented repair task, and the site status is visible",
       "covers": "deploy, QA, reliability",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Deploy verification manifest records green Static quality, branding migration and Pages deploy for db9cee4, plus public URL health evidence and the local-network 503 watch state.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D202",
+      "phase": "Visual QA / First Impression",
+      "priority": "P0",
+      "work_package": "First-screen visual verification pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Run a visual/browser pass on the deployed or local first screen, checking chat composer, activation banners, model library handoff and mobile layout for overlap or confusing first impression",
+      "best_practice": "The first 10 seconds must feel polished and trustworthy",
+      "done_when": "Screenshots or deterministic browser checks prove first screen and mobile layout are coherent after the recent UX changes",
+      "covers": "visual QA, mobile, first impression",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next deploy QA slice: verify latest GitHub Pages checks and public site health after the activation/control commits.",
+      "evidence": "Next visual QA slice: verify first-screen and mobile layout after the recent activation and performance changes.",
       "estimate": "2-6h"
     }
   ]

@@ -1,7 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-05-22T17:15:00+02:00",
+  "updated_at": "2026-05-23T17:58:00+02:00",
   "description": "Public-safe status manifest for MMIR.ai. Browser automation adds live public GitHub Actions checks and active backend telemetry only from a user-selected backend or paired local node.",
+  "latest_verified_commit": "db9cee4",
+  "deploy_verification": "./deploy-verification.json",
   "components": [
     {
       "id": "site-shell",
@@ -9,6 +11,20 @@
       "status": "online",
       "route": "mmir.ai / GitHub Pages",
       "notes": "The static app shell is served from the public Pages artifact."
+    },
+    {
+      "id": "latest-deploy-verification",
+      "label": "Latest deploy verification",
+      "status": "online",
+      "route": "db9cee4 / GitHub Actions",
+      "notes": "Static quality, branding migration and Deploy GitHub Pages completed successfully for commit db9cee4 on 2026-05-23."
+    },
+    {
+      "id": "public-url-health",
+      "label": "Public URL health",
+      "status": "watch",
+      "route": "https://mmir.ai/",
+      "notes": "External web fetch sees MMIR content, while this local PowerShell network returned 503 for mmir.ai and inkognitroz.github.io. Treat as network/edge watch until checked from another network."
     },
     {
       "id": "github-pages",

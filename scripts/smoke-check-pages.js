@@ -504,6 +504,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "op
 requireText(join(root, 'scripts', 'smoke-check-critical-shell-headroom-recovery.js'), 'Critical-shell headroom recovery smoke check passed', 'D200 critical-shell headroom recovery must have a dedicated smoke harness.');
 requireText(mmirPath, './apps/mimir-chat-portal/demo-growth.js', 'D200 demo growth script must remain available through deferred loading.');
 forbidText(mmirPath, '<script src="./apps/mimir-chat-portal/demo-growth.js" defer></script>', 'D200 demo growth script must not block the initial critical shell.');
+requireText(join(root, 'scripts', 'smoke-check-deploy-verification.js'), 'Deploy verification smoke check passed.', 'D201 deploy verification must have a dedicated smoke harness.');
+requireText(join(publicDir, 'deploy-verification.json'), 'db9cee4', 'D201 deploy verification must record latest verified commit.');
+requireText(join(publicDir, 'platform-status.json'), 'latest-deploy-verification', 'D201 platform status must expose latest deploy verification.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');
