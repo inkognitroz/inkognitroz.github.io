@@ -22,7 +22,7 @@ Should not contain:
 - Cloud credentials
 - Raw provider keys
 - Direct cloud provisioning actions
-- Legacy SaaS Fabric navigation as primary UX
+- Legacy MMIR navigation as primary UX
 
 ## Internal/admin routes
 
@@ -45,7 +45,7 @@ Use for:
 - Open Web GUI
 - Ollama Chat Lab
 - Football Evolution Matrix
-- Legacy SaaS Fabric utilities
+- Legacy MMIR utilities
 
 ## App routes
 
@@ -62,7 +62,7 @@ Role: Internal planning tool for new apps and backend ideas.
 Role: Separate football analysis app. It should not dominate Mimir navigation.
 
 ## Design rule
-All routes should gradually move toward the same Mimir light design language. Older SaaS Fabric wording should either be removed or clearly marked as legacy/internal.
+All routes should gradually move toward the same Mimir light design language. Older MMIR wording should either be removed or clearly marked as legacy/internal.
 
 ## Zero Trust rule
 The frontend may store local labels, profile metadata and non-sensitive preferences in browser storage. Secrets, provider keys, cloud credentials and provisioning authority belong behind protected backend/admin systems only.
