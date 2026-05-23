@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 const root = process.cwd();
@@ -108,6 +109,11 @@ function requireModel(models, id, predicate, message) {
 }
 
 function sha256File(file) {
+  const rel = relative(root, file).replace(/\\/g, '/');
+  const blob = spawnSync('git', ['show', `HEAD:${rel}`], { encoding: null });
+  if (blob.status === 0 && blob.stdout?.length) {
+    return createHash('sha256').update(blob.stdout).digest('hex');
+  }
   return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
