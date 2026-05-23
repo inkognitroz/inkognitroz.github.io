@@ -65,6 +65,7 @@ const overrides = new Map([
   ['D126', { status: 'done', evidence: 'Public GUI parity matrix now lists ChatGPT-like, Open WebUI-like and MMIR-specific features with truthful live/beta/planned/blocked/premium-planned states, backed by JSON, docs and site UI.' }],
   ['D127', { status: 'beta', evidence: 'Conversation manager now provides local save/rename, pin, archive/restore, search, load, fork, JSON export and redacted safe-share controls per workspace.' }],
   ['D128', { status: 'beta', evidence: 'Knowledge upload now supports drag/drop staging, text/Markdown/JSON/CSV/log type checks, 1 MB file limits, staged previews and local-first document snippets before optional protected backend indexing.' }],
+  ['D129', { status: 'beta', evidence: 'Knowledge collections now let users group uploaded documents, enable/disable each collection per workspace, and keep chat/comparison context scoped to enabled local collections.' }],
   ['D151', { status: 'beta', evidence: 'Node Dashboard now includes a local model manager with installed model inventory, disk/RAM impact and paired local removal; local-node reports resource metadata for models.' }]
 ]);
 

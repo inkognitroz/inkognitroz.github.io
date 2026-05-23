@@ -96,9 +96,9 @@
       "id": "workspace-memory-knowledge",
       "surface": "Workspace, memory, knowledge and privacy controls",
       "status": "beta",
-      "user_result": "Users can create local workspaces, store memory/knowledge, stage files with previews, sync when a protected backend exists, and export/delete local data.",
-      "selectors": ["#workspace-new", "#memory-save", "#knowledge-dropzone", "#knowledge-save", "#privacy-export", "#privacy-delete"],
-      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "knowledge-preview-list", "mmir-workspace-changed", "workspace-create", "privacy-delete"]
+      "user_result": "Users can create local workspaces, store memory/knowledge, group knowledge into collections, stage files with previews, sync when a protected backend exists, and export/delete local data.",
+      "selectors": ["#workspace-new", "#memory-save", "#knowledge-dropzone", "#knowledge-collection-name", "[data-collection-toggle]", "#knowledge-save", "#privacy-export", "#privacy-delete"],
+      "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "privacy-delete"]
     },
     {
       "id": "conversation-management",

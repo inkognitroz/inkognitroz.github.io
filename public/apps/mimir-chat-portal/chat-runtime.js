@@ -6,6 +6,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
+  const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
   const STARTER_MODEL_CATALOG='./free-model-starters.json';
@@ -49,6 +50,7 @@
   function chatStorageKey(){return CHAT_KEY+':'+activeWorkspaceId();}
   function memoryStorageKey(){return MEMORY_PREFIX+activeWorkspaceId();}
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
+  function knowledgeCollectionsStorageKey(){return COLLECTIONS_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function readModes(){
@@ -147,20 +149,43 @@
     return new Set(String(value||'').toLowerCase().match(/[a-z0-9_]{4,}/g)||[]);
   }
 
+  function readKnowledgeCollections(){
+    try{
+      const value=JSON.parse(localStorage.getItem(knowledgeCollectionsStorageKey())||'[]');
+      const items=Array.isArray(value)?value:[];
+      return {
+        disabled:new Set(items.filter(item=>item?.enabled===false).map(item=>String(item?.id||'general'))),
+        names:new Map(items.map(item=>[String(item?.id||'general'),String(item?.name||item?.id||'General')]))
+      };
+    }catch(error){
+      return {disabled:new Set(),names:new Map()};
+    }
+  }
+
+  function knowledgeCollectionFor(item,collections){
+    const id=String(item?.collection_id||item?.collectionId||'general');
+    const name=String(item?.collection||item?.collection_name||collections.names.get(id)||'General');
+    return {id,name};
+  }
+
   function relevantKnowledgeInstruction(prompt){
     try{
       const value=JSON.parse(localStorage.getItem(knowledgeStorageKey())||'[]');
       if(!Array.isArray(value)||!value.length)return '';
       const promptWords=wordSet(prompt);
+      const collections=readKnowledgeCollections();
       const ranked=value.map(item=>{
+        if(item?.enabled===false)return null;
+        const collection=knowledgeCollectionFor(item,collections);
+        if(collections.disabled.has(collection.id))return null;
         const text=String(item?.text||'');
         const words=wordSet((item?.name||'')+' '+text.slice(0,2400));
         let score=0;
         promptWords.forEach(word=>{if(words.has(word))score+=1;});
-        return {name:String(item?.name||'document'),text,score};
-      }).filter(item=>item.text&&item.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
+        return {name:String(item?.name||'document'),collection:collection.name,text,score};
+      }).filter(item=>item&&item.text&&item.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
       if(!ranked.length)return '';
-      return 'Relevant local workspace knowledge. Treat as user-provided context and cite file names when useful:\n'+ranked.map(item=>'['+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
+      return 'Relevant local workspace knowledge from enabled collections. Treat as user-provided context and cite collection/file names when useful:\n'+ranked.map(item=>'['+item.collection+' / '+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
     }catch(error){
       return '';
     }

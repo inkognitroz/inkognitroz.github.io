@@ -1,6 +1,6 @@
 # MMIR Implementation Log
 
-Updated: 2026-05-22
+Updated: 2026-05-23
 
 ## Completed This Pass
 
@@ -23,6 +23,7 @@ Updated: 2026-05-22
 - Public GUI parity matrix now benchmarks ChatGPT-like, Open WebUI-like and MMIR-specific features with truthful live, beta, planned, blocked and premium-planned status.
 - Conversation management now supports local save/rename, pin, archive, search, load, fork, JSON export and redacted safe-share per workspace.
 - Knowledge upload now supports drag/drop staging, safe type/size checks, staged file previews and local-first snippets before optional backend indexing.
+- Knowledge collections now group uploaded documents by named local scope, allow enable/disable per workspace, and keep chat/model comparison context limited to enabled collections.
 - Role presets are selectable and are sent into chat as system context for Architect, Security reviewer, Coder, Critic, Researcher and Synthesizer modes.
 - Selected chat model now persists locally and the UI records live model options for comparison workflows.
 - Live model comparison panel can send the same prompt to up to three live models through the active backend and render results safely.

@@ -8,6 +8,7 @@
   const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
+  const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_BACKEND_KEY='mimir-chat-active-backend';
   const MODE_KEY='mimir-chat-mode-controls-v1';
@@ -44,7 +45,7 @@
     WELCOME_KEY,
     GROWTH_EVENTS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -145,6 +146,7 @@
     const chat=readJson(chatKey(id),id===DEFAULT_WORKSPACE_ID?readJson(LEGACY_CHAT_KEY,[]):[]);
     const memory=readJson(MEMORY_PREFIX+id,[]);
     const knowledge=readJson(KNOWLEDGE_PREFIX+id,[]);
+    const knowledgeCollections=readJson(COLLECTIONS_PREFIX+id,[]);
     const conversations=readJson(CONVERSATION_PREFIX+id,[]);
 
     return {
@@ -155,7 +157,8 @@
       chat:Array.isArray(chat)?chat:[],
       conversations:Array.isArray(conversations)?conversations:[],
       memory:Array.isArray(memory)?memory:[],
-      knowledge:Array.isArray(knowledge)?knowledge:[]
+      knowledge:Array.isArray(knowledge)?knowledge:[],
+      knowledge_collections:Array.isArray(knowledgeCollections)?knowledgeCollections:[]
     };
   }
 
@@ -163,7 +166,8 @@
     return {
       chat:snapshot.chat.length,
       memory:snapshot.memory.length,
-      knowledge:snapshot.knowledge.length
+      knowledge:snapshot.knowledge.length,
+      knowledge_collections:snapshot.knowledge_collections.length
     };
   }
 
@@ -189,6 +193,7 @@
     ];
     const memoryKeys=keysByPrefix(local,MEMORY_PREFIX);
     const knowledgeKeys=keysByPrefix(local,KNOWLEDGE_PREFIX);
+    const knowledgeCollectionKeys=keysByPrefix(local,COLLECTIONS_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -244,6 +249,16 @@
         retention:'Text extracts stay local unless synced to a protected backend.',
         action:'Export/delete active workspace or clear all MMIR local data.',
         keys:knowledgeKeys
+      },
+      {
+        id:'knowledge-collections',
+        label:'Knowledge collections',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,knowledgeCollectionKeys),
+        size:formatBytes(storageSize(localStorage,knowledgeCollectionKeys)),
+        retention:'Collection names and enable/disable scope stay local with the workspace.',
+        action:'Use Knowledge collection toggles or export/delete active workspace data.',
+        keys:knowledgeCollectionKeys
       },
       {
         id:'workspaces',
@@ -345,7 +360,8 @@
     [
       ['Chat messages',activeCounts.chat],
       ['Memory items',activeCounts.memory],
-      ['Knowledge files',activeCounts.knowledge]
+      ['Knowledge files',activeCounts.knowledge],
+      ['Collections',activeCounts.knowledge_collections]
     ].forEach(([label,value])=>{
       const item=document.createElement('span');
       const strong=document.createElement('strong');
@@ -427,6 +443,7 @@
     window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
+    window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
     window.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated'));
     window.dispatchEvent(new CustomEvent('mmir-active-model-changed',{detail:{id:'',label:''}}));
@@ -434,7 +451,7 @@
 
   function deleteWorkspaceData(button){
     if(!deleteWorkspaceArmed){
-      arm(button,'workspace','Click again to delete local chat, memory and knowledge for this workspace.','Workspace delete cancelled.');
+      arm(button,'workspace','Click again to delete local chat, memory, knowledge and collections for this workspace.','Workspace delete cancelled.');
       return;
     }
 
@@ -445,6 +462,7 @@
     localStorage.removeItem(ACTIVE_CONVERSATION_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
+    localStorage.removeItem(COLLECTIONS_PREFIX+workspaceId());
     button.textContent=button.dataset.originalLabel||'Delete workspace data';
     refresh();
     notifyDataChanged();
@@ -526,6 +544,7 @@
   window.addEventListener('mmir-chat-history-updated',refresh);
   window.addEventListener('mmir-memory-updated',refresh);
   window.addEventListener('mmir-knowledge-updated',refresh);
+  window.addEventListener('mmir-knowledge-collections-updated',refresh);
   window.addEventListener('mmir-backend-profiles-updated',refresh);
   window.addEventListener('mmir-active-model-changed',refresh);
   window.addEventListener('mimir-growth-event',refresh);

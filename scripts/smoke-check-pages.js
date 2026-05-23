@@ -152,7 +152,11 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowl
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'MAX_FILE_BYTES', 'Knowledge upload must enforce file size bounds.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'fileIssue(file)', 'Knowledge upload must validate file type and size before indexing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowledge-preview-list', 'Knowledge upload must show staged file previews.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'COLLECTIONS_PREFIX', 'Knowledge upload must persist local collection scope.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowledge-collection-name', 'Knowledge upload must let users name collections.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'data-collection-toggle', 'Knowledge upload must let users enable or disable collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.css'), '.knowledge-dropzone', 'Knowledge upload needs dropzone styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.css'), '.knowledge-collection-card', 'Knowledge collections need visible styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');
@@ -164,6 +168,8 @@ requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime m
 requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
 requireText(chatRuntimePath, '/chat/completions', 'Chat runtime must use the shared chat completions contract.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
+requireText(chatRuntimePath, 'COLLECTIONS_PREFIX', 'Chat runtime must scope local knowledge to enabled collections.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'), 'COLLECTIONS_PREFIX', 'Model comparison must scope local knowledge to enabled collections.');
 requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
 requireText(firstImpressionPath, 'function syncActivationCockpit', 'First impression script must sync activation cockpit readiness.');
 requireText(firstImpressionPath, 'mmir-first-screen-cockpit-updated', 'Activation cockpit must emit a testable readiness event.');
@@ -181,6 +187,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Delete all local MMIR data', 'Privacy controls must let users reset only MMIR browser data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Provider keys and cloud credentials', 'Privacy inventory must show that provider keys never belong in the public frontend.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, provider keys and backend data.');
 
 const parity = JSON.parse(text(guiParityPath));
@@ -194,7 +201,7 @@ for (const status of ['live', 'beta', 'planned', 'blocked', 'premium planned']) 
     fail(`GUI parity matrix must include status: ${status}.`);
   }
 }
-for (const feature of ['Model selector', 'Workflow builder', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Marketplace and premium routes']) {
+for (const feature of ['Model selector', 'Workflow builder', 'Knowledge collections', 'Rich attachments and previews', 'Web search', 'Code interpreter', 'Marketplace and premium routes']) {
   if (!parityItems.some((item) => item.feature === feature)) {
     fail(`GUI parity matrix is missing ${feature}.`);
   }

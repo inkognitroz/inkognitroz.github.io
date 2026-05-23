@@ -48,7 +48,7 @@
       "items": [
         {"feature": "Workspace memory", "status": "beta", "mmir": "Local-first memory with optional protected backend sync and edit/delete controls.", "benchmark": "ChatGPT memory", "next": "Add scope, expiration and usage explanation in D143."},
         {"feature": "Document upload/RAG", "status": "beta", "mmir": "Text-like local uploads and protected backend indexing/search contracts exist.", "benchmark": "ChatGPT files / Open WebUI documents", "next": "Add previews, richer types and collection scope."},
-        {"feature": "Knowledge collections", "status": "planned", "mmir": "Backlog item D129 covers named collections and enable/disable per chat.", "benchmark": "Open WebUI knowledge", "next": "Implement collection data model and UI."},
+        {"feature": "Knowledge collections", "status": "beta", "mmir": "Named local collections now group uploaded knowledge and can be enabled/disabled before chat or comparison context uses them.", "benchmark": "Open WebUI knowledge", "next": "Add backend collection IDs and per-assistant scope."},
         {"feature": "Rich attachments and previews", "status": "beta", "mmir": "Text-like files can be staged with drag/drop, size/type checks and previews before local-first knowledge indexing.", "benchmark": "ChatGPT file upload", "next": "Add richer binary previews and local/protected multimodal routes."},
         {"feature": "Import/export portability", "status": "planned", "mmir": "Workspace export exists; broad Chat/Open WebUI import-export is D150.", "benchmark": "Open WebUI import/export", "next": "Add portable manifest schema."}
       ]
