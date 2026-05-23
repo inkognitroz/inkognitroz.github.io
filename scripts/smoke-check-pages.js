@@ -454,6 +454,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css'), '
 requireText(join(root, 'scripts', 'smoke-check-device-starter-recommendation.js'), 'Device starter recommendation smoke check passed.', 'D185 device-aware starter recommendation must have a dedicated smoke harness.');
 requireText(firstImpressionPath, 'deviceStarterRecommendation', 'D185 first screen must recommend a starter model from detected device class.');
 requireText(firstImpressionPath, 'recommended_starter:', 'D185 first screen must render the recommended starter evidence.');
+requireText(join(root, 'scripts', 'smoke-check-recommended-starter-telemetry.js'), 'Recommended starter telemetry smoke check passed.', 'D186 recommended starter telemetry must have a dedicated smoke harness.');
+requireText(firstImpressionPath, "recommended-starter", 'D186 first screen must record recommended starter selection telemetry.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'), "if(type==='recommended-starter')", 'D186 activation telemetry must sanitize recommended starter selections.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'starterSelected', 'D186 Progress Dashboard must count recommended starter selections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

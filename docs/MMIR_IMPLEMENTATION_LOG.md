@@ -177,14 +177,15 @@ Updated: 2026-05-23
 - D183 is now beta: Progress Dashboard compares current browser/local/proof/first-chat state against activation gaps and exposes one safe free action per gap.
 - D184 is now beta: first screen shows the same live activation closure state with one safe next action, using local-only profile/proof/receipt signals.
 - D185 is now beta: first-screen activation closure recommends one free installable starter model by detected device class and can preselect it in the runtime model flow.
-- D186 is now the next activation UX/QA slice: record recommended-starter selections in activation telemetry and progress evidence without storing prompts, responses or secrets.
+- D186 is now beta: recommended-starter selections record privacy-safe activation telemetry and Progress Dashboard counts starter-selected events without storing prompts, responses, secrets or paid routes.
+- D187 is now the next activation hardening slice: regain critical-shell byte headroom by moving non-essential first-screen QA banner hydration out of the initial script.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D186` recommended starter telemetry.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D187` critical-shell byte headroom.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

@@ -72,6 +72,7 @@ const files = {
   activationClosureHarness: join(root, 'scripts', 'smoke-check-activation-closure.js'),
   firstScreenClosureHarness: join(root, 'scripts', 'smoke-check-first-screen-activation-closure.js'),
   deviceStarterHarness: join(root, 'scripts', 'smoke-check-device-starter-recommendation.js'),
+  starterTelemetryHarness: join(root, 'scripts', 'smoke-check-recommended-starter-telemetry.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -430,6 +431,10 @@ requireIncludes(files.repairResumeCss, '.activation-closure-strip', 'D184 first-
 requireIncludes(files.deviceStarterHarness, 'Device starter recommendation smoke check passed.', 'D185 device starter recommendation needs dedicated CI fixture coverage.');
 requireIncludes(files.firstImpression, 'deviceStarterRecommendation', 'D185 first screen must recommend a starter model from detected device class.');
 requireIncludes(files.firstImpression, 'recommended_starter:', 'D185 first screen must render recommended starter evidence.');
+requireIncludes(files.starterTelemetryHarness, 'Recommended starter telemetry smoke check passed.', 'D186 recommended starter telemetry needs dedicated CI fixture coverage.');
+requireIncludes(files.firstImpression, "recommended-starter", 'D186 first screen must record recommended starter telemetry.');
+requireIncludes(files.activationTelemetry, "if(type==='recommended-starter')", 'D186 activation telemetry must sanitize recommended starter events.');
+requireIncludes(files.progressDashboard, 'starterSelected', 'D186 Progress Dashboard must count recommended starter selections.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

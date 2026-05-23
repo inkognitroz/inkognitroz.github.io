@@ -129,3 +129,6 @@ jobs:
 
       - name: Smoke-check device starter recommendation
         run: node scripts/smoke-check-device-starter-recommendation.js
+
+      - name: Smoke-check recommended starter telemetry
+        run: node scripts/smoke-check-recommended-starter-telemetry.js

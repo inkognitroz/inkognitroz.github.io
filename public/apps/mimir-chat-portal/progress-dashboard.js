@@ -128,6 +128,7 @@
     const latest=events[events.length-1]||null;
     const verified=events.filter((event)=>event.status==='verified'||event.first_chat_ready||event.status==='ready').length;
     const failed=events.filter((event)=>event.status==='failed'||event.status==='error').length;
+    const starterSelected=events.filter((event)=>event.type==='recommended-starter').length;
     return {
       events,
       latest,
@@ -136,6 +137,7 @@
       detail:latest?latest.note:'Activation telemetry starts when MMIR checks defaults, proof, installs, doctor state or first chat.',
       verified,
       failed,
+      starterSelected,
       autopilot
     };
   }
@@ -180,6 +182,7 @@
         '<span>'+safe(state.events.length)+' events</span>'+
         '<span>'+safe(state.verified)+' ready</span>'+
         '<span>'+safe(state.failed)+' repair</span>'+
+        '<span>'+safe(state.starterSelected)+' starter selected</span>'+
         '<span>'+safe(state.autopilot?.runs||0)+' autopilot</span>'+
       '</div></div>'+
       '<div class="progress-activation-list">'+(events.length?events.map((event)=>

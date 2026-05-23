@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:40:46.034Z",
+  "updated_at": "2026-05-23T14:00:43.691Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 186,
+    "total": 187,
     "done": 51,
-    "beta": 110,
+    "beta": 111,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -760,7 +760,17 @@
         "phase": "Activation QA/UX",
         "total": 5,
         "done": 0,
-        "beta": 4,
+        "beta": 5,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Performance / Activation UX",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1038,7 +1048,7 @@
     }
   ],
   "next_queue": [
-    "D186"
+    "D187"
   ],
   "watchlist": [
     "D082",
@@ -3830,9 +3840,24 @@
       "best_practice": "Owner should know whether users follow the recommended free model path without invasive tracking",
       "done_when": "Progress Dashboard shows recommended-starter selection events and the first screen emits no-spend telemetry",
       "covers": "activation, analytics, model UX",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Recommended starter selections now record privacy-safe activation telemetry and the Progress Dashboard counts starter-selected events without prompts, responses, secrets or paid routes.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D187",
+      "phase": "Performance / Activation UX",
+      "priority": "P0",
+      "work_package": "Critical-shell byte headroom",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Move non-essential replay/repair QA banner logic out of the initial first-screen script and into deferred hydration while preserving visible first action behavior",
+      "best_practice": "The WOW first impression should stay fast as activation UX grows",
+      "done_when": "Critical JS budget regains headroom, first action remains instant, and replay/repair QA still hydrates safely after load",
+      "covers": "performance, activation, architecture",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation UX slice: record recommended-starter selections in activation telemetry and progress dashboard evidence without raw prompts or secrets.",
+      "evidence": "Next activation hardening slice: regain critical-shell byte headroom by moving non-essential first-screen QA banners into deferred hydration.",
       "estimate": "2-6h"
     }
   ]

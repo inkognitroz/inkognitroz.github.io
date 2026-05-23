@@ -81,8 +81,8 @@ if (!d185 || d185.status !== 'beta') {
 }
 
 const d186 = tasks.find((task) => task.seq === 'D186');
-if (!d186 || d186.status !== 'next') {
-  fail('Progress dashboard must expose D186 as the next activation work item.');
+if (!d186 || !['beta', 'next'].includes(d186.status)) {
+  fail('Progress dashboard must expose D186 as beta or next after device starter recommendation ships.');
 }
 
 if (!process.exitCode) {

@@ -156,8 +156,8 @@
     return String(proof?.dataset?.state||'idle');
   }
 
-  function starter(device,id,label,model,note){
-    return {device,id,label,model,note};
+  function starter(device,id,label,model){
+    return {device,id,label,model};
   }
 
   function deviceStarterRecommendation(){
@@ -165,21 +165,21 @@
     const a=String(localConnectorState?.arch||navigator.userAgent||'').toLowerCase();
     const u=String(navigator.userAgent||'').toLowerCase();
     if(/mobile|android|iphone|ipad/.test(u)){
-      return starter('mobile client','ollama-gemma3-270m','Gemma 3 270M','gemma3:270m','Tiny proof via node/VM.');
+      return starter('mobile client','ollama-gemma3-270m','Gemma 3 270M','gemma3:270m');
     }
     if(p.includes('raspberry')||(a.includes('arm')&&p.includes('linux'))){
-      return starter('Raspberry Pi / Linux ARM','ollama-qwen3-06b','Qwen3 0.6B','qwen3:0.6b','ARM edge starter.');
+      return starter('Raspberry Pi / Linux ARM','ollama-qwen3-06b','Qwen3 0.6B','qwen3:0.6b');
     }
     if(p.includes('linux')){
-      return starter('Linux / VM','ollama-qwen3-06b','Qwen3 0.6B','qwen3:0.6b','Small VM starter.');
+      return starter('Linux / VM','ollama-qwen3-06b','Qwen3 0.6B','qwen3:0.6b');
     }
     if(p.includes('mac')){
-      return starter('macOS','ollama-llama32-1b','Llama 3.2 1B','llama3.2:1b','Free Mac starter.');
+      return starter('macOS','ollama-llama32-1b','Llama 3.2 1B','llama3.2:1b');
     }
     if(p.includes('win')){
-      return starter('Windows','ollama-llama32-1b','Llama 3.2 1B','llama3.2:1b','Free Windows starter.');
+      return starter('Windows','ollama-llama32-1b','Llama 3.2 1B','llama3.2:1b');
     }
-    return starter('this device','ollama-gemma3-1b','Gemma 3 1B','gemma3:1b','Free fallback.');
+    return starter('this device','ollama-gemma3-1b','Gemma 3 1B','gemma3:1b');
   }
 
   function clearActivationReplay(){
@@ -316,7 +316,7 @@
       return {state:'watch',title:'Create the free local profile',detail:'Prepares 127.0.0.1. Starter: '+starter.label+' for '+starter.device+'.',action:'Create local profile',target:'#connect-options',kind:'local-profile',starter};
     }
     if(!nodeReady){
-      return {state:nodeHealth==='offline'?'error':'watch',title:'Connect this device',detail:'Node not proven. '+starter.note+' Starter: '+starter.model+'.',action:'Open node health',target:'#node-dashboard',kind:'node-health',starter};
+      return {state:nodeHealth==='offline'?'error':'watch',title:'Connect this device',detail:'Node not proven. Starter: '+starter.model+'.',action:'Open node health',target:'#node-dashboard',kind:'node-health',starter};
     }
     if(!proofReady){
       return {state:'watch',title:'Install '+starter.label,detail:'Use '+starter.model+' for '+starter.device+'; then free proof.',action:'Use '+starter.label,target:'#model-library',kind:'install-starter',starter};
@@ -357,6 +357,7 @@
     if(copy.kind==='install-starter'){
       const select=document.getElementById('runtime-model');
       const starterId=copy.starter?.id||'';
+      window.MimirActivationTelemetry?.record?.('recommended-starter',{...copy.starter,free:true});
       if(select&&starterId&&Array.from(select.options||[]).some(option=>option.value==='starter:'+starterId)){
         select.value='starter:'+starterId;
         select.dispatchEvent(new Event('change',{bubbles:true}));

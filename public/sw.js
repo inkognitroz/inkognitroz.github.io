@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d185-20260523-device-starter';
+const CACHE_NAME='mmir-pwa-d186-20260523-starter-telemetry';
 const SHELL_ASSETS=[
   './',
   './index.html',

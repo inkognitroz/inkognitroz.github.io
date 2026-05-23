@@ -56,6 +56,18 @@
         note:'Model install completed and can bridge into first chat.'
       };
     }
+    if(type==='recommended-starter'){
+      const picked=clean(detail?.label||detail?.model||'starter model',120);
+      const device=clean(detail?.device||'device',80);
+      return {
+        status:'selected',
+        model:clean(detail?.model||picked,120),
+        route:'recommended starter',
+        free:true,
+        first_chat_ready:false,
+        note:picked+' selected for '+device+'. no_paid_routes_started:true.'
+      };
+    }
     if(type==='first-chat-ready'){
       return {
         status:'ready',

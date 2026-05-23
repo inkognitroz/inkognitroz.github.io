@@ -67,6 +67,7 @@ Current priority after the matrix is:
 57. D184 first-screen activation closure strip.
 58. D185 device-aware starter model recommendation.
 59. D186 recommended starter telemetry.
+60. D187 critical-shell byte headroom.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -125,6 +126,7 @@ D182 is now beta: the Progress Dashboard shows scenario targets, evidence and re
 D183 is now beta: Progress Dashboard turns those gaps into a live closure checklist with one safe free action per gap.
 D184 is now beta: the same closure state appears on the first screen.
 D185 is now beta: first-screen activation recommends one free starter model for the detected device class.
-D186 is next: record recommended-starter selection telemetry without storing prompts, responses or secrets.
+D186 is now beta: recommended-starter selection telemetry appears in activation events and progress counts without storing prompts, responses or secrets.
+D187 is next: move non-essential first-screen QA hydration out of the critical shell to regain performance headroom.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.
