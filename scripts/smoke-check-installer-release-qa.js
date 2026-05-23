@@ -5,7 +5,7 @@ import { extname, join, relative, resolve } from 'node:path';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector';
-const textExtensions = new Set(['.cmd', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
+const textExtensions = new Set(['.cmd', '.command', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
 const files = {
   manifest: join(publicDir, 'downloads', 'mmir-local-connector-release.json'),
   installPage: join(publicDir, 'downloads', 'mmir-local-connector-install.html'),

@@ -6,7 +6,7 @@ const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const manifestPath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
 const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector';
-const textExtensions = new Set(['.cmd', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
+const textExtensions = new Set(['.cmd', '.command', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
 
 function bytesForHash(file) {
   const bytes = readFileSync(file);

@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const docsDir = resolve(root, 'docs');
-const textExtensions = new Set(['.cmd', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
+const textExtensions = new Set(['.cmd', '.command', '.css', '.html', '.js', '.json', '.mjs', '.ps1', '.sh', '.svg', '.txt']);
 
 const files = {
   index: join(publicDir, 'index.html'),
