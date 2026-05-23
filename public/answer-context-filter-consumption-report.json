@@ -1,0 +1,39 @@
+{
+  "title": "Answer Context Filter Consumption QA",
+  "principle": "Receipt-linked source filters must become visible source focus in Memory and Knowledge panels without storing raw prompts, raw responses, memory text, knowledge snippets or provider secrets.",
+  "public_repo_rule": "Panels consume metadata-only receipt state from local dataset attributes and local highlight receipts. They render counts, IDs, source labels and state explanations, but do not persist private content in public artifacts.",
+  "scenarios": [
+    {
+      "id": "memory-panel-filter-state",
+      "status": "ready",
+      "target": "#memory-panel",
+      "expected": "Memory renders a visible receipt filter note when a selected answer carries memory source metadata.",
+      "selector": "#memory-receipt-filter-status",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "memory-match-badges",
+      "status": "ready",
+      "target": ".memory-item[data-receipt-match=\"true\"]",
+      "expected": "Matching saved memory and last-message memory-use entries are marked as used in the selected answer when IDs match.",
+      "selector": "data-receipt-match",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "knowledge-exact-id-explainer",
+      "status": "ready",
+      "target": "#knowledge-panel",
+      "expected": "Knowledge shows an explicit receipt filter state and explains when exact document IDs are not available yet.",
+      "selector": "#knowledge-receipt-filter-status",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "safe-consumption-boundary",
+      "status": "ready",
+      "target": "public frontend",
+      "expected": "Filter consumption remains metadata-only and does not introduce provider keys, raw prompts, raw responses, memory text or knowledge snippets into public reports.",
+      "selector": "public-safety-audit",
+      "no_paid_routes_started": true
+    }
+  ]
+}

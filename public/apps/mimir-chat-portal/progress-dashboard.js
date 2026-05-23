@@ -653,6 +653,25 @@
     '</section>';
   }
 
+  function renderAnswerContextFilterConsumptionReport(data){
+    const report=data.answer_context_filter_consumption_report||{};
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    if(!scenarios.length)return '';
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&scenario.no_paid_routes_started===true);
+    return '<section id="progress-answer-context-filter-consumption" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Source focus</p><h2>'+safe(report.title||'Answer context filter consumption QA')+'</h2></div><small>'+safe(report.principle||'Receipt filters should become visible source focus.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+scenarios.map((scenario)=>
+        '<article class="progress-no-model-scenario" data-scenario="'+safe(scenario.id)+'">'+
+          '<span>'+safe(label(scenario.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(scenario.target||scenario.id)+'</h3>'+
+          '<p>'+safe(scenario.expected||'')+'</p>'+
+          '<strong>'+safe(scenario.selector||'filter consumption')+'</strong>'+
+          '<small>no spend / metadata only</small>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe source filter consumption only.')+'</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -908,7 +927,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();

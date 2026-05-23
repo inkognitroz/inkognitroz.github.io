@@ -4,6 +4,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const MEMORY_PREFIX='mimir-memory-v1:';
   const MEMORY_USE_PREFIX='mimir-memory-use-v1:';
+  const HIGHLIGHT_PREFIX='mimir-answer-context-highlight-v1:';
   const MAX_LOCAL_ITEMS=20;
   const MAX_IMPORT_LINES=12;
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
@@ -17,7 +18,9 @@
   let importEl=null;
   let usedEl=null;
   let statusEl=null;
+  let receiptFilterEl=null;
   let editingId='';
+  let receiptEventFilter=null;
 
   if(!host)return;
 
@@ -27,6 +30,7 @@
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function key(){return MEMORY_PREFIX+workspaceId();}
   function useKey(){return MEMORY_USE_PREFIX+workspaceId();}
+  function highlightKey(){return HIGHLIGHT_PREFIX+workspaceId();}
   function clean(value,max=1000){return String(value||'').trim().slice(0,max);}
   function cleanType(value){
     const type=clean(value,48).toLowerCase();
@@ -102,6 +106,60 @@
         usedAt:clean(item.usedAt||item.used_at,64)
       })).filter(item=>item.text).slice(0,8):[];
     }catch(error){return [];}
+  }
+
+  function cleanIds(value){
+    const source=Array.isArray(value)?value:String(value||'').split(',');
+    const seen=new Set();
+    return source.map(item=>clean(item,120)).filter(item=>{
+      if(!item||seen.has(item))return false;
+      seen.add(item);
+      return true;
+    }).slice(0,16);
+  }
+
+  function readReceiptHighlight(){
+    try{
+      const value=JSON.parse(localStorage.getItem(highlightKey())||'null');
+      return value&&value.target==='#memory-panel'?value:null;
+    }catch(error){return null;}
+  }
+
+  function rememberReceiptFilter(detail){
+    if(!detail||detail.target!=='#memory-panel')return;
+    receiptEventFilter={
+      target:'#memory-panel',
+      message_id:clean(detail.message_id,120),
+      model:clean(detail.model,160),
+      memory_use_ids:cleanIds(detail.memory_use_ids),
+      memory_use_count:Math.max(0,Math.round(Number(detail.memory_use_count)||0)),
+      memory_sources:cleanTags(detail.memory_sources||[])
+    };
+  }
+
+  function activeReceiptFilter(){
+    const panel=document.getElementById('memory-panel');
+    const highlight=readReceiptHighlight()||{};
+    const source=receiptEventFilter||{};
+    const ids=cleanIds(panel?.dataset.receiptFilterMemoryIds||source.memory_use_ids||highlight.memory_use_ids||[]);
+    const count=Math.max(ids.length,Math.round(Number(source.memory_use_count||highlight.memory_use_count)||0));
+    const messageId=clean(panel?.dataset.receiptFilterMessage||source.message_id||highlight.message_id,120);
+    const model=clean(panel?.dataset.receiptFilterModel||source.model||highlight.model,160);
+    const sources=cleanTags(source.memory_sources||highlight.memory_sources||[]);
+    return {
+      active:Boolean(messageId||ids.length||count||highlight.target==='#memory-panel'||source.target==='#memory-panel'),
+      messageId,
+      model,
+      ids,
+      idSet:new Set(ids),
+      count,
+      sources
+    };
+  }
+
+  function matchesReceiptFilter(item,filter){
+    if(!filter?.ids?.length)return false;
+    return [item?.id,item?.backendId,item?.memoryId].some(value=>filter.idSet.has(String(value||'')));
   }
 
   function saveMemory(items){
@@ -238,8 +296,30 @@
     if(notesEl)notesEl.value=item?.notes||'';
   }
 
-  function renderMemoryUse(){
+  function renderReceiptFilter(filter,items){
+    if(!receiptFilterEl)return;
+    const active=filter||activeReceiptFilter();
+    const saved=Array.isArray(items)?items:readMemory();
+    const matches=saved.filter(item=>matchesReceiptFilter(item,active)).length;
+    receiptFilterEl.hidden=!active.active;
+    receiptFilterEl.dataset.state=active.ids.length?(matches?'ready':'watch'):(active.active?'watch':'idle');
+    if(!active.active){
+      receiptFilterEl.textContent='';
+      return;
+    }
+    const sourceLabel=active.sources.length?' from '+active.sources.join('/')+'.':'.';
+    if(active.ids.length&&matches){
+      receiptFilterEl.textContent='Receipt filter active: '+String(matches)+' matching memory item(s) from the selected answer are marked below'+sourceLabel;
+    }else if(active.ids.length){
+      receiptFilterEl.textContent='Receipt filter active: '+String(active.ids.length)+' source ID(s) are available, but no saved local memory in this workspace matches yet'+sourceLabel;
+    }else{
+      receiptFilterEl.textContent='Receipt filter active: exact memory IDs were not available for this answer. The current memory-use review remains visible below.';
+    }
+  }
+
+  function renderMemoryUse(filter){
     if(!usedEl)return;
+    const active=filter||activeReceiptFilter();
     const used=readMemoryUse();
     usedEl.innerHTML='';
     if(!used.length){
@@ -255,14 +335,20 @@
       const matched=item.matchedTerms.length?' matched '+item.matchedTerms.join(', '):'';
       meta.textContent=[item.source,item.type,item.scope,item.reason+matched].filter(Boolean).join(' - ');
       article.append(strong,meta);
+      if(matchesReceiptFilter(item,active)){
+        article.setAttribute('data-receipt-match','true');
+        article.appendChild(badge('used in selected answer','ready'));
+      }
       usedEl.appendChild(article);
     }
   }
 
   function render(){
-    renderMemoryUse();
     if(!listEl)return;
     const items=readMemory();
+    const filter=activeReceiptFilter();
+    renderReceiptFilter(filter,items);
+    renderMemoryUse(filter);
     listEl.innerHTML='';
     if(!items.length){
       listEl.innerHTML='<p class="empty-backends">No saved memory in this workspace.</p>';
@@ -273,6 +359,7 @@
       article.className='memory-item';
       if(item.enabled===false)article.dataset.state='disabled';
       if(item.expired)article.dataset.expired='true';
+      if(matchesReceiptFilter(item,filter))article.setAttribute('data-receipt-match','true');
 
       const body=document.createElement('div');
       body.className='memory-copy';
@@ -290,6 +377,7 @@
       );
       if(item.tags.length)meta.appendChild(badge('tags: '+item.tags.join(', ')));
       if(item.expiresAt)meta.appendChild(badge('expires '+item.expiresAt.slice(0,10),item.expired?'warning':'idle'));
+      if(matchesReceiptFilter(item,filter))meta.appendChild(badge('used in selected answer','ready'));
       body.append(text,meta);
       if(item.notes){
         const notes=document.createElement('small');
@@ -467,6 +555,7 @@
           '<button id="memory-import" type="button">Import notes</button>'+
         '</div>'+
         '<p id="memory-status" class="dashboard-note" aria-live="polite"></p>'+
+        '<p id="memory-receipt-filter-status" class="dashboard-note memory-receipt-filter" aria-live="polite" hidden></p>'+
         '<div class="memory-use-review">'+
           '<strong>Used in last message</strong>'+
           '<div id="memory-use-list" class="memory-use-list" aria-live="polite"></div>'+
@@ -484,6 +573,7 @@
     listEl=document.getElementById('memory-list');
     usedEl=document.getElementById('memory-use-list');
     statusEl=document.getElementById('memory-status');
+    receiptFilterEl=document.getElementById('memory-receipt-filter-status');
     document.getElementById('memory-save')?.addEventListener('click',saveInput);
     document.getElementById('memory-sync')?.addEventListener('click',syncAll);
     document.getElementById('memory-refresh')?.addEventListener('click',loadBackendMemory);
@@ -491,9 +581,11 @@
     render();
   }
 
-  window.addEventListener('mmir-workspace-changed',()=>{editingId='';applyForm(null);render();setStatus('');});
+  window.addEventListener('mmir-workspace-changed',()=>{receiptEventFilter=null;editingId='';applyForm(null);render();setStatus('');});
   window.addEventListener('mmir-memory-updated',render);
-  window.addEventListener('mmir-memory-use-updated',renderMemoryUse);
+  window.addEventListener('mmir-memory-use-updated',()=>render());
+  window.addEventListener('mmir-answer-context-highlight-updated',(event)=>{rememberReceiptFilter(event.detail||{});render();});
+  window.addEventListener('mmir-answer-context-source-filter',(event)=>{rememberReceiptFilter(event.detail||{});render();});
   window.addEventListener('mmir-backend-profiles-updated',()=>{if(activeConnection())syncAll();});
   window.addEventListener('storage',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T21:26:13.848Z",
+  "updated_at": "2026-05-23T21:39:09.877Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 227,
+    "total": 228,
     "done": 51,
-    "beta": 151,
+    "beta": 152,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -970,8 +970,8 @@
         "phase": "Memory / Knowledge UX",
         "total": 2,
         "done": 0,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1002,6 +1002,16 @@
         "done": 0,
         "beta": 4,
         "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Knowledge / Context Audit",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -2231,6 +2241,45 @@
       }
     ]
   },
+  "answer_context_filter_consumption_report": {
+    "title": "Answer Context Filter Consumption QA",
+    "principle": "Receipt-linked source filters must become visible source focus in Memory and Knowledge panels without storing raw prompts, raw responses, memory text, knowledge snippets or provider secrets.",
+    "public_repo_rule": "Panels consume metadata-only receipt state from local dataset attributes and local highlight receipts. They render counts, IDs, source labels and state explanations, but do not persist private content in public artifacts.",
+    "scenarios": [
+      {
+        "id": "memory-panel-filter-state",
+        "status": "ready",
+        "target": "#memory-panel",
+        "expected": "Memory renders a visible receipt filter note when a selected answer carries memory source metadata.",
+        "selector": "#memory-receipt-filter-status",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "memory-match-badges",
+        "status": "ready",
+        "target": ".memory-item[data-receipt-match=\"true\"]",
+        "expected": "Matching saved memory and last-message memory-use entries are marked as used in the selected answer when IDs match.",
+        "selector": "data-receipt-match",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "knowledge-exact-id-explainer",
+        "status": "ready",
+        "target": "#knowledge-panel",
+        "expected": "Knowledge shows an explicit receipt filter state and explains when exact document IDs are not available yet.",
+        "selector": "#knowledge-receipt-filter-status",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "safe-consumption-boundary",
+        "status": "ready",
+        "target": "public frontend",
+        "expected": "Filter consumption remains metadata-only and does not introduce provider keys, raw prompts, raw responses, memory text or knowledge snippets into public reports.",
+        "selector": "public-safety-audit",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2281,7 +2330,7 @@
     }
   ],
   "next_queue": [
-    "D227"
+    "D228"
   ],
   "watchlist": [
     "D082",
@@ -5688,9 +5737,24 @@
       "best_practice": "Source filters should become visible source focus, not only stored metadata",
       "done_when": "Memory/Knowledge panels show receipt-linked filter state and matching source badges",
       "covers": "memory, knowledge, audit, usability",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Memory and Knowledge panels now consume receipt source filters, show visible receipt-filter state, mark matching memory/knowledge IDs where available and explain missing exact knowledge IDs.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D228",
+      "phase": "Knowledge / Context Audit",
+      "priority": "P0",
+      "work_package": "Knowledge source IDs in receipts",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Capture safe knowledge document and collection IDs used by chat context, carry them into answer receipts and source filters, and mark exact Knowledge-panel sources when available",
+      "best_practice": "Knowledge audit should become precise without storing document text in receipts",
+      "done_when": "Selected answer receipts can focus the exact local knowledge document or collection used, with metadata-only storage",
+      "covers": "knowledge, RAG, audit, trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: make Memory and Knowledge panels consume receipt source filters with visible filtered lists or badges.",
+      "evidence": "Next activation slice: capture safe knowledge document or collection IDs in runtime context receipts so Knowledge can mark exact sources, not only explain the gap.",
       "estimate": "2-6h"
     }
   ]

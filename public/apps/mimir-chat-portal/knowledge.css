@@ -168,6 +168,11 @@
   background: #fff;
 }
 
+.knowledge-item[data-receipt-match="true"] {
+  border-color: rgba(16, 163, 127, 0.52);
+  background: #f0fdf9;
+}
+
 .knowledge-item div {
   display: grid;
   gap: 3px;
@@ -180,6 +185,11 @@
 
 .knowledge-item small {
   color: var(--mimir-muted, #6b7280);
+}
+
+.knowledge-receipt-match {
+  color: #047857 !important;
+  font-weight: 700;
 }
 
 .knowledge-preview {

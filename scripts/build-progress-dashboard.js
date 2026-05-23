@@ -22,6 +22,7 @@ const answerContextReceiptReportPath = resolve(root, 'public', 'answer-context-r
 const answerContextDrilldownReportPath = resolve(root, 'public', 'answer-context-drilldown-report.json');
 const answerContextHighlightReportPath = resolve(root, 'public', 'answer-context-highlight-report.json');
 const answerContextSourceFilterReportPath = resolve(root, 'public', 'answer-context-source-filter-report.json');
+const answerContextFilterConsumptionReportPath = resolve(root, 'public', 'answer-context-filter-consumption-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -181,7 +182,8 @@ const overrides = new Map([
   ['D224', { status: 'beta', evidence: 'Answer context receipts now include direct Memory, Knowledge, Model and Privacy drill-down actions that open existing public-safe panels.' }],
   ['D225', { status: 'beta', evidence: 'Receipt drill-downs now write local metadata highlights and render the selected answer context inside Memory, Knowledge, Model and Privacy panels.' }],
   ['D226', { status: 'beta', evidence: 'Receipt highlights now carry safe source filters: memory-use IDs/counts/sources and selected model labels are attached to target panels.' }],
-  ['D227', { status: 'next', evidence: 'Next activation slice: make Memory and Knowledge panels consume receipt source filters with visible filtered lists or badges.' }]
+  ['D227', { status: 'beta', evidence: 'Memory and Knowledge panels now consume receipt source filters, show visible receipt-filter state, mark matching memory/knowledge IDs where available and explain missing exact knowledge IDs.' }],
+  ['D228', { status: 'next', evidence: 'Next activation slice: capture safe knowledge document or collection IDs in runtime context receipts so Knowledge can mark exact sources, not only explain the gap.' }]
 ]);
 
 const repoMeta = [
@@ -375,6 +377,11 @@ function readAnswerContextSourceFilterReport() {
   return JSON.parse(readFileSync(answerContextSourceFilterReportPath, 'utf8'));
 }
 
+function readAnswerContextFilterConsumptionReport() {
+  if (!existsSync(answerContextFilterConsumptionReportPath)) return null;
+  return JSON.parse(readFileSync(answerContextFilterConsumptionReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -399,7 +406,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D227', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D228', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -436,6 +443,7 @@ const data = {
   answer_context_drilldown_report: readAnswerContextDrilldownReport(),
   answer_context_highlight_report: readAnswerContextHighlightReport(),
   answer_context_source_filter_report: readAnswerContextSourceFilterReport(),
+  answer_context_filter_consumption_report: readAnswerContextFilterConsumptionReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

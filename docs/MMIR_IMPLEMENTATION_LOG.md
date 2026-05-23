@@ -218,14 +218,15 @@ Updated: 2026-05-23
 - D224 is now beta: answer context receipts include direct Memory, Knowledge, Model and Privacy actions that open existing panels without sending prompts, storing secrets or starting paid routes.
 - D225 is now beta: receipt drill-downs now write local metadata highlights and render the selected answer context inside Memory, Knowledge, Model and Privacy panels.
 - D226 is now beta: receipt highlights now carry safe source filters, including memory-use IDs/counts/sources and selected model labels on the target panel dataset.
-- D227 is now next: make Memory and Knowledge panels consume receipt source filters with visible filtered lists or badges.
+- D227 is now beta: Memory and Knowledge panels consume receipt source filters, show visible filter state, mark matching source IDs where available and explain when exact Knowledge IDs are not available yet.
+- D228 is now next: capture safe knowledge document/collection IDs in runtime context receipts so Knowledge can mark exact sources instead of only explaining the gap.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D227` receipt filter consumption in Memory/Knowledge panels.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D228` knowledge source IDs in answer receipts.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

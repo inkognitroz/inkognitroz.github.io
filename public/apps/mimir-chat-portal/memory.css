@@ -79,6 +79,12 @@
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
+.memory-item[data-receipt-match="true"],
+.memory-used-item[data-receipt-match="true"] {
+  border-color: rgba(16, 163, 127, 0.52);
+  background: #f0fdf9;
+}
+
 .memory-used-item strong {
   color: var(--mimir-text, #111827);
   font-size: 0.86rem;

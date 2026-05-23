@@ -4,6 +4,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
+  const HIGHLIGHT_PREFIX='mimir-answer-context-highlight-v1:';
   const MAX_DOCUMENTS=10;
   const MAX_CHARS_PER_DOC=6000;
   const MAX_FILE_BYTES=1024*1024;
@@ -17,12 +18,15 @@
   let listEl=null;
   let statusEl=null;
   let selectedFiles=[];
+  let receiptFilterEl=null;
+  let receiptEventFilter=null;
 
   if(!host)return;
 
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function key(){return KNOWLEDGE_PREFIX+workspaceId();}
   function collectionKey(){return COLLECTIONS_PREFIX+workspaceId();}
+  function highlightKey(){return HIGHLIGHT_PREFIX+workspaceId();}
   function setStatus(message){if(statusEl)statusEl.textContent=message||'';}
   function collectionId(name){
     const id=String(name||'').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -143,6 +147,59 @@
     }catch(error){return [];}
   }
 
+  function cleanIds(value){
+    const source=Array.isArray(value)?value:String(value||'').split(',');
+    const seen=new Set();
+    return source.map(item=>String(item||'').trim().slice(0,120)).filter(item=>{
+      if(!item||seen.has(item))return false;
+      seen.add(item);
+      return true;
+    }).slice(0,16);
+  }
+
+  function readReceiptHighlight(){
+    try{
+      const value=JSON.parse(localStorage.getItem(highlightKey())||'null');
+      return value&&value.target==='#knowledge-panel'?value:null;
+    }catch(error){return null;}
+  }
+
+  function rememberReceiptFilter(detail){
+    if(!detail||detail.target!=='#knowledge-panel')return;
+    receiptEventFilter={
+      target:'#knowledge-panel',
+      message_id:String(detail.message_id||'').trim().slice(0,120),
+      model:String(detail.model||'').trim().slice(0,160),
+      knowledge_use_ids:cleanIds(detail.knowledge_use_ids),
+      knowledge_sources:Array.isArray(detail.knowledge_sources)?detail.knowledge_sources.map(item=>String(item||'').trim().slice(0,80)).filter(Boolean).slice(0,8):[]
+    };
+  }
+
+  function activeReceiptFilter(){
+    const panel=document.getElementById('knowledge-panel');
+    const highlight=readReceiptHighlight()||{};
+    const source=receiptEventFilter||{};
+    const ids=cleanIds(panel?.dataset.receiptFilterKnowledgeIds||source.knowledge_use_ids||highlight.knowledge_use_ids||[]);
+    const messageId=String(panel?.dataset.receiptFilterMessage||source.message_id||highlight.message_id||'').trim().slice(0,120);
+    const model=String(panel?.dataset.receiptFilterModel||source.model||highlight.model||'').trim().slice(0,160);
+    const knowledge=String(source.knowledge||highlight.knowledge||'none').trim().slice(0,60);
+    const sources=Array.isArray(source.knowledge_sources)?source.knowledge_sources:(Array.isArray(highlight.knowledge_sources)?highlight.knowledge_sources:[]);
+    return {
+      active:Boolean(messageId||ids.length||highlight.target==='#knowledge-panel'||source.target==='#knowledge-panel'),
+      messageId,
+      model,
+      knowledge,
+      ids,
+      idSet:new Set(ids),
+      sources:sources.map(item=>String(item||'').trim().slice(0,80)).filter(Boolean).slice(0,8)
+    };
+  }
+
+  function matchesReceiptFilter(item,filter){
+    if(!filter?.ids?.length)return false;
+    return [item?.id,item?.backendId,item?.collection_id].some(value=>filter.idSet.has(String(value||'')));
+  }
+
   function saveKnowledge(items){
     localStorage.setItem(key(),JSON.stringify(items.slice(-MAX_DOCUMENTS)));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:workspaceId()}}));
@@ -191,10 +248,32 @@
     });
   }
 
+  function renderReceiptFilter(filter,items){
+    if(!receiptFilterEl)return;
+    const active=filter||activeReceiptFilter();
+    const saved=Array.isArray(items)?items:readKnowledge();
+    const matches=saved.filter(item=>matchesReceiptFilter(item,active)).length;
+    receiptFilterEl.hidden=!active.active;
+    receiptFilterEl.dataset.state=active.ids.length?(matches?'ready':'watch'):(active.active?'watch':'idle');
+    if(!active.active){
+      receiptFilterEl.textContent='';
+      return;
+    }
+    if(active.ids.length&&matches){
+      receiptFilterEl.textContent='Receipt filter active: '+String(matches)+' matching knowledge item(s) from the selected answer are marked below.';
+    }else if(active.ids.length){
+      receiptFilterEl.textContent='Receipt filter active: '+String(active.ids.length)+' knowledge source ID(s) are available, but no local document or collection matches yet.';
+    }else{
+      receiptFilterEl.textContent='Receipt filter active: this answer used knowledge state '+(active.knowledge||'none')+'. Exact document IDs are not available yet, so no file is auto-filtered.';
+    }
+  }
+
   function render(){
     if(!listEl)return;
     const items=readKnowledge();
     const state=collectionState();
+    const filter=activeReceiptFilter();
+    renderReceiptFilter(filter,items);
     listEl.innerHTML='';
     if(!items.length){
       listEl.innerHTML='<p class="empty-backends">No local knowledge in this workspace.</p>';
@@ -203,6 +282,7 @@
     for(const item of items.slice().reverse()){
       const article=document.createElement('article');
       article.className='knowledge-item';
+      if(matchesReceiptFilter(item,filter))article.setAttribute('data-receipt-match','true');
       const body=document.createElement('div');
       const title=document.createElement('strong');
       title.textContent=item.name;
@@ -218,6 +298,12 @@
         preview.className='knowledge-preview';
         preview.textContent=item.preview;
         body.appendChild(preview);
+      }
+      if(matchesReceiptFilter(item,filter)){
+        const marker=document.createElement('small');
+        marker.className='knowledge-receipt-match';
+        marker.textContent='Used in selected answer';
+        body.appendChild(marker);
       }
       const button=document.createElement('button');
       button.type='button';
@@ -368,6 +454,7 @@
         '<div id="knowledge-preview-list" class="knowledge-preview-list" aria-live="polite"></div>'+
         '<button id="knowledge-save" type="button">Add knowledge</button>'+
         '<p id="knowledge-status" class="dashboard-note" aria-live="polite"></p>'+
+        '<p id="knowledge-receipt-filter-status" class="dashboard-note knowledge-receipt-filter" aria-live="polite" hidden></p>'+
         '<div id="knowledge-list" class="knowledge-list" aria-live="polite"></div>'+
       '</div>';
     host.appendChild(details);
@@ -378,6 +465,7 @@
     collectionListEl=document.getElementById('knowledge-collection-list');
     listEl=document.getElementById('knowledge-list');
     statusEl=document.getElementById('knowledge-status');
+    receiptFilterEl=document.getElementById('knowledge-receipt-filter-status');
     fileInput?.addEventListener('change',()=>setSelectedFiles(fileInput.files||[]));
     ['dragenter','dragover'].forEach(type=>dropzoneEl?.addEventListener(type,handleDrag));
     ['dragleave','drop'].forEach(type=>dropzoneEl?.addEventListener(type,type==='drop'?handleDrop:handleDrag));
@@ -394,9 +482,11 @@
     render();
   }
 
-  window.addEventListener('mmir-workspace-changed',()=>{renderPreviews();renderCollections();render();setStatus('');});
+  window.addEventListener('mmir-workspace-changed',()=>{receiptEventFilter=null;renderPreviews();renderCollections();render();setStatus('');});
   window.addEventListener('mmir-knowledge-updated',()=>{renderCollections();render();});
   window.addEventListener('mmir-knowledge-collections-updated',()=>{renderCollections();render();});
+  window.addEventListener('mmir-answer-context-highlight-updated',(event)=>{rememberReceiptFilter(event.detail||{});renderCollections();render();});
+  window.addEventListener('mmir-answer-context-source-filter',(event)=>{rememberReceiptFilter(event.detail||{});renderCollections();render();});
   window.addEventListener('storage',()=>{renderCollections();render();});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();

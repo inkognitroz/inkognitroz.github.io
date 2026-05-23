@@ -184,6 +184,9 @@ jobs:
       - name: Smoke-check answer context source filter
         run: node scripts/smoke-check-answer-context-source-filter.js
 
+      - name: Smoke-check answer context filter consumption
+        run: node scripts/smoke-check-answer-context-filter-consumption.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 
