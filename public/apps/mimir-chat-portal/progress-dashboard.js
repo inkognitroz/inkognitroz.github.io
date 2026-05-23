@@ -9,6 +9,8 @@
   const ACTIVATION_EVENTS_PREFIX='mimir-activation-events-v1:';
   const AUTOPILOT_PREFIX='mimir-activation-autopilot-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
+  const PROFILE_KEY='mimir-chat-backend-profiles';
+  const ACTIVE_KEY='mimir-chat-active-backend';
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
@@ -22,6 +24,22 @@
   function activationEventsStorageKey(){return ACTIVATION_EVENTS_PREFIX+activeWorkspaceId();}
   function autopilotStorageKey(){return AUTOPILOT_PREFIX+activeWorkspaceId();}
   function activationReplayStorageKey(){return ACTIVATION_REPLAY_PREFIX+activeWorkspaceId();}
+  function readProfiles(){
+    try{
+      const value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');
+      return Array.isArray(value)?value:[];
+    }catch(error){
+      return [];
+    }
+  }
+  function activeProfile(){
+    const activeId=localStorage.getItem(ACTIVE_KEY)||'';
+    return readProfiles().find((profile)=>profile.id===activeId)||null;
+  }
+  function runtimeProofState(){
+    const proof=document.getElementById('runtime-live-proof');
+    return String(proof?.dataset?.state||'idle');
+  }
   function readFirstChatReceipt(){
     try{
       const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
@@ -201,6 +219,40 @@
         '</article>';
       }).join('')+'</div>'+
     '</div>';
+  }
+
+  function liveGapItems(){
+    const profile=activeProfile();
+    const receipt=readFirstChatReceipt();
+    const proofState=runtimeProofState();
+    const proofReady=proofState==='ready'||profile?.liveness==='chat-probed'||Boolean(profile?.lastProofModel)||receipt?.status==='success';
+    const profileReady=Boolean(profile?.url&&profile?.provider==='local-node');
+    const nodeHealth=String(profile?.health||'unknown');
+    const nodeReady=nodeHealth==='ready'||nodeHealth==='degraded'||proofReady;
+    const firstChatReady=receipt?.status==='success';
+    const firstChatFailed=receipt?.status==='failed';
+    return [
+      {id:'browser-guide',label:'Browser guide',state:'ready',detail:'Free browser helper is available before setup.',action:'Open chat',target:'#mimir-prompt'},
+      {id:'local-profile',label:'Free local profile',state:profileReady?'ready':'watch',detail:profileReady?'Active local profile points to '+String(profile.url||'127.0.0.1')+'.':'MMIR can create the free local profile automatically.',action:profileReady?'Open settings':'Create local profile',target:'#backend-settings'},
+      {id:'local-node',label:'Local node health',state:nodeReady?'ready':(nodeHealth==='offline'?'error':'watch'),detail:nodeReady?'Node state is '+nodeHealth+'.':(nodeHealth==='offline'?'Local node is offline or not paired.':'Node has not been verified in this browser yet.'),action:'Open node health',target:'#node-dashboard'},
+      {id:'live-proof',label:'Live model proof',state:proofReady?'ready':'watch',detail:proofReady?'Proof model: '+String(profile?.lastProofModel||receipt?.model||'verified route')+'.':'Run a free proof after node/model setup.',action:proofReady?'Open chat':'Retry free proof',target:'#mimir-chat-runtime'},
+      {id:'first-chat',label:'First useful chat',state:firstChatReady?'ready':(firstChatFailed?'error':'watch'),detail:firstChatReady?'Receipt saved without raw prompt/response.':(firstChatFailed?'Last first chat failed; recovery is ready.':'No first-chat receipt yet.'),action:firstChatReady?'Open chat':'Start or repair first chat',target:'#mimir-prompt'}
+    ];
+  }
+
+  function renderLiveGapChecklist(){
+    const items=liveGapItems();
+    const remaining=items.filter((item)=>item.state!=='ready').length;
+    return '<section id="progress-live-gap-checklist" class="progress-live-gap-checklist" data-state="'+(remaining?'watch':'ready')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Live activation closure</p><h2>Close the remaining gaps</h2></div><small>Current browser state only. no_paid_routes_started:true / provider_secrets_stored:false.</small></div>'+
+      '<div class="progress-live-gap-grid">'+items.map((item)=>
+        '<article class="progress-live-gap-item" data-gap="'+safe(item.id)+'" data-state="'+safe(item.state)+'">'+
+          '<div><span>'+safe(label(item.state))+'</span><strong>'+safe(item.label)+'</strong><small>'+safe(item.detail)+'</small></div>'+
+          '<button type="button" data-live-gap-action="'+safe(item.id)+'" data-target="'+safe(item.target)+'">'+safe(item.action)+'</button>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">This checklist reads local MMIR state and DOM proof only; it does not create paid/provider work or store secrets.</small>'+
+    '</section>';
   }
 
   function renderActivationSimulator(data){
@@ -384,6 +436,28 @@
     });
   }
 
+  function bindLiveGapChecklist(){
+    root.querySelectorAll('[data-live-gap-action]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const action=button.getAttribute('data-live-gap-action')||'';
+        const target=button.getAttribute('data-target')||'#progress-dashboard';
+        if(action==='local-profile'){
+          window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+        }
+        if(action==='live-proof'){
+          const retry=document.querySelector('#runtime-live-proof [data-proof-action="retry"]')||document.getElementById('runtime-refresh');
+          retry?.click?.();
+        }
+        if(action==='first-chat'){
+          runFirstChatRecovery();
+          return;
+        }
+        if(target.startsWith('#'))openTarget(target);
+        setSummary('Activation closure action opened: '+label(action)+'. No paid route, provider key or secret was used.','ready');
+      });
+    });
+  }
+
   function openHashDetails(){
     const id=window.location.hash?window.location.hash.slice(1):'';
     if(!id)return;
@@ -393,10 +467,11 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderActivationSimulator(dashboard)+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderActivationSimulator(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindActivationTelemetry();
     bindActivationSimulator();
+    bindLiveGapChecklist();
     bindFilters();
     openHashDetails();
   }

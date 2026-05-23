@@ -120,3 +120,6 @@ jobs:
 
       - name: Smoke-check activation route map
         run: node scripts/smoke-check-activation-route-map.js
+
+      - name: Smoke-check activation closure
+        run: node scripts/smoke-check-activation-closure.js

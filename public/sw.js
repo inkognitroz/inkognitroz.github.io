@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d182-20260523-replay-route-map';
+const CACHE_NAME='mmir-pwa-d183-20260523-live-gap-checklist';
 const SHELL_ASSETS=[
   './',
   './index.html',

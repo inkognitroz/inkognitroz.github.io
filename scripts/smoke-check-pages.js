@@ -445,6 +445,9 @@ requireText(join(root, 'scripts', 'smoke-check-activation-replay-render.js'), 'r
 requireText(join(root, 'scripts', 'smoke-check-activation-route-map.js'), 'Activation route map smoke check passed.', 'D182 activation route map must have a dedicated smoke harness.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'renderReplayRouteMap', 'D182 Progress Dashboard must render the activation replay route map.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-replay-route-map', 'D182 route map needs visible Progress Dashboard styling.');
+requireText(join(root, 'scripts', 'smoke-check-activation-closure.js'), 'Activation closure smoke check passed.', 'D183 live activation gap closure checklist must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'renderLiveGapChecklist', 'D183 Progress Dashboard must render the live activation closure checklist.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-live-gap-checklist', 'D183 live activation closure checklist needs visible styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

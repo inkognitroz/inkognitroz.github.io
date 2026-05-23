@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:19:25.639Z",
+  "updated_at": "2026-05-23T13:27:43.285Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 183,
+    "total": 184,
     "done": 51,
-    "beta": 107,
+    "beta": 108,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -288,9 +288,9 @@
       },
       {
         "phase": "Activation UX",
-        "total": 9,
+        "total": 10,
         "done": 4,
-        "beta": 4,
+        "beta": 5,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1038,7 +1038,7 @@
     }
   ],
   "next_queue": [
-    "D183"
+    "D184"
   ],
   "watchlist": [
     "D082",
@@ -3785,9 +3785,24 @@
       "best_practice": "Users and owner should see the shortest path from simulated QA to real working activation",
       "done_when": "Progress Dashboard shows live gap state and one next action without starting paid routes or storing secrets",
       "covers": "activation, UX, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress Dashboard now compares current browser/local/proof/first-chat state against activation gaps and exposes one safe free action per gap.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D184",
+      "phase": "Activation UX",
+      "priority": "P0",
+      "work_package": "First-screen activation closure strip",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Surface the same live activation closure state near the first screen so ordinary users see the next safe step without opening the owner dashboard",
+      "best_practice": "Activation help belongs where the user starts, with dashboard detail only as backup",
+      "done_when": "First screen shows the remaining activation gap and one safe action, using the same local-only state as Progress Dashboard",
+      "covers": "activation, UX, first impression",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation UX slice: convert replay route-map gaps into a live activation closure checklist with one safe action per gap.",
+      "evidence": "Next activation UX slice: surface the live activation closure checklist on the first screen so users do not need the owner dashboard to finish setup.",
       "estimate": "2-6h"
     }
   ]
