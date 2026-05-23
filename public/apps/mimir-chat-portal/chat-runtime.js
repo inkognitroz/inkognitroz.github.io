@@ -12,6 +12,7 @@
   const MODE_KEY='mimir-chat-mode-controls-v1';
   const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
+  const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
   const STARTER_MODEL_CATALOG='./free-model-starters.json';
   const STARTER_PREFIX='starter:';
   const MAX_STORED_MESSAGES=80;
@@ -24,6 +25,7 @@
   let statusEl=null;
   let transcriptEl=null;
   let modelHelperEl=null;
+  let replayEl=null;
   let modelChipEl=null;
   let resourceChipEl=null;
   let proofEl=null;
@@ -61,8 +63,33 @@
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function knowledgeCollectionsStorageKey(){return COLLECTIONS_PREFIX+activeWorkspaceId();}
   function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
+  function activationReplayStorageKey(){return ACTIVATION_REPLAY_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+  function readActivationReplay(){
+    try{
+      const value=JSON.parse(localStorage.getItem(activationReplayStorageKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+  function renderActivationReplayGate(){
+    if(!replayEl)return;
+    const replay=readActivationReplay();
+    if(!replay){
+      replayEl.hidden=true;
+      replayEl.innerHTML='';
+      return;
+    }
+    replayEl.hidden=false;
+    replayEl.dataset.state=String(replay.state||'demo');
+    replayEl.innerHTML='<div><strong>Demo replay: '+escapeHtml(replay.label||'Activation replay')+'</strong><p>'+escapeHtml(replay.expected_next_action||'Review this simulated activation state.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true / real live proof unchanged</small></div><a href="#progress-dashboard" data-runtime-replay-open>Open simulator</a>';
+    replayEl.querySelector('[data-runtime-replay-open]')?.addEventListener('click',(event)=>{
+      event.preventDefault();
+      openPanel('#progress-dashboard');
+    });
+  }
   function readModes(){
     try{
       const saved=JSON.parse(localStorage.getItem(MODE_KEY)||'{}');
@@ -674,6 +701,7 @@
         '<button id="runtime-delete-model" type="button" aria-label="Remove selected local model" disabled>Remove model</button>'+
         '<button id="runtime-clear" type="button" aria-label="Clear local chat history">Clear</button>'+
       '</div>'+
+      '<div id="runtime-activation-replay" class="runtime-activation-replay" data-state="idle" aria-live="polite" hidden></div>'+
       '<div id="runtime-live-proof" class="runtime-live-proof" data-state="idle" aria-live="polite"></div>'+
       '<div id="runtime-model-helper" class="runtime-model-helper" hidden></div>'+
       '<div id="runtime-transcript" class="runtime-transcript" aria-live="polite" aria-relevant="additions text" aria-busy="false"></div>';
@@ -681,6 +709,7 @@
     modelSelect=document.getElementById('runtime-model');
     statusEl=document.getElementById('runtime-state');
     modelHelperEl=document.getElementById('runtime-model-helper');
+    replayEl=document.getElementById('runtime-activation-replay');
     proofEl=document.getElementById('runtime-live-proof');
     transcriptEl=document.getElementById('runtime-transcript');
     refreshBtn=document.getElementById('runtime-refresh');
@@ -693,6 +722,7 @@
     stopBtn.addEventListener('click',stopCurrentResponse);
     deleteModelBtn.addEventListener('click',deleteSelectedLiveModel);
     clearBtn.addEventListener('click',clearConversation);
+    renderActivationReplayGate();
     renderLiveProof('Browser helper is ready. Backend proof starts when a free backend or local node is reachable.','idle',baseProofItems(''));
   }
 
@@ -1736,7 +1766,8 @@
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
-    window.addEventListener('storage',()=>refreshState(true));
+    window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
+    window.addEventListener('storage',()=>{renderActivationReplayGate();refreshState(true);});
     loadStarterModels().then(()=>refreshState(true));
     setInterval(()=>refreshState(false),3000);
     window.addEventListener('focus',()=>refreshState(true));

@@ -1,4 +1,5 @@
-.repair-resume-banner {
+.repair-resume-banner,
+.activation-replay-banner {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.8rem;
@@ -11,11 +12,13 @@
   box-shadow: 0 10px 32px rgba(17, 24, 39, 0.06);
 }
 
-.repair-resume-banner[hidden] {
+.repair-resume-banner[hidden],
+.activation-replay-banner[hidden] {
   display: none;
 }
 
-.repair-resume-banner span {
+.repair-resume-banner span,
+.activation-replay-banner span {
   color: var(--mimir-muted);
   font-size: 0.7rem;
   font-weight: 850;
@@ -23,7 +26,8 @@
   text-transform: uppercase;
 }
 
-.repair-resume-banner strong {
+.repair-resume-banner strong,
+.activation-replay-banner strong {
   display: block;
   color: var(--mimir-text);
   font-size: 0.98rem;
@@ -31,14 +35,21 @@
   margin-top: 0.1rem;
 }
 
-.repair-resume-banner p {
+.repair-resume-banner p,
+.activation-replay-banner p {
   color: var(--mimir-muted);
   font-size: 0.84rem;
   line-height: 1.35;
   margin: 0.22rem 0 0;
 }
 
-.repair-resume-banner a {
+.activation-replay-banner small {
+  color: #475569;
+  font-size: 0.76rem;
+}
+
+.repair-resume-banner a,
+.activation-replay-banner a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -71,13 +82,20 @@
   background: #fff7f7;
 }
 
+.activation-replay-banner {
+  border-left-color: #2563eb;
+  background: #eff6ff;
+}
+
 @media (max-width: 560px) {
-  .repair-resume-banner {
+  .repair-resume-banner,
+  .activation-replay-banner {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
 
-  .repair-resume-banner a {
+  .repair-resume-banner a,
+  .activation-replay-banner a {
     width: 100%;
   }
 }

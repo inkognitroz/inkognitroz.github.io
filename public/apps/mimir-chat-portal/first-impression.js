@@ -13,6 +13,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
   const cockpit=document.getElementById('activation-cockpit');
   const activationCards={
     answer:document.getElementById('activation-answer-card'),
@@ -42,6 +43,7 @@
   let lastCockpitSignature='';
   let lastRailSignature='';
   let lastRepairResumeSignature='';
+  let lastActivationReplaySignature='';
 
   function ensureActivationCockpitShell(){
     if(!document.querySelector('link[href*="activation-cockpit.css"]')){
@@ -129,6 +131,15 @@
     }
   }
 
+  function readActivationReplay(){
+    try{
+      const value=JSON.parse(localStorage.getItem(ACTIVATION_REPLAY_PREFIX+activeWorkspaceId())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+
   function repairResumeCopy(resume){
     const status=String(resume?.status||'pending');
     const model=String(resume?.model||'').trim();
@@ -193,6 +204,42 @@
         event.preventDefault();
         openPanel(target);
       }
+    });
+  }
+
+  function ensureActivationReplayBanner(){
+    let banner=document.getElementById('activation-replay-banner');
+    if(banner||!instantStart)return banner;
+    ensureRepairResumeStyles();
+    banner=document.createElement('aside');
+    banner.id='activation-replay-banner';
+    banner.className='activation-replay-banner';
+    banner.setAttribute('aria-live','polite');
+    const repair=document.getElementById('repair-resume-banner');
+    const rail=document.getElementById('mimir-readiness-rail');
+    (repair||rail||instantStart).insertAdjacentElement('afterend',banner);
+    return banner;
+  }
+
+  function renderActivationReplayBanner(){
+    const banner=ensureActivationReplayBanner();
+    if(!banner)return;
+    const replay=readActivationReplay();
+    if(!replay){
+      if(lastActivationReplaySignature==='hidden')return;
+      lastActivationReplaySignature='hidden';
+      banner.hidden=true;
+      return;
+    }
+    const signature=[replay.id,replay.state,replay.label,replay.expected_next_action,replay.applied_at].join('|');
+    if(signature===lastActivationReplaySignature)return;
+    lastActivationReplaySignature=signature;
+    banner.hidden=false;
+    banner.dataset.state=String(replay.state||'demo');
+    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review this simulated activation state.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><a href="#progress-dashboard" data-activation-replay-open>Open replay</a>';
+    banner.querySelector('[data-activation-replay-open]')?.addEventListener('click',(event)=>{
+      event.preventDefault();
+      openPanel('#progress-dashboard');
     });
   }
 
@@ -428,6 +475,7 @@
     syncReadyState();
     renderReadinessRail();
     renderRepairResumeBanner();
+    renderActivationReplayBanner();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
@@ -445,6 +493,7 @@
   });
   window.addEventListener('mmir-repair-resume-started',run);
   window.addEventListener('mmir-repair-resume-checked',run);
+  window.addEventListener('mmir-activation-replay-updated',run);
   window.addEventListener('mmir-chat-modes-updated',run);
   window.addEventListener('storage',run);
   window.addEventListener('focus',run);

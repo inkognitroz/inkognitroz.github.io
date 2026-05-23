@@ -20,6 +20,7 @@ const files = {
   starters: join(publicDir, 'free-model-starters.json'),
   catalog: join(publicDir, 'ai-model-catalog.json'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
+  chatRuntimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
   onboarding: join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'),
   templates: join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'),
@@ -387,6 +388,12 @@ requireIncludes(files.progressDashboard, 'firstChatReceiptState', 'D167 dashboar
 requireIncludes(files.progressDashboard, 'progress-activation-clear', 'D170 dashboard must expose activation telemetry controls.');
 requireIncludes(files.progressDashboard, 'progress-activation-autopilot', 'D171 dashboard must expose a manual safe autopilot run.');
 requireIncludes(files.progressDashboard, 'activationSummary', 'D170 dashboard must summarize activation telemetry.');
+requireIncludes(files.firstImpression, 'activation-replay-banner', 'D179 first screen must show active replay state.');
+requireIncludes(files.firstImpression, 'mutated_real_connector:false', 'D179 first screen replay state must be demo-only.');
+requireIncludes(files.chatRuntime, 'runtime-activation-replay', 'D179 chat runtime must show active replay near live proof.');
+requireIncludes(files.chatRuntime, 'real live proof unchanged', 'D179 replay handoff must not replace real proof.');
+requireIncludes(files.chatRuntimeCss, '.runtime-activation-replay', 'D179 chat runtime replay state needs styling.');
+requireIncludes(files.repairResumeCss, '.activation-replay-banner', 'D179 first-screen replay state needs styling.');
 requireIncludes(files.progressDashboard, 'renderActivationSimulator', 'D177 dashboard must render activation simulator fixtures.');
 requireIncludes(files.progressDashboard, 'progress-activation-simulator', 'D177 dashboard must expose activation simulator panel.');
 requireIncludes(files.progressDashboard, 'data-activation-replay', 'D178 dashboard must expose safe replay controls.');

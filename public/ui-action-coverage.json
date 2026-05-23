@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:15:00+02:00",
+  "updated_at": "2026-05-23T13:35:00+02:00",
   "principle": "Every visible MMIR control must either perform a useful action, be disabled with a clear reason, or be truthfully labeled beta/planned/premium.",
   "public_repo_rule": "This manifest is public-safe. It documents UI behavior only; no secrets, provider keys, billing policy or private user data belong here.",
   "groups": [
@@ -9,8 +9,8 @@
       "surface": "First screen chat",
       "status": "live",
       "user_result": "A new visitor can type or choose a starter prompt and get a useful free browser answer before setup.",
-      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "#repair-resume-banner", "[data-prompt-action]", "[data-repair-resume-action]", "#try-demo-mode"],
-      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "renderRepairResumeBanner", "Repair resume", "repair-resume-action", "demo_start_click"]
+      "selectors": ["#mimir-prompt", "#primary-chat-link", "#mimir-readiness-rail", "#repair-resume-banner", "#activation-replay-banner", "[data-prompt-action]", "[data-repair-resume-action]", "[data-activation-replay-open]", "#try-demo-mode"],
+      "evidence": ["ensureSendControl", "sendMessage", "sendPrompt(prompt)", "renderReadinessRail", "renderRepairResumeBanner", "renderActivationReplayBanner", "Repair resume", "Demo replay active", "mutated_real_connector:false", "repair-resume-action", "demo_start_click"]
     },
     {
       "id": "mmir-local-analytics",
@@ -49,8 +49,8 @@
       "surface": "Chat runtime",
       "status": "live",
       "user_result": "Users can refresh models, prove the selected free route is live, repair failed proof states, hand a verified model into first chat, save a privacy-safe first-chat receipt, stop a running response, clear local chat history, copy/retry answers and switch functional modes.",
-      "selectors": ["#runtime-refresh", "#runtime-live-proof", "[data-proof-action]", "#runtime-stop", "#runtime-clear", "[data-chat-mode]", "#composer-voice-input"],
-      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "tinyChatProbe", "skipped to avoid hidden provider cost", "proofRepairActions", "data-proof-action", "Chat with verified model", "first_chat_ready:true", "mimir-first-chat-receipt-v1:", "raw_prompt_stored:false", "raw_response_stored:false", "mmir-first-chat-receipt-updated", "mmir-live-model-proof-updated", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
+      "selectors": ["#runtime-refresh", "#runtime-live-proof", "#runtime-activation-replay", "[data-proof-action]", "[data-runtime-replay-open]", "#runtime-stop", "#runtime-clear", "[data-chat-mode]", "#composer-voice-input"],
+      "evidence": ["refreshBtn.addEventListener('click',()=>refreshState(true))", "tinyChatProbe", "skipped to avoid hidden provider cost", "proofRepairActions", "data-proof-action", "Chat with verified model", "first_chat_ready:true", "mimir-first-chat-receipt-v1:", "raw_prompt_stored:false", "raw_response_stored:false", "mmir-first-chat-receipt-updated", "mmir-live-model-proof-updated", "renderActivationReplayGate", "real live proof unchanged", "stopBtn.addEventListener('click',stopCurrentResponse)", "clearBtn.addEventListener('click',clearConversation)", "function modeInstruction()", "function startVoiceInput()"]
     },
     {
       "id": "local-node-actions",

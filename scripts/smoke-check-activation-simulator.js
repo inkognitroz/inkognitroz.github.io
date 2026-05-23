@@ -9,6 +9,7 @@ const files = {
   mmir: join(publicDir, 'mmir.html'),
   firstScreen: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
+  chatRuntimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   telemetry: join(publicDir, 'apps', 'mimir-chat-portal', 'activation-telemetry.js'),
   progressDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'),
@@ -156,6 +157,26 @@ if (!text(files.privacyControls).includes('Activation replay demo state')) {
 
 if (!text(files.privacyControls).includes('mimir-activation-replay-v1:')) {
   fail('Privacy reset must include activation replay demo state.');
+}
+
+for (const needle of ['activation-replay-banner', 'mimir-activation-replay-v1:', 'demo_only:true', 'mutated_real_connector:false', 'mmir-activation-replay-updated']) {
+  if (!text(files.firstScreen).includes(needle)) {
+    fail(`D179 first-screen replay handoff needs evidence: ${needle}`);
+  }
+}
+
+for (const needle of ['runtime-activation-replay', 'real live proof unchanged', 'mimir-activation-replay-v1:', 'renderActivationReplayGate']) {
+  if (!text(files.chatRuntime).includes(needle)) {
+    fail(`D179 chat runtime replay handoff needs evidence: ${needle}`);
+  }
+}
+
+if (!text(files.chatRuntimeCss).includes('.runtime-activation-replay')) {
+  fail('D179 chat runtime replay handoff needs visible runtime styling.');
+}
+
+if (!text(join(publicDir, 'apps', 'mimir-chat-portal', 'repair-resume.css')).includes('.activation-replay-banner')) {
+  fail('D179 first-screen replay handoff needs visible first-screen styling.');
 }
 
 if (!process.exitCode) {

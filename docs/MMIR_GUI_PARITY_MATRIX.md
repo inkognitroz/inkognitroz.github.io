@@ -60,6 +60,7 @@ Current priority after the matrix is:
 50. D177 end-to-end activation simulator.
 51. D178 safe activation replay controls.
 52. D179 first-screen replay handoff.
+53. D180 first-screen replay reset/jump controls.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -111,6 +112,7 @@ D175 is now beta: returning from installer/repair links resumes verification aut
 D176 is now beta: last repair resume result is visible near the first screen and Node Dashboard.
 D177 is now beta: public-safe activation fixtures prove the full free-first activation loop across core surfaces.
 D178 is now beta: simulator states can be replayed safely in browser-local demo mode from Progress Dashboard.
-D179 is next: surface active replay state near first-screen/chat gates without replacing real proof.
+D179 is now beta: active replay state is visible near first-screen/chat gates without replacing real proof.
+D180 is next: add first-screen controls to reset replay or jump to the simulated next action.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

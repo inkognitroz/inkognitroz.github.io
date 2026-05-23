@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T12:53:22.833Z",
+  "updated_at": "2026-05-23T13:00:20.977Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 179,
+    "total": 180,
     "done": 51,
-    "beta": 103,
+    "beta": 104,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -758,9 +758,9 @@
       },
       {
         "phase": "Activation QA/UX",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1033,7 +1033,7 @@
     }
   ],
   "next_queue": [
-    "D179"
+    "D180"
   ],
   "watchlist": [
     "D082",
@@ -3720,9 +3720,24 @@
       "best_practice": "Demo QA should be visible where the user journey begins",
       "done_when": "Replay state appears as clearly demo-only on the first screen and never replaces real live-model proof",
       "covers": "activation, QA, demo",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Active replay state now appears near the first screen and chat runtime proof gate as demo-only, with real live proof explicitly unchanged.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D180",
+      "phase": "Activation QA/UX",
+      "priority": "P0",
+      "work_package": "First-screen replay reset/jump controls",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add first-screen controls to reset active replay or jump directly to the simulated next action without touching real connector/profile state",
+      "best_practice": "Demo QA should be easy to exit and should lead to the exact user surface under test",
+      "done_when": "Owner can clear replay from first screen or jump to the scenario target with demo-only labeling preserved",
+      "covers": "activation, QA, demo",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation QA/UX slice: show active replay state on the first screen and chat/runtime gates as clearly demo-only.",
+      "evidence": "Next activation QA/UX slice: add first-screen reset and scenario jump controls for active replay states.",
       "estimate": "2-6h"
     }
   ]

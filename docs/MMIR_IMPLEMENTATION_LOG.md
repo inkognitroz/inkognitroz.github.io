@@ -170,14 +170,15 @@ Updated: 2026-05-23
 - D176 is now beta: first screen and Node Dashboard show the last repair resume result with verified/needs-model/needs-action state and a safe next action.
 - D177 is now beta: activation simulator fixtures cover first visit, missing connector, installer return, connector-online/no-model and verified local model across first screen, chat runtime, Node Dashboard, telemetry and progress surfaces.
 - D178 is now beta: Progress Dashboard can replay simulator states into a workspace-local demo key and reset them, without mutating real connector tokens, pairing tokens, paid routes, provider secrets or raw chat data.
-- D179 is now the next activation QA/UX slice: show active replay state near first screen/chat gates as clearly demo-only.
+- D179 is now beta: active replay state appears near first screen and chat/runtime proof gates as clearly demo-only, with real live proof explicitly unchanged.
+- D180 is now the next activation QA/UX slice: add first-screen reset and scenario jump controls for active replay states.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D179` first-screen replay handoff.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D180` first-screen replay reset/jump controls.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
