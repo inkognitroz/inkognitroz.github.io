@@ -1,0 +1,43 @@
+{
+  "title": "Answer Context Drill-Down QA",
+  "principle": "Answer audit must lead to simple correction: users can open the exact context controls behind a response without secrets, spend or backend setup.",
+  "public_repo_rule": "Drill-down actions only open existing public-safe panels. They do not store provider keys, send prompts, start paid routes or mutate backend state.",
+  "scenarios": [
+    {
+      "id": "memory-drilldown",
+      "status": "ready",
+      "target": "#memory-panel",
+      "label": "Memory",
+      "expected": "Open local memory governance from the answer receipt.",
+      "selector": "[data-receipt-open=\"#memory-panel\"]",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "knowledge-drilldown",
+      "status": "ready",
+      "target": "#knowledge-panel",
+      "label": "Knowledge",
+      "expected": "Open local knowledge/RAG controls from the answer receipt.",
+      "selector": "[data-receipt-open=\"#knowledge-panel\"]",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "model-drilldown",
+      "status": "ready",
+      "target": "#model-library",
+      "label": "Model",
+      "expected": "Open free model library and route choices from the answer receipt.",
+      "selector": "[data-receipt-open=\"#model-library\"]",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "privacy-drilldown",
+      "status": "ready",
+      "target": "#privacy-controls-panel",
+      "label": "Privacy",
+      "expected": "Open export/delete/privacy inventory controls from the answer receipt.",
+      "selector": "[data-receipt-open=\"#privacy-controls-panel\"]",
+      "no_paid_routes_started": true
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:56:34.975Z",
+  "updated_at": "2026-05-23T21:12:24.645Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 224,
+    "total": 225,
     "done": 51,
-    "beta": 148,
+    "beta": 149,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -998,9 +998,9 @@
       },
       {
         "phase": "Chat UX / Context Audit",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -2102,6 +2102,49 @@
       }
     ]
   },
+  "answer_context_drilldown_report": {
+    "title": "Answer Context Drill-Down QA",
+    "principle": "Answer audit must lead to simple correction: users can open the exact context controls behind a response without secrets, spend or backend setup.",
+    "public_repo_rule": "Drill-down actions only open existing public-safe panels. They do not store provider keys, send prompts, start paid routes or mutate backend state.",
+    "scenarios": [
+      {
+        "id": "memory-drilldown",
+        "status": "ready",
+        "target": "#memory-panel",
+        "label": "Memory",
+        "expected": "Open local memory governance from the answer receipt.",
+        "selector": "[data-receipt-open=\"#memory-panel\"]",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "knowledge-drilldown",
+        "status": "ready",
+        "target": "#knowledge-panel",
+        "label": "Knowledge",
+        "expected": "Open local knowledge/RAG controls from the answer receipt.",
+        "selector": "[data-receipt-open=\"#knowledge-panel\"]",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "model-drilldown",
+        "status": "ready",
+        "target": "#model-library",
+        "label": "Model",
+        "expected": "Open free model library and route choices from the answer receipt.",
+        "selector": "[data-receipt-open=\"#model-library\"]",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "privacy-drilldown",
+        "status": "ready",
+        "target": "#privacy-controls-panel",
+        "label": "Privacy",
+        "expected": "Open export/delete/privacy inventory controls from the answer receipt.",
+        "selector": "[data-receipt-open=\"#privacy-controls-panel\"]",
+        "no_paid_routes_started": true
+      }
+    ]
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -2152,7 +2195,7 @@
     }
   ],
   "next_queue": [
-    "D224"
+    "D225"
   ],
   "watchlist": [
     "D082",
@@ -5514,9 +5557,24 @@
       "best_practice": "Audit should lead to simple correction, not just passive transparency",
       "done_when": "User can adjust the context source behind an answer in one safe click",
       "covers": "chat UX, audit, context, trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Answer context receipts now include direct Memory, Knowledge, Model and Privacy drill-down actions that open existing public-safe panels.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D225",
+      "phase": "Chat UX / Context Audit",
+      "priority": "P0",
+      "work_package": "Context-aware receipt highlights",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "When a receipt action opens Memory, Knowledge or Model controls, highlight the exact used source or route where available",
+      "best_practice": "Audit controls should point to the relevant item, not just the general panel",
+      "done_when": "User lands on the right source/route with a clear receipt-linked highlight",
+      "covers": "chat UX, audit, context, usability",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: turn answer context receipts into direct edit/open actions for Memory, Knowledge, model route and privacy controls.",
+      "evidence": "Next activation slice: make receipt drill-downs context-aware, highlighting the exact memory, knowledge collection or model route behind the selected answer.",
       "estimate": "2-6h"
     }
   ]

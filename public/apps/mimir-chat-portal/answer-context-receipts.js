@@ -53,6 +53,26 @@
   }
   function status(value){return String(value||'none').replace('+',' + ');}
   function row(label,value){return '<dt>'+safe(label)+'</dt><dd>'+safe(value||'none')+'</dd>';}
+  function openReceiptTarget(target){
+    const open=()=>{
+      const el=document.querySelector(target);
+      if(!el)return;
+      let panel=el.closest('details');
+      while(panel){panel.open=true;panel=panel.parentElement?.closest?.('details')||null;}
+      el.scrollIntoView({behavior:'smooth',block:'start'});
+      (el.querySelector?.('summary,button,input,select,textarea,a[href]')||el).focus?.({preventScroll:true});
+    };
+    if(!document.querySelector(target)&&window.MimirLoadDeferred)Promise.resolve(window.MimirLoadDeferred()).then(open);
+    else open();
+  }
+  function actionButtons(){
+    return '<div class="runtime-answer-context-actions" role="group" aria-label="Adjust answer context">'+
+      '<button type="button" data-receipt-open="#memory-panel">Memory</button>'+
+      '<button type="button" data-receipt-open="#knowledge-panel">Knowledge</button>'+
+      '<button type="button" data-receipt-open="#model-library">Model</button>'+
+      '<button type="button" data-receipt-open="#privacy-controls-panel">Privacy</button>'+
+      '</div>';
+  }
   function renderOne(receipt){
     if(!receipt?.message_id)return;
     const bubble=document.querySelector('[data-message-id="'+selector(receipt.message_id)+'"]');
@@ -72,7 +92,11 @@
       row('Modes',receipt.mode_summary||'default')+
       row('Cost',receipt.no_paid_routes_started?'no paid route started':receipt.cost_guard||'user-configured route')+
       '</dl>'+
+      actionButtons()+
       '<small>Local receipt only. No prompt, response or provider secret is stored in this receipt.</small>';
+    el.querySelectorAll('[data-receipt-open]').forEach((button)=>{
+      button.addEventListener('click',(event)=>{event.preventDefault();openReceiptTarget(button.getAttribute('data-receipt-open')||'#privacy-controls-panel');});
+    });
     const note=bubble.querySelector('.runtime-message-action-status');
     if(note)note.before(el);
     else bubble.appendChild(el);

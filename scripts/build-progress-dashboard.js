@@ -19,6 +19,7 @@ const savedChatMemoryHandoffReportPath = resolve(root, 'public', 'saved-chat-mem
 const promotedContextNextAnswerReportPath = resolve(root, 'public', 'promoted-context-next-answer-report.json');
 const contextControlsReportPath = resolve(root, 'public', 'context-controls-report.json');
 const answerContextReceiptReportPath = resolve(root, 'public', 'answer-context-receipt-report.json');
+const answerContextDrilldownReportPath = resolve(root, 'public', 'answer-context-drilldown-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -175,7 +176,8 @@ const overrides = new Map([
   ['D221', { status: 'beta', evidence: 'Promoted context next-answer proof now evaluates the real chat-runtime memory/knowledge functions against synthetic saved-chat data and proves visible memory-use review.' }],
   ['D222', { status: 'beta', evidence: 'Per-message context controls now let users see and turn local Memory/Knowledge on or off for the next answer, enforced by chat-runtime guards.' }],
   ['D223', { status: 'beta', evidence: 'Answer context receipts now record and render safe per-answer metadata for model, route, memory, knowledge, history, role, modes and cost guard.' }],
-  ['D224', { status: 'next', evidence: 'Next activation slice: turn answer context receipts into direct edit/open actions for Memory, Knowledge, model route and privacy controls.' }]
+  ['D224', { status: 'beta', evidence: 'Answer context receipts now include direct Memory, Knowledge, Model and Privacy drill-down actions that open existing public-safe panels.' }],
+  ['D225', { status: 'next', evidence: 'Next activation slice: make receipt drill-downs context-aware, highlighting the exact memory, knowledge collection or model route behind the selected answer.' }]
 ]);
 
 const repoMeta = [
@@ -354,6 +356,11 @@ function readAnswerContextReceiptReport() {
   return JSON.parse(readFileSync(answerContextReceiptReportPath, 'utf8'));
 }
 
+function readAnswerContextDrilldownReport() {
+  if (!existsSync(answerContextDrilldownReportPath)) return null;
+  return JSON.parse(readFileSync(answerContextDrilldownReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -378,7 +385,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D224', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D225', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -412,6 +419,7 @@ const data = {
   promoted_context_next_answer_report: readPromotedContextNextAnswerReport(),
   context_controls_report: readContextControlsReport(),
   answer_context_receipt_report: readAnswerContextReceiptReport(),
+  answer_context_drilldown_report: readAnswerContextDrilldownReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

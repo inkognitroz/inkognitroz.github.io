@@ -175,6 +175,9 @@ jobs:
       - name: Smoke-check answer context receipt
         run: node scripts/smoke-check-answer-context-receipt.js
 
+      - name: Smoke-check answer context drill-down
+        run: node scripts/smoke-check-answer-context-drilldown.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

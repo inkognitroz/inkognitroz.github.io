@@ -27,6 +27,7 @@ const files = {
   promotedContextNextAnswerReport: join(publicDir, 'promoted-context-next-answer-report.json'),
   contextControlsReport: join(publicDir, 'context-controls-report.json'),
   answerContextReceiptReport: join(publicDir, 'answer-context-receipt-report.json'),
+  answerContextDrilldownReport: join(publicDir, 'answer-context-drilldown-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -109,6 +110,7 @@ const files = {
   promotedContextNextAnswerHarness: join(root, 'scripts', 'smoke-check-promoted-context-next-answer.js'),
   contextControlsHarness: join(root, 'scripts', 'smoke-check-context-controls.js'),
   answerContextReceiptHarness: join(root, 'scripts', 'smoke-check-answer-context-receipt.js'),
+  answerContextDrilldownHarness: join(root, 'scripts', 'smoke-check-answer-context-drilldown.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -655,6 +657,9 @@ requireIncludes(files.progressDashboard, 'renderContextControlsReport', 'D222 Pr
 requireIncludes(files.answerContextReceiptHarness, 'Answer context receipt smoke check passed.', 'D223 answer context receipt must have dedicated CI coverage.');
 requireIncludes(files.answerContextReceiptReport, 'backend-context-receipt', 'D223 answer context receipt report must cover backend context behavior.');
 requireIncludes(files.progressDashboard, 'renderAnswerContextReceiptReport', 'D223 Progress Dashboard must render answer context receipt evidence.');
+requireIncludes(files.answerContextDrilldownHarness, 'Answer context drill-down smoke check passed.', 'D224 answer context drill-down must have dedicated CI coverage.');
+requireIncludes(files.answerContextDrilldownReport, 'memory-drilldown', 'D224 answer context drill-down report must cover memory drill-down behavior.');
+requireIncludes(files.progressDashboard, 'renderAnswerContextDrilldownReport', 'D224 Progress Dashboard must render answer context drill-down evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

@@ -111,8 +111,8 @@ if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard must expose D206 as beta after installer-to-live-model proof ships.');
 }
 
-if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D224') {
-  fail('Progress dashboard next queue must prioritize D224 after D223 ships.');
+if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D225') {
+  fail('Progress dashboard next queue must prioritize D225 after D224 ships.');
 }
 
 if (!process.exitCode) {
