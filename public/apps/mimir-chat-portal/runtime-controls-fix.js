@@ -1,5 +1,7 @@
 (function(){
   const READY_COPY='Free guide works now; connect local node for live models.';
+  const BRIDGE_PROMPT='Give me a short, useful first answer from this verified local model.';
+  let installBridgeSignature='';
 
   function syncPrimaryLink(){
     const link=document.getElementById('primary-chat-link');
@@ -74,6 +76,61 @@
     });
   }
 
+  function liveModelIds(models){
+    return (Array.isArray(models)?models:[]).map(model=>String(model.id||model.name||model.model||'').trim()).filter(Boolean);
+  }
+
+  function selectLiveModel(modelId){
+    const select=document.getElementById('runtime-model');
+    if(!select)return false;
+    const options=Array.from(select.options||[]);
+    const option=options.find(item=>item.value===modelId)||options.find(item=>item.dataset.runtime==='live');
+    if(!option)return false;
+    if(select.value!==option.value){
+      select.value=option.value;
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    return true;
+  }
+
+  function prepareFirstChatBridge(modelId,reason){
+    if(!selectLiveModel(modelId))return false;
+    const prompt=document.getElementById('mimir-prompt');
+    if(prompt&&!String(prompt.value||'').trim())prompt.placeholder=BRIDGE_PROMPT;
+    const status=document.getElementById('runtime-state');
+    if(status){
+      status.textContent='Local model is live. First verified chat is prepared.';
+      status.dataset.state='ready';
+    }
+    window.dispatchEvent(new CustomEvent('mmir-install-to-first-chat-ready',{detail:{model:modelId,reason}}));
+    return true;
+  }
+
+  function scheduleInstallToFirstChatBridge(modelId,reason){
+    document.getElementById('runtime-refresh')?.click();
+    [700,2200,4200].forEach(delay=>{
+      window.setTimeout(()=>prepareFirstChatBridge(modelId,reason),delay);
+    });
+  }
+
+  function bridgeLocalConnector(event){
+    const detail=event.detail||{};
+    const ids=liveModelIds(detail.models);
+    if(String(detail.status||'').toLowerCase()!=='online'||!ids.length)return;
+    const signature=ids.join('|');
+    if(signature===installBridgeSignature)return;
+    installBridgeSignature=signature;
+    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    scheduleInstallToFirstChatBridge(ids[0],'local-node-online');
+  }
+
+  function bridgeVerifiedProof(event){
+    const detail=event.detail||{};
+    if(detail.status==='verified'&&detail.first_chat_ready===true){
+      prepareFirstChatBridge(String(detail.model||''),'proof-verified');
+    }
+  }
+
   function run(){
     syncPrimaryLink();
     bindConnectOptions();
@@ -89,6 +146,8 @@
     attributeFilter:['aria-disabled','href','class']
   });
   window.addEventListener('mmir-backend-profiles-updated',run);
+  window.addEventListener('mmir-local-connector-refreshed',bridgeLocalConnector);
+  window.addEventListener('mmir-live-model-proof-updated',bridgeVerifiedProof);
   window.addEventListener('mmir-chat-history-updated',run);
   window.addEventListener('storage',run);
   window.addEventListener('focus',run);
