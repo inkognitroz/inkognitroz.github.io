@@ -1,5 +1,74 @@
 (function(){
   const READY_COPY='Free guide works now; connect local node for live models.';
+  const FIRST_CHAT_RECEIPT_KEY='mimir-first-chat-receipt-v1';
+  let verifiedProof=null;
+  let receipt=null;
+
+  function safe(value){
+    return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  }
+
+  function readReceipt(){
+    try{
+      const data=JSON.parse(localStorage.getItem(FIRST_CHAT_RECEIPT_KEY)||'null');
+      return data&&data.privacy==='no_prompt_content'?data:null;
+    }catch(error){
+      return null;
+    }
+  }
+
+  function writeReceipt(status,error){
+    if(receipt?.status==='succeeded')return receipt;
+    receipt={
+      status:status==='succeeded'?'succeeded':'failed',
+      model:String(verifiedProof?.model||'verified model').slice(0,160),
+      backend:String(verifiedProof?.url||'active backend').replace(/^https?:\/\//,'').slice(0,120),
+      at:new Date().toISOString(),
+      privacy:'no_prompt_content'
+    };
+    if(error)receipt.error=String(error).slice(0,160);
+    try{localStorage.setItem(FIRST_CHAT_RECEIPT_KEY,JSON.stringify(receipt));}
+    catch(storageError){}
+    window.dispatchEvent(new CustomEvent('mmir-first-chat-receipt-updated',{detail:receipt}));
+    return receipt;
+  }
+
+  function renderFirstChatReceipt(){
+    const proof=document.getElementById('runtime-live-proof');
+    if(!proof)return;
+    receipt=receipt||readReceipt();
+    let box=document.getElementById('runtime-first-chat-receipt');
+    if(!receipt){
+      if(box)box.remove();
+      return;
+    }
+    if(!box){
+      box=document.createElement('div');
+      box.id='runtime-first-chat-receipt';
+      box.className='runtime-model-install-status';
+      proof.appendChild(box);
+    }
+    const ready=receipt.status==='succeeded';
+    box.dataset.state=ready?'ready':'error';
+    box.innerHTML='<strong>'+(ready?'First chat succeeded':'First chat needs recovery')+'</strong><br><span>'+safe([receipt.model,receipt.backend,receipt.at].filter(Boolean).join(' - '))+'</span><br><small>privacy: no_prompt_content</small>'+(receipt.error?'<br><small>'+safe(receipt.error)+'</small>':'')+(ready?'':'<br><button type="button" data-first-chat-recovery="retry-proof">Retry proof</button> <button type="button" data-first-chat-recovery="connect-settings">Connect settings</button>');
+    box.querySelector('[data-first-chat-recovery="retry-proof"]')?.addEventListener('click',()=>document.getElementById('runtime-refresh')?.click());
+    box.querySelector('[data-first-chat-recovery="connect-settings"]')?.addEventListener('click',()=>openTarget('#backend-settings'));
+  }
+
+  function syncFirstChatReceipt(){
+    const state=document.getElementById('runtime-state');
+    if(!state||!verifiedProof||receipt?.status==='succeeded'){
+      renderFirstChatReceipt();
+      return;
+    }
+    const text=String(state.textContent||'');
+    if(state.dataset.state==='ready'&&/Response received|First verified chat succeeded/i.test(text)){
+      writeReceipt('succeeded');
+    }else if(state.dataset.state==='error'&&!/Write a message first|No live model|Activate a backend/i.test(text)){
+      writeReceipt('failed',text);
+    }
+    renderFirstChatReceipt();
+  }
 
   function syncPrimaryLink(){
     const link=document.getElementById('primary-chat-link');
@@ -79,6 +148,7 @@
     bindConnectOptions();
     updateOnboardingCopy();
     rewriteLegacyInstallerUi();
+    syncFirstChatReceipt();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
@@ -89,6 +159,10 @@
     attributeFilter:['aria-disabled','href','class']
   });
   window.addEventListener('mmir-backend-profiles-updated',run);
+  window.addEventListener('mmir-live-model-proof-updated',event=>{
+    if(event.detail?.status==='verified'&&event.detail?.first_chat_ready===true)verifiedProof=event.detail;
+    run();
+  });
   window.addEventListener('mmir-chat-history-updated',run);
   window.addEventListener('storage',run);
   window.addEventListener('focus',run);
