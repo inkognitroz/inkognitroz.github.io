@@ -207,14 +207,15 @@ Updated: 2026-05-23
 - D213 is now beta: composer action bar usefulness pass wires Add model, mode toggles, model/resource chips, voice fallback and composer feedback to useful free/gated outcomes.
 - D214 is now beta: composer action bar visual QA proves desktop/mobile selector, CSS and copy contracts for compact controls, feedback text and stable send behavior.
 - D215 is now beta: assistant answers now expose local-first Copy, Retry, Save, Fork, Safe share and Next controls, with browser-local conversation storage, redacted share drafts and no paid-route side effects.
-- D216 is now next: add visual/mobile QA for the message action bar so transcript controls stay compact, touchable and readable on desktop and mobile.
+- D216 is now beta: message action visual QA proves desktop/mobile selector, CSS and copy contracts for transcript controls, wrapping and status feedback.
+- D217 is now next: add a deterministic browser/localStorage fixture proving message save, fork, safe share and next-step effects end to end.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D216` message action visual QA.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D217` message action browser fixture.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

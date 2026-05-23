@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-23T21:45:00+02:00",
+  "title": "Message Action Visual QA",
+  "principle": "Transcript actions must stay compact, touchable and secondary to the answer on desktop and mobile.",
+  "public_repo_rule": "Visual evidence is selector, layout and copy metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+  "viewports": [
+    {
+      "id": "desktop-transcript-actions",
+      "width": 1280,
+      "height": 820,
+      "expected": [
+        "assistant answer remains the visual focus",
+        "copy retry save fork share-safe next-step actions wrap in one calm row",
+        "action status line is readable and secondary"
+      ]
+    },
+    {
+      "id": "mobile-transcript-actions",
+      "width": 390,
+      "height": 844,
+      "expected": [
+        "message bubble uses full width without horizontal scroll",
+        "action buttons wrap into stable touch targets",
+        "safe share and next step remain visible without overlap"
+      ]
+    }
+  ],
+  "selector_contract": [
+    "[data-message-action=\"copy\"]",
+    "[data-message-action=\"retry\"]",
+    "[data-message-action=\"save\"]",
+    "[data-message-action=\"fork\"]",
+    "[data-message-action=\"share-safe\"]",
+    "[data-message-action=\"next-step\"]",
+    ".runtime-message-actions",
+    ".runtime-message-action-status"
+  ],
+  "css_contract": [
+    ".runtime-message-actions",
+    "flex-wrap: wrap",
+    ".runtime-message-actions button",
+    "flex: 1 1 92px",
+    ".runtime-message-action-status",
+    "@media (max-width: 720px)"
+  ],
+  "copy_contract": [
+    "Actions are local-first",
+    "Share safe",
+    "Next",
+    "Copied locally. Review before sharing."
+  ],
+  "result": "ready"
+}

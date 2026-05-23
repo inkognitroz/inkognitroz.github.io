@@ -70,6 +70,8 @@ jobs:
         run: node scripts/smoke-check-composer-action-bar-visual.js
       - name: Smoke check message action completeness
         run: node scripts/smoke-check-message-action-completeness.js
+      - name: Smoke check message action visual
+        run: node scripts/smoke-check-message-action-visual.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

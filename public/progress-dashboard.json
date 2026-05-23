@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T18:56:52.594Z",
+  "updated_at": "2026-05-23T19:20:11.094Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 216,
+    "total": 217,
     "done": 51,
-    "beta": 140,
+    "beta": 141,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -938,9 +938,9 @@
       },
       {
         "phase": "Chat UX / Transcript",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1659,6 +1659,60 @@
     ],
     "result": "ready"
   },
+  "message_action_visual_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T21:45:00+02:00",
+    "title": "Message Action Visual QA",
+    "principle": "Transcript actions must stay compact, touchable and secondary to the answer on desktop and mobile.",
+    "public_repo_rule": "Visual evidence is selector, layout and copy metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "viewports": [
+      {
+        "id": "desktop-transcript-actions",
+        "width": 1280,
+        "height": 820,
+        "expected": [
+          "assistant answer remains the visual focus",
+          "copy retry save fork share-safe next-step actions wrap in one calm row",
+          "action status line is readable and secondary"
+        ]
+      },
+      {
+        "id": "mobile-transcript-actions",
+        "width": 390,
+        "height": 844,
+        "expected": [
+          "message bubble uses full width without horizontal scroll",
+          "action buttons wrap into stable touch targets",
+          "safe share and next step remain visible without overlap"
+        ]
+      }
+    ],
+    "selector_contract": [
+      "[data-message-action=\"copy\"]",
+      "[data-message-action=\"retry\"]",
+      "[data-message-action=\"save\"]",
+      "[data-message-action=\"fork\"]",
+      "[data-message-action=\"share-safe\"]",
+      "[data-message-action=\"next-step\"]",
+      ".runtime-message-actions",
+      ".runtime-message-action-status"
+    ],
+    "css_contract": [
+      ".runtime-message-actions",
+      "flex-wrap: wrap",
+      ".runtime-message-actions button",
+      "flex: 1 1 92px",
+      ".runtime-message-action-status",
+      "@media (max-width: 720px)"
+    ],
+    "copy_contract": [
+      "Actions are local-first",
+      "Share safe",
+      "Next",
+      "Copied locally. Review before sharing."
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1709,7 +1763,7 @@
     }
   ],
   "next_queue": [
-    "D216"
+    "D217"
   ],
   "watchlist": [
     "D082",
@@ -4951,9 +5005,24 @@
       "best_practice": "Message actions must help without crowding the answer, especially on mobile",
       "done_when": "CI and dashboard prove transcript action selectors, labels, status feedback and mobile wrapping",
       "covers": "chat UX, transcript, visual QA",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Message action visual QA now proves desktop/mobile selector, CSS and copy contracts for transcript controls, wrapping and status feedback.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D217",
+      "phase": "Chat UX / Transcript",
+      "priority": "P0",
+      "work_package": "Message action browser fixture",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a deterministic browser/localStorage fixture proving save, fork, safe share and next-step message actions mutate only the intended local state",
+      "best_practice": "Static wiring is not enough; key chat actions need end-to-end local behavior proof",
+      "done_when": "CI proves message actions update local conversations/share drafts and preserve no-secret/no-spend boundaries",
+      "covers": "chat UX, transcript, local storage",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add visual/mobile QA for the message action bar so transcript controls stay compact, touchable and readable.",
+      "evidence": "Next activation slice: add a browser/storage fixture for message actions so save, fork, safe share and next-step effects are proven end to end.",
       "estimate": "2-6h"
     }
   ]

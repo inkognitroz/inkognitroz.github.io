@@ -11,6 +11,7 @@ const firstFreeChatResponseReportPath = resolve(root, 'public', 'first-free-chat
 const composerActionBarReportPath = resolve(root, 'public', 'composer-action-bar-report.json');
 const composerActionBarVisualReportPath = resolve(root, 'public', 'composer-action-bar-visual-report.json');
 const messageActionCompletenessReportPath = resolve(root, 'public', 'message-action-completeness-report.json');
+const messageActionVisualReportPath = resolve(root, 'public', 'message-action-visual-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -159,7 +160,8 @@ const overrides = new Map([
   ['D213', { status: 'beta', evidence: 'Composer action bar usefulness pass now wires Add model, mode toggles, model/resource chips, voice fallback and feedback copy to useful free/gated outcomes.' }],
   ['D214', { status: 'beta', evidence: 'Composer action bar visual QA now proves desktop/mobile selector, CSS and copy contracts for compact controls, feedback text and stable send behavior.' }],
   ['D215', { status: 'beta', evidence: 'Message action completeness now gives assistant answers copy, retry, save, fork, safe share and next-step controls with local-first/no-spend boundaries.' }],
-  ['D216', { status: 'next', evidence: 'Next activation slice: add visual/mobile QA for the message action bar so transcript controls stay compact, touchable and readable.' }]
+  ['D216', { status: 'beta', evidence: 'Message action visual QA now proves desktop/mobile selector, CSS and copy contracts for transcript controls, wrapping and status feedback.' }],
+  ['D217', { status: 'next', evidence: 'Next activation slice: add a browser/storage fixture for message actions so save, fork, safe share and next-step effects are proven end to end.' }]
 ]);
 
 const repoMeta = [
@@ -298,6 +300,11 @@ function readMessageActionCompletenessReport() {
   return JSON.parse(readFileSync(messageActionCompletenessReportPath, 'utf8'));
 }
 
+function readMessageActionVisualReport() {
+  if (!existsSync(messageActionVisualReportPath)) return null;
+  return JSON.parse(readFileSync(messageActionVisualReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -322,7 +329,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D216', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D217', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -348,6 +355,7 @@ const data = {
   composer_action_bar_report: readComposerActionBarReport(),
   composer_action_bar_visual_report: readComposerActionBarVisualReport(),
   message_action_completeness_report: readMessageActionCompletenessReport(),
+  message_action_visual_report: readMessageActionVisualReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

@@ -445,6 +445,24 @@
     '</section>';
   }
 
+  function renderMessageActionVisualReport(data){
+    const report=data.message_action_visual_report||{};
+    const viewports=Array.isArray(report.viewports)?report.viewports:[];
+    if(!viewports.length)return '';
+    return '<section id="progress-message-action-visual" class="progress-no-model-fixture" data-state="ready">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Transcript visual QA</p><h2>'+safe(report.title||'Message action visual QA')+'</h2></div><small>'+safe(report.principle||'Transcript controls stay compact and touchable.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+viewports.map((viewport)=>
+        '<article class="progress-no-model-scenario" data-viewport="'+safe(viewport.id)+'">'+
+          '<span>'+safe(label('ready'))+'</span><h3>'+safe(viewport.id)+'</h3>'+
+          '<p>'+safe(String(viewport.width||''))+'x'+safe(String(viewport.height||''))+'</p>'+
+          '<strong>'+safe((viewport.expected||[]).slice(0,2).join(' + '))+'</strong>'+
+          '<small>selectors:'+safe((report.selector_contract||[]).length)+' / css:'+safe((report.css_contract||[]).length)+'</small>'+
+        '</article>'
+      ).join('')+'</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe transcript visual evidence only.')+'</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -700,7 +718,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
     bindActivationTelemetry();
