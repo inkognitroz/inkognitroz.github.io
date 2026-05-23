@@ -29,13 +29,59 @@
   }
 
   function openTarget(target){
-    if(target==='#local-connector'||target==='#backend-settings'){
+    if(target==='#connect-options'&&!document.querySelector(target))target='#local-connector';
+    if(target==='#local-connector'||target==='#backend-settings'||target==='#connect-options'){
       window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
     }
     const targetEl=document.querySelector(target);
     if(targetEl&&'open' in targetEl)targetEl.open=true;
     if(targetEl)targetEl.scrollIntoView({behavior:'smooth',block:'start'});
     window.dispatchEvent(new CustomEvent('mmir-connect-option-opened',{detail:{target}}));
+  }
+
+  function focusChatTarget(){
+    const runtime=document.getElementById('mimir-chat-runtime');
+    const prompt=document.getElementById('mimir-prompt');
+    const target=runtime||prompt;
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    if(prompt)window.setTimeout(()=>prompt.focus({preventScroll:true}),120);
+    window.dispatchEvent(new CustomEvent('mmir-mobile-chat-target-opened',{detail:{target:runtime?'#mimir-chat-runtime':'#mimir-prompt'}}));
+  }
+
+  function bindPrimaryAnchors(){
+    document.querySelector('a[href="#mimir-chat-runtime"]')?.setAttribute('href','#mimir-prompt');
+    document.querySelectorAll('a[href="#connect-options"]').forEach(link=>{
+      if(!document.querySelector('#connect-options'))link.setAttribute('href','#local-connector');
+    });
+    document.querySelectorAll('a[href="#mimir-prompt"],a[href="#mimir-chat-runtime"],a[href="#local-connector"],a[href="#connect-options"],a[href="#backend-settings"]').forEach(link=>{
+      if(link.dataset.runtimeAnchorBound==='true')return;
+      link.dataset.runtimeAnchorBound='true';
+      link.addEventListener('click',event=>{
+        const target=link.getAttribute('href')||'#mimir-prompt';
+        if(target==='#mimir-prompt'||target==='#mimir-chat-runtime'){
+          event.preventDefault();
+          focusChatTarget();
+          return;
+        }
+        event.preventDefault();
+        openTarget(target);
+      });
+    });
+  }
+
+  function repairMobileFirstChatDom(){
+    const center=document.querySelector('.mimir-chat-center');
+    const instant=document.getElementById('mimir-instant-start');
+    const composer=document.querySelector('.mimir-composer');
+    const quick=document.querySelector('.quick-suggestions');
+    if(!center||!instant||!composer)return;
+    if(instant.compareDocumentPosition(composer)&Node.DOCUMENT_POSITION_FOLLOWING){
+      center.insertBefore(composer,instant);
+    }
+    if(quick&&(instant.compareDocumentPosition(quick)&Node.DOCUMENT_POSITION_FOLLOWING)){
+      center.insertBefore(quick,instant);
+    }
+    composer.dataset.mobileFirstChatReady='true';
   }
 
   function bindConnectOptions(){
@@ -91,7 +137,9 @@
   }
 
   function run(){
+    repairMobileFirstChatDom();
     syncPrimaryLink();
+    bindPrimaryAnchors();
     bindConnectOptions();
     updateOnboardingCopy();
     rewriteLegacyInstallerUi();
