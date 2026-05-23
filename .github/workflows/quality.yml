@@ -114,3 +114,6 @@ jobs:
 
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
+
+      - name: Smoke-check activation replay render
+        run: node scripts/smoke-check-activation-replay-render.js

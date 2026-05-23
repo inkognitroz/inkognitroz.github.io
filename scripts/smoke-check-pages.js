@@ -440,6 +440,8 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay demo state.');
 requireText(join(publicDir, 'activation-simulator-fixtures.json'), 'verified-local-model', 'D177 activation simulator must include verified local model fixture.');
 requireText(join(root, 'scripts', 'smoke-check-activation-simulator.js'), 'expectedScenarioIds', 'D177 activation simulator must have a dedicated smoke harness.');
+requireText(join(root, 'scripts', 'smoke-check-activation-replay-render.js'), 'Activation replay render smoke check passed.', 'D181 replay render regression harness must be part of the public smoke gate.');
+requireText(join(root, 'scripts', 'smoke-check-activation-replay-render.js'), 'requiredSurfaces', 'D181 replay render harness must verify every required activation surface.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

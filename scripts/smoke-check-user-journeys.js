@@ -67,6 +67,7 @@ const files = {
   linuxConnectorInstaller: join(publicDir, 'downloads', 'mmir-local-connector-linux.sh'),
   repairCardHarness: join(root, 'scripts', 'smoke-check-node-repair-cards.js'),
   simulatorHarness: join(root, 'scripts', 'smoke-check-activation-simulator.js'),
+  replayRenderHarness: join(root, 'scripts', 'smoke-check-activation-replay-render.js'),
   productDoctrine: join(docsDir, 'MMIR_PRODUCT_DOCTRINE.md'),
   architectureBaseline: join(docsDir, 'MMIR_ARCHITECTURE_BASELINE.md'),
   userJourneyDoc: join(docsDir, 'MMIR_USER_JOURNEYS.md'),
@@ -411,6 +412,8 @@ requireIncludes(files.activationSimulator, 'installer-return-checking', 'D177 si
 requireIncludes(files.activationSimulator, 'connector-online-no-model', 'D177 simulator must cover connector online with no model.');
 requireIncludes(files.activationSimulator, 'verified-local-model', 'D177 simulator must cover verified local model.');
 requireIncludes(files.simulatorHarness, 'expectedScenarioIds', 'D177 simulator needs dedicated CI fixture coverage.');
+requireIncludes(files.replayRenderHarness, 'expectedScenarioIds', 'D181 replay render harness must cover every activation simulator scenario.');
+requireIncludes(files.replayRenderHarness, 'Activation replay render smoke check passed.', 'D181 replay render harness must have a dedicated success signal.');
 requireIncludes(files.privacyControls, 'Activation replay demo state', 'D178 privacy inventory must disclose activation replay state.');
 requireIncludes(files.activationTelemetry, 'MimirActivationTelemetry', 'D170 needs a browser-local activation telemetry API.');
 requireIncludes(files.activationTelemetry, 'mmir-local-doctor-updated', 'D170 telemetry must include local doctor updates.');

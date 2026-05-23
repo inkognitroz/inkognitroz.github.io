@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T13:05:09.689Z",
+  "updated_at": "2026-05-23T13:12:57.417Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 181,
+    "total": 182,
     "done": 51,
-    "beta": 105,
+    "beta": 106,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -740,8 +740,8 @@
         "phase": "Activation QA",
         "total": 6,
         "done": 0,
-        "beta": 5,
-        "next": 1,
+        "beta": 6,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -758,10 +758,10 @@
       },
       {
         "phase": "Activation QA/UX",
-        "total": 3,
+        "total": 4,
         "done": 0,
         "beta": 3,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1038,7 +1038,7 @@
     }
   ],
   "next_queue": [
-    "D181"
+    "D182"
   ],
   "watchlist": [
     "D082",
@@ -3755,9 +3755,24 @@
       "best_practice": "Replay QA should not regress when first-screen or chat runtime code changes",
       "done_when": "CI proves replay controls exist for every scenario and remain demo-only",
       "covers": "activation, QA, automation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A dedicated replay render smoke harness now checks every activation simulator scenario, required surface, next-target jump, reset path, runtime gate and demo-only invariant.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D182",
+      "phase": "Activation QA/UX",
+      "priority": "P0",
+      "work_package": "Replay route map report",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add an owner-facing replay route map that lists every simulator scenario, required surface, next target, evidence and remaining live-proof gap from the same public-safe fixtures",
+      "best_practice": "The owner should see exactly what is simulated, what is real and what still needs live infrastructure without reading code",
+      "done_when": "Progress Dashboard shows a route map for all replay scenarios and keeps demo-only/no-spend boundaries visible",
+      "covers": "activation, QA, owner dashboard",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation QA slice: add a replay render regression harness for every simulator scenario and next-target control.",
+      "evidence": "Next activation QA slice: add a replay route map that shows each simulator scenario, tested surface, target and remaining live proof gap in one owner-facing report.",
       "estimate": "2-6h"
     }
   ]

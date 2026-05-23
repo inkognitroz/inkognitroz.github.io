@@ -46,6 +46,8 @@ jobs:
         run: node scripts/smoke-check-local-install-return.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
+      - name: Smoke check activation replay render
+        run: node scripts/smoke-check-activation-replay-render.js
       - name: Smoke check user journeys
         run: node scripts/smoke-check-user-journeys.js
       - name: Setup Pages

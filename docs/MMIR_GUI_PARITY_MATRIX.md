@@ -62,6 +62,7 @@ Current priority after the matrix is:
 52. D179 first-screen replay handoff.
 53. D180 first-screen replay reset/jump controls.
 54. D181 replay render regression harness.
+55. D182 replay route map report.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -115,6 +116,7 @@ D177 is now beta: public-safe activation fixtures prove the full free-first acti
 D178 is now beta: simulator states can be replayed safely in browser-local demo mode from Progress Dashboard.
 D179 is now beta: active replay state is visible near first-screen/chat gates without replacing real proof.
 D180 is now beta: first-screen controls can reset replay or jump to the simulated next action.
-D181 is next: add regression coverage for replay render controls across all simulator scenarios.
+D181 is now beta: replay render controls are guarded across all simulator scenarios.
+D182 is next: add an owner-facing replay route map that shows scenario targets, evidence and remaining live-proof gaps.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.
