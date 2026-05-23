@@ -22,6 +22,7 @@ const files = {
   messageActionVisualReport: join(publicDir, 'message-action-visual-report.json'),
   messageActionBrowserFixtureReport: join(publicDir, 'message-action-browser-fixture-report.json'),
   messageActionAccessibilityReport: join(publicDir, 'message-action-accessibility-report.json'),
+  conversationHandoffReport: join(publicDir, 'conversation-handoff-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -99,6 +100,7 @@ const files = {
   messageActionVisualHarness: join(root, 'scripts', 'smoke-check-message-action-visual.js'),
   messageActionBrowserFixtureHarness: join(root, 'scripts', 'smoke-check-message-action-browser-fixture.js'),
   messageActionAccessibilityHarness: join(root, 'scripts', 'smoke-check-message-action-accessibility.js'),
+  conversationHandoffHarness: join(root, 'scripts', 'smoke-check-conversation-handoff.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -630,6 +632,9 @@ requireIncludes(files.progressDashboard, 'renderMessageActionBrowserFixtureRepor
 requireIncludes(files.messageActionAccessibilityHarness, 'Message action accessibility smoke check passed.', 'D218 message action accessibility must have dedicated CI coverage.');
 requireIncludes(files.messageActionAccessibilityReport, 'keyboard-focus', 'D218 message action accessibility report must cover keyboard focus behavior.');
 requireIncludes(files.progressDashboard, 'renderMessageActionAccessibilityReport', 'D218 Progress Dashboard must render message action accessibility evidence.');
+requireIncludes(files.conversationHandoffHarness, 'Conversation handoff smoke check passed.', 'D219 conversation handoff must have dedicated CI coverage.');
+requireIncludes(files.conversationHandoffReport, 'continue-chat', 'D219 conversation handoff report must cover continue-chat behavior.');
+requireIncludes(files.progressDashboard, 'renderConversationHandoffReport', 'D219 Progress Dashboard must render conversation handoff evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

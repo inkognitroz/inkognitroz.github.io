@@ -210,14 +210,15 @@ Updated: 2026-05-23
 - D216 is now beta: message action visual QA proves desktop/mobile selector, CSS and copy contracts for transcript controls, wrapping and status feedback.
 - D217 is now beta: message action browser fixture proves Save, Fork, Safe share and Next against synthetic localStorage, clipboard and bridge state with no network, secrets or spend.
 - D218 is now beta: transcript action accessibility now has grouped controls, described status feedback, aria labels and focus-visible contracts.
-- D219 is now next: polish the conversation manager handoff after message Save/Fork so saved branches are easy to find, load and continue.
+- D219 is now beta: message Save/Fork now writes metadata-only conversation handoff state, opens Conversations, highlights the active saved branch and surfaces Continue/Rename/Safe share/Dismiss actions.
+- D220 is now next: add a no-spend memory/knowledge handoff from saved chats so useful context can be reused deliberately without hidden backend storage.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D219` conversation handoff polish.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D220` saved chat to memory handoff.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

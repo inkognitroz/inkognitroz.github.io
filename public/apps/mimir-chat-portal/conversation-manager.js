@@ -4,10 +4,12 @@
   const CHAT_KEY='mimir-chat-current-session-v1';
   const CONVERSATION_PREFIX='mimir-conversations-v1:';
   const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
+  const CONVERSATION_HANDOFF_PREFIX='mimir-conversation-handoff-v1:';
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   let titleEl=null;
   let searchEl=null;
   let archivedEl=null;
+  let handoffEl=null;
   let listEl=null;
   let statusEl=null;
 
@@ -16,6 +18,7 @@
   function workspaceId(){return localStorage.getItem(ACTIVE_WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
   function conversationKey(){return CONVERSATION_PREFIX+workspaceId();}
   function activeConversationKey(){return ACTIVE_CONVERSATION_PREFIX+workspaceId();}
+  function handoffKey(){return CONVERSATION_HANDOFF_PREFIX+workspaceId();}
   function chatStorageKey(){return CHAT_KEY+':'+workspaceId();}
   function safeId(){return 'conversation-'+Date.now().toString(36)+'-'+Math.random().toString(16).slice(2,7);}
 
@@ -72,6 +75,34 @@
     return localStorage.getItem(activeConversationKey())||'';
   }
 
+  function readHandoff(){
+    const handoff=readJson(handoffKey(),null);
+    if(!handoff||handoff.workspace_id!==workspaceId()||!handoff.conversation_id)return null;
+    return handoff;
+  }
+
+  function activeHandoff(){
+    const handoff=readHandoff();
+    if(!handoff)return null;
+    return readConversations().some(item=>item.id===handoff.conversation_id)?handoff:null;
+  }
+
+  function clearHandoff(){
+    localStorage.removeItem(handoffKey());
+  }
+
+  function handoffLabel(action){
+    return action==='forked'?'Fork ready':'Saved locally';
+  }
+
+  function button(action,label){
+    const element=document.createElement('button');
+    element.type='button';
+    element.dataset.handoffAction=action;
+    element.textContent=label;
+    return element;
+  }
+
   function saveCurrentConversation(){
     const messages=readMessages();
     if(!messages.length){setStatus('No current chat to save yet.','error');return;}
@@ -126,6 +157,35 @@
     if(titleEl)titleEl.value=fork.title;
     render();
     setStatus('Conversation forked.','ready');
+  }
+
+  function renderHandoff(){
+    if(!handoffEl)return;
+    const handoff=activeHandoff();
+    handoffEl.replaceChildren();
+    if(!handoff){
+      handoffEl.hidden=true;
+      return;
+    }
+    handoffEl.hidden=false;
+    const item=readConversations().find(entry=>entry.id===handoff.conversation_id);
+    const body=document.createElement('div');
+    const eyebrow=document.createElement('span');
+    eyebrow.textContent=handoffLabel(handoff.action);
+    const title=document.createElement('strong');
+    title.textContent=handoff.title||'Conversation';
+    const meta=document.createElement('small');
+    meta.textContent=String(handoff.message_count||item?.messages?.length||0)+' messages - next: continue chat';
+    body.append(eyebrow,title,meta);
+    const actions=document.createElement('div');
+    actions.className='conversation-handoff-actions';
+    actions.append(
+      button('continue','Continue chat'),
+      button('rename','Rename'),
+      button('share','Safe share'),
+      button('dismiss','Dismiss')
+    );
+    handoffEl.append(body,actions);
   }
 
   function toggleField(id,field){
@@ -198,8 +258,10 @@
 
   function render(){
     if(!listEl)return;
+    renderHandoff();
     const items=sortedConversations();
     const activeId=activeConversationId();
+    const handoff=activeHandoff();
     if(titleEl&&!titleEl.value){
       const active=readConversations().find(item=>item.id===activeId);
       if(active)titleEl.value=active.title||'';
@@ -211,17 +273,32 @@
     }
     items.forEach(item=>{
       const article=document.createElement('article');
-      article.className='conversation-item '+(item.id===activeId?'is-active':'');
+      article.className='conversation-item '+(item.id===activeId?'is-active ':'')+(handoff?.conversation_id===item.id?'is-handoff':'');
       const body=document.createElement('div');
       const title=document.createElement('strong');
       title.textContent=(item.pinned?'Pinned: ':'')+(item.title||'Conversation');
       const meta=document.createElement('small');
       meta.textContent=String(item.messages.length)+' messages - '+(item.archived?'archived':'active')+' - '+String(item.updated_at||'').slice(0,10);
       body.append(title,meta);
+      if(item.id===activeId||handoff?.conversation_id===item.id){
+        const badges=document.createElement('span');
+        badges.className='conversation-badges';
+        if(item.id===activeId){
+          const badge=document.createElement('em');
+          badge.textContent='Active';
+          badges.appendChild(badge);
+        }
+        if(handoff?.conversation_id===item.id){
+          const badge=document.createElement('em');
+          badge.textContent=handoff.action==='forked'?'Just forked':'Just saved';
+          badges.appendChild(badge);
+        }
+        body.appendChild(badges);
+      }
       const actions=document.createElement('div');
       actions.className='conversation-actions';
       [
-        ['load','Load'],
+        ['load',item.id===activeId?'Continue':'Load'],
         ['pin',item.pinned?'Unpin':'Pin'],
         ['archive',item.archived?'Restore':'Archive'],
         ['fork','Fork'],
@@ -253,6 +330,44 @@
     if(action==='share')safeShare(id);
   }
 
+  function handleHandoffAction(event){
+    const control=event.target?.closest?.('[data-handoff-action]');
+    if(!control)return;
+    const handoff=activeHandoff();
+    const id=handoff?.conversation_id||activeConversationId();
+    const action=control.dataset.handoffAction;
+    if(action==='continue')loadConversation(id);
+    if(action==='rename'){
+      const item=readConversations().find(entry=>entry.id===id);
+      if(titleEl){
+        titleEl.value=item?.title||handoff?.title||'Conversation';
+        titleEl.focus();
+        titleEl.select?.();
+      }
+      setStatus('Rename the saved chat, then press Save / rename.','ready');
+    }
+    if(action==='share')safeShare(id);
+    if(action==='dismiss'){
+      clearHandoff();
+      render();
+      setStatus('Conversation handoff hidden. Saved chat remains in the list.','idle');
+    }
+  }
+
+  function receiveHandoff(event){
+    const handoff=event.detail||{};
+    if(handoff.workspace_id&&handoff.workspace_id!==workspaceId())return;
+    if(handoff.conversation_id){
+      try{writeJson(handoffKey(),handoff);}catch(error){}
+      if(searchEl)searchEl.value='';
+      if(archivedEl)archivedEl.checked=false;
+      const panel=document.getElementById('conversation-manager-panel');
+      if(panel)panel.open=true;
+      render();
+      setStatus((handoff.action==='forked'?'Fork':'Saved chat')+' is ready to continue.','ready');
+    }
+  }
+
   function install(){
     if(document.getElementById('conversation-manager-panel'))return;
     const details=document.createElement('details');
@@ -271,12 +386,14 @@
           '<label class="conversation-archive-toggle"><input id="conversation-show-archived" type="checkbox" /> Show archived</label>'+
         '</div>'+
         '<p id="conversation-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>'+
+        '<div id="conversation-handoff" class="conversation-handoff" aria-live="polite" hidden></div>'+
         '<div id="conversation-list" class="conversation-list" aria-live="polite"></div>'+
       '</div>';
     host.appendChild(details);
     titleEl=document.getElementById('conversation-title');
     searchEl=document.getElementById('conversation-search');
     archivedEl=document.getElementById('conversation-show-archived');
+    handoffEl=document.getElementById('conversation-handoff');
     listEl=document.getElementById('conversation-list');
     statusEl=document.getElementById('conversation-status');
     document.getElementById('conversation-save')?.addEventListener('click',saveCurrentConversation);
@@ -284,12 +401,14 @@
     searchEl?.addEventListener('input',render);
     archivedEl?.addEventListener('change',render);
     listEl?.addEventListener('click',handleAction);
+    handoffEl?.addEventListener('click',handleHandoffAction);
     render();
   }
 
   window.addEventListener('mmir-chat-history-updated',render);
   window.addEventListener('mmir-workspace-changed',()=>{if(titleEl)titleEl.value='';render();});
   window.addEventListener('mmir-conversations-updated',render);
+  window.addEventListener('mmir-conversation-handoff',receiveHandoff);
   window.addEventListener('storage',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();

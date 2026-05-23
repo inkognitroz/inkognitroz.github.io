@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-23T22:55:00+02:00",
+  "title": "Conversation Handoff QA",
+  "principle": "Save and Fork must become a visible continuation path, not hidden browser storage.",
+  "public_repo_rule": "Handoff evidence is metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+  "scenarios": [
+    {
+      "id": "save-handoff",
+      "action": "saved",
+      "expected": "Message Save writes a browser-local handoff for the active conversation and opens Conversations.",
+      "storage_key": "mimir-conversation-handoff-v1:<workspace>",
+      "next_action": "continue-chat",
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "fork-handoff",
+      "action": "forked",
+      "expected": "Message Fork creates a branch, marks it active and stores a handoff without raw chat content.",
+      "storage_key": "mimir-active-conversation-v1:<workspace>",
+      "next_action": "continue-chat",
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "manager-callout",
+      "action": "render-callout",
+      "expected": "Conversations shows a handoff callout, active badges and Continue/Rename/Safe share/Dismiss actions.",
+      "selector": "#conversation-handoff",
+      "next_action": "continue-chat",
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "public-boundary",
+      "action": "metadata-only",
+      "expected": "The handoff object keeps title, id, counts and flags only; raw prompt/response content stays in local conversation storage.",
+      "storage_key": "mimir-conversation-handoff-v1:<workspace>",
+      "next_action": "continue-chat",
+      "status": "ready",
+      "no_paid_routes_started": true
+    }
+  ],
+  "result": "ready"
+}

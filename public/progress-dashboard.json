@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T19:42:05.706Z",
+  "updated_at": "2026-05-23T19:54:55.180Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 219,
+    "total": 220,
     "done": 51,
-    "beta": 143,
+    "beta": 144,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -960,6 +960,16 @@
         "phase": "Chat UX / Conversations",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Memory / Knowledge UX",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1835,6 +1845,52 @@
     ],
     "result": "ready"
   },
+  "conversation_handoff_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T22:55:00+02:00",
+    "title": "Conversation Handoff QA",
+    "principle": "Save and Fork must become a visible continuation path, not hidden browser storage.",
+    "public_repo_rule": "Handoff evidence is metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "scenarios": [
+      {
+        "id": "save-handoff",
+        "action": "saved",
+        "expected": "Message Save writes a browser-local handoff for the active conversation and opens Conversations.",
+        "storage_key": "mimir-conversation-handoff-v1:<workspace>",
+        "next_action": "continue-chat",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "fork-handoff",
+        "action": "forked",
+        "expected": "Message Fork creates a branch, marks it active and stores a handoff without raw chat content.",
+        "storage_key": "mimir-active-conversation-v1:<workspace>",
+        "next_action": "continue-chat",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "manager-callout",
+        "action": "render-callout",
+        "expected": "Conversations shows a handoff callout, active badges and Continue/Rename/Safe share/Dismiss actions.",
+        "selector": "#conversation-handoff",
+        "next_action": "continue-chat",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "public-boundary",
+        "action": "metadata-only",
+        "expected": "The handoff object keeps title, id, counts and flags only; raw prompt/response content stays in local conversation storage.",
+        "storage_key": "mimir-conversation-handoff-v1:<workspace>",
+        "next_action": "continue-chat",
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1885,7 +1941,7 @@
     }
   ],
   "next_queue": [
-    "D219"
+    "D220"
   ],
   "watchlist": [
     "D082",
@@ -5172,9 +5228,24 @@
       "best_practice": "Save and fork should feel like a natural continuation, not a hidden storage side effect",
       "done_when": "User sees the saved/forked chat clearly, with active state, title and next action surfaced",
       "covers": "chat UX, persistence, conversation manager",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Conversation handoff polish now turns message Save/Fork into visible Conversations callouts with active badges, continue actions and metadata-only local handoff state.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D220",
+      "phase": "Memory / Knowledge UX",
+      "priority": "P0",
+      "work_package": "Saved chat to memory handoff",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a no-spend handoff from saved conversations into memory/knowledge so useful context can be reused deliberately",
+      "best_practice": "Users should not have to retype useful context after saving a good chat",
+      "done_when": "User can promote a saved chat summary or selected safe snippets into local memory/knowledge with clear privacy controls",
+      "covers": "memory, knowledge, retention",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: polish the conversation manager handoff after message Save/Fork so saved branches are easier to find and continue.",
+      "evidence": "Next activation slice: add a no-spend memory/knowledge handoff from saved chats so useful context can be reused without hidden backend storage.",
       "estimate": "2-6h"
     }
   ]

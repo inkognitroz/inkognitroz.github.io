@@ -3,6 +3,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const CONVERSATION_PREFIX='mimir-conversations-v1:';
   const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
+  const CONVERSATION_HANDOFF_PREFIX='mimir-conversation-handoff-v1:';
   const MESSAGE_SHARE_PREFIX='mimir-message-share-draft-v1:';
 
   function workspaceId(bridge){
@@ -69,6 +70,36 @@
     window.dispatchEvent(new CustomEvent('mmir-conversations-updated',{detail:{workspaceId:workspaceId(bridge)}}));
     return next;
   }
+  function redactHandoffTitle(value){
+    return String(value||'Conversation')
+      .replace(/(?:sk|pk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_=-]{12,}/g,'[redacted token]')
+      .replace(/Bearer\s+[A-Za-z0-9._=-]{12,}/gi,'Bearer [redacted]')
+      .replace(/\b(api[_ -]?key|password|secret|token)\s*[:=]\s*["']?[^"'\s]{8,}/gi,'$1: [redacted]')
+      .slice(0,90);
+  }
+  function publishConversationHandoff(bridge,saved,action){
+    if(!saved)return null;
+    const handoff={
+      object:'mmir.conversation_handoff',
+      version:1,
+      workspace_id:workspaceId(bridge),
+      conversation_id:saved.id,
+      action,
+      title:redactHandoffTitle(saved.title),
+      message_count:Array.isArray(saved.messages)?saved.messages.length:0,
+      next_action:'continue-chat',
+      source:'message-action',
+      created_at:new Date().toISOString(),
+      local_only:true,
+      no_paid_routes_started:true,
+      public_frontend_secrets_allowed:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false
+    };
+    try{writeJson(key(CONVERSATION_HANDOFF_PREFIX,bridge),handoff);}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-conversation-handoff',{detail:handoff}));
+    return handoff;
+  }
   function redactShareText(value){
     return String(value||'')
       .replace(/(?:sk|pk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_=-]{12,}/g,'[redacted token]')
@@ -85,9 +116,10 @@
       setStatus(bridge,'No chat to save yet.','error');
       return;
     }
+    publishConversationHandoff(bridge,saved,'saved');
     bridge?.openPanel?.('#conversation-manager-panel');
-    setActionStatus(bridge,message,'Saved locally as "'+saved.title+'".','ready');
-    setStatus(bridge,'Conversation saved locally.','ready');
+    setActionStatus(bridge,message,'Saved locally as "'+saved.title+'". Continue in Conversations.','ready');
+    setStatus(bridge,'Conversation saved locally. Continue from Conversations.','ready');
     record(bridge,'save',message,{conversation_id:saved.id});
   }
   function fork(message,bridge){
@@ -97,9 +129,10 @@
       return;
     }
     bridge?.setMessages?.(forked.messages);
+    publishConversationHandoff(bridge,forked,'forked');
     bridge?.openPanel?.('#conversation-manager-panel');
-    setActionStatus(bridge,message,'Fork created from this answer.','ready');
-    setStatus(bridge,'Fork created from this answer.','ready');
+    setActionStatus(bridge,message,'Fork created from this answer. Continue in Conversations.','ready');
+    setStatus(bridge,'Fork created from this answer. Continue from Conversations.','ready');
     record(bridge,'fork',message,{conversation_id:forked.id,message_count:forked.messages.length});
   }
   async function shareSafe(message,bridge){
@@ -140,6 +173,7 @@
       return;
     }
     const saved=saveSnapshot(bridge,snapshot(bridge), '');
+    publishConversationHandoff(bridge,saved,'saved');
     bridge?.openPanel?.('#conversation-manager-panel');
     setActionStatus(bridge,message,'Next step opened: saved chat and ready for memory/workspace follow-up.','ready');
     setStatus(bridge,'Chat saved. Add memory, knowledge or a workflow next.','ready');
