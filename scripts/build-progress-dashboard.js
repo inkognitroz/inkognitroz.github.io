@@ -55,7 +55,7 @@ const overrides = new Map([
   ['D113', { status: 'beta', evidence: 'One-click install/switch/remove now exists for local-node/Ollama paths; keep polishing catalog-level management and confirmations.' }],
   ['D114', { status: 'done', evidence: 'The first-run onboarding panel now shows automatic Browser ready, Private mode, Local node, Model live and First chat gates with live updates from mode, profile, node and chat events.' }],
   ['D115', { status: 'beta', evidence: 'First screen now has an automatic readiness rail for free start, privacy, node and model state, plus the send glyph is encoded safely.' }],
-  ...range(116, 159).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
+  ...range(116, 160).map((id) => [id, { status: 'planned', evidence: 'Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.' }]),
   ['D116', { status: 'beta', evidence: 'Control-plane boundary spec now documents current and target architecture, trust zones, route ownership, public/private rules and Codex work rules.' }],
   ['D117', { status: 'beta', evidence: 'Public safety audit now blocks token-like strings, real-looking secret assignments, browser Bearer-key construction, enabled public API-key fields and paid-compute enablement in the public frontend.' }],
   ['D118', { status: 'beta', evidence: 'Privacy controls now show a browser data inventory for chats, memory, knowledge, workspaces, backend profile metadata, model preferences, demo events and temporary pairing tokens, with export, workspace delete, pairing-token clear and all-local-MMIR reset controls.' }],
@@ -95,7 +95,8 @@ const overrides = new Map([
   ['D156', { status: 'beta', evidence: 'Managed backend and public UI now support short-lived session-token and invite create/accept/revoke flows tied to organizations; tokens and codes are returned once and not stored in GitHub Pages.' }],
   ['D157', { status: 'beta', evidence: 'Protected shares now support organization visibility, org id and minimum-role audiences; backend identity policy enforces owner/admin creation and member-role read access while public preview links remain non-authoritative.' }],
   ['D158', { status: 'beta', evidence: 'Share access review now exposes audience summaries, viewer decisions, next-safe actions and share-specific audit state from the protected backend inside Safe Sharing.' }],
-  ['D159', { status: 'next', evidence: 'Next sharing/security slice: guide recipients from invite/session acceptance to the intended protected share with safe denial states and no public token storage.' }]
+  ['D159', { status: 'beta', evidence: 'Recipient handoff now guides invited users from invite acceptance to the intended protected share, opens payload only after backend policy allows it and shows session tokens once without public storage.' }],
+  ['D160', { status: 'next', evidence: 'Next sharing/security slice: make owner-side team sharing easier with a safe handoff packet that pre-fills non-secret recipient fields while one-time codes remain one-time.' }]
 ]);
 
 const repoMeta = [
@@ -223,7 +224,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D159', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D160', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),

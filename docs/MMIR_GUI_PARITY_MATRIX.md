@@ -40,6 +40,7 @@ Current priority after the matrix is:
 30. D157 organization-scoped share audiences.
 31. D158 share access review and audit trail.
 32. D159 share recipient onboarding handoff.
+33. D160 one-click team share packet.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -71,6 +72,7 @@ D155 is now beta across frontend/backend: protected principal/org routes and a p
 D156 is now beta across frontend/backend: short-lived session tokens and invite create/accept/revoke flows exist, with one-time tokens/codes shown without public frontend storage.
 D157 is now beta across frontend/backend: protected shares can be scoped to organization id and minimum role, with backend identity checks and Safe Sharing audience controls.
 D158 is now beta across frontend/backend: share owners can inspect audience summaries, viewer decisions, next-safe actions and recent share-specific audit state from Safe Sharing.
-D159 is next: recipients need a clear invite/session-to-share handoff so team sharing feels simple, useful and safe without storing tokens in the public frontend.
+D159 is now beta across frontend/backend: recipients can accept an invite/session handoff, open the intended share only when policy allows it, and see session tokens once without public storage.
+D160 is next: owners need one-click team-share packets that prefill non-secret recipient fields while keeping one-time codes one-time.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

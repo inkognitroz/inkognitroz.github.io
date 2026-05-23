@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T09:49:26.615Z",
+  "updated_at": "2026-05-23T10:01:36.316Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 159,
+    "total": 160,
     "done": 51,
-    "beta": 83,
+    "beta": 84,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -718,9 +718,9 @@
       },
       {
         "phase": "Sharing/Security",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -778,7 +778,7 @@
     }
   ],
   "next_queue": [
-    "D159"
+    "D160"
   ],
   "watchlist": [
     "D082",
@@ -3165,9 +3165,24 @@
       "best_practice": "Team sharing becomes useful only when recipients can land, authenticate and open the right object with clear gates",
       "done_when": "Recipient can paste/accept an invite code, establish a short-lived session, open the intended share if policy allows, and see a safe denial if not",
       "covers": "team adoption",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Recipient handoff now guides invited users from invite acceptance to the intended protected share, opens payload only after backend policy allows it and shows session tokens once without public storage.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D160",
+      "phase": "Sharing/Security",
+      "priority": "P1",
+      "work_package": "One-click team share packet",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add an owner-side handoff packet that combines share id, invite id, audience role and safe recipient instructions, with code shown once and never saved",
+      "best_practice": "Team sharing should be easy enough to use without asking recipients to assemble ids manually",
+      "done_when": "Owner can create/copy a safe team-share packet; recipient flow can prefill non-secret ids and still require the one-time code",
+      "covers": "team adoption",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next sharing/security slice: guide recipients from invite/session acceptance to the intended protected share with safe denial states and no public token storage.",
+      "evidence": "Next sharing/security slice: make owner-side team sharing easier with a safe handoff packet that pre-fills non-secret recipient fields while one-time codes remain one-time.",
       "estimate": "0.5-2d"
     }
   ]

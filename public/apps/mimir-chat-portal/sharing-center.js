@@ -15,9 +15,11 @@
   let previewEl=null;
   let backendListEl=null;
   let accessReviewEl=null;
+  let recipientEl=null;
   let statusEl=null;
   let currentBundle=null;
   let currentAccessReview=null;
+  let currentRecipientHandoff=null;
   let backendShares=[];
 
   if(!root)return;
@@ -289,6 +291,7 @@
         '<div class="sharing-backend-actions">'+
           '<button type="button" data-share-action="load" data-share-id="'+safe(share.id)+'" '+(share.payload_available===false?'disabled':'')+'>Preview</button>'+
           '<button type="button" data-share-action="review" data-share-id="'+safe(share.id)+'">Review access</button>'+
+          '<button type="button" data-share-action="handoff" data-share-id="'+safe(share.id)+'">Use for handoff</button>'+
           '<button type="button" data-share-action="revoke" data-share-id="'+safe(share.id)+'" '+(share.status==='revoked'?'disabled':'')+'>Revoke</button>'+
         '</div>'+
       '</article>').join('');
@@ -323,6 +326,33 @@
             '<p class="dashboard-note">No recent share-specific audit events returned yet.</p>'
         )+'</section>'+
       '</article>';
+  }
+
+  function renderRecipientHandoff(payload=currentRecipientHandoff){
+    if(!recipientEl)return;
+    if(!payload){
+      recipientEl.innerHTML='<p class="dashboard-note">Recipient handoff is ready. Paste share id, invite id and one-time invite code to open a protected share.</p>';
+      return;
+    }
+    const handoff=payload.handoff||payload.data||payload;
+    const error=payload.error||null;
+    const token=payload.token||'';
+    const actions=array(handoff.next_actions);
+    recipientEl.innerHTML=''+
+      '<article class="sharing-recipient-result" data-share-recipient="recipient-handoff">'+
+        '<header><div><strong>Recipient handoff</strong><span>'+safe(handoff.share_id||'Protected share')+'</span></div><small>'+safe(handoff.status||'ready')+'</small></header>'+
+        (error?'<p class="sharing-recipient-error">'+safe(error.message||error.code||'Handoff blocked safely.')+'</p>':'')+
+        '<div class="sharing-review-grid">'+
+          '<div><dt>Payload</dt><dd>'+safe(handoff.payload_available?'Opened':'Blocked')+'</dd><small>session_token_returned_once: '+safe(String(handoff.session_token_returned_once===true))+'</small></div>'+
+          '<div><dt>Invite</dt><dd>'+safe(handoff.accepted_invite?.status||'not used')+'</dd><small>'+safe(handoff.accepted_invite?.id||'Use a valid invite id')+'</small></div>'+
+          '<div><dt>Organization</dt><dd>'+safe(handoff.org?.name||handoff.accepted_invite?.org_id||'not confirmed')+'</dd><small>'+safe(handoff.member?.role?('role '+handoff.member.role):'role decided by backend')+'</small></div>'+
+          '<div><dt>Share</dt><dd>'+safe(handoff.share?.status||'not opened')+'</dd><small>'+safe(handoff.access_review?.audience_summary?.visibility||'server-side policy')+'</small></div>'+
+        '</div>'+
+        (token?'<section class="sharing-one-time"><div><span>Shown once</span><strong>Session token</strong><small>Use only with a protected backend profile. This public page does not store it.</small></div><input id="sharing-recipient-token" type="text" readonly value="'+safe(token)+'" /><div class="sharing-backend-actions"><button id="sharing-copy-recipient-token" type="button">Copy token</button><button id="sharing-hide-recipient-token" type="button">Hide</button></div></section>':'')+
+        '<section class="sharing-review-actions"><strong>Next safe action</strong><ul>'+actions.map(action=>'<li>'+safe(action)+'</li>').join('')+'</ul></section>'+
+      '</article>';
+    document.getElementById('sharing-copy-recipient-token')?.addEventListener('click',copyRecipientToken);
+    document.getElementById('sharing-hide-recipient-token')?.addEventListener('click',hideRecipientToken);
   }
 
   async function copyText(){
@@ -405,6 +435,57 @@
     }
   }
 
+  async function recipientHandoff(){
+    const shareId=clean(document.getElementById('sharing-recipient-share-id')?.value||'',180);
+    const inviteId=clean(document.getElementById('sharing-recipient-invite-id')?.value||'',180);
+    const code=String(document.getElementById('sharing-recipient-code')?.value||'').trim();
+    const createSession=document.getElementById('sharing-recipient-create-session')?.checked!==false;
+    if(!shareId||!inviteId||!code){setStatus('Paste share id, invite id and one-time invite code first.','error');return;}
+    try{
+      setStatus('Accepting invite and opening protected share...','loading');
+      const path='/shares/'+encodeURIComponent(shareId)+'/'+'recipient-handoff';
+      const data=await request(path,{
+        method:'POST',
+        body:JSON.stringify({invite_id:inviteId,code,create_session:createSession}),
+        timeoutMs:12000
+      });
+      document.getElementById('sharing-recipient-code').value='';
+      currentRecipientHandoff={handoff:data.data||data,token:data.token||''};
+      if(data.data?.share){
+        currentBundle=protectedShareToBundle(data.data.share);
+        renderPreview(currentBundle);
+      }
+      renderRecipientHandoff(currentRecipientHandoff);
+      setStatus('Recipient handoff complete. Protected share opened if policy allowed it.','ready');
+    }catch(error){
+      const field=document.getElementById('sharing-recipient-code');
+      if(field)field.value='';
+      currentRecipientHandoff={handoff:error.payload?.data||{share_id:shareId,status:'blocked',payload_available:false,next_actions:['Ask the owner for a fresh invite or correct role.']},error:error.payload?.error||{message:error.message}};
+      renderRecipientHandoff(currentRecipientHandoff);
+      setStatus(error.message||'Recipient handoff failed safely.','error');
+    }
+  }
+
+  async function copyRecipientToken(){
+    const value=document.getElementById('sharing-recipient-token')?.value||'';
+    if(!value){setStatus('No one-time session token is visible.','error');return;}
+    try{
+      await navigator.clipboard.writeText(value);
+      setStatus('Session token copied. It is still not stored by this public page.','ready');
+    }catch(error){
+      const field=document.getElementById('sharing-recipient-token');
+      field?.focus();
+      field?.select();
+      setStatus('Select and copy the visible session token. Clipboard access was blocked.','ready');
+    }
+  }
+
+  function hideRecipientToken(){
+    if(currentRecipientHandoff)currentRecipientHandoff.token='';
+    renderRecipientHandoff(currentRecipientHandoff);
+    setStatus('One-time session token hidden from the page.','ready');
+  }
+
   async function revokeProtectedShare(id){
     if(!id)return;
     try{
@@ -461,6 +542,13 @@
         '<label for="sharing-audience">Audience<input id="sharing-audience" type="text" maxlength="240" placeholder="team-a, user@example.com" /></label>'+
         '<button id="sharing-load-backend" type="button">Load protected</button>'+
       '</div>'+
+      '<div class="sharing-toolbar sharing-recipient-policy">'+
+        '<label for="sharing-recipient-share-id">Share id<input id="sharing-recipient-share-id" type="text" maxlength="180" autocomplete="off" /></label>'+
+        '<label for="sharing-recipient-invite-id">Invite id<input id="sharing-recipient-invite-id" type="text" maxlength="180" autocomplete="off" /></label>'+
+        '<label for="sharing-recipient-code">Invite code<input id="sharing-recipient-code" type="password" maxlength="260" autocomplete="one-time-code" /></label>'+
+        '<label class="sharing-check" for="sharing-recipient-create-session"><input id="sharing-recipient-create-session" type="checkbox" checked /> Session</label>'+
+        '<button id="sharing-recipient-open" type="button">Accept and open</button>'+
+      '</div>'+
       '<div class="sharing-actions">'+
         '<button id="sharing-build" type="button">Build safe preview</button>'+
         '<button id="sharing-copy-text" type="button">Copy text</button>'+
@@ -477,12 +565,14 @@
       '<div id="sharing-preview" class="sharing-preview" aria-live="polite"></div>'+
       '<div id="sharing-backend-list" class="sharing-backend-list" aria-live="polite"></div>'+
       '<div id="sharing-access-review" class="sharing-access-review" aria-live="polite"></div>'+
+      '<div id="sharing-recipient-handoff" class="sharing-recipient-handoff" aria-live="polite"></div>'+
       '<p id="sharing-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>';
     typeEl=document.getElementById('sharing-type');
     itemEl=document.getElementById('sharing-item');
     previewEl=document.getElementById('sharing-preview');
     backendListEl=document.getElementById('sharing-backend-list');
     accessReviewEl=document.getElementById('sharing-access-review');
+    recipientEl=document.getElementById('sharing-recipient-handoff');
     statusEl=document.getElementById('sharing-status');
     typeEl?.addEventListener('change',()=>{currentBundle=null;renderOptions();renderPreview();});
     document.getElementById('sharing-refresh')?.addEventListener('click',()=>{renderOptions();setStatus('Shareable items refreshed.','ready');});
@@ -491,6 +581,7 @@
     document.getElementById('sharing-copy-link')?.addEventListener('click',copyLink);
     document.getElementById('sharing-save-backend')?.addEventListener('click',saveProtectedShare);
     document.getElementById('sharing-load-backend')?.addEventListener('click',()=>loadProtectedShares(true));
+    document.getElementById('sharing-recipient-open')?.addEventListener('click',recipientHandoff);
     document.getElementById('sharing-export')?.addEventListener('click',exportJson);
     document.getElementById('sharing-clear-hash')?.addEventListener('click',clearHash);
     backendListEl?.addEventListener('click',(event)=>{
@@ -504,11 +595,17 @@
         setStatus('Protected share preview loaded.','ready');
       }
       if(button.dataset.shareAction==='review')reviewProtectedShare(id);
+      if(button.dataset.shareAction==='handoff'){
+        const field=document.getElementById('sharing-recipient-share-id');
+        if(field)field.value=id;
+        setStatus('Share id inserted for recipient handoff. Paste invite id and one-time code.','ready');
+      }
       if(button.dataset.shareAction==='revoke')revokeProtectedShare(id);
     });
     renderOptions();
     renderBackendShares();
     renderAccessReview();
+    renderRecipientHandoff();
     if(!loadSharedHash())renderPreview();
   }
 

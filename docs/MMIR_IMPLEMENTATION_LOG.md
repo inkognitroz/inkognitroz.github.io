@@ -150,14 +150,15 @@ Updated: 2026-05-23
 - D156 is now beta across frontend/backend: short-lived MMIR session tokens and organization invite codes can be created, listed, accepted and revoked through protected backend routes, while the public UI shows one-time tokens/codes without storing them in GitHub Pages.
 - D157 is now beta across frontend/backend: protected shares can be scoped to organization id and minimum role, backend identity policy enforces owner/admin creation plus member-role read access, and Safe Sharing exposes organization audience controls while preview links remain non-authoritative.
 - D158 is now beta across frontend/backend: share access review exposes protected audience summaries, viewer decisions, next-safe actions and recent share-specific audit state inside Safe Sharing.
-- D159 is now the next sharing/security slice: add recipient onboarding from invite/session acceptance to the intended protected share, with safe denial states and no public token storage.
+- D159 is now beta across frontend/backend: recipient handoff accepts invite/session onboarding, opens the intended protected share only after backend policy allows it and shows session tokens once without public storage.
+- D160 is now the next sharing/security slice: add owner-side one-click team-share packets that prefill non-secret recipient fields while keeping invite codes one-time.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D159` share recipient onboarding handoff.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D160` one-click team share packet.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

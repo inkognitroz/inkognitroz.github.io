@@ -48,6 +48,7 @@
     { "path": "/registry/models", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected model registry." },
     { "path": "/runs", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Workflow run dynamic route fragment." },
     { "path": "/shares", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected share registry root." },
+    { "path": "/shares/:id/recipient-handoff", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Accept invite/session handoff and open an intended protected share when policy allows." },
     { "path": "/shares/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Protected share dynamic route fragment." },
     { "path": "/status", "owner": "local-node", "auth": "public-safe", "status": "live", "purpose": "Node/runtime status and capability inventory." },
     { "path": "/tools", "owner": "managed-api", "auth": "protected-backend-auth", "status": "planned", "purpose": "Protected tool capability list." },

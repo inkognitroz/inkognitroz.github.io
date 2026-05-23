@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d158-20260523-share-access-review';
+const CACHE_NAME='mmir-pwa-d159-20260523-share-recipient-handoff';
 const SHELL_ASSETS=[
   './',
   './index.html',

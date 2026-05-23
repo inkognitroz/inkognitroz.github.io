@@ -150,6 +150,10 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'access-review', 'D158 needs protected share access-review route support.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'audience_summary', 'D158 needs audience summary rendering in Safe Sharing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-review-card', 'D158 needs access review styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'sharing-recipient-share-id', 'D159 needs recipient share id input in Safe Sharing.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'recipient-handoff', 'D159 needs protected recipient handoff route support.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'), 'session_token_returned_once', 'D159 needs one-time session token handling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.css'), '.sharing-recipient-result', 'D159 needs recipient handoff styling.');
 requireText(mmirPath, './apps/mimir-chat-portal/identity-org.js', 'D155 needs identity/organization UI loaded on the product page.');
 requireText(mmirPath, './apps/mimir-chat-portal/identity-org.css', 'D155 needs identity/organization styling loaded on the product page.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'identity-org.js'), '/identity/me', 'D155 needs protected identity principal route support.');
