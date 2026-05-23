@@ -49,6 +49,7 @@ jobs:
           node scripts/smoke-check-starter-install-retry-after-repair.js
           node scripts/smoke-check-starter-retry-success-closure.js
           node scripts/smoke-check-first-answer-send-handoff.js
+          node scripts/smoke-check-first-answer-next-step.js
 
       - name: Commit migrated assets
         run: |

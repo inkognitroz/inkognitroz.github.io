@@ -55,7 +55,7 @@
         status:'ready',
         label:'Verified',
         detail:(receipt.model||'model')+' answered at '+new Date(receipt.first_success_at||receipt.at||Date.now()).toLocaleString()+'. No raw prompt or response is stored.',
-        action:'Open chat'
+        action:'Next step'
       };
     }
     if(receipt?.status==='failed'){
@@ -170,6 +170,34 @@
     return '<section class="progress-receipt-card" data-state="'+safe(state.status)+'">'+
       '<div><p class="eyebrow">Activation receipt</p><h2>First chat receipt: '+safe(state.label)+'</h2><small>'+safe(state.detail)+'</small></div>'+
       '<button id="progress-first-chat-recovery" type="button">'+safe(state.action)+'</button>'+
+    '</section>';
+  }
+
+  function readLocalJson(key,fallback){
+    try{
+      const value=JSON.parse(localStorage.getItem(key)||'null');
+      return value==null?fallback:value;
+    }catch(error){
+      return fallback;
+    }
+  }
+
+  function firstAnswerNextStep(){
+    const receipt=readFirstChatReceipt();
+    if(receipt?.status!=='success')return null;
+    const profile=activeProfile();
+    if(!profile?.url)return {kind:'connect-node',label:'Connect local node',target:'#local-connector',detail:'Make future answers private and faster on this device.'};
+    const conversations=readLocalJson('mimir-conversations-v1:'+activeWorkspaceId(),[]);
+    if(!Array.isArray(conversations)||!conversations.length)return {kind:'save-chat',label:'Save chat',target:'#conversation-manager-panel',detail:'Keep the first useful answer in this workspace.'};
+    return {kind:'add-memory',label:'Add memory',target:'#memory-panel',detail:'Let MMIR remember what mattered for the next answer.'};
+  }
+
+  function renderFirstAnswerNextStep(){
+    const step=firstAnswerNextStep();
+    if(!step)return '';
+    return '<section id="progress-first-answer-next-step" class="progress-receipt-card" data-state="ready">'+
+      '<div><p class="eyebrow">After first answer</p><h2>'+safe(step.label)+'</h2><small>'+safe(step.detail)+'</small></div>'+
+      '<button id="progress-first-answer-next-step-action" type="button" data-kind="'+safe(step.kind)+'" data-target="'+safe(step.target)+'">'+safe(step.label)+'</button>'+
     '</section>';
   }
 
@@ -453,6 +481,18 @@
     document.getElementById('progress-first-chat-recovery')?.addEventListener('click',runFirstChatRecovery);
   }
 
+  function bindFirstAnswerNextStep(){
+    document.getElementById('progress-first-answer-next-step-action')?.addEventListener('click',()=>{
+      const step=firstAnswerNextStep();
+      if(!step)return;
+      window.MimirLoadDeferred?.();
+      if(step.target.startsWith('#'))openTarget(step.target);
+      if(step.kind==='save-chat')window.setTimeout(()=>document.getElementById('conversation-save')?.click(),80);
+      if(step.kind==='add-memory')window.setTimeout(()=>document.getElementById('memory-input')?.focus(),80);
+      setSummary('first-answer-next-step: '+label(step.kind)+'. No paid route, provider key or raw prompt was stored.','ready');
+    });
+  }
+
   function bindActivationTelemetry(){
     document.getElementById('progress-activation-autopilot')?.addEventListener('click',()=>{
       window.MimirActivationAutopilot?.run?.('manual');
@@ -545,8 +585,9 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFirstChatReceipt();
+    bindFirstAnswerNextStep();
     bindActivationTelemetry();
     bindStarterFunnel();
     bindActivationSimulator();

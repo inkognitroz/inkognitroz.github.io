@@ -82,8 +82,13 @@ if (!d197 || d197.status !== 'beta') {
 }
 
 const d198 = tasks.find((task) => task.seq === 'D198');
-if (!d198 || d198.status !== 'next') {
-  fail('Progress dashboard must expose D198 as the next first-answer success next-step work item.');
+if (!d198 || d198.status !== 'beta') {
+  fail('Progress dashboard task D198 must stay beta after first-answer success next-step ships.');
+}
+
+const d199 = tasks.find((task) => task.seq === 'D199');
+if (!d199 || d199.status !== 'next') {
+  fail('Progress dashboard must expose D199 as the next visible-control reliability work item.');
 }
 
 if (!process.exitCode) {

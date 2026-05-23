@@ -189,7 +189,7 @@
     if(receipt?.status!=='success'){
       return {state:receipt?.status==='failed'?'error':'watch',title:'Get the first useful answer',detail:'A live model is ready; send the first chat and save a privacy-safe receipt.',action:'Send first answer',target:'#mimir-prompt',kind:'first-chat'};
     }
-    return {state:'ready',title:'Activation path is closed',detail:'Browser guide, local profile, live proof and first-chat receipt are all ready for this workspace.',action:'Chat now',target:'#mimir-prompt',kind:'chat-now'};
+    return {state:'ready',title:'First answer worked',detail:'Save the chat, then add memory, knowledge or models when needed.',action:'Save chat',target:'#conversation-manager-panel',kind:'save-chat'};
   }
 
   function ensureActivationClosureStrip(){

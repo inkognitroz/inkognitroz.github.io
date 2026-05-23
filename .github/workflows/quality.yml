@@ -165,3 +165,6 @@ jobs:
 
       - name: Smoke-check first-answer send handoff
         run: node scripts/smoke-check-first-answer-send-handoff.js
+
+      - name: Smoke-check first-answer next step
+        run: node scripts/smoke-check-first-answer-next-step.js

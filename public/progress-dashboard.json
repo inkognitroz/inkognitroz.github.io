@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T15:32:56.436Z",
+  "updated_at": "2026-05-23T15:39:56.748Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 198,
+    "total": 199,
     "done": 51,
-    "beta": 122,
+    "beta": 123,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -820,6 +820,16 @@
         "phase": "Activation Retention",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "UX Reliability",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1098,7 +1108,7 @@
     }
   ],
   "next_queue": [
-    "D198"
+    "D199"
   ],
   "watchlist": [
     "D082",
@@ -4070,9 +4080,24 @@
       "best_practice": "Activation should not dead-end after the first useful answer",
       "done_when": "User sees a receipt-driven next step without raw prompt storage, provider secrets or paid routes",
       "covers": "activation, retention, UX",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "After a verified first answer, chat proof, first-screen closure and Progress Dashboard now offer one receipt-driven next step such as save chat, connect node or add memory without storing raw prompts or starting paid routes.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D199",
+      "phase": "UX Reliability",
+      "priority": "P0",
+      "work_package": "Visible-control dead-end elimination pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Audit the first screen, chat runtime, progress dashboard and model/node panels for visible controls that do not complete a useful action, then wire or clearly gate them",
+      "best_practice": "A freemium product earns trust only when every visible control either works or explains why it is gated",
+      "done_when": "UI action coverage proves visible controls have handlers, useful result paths and no paid/secret side effects",
+      "covers": "UX, QA, automation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation retention slice: after first verified answer, show one receipt-driven next step without storing raw prompts or starting paid routes.",
+      "evidence": "Next UX reliability slice: audit visible first-screen/chat/dashboard/model/node controls and wire or clearly gate any remaining dead ends.",
       "estimate": "2-6h"
     }
   ]

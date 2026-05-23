@@ -262,6 +262,10 @@
       {id:'chat-now',label:'Send first answer'},
       retry
     ];
+    if(kind==='answered')return [
+      {id:'save-chat',label:'Save chat'},
+      retry
+    ];
     return [
       {id:'repair',label:'Repair free route'},
       retry
@@ -295,6 +299,10 @@
     }
     if(action==='connect-settings'){
       openPanel('#backend-settings');
+      return;
+    }
+    if(action==='save-chat'){
+      openPanel('#conversation-manager-panel');
       return;
     }
     if(action==='chat-now'){
@@ -1838,8 +1846,8 @@
         prompt_chars:prompt.length,
         response_chars:String(content||'').length
       });
-      renderLiveProof('First verified chat answered. Local receipt saved without raw prompt/response.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('verified'));
-      setStatus('Response received.','ready');
+      renderLiveProof('First verified chat answered. Save it or keep building.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('answered'));
+      setStatus('First answer received.','ready');
     }catch(error){
       const message=stopRequested?'Response stopped.':friendlyError(error);
       updateMessage(assistant.message.id,message,stopRequested?'stopped':'error');

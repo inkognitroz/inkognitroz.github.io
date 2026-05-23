@@ -495,6 +495,9 @@ requireText(firstScreenHydrationPath, 'Starter repair verified', 'D196 first scr
 requireText(join(root, 'scripts', 'smoke-check-first-answer-send-handoff.js'), 'First-answer send handoff smoke check passed.', 'D197 first-answer send handoff must have a dedicated smoke harness.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "setStatus('Sending first verified answer...','loading')", 'D197 chat runtime must turn verified proof action into an actual first-answer send.');
 requireText(firstScreenHydrationPath, 'primary-chat-link', 'D197 first screen must hand verified starter repair into the primary chat send action.');
+requireText(join(root, 'scripts', 'smoke-check-first-answer-next-step.js'), 'First-answer next-step smoke check passed.', 'D198 first-answer next-step must have a dedicated smoke harness.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'), "proofRepairActions('answered')", 'D198 chat runtime must replace repeated send prompts with a post-answer next step.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'firstAnswerNextStep', 'D198 Progress Dashboard must compute a receipt-driven next step.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

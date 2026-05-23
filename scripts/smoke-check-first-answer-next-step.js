@@ -7,8 +7,6 @@ const files = {
   progressData: join(publicDir, 'progress-dashboard.json'),
   chatRuntime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
-  nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
-  hydration: join(publicDir, 'apps', 'mimir-chat-portal', 'first-screen-activation-hydration.js'),
   progressDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'),
   coverage: join(publicDir, 'ui-action-coverage.json')
 };
@@ -20,7 +18,7 @@ function fail(message) {
 
 function text(file) {
   if (!existsSync(file)) {
-    fail(`Missing first-answer send handoff file: ${relative(root, file)}`);
+    fail(`Missing first-answer next-step file: ${relative(root, file)}`);
     return '';
   }
   return readFileSync(file, 'utf8');
@@ -37,56 +35,50 @@ function json(file) {
 
 const chatRuntime = text(files.chatRuntime);
 const firstImpression = text(files.firstImpression);
-const nodeDashboard = text(files.nodeDashboard);
-const hydration = text(files.hydration);
 const progressDashboard = text(files.progressDashboard);
 const coverage = text(files.coverage);
 const progressData = json(files.progressData);
 
 for (const needle of [
-  "{id:'chat-now',label:'Send first answer'}",
-  "promptEl.dispatchEvent(new Event('input',{bubbles:true}))",
-  "setStatus('Sending first verified answer...','loading')",
-  'window.setTimeout(()=>primaryLink?.click(),40)'
+  "proofRepairActions('answered')",
+  "{id:'save-chat',label:'Save chat'}",
+  'First verified chat answered. Save it or keep building.'
 ]) {
-  if (!chatRuntime.includes(needle)) fail(`Chat runtime missing first-answer send handoff evidence: ${needle}`);
-}
-
-for (const [label, source] of [
-  ['first screen', firstImpression],
-  ['first-screen hydration', hydration],
-  ['Node Dashboard', nodeDashboard],
-  ['Progress Dashboard', progressDashboard]
-]) {
-  if (!source.includes('Send first answer')) fail(`${label} must expose a Send first answer action.`);
+  if (!chatRuntime.includes(needle)) fail(`Chat runtime missing first-answer next-step evidence: ${needle}`);
 }
 
 for (const needle of [
-  "document.getElementById('primary-chat-link')?.click()",
-  'runFirstChatRecovery',
-  'prompt.dispatchEvent(new Event'
+  'First answer worked',
+  "kind:'save-chat'",
+  '#conversation-manager-panel'
 ]) {
-  if (!progressDashboard.includes(needle)) fail(`Progress Dashboard missing first-answer handoff evidence: ${needle}`);
+  if (!firstImpression.includes(needle)) fail(`First screen missing first-answer next-step evidence: ${needle}`);
 }
 
 for (const needle of [
-  'Send first answer',
-  'first-answer-send-handoff',
-  'primary-chat-link',
-  'no_paid_routes_started:true'
+  'function firstAnswerNextStep()',
+  'progress-first-answer-next-step',
+  'first-answer-next-step',
+  'mimir-conversations-v1:',
+  "kind:'add-memory'"
 ]) {
-  if (!coverage.includes(needle)) fail(`UI action coverage missing first-answer handoff evidence: ${needle}`);
+  if (!progressDashboard.includes(needle)) fail(`Progress Dashboard missing first-answer next-step evidence: ${needle}`);
+}
+
+for (const needle of [
+  'first-answer-next-step',
+  'Save chat',
+  'Connect local node',
+  'Add memory',
+  'raw_prompt_stored:false'
+]) {
+  if (!coverage.includes(needle)) fail(`UI action coverage missing first-answer next-step evidence: ${needle}`);
 }
 
 const tasks = Array.isArray(progressData.tasks) ? progressData.tasks : [];
-const d197 = tasks.find((task) => task.seq === 'D197');
-if (!d197 || d197.status !== 'beta') {
-  fail('Progress dashboard task D197 must be beta after first-answer send handoff ships.');
-}
-
 const d198 = tasks.find((task) => task.seq === 'D198');
 if (!d198 || d198.status !== 'beta') {
-  fail('Progress dashboard task D198 must stay beta after first-answer success next-step ships.');
+  fail('Progress dashboard task D198 must be beta after first-answer next-step ships.');
 }
 
 const d199 = tasks.find((task) => task.seq === 'D199');
@@ -99,5 +91,5 @@ if (!Array.isArray(progressData.next_queue) || progressData.next_queue[0] !== 'D
 }
 
 if (!process.exitCode) {
-  console.log('First-answer send handoff smoke check passed.');
+  console.log('First-answer next-step smoke check passed.');
 }

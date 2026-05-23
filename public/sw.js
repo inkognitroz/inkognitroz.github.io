@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d197-20260523-first-answer';
+const CACHE_NAME='mmir-pwa-d198-20260523-next-step';
 const SHELL_ASSETS=[
   './',
   './index.html',
