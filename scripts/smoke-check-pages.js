@@ -107,9 +107,14 @@ if (!String(content?.site?.subtitle || '').includes('orchestration layer for tru
 forbidText(contentPath, 'SaaS Fabric', 'content.json must not include retired SaaS Fabric branding.');
 
 requireText(mmirPath, 'mimir-instant-start', 'MMIR product page must show an automatic ready state before technical setup sections.');
+requireText(firstImpressionPath, 'activation-cockpit', 'MMIR first impression must mount the first-screen activation cockpit.');
+requireText(firstImpressionPath, 'activation-connect-local', 'MMIR activation cockpit must expose local connector activation.');
+requireText(firstImpressionPath, 'activation-open-node-dashboard', 'MMIR activation cockpit must expose node health activation.');
 requireText(mmirPath, 'The orchestration layer for trusted AI.', 'MMIR product page hero must state the MMIR product identity.');
 requireText(mmirPath, 'Connect local AI', 'MMIR product page must show the first local AI activation action.');
 requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose a node dashboard entrypoint.');
+requireText(mmirPath, 'id="node-dashboard-root"', 'MMIR product page must expose a node dashboard render root.');
+requireText(mmirPath, './apps/mimir-chat-portal/node-dashboard.js', 'MMIR product page must load the node dashboard script.');
 requireText(mmirPath, 'id="model-library"', 'MMIR product page must expose model-agnostic routing.');
 requireText(mmirPath, 'id="workflow-builder"', 'MMIR product page must expose workflow orchestration.');
 
@@ -118,8 +123,14 @@ requireText(chatRuntimePath, 'function preferredStarterModel()', 'Chat runtime m
 requireText(chatRuntimePath, "model.id==='mmir-guide'", 'Chat runtime must default to the immediate in-browser guide when no backend model is live.');
 requireText(chatRuntimePath, '/chat/completions', 'Chat runtime must use the shared chat completions contract.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
-requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
+requireText(firstImpressionPath, 'function syncReadyState()', 'First impression script must sync live model readiness into the hero.');
+requireText(firstImpressionPath, 'function syncActivationCockpit', 'First impression script must sync activation cockpit readiness.');
+requireText(firstImpressionPath, 'mmir-first-screen-cockpit-updated', 'Activation cockpit must emit a testable readiness event.');
+requireText(firstImpressionPath, 'if(current!==tone)', 'Activation cockpit class updates must be idempotent under MutationObserver.');
+requireText(firstImpressionPath, 'function sendPrompt(value)', 'First impression smart actions must send prompts instead of only navigating.');
 requireText(firstImpressionPath, 'mimir-readiness-rail', 'First impression must expose a live readiness rail on the first screen.');
+requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readiness rail must update automatically.');
+requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
 requireText(mimirCssPath, '.mimir-topbar nav{display:flex;width:100%;overflow-x:auto', 'Mobile navigation must remain accessible instead of disappearing.');
