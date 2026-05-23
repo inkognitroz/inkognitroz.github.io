@@ -1,7 +1,7 @@
 # RAG architecture plan
 
 ## Goal
-Prepare SaaS Fabric for retrieval-augmented generation without exposing documents, embeddings, database credentials or API keys in frontend code.
+Prepare MMIR for retrieval-augmented generation without exposing documents, embeddings, database credentials or API keys in frontend code.
 
 ## Static v1
 - Keep public docs and static content visible in the repo.
