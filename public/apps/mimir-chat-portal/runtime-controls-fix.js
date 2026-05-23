@@ -48,10 +48,37 @@
     });
   }
 
+  function rewriteLegacyInstallerUi(){
+    const helper=document.getElementById('runtime-model-helper');
+    if(!helper||helper.hidden)return;
+    const legacyGrid=helper.querySelector('.runtime-install-grid');
+    const hasLegacyText=helper.textContent.includes('mmir-local-node-windows.ps1')||helper.textContent.includes('DryRun');
+    if(!legacyGrid&&!hasLegacyText)return;
+    const replacement=document.createElement('div');
+    replacement.className='runtime-helper-actions';
+    replacement.dataset.connectorRewrite='true';
+    replacement.innerHTML=''+
+      '<a class="button-link" href="./downloads/mmir-local-connector-install.html">Open universal installer</a>'+
+      '<a class="button-link" href="./downloads/mmir-local-connector-mac.zip.html">Mac installer</a>'+
+      '<a class="button-link" href="./downloads/mmir-local-connector-windows.cmd" download>Windows installer</a>'+
+      '<a class="button-link" href="./downloads/mmir-local-connector-linux.sh" download>Linux / Raspberry Pi</a>';
+    if(legacyGrid){
+      const note=document.createElement('p');
+      note.textContent='Install the universal MMIR Local Connector once. It detects Mac, Windows, Linux, Raspberry Pi/Linux ARM or mobile client mode, keeps the node on localhost by default and then MMIR can pull models through the paired local API.';
+      legacyGrid.replaceWith(note,replacement);
+    }
+    helper.querySelectorAll('a[href*="mmir-local-node-"]').forEach(link=>{
+      link.setAttribute('href','./downloads/mmir-local-connector-install.html');
+      link.removeAttribute('download');
+      link.textContent='Open universal installer';
+    });
+  }
+
   function run(){
     syncPrimaryLink();
     bindConnectOptions();
     updateOnboardingCopy();
+    rewriteLegacyInstallerUi();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
