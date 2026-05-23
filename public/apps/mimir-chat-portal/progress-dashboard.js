@@ -3,6 +3,9 @@
   const refreshButton=document.getElementById('refresh-progress-dashboard');
   const summary=document.getElementById('progress-dashboard-summary');
   const DATA_URL='./progress-dashboard.json';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
+  const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
@@ -20,6 +23,15 @@
     summary.textContent=message||'';
     summary.dataset.state=state||'idle';
   }
+  function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+  function readFirstChatReceipt(){
+    try{
+      const value=JSON.parse(localStorage.getItem(FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
 
   async function fetchDashboard(){
     const response=await fetch(DATA_URL,{cache:'no-store'});
@@ -33,6 +45,29 @@
 
   function metric(labelText,value,note){
     return '<article class="progress-tile"><span>'+safe(labelText)+'</span><strong>'+safe(value)+'</strong><small>'+safe(note||'')+'</small></article>';
+  }
+
+  function renderFirstChatEvidence(){
+    const receipt=readFirstChatReceipt();
+    const ok=receipt?.status==='success';
+    const failed=receipt?.status==='failed';
+    const value=ok?'Succeeded':failed?'Needs repair':'Missing';
+    const note=ok?
+      String(receipt.model||'model')+' via '+String(receipt.route||'route')+'; no raw prompt stored.':
+      failed?'Last verified chat failed; retry proof or repair the local route.':
+      'No verified first-chat receipt in this workspace yet.';
+    const status=ok?'done':failed?'blocked':'watch';
+    return '<section><div class="dashboard-heading"><div><p class="eyebrow">Activation evidence</p><h2>First-chat recovery</h2></div>'+chip(status)+'</div>'+
+      '<div class="progress-summary-grid">'+
+        metric('Verified first chat',value,note)+
+        metric('Privacy','No raw prompt','Receipt stores model, route, counts and status only')+
+        metric('Workspace',activeWorkspaceId(),receipt?.at?('Last update '+receipt.at):'Waiting for first verified answer')+
+      '</div>'+
+      '<div class="progress-status-row">'+
+        '<button type="button" data-first-chat-repair="retry-proof">Retry proof</button>'+
+        '<button type="button" data-first-chat-repair="connect-local">Connect local</button>'+
+        '<button type="button" data-first-chat-repair="open-chat">Open chat</button>'+
+      '</div></section>';
   }
 
   function renderSummary(data){
@@ -116,6 +151,22 @@
     if(status)status.addEventListener('change',()=>{filterStatus=status.value;render();});
   }
 
+  function bindFirstChatRepair(){
+    root.querySelectorAll('[data-first-chat-repair]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const action=button.getAttribute('data-first-chat-repair')||'open-chat';
+        if(action==='connect-local')window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+        const target=action==='connect-local'?'#local-connector':action==='retry-proof'?'#mimir-chat-runtime':'#mimir-prompt';
+        const el=document.querySelector(target);
+        if(el&&'open' in el)el.open=true;
+        if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+        if(action==='retry-proof'){
+          (document.querySelector('[data-proof-action="retry"]')||document.getElementById('runtime-refresh'))?.click();
+        }
+      });
+    });
+  }
+
   function openHashDetails(){
     const id=window.location.hash?window.location.hash.slice(1):'';
     if(!id)return;
@@ -125,8 +176,9 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderSummary(dashboard)+renderFirstChatEvidence()+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     bindFilters();
+    bindFirstChatRepair();
     openHashDetails();
   }
 
@@ -148,5 +200,8 @@
 
   if(refreshButton)refreshButton.addEventListener('click',init);
   window.addEventListener('hashchange',openHashDetails);
+  window.addEventListener('mmir-first-chat-receipt-updated',render);
+  window.addEventListener('storage',render);
+  window.addEventListener('focus',render);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
