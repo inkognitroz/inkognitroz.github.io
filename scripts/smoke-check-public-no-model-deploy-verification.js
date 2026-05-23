@@ -116,7 +116,7 @@ const d211 = tasks.find((task) => task.seq === 'D211');
 const d212 = tasks.find((task) => task.seq === 'D212');
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d215 = tasks.find((task) => task.seq === 'D215');
+const d216 = tasks.find((task) => task.seq === 'D216');
 if (!d211 || d211.status !== 'beta') {
   fail('Progress dashboard task D211 must be beta after public deploy verification ships.');
 }
@@ -129,11 +129,11 @@ if (!d213 || d213.status !== 'beta') {
 if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
-if (!d215 || d215.status !== 'next') {
-  fail('Progress dashboard task D215 must become the next work item after D214 ships.');
+if (!d216 || d216.status !== 'next') {
+  fail('Progress dashboard task D216 must become the next work item after D215 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D215') {
-  fail('Progress dashboard next queue must prioritize D215 after D214 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D216') {
+  fail('Progress dashboard next queue must prioritize D216 after D215 ships.');
 }
 
 if (!process.exitCode) {

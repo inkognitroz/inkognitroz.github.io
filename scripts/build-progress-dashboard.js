@@ -10,6 +10,7 @@ const noModelPublicDeployVerificationPath = resolve(root, 'public', 'no-model-pu
 const firstFreeChatResponseReportPath = resolve(root, 'public', 'first-free-chat-response-report.json');
 const composerActionBarReportPath = resolve(root, 'public', 'composer-action-bar-report.json');
 const composerActionBarVisualReportPath = resolve(root, 'public', 'composer-action-bar-visual-report.json');
+const messageActionCompletenessReportPath = resolve(root, 'public', 'message-action-completeness-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -157,7 +158,8 @@ const overrides = new Map([
   ['D212', { status: 'beta', evidence: 'First free chat response QA now proves MMIR Guide is truthful about the browser fallback, gives useful setup/model/growth guidance and exposes one no-spend next action.' }],
   ['D213', { status: 'beta', evidence: 'Composer action bar usefulness pass now wires Add model, mode toggles, model/resource chips, voice fallback and feedback copy to useful free/gated outcomes.' }],
   ['D214', { status: 'beta', evidence: 'Composer action bar visual QA now proves desktop/mobile selector, CSS and copy contracts for compact controls, feedback text and stable send behavior.' }],
-  ['D215', { status: 'next', evidence: 'Next activation slice: harden message-level actions such as retry, copy, save, fork and first-answer next steps so the transcript feels complete.' }]
+  ['D215', { status: 'beta', evidence: 'Message action completeness now gives assistant answers copy, retry, save, fork, safe share and next-step controls with local-first/no-spend boundaries.' }],
+  ['D216', { status: 'next', evidence: 'Next activation slice: add visual/mobile QA for the message action bar so transcript controls stay compact, touchable and readable.' }]
 ]);
 
 const repoMeta = [
@@ -291,6 +293,11 @@ function readComposerActionBarVisualReport() {
   return JSON.parse(readFileSync(composerActionBarVisualReportPath, 'utf8'));
 }
 
+function readMessageActionCompletenessReport() {
+  if (!existsSync(messageActionCompletenessReportPath)) return null;
+  return JSON.parse(readFileSync(messageActionCompletenessReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -315,7 +322,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D215', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D216', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -340,6 +347,7 @@ const data = {
   first_free_chat_response_report: readFirstFreeChatResponseReport(),
   composer_action_bar_report: readComposerActionBarReport(),
   composer_action_bar_visual_report: readComposerActionBarVisualReport(),
+  message_action_completeness_report: readMessageActionCompletenessReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

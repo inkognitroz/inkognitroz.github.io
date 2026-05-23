@@ -77,6 +77,15 @@
       "no_spend": true
     },
     {
+      "id": "message-actions",
+      "surface": "Chat transcript",
+      "selector": "[data-message-action]",
+      "status": "wired",
+      "result": "Assistant answers expose Copy, Retry, Save, Fork, Share safe and Next controls with local-first storage, redacted share drafts and no paid-route side effects.",
+      "source_evidence": ["renderMessageActions", "MimirChatRuntimeBridge", "message-actions.js", "shareSafe", "nextStep"],
+      "no_spend": true
+    },
+    {
       "id": "model-library-starters",
       "surface": "Model library",
       "selector": "[data-starter-action]",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T18:38:18.464Z",
+  "updated_at": "2026-05-23T18:56:52.594Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 215,
+    "total": 216,
     "done": 51,
-    "beta": 139,
+    "beta": 140,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -938,9 +938,9 @@
       },
       {
         "phase": "Chat UX / Transcript",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1550,6 +1550,115 @@
       "Node dashboard opened. CPU/RAM and model health come only from a paired local node."
     ]
   },
+  "message_action_completeness_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T21:05:00+02:00",
+    "title": "Message Action Completeness QA",
+    "principle": "Every assistant answer should have useful local-first follow-through: copy, retry, save, fork, safe share and next step.",
+    "public_repo_rule": "Public-safe QA only. The report stores no user prompts, raw responses, provider keys, secrets, billing configuration or private telemetry.",
+    "actions": [
+      {
+        "id": "copy",
+        "selector": "[data-message-action=\"copy\"]",
+        "status": "ready",
+        "expected": "Copies the assistant answer locally and shows review-before-pasting feedback.",
+        "evidence": [
+          "copyMessage",
+          "Answer copied.",
+          "runtime-message-action-status"
+        ],
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored_in_public_repo": false
+      },
+      {
+        "id": "retry",
+        "selector": "[data-message-action=\"retry\"]",
+        "status": "ready",
+        "expected": "Retries the same prompt with the same safe routing rules when retry context exists.",
+        "evidence": [
+          "retryMessage",
+          "Retrying with the same local/private routing rules.",
+          "mmir-chat-message-action"
+        ],
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored_in_public_repo": false
+      },
+      {
+        "id": "save",
+        "selector": "[data-message-action=\"save\"]",
+        "status": "ready",
+        "expected": "Saves the current transcript into browser-local conversation storage and opens the conversation manager.",
+        "evidence": [
+          "message-actions.js save",
+          "mimir-conversations-v1:",
+          "conversation-manager-panel"
+        ],
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored_in_public_repo": false
+      },
+      {
+        "id": "fork",
+        "selector": "[data-message-action=\"fork\"]",
+        "status": "ready",
+        "expected": "Creates a new local branch ending at the selected answer and refreshes the transcript to that fork.",
+        "evidence": [
+          "message-actions.js fork",
+          "Fork: ",
+          "setMessages"
+        ],
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored_in_public_repo": false
+      },
+      {
+        "id": "share-safe",
+        "selector": "[data-message-action=\"share-safe\"]",
+        "status": "ready",
+        "expected": "Builds a redacted local share draft, copies it when allowed and opens the Safe Sharing surface.",
+        "evidence": [
+          "message-actions.js shareSafe",
+          "mimir-message-share-draft-v1:",
+          "redacted token",
+          "sharing-center"
+        ],
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored_in_public_repo": false
+      },
+      {
+        "id": "next-step",
+        "selector": "[data-message-action=\"next-step\"]",
+        "status": "ready",
+        "expected": "Opens the most useful next surface: free model picker before live routes, or save/workspace follow-up after useful answers.",
+        "evidence": [
+          "message-actions.js nextStep",
+          "openModelPicker",
+          "Add memory, knowledge or a workflow next."
+        ],
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored_in_public_repo": false
+      }
+    ],
+    "storage_contract": [
+      "Saved conversations stay in browser-local workspace storage.",
+      "Safe share drafts are redacted before local copy/storage.",
+      "Public dashboard evidence never includes raw user prompts or raw model responses."
+    ],
+    "selector_contract": [
+      "[data-message-action=\"copy\"]",
+      "[data-message-action=\"retry\"]",
+      "[data-message-action=\"save\"]",
+      "[data-message-action=\"fork\"]",
+      "[data-message-action=\"share-safe\"]",
+      "[data-message-action=\"next-step\"]",
+      ".runtime-message-action-status"
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1600,7 +1709,7 @@
     }
   ],
   "next_queue": [
-    "D215"
+    "D216"
   ],
   "watchlist": [
     "D082",
@@ -4827,9 +4936,24 @@
       "best_practice": "A chat product feels incomplete if messages cannot be acted on",
       "done_when": "User can act on assistant responses with clear no-secret/no-spend controls and no dead buttons",
       "covers": "chat UX, transcript, reliability",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Message action completeness now gives assistant answers copy, retry, save, fork, safe share and next-step controls with local-first/no-spend boundaries.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D216",
+      "phase": "Chat UX / Transcript",
+      "priority": "P0",
+      "work_package": "Message action visual QA",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Publish deterministic desktop/mobile visual contract for transcript message actions so copy, retry, save, fork, safe share and next step remain compact and touchable",
+      "best_practice": "Message actions must help without crowding the answer, especially on mobile",
+      "done_when": "CI and dashboard prove transcript action selectors, labels, status feedback and mobile wrapping",
+      "covers": "chat UX, transcript, visual QA",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: harden message-level actions such as retry, copy, save, fork and first-answer next steps so the transcript feels complete.",
+      "evidence": "Next activation slice: add visual/mobile QA for the message action bar so transcript controls stay compact, touchable and readable.",
       "estimate": "2-6h"
     }
   ]

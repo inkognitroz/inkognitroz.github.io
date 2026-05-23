@@ -499,6 +499,7 @@
 }
 
 .runtime-message-actions button {
+  flex: 0 1 auto;
   min-height: 30px;
   padding: 0 10px;
   border: 1px solid rgba(100, 116, 139, 0.26);
@@ -510,6 +511,30 @@
 
 .runtime-message-actions button:hover {
   border-color: rgba(15, 23, 42, 0.42);
+}
+
+.runtime-message-actions button[data-message-action="next-step"] {
+  border-color: rgba(16, 163, 127, 0.38);
+  color: #047857;
+}
+
+.runtime-message-action-status {
+  color: #475569;
+  display: block;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.runtime-message-action-status[data-state="ready"] {
+  color: #047857;
+}
+
+.runtime-message-action-status[data-state="error"] {
+  color: #b91c1c;
+}
+
+.runtime-message-action-status[data-state="loading"] {
+  color: #92400e;
 }
 
 @media (max-width: 720px) {
@@ -526,6 +551,10 @@
   .composer-mode-button,
   .composer-live-chip {
     flex: 1 1 auto;
+  }
+
+  .runtime-message-actions button {
+    flex: 1 1 92px;
   }
 
   .composer-live-chip {

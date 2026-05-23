@@ -101,7 +101,7 @@
     }
     replayEl.hidden=false;
     replayEl.dataset.state=String(replay.state||'demo');
-    replayEl.innerHTML='<div><strong>Demo replay: '+escapeHtml(replay.label||'Activation replay')+'</strong><p>'+escapeHtml(replay.expected_next_action||'Review this simulated activation state.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true / real live proof unchanged</small></div><a href="#progress-dashboard" data-runtime-replay-open>Open simulator</a>';
+    replayEl.innerHTML='<div><strong>Demo replay: '+escapeHtml(replay.label||'Activation replay')+'</strong><p>'+escapeHtml(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / no_paid_routes_started:true / real live proof unchanged</small></div><a href="#progress-dashboard" data-runtime-replay-open>Simulator</a>';
     replayEl.querySelector('[data-runtime-replay-open]')?.addEventListener('click',(event)=>{
       event.preventDefault();
       openPanel('#progress-dashboard');
@@ -165,16 +165,33 @@
   }
   function openPanel(target){
     const targetEl=document.querySelector(target);
-    if(targetEl&&'open' in targetEl)targetEl.open=true;
-    if(targetEl)targetEl.scrollIntoView({block:'start',behavior:'smooth'});
+    if(targetEl){
+      let details=targetEl;
+      while(details){
+        if('open' in details)details.open=true;
+        details=details.parentElement?.closest?.('details')||null;
+      }
+      targetEl.scrollIntoView({block:'start',behavior:'smooth'});
+    }
+  }
+  function openDeferredPanel(target){
+    if(document.querySelector(target)){
+      openPanel(target);
+      return;
+    }
+    if(window.MimirLoadDeferred){
+      window.MimirLoadDeferred().then(()=>openPanel(target));
+      return;
+    }
+    openPanel(target);
   }
   function modeInstruction(){
     const modes=readModes();
     const instructions=[];
-    if(modes.private)instructions.push('Private mode: prefer local/private execution, avoid unnecessary external services, and flag steps outside the trusted backend.');
-    if(modes.boost)instructions.push('Boost 5.5: reason carefully, sharpen recommendations, and prioritize the highest-leverage next action.');
-    if(modes.super)instructions.push('MMIR++: combine product, architecture, security and implementation perspectives into one practical answer.');
-    if(modes.vision)instructions.push('Vision mode: use images, screen context or uploads when present; otherwise say what is missing and offer the nearest text/local alternative.');
+    if(modes.private)instructions.push('Private mode: prefer local/private execution and flag steps outside the trusted backend.');
+    if(modes.boost)instructions.push('Boost 5.5: prioritize the highest-leverage next action.');
+    if(modes.super)instructions.push('MMIR++: blend product, architecture, security and implementation.');
+    if(modes.vision)instructions.push('Vision mode: use images/screen/uploads when present; otherwise ask for what is missing.');
     return instructions.join('\n');
   }
   function activeModelLabel(){
@@ -514,7 +531,7 @@
         .slice(0,8);
       writeMemoryUse(ranked.map(item=>({...item,source:'local'})).concat(lastBackendMemoryUses));
       if(!ranked.length)return '';
-      return 'User-governed workspace memory for this conversation. Use it only when relevant, do not reveal it verbatim unless the user asks, and respect disabled/expired memory. Each item includes why it was selected:\n'+ranked.map(item=>{
+      return 'User-governed memory. Use only when relevant; do not reveal verbatim unless asked; respect disabled/expired items:\n'+ranked.map(item=>{
         const memory=item.item;
         return '- ['+cleanMemoryType(memory.type)+' / '+cleanMemoryScope(memory.scope)+'; why: '+item.reason+'] '+String(memory.text||'').trim().slice(0,500);
       }).join('\n');
@@ -564,7 +581,7 @@
         return {name:String(item?.name||'document'),collection:collection.name,text,score};
       }).filter(item=>item&&item.text&&item.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
       if(!ranked.length)return '';
-      return 'Relevant local workspace knowledge from enabled collections. Treat as user-provided context and cite collection/file names when useful:\n'+ranked.map(item=>'['+item.collection+' / '+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
+      return 'Relevant local knowledge. Treat as user-provided; cite collection/file names when useful:\n'+ranked.map(item=>'['+item.collection+' / '+item.name+']\n'+item.text.slice(0,1200)).join('\n\n');
     }catch(error){
       return '';
     }
@@ -581,7 +598,7 @@
       const results=Array.isArray(data?.data)?data.data:[];
       const ranked=results.filter(item=>item?.snippet&&item?.document?.name).slice(0,3);
       if(!ranked.length)return '';
-      return 'Relevant protected backend knowledge. Treat as user-provided context and cite file names when useful:\n'+ranked.map(item=>'['+item.document.name+' / '+item.chunk_id+']\n'+String(item.snippet).slice(0,1000)).join('\n\n');
+      return 'Relevant protected backend knowledge. Treat as user-provided; cite file names when useful:\n'+ranked.map(item=>'['+item.document.name+' / '+item.chunk_id+']\n'+String(item.snippet).slice(0,1000)).join('\n\n');
     }catch(error){
       return '';
     }
@@ -670,6 +687,55 @@
       localStorage.setItem(currentChatKey||chatStorageKey(),JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));
       window.dispatchEvent(new CustomEvent('mmir-chat-history-updated',{detail:{workspaceId:activeWorkspaceId()}}));
     }catch(error){}
+  }
+
+  function setMessageActionStatus(messageId,text,state){
+    const bubble=transcriptEl?.querySelector('[data-message-id="'+CSS.escape(messageId)+'"]');
+    const note=bubble?.querySelector('.runtime-message-action-status');
+    if(note){note.dataset.state=state||'idle';note.textContent=text||'';}
+  }
+  function recordMessageAction(action,message,detail={}){
+    window.dispatchEvent(new CustomEvent('mmir-chat-message-action',{detail:{action,message_id:message?.id||'',workspace_id:activeWorkspaceId(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_public_repo:false,raw_response_stored_in_public_repo:false,...detail}}));
+  }
+  async function copyMessage(message){
+    try{
+      await navigator.clipboard.writeText(message.content);
+      setMessageActionStatus(message.id,'Copied locally. Review before sharing.','ready');
+      setStatus('Answer copied.','ready');
+      recordMessageAction('copy',message);
+    }catch(error){
+      setMessageActionStatus(message.id,'Copy failed. Select manually.','error');
+      setStatus('Copy failed in this browser.','error');
+    }
+  }
+  function publicMessage(message){
+    return {id:String(message?.id||''),role:message?.role==='user'?'user':'assistant',content:String(message?.content||''),meta:String(message?.meta||''),createdAt:String(message?.createdAt||new Date().toISOString()),retryPrompt:typeof message?.retryPrompt==='string'?message.retryPrompt:'',model:typeof message?.model==='string'?message.model:''};
+  }
+  function runtimeMessageSnapshot(){
+    return messages.filter(message=>(message.role==='user'||message.role==='assistant')&&message.content&&message.content!=='Thinking...').map(publicMessage);
+  }
+  function replaceRuntimeMessages(nextMessages){
+    messages=parseStoredMessages(JSON.stringify(Array.isArray(nextMessages)?nextMessages:[]));
+    currentChatKey=chatStorageKey();
+    saveMessages();
+    renderStoredMessages();
+  }
+  function hasUsableLiveModel(){
+    return Boolean(verifiedLiveModel)||/\b(webgpu|browser|local|ollama|live)\b/i.test(activeModelLabel());
+  }
+  function runtimeBridge(){
+    return {workspaceId:activeWorkspaceId,messages:runtimeMessageSnapshot,setMessages:replaceRuntimeMessages,setStatus,setMessageActionStatus,recordAction:recordMessageAction,openPanel:openDeferredPanel,openModelPicker:openComposerModelPicker,hasUsableLiveModel};
+  }
+  window.MimirChatRuntimeBridge=runtimeBridge();
+  function runDeferredMessageAction(action,message){
+    const run=()=>window.MimirMessageActions?.run?.(action,publicMessage(message),runtimeBridge());
+    if(window.MimirMessageActions?.run){run();return;}
+    if(window.MimirLoadDeferred){
+      setMessageActionStatus(message.id,'Loading actions...','loading');
+      window.MimirLoadDeferred().then(()=>{if(window.MimirMessageActions?.run)run();else setMessageActionStatus(message.id,'Actions unavailable.','error');});
+      return;
+    }
+    setMessageActionStatus(message.id,'Actions unavailable.','error');
   }
 
   function createMessage(role,content,meta,extra={}){
@@ -818,24 +884,30 @@
     if(message.role!=='assistant'||!message.content||message.content==='Thinking...')return;
     const actions=document.createElement('div');
     actions.className='runtime-message-actions';
-    const copy=document.createElement('button');
-    copy.type='button';
-    copy.textContent='Copy';
-    copy.setAttribute('aria-label','Copy assistant answer');
-    copy.addEventListener('click',async()=>{
-      try{await navigator.clipboard.writeText(message.content);setStatus('Answer copied.','ready');}
-      catch(error){setStatus('Copy failed in this browser.','error');}
-    });
-    actions.appendChild(copy);
+    const addAction=(id,label,aria,handler)=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.textContent=label;
+      button.dataset.messageAction=id;
+      button.setAttribute('aria-label',aria);
+      button.addEventListener('click',handler);
+      actions.appendChild(button);
+    };
+    addAction('copy','Copy','Copy assistant answer',()=>copyMessage(message));
     if(message.retryPrompt){
-      const retry=document.createElement('button');
-      retry.type='button';
-      retry.textContent='Retry';
-      retry.setAttribute('aria-label','Retry this prompt');
-      retry.addEventListener('click',()=>retryMessage(message));
-      actions.appendChild(retry);
+      addAction('retry','Retry','Retry this prompt',()=>retryMessage(message));
     }
-    bubble.appendChild(actions);
+    addAction('save','Save','Save this chat locally',()=>runDeferredMessageAction('save',message));
+    addAction('fork','Fork','Fork the conversation at this answer',()=>runDeferredMessageAction('fork',message));
+    addAction('share-safe','Share safe','Copy a redacted safe share for this answer',()=>runDeferredMessageAction('share-safe',message));
+    addAction('next-step','Next','Open the best safe next step for this answer',()=>runDeferredMessageAction('next-step',message));
+    const note=document.createElement('small');
+    note.className='runtime-message-action-status';
+    note.dataset.state='idle';
+    note.setAttribute('role','status');
+    note.setAttribute('aria-live','polite');
+    note.textContent='Actions are local-first: copy, retry, save, fork, safe share or continue.';
+    bubble.append(actions,note);
   }
 
   function appendTextBlock(target,text){
@@ -976,17 +1048,19 @@
     if(!message.retryPrompt)return;
     promptEl.value=message.retryPrompt;
     promptEl.focus();
+    setMessageActionStatus(message.id,'Retrying with the same local/private routing rules.','loading');
+    recordMessageAction('retry',message);
     sendMessage();
   }
 
   function defaultMmirInstruction(){
     return [
-      'You are the MMIR platform assistant inside MMIR.ai.',
-      'MMIR is the orchestration layer for trusted AI: a trusted AI operating layer focused on local-first chat, model connections, local nodes, secure tunnels, workspaces, memory, workflows and a marketplace over time.',
-      'Default goal: make the service useful immediately with free/local options first, then let users configure details later.',
-      'When asked about MMIR, answer as MMIR product support. Do not redefine MMIR as an unrelated academic term unless the user explicitly asks for that.',
-      'Security rules: no secrets in the public frontend; provider keys belong behind a protected backend; prefer 127.0.0.1 local node with pairing; never expose raw model runtimes publicly.',
-      'Match the user language, stay calm and concrete, and name any free local step needed for Ollama, MMIR Local Node or cloudflared.'
+      'You are the MMIR.ai platform assistant.',
+      'MMIR is the orchestration layer for trusted AI: local-first chat, model connections, nodes, tunnels, workspaces, memory and workflows.',
+      'Goal: useful immediately with free/local defaults; configuration can wait.',
+      'Answer as MMIR product support unless the user asks for another meaning.',
+      'Security: no secrets in public frontend; provider keys stay behind protected backend; prefer paired 127.0.0.1 local node; never expose raw runtimes.',
+      'Match the user language and name the free local step for Ollama, MMIR Local Node or cloudflared.'
     ].join('\n');
   }
 
@@ -1036,14 +1110,14 @@
 
   function fallbackStarterModels(){
     return [
-      {id:'mmir-guide',label:'MMIR Guide - free browser helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Immediate onboarding and setup help.',install_note:'No install required.'},
-      {id:'mmir-model-picker',label:'MMIR Model Picker - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Choosing the right free model and install route.',install_note:'No install required.'},
-      {id:'mmir-setup-coach',label:'MMIR Setup Coach - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Getting from first visit to local model running.',install_note:'No install required.'},
-      {id:'mmir-security-coach',label:'MMIR Security Coach - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Explaining local-first and zero-trust choices.',install_note:'No install required.'},
-      {id:'mmir-growth-coach',label:'MMIR Growth Coach - live helper',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Freemium, marketplace and premium feature guidance.',install_note:'No install required.'},
-      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B - active in browser',runtime:'webllm',status:'active-browser-webgpu',cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Fastest real browser LLM test without backend or API key.',install_note:'Runs locally in the browser with WebGPU.'},
-      {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',cost:'free local',model:'gemma3:270m',size:'292 MB',best_for:'Smallest useful local starter.',install_note:'Install through Ollama and MMIR Local Node.'},
-      {id:'ollama-llama32-1b',label:'Llama 3.2 1B - local assistant',runtime:'ollama',status:'installable-free',cost:'free local',model:'llama3.2:1b',size:'1.3 GB',best_for:'Better local assistant on normal laptops.',install_note:'Install through Ollama and MMIR Local Node.'}
+      {id:'mmir-guide',label:'MMIR Guide',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Setup help.'},
+      {id:'mmir-model-picker',label:'MMIR Model Picker',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Choose model.'},
+      {id:'mmir-setup-coach',label:'MMIR Setup Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Local setup.'},
+      {id:'mmir-security-coach',label:'MMIR Security Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Security.'},
+      {id:'mmir-growth-coach',label:'MMIR Growth Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Growth.'},
+      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B',runtime:'webllm',status:'active-browser-webgpu',cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Browser LLM.'},
+      {id:'ollama-gemma3-270m',label:'Gemma 3 270M',runtime:'ollama',status:'installable-free',cost:'free local',model:'gemma3:270m',size:'292 MB',best_for:'Tiny local.'},
+      {id:'ollama-llama32-1b',label:'Llama 3.2 1B',runtime:'ollama',status:'installable-free',cost:'free local',model:'llama3.2:1b',size:'1.3 GB',best_for:'Laptop local.'}
     ];
   }
 
@@ -1103,7 +1177,7 @@
     openPanel('#mimir-chat-runtime');
     if(!starter)return;
     pendingStarterHandoff=null;
-    window.MimirActivationTelemetry?.record?.('runtime-starter-handoff',{status:detail?.action||'select',model:starter.model||starter.id,route:'chat runtime',free:true,note:'Runtime selected '+(starter.model||starter.id)+' from Model Library. no_paid_routes_started:true.'});
+    window.MimirActivationTelemetry?.record?.('runtime-starter-handoff',{status:detail?.action||'select',model:starter.model||starter.id,route:'chat runtime',free:true,note:'Runtime selected '+(starter.model||starter.id)+'. no_paid_routes_started:true.'});
     if(detail?.action==='install'&&starter.runtime==='ollama'){
       window.setTimeout(()=>installSelectedStarterModel(),120);
     }else if(detail?.action==='proof'){
@@ -1139,7 +1213,7 @@
     if(Number(resume.retry_count||0)>=1||resume.status==='retrying')return;
     const next=writeRepairResume({...resume,status:'retrying',retry_count:Number(resume.retry_count||0)+1,retry_at:new Date().toISOString(),note:'Retrying preserved starter install once after repair.'});
     pendingStarterHandoff={starter_id:next.starter_id,action:'install',model:next.model||''};
-    window.MimirActivationTelemetry?.record?.('starter-install-retry',{status:'retrying',model:next.model||'',route:'chat runtime',free:true,note:'Retrying preserved starter install once after repair. no_paid_routes_started:true.'});
+    window.MimirActivationTelemetry?.record?.('starter-install-retry',{status:'retrying',model:next.model||'',route:'chat runtime',free:true,note:'Retrying starter install once. no_paid_routes_started:true.'});
     runStarterHandoff({starter_id:next.starter_id,model:next.model||'',action:'install',source:'repair-resume',free:true,no_paid_routes_started:true});
   }
 
@@ -1149,7 +1223,7 @@
     const model=String(readyModel||resume.model||'').trim();
     const next=writeRepairResume({...resume,status:'verified',model,model_count:1,target:'#mimir-prompt',note:'Starter retry installed '+(model||'the selected model')+'; preparing proof and first chat.'});
     window.dispatchEvent(new CustomEvent('mmir-repair-resume-checked',{detail:next}));
-    window.MimirActivationTelemetry?.record?.('starter-retry-success',{status:'verified',model,route:'chat runtime',free:true,first_chat_ready:true,note:'Starter retry installed and moved to verified first-chat readiness. no_paid_routes_started:true.'});
+    window.MimirActivationTelemetry?.record?.('starter-retry-success',{status:'verified',model,route:'chat runtime',free:true,first_chat_ready:true,note:'Starter retry verified first-chat readiness. no_paid_routes_started:true.'});
     if(promptEl&&!String(promptEl.value||'').trim()){
       promptEl.value='Give me my first useful MMIR answer with '+(model||'this verified local model')+'.';
       promptEl.dispatchEvent(new Event('input',{bubbles:true}));
@@ -1238,7 +1312,7 @@
       '</div>'+
       '<p>'+escapeHtml(model.best_for||model.install_note||'Free model option.')+'</p>'+
       (isGuide?'<p>This helper works immediately in the browser. Choose a WebGPU or Ollama model below when you want a real local LLM.</p>':
-      isWebLlm?'<p>This is a real browser LLM. It runs on the user machine with WebGPU, no API key and no cloud cost. First message downloads model weights and can take time.</p><p>Works best in a modern Chromium-based browser with WebGPU enabled.</p>':
+      isWebLlm?'<p>Real browser LLM: WebGPU, no API key or cloud cost. First use downloads weights and may take time.</p>':
         '<div class="runtime-install-grid">'+
           '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
           '<div><strong>Mac / Linux</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
@@ -1249,7 +1323,7 @@
           '<button id="install-selected-model" type="button">Install in Local Node</button>'+
           '<button id="refresh-model-pulls" type="button">Check install progress</button>'+
         '</div>')+
-      '<p id="model-install-status" class="runtime-model-install-status" data-state="idle" aria-live="polite">'+escapeHtml(currentModelInstall?.message||'Local install can run through MMIR Local Node when it has the model install API.')+'</p>'+
+      '<p id="model-install-status" class="runtime-model-install-status" data-state="idle" aria-live="polite">'+escapeHtml(currentModelInstall?.message||'Local install runs through MMIR Local Node when available.')+'</p>'+
       '<small>'+escapeHtml(model.install_note||'Installer keeps MMIR Local Node bound to localhost and pairs before chat/model control.')+'</small>'+
       (complianceNote?'<small>'+escapeHtml(complianceNote)+(sourceUrl?' <a href="'+escapeHtml(sourceUrl)+'" target="_blank" rel="noopener noreferrer">Open source</a>':'')+'</small>':'');
     modelHelperEl.querySelector('#install-selected-model')?.addEventListener('click',installSelectedStarterModel);
@@ -1609,22 +1683,22 @@
   function guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,emptyPrompt){
     const guideName=starter.label||'MMIR Guide';
     const parts=[
-      guideName+' is active locally in this browser. This is free guidance, not a remote LLM call, and it does not send provider keys, prompts or billing data to MMIR cloud.',
-      'Useful now: MMIR can help you choose a free route, install a local model, and move from browser guidance to a real live model proof.'
+      guideName+' is active in this browser: free guidance, not a remote LLM call. Provider keys, prompts and billing data stay out of MMIR cloud.',
+      'Useful now: choose a free route, install a local model, then prove a real live model.'
     ];
     if(helperId==='mmir-model-picker'||wantsModel||emptyPrompt){
-      parts.push('Best free model path: start with Gemma 3 270M or SmolLM2 135M on weak machines, Gemma 3 1B or Llama 3.2 1B on normal laptops, and DeepSeek-R1 1.5B or Phi-4 Mini when you want stronger reasoning.');
+      parts.push('Best free model path: Gemma 3 270M or SmolLM2 135M on weak devices; Gemma 3 1B or Llama 3.2 1B on laptops; DeepSeek-R1 1.5B or Phi-4 Mini for stronger reasoning.');
     }
     if(helperId==='mmir-setup-coach'||wantsConnect||emptyPrompt){
-      parts.push('Setup path: press + Add model, choose an installable-free Ollama model, run the free Local Node installer for Windows, Mac, Linux, Raspberry Pi/Linux ARM or VM, then let MMIR verify /health, /models and first-chat readiness on http://127.0.0.1:3000.');
+      parts.push('Setup path: + Add model, choose an installable-free Ollama model, run free Local Node for Windows/Mac/Linux/Raspberry Pi/Linux ARM or VM, then verify /health, /models and first chat on http://127.0.0.1:3000.');
     }
     if(helperId==='mmir-security-coach'){
-      parts.push('Security rule: the public frontend stays secret-free. Local models use 127.0.0.1 plus pairing. Provider keys, paid models, teams and billing must go through a protected backend with auth, rate limits, audit logs and cost policy.');
+      parts.push('Security rule: public frontend stays secret-free. Local models use 127.0.0.1 plus pairing. Provider keys, paid models, teams and billing need protected backend auth, limits, audit and cost policy.');
     }
     if(helperId==='mmir-growth-coach'||wantsBusiness){
-      parts.push('Growth ladder: keep the free product useful first, then sell managed VM/GPU nodes, premium provider routing, team governance, marketplace listings, evaluations and supported enterprise deployment.');
+      parts.push('Growth ladder: keep free useful first, then sell managed VM/GPU nodes, premium provider routing, team governance, marketplace listings, evals and enterprise.');
     }
-    const primary=wantsBusiness?'Open the progress dashboard, then keep the free local chat loop green before enabling premium routes.':(wantsConnect||emptyPrompt?'Press + Add model and run the free Local Node installer.':'Choose a free starter model from the model picker.');
+    const primary=wantsBusiness?'Open progress; keep free local chat green before premium routes.':(wantsConnect||emptyPrompt?'Press + Add model and run the free Local Node installer.':'Choose a free starter model.');
     parts.push('Primary next action: '+primary);
     parts.push('No paid route starts here. To use SaaS/provider models later, connect them through a protected backend, never by pasting keys into the public page.');
     return parts.join('\n\n');
@@ -1633,14 +1707,14 @@
   function installResponseText(model,commands){
     return [
       model.label+' is selected as a free local model.',
-      'It is not live in the browser yet. It becomes live when MMIR Local Node and Ollama run locally and /models reports the model.',
+      'It becomes live when MMIR Local Node and Ollama run locally and /models reports it.',
       'Windows:',
       '```powershell\n'+commands.windows.join('\n')+'\n```',
       'Mac / Linux:',
       '```bash\n'+commands.unix.join('\n')+'\n```',
       'Direct Ollama test if Ollama is already installed:',
       '```bash\n'+commands.ollama.join('\n')+'\n```',
-      'After install: use + Add model, keep the local profile active, and press Refresh in chat. The model should move from installable-free to live backend model.'
+      'After install: use + Add model, keep the local profile active, and press Refresh. The model should move from installable-free to live.'
     ].join('\n\n');
   }
 
@@ -1651,48 +1725,11 @@
     const wantsConnect=/connect|koble|install|installer|local|lokal|backend|node/.test(text);
     const wantsBusiness=/premium|betalt|marked|market|users|brukere|money|penger|inntekt/.test(text);
     return guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,!text);
-    const parts=[
-      'Jeg er '+(starter.label||'MMIR Guide')+', en gratis nettleserhjelper som fungerer uten backend. Jeg er ikke en full LLM, men jeg kan hjelpe deg til første ekte lokale modell raskt.'
-    ];
-    if(helperId==='mmir-model-picker'){
-      parts.push('Min anbefaling: start med Qwen2.5 0.5B WebGPU hvis browseren støtter WebGPU. Hvis ikke: Gemma 3 270M eller SmolLM2 135M via Ollama for raskest install, deretter Llama 3.2 1B eller Phi-4 Mini når maskinen tåler mer.');
-    }
-    if(helperId==='mmir-setup-coach'){
-      parts.push('Korteste setup: 1) velg en installable-free modell, 2) last ned Windows eller Mac/Linux installer, 3) kjør DryRun, 4) kjør install, 5) trykk Refresh. Når Local Node rapporterer modellen, flyttes chatten over til ekte live backend.');
-    }
-    if(helperId==='mmir-security-coach'){
-      parts.push('Sikkerhetsregelen er: offentlig frontend lagrer ikke hemmeligheter. Lokale modeller går via 127.0.0.1 og pairing. Provider-nøkler og betalte modeller må gå via beskyttet backend med auth, rate limit, audit og cost-policy.');
-    }
-    if(helperId==='mmir-growth-coach'){
-      parts.push('Smart inntektsstige: gratis browser helpers + gratis lokal chat først, deretter betalt managed VM/GPU, premium provider routing, team/admin, marketplace listing, evals og supportert enterprise governance.');
-    }
-    if(wantsModel||!text){
-      parts.push('Beste gratis start: velg Gemma 3 270M eller SmolLM2 135M for svak maskin, Gemma 3 1B eller Llama 3.2 1B for normal laptop, og DeepSeek-R1 1.5B eller Phi-4 Mini når du vil teste mer reasoning.');
-    }
-    if(wantsConnect||!text){
-      parts.push('Flyt: velg en installable-free modell i listen, last ned installer for Windows eller Mac/Linux, kjør DryRun først, kjør install, og la MMIR aktivere Local Node på http://127.0.0.1:3000. Etterpå vises modellen som live fra aktiv backend.');
-    }
-    if(wantsBusiness){
-      parts.push('Smart freemium: gratis lokal chat og installasjon først; betalte inntektslag senere bør være managed VM/GPU, premium provider routing, team governance, marketplace listing og supportert one-click deployment. Ingen betalt rute skal starte uten eksplisitt kostpolicy.');
-    }
-    parts.push('Neste handling her: velg en gratis Ollama-modell i modelllisten, eller trykk + Connect Model for å opprette en lokal profil.');
-    return parts.join('\n\n');
   }
 
   function installResponse(model){
     const commands=commandLines(model);
     return installResponseText(model,commands);
-    return [
-      model.label+' er valgt som gratis lokal modell.',
-      'Den er ikke live i nettleseren ennå. Den blir live når MMIR Local Node og Ollama kjører lokalt og /models rapporterer modellen.',
-      'Windows:',
-      '```powershell\n'+commands.windows.join('\n')+'\n```',
-      'Mac / Linux:',
-      '```bash\n'+commands.unix.join('\n')+'\n```',
-      'Direkte Ollama-test hvis Ollama allerede er installert:',
-      '```bash\n'+commands.ollama.join('\n')+'\n```',
-      'Etter install: bruk + Connect Model, sett profilen aktiv, og trykk Refresh i chatten. Da skal modellen flytte seg fra installable-free til live backend-modell.'
-    ].join('\n\n');
   }
 
   async function sendStarterMessage(starter,prompt){
@@ -1752,7 +1789,7 @@
     if(!firstModel?.id){
       lastProofSignature='';
       verifiedLiveModel=null;
-      renderLiveProof('No backend model is live yet. Browser helper remains usable; install or connect a free local model to prove real chat.', 'idle', items.concat([{label:'Model list',state:'idle',detail:'no live model'}]), proofRepairActions('no-model'));
+      renderLiveProof('No backend model is live yet. Browser helper works; connect a free local model to prove chat.', 'idle', items.concat([{label:'Model list',state:'idle',detail:'no live model'}]), proofRepairActions('no-model'));
       window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'no-live-model',free:true}}));
       return;
     }

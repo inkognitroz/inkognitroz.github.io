@@ -18,6 +18,7 @@ const files = {
   firstFreeChatResponseReport: join(publicDir, 'first-free-chat-response-report.json'),
   composerActionBarReport: join(publicDir, 'composer-action-bar-report.json'),
   composerActionBarVisualReport: join(publicDir, 'composer-action-bar-visual-report.json'),
+  messageActionCompletenessReport: join(publicDir, 'message-action-completeness-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -91,6 +92,7 @@ const files = {
   firstFreeChatResponseHarness: join(root, 'scripts', 'smoke-check-first-free-chat-response-qa.js'),
   composerActionBarHarness: join(root, 'scripts', 'smoke-check-composer-action-bar-usefulness.js'),
   composerActionBarVisualHarness: join(root, 'scripts', 'smoke-check-composer-action-bar-visual.js'),
+  messageActionCompletenessHarness: join(root, 'scripts', 'smoke-check-message-action-completeness.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -610,6 +612,9 @@ requireIncludes(files.progressDashboard, 'renderComposerActionBarReport', 'D213 
 requireIncludes(files.composerActionBarVisualHarness, 'Composer action bar visual smoke check passed.', 'D214 composer action bar visual QA must have dedicated CI coverage.');
 requireIncludes(files.composerActionBarVisualReport, 'mobile-composer', 'D214 composer action bar visual report must cover mobile composer behavior.');
 requireIncludes(files.progressDashboard, 'renderComposerActionBarVisualReport', 'D214 Progress Dashboard must render composer action bar visual evidence.');
+requireIncludes(files.messageActionCompletenessHarness, 'Message action completeness smoke check passed.', 'D215 message action completeness must have dedicated CI coverage.');
+requireIncludes(files.messageActionCompletenessReport, 'share-safe', 'D215 message action completeness report must cover safe sharing behavior.');
+requireIncludes(files.progressDashboard, 'renderMessageActionCompletenessReport', 'D215 Progress Dashboard must render message action evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');
