@@ -261,7 +261,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140', 'D141']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

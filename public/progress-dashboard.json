@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T04:49:44.923Z",
+  "updated_at": "2026-05-23T05:06:27.198Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -20,11 +20,11 @@
   "summary": {
     "total": 152,
     "done": 51,
-    "beta": 65,
+    "beta": 66,
     "next": 2,
     "watch": 1,
     "blocked": 1,
-    "planned": 32,
+    "planned": 31,
     "by_phase": [
       {
         "phase": "Foundation",
@@ -580,8 +580,8 @@
         "phase": "API",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -601,10 +601,10 @@
         "total": 1,
         "done": 0,
         "beta": 0,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
-        "planned": 1
+        "planned": 0
       },
       {
         "phase": "Research",
@@ -748,7 +748,7 @@
     }
   ],
   "next_queue": [
-    "D141",
+    "D143",
     "D042"
   ],
   "watchlist": [
@@ -2866,10 +2866,10 @@
       "best_practice": "Compatibility claims should be testable",
       "done_when": "OpenAI-compatible clients can target MMIR routes safely",
       "covers": "Open WebUI/API parity",
-      "status": "next",
-      "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next slice: OpenAI-compatible proxy conformance tests for chat completions, streaming, errors, model listing and tool-call shapes.",
-      "estimate": "0.5-2d"
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Managed backend and Local Node now have OpenAI-compatible conformance tests and contract support for model list metadata, chat completions, SSE terminal chunks, safe errors and function tool-call shapes without implicit tool execution.",
+      "estimate": "Verify + polish"
     },
     {
       "seq": "D142",
@@ -2896,9 +2896,9 @@
       "best_practice": "Memory must be user-governed, not mysterious",
       "done_when": "User can see why memory was used and change it",
       "covers": "ChatGPT parity",
-      "status": "planned",
-      "status_note": "Planned after higher-priority activation, security and architecture work.",
-      "evidence": "Added to the expanded GUI parity and platform-readiness backlog; implementation has not started.",
+      "status": "next",
+      "status_note": "Next implementation slice for Codex work.",
+      "evidence": "Next slice: memory and notes governance with review, edit, disable, scoping, expiration and visible memory-use reasons.",
       "estimate": "0.5-2d"
     },
     {

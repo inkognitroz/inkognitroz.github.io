@@ -22,6 +22,7 @@ Current priority after the matrix is:
 12. D138 access control / RBAC.
 13. D139 model/runtime settings panel.
 14. D140 prompt library and quick actions polish.
+15. D141 OpenAI-compatible API conformance.
 
 D129 is now beta in the public UI: local knowledge can be grouped into named collections and disabled/enabled per workspace before chat or model comparison uses it.
 D130 is now beta across frontend/backend: search is explicit, consent-gated, free/manual by default, and can use protected SearXNG/BYOK providers without public frontend keys.
@@ -35,5 +36,6 @@ D137 is now beta across backend/frontend: admin overview shows current owner, pl
 D138 is now beta across backend/frontend: access policy and access decision routes expose a deny-by-default RBAC matrix, and the public UI can simulate model, tool, knowledge, node, workflow and admin decisions while making server-side enforcement explicit.
 D139 is now beta across frontend/backend/local-node: users can tune bounded runtime settings and a workspace system prompt, the chat runtime sends those settings through `/chat/completions`, the managed backend validates them, and Local Node maps them to Ollama options.
 D140 is now beta in the public UI: prompt reuse works free/local-first with backend prompt loading, starter patterns, tags, variables, search, insert, copy and version flows, plus privacy inventory/export coverage for local prompts.
+D141 is now beta across backend/local-node: OpenAI-compatible clients get tested model metadata, chat completion, SSE terminal chunk, safe error and function tool-call shapes, while actual tool execution remains separated behind consent-gated `/tools` routes.
 
 Zero-trust rule: any feature that needs secrets, paid providers, arbitrary code execution, external browsing or shared infrastructure remains blocked/planned until the protected backend, policy gates and user consent are in place.

@@ -53,6 +53,7 @@ Updated: 2026-05-23
 - MMIR Local Node streams Ollama chat over SSE.
 - Managed backend template has API-key auth policy, rate limits, metrics and SSE streaming support.
 - Managed backend now includes an OpenAI-compatible provider adapter for server-side provider routing.
+- Managed backend and Local Node now share OpenAI-compatible conformance coverage for model list metadata, chat completions, streaming terminal chunks, safe error metadata and function tool-call shapes without implicit tool execution.
 - Managed backend now exposes sanitized bounded `/audit` events without raw prompts or provider secrets.
 - Managed backend now preserves safe provider HTTP status codes such as `503`/`429` and audits provider failures without leaking prompts.
 - Managed backend now has protected knowledge document and search endpoints as the first server-side RAG contract.
