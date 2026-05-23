@@ -103,6 +103,12 @@ jobs:
       - name: Smoke-check UI action coverage
         run: node scripts/smoke-check-ui-actions.js
 
+      - name: Smoke-check mobile chat layout
+        run: node scripts/smoke-check-mobile-chat.js
+
+      - name: Smoke-check mobile first-chat journey
+        run: node scripts/smoke-check-mobile-first-chat-journey.js
+
       - name: Smoke-check MMIR performance budget
         run: node scripts/smoke-check-performance-budget.js
 
