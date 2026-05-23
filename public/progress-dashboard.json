@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T11:14:14.483Z",
+  "updated_at": "2026-05-23T11:24:59.601Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 168,
+    "total": 169,
     "done": 51,
-    "beta": 92,
+    "beta": 93,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -728,9 +728,9 @@
       },
       {
         "phase": "Model Activation",
-        "total": 4,
+        "total": 5,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -798,7 +798,7 @@
     }
   ],
   "next_queue": [
-    "D168"
+    "D169"
   ],
   "watchlist": [
     "D082",
@@ -3320,9 +3320,24 @@
       "best_practice": "Install success should turn into first value without another manual troubleshooting loop",
       "done_when": "User installs a model, sees it become live, and can send the first verified chat from the prepared state",
       "covers": "activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Model install completion and local-node refreshed events now prefer the installed/live model, rerun free proof, select it and prepare the first verified chat prompt without auto-spend.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D169",
+      "phase": "Model Activation",
+      "priority": "P0",
+      "work_package": "Local install repair loop",
+      "repos": "inkognitroz.github.io, mmir-local-node",
+      "concrete_work": "Turn install/proof failures into a single health doctor loop that checks Ollama, connector version, model pull state, pairing and tunnel without asking the user to diagnose",
+      "best_practice": "Failed activation should produce one next action, not a list of possible causes",
+      "done_when": "User sees the exact failing gate and a one-click safe repair path for connector, Ollama or model install",
+      "covers": "activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: bridge local model install/node-online events directly into refreshed model proof and prepared first verified chat.",
+      "evidence": "Next activation slice: collapse install/proof failures into a single local health doctor repair loop for connector, Ollama, pairing and model pull state.",
       "estimate": "2-6h"
     }
   ]

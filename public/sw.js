@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d167-20260523-receipt-dashboard';
+const CACHE_NAME='mmir-pwa-d168-20260523-install-chat-bridge';
 const SHELL_ASSETS=[
   './',
   './index.html',

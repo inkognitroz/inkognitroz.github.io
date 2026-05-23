@@ -371,6 +371,10 @@ requireIncludes(files.chatRuntime, 'mimir-first-chat-receipt-v1:', 'D166 needs a
 requireIncludes(files.chatRuntime, 'raw_prompt_stored:false', 'D166 first-chat receipt must not store raw prompts.');
 requireIncludes(files.chatRuntime, 'raw_response_stored:false', 'D166 first-chat receipt must not store raw responses.');
 requireIncludes(files.chatRuntime, 'mmir-first-chat-receipt-updated', 'D166 first-chat receipt must refresh dependent UI.');
+requireIncludes(files.chatRuntime, 'preferredProofModel', 'D168 needs install-to-first-chat preferred model proof selection.');
+requireIncludes(files.chatRuntime, 'mmir-model-install-ready', 'D168 needs a model-install-ready bridge event.');
+requireIncludes(files.chatRuntime, 'mmir-install-to-first-chat-ready', 'D168 needs a first verified chat prepared event.');
+requireIncludes(files.chatRuntime, 'mmir-local-connector-refreshed', 'D168 needs node-online refresh events to trigger chat proof.');
 requireIncludes(files.progressDashboard, 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
 requireIncludes(files.progressDashboard, 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
 requireIncludes(files.progressDashboardCss, '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');

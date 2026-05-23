@@ -356,6 +356,10 @@ requireText(chatRuntimePath, 'mimir-first-chat-receipt-v1:', 'D166 needs a brows
 requireText(chatRuntimePath, 'raw_prompt_stored:false', 'D166 receipt must prove raw prompts are not stored.');
 requireText(chatRuntimePath, 'raw_response_stored:false', 'D166 receipt must prove raw responses are not stored.');
 requireText(chatRuntimePath, 'mmir-first-chat-receipt-updated', 'D166 receipt must emit a refreshable event.');
+requireText(chatRuntimePath, 'preferredProofModel', 'D168 needs install-to-first-chat preferred model proof selection.');
+requireText(chatRuntimePath, 'mmir-model-install-ready', 'D168 needs a model-install-ready bridge event.');
+requireText(chatRuntimePath, 'mmir-install-to-first-chat-ready', 'D168 needs a first verified chat prepared event.');
+requireText(chatRuntimePath, 'mmir-local-connector-refreshed', 'D168 needs node-online refresh events to trigger chat proof.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
 requireText(chatRuntimePath, 'COLLECTIONS_PREFIX', 'Chat runtime must scope local knowledge to enabled collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'), 'COLLECTIONS_PREFIX', 'Model comparison must scope local knowledge to enabled collections.');

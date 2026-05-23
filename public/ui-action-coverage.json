@@ -88,9 +88,9 @@
       "id": "one-click-model-install",
       "surface": "Chat model helper",
       "status": "beta",
-      "user_result": "Users can choose an installable-free Ollama model, start a paired local-node install job, watch pull progress and refresh into a live model.",
+      "user_result": "Users can choose an installable-free Ollama model, start a paired local-node install job, watch pull progress and bridge the installed model into live proof and first verified chat.",
       "selectors": ["#install-selected-model", "#refresh-model-pulls", "#model-install-status", "#runtime-delete-model"],
-      "evidence": ["/models/pull", "/models/pulls/", "/models/delete", "installSelectedStarterModel", "pollModelInstall", "deleteSelectedLiveModel"]
+      "evidence": ["/models/pull", "/models/pulls/", "/models/delete", "installSelectedStarterModel", "pollModelInstall", "preferredProofModel", "mmir-model-install-ready", "mmir-install-to-first-chat-ready", "deleteSelectedLiveModel"]
     },
     {
       "id": "operator-dashboards",

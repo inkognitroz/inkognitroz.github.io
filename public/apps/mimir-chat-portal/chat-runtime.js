@@ -47,6 +47,7 @@
   let lastBackendMemoryUses=[];
   let lastProofSignature='';
   let verifiedLiveModel=null;
+  let preferredProofModel='';
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -307,6 +308,12 @@
   }
   function updateRuntimeModelActions(){
     if(deleteModelBtn)deleteModelBtn.disabled=busy||!canManageSelectedLiveModel();
+  }
+  function preferProofModel(model){
+    const value=String(model||'').trim();
+    if(!value)return;
+    preferredProofModel=value;
+    lastProofSignature='';
   }
   function updateModeButtons(){
     const modes=readModes();
@@ -1099,7 +1106,10 @@
       });
       const percent=typeof job.percent==='number'?' '+String(job.percent)+'%':'';
       if(job.status==='ready'){
-        setModelInstallStatus((job.model||currentModelInstall.model)+' installed. Refreshing live models...','ready');
+        const readyModel=String(job.model||currentModelInstall.model||'').trim();
+        if(readyModel)preferProofModel(readyModel);
+        setModelInstallStatus((readyModel||'Model')+' installed. Preparing verified chat...','ready');
+        window.dispatchEvent(new CustomEvent('mmir-model-install-ready',{detail:{model:readyModel,first_chat_bridge:true}}));
         await refreshState(true);
         return;
       }
@@ -1174,7 +1184,11 @@
 
     const values=Array.from(modelSelect.options||[]).map(option=>option.value);
     const liveValues=(models||[]).map(model=>model.id).filter(Boolean);
-    if(liveValues.length&&(String(previous||'').startsWith(STARTER_PREFIX)||!liveValues.includes(previous))){
+    const preferredLive=preferredProofModel&&liveValues.includes(preferredProofModel)?preferredProofModel:'';
+    if(preferredLive){
+      modelSelect.value=preferredLive;
+    }
+    else if(liveValues.length&&(String(previous||'').startsWith(STARTER_PREFIX)||!liveValues.includes(previous))){
       modelSelect.value=liveValues[0];
     }
     else if(previous&&values.includes(previous))modelSelect.value=previous;
@@ -1519,7 +1533,10 @@
   }
 
   async function proveLiveRoute(profile,url,headers,models){
-    const firstModel=Array.isArray(models)&&models.length?models[0]:null;
+    const candidates=Array.isArray(models)?models:[];
+    const firstModel=(preferredProofModel?candidates.find(model=>model.id===preferredProofModel):null)||candidates[0]||null;
+    const bridgeModel=Boolean(preferredProofModel&&firstModel?.id===preferredProofModel);
+    if(preferredProofModel&&!bridgeModel&&candidates.length)preferredProofModel='';
     const items=baseProofItems(url);
     if(!firstModel?.id){
       lastProofSignature='';
@@ -1530,7 +1547,7 @@
     }
     if(!routeLooksFree(profile,url)){
       verifiedLiveModel=null;
-      renderLiveProof('Model list verified, but automatic chat proof is skipped to avoid hidden provider cost. Mark the route free/local or use Local Node to probe automatically.', 'blocked', items.concat([{label:'Chat probe',state:'blocked',detail:'cost guard'}]), proofRepairActions('cost-guard'));
+      renderLiveProof('Model list verified, but proof is skipped to avoid hidden provider cost. Use Local Node or mark route free/local.', 'blocked', items.concat([{label:'Chat probe',state:'blocked',detail:'cost guard'}]), proofRepairActions('cost-guard'));
       window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'skipped-cost-guard',model:firstModel.id,free:false}}));
       return;
     }
@@ -1552,10 +1569,15 @@
       }
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.placeholder='Ask '+firstModel.id+' anything. This verified free route is selected.';
+        if(bridgeModel)promptEl.value='Give first answer from '+firstModel.id+'.';
       }
       writeActiveProfilePatch({health:'ready',liveness:'chat-probed',lastProofAt:new Date().toISOString(),lastProofModel:firstModel.id});
       renderLiveProof(firstModel.id+' answered a tiny free readiness probe. This route is live.', 'ready', items.concat([{label:'Chat probe',state:'ready',detail:firstModel.id}]), proofRepairActions('verified'));
       window.dispatchEvent(new CustomEvent('mmir-live-model-proof-updated',{detail:{status:'verified',model:firstModel.id,free:true,url,first_chat_ready:true}}));
+      if(bridgeModel){
+        preferredProofModel='';
+        window.dispatchEvent(new CustomEvent('mmir-install-to-first-chat-ready',{detail:{model:firstModel.id,first_chat_ready:true}}));
+      }
     }catch(error){
       lastProofSignature='';
       verifiedLiveModel=null;
@@ -1609,6 +1631,24 @@
     }
   }
 
+  function modelIdFromConnector(item){
+    return String(item?.id||item?.name||item?.model||'').trim();
+  }
+
+  function handleLocalConnectorRefreshed(event){
+    const detail=event?.detail||{};
+    const models=Array.isArray(detail.models)?detail.models:[];
+    const firstModel=modelIdFromConnector(models[0]);
+    if(firstModel)preferProofModel(firstModel);
+    refreshState(true);
+  }
+
+  function handleLocalInstallReturned(){
+    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
+    lastProofSignature='';
+    refreshState(true);
+  }
+
   async function sendMessage(){
     if(busy)return;
     const profile=activeProfile();
@@ -1656,7 +1696,7 @@
         prompt_chars:prompt.length,
         response_chars:String(content||'').length
       });
-      renderLiveProof('First verified chat answered. Receipt saved locally without raw prompt or raw response.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('verified'));
+      renderLiveProof('First verified chat answered. Local receipt saved without raw prompt/response.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('verified'));
       setStatus('Response received.','ready');
     }catch(error){
       const message=stopRequested?'Response stopped.':friendlyError(error);
@@ -1670,7 +1710,7 @@
           response_chars:0,
           error_status:error?.status||'network'
         });
-        renderLiveProof('First verified chat failed. Recovery is ready, and no raw prompt or raw response was stored.', 'error', baseProofItems(url).concat([{label:'Chat response',state:'error',detail:selectedModel}]), proofRepairActions('no-model'));
+        renderLiveProof('First verified chat failed. Recovery is ready; no raw prompt/response stored.', 'error', baseProofItems(url).concat([{label:'Chat response',state:'error',detail:selectedModel}]), proofRepairActions('no-model'));
       }
       setStatus(message,stopRequested?'idle':'error');
     }finally{
@@ -1694,6 +1734,8 @@
     window.addEventListener('mmir-knowledge-updated',()=>setStatus('Workspace knowledge updated.','idle'));
     window.addEventListener('mmir-runtime-settings-updated',()=>setStatus('Runtime settings updated for the next message.','idle'));
     window.addEventListener('mmir-workspace-changed',switchWorkspace);
+    window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
+    window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
     window.addEventListener('storage',()=>refreshState(true));
     loadStarterModels().then(()=>refreshState(true));
     setInterval(()=>refreshState(false),3000);
