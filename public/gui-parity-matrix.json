@@ -56,7 +56,7 @@
     {
       "name": "Advanced platform parity",
       "items": [
-        {"feature": "Web search", "status": "planned", "mmir": "D130 requires explicit consent, sources and bring-your-own provider.", "benchmark": "ChatGPT search", "next": "No hidden browsing or paid spend."},
+        {"feature": "Web search", "status": "beta", "mmir": "Explicit search panel supports free manual source links, protected SearXNG/BYOK routes, consent and saving selected sources into knowledge.", "benchmark": "ChatGPT search", "next": "Add richer source ingestion once protected provider deployment is configured."},
         {"feature": "Tool/function calling", "status": "planned", "mmir": "D131 requires permissioned schemas, consent, logs and safe errors.", "benchmark": "Open WebUI tools", "next": "Keep execution policy-gated."},
         {"feature": "Code interpreter", "status": "blocked", "mmir": "D132 must define sandbox and resource limits before execution.", "benchmark": "ChatGPT data analysis", "next": "Do not run arbitrary code unsafely."},
         {"feature": "Canvas/artifacts", "status": "planned", "mmir": "D133 covers side-by-side editable artifacts.", "benchmark": "ChatGPT canvas", "next": "Start with text/code/workflow outputs."},

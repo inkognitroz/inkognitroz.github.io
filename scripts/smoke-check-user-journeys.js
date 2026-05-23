@@ -23,6 +23,7 @@ const files = {
   privacyControls: join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
   knowledge: join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'),
   comparison: join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'),
+  webSearch: join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   firstImpression: join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js'),
@@ -170,6 +171,11 @@ requireIncludes(files.knowledge, 'knowledge-collection-name', 'D129 needs collec
 requireIncludes(files.knowledge, 'data-collection-toggle', 'D129 needs enable/disable controls for collections.');
 requireIncludes(files.chatRuntime, 'COLLECTIONS_PREFIX', 'D129 needs chat context to respect enabled knowledge collections.');
 requireIncludes(files.comparison, 'COLLECTIONS_PREFIX', 'D129 needs comparison context to respect enabled knowledge collections.');
+requireIncludes(files.mmir, './apps/mimir-chat-portal/web-search.js', 'D130 needs explicit web search loaded on the product page.');
+requireIncludes(files.webSearch, 'web-search-consent', 'D130 needs consent before search.');
+requireIncludes(files.webSearch, 'manualSearchUrls', 'D130 needs a free manual search path.');
+requireIncludes(files.webSearch, '/web/search', 'D130 needs protected backend search route support.');
+requireIncludes(files.webSearch, 'saveLocalSources', 'D130 needs selected sources saved into local knowledge.');
 requireIncludes(files.chatRuntime, "model.id==='mmir-guide'", 'J001 must prefer MMIR Guide before setup.');
 requireIncludes(files.chatRuntime, 'const liveValues=(models||[]).map', 'J002 must auto-select live backend models when they exist.');
 requireIncludes(files.chatRuntime, 'the orchestration layer for trusted AI', 'Live model default context must position MMIR correctly.');
@@ -200,7 +206,7 @@ requireModel(catalogModels, 'nomic-embed-text', (model) => model.status === 'req
 
 const progress = json(files.progress);
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
-for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129']) {
+for (const id of ['D001', 'D023', 'D082', 'D099', 'D104', 'D106', 'D107', 'D119', 'D120', 'D121', 'D126', 'D127', 'D128', 'D129', 'D130']) {
   if (!tasks.some((task) => task.seq === id)) {
     fail(`Progress dashboard must expose delivery task ${id}.`);
   }

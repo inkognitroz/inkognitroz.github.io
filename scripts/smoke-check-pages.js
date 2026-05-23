@@ -123,6 +123,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/gui-parity-matrix.js', 'MMIR pro
 requireText(mmirPath, './apps/mimir-chat-portal/conversation-manager.js', 'MMIR product page must load conversation manager script.');
 requireText(mmirPath, './apps/mimir-chat-portal/use-case-templates.js', 'MMIR product page must load use-case templates.');
 requireText(mmirPath, './apps/mimir-chat-portal/free-value-loops.js', 'MMIR product page must load free value loops.');
+requireText(mmirPath, './apps/mimir-chat-portal/web-search.js', 'MMIR product page must load explicit web search script.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'function templateOptions()', 'Use-case templates must expose a concrete template catalog.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'repo-analysis', 'Use-case templates must include repo analysis.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'use-case-templates.js'), 'product-plan', 'Use-case templates must include product planning.');
@@ -157,6 +158,11 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'knowl
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.js'), 'data-collection-toggle', 'Knowledge upload must let users enable or disable collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.css'), '.knowledge-dropzone', 'Knowledge upload needs dropzone styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'knowledge.css'), '.knowledge-collection-card', 'Knowledge collections need visible styling.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), '/web/search', 'Web search UI must call the protected web search route only when a backend is active.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'manualSearchUrls', 'Web search UI must keep a free manual search path.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'web-search-consent', 'Web search UI must require explicit consent.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.js'), 'saveLocalSources', 'Web search UI must save selected sources to local knowledge.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'web-search.css'), '.web-search-result', 'Web search needs visible result/source styling.');
 
 requireText(chatPortalPath, 'ensureAutomaticDefaults();render();', 'Chat portal must prepare automatic first-run defaults.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'onboarding.js'), "const INTENT_KEY='mimir-user-intent-v1'", 'Onboarding must persist an optional user intent without forcing setup choices.');

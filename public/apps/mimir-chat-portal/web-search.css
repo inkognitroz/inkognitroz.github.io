@@ -1,0 +1,121 @@
+.web-search-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.web-search-body label {
+  display: grid;
+  gap: 5px;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.web-search-body input,
+.web-search-body select,
+.web-search-body textarea {
+  width: 100%;
+  border: 1px solid var(--mimir-line, #e5e5e8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mimir-text, #111827);
+  padding: 8px;
+}
+
+.web-search-body textarea {
+  resize: vertical;
+}
+
+.web-search-links,
+.web-search-result-list,
+.web-search-source-form {
+  display: grid;
+  gap: 8px;
+}
+
+.web-search-links {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.web-search-links a {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid rgba(16, 163, 127, 0.24);
+  border-radius: 8px;
+  color: #047857;
+  background: #f0fdf9;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.web-search-result {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.web-search-result input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.web-search-result span,
+.web-search-result strong,
+.web-search-result small,
+.web-search-result em {
+  display: block;
+}
+
+.web-search-result strong {
+  color: var(--mimir-text, #111827);
+  overflow-wrap: anywhere;
+}
+
+.web-search-result small,
+.web-search-result em {
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.web-search-result em {
+  margin-top: 4px;
+  font-style: normal;
+}
+
+.web-search-panel button {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px !important;
+}
+
+.web-search-body input:focus-visible,
+.web-search-body select:focus-visible,
+.web-search-body textarea:focus-visible,
+.web-search-panel button:focus-visible,
+.web-search-links a:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+  border-color: rgba(16, 163, 127, 0.72);
+}
+
+@media (max-width: 640px) {
+  .web-search-links {
+    grid-template-columns: 1fr;
+  }
+
+  .web-search-panel button {
+    width: 100%;
+  }
+}

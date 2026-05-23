@@ -101,6 +101,14 @@
       "evidence": ["mimir-memory-v1:", "mimir-knowledge-v1:", "mimir-knowledge-collections-v1:", "knowledge-preview-list", "data-collection-toggle", "mmir-workspace-changed", "workspace-create", "privacy-delete"]
     },
     {
+      "id": "explicit-web-search",
+      "surface": "Web search connector",
+      "status": "beta",
+      "user_result": "Users can run explicit free/manual sourced search, check protected search providers, and save selected sources into local knowledge without public frontend keys or hidden browsing.",
+      "selectors": ["#web-search-panel", "#web-search-query", "#web-search-consent", "#web-search-run", "#web-search-save-sources"],
+      "evidence": ["/web/search", "/web/search/providers", "manualSearchUrls", "saveLocalSources", "Manual free search"]
+    },
+    {
       "id": "conversation-management",
       "surface": "Conversation manager",
       "status": "beta",
