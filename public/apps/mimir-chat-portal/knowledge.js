@@ -395,6 +395,7 @@
   }
 
   window.addEventListener('mmir-workspace-changed',()=>{renderPreviews();renderCollections();render();setStatus('');});
+  window.addEventListener('mmir-knowledge-updated',()=>{renderCollections();render();});
   window.addEventListener('mmir-knowledge-collections-updated',()=>{renderCollections();render();});
   window.addEventListener('storage',()=>{renderCollections();render();});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();

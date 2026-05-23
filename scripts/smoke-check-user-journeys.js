@@ -23,6 +23,7 @@ const files = {
   messageActionBrowserFixtureReport: join(publicDir, 'message-action-browser-fixture-report.json'),
   messageActionAccessibilityReport: join(publicDir, 'message-action-accessibility-report.json'),
   conversationHandoffReport: join(publicDir, 'conversation-handoff-report.json'),
+  savedChatMemoryHandoffReport: join(publicDir, 'saved-chat-memory-handoff-report.json'),
   visualQaReport: join(publicDir, 'visual-qa-report.json'),
   activationSimulator: join(publicDir, 'activation-simulator-fixtures.json'),
   parity: join(publicDir, 'gui-parity-matrix.json'),
@@ -101,6 +102,7 @@ const files = {
   messageActionBrowserFixtureHarness: join(root, 'scripts', 'smoke-check-message-action-browser-fixture.js'),
   messageActionAccessibilityHarness: join(root, 'scripts', 'smoke-check-message-action-accessibility.js'),
   conversationHandoffHarness: join(root, 'scripts', 'smoke-check-conversation-handoff.js'),
+  savedChatMemoryHandoffHarness: join(root, 'scripts', 'smoke-check-saved-chat-memory-handoff.js'),
   visualQaHarness: join(root, 'scripts', 'smoke-check-first-screen-visual-qa.js'),
   composerModelPickerHarness: join(root, 'scripts', 'smoke-check-composer-model-picker.js'),
   starterFunnelHarness: join(root, 'scripts', 'smoke-check-starter-to-proof-funnel.js'),
@@ -635,6 +637,9 @@ requireIncludes(files.progressDashboard, 'renderMessageActionAccessibilityReport
 requireIncludes(files.conversationHandoffHarness, 'Conversation handoff smoke check passed.', 'D219 conversation handoff must have dedicated CI coverage.');
 requireIncludes(files.conversationHandoffReport, 'continue-chat', 'D219 conversation handoff report must cover continue-chat behavior.');
 requireIncludes(files.progressDashboard, 'renderConversationHandoffReport', 'D219 Progress Dashboard must render conversation handoff evidence.');
+requireIncludes(files.savedChatMemoryHandoffHarness, 'Saved chat memory handoff smoke check passed.', 'D220 saved chat memory handoff must have dedicated CI coverage.');
+requireIncludes(files.savedChatMemoryHandoffReport, 'promote-memory', 'D220 saved chat memory handoff report must cover memory promotion behavior.');
+requireIncludes(files.progressDashboard, 'renderSavedChatMemoryHandoffReport', 'D220 Progress Dashboard must render saved chat memory handoff evidence.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');

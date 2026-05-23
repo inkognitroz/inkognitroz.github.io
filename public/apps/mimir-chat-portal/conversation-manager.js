@@ -5,6 +5,10 @@
   const CONVERSATION_PREFIX='mimir-conversations-v1:';
   const ACTIVE_CONVERSATION_PREFIX='mimir-active-conversation-v1:';
   const CONVERSATION_HANDOFF_PREFIX='mimir-conversation-handoff-v1:';
+  const MEMORY_PREFIX='mimir-memory-v1:';
+  const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
+  const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
+  const SAVED_CHAT_PROMOTION_PREFIX='mimir-saved-chat-promotion-v1:';
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   let titleEl=null;
   let searchEl=null;
@@ -19,6 +23,10 @@
   function conversationKey(){return CONVERSATION_PREFIX+workspaceId();}
   function activeConversationKey(){return ACTIVE_CONVERSATION_PREFIX+workspaceId();}
   function handoffKey(){return CONVERSATION_HANDOFF_PREFIX+workspaceId();}
+  function memoryKey(){return MEMORY_PREFIX+workspaceId();}
+  function knowledgeKey(){return KNOWLEDGE_PREFIX+workspaceId();}
+  function collectionsKey(){return COLLECTIONS_PREFIX+workspaceId();}
+  function promotionKey(){return SAVED_CHAT_PROMOTION_PREFIX+workspaceId();}
   function chatStorageKey(){return CHAT_KEY+':'+workspaceId();}
   function safeId(){return 'conversation-'+Date.now().toString(36)+'-'+Math.random().toString(16).slice(2,7);}
 
@@ -75,6 +83,20 @@
     return localStorage.getItem(activeConversationKey())||'';
   }
 
+  function openPanel(target){
+    const targetEl=document.querySelector(target);
+    if(targetEl){
+      let details=targetEl;
+      while(details){
+        if('open' in details)details.open=true;
+        details=details.parentElement?.closest?.('details')||null;
+      }
+      targetEl.scrollIntoView({block:'start',behavior:'smooth'});
+      return;
+    }
+    if(window.MimirLoadDeferred)window.MimirLoadDeferred().then(()=>openPanel(target));
+  }
+
   function readHandoff(){
     const handoff=readJson(handoffKey(),null);
     if(!handoff||handoff.workspace_id!==workspaceId()||!handoff.conversation_id)return null;
@@ -101,6 +123,133 @@
     element.dataset.handoffAction=action;
     element.textContent=label;
     return element;
+  }
+
+  function redactedText(value,max=900){
+    return String(value||'')
+      .replace(/(?:sk|pk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_=-]{12,}/g,'[redacted token]')
+      .replace(/Bearer\s+[A-Za-z0-9._=-]{12,}/gi,'Bearer [redacted]')
+      .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,'[redacted private key]')
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[redacted email]')
+      .replace(/\b(api[_ -]?key|password|secret|token)\s*[:=]\s*["']?[^"'\s]{8,}/gi,'$1: [redacted]')
+      .replace(/\s+/g,' ')
+      .trim()
+      .slice(0,max);
+  }
+
+  function readArray(key){
+    const value=readJson(key,[]);
+    return Array.isArray(value)?value:[];
+  }
+
+  function writePromotion(target,item,conversation){
+    const promotion={
+      object:'mmir.saved_chat_promotion',
+      version:1,
+      workspace_id:workspaceId(),
+      conversation_id:conversation.id,
+      target,
+      item_id:item.id,
+      source:'conversation-handoff',
+      message_count:Array.isArray(conversation.messages)?conversation.messages.length:0,
+      created_at:new Date().toISOString(),
+      local_only:true,
+      no_paid_routes_started:true,
+      public_frontend_secrets_allowed:false,
+      raw_prompt_stored_in_public_repo:false,
+      raw_response_stored_in_public_repo:false
+    };
+    writeJson(promotionKey(),promotion);
+    window.dispatchEvent(new CustomEvent('mmir-saved-chat-promoted',{detail:promotion}));
+    return promotion;
+  }
+
+  function conversationSummary(item){
+    const messages=Array.isArray(item?.messages)?item.messages:[];
+    const firstUser=messages.find(message=>message.role==='user'&&String(message.content||'').trim());
+    const lastAssistant=messages.slice().reverse().find(message=>message.role==='assistant'&&String(message.content||'').trim());
+    const title=redactedText(item?.title||'Saved chat',160);
+    const useful=redactedText(lastAssistant?.content||firstUser?.content||title,620);
+    return {title,useful,messageCount:messages.length};
+  }
+
+  function promoteToMemory(id){
+    const conversation=readConversations().find(entry=>entry.id===id);
+    if(!conversation)return;
+    const summary=conversationSummary(conversation);
+    const items=readArray(memoryKey());
+    const now=new Date().toISOString();
+    const item={
+      id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
+      backendId:'',
+      text:'Saved chat: '+summary.title+' - '+summary.useful,
+      type:'project',
+      scope:'workspace',
+      tags:['conversation','handoff'],
+      expiresAt:'',
+      notes:'Created locally from a saved chat. Review before any backend sync.',
+      source:'conversation-handoff',
+      enabled:true,
+      createdAt:now,
+      updatedAt:now,
+      syncState:'local',
+      syncError:''
+    };
+    writeJson(memoryKey(),items.concat(item).slice(-20));
+    writePromotion('memory',item,conversation);
+    window.dispatchEvent(new CustomEvent('mmir-memory-updated',{detail:{workspaceId:workspaceId(),source:'conversation-handoff',id:item.id}}));
+    openPanel('#memory-panel');
+    setStatus('Saved chat promoted to local memory. Review it in Memory.','ready');
+  }
+
+  function collectionId(name){
+    return String(name||'General').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'general';
+  }
+
+  function ensureSavedChatCollection(){
+    const id='saved-chats';
+    const items=readArray(collectionsKey());
+    const existing=items.find(item=>item.id===id);
+    if(existing)return existing;
+    const collection={id,name:'Saved chats',enabled:true,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    writeJson(collectionsKey(),items.concat(collection));
+    window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:workspaceId()}}));
+    return collection;
+  }
+
+  function promoteToKnowledge(id){
+    const conversation=readConversations().find(entry=>entry.id===id);
+    if(!conversation)return;
+    const summary=conversationSummary(conversation);
+    const collection=ensureSavedChatCollection();
+    const text=[
+      '# '+summary.title,
+      '',
+      'Source: saved MMIR conversation',
+      'Messages: '+String(summary.messageCount),
+      'Stored locally first. Review before backend indexing.',
+      '',
+      '## Useful context',
+      summary.useful
+    ].join('\n');
+    const item={
+      id:String(Date.now())+'-'+Math.random().toString(16).slice(2),
+      name:'Saved chat - '+summary.title.slice(0,70),
+      type:'text/markdown',
+      size:text.length,
+      collection_id:collectionId(collection.id),
+      collection:collection.name,
+      text,
+      preview:summary.useful.slice(0,240),
+      sync:'local-only',
+      source:'conversation-handoff',
+      createdAt:new Date().toISOString()
+    };
+    writeJson(knowledgeKey(),readArray(knowledgeKey()).concat(item).slice(-10));
+    writePromotion('knowledge',item,conversation);
+    window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:workspaceId(),source:'conversation-handoff',id:item.id}}));
+    openPanel('#knowledge-panel');
+    setStatus('Saved chat promoted to local knowledge. Review it in Knowledge.','ready');
   }
 
   function saveCurrentConversation(){
@@ -181,6 +330,8 @@
     actions.className='conversation-handoff-actions';
     actions.append(
       button('continue','Continue chat'),
+      button('memory','Add memory'),
+      button('knowledge','Add knowledge'),
       button('rename','Rename'),
       button('share','Safe share'),
       button('dismiss','Dismiss')
@@ -337,6 +488,8 @@
     const id=handoff?.conversation_id||activeConversationId();
     const action=control.dataset.handoffAction;
     if(action==='continue')loadConversation(id);
+    if(action==='memory')promoteToMemory(id);
+    if(action==='knowledge')promoteToKnowledge(id);
     if(action==='rename'){
       const item=readConversations().find(entry=>entry.id===id);
       if(titleEl){
@@ -367,6 +520,14 @@
       setStatus((handoff.action==='forked'?'Fork':'Saved chat')+' is ready to continue.','ready');
     }
   }
+
+  window.MimirConversationManager={
+    promoteSavedChat(id,target){
+      if(target==='knowledge')return promoteToKnowledge(id);
+      return promoteToMemory(id);
+    },
+    refresh:render
+  };
 
   function install(){
     if(document.getElementById('conversation-manager-panel'))return;

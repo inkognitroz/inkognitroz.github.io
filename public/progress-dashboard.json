@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T19:54:55.180Z",
+  "updated_at": "2026-05-23T20:04:48.374Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 220,
+    "total": 221,
     "done": 51,
-    "beta": 144,
+    "beta": 145,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -970,6 +970,16 @@
         "phase": "Memory / Knowledge UX",
         "total": 1,
         "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Memory / Chat Runtime",
+        "total": 1,
+        "done": 0,
         "beta": 0,
         "next": 1,
         "watch": 0,
@@ -1891,6 +1901,52 @@
     ],
     "result": "ready"
   },
+  "saved_chat_memory_handoff_report": {
+    "version": 1,
+    "updated_at": "2026-05-23T23:20:00+02:00",
+    "title": "Saved Chat Memory Handoff QA",
+    "principle": "A useful saved chat should become reusable memory or knowledge with one local, reviewable action.",
+    "public_repo_rule": "Promotion evidence is metadata only. It contains no prompts, responses, tokens, provider keys, pairing codes, billing data or private telemetry.",
+    "scenarios": [
+      {
+        "id": "promote-memory",
+        "target": "memory",
+        "expected": "Conversation handoff can create a local memory item with review notes, tags and disabled backend sync by default.",
+        "storage_key": "mimir-memory-v1:<workspace>",
+        "event": "mmir-memory-updated",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "promote-knowledge",
+        "target": "knowledge",
+        "expected": "Conversation handoff can create a local knowledge document in the Saved chats collection.",
+        "storage_key": "mimir-knowledge-v1:<workspace>",
+        "event": "mmir-knowledge-updated",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "promotion-receipt",
+        "target": "metadata",
+        "expected": "Each promotion writes a metadata-only receipt with target, item id and conversation id.",
+        "storage_key": "mimir-saved-chat-promotion-v1:<workspace>",
+        "event": "mmir-saved-chat-promoted",
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "review-panels",
+        "target": "ui",
+        "expected": "Memory and Knowledge panels refresh when local promotion events fire.",
+        "selector": "#memory-panel #knowledge-panel",
+        "event": "mmir-memory-updated / mmir-knowledge-updated",
+        "status": "ready",
+        "no_paid_routes_started": true
+      }
+    ],
+    "result": "ready"
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -1941,7 +1997,7 @@
     }
   ],
   "next_queue": [
-    "D220"
+    "D221"
   ],
   "watchlist": [
     "D082",
@@ -5243,9 +5299,24 @@
       "best_practice": "Users should not have to retype useful context after saving a good chat",
       "done_when": "User can promote a saved chat summary or selected safe snippets into local memory/knowledge with clear privacy controls",
       "covers": "memory, knowledge, retention",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Saved chat handoff now promotes useful conversations into local memory or Saved chats knowledge with review notes, redaction and no backend spend by default.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D221",
+      "phase": "Memory / Chat Runtime",
+      "priority": "P0",
+      "work_package": "Promoted context next-answer proof",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Prove promoted memory and Saved chats knowledge are actually used in the next free chat answer with visible memory-use review",
+      "best_practice": "Promotion is only valuable if it improves the next answer without surprising the user",
+      "done_when": "CI proves the next chat request can include promoted local memory/knowledge and the UI shows what memory was used",
+      "covers": "memory, knowledge, chat runtime",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add a no-spend memory/knowledge handoff from saved chats so useful context can be reused without hidden backend storage.",
+      "evidence": "Next activation slice: prove promoted memory/knowledge is actually used in the next free chat answer with visible memory-use review.",
       "estimate": "2-6h"
     }
   ]

@@ -92,15 +92,15 @@ if (!progress.message_action_visual_report || progress.message_action_visual_rep
 }
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d216 = tasks.find((task) => task.seq === 'D216');
-const d220 = tasks.find((task) => task.seq === 'D220');
+const d221 = tasks.find((task) => task.seq === 'D221');
 if (!d216 || d216.status !== 'beta') {
   fail('Progress dashboard task D216 must be beta after message action visual QA ships.');
 }
-if (!d220 || d220.status !== 'next') {
-  fail('Progress dashboard task D220 must become the next work item after D219 ships.');
+if (!d221 || d221.status !== 'next') {
+  fail('Progress dashboard task D221 must become the next work item after D220 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D220') {
-  fail('Progress dashboard next queue must prioritize D220 after D219 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D221') {
+  fail('Progress dashboard next queue must prioritize D221 after D220 ships.');
 }
 
 if (!process.exitCode) {

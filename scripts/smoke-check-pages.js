@@ -563,6 +563,9 @@ requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D219 |
 requireText(join(root, 'scripts', 'smoke-check-conversation-handoff.js'), 'Conversation handoff smoke check passed.', 'D219 conversation handoff must have a dedicated smoke harness.');
 requireText(join(publicDir, 'conversation-handoff-report.json'), 'continue-chat', 'D219 conversation handoff report must publish continue-chat evidence.');
 requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D220 |', 'Backlog must keep a next sequential work item after D219.');
+requireText(join(root, 'scripts', 'smoke-check-saved-chat-memory-handoff.js'), 'Saved chat memory handoff smoke check passed.', 'D220 saved chat memory handoff must have a dedicated smoke harness.');
+requireText(join(publicDir, 'saved-chat-memory-handoff-report.json'), 'promote-memory', 'D220 saved chat memory handoff report must publish memory promotion evidence.');
+requireText(join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'), '| D221 |', 'Backlog must keep a next sequential work item after D220.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'mimir-activation-events-v1:', 'D170 dashboard must read activation telemetry by workspace.');
 requireText(mmirPath, 'activation-telemetry.js', 'D170 activation telemetry must load on the MMIR page.');
 requireText(mmirPath, 'activation-autopilot.js', 'D171 activation autopilot must load on the MMIR page.');

@@ -15,6 +15,7 @@ const messageActionVisualReportPath = resolve(root, 'public', 'message-action-vi
 const messageActionBrowserFixtureReportPath = resolve(root, 'public', 'message-action-browser-fixture-report.json');
 const messageActionAccessibilityReportPath = resolve(root, 'public', 'message-action-accessibility-report.json');
 const conversationHandoffReportPath = resolve(root, 'public', 'conversation-handoff-report.json');
+const savedChatMemoryHandoffReportPath = resolve(root, 'public', 'saved-chat-memory-handoff-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -167,7 +168,8 @@ const overrides = new Map([
   ['D217', { status: 'beta', evidence: 'Message action browser fixture now proves save, fork, safe share and next-step behavior against synthetic localStorage, clipboard and bridge state.' }],
   ['D218', { status: 'beta', evidence: 'Message action accessibility pass now adds grouped controls, described status feedback and verified focus/aria contracts.' }],
   ['D219', { status: 'beta', evidence: 'Conversation handoff polish now turns message Save/Fork into visible Conversations callouts with active badges, continue actions and metadata-only local handoff state.' }],
-  ['D220', { status: 'next', evidence: 'Next activation slice: add a no-spend memory/knowledge handoff from saved chats so useful context can be reused without hidden backend storage.' }]
+  ['D220', { status: 'beta', evidence: 'Saved chat handoff now promotes useful conversations into local memory or Saved chats knowledge with review notes, redaction and no backend spend by default.' }],
+  ['D221', { status: 'next', evidence: 'Next activation slice: prove promoted memory/knowledge is actually used in the next free chat answer with visible memory-use review.' }]
 ]);
 
 const repoMeta = [
@@ -326,6 +328,11 @@ function readConversationHandoffReport() {
   return JSON.parse(readFileSync(conversationHandoffReportPath, 'utf8'));
 }
 
+function readSavedChatMemoryHandoffReport() {
+  if (!existsSync(savedChatMemoryHandoffReportPath)) return null;
+  return JSON.parse(readFileSync(savedChatMemoryHandoffReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -350,7 +357,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D220', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D221', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -380,6 +387,7 @@ const data = {
   message_action_browser_fixture_report: readMessageActionBrowserFixtureReport(),
   message_action_accessibility_report: readMessageActionAccessibilityReport(),
   conversation_handoff_report: readConversationHandoffReport(),
+  saved_chat_memory_handoff_report: readSavedChatMemoryHandoffReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

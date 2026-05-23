@@ -492,6 +492,7 @@
   }
 
   window.addEventListener('mmir-workspace-changed',()=>{editingId='';applyForm(null);render();setStatus('');});
+  window.addEventListener('mmir-memory-updated',render);
   window.addEventListener('mmir-memory-use-updated',renderMemoryUse);
   window.addEventListener('mmir-backend-profiles-updated',()=>{if(activeConnection())syncAll();});
   window.addEventListener('storage',render);

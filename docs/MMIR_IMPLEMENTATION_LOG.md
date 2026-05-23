@@ -211,14 +211,15 @@ Updated: 2026-05-23
 - D217 is now beta: message action browser fixture proves Save, Fork, Safe share and Next against synthetic localStorage, clipboard and bridge state with no network, secrets or spend.
 - D218 is now beta: transcript action accessibility now has grouped controls, described status feedback, aria labels and focus-visible contracts.
 - D219 is now beta: message Save/Fork now writes metadata-only conversation handoff state, opens Conversations, highlights the active saved branch and surfaces Continue/Rename/Safe share/Dismiss actions.
-- D220 is now next: add a no-spend memory/knowledge handoff from saved chats so useful context can be reused deliberately without hidden backend storage.
+- D220 is now beta: saved chat handoff can promote useful conversations into local Memory or Saved chats Knowledge with redaction, review notes, metadata receipts and no backend spend by default.
+- D221 is now next: prove promoted memory/knowledge is actually used in the next free chat answer with visible memory-use review.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D220` saved chat to memory handoff.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D221` promoted context next-answer proof.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
