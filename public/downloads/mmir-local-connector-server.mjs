@@ -80,6 +80,7 @@ function nodeCapabilities() {
   return [
     'health',
     'status',
+    'doctor',
     'node.identity',
     'pairing',
     'pairing.remote-code',
@@ -151,6 +152,80 @@ function tunnelPayload() {
       'Do not put provider API keys or tunnel secrets in the public frontend',
     ],
     recent_logs: tunnelState.logs,
+  };
+}
+
+function nextDoctorAction(checks = []) {
+  const first = checks.find(check => check.state !== 'ready');
+  if (!first) {
+    return {
+      id: 'ready',
+      title: 'Local AI path is ready',
+      detail: 'Connector, pairing, Ollama and at least one model are ready.',
+      primary: 'Chat now',
+      target: '#mimir-prompt',
+    };
+  }
+  if (first.id === 'ollama') {
+    return {
+      id: 'start-ollama',
+      title: 'Start Ollama',
+      detail: 'Start Ollama or rerun the free local connector installer.',
+      primary: 'Local connector',
+      target: '#local-connector',
+    };
+  }
+  if (first.id === 'model-pull') {
+    return {
+      id: 'repair-model-pull',
+      title: 'Repair model install',
+      detail: first.detail,
+      primary: 'Model library',
+      target: '#model-library',
+    };
+  }
+  if (first.id === 'model') {
+    return {
+      id: 'install-model',
+      title: 'Install a free local model',
+      detail: 'Choose a small free Ollama model and let MMIR pull it through this paired local connector.',
+      primary: 'Model library',
+      target: '#model-library',
+    };
+  }
+  return {
+    id: 'review',
+    title: 'Review local connector health',
+    detail: first.detail || 'A local activation gate needs attention.',
+    primary: 'Local connector',
+    target: '#local-connector',
+  };
+}
+
+function doctorReport({ runtime, models }) {
+  const pulls = Array.from(modelPulls.values()).map(publicPullState);
+  const profile = hardware();
+  const runningPull = pulls.find(pull => ['running', 'queued', 'pulling'].includes(String(pull.status || pull.phase || '').toLowerCase()));
+  const failedPull = pulls.find(pull => String(pull.status || '').toLowerCase() === 'failed');
+  const runtimeOnline = runtime.status === 'online';
+  const checks = [
+    { id: 'connector', state: 'ready', label: 'Connector', detail: 'MMIR Local Connector is reachable.' },
+    { id: 'pairing', state: 'ready', label: 'Pairing', detail: 'This browser has a local pairing token for protected routes.' },
+    { id: 'ollama', state: runtimeOnline ? 'ready' : 'error', label: 'Ollama runtime', detail: runtimeOnline ? 'Ollama is online.' : 'Ollama is offline or not reachable from the connector.' },
+    { id: 'model-pull', state: failedPull ? 'error' : (runningPull ? 'warn' : 'ready'), label: 'Model install', detail: failedPull ? `Last pull failed for ${failedPull.model || 'model'}.` : (runningPull ? `Pulling ${runningPull.model || 'model'} ${runningPull.percent || 0}%.` : 'No failed model pull jobs.') },
+    { id: 'model', state: models.length ? 'ready' : 'warn', label: 'Model availability', detail: models.length ? `${models.length} local model(s) available.` : 'Install one free local model to activate private live chat.' },
+    { id: 'hardware', state: 'ready', label: 'Hardware profile', detail: `${profile.cpu_count} CPU / ${profile.memory_gb} GB RAM.` },
+    { id: 'tunnel', state: 'ready', label: 'Tunnel', detail: tunnelState.public_url ? `Tunnel online at ${tunnelState.public_url}.` : 'Tunnel is optional and stays disabled unless explicitly started.' },
+  ];
+  return {
+    object: 'mmir.local_node_doctor',
+    version: 1,
+    status: checks.every(check => check.state === 'ready') ? 'ready' : 'needs_action',
+    checks,
+    next_action: nextDoctorAction(checks),
+    model_count: models.length,
+    pull_count: pulls.length,
+    generated_at: new Date().toISOString(),
   };
 }
 
@@ -405,6 +480,27 @@ http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && url.pathname === '/node/identity') {
       send(res, 200, nodeIdentity(), origin);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/doctor') {
+      if (!paired(req, res, origin)) return;
+      let runtime;
+      let models = [];
+      try {
+        runtime = { provider: 'ollama', status: 'online', ...(await ollama('/api/version', { timeoutMs: 2500 })) };
+      } catch {
+        runtime = { provider: 'ollama', status: 'offline', reason: 'unreachable' };
+      }
+      if (runtime.status === 'online') {
+        try {
+          const tags = await ollama('/api/tags', { timeoutMs: 8000 });
+          models = Array.isArray(tags.models) ? tags.models : [];
+        } catch {
+          models = [];
+        }
+      }
+      send(res, 200, doctorReport({ runtime, models }), origin);
       return;
     }
 

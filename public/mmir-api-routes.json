@@ -21,6 +21,7 @@
     { "path": "/connectors/sync-plans", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Plan connector sync without fetching data, storing secrets or starting paid/background jobs." },
     { "path": "/datasets", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Dataset registry root." },
     { "path": "/datasets/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Dataset dynamic route fragment." },
+    { "path": "/doctor", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "Protected local activation health report with one next repair action." },
     { "path": "/hardware", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "Public-safe node hardware/capacity hints." },
     { "path": "/health", "owner": "local-node", "auth": "public-safe", "status": "live", "purpose": "Cheap liveness check." },
     { "path": "/identity/me", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Return authenticated principal and organization memberships." },

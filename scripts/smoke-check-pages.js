@@ -373,6 +373,9 @@ requireText(firstImpressionPath, 'renderReadinessRail', 'First impression readin
 requireText(firstImpressionPath, 'Open. Connect local AI. Ready.', 'First impression runtime must preserve the ground-zero activation promise.');
 requireText(nodeDashboardPath, '/models', 'Node dashboard must check live model inventory.');
 requireText(nodeDashboardPath, '/tunnels/status', 'Node dashboard must check tunnel status.');
+requireText(nodeDashboardPath, '/doctor', 'D169 node dashboard must use the local health doctor route when available.');
+requireText(nodeDashboardPath, 'Local Node Doctor', 'D169 node dashboard must label the authoritative doctor source.');
+requireText(nodeDashboardPath, 'model-pull', 'D169 node dashboard must include model pull state in the repair loop.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'progress-first-chat-recovery', 'D167 dashboard must expose first-chat receipt recovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.js'), 'firstChatReceiptState', 'D167 dashboard must compute first-chat receipt state.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'progress-dashboard.css'), '.progress-receipt-card', 'D167 dashboard needs first-chat receipt styling.');

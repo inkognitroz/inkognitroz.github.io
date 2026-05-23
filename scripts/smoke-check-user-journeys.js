@@ -382,6 +382,9 @@ requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 
 requireIncludes(files.localConnector, '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(files.localConnector, '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route.');
 requireIncludes(files.nodeDashboard, '/pairing/sessions', 'J009 needs local approval codes before cross-device node pairing.');
+requireIncludes(files.nodeDashboard, '/doctor', 'D169 needs the dashboard to consume the local health doctor route.');
+requireIncludes(files.nodeDashboard, 'Local Node Doctor', 'D169 needs authoritative local doctor source labeling.');
+requireIncludes(files.nodeDashboard, 'model-pull', 'D169 needs model pull state in the repair loop.');
 requireIncludes(files.privacyControls, 'export', 'J005 needs local data export controls.');
 requireIncludes(files.privacyControls, 'delete', 'J005 needs local data delete controls.');
 requireIncludes(files.privacyControls, 'privacy-data-inventory', 'J005/D118 needs a visible data inventory.');
@@ -396,6 +399,9 @@ requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector ser
 requireIncludes(files.connectorServer, '/models/pulls/', 'Standalone connector server must expose model install progress.');
 requireIncludes(files.connectorServer, '/models/delete', 'Standalone connector server must support local model removal.');
 requireIncludes(files.connectorServer, '/pairing/sessions', 'Standalone connector server must support short-lived cross-device pairing codes.');
+requireIncludes(files.connectorServer, '/doctor', 'Standalone connector server must expose the D169 local health doctor route.');
+requireIncludes(files.connectorServer, 'mmir.local_node_doctor', 'Standalone connector server must return the D169 doctor contract.');
+requireIncludes(files.connectorServer, 'model-pull', 'Standalone connector server doctor must include model pull state.');
 const release = json(files.connectorRelease);
 if (release.contract_version !== '0.1' || release.default_host !== '127.0.0.1') {
   fail('Connector release manifest must pin contract version and localhost default.');

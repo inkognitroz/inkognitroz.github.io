@@ -106,10 +106,30 @@
     if(first.id==='ollama'){
       return {title:'Start Ollama or reinstall local connector',detail:'The node is reachable, but the local model runtime needs attention.',primary:'Local connector',target:'#local-connector'};
     }
+    if(first.id==='model-pull'||first.id==='model_pull'){
+      return {title:'Repair model install',detail:first.detail||'The last model install did not complete. Retry the free model install from the model library.',primary:'Model library',target:'#model-library'};
+    }
     if(first.id==='model'){
       return {title:'Install a free local model',detail:'Pick an installable-free Ollama model, run the installer path, then refresh until it becomes live.',primary:'Model library',target:'#model-library'};
     }
     return {title:'Review node health',detail:first.detail,primary:'Local connector',target:'#local-connector'};
+  }
+
+  function normalizedDoctor(report){
+    if(!report||!Array.isArray(report.checks)||!report.checks.length)return null;
+    const checks=report.checks.map(check=>({
+      id:String(check.id||'doctor'),
+      state:['ready','warn','error'].includes(String(check.state||''))?String(check.state):'warn',
+      label:String(check.label||check.id||'Doctor check'),
+      detail:String(check.detail||'Local doctor reported this gate.')
+    }));
+    const action=report.next_action&&report.next_action.title?{
+      title:String(report.next_action.title),
+      detail:String(report.next_action.detail||'Follow the safest next activation step.'),
+      primary:String(report.next_action.primary||'Open'),
+      target:String(report.next_action.target||'#local-connector')
+    }:nextAction(checks);
+    return {checks,action,status:String(report.status||'unknown')};
   }
 
   function bindActions(connection){
@@ -177,6 +197,7 @@
       {id:'connector',state:'error',label:'Connector install',detail:api.friendlyError(error)||'MMIR Local Node is not reachable on localhost.'},
       {id:'pairing',state:'warn',label:'Pairing',detail:'Pairing starts after the connector is reachable.'},
       {id:'ollama',state:'warn',label:'Ollama runtime',detail:'Runtime status is checked through the local node.'},
+      {id:'model-pull',state:'warn',label:'Model install',detail:'Model install jobs are checked after the connector is reachable.'},
       {id:'model',state:'warn',label:'Model availability',detail:'Live models appear after Ollama/local runtime is online.'}
     ];
     const action=nextAction(checks);
@@ -227,20 +248,24 @@
     return '<section class="node-model-manager"><div class="node-model-manager-head"><div><span>Local model manager</span><h3>Installed models</h3></div><p>Manage local models without terminal commands. Deleting only affects this local Ollama runtime.</p></div><div class="node-model-grid">'+cards+'</div></section>';
   }
 
-  function renderReady(connection,status,identity,hardware,models,tunnel){
+  function renderReady(connection,status,identity,hardware,models,tunnel,doctorReport){
     const modelCount=Array.isArray(models)?models.length:0;
     const runtimeStatus=status?.runtime?.status||status?.status||'unknown';
     const pairingRequired=status?.pairing?.required!==false;
     const tunnelReady=Boolean(tunnel?.public_url);
-    const checks=[
+    const fallbackChecks=[
       {id:'connector',state:'ready',label:'Connector install',detail:'MMIR Local Node answered on '+connection.url+'.'},
       {id:'pairing',state:'ready',label:'Pairing',detail:pairingRequired?'This browser has a local pairing token for protected routes.':'Pairing is disabled for this local dev node.'},
       {id:'ollama',state:runtimeStatus==='online'?'ready':'warn',label:'Ollama runtime',detail:runtimeStatus==='online'?'Ollama/local runtime is online.':'Node is up, but local model runtime is '+statusText(runtimeStatus)+'.'},
+      {id:'model-pull',state:'ready',label:'Model install',detail:'No blocked model pull jobs reported by browser fallback checks.'},
       {id:'model',state:modelCount?'ready':'warn',label:'Model availability',detail:modelCount?modelSummary(models):'Use a free installable Ollama model to activate private live chat.'},
       {id:'hardware',state:hardware?'ready':'warn',label:'Hardware profile',detail:hardware?hardwareSummary(hardware):'Hardware route did not return a profile.'},
       {id:'tunnel',state:tunnelReady?'ready':(tunnel?.control_enabled?'warn':'warn'),label:'Tunnel support',detail:tunnelSummary(tunnel)}
     ];
-    const action=nextAction(checks);
+    const report=normalizedDoctor(doctorReport);
+    const checks=report?.checks||fallbackChecks;
+    const action=report?.action||nextAction(checks);
+    const doctorSource=report?'Local Node Doctor':'Browser fallback doctor';
     const canStartTunnel=Boolean(tunnel&&tunnel.control_enabled!==false&&!tunnel.public_url);
     root.innerHTML=
       '<div class="node-dashboard-grid">'+
@@ -250,12 +275,13 @@
         card('Models',String(modelCount),modelSummary(models))+
         card('Hardware',hardwareSummary(hardware),hardware?.recommended_model?'Recommended: '+hardware.recommended_model:'Capacity checked locally')+
         card('Tunnel',statusText(tunnel?.status),tunnelSummary(tunnel))+
+        card('Doctor source',doctorSource,report?'Status: '+statusText(report.status):'Connector does not expose /doctor yet')+
       '</div>'+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
       renderModelManager(models)+
       renderAction(action,canStartTunnel,true);
     bindActions(connection);
-    setSummary('Install Health Doctor checked connector, pairing, runtime, models, hardware and tunnel.','ready');
+    setSummary(doctorSource+' checked connector, pairing, runtime, model pull, models, hardware and tunnel.','ready');
   }
 
   async function load(){
@@ -263,12 +289,13 @@
     setSummary('Checking node health...','loading');
     try{
       const connection=await pairedConnection();
-      const [statusRes,identityRes,hardwareRes,modelsRes,tunnelRes]=await Promise.all([
+      const [statusRes,identityRes,hardwareRes,modelsRes,tunnelRes,doctorRes]=await Promise.all([
         fetchSafe(joinUrl(connection.url,'/status'),{timeoutMs:6000}),
         fetchSafe(joinUrl(connection.url,'/node/identity'),{timeoutMs:6000}),
         fetchSafe(joinUrl(connection.url,'/hardware'),{headers:connection.headers,timeoutMs:6000}),
         fetchSafe(joinUrl(connection.url,'/models'),{headers:connection.headers,timeoutMs:9000}),
-        fetchSafe(joinUrl(connection.url,'/tunnels/status'),{headers:connection.headers,timeoutMs:6000})
+        fetchSafe(joinUrl(connection.url,'/tunnels/status'),{headers:connection.headers,timeoutMs:6000}),
+        fetchSafe(joinUrl(connection.url,'/doctor'),{headers:connection.headers,timeoutMs:7000})
       ]);
       if(!statusRes.ok)throw statusRes.error;
       renderReady(
@@ -277,7 +304,8 @@
         identityRes.data,
         hardwareRes.ok?hardwareRes.data:null,
         modelsRes.ok?arrayData(modelsRes.data):[],
-        tunnelRes.ok?tunnelRes.data:null
+        tunnelRes.ok?tunnelRes.data:null,
+        doctorRes.ok?doctorRes.data:null
       );
     }catch(error){
       renderError(error);

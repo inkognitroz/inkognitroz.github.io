@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T11:24:59.601Z",
+  "updated_at": "2026-05-23T11:39:04.988Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 169,
+    "total": 170,
     "done": 51,
-    "beta": 93,
+    "beta": 94,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -730,18 +730,18 @@
         "phase": "Model Activation",
         "total": 5,
         "done": 0,
-        "beta": 4,
-        "next": 1,
+        "beta": 5,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
       },
       {
         "phase": "Activation QA",
-        "total": 2,
+        "total": 3,
         "done": 0,
         "beta": 2,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -798,7 +798,7 @@
     }
   ],
   "next_queue": [
-    "D169"
+    "D170"
   ],
   "watchlist": [
     "D082",
@@ -3335,9 +3335,24 @@
       "best_practice": "Failed activation should produce one next action, not a list of possible causes",
       "done_when": "User sees the exact failing gate and a one-click safe repair path for connector, Ollama or model install",
       "covers": "activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Local Node Doctor now exposes a protected /doctor route, the downloadable connector has the same contract, and the dashboard consumes it with model-pull-aware next repair actions.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D170",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "Activation telemetry panel",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Show a public-safe activation timeline for automatic defaults, live proof, model install, doctor next action and first chat receipt without raw prompts, secrets or paid routes",
+      "best_practice": "The owner should see where users fall out of activation without invasive tracking",
+      "done_when": "Progress dashboard shows the latest local activation events and next automatic repair path from one panel",
+      "covers": "activation, analytics, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: collapse install/proof failures into a single local health doctor repair loop for connector, Ollama, pairing and model pull state.",
+      "evidence": "Next activation slice: show a public-safe activation telemetry timeline for defaults, proof, install, doctor and first chat without raw prompts or secrets.",
       "estimate": "2-6h"
     }
   ]

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d168-20260523-install-chat-bridge';
+const CACHE_NAME='mmir-pwa-d169-20260523-local-doctor-loop';
 const SHELL_ASSETS=[
   './',
   './index.html',
