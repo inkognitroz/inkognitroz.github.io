@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T10:53:16.103Z",
+  "updated_at": "2026-05-23T11:04:54.051Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 166,
+    "total": 167,
     "done": 51,
-    "beta": 90,
+    "beta": 91,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -738,9 +738,9 @@
       },
       {
         "phase": "Activation QA",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -798,7 +798,7 @@
     }
   ],
   "next_queue": [
-    "D166"
+    "D167"
   ],
   "watchlist": [
     "D082",
@@ -3290,9 +3290,24 @@
       "best_practice": "Activation should be measured by first useful answer, not only model proof",
       "done_when": "User and owner can see whether first chat succeeded without logging raw prompts",
       "covers": "activation",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "First backend chat success/failure now writes a browser-local first-chat receipt with model, route, character counts, recovery actions and raw_prompt_stored:false/raw_response_stored:false.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D167",
+      "phase": "Activation QA",
+      "priority": "P0",
+      "work_package": "First-chat recovery dashboard",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Surface first-chat receipt state in the progress/status dashboard and first-run gates, with automatic retry/repair next action when the receipt is failed or missing",
+      "best_practice": "Activation evidence should be visible to the owner without inspecting browser storage",
+      "done_when": "Owner and user can see first chat success/missing/failed state and the next automatic repair path from the UI",
+      "covers": "activation",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: record a browser-local, privacy-safe first-chat success receipt and show recovery if first verified chat fails.",
+      "evidence": "Next activation slice: surface first-chat receipt state in dashboards and first-run gates with automatic recovery when missing or failed.",
       "estimate": "2-6h"
     }
   ]

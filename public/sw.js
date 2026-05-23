@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d165-20260523-verified-chat-handoff';
+const CACHE_NAME='mmir-pwa-d166-20260523-first-chat-receipt';
 const SHELL_ASSETS=[
   './',
   './index.html',

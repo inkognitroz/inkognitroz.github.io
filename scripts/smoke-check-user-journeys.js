@@ -362,6 +362,10 @@ requireIncludes(files.chatRuntime, 'proofRepairActions', 'D164 needs failed-proo
 requireIncludes(files.chatRuntime, 'data-proof-action', 'D164 needs repair controls rendered from proof state.');
 requireIncludes(files.chatRuntime, 'Chat with verified model', 'D165 needs first-chat handoff from verified model proof.');
 requireIncludes(files.chatRuntime, 'first_chat_ready:true', 'D165 needs a testable first-chat-ready signal.');
+requireIncludes(files.chatRuntime, 'mimir-first-chat-receipt-v1:', 'D166 needs a browser-local first-chat receipt.');
+requireIncludes(files.chatRuntime, 'raw_prompt_stored:false', 'D166 first-chat receipt must not store raw prompts.');
+requireIncludes(files.chatRuntime, 'raw_response_stored:false', 'D166 first-chat receipt must not store raw responses.');
+requireIncludes(files.chatRuntime, 'mmir-first-chat-receipt-updated', 'D166 first-chat receipt must refresh dependent UI.');
 requireIncludes(files.apiClient, "headers:{'Content-Type':'application/json'}", 'Pairing requests must send explicit JSON content type.');
 requireIncludes(files.localConnector, '/tunnels/status', 'J002/J009 need live local tunnel status.');
 requireIncludes(files.localConnector, '/tunnels/trycloudflare/start', 'J002/J009 need a real tunnel start route.');
@@ -373,6 +377,7 @@ requireIncludes(files.privacyControls, 'Provider keys and cloud credentials', 'J
 requireIncludes(files.privacyControls, 'Clear pairing tokens', 'J009/D118 needs a safe way to clear temporary local node pairing tokens.');
 requireIncludes(files.privacyControls, 'Safe share bundles', 'D152 privacy inventory must include browser-local safe share bundles.');
 requireIncludes(files.privacyControls, 'MMIR managed session token', 'D161 privacy inventory must disclose current-tab managed session tokens.');
+requireIncludes(files.privacyControls, 'First chat receipt', 'D166 privacy inventory must disclose browser-local first-chat receipts.');
 requireIncludes(files.universalInstaller, 'Raspberry Pi / Linux ARM', 'J002 must offer Raspberry Pi/Linux ARM in the universal installer.');
 requireIncludes(files.connectorServer, 'CONTRACT_VERSION', 'Standalone connector server must advertise the MMIR node contract version.');
 requireIncludes(files.connectorServer, '/models/pull', 'Standalone connector server must support one-click model install.');

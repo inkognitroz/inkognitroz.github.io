@@ -157,14 +157,15 @@ Updated: 2026-05-23
 - D163 is now beta in the public UI: chat has a live-model proof panel, verifies browser helper/WebGPU readiness, runs a tiny free chat probe for free/local-looking live models and skips possible paid/provider probes.
 - D164 is now beta in the public UI: failed live-model proof states render direct repair actions for free local profile, installer, model library, connect settings and retry proof.
 - D165 is now beta in the public UI: verified proof selects the model, updates the chat prompt, exposes a Chat with verified model action and emits a first_chat_ready signal.
-- D166 is now the next activation slice: first verified chat should create a browser-local privacy-safe success receipt and recovery if it fails.
+- D166 is now beta in the public UI: first backend chat success/failure writes a browser-local privacy-safe receipt with model, route, character counts, recovery actions and explicit raw_prompt_stored:false/raw_response_stored:false fields.
+- D167 is now the next activation slice: first-chat receipt state should appear in dashboards and first-run gates with automatic recovery when missing or failed.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D166` first-chat success receipt.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D167` first-chat recovery dashboard.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

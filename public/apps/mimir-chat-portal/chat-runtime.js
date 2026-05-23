@@ -11,6 +11,7 @@
   const CHAT_KEY='mimir-chat-current-session-v1';
   const MODE_KEY='mimir-chat-mode-controls-v1';
   const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
+  const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const STARTER_MODEL_CATALOG='./free-model-starters.json';
   const STARTER_PREFIX='starter:';
   const MAX_STORED_MESSAGES=80;
@@ -58,6 +59,7 @@
   function memoryUseStorageKey(){return MEMORY_USE_PREFIX+activeWorkspaceId();}
   function knowledgeStorageKey(){return KNOWLEDGE_PREFIX+activeWorkspaceId();}
   function knowledgeCollectionsStorageKey(){return COLLECTIONS_PREFIX+activeWorkspaceId();}
+  function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function readModes(){
@@ -137,6 +139,57 @@
   function updateRuntimeChips(){
     if(modelChipEl)modelChipEl.textContent=activeModelLabel()||'Model ready';
     if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
+  }
+
+  function readFirstChatReceipt(){
+    try{
+      const value=JSON.parse(localStorage.getItem(firstChatReceiptStorageKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+
+  function writeFirstChatReceipt(receipt){
+    try{
+      localStorage.setItem(firstChatReceiptStorageKey(),JSON.stringify(receipt));
+      window.dispatchEvent(new CustomEvent('mmir-first-chat-receipt-updated',{detail:receipt}));
+    }catch(error){}
+  }
+
+  function recordFirstChatReceipt(status,details={}){
+    const existing=readFirstChatReceipt();
+    const now=new Date().toISOString();
+    const ok=status==='success';
+    const receipt={
+      object:'mmir.first_chat_receipt',
+      version:1,
+      workspace_id:activeWorkspaceId(),
+      status:ok?'success':'failed',
+      model:String(details.model||'').slice(0,160),
+      route:String(details.route||'backend').slice(0,120),
+      at:now,
+      first_success_at:ok?(existing?.first_success_at||now):(existing?.first_success_at||''),
+      prompt_chars:Math.max(0,Math.round(Number(details.prompt_chars)||0)),
+      response_chars:Math.max(0,Math.round(Number(details.response_chars)||0)),
+      error_status:ok?'':String(details.error_status||'unknown').slice(0,40),
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      recovery:ok?[]:['retry proof','use free local profile','open installer','connect settings']
+    };
+    writeFirstChatReceipt(receipt);
+    return receipt;
+  }
+
+  function firstChatReceiptItem(){
+    const receipt=readFirstChatReceipt();
+    if(receipt?.status==='success'){
+      return {label:'First chat',state:'ready',detail:(receipt.model||'model')+' answered; no raw prompt stored'};
+    }
+    if(receipt?.status==='failed'){
+      return {label:'First chat',state:'error',detail:'recovery ready; no raw prompt stored'};
+    }
+    return {label:'First chat',state:'idle',detail:'waiting for first useful answer'};
   }
 
   function proofStateClass(state){
@@ -238,7 +291,8 @@
     return [
       {label:'Browser helper',state:'ready',detail:'verified free route'},
       {label:'WebGPU',state:navigator.gpu?'ready':'idle',detail:navigator.gpu?'available for browser LLMs':'not available; browser guide still works'},
-      {label:'Backend health',state:url?'ready':'idle',detail:url||'not connected'}
+      {label:'Backend health',state:url?'ready':'idle',detail:url||'not connected'},
+      firstChatReceiptItem()
     ];
   }
   function selectedOptionRuntime(){
@@ -1596,11 +1650,28 @@
       });
       updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta);
       writeActiveProfilePatch({health:'ready'});
+      recordFirstChatReceipt('success',{
+        model:selectedModel,
+        route:profile.provider||profile.name||'backend',
+        prompt_chars:prompt.length,
+        response_chars:String(content||'').length
+      });
+      renderLiveProof('First verified chat answered. Receipt saved locally without raw prompt or raw response.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('verified'));
       setStatus('Response received.','ready');
     }catch(error){
       const message=stopRequested?'Response stopped.':friendlyError(error);
       updateMessage(assistant.message.id,message,stopRequested?'stopped':'error');
       writeActiveProfilePatch({health:stopRequested?'ready':(error?.status===401?'testing':'degraded')});
+      if(!stopRequested){
+        recordFirstChatReceipt('failed',{
+          model:selectedModel,
+          route:profile.provider||profile.name||'backend',
+          prompt_chars:prompt.length,
+          response_chars:0,
+          error_status:error?.status||'network'
+        });
+        renderLiveProof('First verified chat failed. Recovery is ready, and no raw prompt or raw response was stored.', 'error', baseProofItems(url).concat([{label:'Chat response',state:'error',detail:selectedModel}]), proofRepairActions('no-model'));
+      }
       setStatus(message,stopRequested?'idle':'error');
     }finally{
       currentAbortController=null;

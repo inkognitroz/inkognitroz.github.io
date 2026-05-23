@@ -27,6 +27,7 @@
   const SELECTED_MODEL_KEY='mimir-chat-selected-model';
   const LIVE_MODELS_KEY='mimir-chat-live-models';
   const RUNTIME_SETTINGS_KEY='mimir-runtime-settings-v1';
+  const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const DEMO_KEY='mimir-demo-mode-v1';
   const WELCOME_KEY='mimir-demo-welcome-shown-v1';
   const GROWTH_EVENTS_KEY='mimir-growth-events-v1';
@@ -61,7 +62,7 @@
     GROWTH_EVENTS_KEY,
     VOICE_SETTINGS_KEY
   ];
-  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX,SHARE_PREFIX];
+  const LOCAL_PREFIXES=[CHAT_PREFIX,CONVERSATION_PREFIX,ACTIVE_CONVERSATION_PREFIX,MEMORY_PREFIX,MEMORY_USE_PREFIX,KNOWLEDGE_PREFIX,COLLECTIONS_PREFIX,ARTIFACT_PREFIX,PROMPT_PREFIX,ASSISTANT_PREFIX,ACTIVE_ASSISTANT_PREFIX,TOOL_GALLERY_PREFIX,RESEARCH_PREFIX,DATA_ANALYSIS_PREFIX,SCHEDULED_TASKS_PREFIX,CONNECTOR_PLANS_PREFIX,SHARE_PREFIX,FIRST_CHAT_RECEIPT_PREFIX];
   const SESSION_EXACT_KEYS=[GROWTH_SESSION_KEY];
   const SESSION_PREFIXES=[TOKEN_PREFIX,PAIRING_CODE_PREFIX];
 
@@ -175,6 +176,7 @@
     const scheduledTasks=readJson(SCHEDULED_TASKS_PREFIX+id,[]);
     const connectorPlans=readJson(CONNECTOR_PLANS_PREFIX+id,[]);
     const shareBundles=readJson(SHARE_PREFIX+id,[]);
+    const firstChatReceipt=readJson(FIRST_CHAT_RECEIPT_PREFIX+id,null);
 
     return {
       exported_at:new Date().toISOString(),
@@ -193,6 +195,7 @@
       scheduled_tasks:Array.isArray(scheduledTasks)?scheduledTasks:[],
       connector_plans:Array.isArray(connectorPlans)?connectorPlans:[],
       share_bundles:Array.isArray(shareBundles)?shareBundles:[],
+      first_chat_receipt:firstChatReceipt&&typeof firstChatReceipt==='object'?firstChatReceipt:null,
       memory:Array.isArray(memory)?memory:[],
       memory_use:Array.isArray(memoryUse)?memoryUse:[],
       knowledge:Array.isArray(knowledge)?knowledge:[],
@@ -213,6 +216,7 @@
       scheduled_tasks:snapshot.scheduled_tasks.length,
       connector_plans:snapshot.connector_plans.length,
       share_bundles:snapshot.share_bundles.length,
+      first_chat_receipt:snapshot.first_chat_receipt?1:0,
       memory:snapshot.memory.length,
       memory_use:snapshot.memory_use.length,
       knowledge:snapshot.knowledge.length,
@@ -256,6 +260,7 @@
     const scheduledTaskKeys=keysByPrefix(local,SCHEDULED_TASKS_PREFIX);
     const connectorPlanKeys=keysByPrefix(local,CONNECTOR_PLANS_PREFIX);
     const shareBundleKeys=keysByPrefix(local,SHARE_PREFIX);
+    const firstChatReceiptKeys=keysByPrefix(local,FIRST_CHAT_RECEIPT_PREFIX);
     const conversationKeys=[
       ...keysByPrefix(local,CONVERSATION_PREFIX),
       ...keysByPrefix(local,ACTIVE_CONVERSATION_PREFIX)
@@ -382,6 +387,16 @@
         retention:'Redacted share previews stay local until exported, copied, deleted or cleared.',
         action:'Use Safe Sharing or export/delete active workspace data.',
         keys:shareBundleKeys
+      },
+      {
+        id:'first-chat-receipt',
+        label:'First chat receipt',
+        location:'Browser localStorage',
+        count:countArrayKeys(localStorage,firstChatReceiptKeys),
+        size:formatBytes(storageSize(localStorage,firstChatReceiptKeys)),
+        retention:'Until workspace reset/delete or all MMIR browser data is cleared.',
+        action:'Stores status, model, route and character counts only; raw_prompt_stored:false and raw_response_stored:false.',
+        keys:firstChatReceiptKeys
       },
       {
         id:'workspace-memory',
@@ -550,6 +565,7 @@
       ['Tasks',activeCounts.scheduled_tasks],
       ['Connector plans',activeCounts.connector_plans],
       ['Share bundles',activeCounts.share_bundles],
+      ['First chat receipt',activeCounts.first_chat_receipt],
       ['Memory items',activeCounts.memory],
       ['Memory use',activeCounts.memory_use],
       ['Knowledge files',activeCounts.knowledge],
@@ -642,6 +658,7 @@
     window.dispatchEvent(new CustomEvent('mmir-scheduled-tasks-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-connector-plans-updated',{detail:{workspaceId:id,count:0}}));
     window.dispatchEvent(new CustomEvent('mmir-share-bundles-updated',{detail:{workspaceId:id,count:0}}));
+    window.dispatchEvent(new CustomEvent('mmir-first-chat-receipt-updated',{detail:{workspaceId:id,status:'cleared'}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-knowledge-collections-updated',{detail:{workspaceId:id}}));
     window.dispatchEvent(new CustomEvent('mmir-workspace-changed',{detail:{id,name:workspaceName(id)}}));
@@ -669,6 +686,7 @@
     localStorage.removeItem(SCHEDULED_TASKS_PREFIX+workspaceId());
     localStorage.removeItem(CONNECTOR_PLANS_PREFIX+workspaceId());
     localStorage.removeItem(SHARE_PREFIX+workspaceId());
+    localStorage.removeItem(FIRST_CHAT_RECEIPT_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_PREFIX+workspaceId());
     localStorage.removeItem(MEMORY_USE_PREFIX+workspaceId());
     localStorage.removeItem(KNOWLEDGE_PREFIX+workspaceId());
@@ -758,6 +776,7 @@
   window.addEventListener('mmir-connector-plans-updated',refresh);
   window.addEventListener('mmir-backend-profiles-updated',refresh);
   window.addEventListener('mmir-managed-session-updated',refresh);
+  window.addEventListener('mmir-first-chat-receipt-updated',refresh);
   window.addEventListener('mmir-active-model-changed',refresh);
   window.addEventListener('mimir-growth-event',refresh);
   window.addEventListener('storage',refresh);

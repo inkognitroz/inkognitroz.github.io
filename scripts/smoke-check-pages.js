@@ -349,6 +349,10 @@ requireText(chatRuntimePath, 'data-proof-action', 'D164 needs visible repair con
 requireText(chatRuntimePath, 'mmir-local-connector-install.html', 'D164 needs installer repair path from failed proof.');
 requireText(chatRuntimePath, 'Chat with verified model', 'D165 needs first-chat handoff from verified model proof.');
 requireText(chatRuntimePath, 'first_chat_ready:true', 'D165 needs a testable first-chat-ready signal.');
+requireText(chatRuntimePath, 'mimir-first-chat-receipt-v1:', 'D166 needs a browser-local first-chat receipt key.');
+requireText(chatRuntimePath, 'raw_prompt_stored:false', 'D166 receipt must prove raw prompts are not stored.');
+requireText(chatRuntimePath, 'raw_response_stored:false', 'D166 receipt must prove raw responses are not stored.');
+requireText(chatRuntimePath, 'mmir-first-chat-receipt-updated', 'D166 receipt must emit a refreshable event.');
 requireText(chatRuntimePath, 'the orchestration layer for trusted AI', 'Chat runtime must keep the MMIR product identity in model context.');
 requireText(chatRuntimePath, 'COLLECTIONS_PREFIX', 'Chat runtime must scope local knowledge to enabled collections.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'model-comparison.js'), 'COLLECTIONS_PREFIX', 'Model comparison must scope local knowledge to enabled collections.');
@@ -374,6 +378,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'),
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'runtime settings', 'Privacy inventory must include browser-local runtime settings.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Managed backend data', 'Privacy inventory must distinguish protected backend data from browser-local data.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'MMIR managed session token', 'D161 privacy inventory must disclose current-tab managed session tokens.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'First chat receipt', 'D166 privacy inventory must disclose the browser-local first-chat receipt.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Knowledge collections', 'Privacy inventory must include knowledge collection scope metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), 'Safe share bundles', 'Privacy inventory must include safe share bundles.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'privacy-controls.js'), "excludes:['pairing tokens','MMIR session tokens','invite codes','provider keys','managed backend data']", 'Workspace export must explicitly exclude pairing tokens, session tokens, invite codes, provider keys and backend data.');
