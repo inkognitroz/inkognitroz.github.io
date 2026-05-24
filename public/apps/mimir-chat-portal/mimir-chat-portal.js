@@ -62,7 +62,7 @@
   function renderList(){
     const profiles=readProfiles();
     const activeId=readActive();
-    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">No backend connected yet. Click + Connect Model to create a local node profile on 127.0.0.1.</p>';return;}
+    if(!profiles.length){listEl.innerHTML='<p class="empty-backends">Free browser chat is ready now. Connect Model prepares a private local node when you want your own models.</p>';return;}
     listEl.innerHTML=profiles.map(p=>{
       const active=p.id===activeId;
       const health=p.health||'unknown';
@@ -100,7 +100,7 @@
       activeDesc.textContent=(active.provider||'local-node')+' \u00b7 '+(active.models||'models selected in backend')+' \u00b7 '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
-      activeBadge.textContent='No backend selected';activeTitle.textContent='Connect MMIR Local Node or a trusted backend profile.';activeDesc.textContent='Use + Connect Model to create a local connector profile, then Set active and send a message.';primaryLink.href='#';primaryLink.classList.add('disabled');primaryLink.setAttribute('aria-disabled','true');
+      activeBadge.textContent='Free browser chat ready';activeTitle.textContent='Ask MMIR now. Add your own model when ready.';activeDesc.textContent='MMIR Guide answers immediately; Connect Model stays optional for private local models and trusted backends.';primaryLink.href='#mimir-chat-runtime';primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }
   }
 

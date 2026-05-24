@@ -246,6 +246,9 @@ Updated: 2026-05-23
 - D252 is now beta: Progress Dashboard now embeds a public-safe cross-repo code review, architecture review, security review and UX review gate using public smoke/safety evidence and backend test/route/secret-scan evidence.
 - D253 is now beta: chat-first free activation canary proves instant browser-helper chat, first-chat receipt coverage, Mac installer checksum alignment and local-node proof handoff without spend, while keeping real-device Mac QA as a watch item.
 - D254 is now next: tighten Open WebUI-style chat-first focus, active model/node strip and Mac package/app-bundle QA without spend.
+- Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
+- Active route/node strip now loads from deferred UI instead of the critical runtime guard, preserving the autostart chat UX without breaking first-paint JS headroom.
+- Review follow-ups `D255-D256` were added for inline critical-shell budget accounting and DOM rendering hardening across escaped dynamic UI surfaces.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
