@@ -159,10 +159,11 @@
     const profiles=readProfiles();
     const active=profiles.find(p=>p.id===readActive());
     if(!active||!validUrl(active.url)||blockedByFreeMode(active)){
-      writeActive(profile.id);
+      if(!active) localStorage.removeItem(ACTIVE_KEY);
       selectedId=profile.id;
-      setStatus('Free local profile prepared automatically. You can configure it later.');
-      return profile;
+      setStatus('Free local profile prepared. Activate it only when you want to connect this device.');
+      render();
+      return null;
     }
     selectedId=active.id;
     return active;
