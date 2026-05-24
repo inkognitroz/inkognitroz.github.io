@@ -325,17 +325,23 @@
 }
 
 .composer-mode-dock {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "tools live"
+    "feedback feedback";
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
   gap: 10px;
   padding: 7px 6px 9px;
   border-top: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .composer-action-feedback {
-  flex: 1 1 100%;
-  min-width: 100%;
+  grid-area: feedback;
+  min-width: 0;
+  width: 100%;
   color: #64748b;
   font-size: 0.78rem;
   line-height: 1.35;
@@ -359,7 +365,13 @@
   flex-wrap: wrap;
 }
 
+.composer-tool-cluster {
+  grid-area: tools;
+  justify-content: flex-start;
+}
+
 .composer-live-cluster {
+  grid-area: live;
   justify-content: flex-end;
 }
 
@@ -384,11 +396,17 @@
 }
 
 .composer-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 32px;
   padding: 0 10px;
 }
 
 .composer-mode-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0 10px;
 }
 
@@ -401,10 +419,12 @@
 .composer-live-chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  max-width: 220px;
+  justify-content: flex-start;
+  min-width: 0;
+  max-width: min(280px, 44vw);
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: left;
   padding: 0 10px;
   background: rgba(248, 250, 252, 0.86);
 }
@@ -415,6 +435,12 @@
 
 #runtime-model-chip {
   color: #0f172a;
+  max-width: min(310px, 42vw);
+}
+
+#runtime-resource-chip {
+  justify-content: center;
+  max-width: 190px;
 }
 
 #primary-chat-link.btn-primary {
@@ -596,12 +622,17 @@
 @media (max-width: 720px) {
   .composer-mode-dock {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "tools"
+      "live"
+      "feedback";
   }
 
   .composer-tool-cluster,
   .composer-live-cluster {
     justify-content: flex-start;
+    width: 100%;
   }
 
   .composer-mode-button,

@@ -190,7 +190,10 @@ for (const needle of [
   '.quick-suggestions a,.quick-suggestions button{width:100%;justify-content:center}',
   '.readiness-pill small{white-space:normal}',
   '.composer-mode-dock',
-  '.composer-mode-dock {\n    align-items: stretch;\n    flex-direction: column;',
+  '.composer-mode-dock {\n  display: grid;',
+  'grid-template-areas:\n    "tools live"',
+  'grid-area: feedback;',
+  'grid-template-columns: 1fr;',
   '.composer-live-chip {\n    max-width: 100%;',
   '.runtime-message {\n    max-width: 100%;'
 ]) {

@@ -9,7 +9,8 @@
       "width": 1440,
       "height": 900,
       "expected": [
-        "tool cluster and live cluster share one compact row when space allows",
+        "tool cluster and live cluster sit in separate grid areas when space allows",
+        "composer feedback occupies its own row and cannot squeeze chips",
         "send button keeps stable 44px dimensions",
         "composer feedback line is visible but secondary",
         "resource chip is a clickable control, not decorative text"
@@ -40,11 +41,17 @@
   "css_contract": [
     ".composer-action-feedback",
     ".composer-mode-dock",
+    "grid-template-areas",
+    "minmax(0, 1fr) auto",
     ".composer-tool-cluster",
     ".composer-live-cluster",
     "#primary-chat-link.btn-primary",
     "@media (max-width: 720px)",
-    "flex-direction: column",
+    "grid-area: tools",
+    "grid-area: live",
+    "grid-area: feedback",
+    "flex-wrap: wrap",
+    "grid-template-columns: 1fr",
     "flex: 1 1 auto"
   ],
   "copy_contract": [

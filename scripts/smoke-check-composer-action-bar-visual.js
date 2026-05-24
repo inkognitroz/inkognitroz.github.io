@@ -73,6 +73,21 @@ for (const selector of report.selector_contract || []) {
 for (const needle of report.css_contract || []) {
   requireIncludes(files.runtimeCss, needle, `D214 CSS missing visual contract: ${needle}`);
 }
+for (const needle of [
+  'display: grid;',
+  'grid-template-areas:',
+  'grid-area: tools;',
+  'grid-area: live;',
+  'grid-area: feedback;',
+  'flex-wrap: wrap;',
+  'min-width: 0;',
+  'grid-template-columns: 1fr;'
+]) {
+  requireIncludes(files.runtimeCss, needle, `Composer dock must prevent chip/text overlap with ${needle}`);
+}
+if (/\.composer-mode-dock\s*\{[^}]*display:\s*flex/i.test(raw(files.runtimeCss))) {
+  fail('Composer dock must not use the old no-wrap flex layout that caused overlapping chips.');
+}
 for (const needle of report.copy_contract || []) {
   requireIncludes(files.runtime, needle, `D214 runtime missing copy contract: ${needle}`);
 }
