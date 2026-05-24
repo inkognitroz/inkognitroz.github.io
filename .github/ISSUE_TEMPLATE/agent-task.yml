@@ -1,0 +1,136 @@
+name: MMIR agent task
+description: Small, agent-ready task for Codex, ChatGPT 5.5, Copilot or another coding agent.
+title: "[Agent][P0] "
+labels: ["state/ready-for-agent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for autonomous agent work. Keep the task small, testable and inside one clear repo boundary.
+  - type: dropdown
+    id: suggested_agent
+    attributes:
+      label: Suggested agent role
+      options:
+        - Product strategist
+        - Solution architect
+        - Frontend agent
+        - Backend agent
+        - Local-node agent
+        - Security agent
+        - QA/release agent
+        - Documentation agent
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - blocks first local MVP
+        - P1 - important for launch quality
+        - P2 - useful improvement
+        - P3 - later
+    validations:
+      required: true
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Lane
+      options:
+        - lane/frontend
+        - lane/backend
+        - lane/local-node
+        - lane/security
+        - lane/qa
+        - lane/docs
+        - lane/infra
+    validations:
+      required: true
+  - type: input
+    id: target_repo
+    attributes:
+      label: Target repo
+      placeholder: inkognitroz.github.io, mimir-backend-template, mmir-local-node
+    validations:
+      required: true
+  - type: textarea
+    id: coordination
+    attributes:
+      label: Coordination / active overlap check
+      placeholder: |
+        Active issues/PRs checked:
+        - 
+        Planned claim comment:
+        Claiming this as <role>. Repo/lane: ... Planned files: ...
+    validations:
+      required: true
+  - type: textarea
+    id: user_journey
+    attributes:
+      label: User journey protected
+      placeholder: Open mmir.ai -> connect local AI -> install -> see model -> chat.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Name expected files/modules and what the agent should change.
+      placeholder: |
+        Files/modules:
+        - public/mmir.html
+        - public/apps/mimir-chat-portal/chat-runtime.js
+
+        Change:
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      placeholder: Do not start paid resources. Do not touch auth/provider secrets. Do not refactor unrelated UI.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ] Mobile first-click chat works.
+        - [ ] No SaaS Fabric copy.
+        - [ ] Smoke check added or updated.
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Required tests / verification
+      placeholder: |
+        - node --check ...
+        - node scripts/smoke-check-...
+        - Live/manual verification if needed.
+    validations:
+      required: true
+  - type: textarea
+    id: security_cost
+    attributes:
+      label: Security and cost guard
+      placeholder: No secrets, no provider keys, no paid compute, no raw prompt/response logging.
+    validations:
+      required: true
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback / failure behavior
+      placeholder: How should this be reverted or fail safely if it breaks?
+    validations:
+      required: true
+  - type: textarea
+    id: handoff
+    attributes:
+      label: Agent handoff notes
+      placeholder: What should the next agent know if this task is paused or continued?
+    validations:
+      required: true

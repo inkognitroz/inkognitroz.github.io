@@ -25,6 +25,9 @@ Do not reintroduce the retired app-factory concept into public copy, onboarding,
 - Do not start paid compute or provider usage without explicit owner approval.
 - Search existing issues/docs before creating duplicate work.
 - Run smoke checks before publishing.
+- Use `docs/AI_AGENT_OPERATING_MODEL.md` for multi-agent roles, issue format, PR sizing and handoff rules.
+- Keep every agent task tied to one user journey, one repo boundary and one testable acceptance result.
+- Prefer small PRs that another agent can review or continue without reconstructing the whole thread.
 
 ```bash
 node scripts/ensure-mmir-public-branding.js --check
