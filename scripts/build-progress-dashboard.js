@@ -36,6 +36,7 @@ const correctionRemediationApplyGatesReportPath = resolve(root, 'public', 'corre
 const correctionRemediationAdaptersReportPath = resolve(root, 'public', 'correction-remediation-adapters-report.json');
 const correctionRemediationCommitPolicyReportPath = resolve(root, 'public', 'correction-remediation-commit-policy-report.json');
 const correctionRemediationExecutionGatesReportPath = resolve(root, 'public', 'correction-remediation-execution-gates-report.json');
+const correctionRemediationRollbackGatesReportPath = resolve(root, 'public', 'correction-remediation-rollback-gates-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -209,7 +210,8 @@ const overrides = new Map([
   ['D238', { status: 'beta', evidence: 'Backend and public UI now convert confirmed remediation receipts into protected memory/knowledge adapter drafts with source IDs, rollback metadata and source_mutation_executed:false.' }],
   ['D239', { status: 'beta', evidence: 'Backend and public UI now preview and record protected remediation adapter commit receipts with rollback metadata and source_mutation_allowed:false.' }],
   ['D240', { status: 'beta', evidence: 'Backend and public UI now preview and apply supported memory remediation executions through backend-only gates with before/after rollback metadata.' }],
-  ['D241', { status: 'next', evidence: 'Next activation slice: add protected rollback gates for remediation execution receipts.' }]
+  ['D241', { status: 'beta', evidence: 'Backend and public UI now preview and apply rollback for supported memory remediation executions through backend-only gates.' }],
+  ['D242', { status: 'next', evidence: 'Next activation slice: add protected knowledge remediation source models before any knowledge mutation execution.' }]
 ]);
 
 const repoMeta = [
@@ -473,6 +475,11 @@ function readCorrectionRemediationExecutionGatesReport() {
   return JSON.parse(readFileSync(correctionRemediationExecutionGatesReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationRollbackGatesReport() {
+  if (!existsSync(correctionRemediationRollbackGatesReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationRollbackGatesReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -497,7 +504,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D241', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D242', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -548,6 +555,7 @@ const data = {
   correction_remediation_adapters_report: readCorrectionRemediationAdaptersReport(),
   correction_remediation_commit_policy_report: readCorrectionRemediationCommitPolicyReport(),
   correction_remediation_execution_gates_report: readCorrectionRemediationExecutionGatesReport(),
+  correction_remediation_rollback_gates_report: readCorrectionRemediationRollbackGatesReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

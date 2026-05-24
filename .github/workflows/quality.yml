@@ -226,6 +226,9 @@ jobs:
       - name: Smoke-check correction remediation execution gates
         run: node scripts/smoke-check-correction-remediation-execution-gates.js
 
+      - name: Smoke-check correction remediation rollback gates
+        run: node scripts/smoke-check-correction-remediation-rollback-gates.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

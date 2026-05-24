@@ -459,6 +459,45 @@
   background: rgba(255, 255, 255, 0.82);
 }
 
+.context-correction-rollback-status {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: #f8fafc;
+}
+
+.context-correction-rollback-status[data-state="preview"],
+.context-correction-rollback-status[data-state="rolled-back"],
+.context-correction-rollback-status[data-state="partial"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-rollback-status[data-state="blocked"],
+.context-correction-rollback-status[data-state="error"],
+.context-correction-rollback-status[data-state="needs-backend"],
+.context-correction-rollback-status[data-state="needs-execution"],
+.context-correction-rollback-status[data-state="needs-preview"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-rollback-checks,
+.context-correction-rollback-results {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.context-correction-rollback-checks article,
+.context-correction-rollback-results article {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: rgba(255, 255, 255, 0.82);
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;

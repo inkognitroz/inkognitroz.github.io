@@ -118,18 +118,18 @@ for (const needle of [
 
 requireIncludes(files.qualityWorkflow, 'smoke-check-correction-remediation-plan.js', 'Quality workflow must run D236 correction remediation plan QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-correction-remediation-plan.js', 'Pages workflow must run D236 correction remediation plan QA.');
-requireIncludes(files.backlog, '| D241 |', 'Backlog must add D241 after D236.');
+requireIncludes(files.backlog, '| D242 |', 'Backlog must add D242 after D236.');
 requireIncludes(files.implementationLog, 'D236 is now beta', 'Implementation log must mark D236 beta.');
-requireIncludes(files.implementationLog, 'D241 is now next', 'Implementation log must mark D241 next.');
+requireIncludes(files.implementationLog, 'D242 is now next', 'Implementation log must mark D242 next.');
 
 const progress = json(files.progressData);
 requireTrue(progress.correction_remediation_plan_report?.title === report.title, 'Progress dashboard data must embed D236 remediation report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d236 = tasks.find((task) => task.seq === 'D236');
-const d237 = tasks.find((task) => task.seq === 'D241');
+const d237 = tasks.find((task) => task.seq === 'D242');
 requireTrue(d236?.status === 'beta', 'Progress dashboard task D236 must be beta after remediation plans ship.');
-requireTrue(d237?.status === 'next', 'Progress dashboard task D241 must become next after D236 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D241', 'Progress dashboard next queue must prioritize D241 after D236 ships.');
+requireTrue(d237?.status === 'next', 'Progress dashboard task D242 must become next after D236 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D242', 'Progress dashboard next queue must prioritize D242 after D236 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

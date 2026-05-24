@@ -10,6 +10,7 @@
   const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
   const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
   const EXECUTION_PREFIX='mimir-context-correction-remediation-execution-v1:';
+  const ROLLBACK_PREFIX='mimir-context-correction-remediation-rollback-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -23,6 +24,7 @@
   function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
   function commitKey(){return COMMIT_PREFIX+workspaceId();}
   function executionKey(){return EXECUTION_PREFIX+workspaceId();}
+  function rollbackKey(){return ROLLBACK_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -181,6 +183,27 @@
   }
   function readExecutionState(){
     const value=readJson(executionKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeRollbackState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      backend_only_rollback:true,
+      ...value
+    };
+    try{localStorage.setItem(rollbackKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-rollback-updated',{detail:state}));
+    return state;
+  }
+  function readRollbackState(){
+    const value=readJson(rollbackKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -642,6 +665,7 @@
         message:data?.supported?'Backend-only execution preview ready for supported memory repair.':'Execution preview is blocked: '+(data?.blocked_reason||'unsupported repair target.')
       });
       if(isExecute)await loadReviewQueue({limit:10,include_undone:true});
+      if(isExecute&&data?.id)await previewRemediationRollback(data.id);
       render();
       return state;
     }catch(error){
@@ -661,6 +685,91 @@
   }
   function executeRemediationCommit(commitId=''){
     return executionPolicyRequest('execute',commitId);
+  }
+  async function rollbackPolicyRequest(mode='preview',executionId=''){
+    const executionState=readExecutionState();
+    const rollbackState=readRollbackState();
+    const execution=executionState?.execution&&typeof executionState.execution==='object'?executionState.execution:null;
+    const cleanExecutionId=cleanString(executionId||execution?.id,120);
+    const isApply=mode==='apply';
+    if(!cleanExecutionId){
+      const state=writeRollbackState({status:'needs-execution',message:'Apply a supported remediation execution before previewing rollback.',execution_id:''});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeRollbackState({status:'needs-backend',message:'Choose an active protected backend before rolling back remediation execution.',execution_id:cleanExecutionId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      execution_id:cleanExecutionId,
+      preview:!isApply,
+      confirm:isApply,
+      execute_rollback:isApply,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false
+    };
+    if(isApply){
+      const previewId=cleanString(rollbackState?.preview?.id,120);
+      if(!previewId){
+        const state=writeRollbackState({status:'needs-preview',message:'Preview backend-only rollback before restoring memory metadata.',execution_id:cleanExecutionId});
+        render();
+        return state;
+      }
+      body.rollback_preview_id=previewId;
+    }
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-rollbacks/apply'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=isApply?writeRollbackState({
+        status:data?.status||'rolled-back',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        execution_id:cleanExecutionId,
+        preview:rollbackState?.preview||null,
+        rollback:data,
+        source_mutation_executed:Boolean(data?.source_mutation_executed),
+        message:data?.source_mutation_executed?'Rollback applied by protected backend and memory metadata restored.':'Rollback recorded without source mutation.'
+      }):writeRollbackState({
+        status:data?.status||'preview',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        execution_id:cleanExecutionId,
+        preview:data,
+        rollback:null,
+        source_mutation_allowed:Boolean(data?.supported),
+        message:data?.supported?'Backend-only rollback preview ready for supported memory restore.':'Rollback preview is blocked: '+(data?.blocked_reason||'unsupported rollback target.')
+      });
+      if(isApply)await loadReviewQueue({limit:10,include_undone:true});
+      render();
+      return state;
+    }catch(error){
+      const state=writeRollbackState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        execution_id:cleanExecutionId,
+        message:api.friendlyError?.(error)||error.message||'Could not preview or apply remediation rollback gate.'
+      });
+      render();
+      return state;
+    }
+  }
+  function previewRemediationRollback(executionId=''){
+    return rollbackPolicyRequest('preview',executionId);
+  }
+  function applyRemediationRollback(executionId=''){
+    return rollbackPolicyRequest('apply',executionId);
   }
   async function applyRemediationStep(stepId,correctionId){
     const planState=readPlanState();
@@ -822,6 +931,29 @@
       '<small class="context-correction-review-policy">backend_only_execution:true / preview_required:true / public_frontend_authority:false / no_paid_routes_started:true</small>'+
     '</div>';
   }
+  function rollbackGateHtml(){
+    const executionState=readExecutionState();
+    const state=readRollbackState();
+    const execution=executionState?.execution&&typeof executionState.execution==='object'?executionState.execution:null;
+    const preview=state?.preview&&typeof state.preview==='object'?state.preview:null;
+    const rollback=state?.rollback&&typeof state.rollback==='object'?state.rollback:null;
+    const checks=Array.isArray(preview?.checks)?preview.checks.slice(0,5):[];
+    const results=Array.isArray(rollback?.results)?rollback.results.slice(0,4):[];
+    const status=state?.status||'idle';
+    const canApply=Boolean(preview?.supported);
+    return '<div class="context-correction-rollback-status" data-state="'+safe(status)+'">'+
+      '<div><strong>Rollback gate: '+safe(rollback?.status||preview?.status||status)+'</strong><small>'+safe(state?.message||'Preview backend-only rollback before restoring captured memory metadata.')+'</small></div>'+
+      '<div class="context-correction-plan-actions"><button type="button" data-correction-rollback="preview" '+(!execution?'disabled':'')+'>Preview rollback</button><button type="button" data-correction-rollback="apply" '+(!canApply?'disabled':'')+'>Apply rollback</button></div>'+
+      '<div class="context-correction-rollback-checks">'+(checks.length?checks.map((check)=>
+        '<article data-check-status="'+safe(check.status||'pending')+'"><strong>'+safe(check.id||'check')+'</strong><p>'+safe(check.label||'Rollback check')+'</p></article>'
+      ).join(''):'<article><strong>No rollback preview yet</strong><p>Apply a supported memory execution, then preview backend-only rollback. Raw text remains untouched.</p></article>')+'</div>'+
+      '<div class="context-correction-rollback-results">'+(results.length?results.map((result)=>
+        '<article><strong>'+safe(result.source_id||'source')+' '+safe(result.status||'result')+'</strong><small>source_mutation_executed:'+safe(Boolean(result.source_mutation_executed))+' / rollback:'+safe(result.rollback_hint||'restored metadata')+'</small></article>'
+      ).join(''):'')+'</div>'+
+      (preview&&!preview.supported?'<small>Blocked: '+safe(preview.blocked_reason||'unsupported rollback target')+'</small>':'')+
+      '<small class="context-correction-review-policy">backend_only_rollback:true / preview_required:true / execute_rollback_required:true / public_frontend_authority:false / no_paid_routes_started:true</small>'+
+    '</div>';
+  }
   function adapterDraftHtml(){
     const state=readAdapterState();
     const applyState=readApplyState();
@@ -837,6 +969,7 @@
       ).join(''):'<article><strong>No adapter draft yet</strong><p>Confirmed apply receipts can be converted into memory scope drafts, knowledge source packets or collection split proposals.</p><small>execution_allowed:false / source_mutation_executed:false</small></article>')+'</div>'+
       commitPolicyHtml()+
       executionGateHtml()+
+      rollbackGateHtml()+
       '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
@@ -976,10 +1109,17 @@
     if(action==='preview')previewRemediationExecution();
     if(action==='execute')executeRemediationCommit();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-rollback]');
+    if(!button)return;
+    const action=button.dataset.correctionRollback;
+    if(action==='preview')previewRemediationRollback();
+    if(action==='apply')applyRemediationRollback();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewRemediationExecution,executeRemediationCommit,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readExecutionState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readExecutionState,readRollbackState};
 })();

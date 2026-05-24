@@ -246,10 +246,10 @@ const progress = json(files.progressData);
 requireTrue(progress.promoted_context_next_answer_report?.title === report.title, 'Progress dashboard data must embed D221 promoted context report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d221 = tasks.find((task) => task.seq === 'D221');
-const d237 = tasks.find((task) => task.seq === 'D241');
+const d237 = tasks.find((task) => task.seq === 'D242');
 requireTrue(d221?.status === 'beta', 'Progress dashboard task D221 must be beta after promoted context proof ships.');
-requireTrue(d237?.status === 'next', 'Progress dashboard task D241 must become next after D236 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D241', 'Progress dashboard next queue must prioritize D241 after D236 ships.');
+requireTrue(d237?.status === 'next', 'Progress dashboard task D242 must become next after D236 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D242', 'Progress dashboard next queue must prioritize D242 after D236 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

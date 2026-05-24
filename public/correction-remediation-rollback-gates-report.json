@@ -1,0 +1,97 @@
+{
+  "title": "Correction Remediation Rollback Gates",
+  "task": "D241",
+  "status": "beta",
+  "backend_commit": "b9de2d9",
+  "principle": "Every backend-owned source mutation must expose a protected preview, confirmation and rollback path before broader automation is trusted.",
+  "public_repo_rule": "GitHub Pages may request rollback previews and show receipts. It never owns rollback mutation authority, stores raw content or starts paid routes.",
+  "backend_route": {
+    "method": "POST",
+    "path": "/context/corrections/remediation-rollbacks/apply",
+    "auth": "protected-backend-auth",
+    "status": "beta",
+    "responses": ["context.correction_remediation_rollback_preview", "context.correction_remediation_rollback"],
+    "purpose": "Preview and apply rollback for supported remediation execution receipts through backend-only rollback gates."
+  },
+  "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+  "local_storage": {
+    "execution_state": "mimir-context-correction-remediation-execution-v1:{workspace}",
+    "rollback_state": "mimir-context-correction-remediation-rollback-v1:{workspace}",
+    "metadata_only": true
+  },
+  "ui_contract": {
+    "panel": ".context-correction-rollback-status",
+    "checks": ".context-correction-rollback-checks",
+    "results": ".context-correction-rollback-results",
+    "preview_selector": "[data-correction-rollback=\"preview\"]",
+    "apply_selector": "[data-correction-rollback=\"apply\"]",
+    "auto_preview": "executeRemediationCommit automatically calls previewRemediationRollback when the backend returns an execution receipt"
+  },
+  "rollback_policy": {
+    "preview_required": true,
+    "confirm_required": true,
+    "execute_rollback_required": true,
+    "backend_only_rollback": true,
+    "public_frontend_authority": false,
+    "destructive_execution_allowed": false,
+    "automatic_mutation_allowed": false,
+    "no_paid_routes_started": true,
+    "raw_prompt_stored": false,
+    "raw_response_stored": false,
+    "document_text_stored": false,
+    "provider_secrets_stored": false
+  },
+  "supported_rollback": {
+    "kind": "memory-scope-restore",
+    "restores": ["memory.scope", "memory.enabled", "memory.expires_at"],
+    "captures": ["source_id", "before.scope", "before.enabled", "before.expires_at", "after.scope", "after.enabled", "after.expires_at", "rollback_hint"]
+  },
+  "blocked_rollback": {
+    "targets": ["knowledge", "context", "execution-without-before-metadata"],
+    "reason": "Only applied memory execution receipts with captured before metadata can be rolled back until knowledge source mutation models exist."
+  },
+  "checks": [
+    "execution-receipt",
+    "mutation-executed",
+    "before-metadata",
+    "backend-only",
+    "no-raw-or-paid-route"
+  ],
+  "scenarios": [
+    {
+      "id": "auto-preview-after-execution",
+      "status": "ready",
+      "expected": "A successful supported execution automatically requests a rollback preview.",
+      "selector": "executeRemediationCommit -> previewRemediationRollback",
+      "backend_only_rollback": true
+    },
+    {
+      "id": "apply-memory-rollback",
+      "status": "ready",
+      "expected": "Supported memory rollback can be applied only after rollback preview and confirmation.",
+      "selector": "[data-correction-rollback=\"apply\"]",
+      "source_mutation_executed": true,
+      "public_frontend_authority": false
+    },
+    {
+      "id": "blocked-no-before-metadata",
+      "status": "ready",
+      "expected": "Executions without captured before metadata render a blocked rollback preview.",
+      "source_mutation_executed": false,
+      "public_frontend_authority": false
+    },
+    {
+      "id": "rollback-receipt-visible",
+      "status": "ready",
+      "expected": "Rollback receipts expose public-safe before/after metadata and result status.",
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "provider_secrets_stored": false
+    }
+  ],
+  "next": {
+    "task": "D242",
+    "label": "Knowledge remediation source model",
+    "reason": "Memory repairs now have execution and rollback gates. Knowledge repairs need a protected source/collection model before mutation can be safe."
+  }
+}
