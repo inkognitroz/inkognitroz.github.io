@@ -75,7 +75,7 @@ for (const needle of [
 
 for (const needle of [
   'initialJsByteBudget = 155000',
-  'first-impression.js?v=20260524-cache-bust-v2',
+  'first-impression.js?v=20260524-quiet-first-paint-v3',
   'Critical first-journey script must load immediately'
 ]) {
   if (!text(files.performance).includes(needle)) fail(`Performance budget guard missing evidence: ${needle}`);
