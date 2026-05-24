@@ -13,7 +13,7 @@
   <link rel="icon" href="./assets/mmir-icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./assets/mmir-maskable-icon.svg" />
   <link rel="stylesheet" href="./assets/styles.css" />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css?v=20260524-mobile-sticky-v1" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/workspaces.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/memory.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/knowledge.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
@@ -389,7 +389,7 @@
   <script data-mimir-chat-first>!function(){function v(){const e=document.getElementById('mimir-prompt')||document.querySelector('textarea[placeholder*="Ask MMIR"],textarea');if(!e)return;const r=e.getBoundingClientRect();if(r.top>=96&&r.bottom<=innerHeight-24)return;scrollTo(0,Math.max(0,r.top+scrollY-160))}function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime';setTimeout(v,80);setTimeout(v,420)}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>
   <script src="./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-chat-first-v1" defer></script>
   <script src="./apps/mimir-chat-portal/api-client.js?v=20260524-quiet-first-paint-v3" defer></script>
-  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260524-quiet-first-paint-v3" defer></script>
+  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1" defer></script>
   <script src="./apps/mimir-chat-portal/first-impression.js?v=20260524-quiet-first-paint-v3" defer></script>
   <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-local-probe-v5" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[

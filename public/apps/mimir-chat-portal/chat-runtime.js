@@ -1008,7 +1008,9 @@
     if(message.meta){const small=document.createElement('small');small.textContent=message.meta;bubble.appendChild(small);}
     renderMessageActions(bubble,message);
     transcriptEl.appendChild(bubble);
-    bubble.scrollIntoView({block:'nearest'});
+    requestAnimationFrame(()=>{
+      if(transcriptEl)transcriptEl.scrollTop=transcriptEl.scrollHeight;
+    });
     return body;
   }
 
