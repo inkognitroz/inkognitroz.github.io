@@ -42,6 +42,7 @@ const correctionRemediationKnowledgeExecutionGatesReportPath = resolve(root, 'pu
 const correctionRemediationKnowledgeRollbackGatesReportPath = resolve(root, 'public', 'correction-remediation-knowledge-rollback-gates-report.json');
 const correctionRemediationAutopilotQueueReportPath = resolve(root, 'public', 'correction-remediation-autopilot-queue-report.json');
 const correctionRemediationAutopilotHandoffReportPath = resolve(root, 'public', 'correction-remediation-autopilot-handoff-report.json');
+const correctionRemediationAutopilotRollbackReadinessReportPath = resolve(root, 'public', 'correction-remediation-autopilot-rollback-readiness-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -221,7 +222,8 @@ const overrides = new Map([
   ['D244', { status: 'beta', evidence: 'Backend and public UI now preview and apply rollback for supported knowledge source metadata executions through backend-only gates.' }],
   ['D245', { status: 'beta', evidence: 'Backend and public UI now preview and run a safe correction remediation autopilot queue that records non-destructive metadata receipts and stops before source mutation.' }],
   ['D246', { status: 'beta', evidence: 'Backend commit 6c83644 and public UI now prepare resumable source-mutation handoff previews after safe autopilot runs without giving GitHub Pages mutation authority.' }],
-  ['D247', { status: 'next', evidence: 'Next activation slice: show rollback readiness before and after explicit source changes so owners trust the automation path.' }]
+  ['D247', { status: 'beta', evidence: 'Backend commit e648af0 and public UI now show rollback readiness before and after explicit source changes without executing mutation or rollback from GitHub Pages.' }],
+  ['D248', { status: 'next', evidence: 'Next activation slice: combine autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline.' }]
 ]);
 
 const repoMeta = [
@@ -515,6 +517,11 @@ function readCorrectionRemediationAutopilotHandoffReport() {
   return JSON.parse(readFileSync(correctionRemediationAutopilotHandoffReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationAutopilotRollbackReadinessReport() {
+  if (!existsSync(correctionRemediationAutopilotRollbackReadinessReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationAutopilotRollbackReadinessReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -539,7 +546,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D247', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D248', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -596,6 +603,7 @@ const data = {
   correction_remediation_knowledge_rollback_gates_report: readCorrectionRemediationKnowledgeRollbackGatesReport(),
   correction_remediation_autopilot_queue_report: readCorrectionRemediationAutopilotQueueReport(),
   correction_remediation_autopilot_handoff_report: readCorrectionRemediationAutopilotHandoffReport(),
+  correction_remediation_autopilot_rollback_readiness_report: readCorrectionRemediationAutopilotRollbackReadinessReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

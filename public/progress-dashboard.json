@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T03:22:59.639Z",
+  "updated_at": "2026-05-24T03:50:15.384Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 247,
+    "total": 248,
     "done": 51,
-    "beta": 171,
+    "beta": 172,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1058,10 +1058,10 @@
       },
       {
         "phase": "Automation / UX",
-        "total": 2,
+        "total": 3,
         "done": 0,
         "beta": 2,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1070,8 +1070,8 @@
         "phase": "Automation / Trust UX",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -4139,6 +4139,109 @@
       "why": "After source-mutation handoff can resume cleanly, users need a simple rollback readiness view before and after explicit source changes."
     }
   },
+  "correction_remediation_autopilot_rollback_readiness_report": {
+    "title": "Autopilot Rollback Readiness Cards",
+    "task": "D247",
+    "status": "beta",
+    "updated_at": "2026-05-24T06:10:00.000Z",
+    "backend_repo": "mimir-backend-template",
+    "backend_commit": "e648af0",
+    "public_repo_rule": "Public GitHub Pages stores only rollback readiness metadata; protected backend routes remain the only authority for source mutation and rollback execution.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-autopilot/rollback-readiness",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Show whether rollback is planned before source mutation or ready after source mutation without executing mutation or rollback."
+    },
+    "local_storage": {
+      "readiness_state": "mimir-context-correction-autopilot-rollback-readiness-v1:{workspace}",
+      "stores_raw_prompt": false,
+      "stores_raw_response": false,
+      "stores_document_text": false,
+      "stores_provider_secrets": false,
+      "stores_paid_route_credentials": false
+    },
+    "ui_contract": {
+      "panel": ".context-correction-rollback-readiness-status",
+      "check_selector": "[data-correction-rollback-readiness=\"check\"]",
+      "event": "mmir-context-correction-rollback-readiness-updated",
+      "memory_rollback_state": "mimir-context-correction-remediation-rollback-v1:{workspace}",
+      "knowledge_rollback_state": "mimir-context-correction-knowledge-rollback-v1:{workspace}"
+    },
+    "readiness_policy": {
+      "preview_required": true,
+      "confirm_required": true,
+      "execute_rollback_required": true,
+      "backend_only_rollback": true,
+      "source_mutation_executed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false,
+      "no_paid_routes_started": true
+    },
+    "readiness_phases": [
+      {
+        "phase": "before-source-mutation",
+        "status": "planned",
+        "expected": "After autopilot handoff, users see whether rollback will be available before confirming source mutation.",
+        "rollback_available_now": false,
+        "rollback_available_after_execution": true,
+        "source_mutation_executed": false,
+        "source_mutation_already_executed": false
+      },
+      {
+        "phase": "after-source-mutation",
+        "status": "ready",
+        "expected": "After protected source mutation, users see a rollback preview and explicit confirmation body.",
+        "rollback_available_now": true,
+        "rollback_available_after_execution": true,
+        "source_mutation_executed": false,
+        "source_mutation_already_executed": true
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "auto-check-after-handoff",
+        "status": "ready",
+        "expected": "A ready handoff automatically checks rollback readiness through the protected backend.",
+        "selector": ".context-correction-rollback-readiness-status",
+        "source_mutation_executed": false,
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "memory-readiness-resume",
+        "status": "ready",
+        "expected": "Memory readiness writes rollback preview metadata into the existing memory rollback card when source mutation has executed.",
+        "selector": "[data-correction-rollback=\"preview\"]",
+        "public_frontend_authority": false,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "knowledge-readiness-resume",
+        "status": "ready",
+        "expected": "Knowledge readiness writes rollback preview metadata into the existing knowledge rollback card without document text.",
+        "selector": "[data-correction-knowledge-rollback=\"preview\"]",
+        "document_text_stored": false,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "no-secret-or-spend",
+        "status": "ready",
+        "expected": "Readiness stores no provider credentials, raw chat text or document text and starts no paid route.",
+        "selector": "mmir-api-routes.json",
+        "provider_secrets_stored": false,
+        "document_text_stored": false,
+        "no_paid_routes_started": true
+      }
+    ],
+    "next": {
+      "task": "D248",
+      "label": "autopilot guided trust timeline",
+      "why": "After rollback readiness exists, users need one calm timeline showing what autopilot did, what stopped, and what remains manual."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -4189,7 +4292,7 @@
     }
   ],
   "next_queue": [
-    "D247"
+    "D248"
   ],
   "watchlist": [
     "D082",
@@ -7896,9 +7999,24 @@
       "best_practice": "Users will only trust automatic repair if the undo path is visible before the final confirmation",
       "done_when": "Owner sees rollback status beside each handoff, with no raw data exposure, no paid routes and a clear next-safe action when rollback is unavailable",
       "covers": "automation, rollback, remediation, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend commit e648af0 and public UI now show rollback readiness before and after explicit source changes without executing mutation or rollback from GitHub Pages.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D248",
+      "phase": "Automation / UX",
+      "priority": "P1",
+      "work_package": "Autopilot guided trust timeline",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Combine handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided lane without automatic source mutation",
+      "best_practice": "Once the safe queue reaches a manual source gate, users should not hunt across panels to know what happened, what is next and how to undo it",
+      "done_when": "Owner sees one calm timeline from safe autopilot run to manual source confirmation, rollback readiness and next action, with public frontend non-authoritative and no paid route started",
+      "covers": "automation, trust, rollback, user-fit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: show rollback readiness before and after explicit source changes so owners trust the automation path.",
+      "evidence": "Next activation slice: combine autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline.",
       "estimate": "0.5-2d"
     }
   ]

@@ -699,6 +699,34 @@
   background: #fff7ed;
 }
 
+.context-correction-rollback-readiness-status {
+  display: grid;
+  gap: 0.3rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.context-correction-rollback-readiness-status[data-state="ready"],
+.context-correction-rollback-readiness-status[data-state="planned"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-rollback-readiness-status[data-state="checking"] {
+  border-color: rgba(14, 116, 144, 0.24);
+  background: #f0f9ff;
+}
+
+.context-correction-rollback-readiness-status[data-state="blocked"],
+.context-correction-rollback-readiness-status[data-state="error"],
+.context-correction-rollback-readiness-status[data-state="needs-backend"],
+.context-correction-rollback-readiness-status[data-state="needs-handoff"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;

@@ -8,6 +8,7 @@
   const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
   const AUTOPILOT_PREFIX='mimir-context-correction-remediation-autopilot-v1:';
   const HANDOFF_PREFIX='mimir-context-correction-autopilot-handoff-v1:';
+  const ROLLBACK_READINESS_PREFIX='mimir-context-correction-autopilot-rollback-readiness-v1:';
   const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
   const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
   const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
@@ -27,6 +28,7 @@
   function planKey(){return PLAN_PREFIX+workspaceId();}
   function autopilotKey(){return AUTOPILOT_PREFIX+workspaceId();}
   function handoffKey(){return HANDOFF_PREFIX+workspaceId();}
+  function rollbackReadinessKey(){return ROLLBACK_READINESS_PREFIX+workspaceId();}
   function applyKey(){return APPLY_PREFIX+workspaceId();}
   function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
   function commitKey(){return COMMIT_PREFIX+workspaceId();}
@@ -154,6 +156,29 @@
   }
   function readHandoffState(){
     const value=readJson(handoffKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeRollbackReadinessState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      ...value,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_executed:false,
+      backend_only_rollback:true
+    };
+    try{localStorage.setItem(rollbackReadinessKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-rollback-readiness-updated',{detail:state}));
+    return state;
+  }
+  function readRollbackReadinessState(){
+    const value=readJson(rollbackReadinessKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function writeApplyState(value){
@@ -716,6 +741,7 @@
         writeKnowledgeSourceState({status:'handoff-ready',backend_url:url,backend_provider:profile.provider||'backend',commit_id:data.commit_id,model:{id:data.model_id,target:'knowledge'},message:'Autopilot handoff prepared a knowledge source execution preview.'});
         writeKnowledgeExecutionState({status:data.preview.status||'preview',backend_url:url,backend_provider:profile.provider||'backend',model_id:data.model_id,preview:data.preview,execution:null,source_mutation_allowed:Boolean(data.preview.supported),knowledge_execution_supported:Boolean(data.preview.supported),message:data.preview.supported?'Knowledge source execution preview is ready for explicit confirmation.':'Knowledge handoff is blocked: '+(data.preview.blocked_reason||'unsupported source model.')});
       }
+      if(data?.status==='ready')await prepareRollbackReadiness({handoff:data});
       render();
       return state;
     }catch(error){
@@ -725,6 +751,86 @@
         backend_provider:profile.provider||'backend',
         handoff:null,
         message:api.friendlyError?.(error)||error.message||'Could not prepare autopilot source-mutation handoff.'
+      });
+      render();
+      return state;
+    }
+  }
+  async function prepareRollbackReadiness(filters={}){
+    const handoffState=readHandoffState();
+    const executionState=readExecutionState();
+    const knowledgeExecutionState=readKnowledgeExecutionState();
+    const handoff=filters.handoff&&typeof filters.handoff==='object'?filters.handoff:(handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null);
+    const memoryExecution=executionState?.execution&&typeof executionState.execution==='object'?executionState.execution:null;
+    const knowledgeExecution=knowledgeExecutionState?.execution&&typeof knowledgeExecutionState.execution==='object'?knowledgeExecutionState.execution:null;
+    const explicitTarget=cleanString(filters.target||handoff?.target,40);
+    const executionId=cleanString(filters.execution_id||(explicitTarget==='knowledge'?knowledgeExecution?.id:memoryExecution?.id)||(!explicitTarget&&knowledgeExecution?.id)||(!explicitTarget&&memoryExecution?.id),120);
+    const commitId=cleanString(filters.commit_id||handoff?.commit_id,120);
+    const modelId=cleanString(filters.model_id||handoff?.model_id,120);
+    const correctionId=cleanString(filters.correction_id||handoff?.correction_id,120);
+    const target=cleanString(explicitTarget||((executionId&&knowledgeExecution?.id===executionId)?'knowledge':'')||((executionId&&memoryExecution?.id===executionId)?'memory':''),40);
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeRollbackReadinessState({status:'needs-backend',message:'Choose an active protected backend before checking rollback readiness.',readiness:null});
+      render();
+      return state;
+    }
+    if(!executionId&&!commitId&&!modelId&&!correctionId){
+      const state=writeRollbackReadinessState({status:'needs-handoff',message:'Prepare autopilot handoff or execute a source change before checking rollback readiness.',readiness:null});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      provider_secrets_stored:false
+    };
+    if(executionId)body.execution_id=executionId;
+    if(commitId)body.commit_id=commitId;
+    if(modelId)body.model_id=modelId;
+    if(correctionId)body.correction_id=correctionId;
+    if(target&&target!=='all')body.target=target;
+    writeRollbackReadinessState({status:'checking',backend_url:url,backend_provider:profile.provider||'backend',readiness:null,message:'Checking rollback readiness through protected backend. No mutation or rollback is executed.'});
+    render();
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-autopilot/rollback-readiness'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=writeRollbackReadinessState({
+        status:data?.status||'ready',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        readiness:data,
+        target:data?.target||target||'all',
+        route:data?.route||null,
+        source_mutation_executed:false,
+        source_mutation_already_executed:Boolean(data?.source_mutation_already_executed),
+        message:data?.phase==='after-source-mutation'
+          ? (data?.rollback_available_now?'Rollback is ready after protected source mutation.':'Rollback readiness is blocked after source mutation.')
+          : (data?.rollback_available_after_execution?'Rollback will be available after explicit protected source mutation.':'Rollback readiness is blocked until handoff has a supported execution preview.')
+      });
+      if(data?.target==='memory'&&data?.rollback_preview){
+        writeRollbackState({status:data.rollback_preview.status||'preview',backend_url:url,backend_provider:profile.provider||'backend',execution_id:data.execution_id,preview:data.rollback_preview,rollback:null,source_mutation_allowed:Boolean(data.rollback_preview.supported),message:data.rollback_preview.supported?'Backend-only rollback preview ready from readiness card.':'Rollback readiness found a blocked memory rollback preview.'});
+      }
+      if(data?.target==='knowledge'&&data?.rollback_preview){
+        writeKnowledgeRollbackState({status:data.rollback_preview.status||'preview',backend_url:url,backend_provider:profile.provider||'backend',execution_id:data.execution_id,preview:data.rollback_preview,rollback:null,source_mutation_allowed:Boolean(data.rollback_preview.supported),knowledge_rollback_supported:Boolean(data.rollback_preview.supported),message:data.rollback_preview.supported?'Backend-only knowledge rollback preview ready from readiness card.':'Rollback readiness found a blocked knowledge rollback preview.'});
+      }
+      render();
+      return state;
+    }catch(error){
+      const state=writeRollbackReadinessState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        readiness:null,
+        message:api.friendlyError?.(error)||error.message||'Could not check rollback readiness.'
       });
       render();
       return state;
@@ -1051,6 +1157,7 @@
         message:data?.supported?'Backend-only knowledge execution preview ready for owned source status and collection metadata.':'Knowledge execution preview is blocked: '+(data?.blocked_reason||'unsupported source model.')
       });
       if(isExecute)await loadReviewQueue({limit:10,include_undone:true});
+      if(isExecute&&data?.id)await prepareRollbackReadiness({execution_id:data.id,target:'knowledge'});
       if(isExecute&&data?.id)await previewKnowledgeRollback(data.id);
       render();
       return state;
@@ -1225,6 +1332,7 @@
         message:data?.supported?'Backend-only execution preview ready for supported memory repair.':'Execution preview is blocked: '+(data?.blocked_reason||'unsupported repair target.')
       });
       if(isExecute)await loadReviewQueue({limit:10,include_undone:true});
+      if(isExecute&&data?.id)await prepareRollbackReadiness({execution_id:data.id,target:'memory'});
       if(isExecute&&data?.id)await previewRemediationRollback(data.id);
       render();
       return state;
@@ -1616,12 +1724,20 @@
   function autopilotQueueHtml(){
     const state=readAutopilotState();
     const handoffState=readHandoffState();
+    const readinessState=readRollbackReadinessState();
+    const executionState=readExecutionState();
+    const knowledgeExecutionState=readKnowledgeExecutionState();
     const run=state?.run&&typeof state.run==='object'?state.run:null;
     const handoff=handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null;
+    const readiness=readinessState?.readiness&&typeof readinessState.readiness==='object'?readinessState.readiness:null;
+    const memoryExecution=executionState?.execution&&typeof executionState.execution==='object'?executionState.execution:null;
+    const knowledgeExecution=knowledgeExecutionState?.execution&&typeof knowledgeExecutionState.execution==='object'?knowledgeExecutionState.execution:null;
     const queue=Array.isArray(run?.queue)?run.queue.slice(0,8):[];
     const manual=run?.manual_stop||state?.manual_stop||null;
     const status=state?.status||'idle';
     const handoffPreview=handoff?.preview&&typeof handoff.preview==='object'?handoff.preview:null;
+    const rollbackPreview=readiness?.rollback_preview&&typeof readiness.rollback_preview==='object'?readiness.rollback_preview:null;
+    const canCheckReadiness=Boolean(handoff||memoryExecution?.id||knowledgeExecution?.id);
     return '<div class="context-correction-autopilot-status" data-state="'+safe(status)+'">'+
       '<div><p class="eyebrow">Autopilot</p><h4>'+safe(run?.status?('Safe queue '+run.status):'Automatic safe queue')+'</h4>'+
       '<small>'+safe(state?.message||'MMIR can preview the obvious remediation path and run safe metadata-only steps automatically, then stop before source mutation.')+'</small></div>'+
@@ -1629,6 +1745,7 @@
         '<button type="button" data-correction-autopilot="preview" data-target-filter="all">Preview auto</button>'+
         '<button type="button" data-correction-autopilot="run" data-target-filter="all">Run safe queue</button>'+
         '<button type="button" data-correction-handoff="prepare" '+(!run?.safe_steps_executed?'disabled':'')+'>Prepare handoff</button>'+
+        '<button type="button" data-correction-rollback-readiness="check" '+(!canCheckReadiness?'disabled':'')+'>Rollback ready?</button>'+
         '<button type="button" data-correction-autopilot="preview" data-target-filter="memory">Memory</button>'+
         '<button type="button" data-correction-autopilot="preview" data-target-filter="knowledge">Knowledge</button>'+
       '</div>'+
@@ -1640,6 +1757,13 @@
         '<small>'+safe(handoffState?.message||'After safe autopilot, prepare the exact backend-only confirmation step for source changes.')+'</small>'+
         (handoff?.route?'<small>next:'+safe(handoff.route.method||'POST')+' '+safe(handoff.route.path||'')+' / target:'+safe(handoff.target||'')+'</small>':'')+
         (handoffPreview?'<small>preview:'+safe(handoffPreview.id||'ready')+' / supported:'+safe(Boolean(handoffPreview.supported))+' / mutation_executed:false</small>':'')+
+      '</div>'+
+      '<div class="context-correction-rollback-readiness-status" data-state="'+safe(readinessState?.status||'idle')+'">'+
+        '<strong>Rollback readiness: '+safe(readiness?.status||readinessState?.status||'idle')+'</strong>'+
+        '<small>'+safe(readinessState?.message||'MMIR checks rollback before and after protected source changes, without executing rollback from the public app.')+'</small>'+
+        (readiness?.phase?'<small>phase:'+safe(readiness.phase)+' / target:'+safe(readiness.target||'')+' / rollback_now:'+safe(Boolean(readiness.rollback_available_now))+' / rollback_after_execution:'+safe(Boolean(readiness.rollback_available_after_execution))+' / source_mutation_already_executed:'+safe(Boolean(readiness.source_mutation_already_executed))+'</small>':'')+
+        (readiness?.route?'<small>rollback:'+safe(readiness.route.method||'POST')+' '+safe(readiness.route.path||'')+' / backend_only_rollback:true</small>':'')+
+        (rollbackPreview?'<small>preview:'+safe(rollbackPreview.id||'ready')+' / supported:'+safe(Boolean(rollbackPreview.supported))+' / mutation_executed:false</small>':'')+
       '</div>'+
       (manual?'<small class="context-correction-autopilot-stop">Manual stop: '+safe(manual.action||'review')+' via '+safe(manual.route||'/context/corrections/review')+' - '+safe(manual.reason||'Source mutation requires explicit confirmation.')+'</small>':'')+
       '<small class="context-correction-review-policy">automatic_safe_steps:true / source_mutation_allowed:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
@@ -1771,6 +1895,12 @@
     if(action==='prepare')prepareAutopilotHandoff();
   });
   document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-rollback-readiness]');
+    if(!button)return;
+    const action=button.dataset.correctionRollbackReadiness;
+    if(action==='check')prepareRollbackReadiness();
+  });
+  document.addEventListener('click',(event)=>{
     const button=event.target.closest('[data-correction-apply]');
     if(!button)return;
     const action=button.dataset.correctionApply;
@@ -1824,10 +1954,10 @@
     if(action==='preview')previewKnowledgeRollback();
     if(action==='apply')applyKnowledgeRollback();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-handoff-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-handoff-updated','mmir-context-correction-rollback-readiness-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,prepareAutopilotHandoff,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readHandoffState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,prepareAutopilotHandoff,prepareRollbackReadiness,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readHandoffState,readRollbackReadinessState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
 })();
