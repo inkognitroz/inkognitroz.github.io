@@ -97,9 +97,9 @@ for (const src of deferredScripts) {
 
 for (const required of [
   './apps/mimir-chat-portal/api-client.js',
-  './apps/mimir-chat-portal/chat-runtime.js?v=20260522-doctrine',
-  './apps/mimir-chat-portal/first-impression.js?v=20260522-doctrine',
-  './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260522-doctrine'
+  './apps/mimir-chat-portal/chat-runtime.js?v=20260523-mobile-buttons-v2',
+  './apps/mimir-chat-portal/first-impression.js?v=20260523-mobile-buttons-v2',
+  './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260523-mobile-buttons-v2'
 ]) {
   if (!initialScripts.includes(required)) fail(`Critical first-journey script must load immediately: ${required}`);
 }

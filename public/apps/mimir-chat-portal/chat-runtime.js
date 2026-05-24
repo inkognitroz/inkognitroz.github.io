@@ -1290,15 +1290,14 @@
     const envValue=ollamaModel||'gemma3:270m';
     return {
       windows:[
-        'iwr -UseBasicParsing https://mmir.ai/downloads/mmir-local-node-windows.ps1 -OutFile mmir-local-node-windows.ps1',
+        'iwr -UseBasicParsing https://mmir.ai/downloads/mmir-local-connector-windows.ps1 -OutFile mmir-local-connector-windows.ps1',
         '$env:MMIR_MODEL="'+envValue+'"',
-        '.\\mmir-local-node-windows.ps1 -DryRun',
-        '.\\mmir-local-node-windows.ps1'
+        '.\\mmir-local-connector-windows.ps1'
       ],
       unix:[
-        'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh -o mmir-local-node-macos-linux.sh',
-        'chmod +x mmir-local-node-macos-linux.sh',
-        'MMIR_MODEL='+envValue+' ./mmir-local-node-macos-linux.sh'
+        'curl -fsSL https://mmir.ai/downloads/mmir-local-connector-linux.sh -o mmir-local-connector-linux.sh',
+        'chmod +x mmir-local-connector-linux.sh',
+        'MMIR_MODEL='+envValue+' ./mmir-local-connector-linux.sh'
       ],
       ollama:ollamaModel?['ollama pull '+ollamaModel]:[]
     };
@@ -1347,8 +1346,9 @@
           '<div><strong>Mac / Linux</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
         '</div>'+
         '<div class="runtime-helper-actions">'+
-          '<a class="button-link" href="./downloads/mmir-local-node-windows.ps1" download>Download Windows installer</a>'+
-          '<a class="button-link" href="./downloads/mmir-local-node-macos-linux.sh" download>Download Mac/Linux installer</a>'+
+          '<a class="button-link" href="./downloads/mmir-local-connector-install.html">Choose installer</a>'+
+          '<a class="button-link" href="./downloads/mmir-local-connector-windows.cmd" download>Download Windows installer</a>'+
+          '<a class="button-link" href="./downloads/mmir-local-connector-linux.sh" download>Download Linux installer</a>'+
           '<button id="install-selected-model" type="button">Install in Local Node</button>'+
           '<button id="refresh-model-pulls" type="button">Check install progress</button>'+
         '</div>')+

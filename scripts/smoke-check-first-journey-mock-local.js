@@ -218,6 +218,10 @@ async function run() {
   requireTrue(chatRuntime.includes("joinUrl(url,'/chat/completions')"), 'Chat runtime must call the canonical /chat/completions route.');
   requireTrue(!html.includes('mmir-local-node-windows.ps1'), 'Static first journey must not link retired Windows local-node installer.');
   requireTrue(!html.includes('mmir-local-node-macos-linux.sh'), 'Static first journey must not link retired Mac/Linux local-node installer.');
+  requireTrue(!chatRuntime.includes('mmir-local-node-windows.ps1'), 'Runtime model helper must not emit retired Windows local-node installer.');
+  requireTrue(!chatRuntime.includes('mmir-local-node-macos-linux.sh'), 'Runtime model helper must not emit retired Mac/Linux local-node installer.');
+  requireTrue(chatRuntime.includes('mmir-local-connector-windows.ps1'), 'Runtime model helper must generate the Windows Local Connector installer command.');
+  requireTrue(chatRuntime.includes('mmir-local-connector-linux.sh'), 'Runtime model helper must generate the Linux/Raspberry Pi Local Connector installer command.');
   requireTrue(runtimeFix.includes('mmir-local-node-windows.ps1'), 'Runtime guard must detect retired Windows local-node installer output.');
   requireTrue(runtimeFix.includes('a[href*="mmir-local-node-"]'), 'Runtime guard must rewrite any retired local-node installer links.');
   requireTrue(runtimeFix.includes('mmir-local-connector-windows.cmd'), 'Runtime guard must rewrite to the Windows Local Connector installer.');

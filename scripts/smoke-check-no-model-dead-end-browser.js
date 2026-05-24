@@ -88,10 +88,11 @@ for (const needle of [
 for (const needle of [
   'id="mimir-prompt"',
   'primary-chat-link',
-  'mimir-chat-runtime'
+  '<a href="#mimir-prompt">Chat</a>'
 ]) {
   requireIncludes(files.mmir, needle, `D208 static page must keep first chat DOM anchor: ${needle}`);
 }
+requireIncludes(files.chatRuntime, "runtime.id='mimir-chat-runtime'", 'D208 runtime script must still create the live chat transcript anchor.');
 
 requireIncludes(files.onboarding, 'Browser guide works now; local model activates after install.', 'D208 first-run gates must turn no-live-model into useful free guidance.');
 requireIncludes(files.firstImpression, 'Free browser route ready.', 'D208 first screen must show a useful browser-guide state.');
