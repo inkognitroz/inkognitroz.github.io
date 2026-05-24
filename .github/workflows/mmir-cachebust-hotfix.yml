@@ -1,0 +1,117 @@
+name: MMIR cache-bust hotfix
+
+on:
+  push:
+    paths:
+      - .github/workflows/mmir-cachebust-hotfix.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-hotfix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply MMIR local-probe cache bust
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          function read(path) {
+            return fs.readFileSync(path, 'utf8');
+          }
+
+          function write(path, value) {
+            fs.writeFileSync(path, value, 'utf8');
+          }
+
+          function replace(path, from, to, label) {
+            const source = read(path);
+            if (!source.includes(from)) {
+              if (source.includes(to)) return;
+              throw new Error(`${label || path}: missing expected text`);
+            }
+            write(path, source.replace(from, to));
+          }
+
+          replace(
+            'public/mmir.html',
+            '#progress-activation-autopilot,#primary-chat-link,[data-local-action="refresh"]',
+            '#progress-activation-autopilot,[data-local-action="refresh"]',
+            'inline quiet guard must not authorize local probes on Send'
+          );
+          replace(
+            'public/mmir.html',
+            './apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-quiet-first-paint-v3',
+            './apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-local-probe-v5',
+            'portal cache key'
+          );
+          replace(
+            'public/mmir.html',
+            './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-quiet-first-paint-v3',
+            './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-local-probe-v5',
+            'runtime controls cache key'
+          );
+          replace(
+            'public/mmir.html',
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-quiet-first-paint-v3',
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-local-probe-v5',
+            'deferred quiet guard cache key'
+          );
+          replace(
+            'public/apps/mimir-chat-portal/quiet-first-paint-hotfix.js',
+            '#progress-activation-autopilot,#primary-chat-link,[data-local-action="refresh"]',
+            '#progress-activation-autopilot,[data-local-action="refresh"]',
+            'deferred quiet guard must not authorize local probes on Send'
+          );
+
+          const performancePath = 'scripts/smoke-check-performance-budget.js';
+          let performance = read(performancePath);
+          if (!performance.includes("const runtimeFixKey = '20260524-local-probe-v5';")) {
+            performance = performance.replace(
+              "const cacheKey = '20260524-quiet-first-paint-v3';",
+              "const cacheKey = '20260524-quiet-first-paint-v3';\nconst runtimeFixKey = '20260524-local-probe-v5';"
+            );
+          }
+          performance = performance.replace(
+            '`./apps/mimir-chat-portal/runtime-controls-fix.js?v=${cacheKey}`',
+            '`./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`'
+          );
+          write(performancePath, performance);
+
+          replace(
+            'scripts/smoke-check-mobile-first-chat-journey.js',
+            'runtime-controls-fix.js?v=20260524-quiet-first-paint-v3',
+            'runtime-controls-fix.js?v=20260524-local-probe-v5',
+            'mobile first-chat cache key evidence'
+          );
+          NODE
+      - name: Run targeted smoke checks
+        run: |
+          node scripts/smoke-check-performance-budget.js
+          node scripts/smoke-check-mobile-first-chat-journey.js
+          node scripts/smoke-check-critical-shell-headroom.js
+          node scripts/smoke-check-mobile-chat.js
+          node scripts/smoke-check-first-journey-mock-local.js
+          node scripts/smoke-check-local-install-return.js
+          node scripts/smoke-check-public-no-model-deploy-verification.js
+          node scripts/smoke-check-no-model-dead-end-browser.js
+      - name: Commit and push hotfix
+        run: |
+          if git diff --quiet; then
+            echo "No hotfix diff to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/mmir.html public/apps/mimir-chat-portal/quiet-first-paint-hotfix.js scripts/smoke-check-performance-budget.js scripts/smoke-check-mobile-first-chat-journey.js
+          git commit -m "fix: bust MMIR local probe shell cache"
+          git push origin HEAD:main
