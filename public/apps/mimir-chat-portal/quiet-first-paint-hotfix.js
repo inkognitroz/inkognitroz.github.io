@@ -22,12 +22,22 @@
     const hash=String(w.location.hash||'').toLowerCase();
     return !hash||hash==='#mimir-instant-start'||hash==='#app-factory'||hash==='#chat';
   }
+  function keepPromptInView(){
+    const prompt=d.getElementById('mimir-prompt')||d.querySelector('textarea[placeholder*="Ask MMIR"], textarea');
+    if(!prompt)return;
+    const rect=prompt.getBoundingClientRect();
+    if(rect.top>=96&&rect.bottom<=w.innerHeight-24)return;
+    const target=Math.max(0,rect.top+w.scrollY-160);
+    w.scrollTo(0,target);
+  }
   function landOnChat(){
     if(!shouldLandOnChat())return;
     if(!d.getElementById('mimir-chat-runtime'))return;
     if(String(w.location.hash||'').toLowerCase()!=='#mimir-chat-runtime'){
       w.location.hash='mimir-chat-runtime';
     }
+    setTimeout(keepPromptInView,80);
+    setTimeout(keepPromptInView,420);
   }
   if(!w.MimirAllowLocalProbes)w.MimirAllowLocalProbes=allow;
   const originalFetch=w.fetch;
