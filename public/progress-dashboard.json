@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T04:36:42.716Z",
+  "updated_at": "2026-05-24T04:45:52.336Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 252,
+    "total": 253,
     "done": 51,
-    "beta": 176,
+    "beta": 177,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1098,6 +1098,16 @@
       },
       {
         "phase": "Review / Architecture",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "QA / Activation",
         "total": 1,
         "done": 0,
         "beta": 0,
@@ -5032,6 +5042,188 @@
       "why": "After the trust timeline is covered, the next no-spend hardening pass should turn code review, architecture review and public/private security review into a repeatable dashboard gate."
     }
   },
+  "cross_repo_architecture_security_review_report": {
+    "title": "Cross-Repo Architecture and Security Review Gate",
+    "task": "D252",
+    "status": "beta",
+    "updated_at": "2026-05-24T04:55:00.000Z",
+    "public_repo_rule": "This report contains only public-safe metadata, commit ids, test outcomes and review findings; it stores no secrets, raw prompts, raw responses, document text or provider credentials.",
+    "reviewed_repos": [
+      {
+        "name": "inkognitroz.github.io",
+        "visibility": "public",
+        "commit": "96de2fb",
+        "role": "Static MMIR.ai app shell, chat UI, progress dashboard, no-secret public evidence and GitHub Pages deployment.",
+        "status": "pass"
+      },
+      {
+        "name": "mimir-backend-template",
+        "visibility": "private",
+        "commit": "e648af0",
+        "role": "Protected managed API template for owner-scoped data, provider routing, auth, remediation gates and audit-safe backend workflows.",
+        "status": "pass"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "public-smoke-suite",
+        "repo": "inkognitroz.github.io",
+        "status": "pass",
+        "result": "All smoke checks passed locally after D251.",
+        "scope": "Visible controls, first-chat activation, model/no-model states, remediation timeline, public dashboard and route evidence."
+      },
+      {
+        "id": "public-safety-audit",
+        "repo": "inkognitroz.github.io",
+        "status": "pass",
+        "result": "Public safety audit passed.",
+        "scope": "Blocks secret-like strings, real-looking key assignment, browser bearer construction and enabled paid/provider key flows in public assets."
+      },
+      {
+        "id": "public-branding",
+        "repo": "inkognitroz.github.io",
+        "status": "pass",
+        "result": "MMIR public branding is clean.",
+        "scope": "Public copy stays MMIR.ai aligned and avoids stale Mimir/MMIR drift."
+      },
+      {
+        "id": "public-route-manifest",
+        "repo": "inkognitroz.github.io",
+        "status": "pass",
+        "result": "MMIR API route manifest check passed for 74 public route entries.",
+        "scope": "Frontend route expectations remain explicit and public-safe."
+      },
+      {
+        "id": "backend-tests",
+        "repo": "mimir-backend-template",
+        "status": "pass",
+        "result": "188 backend tests passed.",
+        "scope": "Auth, RBAC, memory, knowledge, model registry, node registry, sharing, corrections, remediation, routing, billing gates, training plans and workflow stores."
+      },
+      {
+        "id": "backend-route-contract",
+        "repo": "mimir-backend-template",
+        "status": "pass",
+        "result": "Managed API route manifest check passed for 125 backend route entries.",
+        "scope": "Protected API surface is documented and contract-checked."
+      },
+      {
+        "id": "backend-secrets",
+        "repo": "mimir-backend-template",
+        "status": "pass",
+        "result": "No obvious secrets found.",
+        "scope": "Private backend template remains free of committed provider keys and tokens."
+      },
+      {
+        "id": "github-actions-d251",
+        "repo": "inkognitroz.github.io",
+        "status": "pass",
+        "result": "Static quality gates, public branding migration and GitHub Pages deploy succeeded for commit 96de2fb.",
+        "scope": "Remote CI agrees with local quality gates for the latest public deployment."
+      }
+    ],
+    "architecture_scorecard": [
+      {
+        "area": "Public/private boundary",
+        "status": "pass",
+        "finding": "The public GitHub Pages repo acts as a non-authoritative UI and evidence surface; protected mutation, provider keys and owner-scoped storage stay behind the private backend template.",
+        "next_action": "Keep public-safety audit in both deploy and quality workflows."
+      },
+      {
+        "area": "Zero-trust workflow gates",
+        "status": "pass",
+        "finding": "Correction remediation, execution, rollback and autopilot flows stop before sensitive source mutation unless an explicit protected backend route confirms the action.",
+        "next_action": "Continue adding backend-only gates before any new source mutation or paid route."
+      },
+      {
+        "area": "No-spend defaults",
+        "status": "pass",
+        "finding": "Current public and backend tests keep paid routes disabled unless explicitly approved; free/local/mock routes are the default path.",
+        "next_action": "Make every new user journey show a free first action before paid/provider options."
+      },
+      {
+        "area": "Route ownership",
+        "status": "watch",
+        "finding": "Public and backend route manifests both pass independently, but the platform does not yet publish one merged cross-repo drift report.",
+        "next_action": "Fold route drift into the next activation canary or a dedicated route parity check."
+      },
+      {
+        "area": "Browser visual QA",
+        "status": "watch",
+        "finding": "Deterministic fixtures cover desktop/mobile selectors and no-overlap contracts, but live in-app browser automation was unstable in this thread.",
+        "next_action": "Prefer fixture gates now; restore live browser screenshot checks when the browser bridge is stable."
+      }
+    ],
+    "code_review_findings": [
+      {
+        "id": "CR-001",
+        "severity": "P0",
+        "status": "pass",
+        "finding": "No high-severity secret leakage or public authority regression was found in the latest public changes.",
+        "evidence": [
+          "public-safety-audit",
+          "backend-secrets"
+        ],
+        "next_action": "Keep public repo public-safe; do not place backend secrets, provider keys or paid route credentials in GitHub Pages."
+      },
+      {
+        "id": "CR-002",
+        "severity": "P0",
+        "status": "pass",
+        "finding": "Backend remediation gates enforce explicit confirmation, owner scope and rollback metadata before supported source changes.",
+        "evidence": [
+          "backend-tests",
+          "backend-route-contract"
+        ],
+        "next_action": "Continue using backend-only execution and rollback routes for source mutation."
+      },
+      {
+        "id": "CR-003",
+        "severity": "P1",
+        "status": "watch",
+        "finding": "Many beta UI controls now have individual smoke coverage, but the highest user-fit risk is still the end-to-end free activation path feeling fragmented across first screen, model selection, local node and chat receipt.",
+        "evidence": [
+          "public-smoke-suite"
+        ],
+        "next_action": "D253 should add one no-spend end-to-end activation canary from first visit to first useful answer receipt."
+      },
+      {
+        "id": "CR-004",
+        "severity": "P1",
+        "status": "watch",
+        "finding": "Live browser screenshot QA could not be trusted in this thread because the in-app browser bridge timed out; deterministic fixture QA is green but not a full visual replacement.",
+        "evidence": [
+          "public-smoke-suite"
+        ],
+        "next_action": "Keep fixture QA mandatory and reintroduce live screenshot checks once the browser bridge is reliable."
+      }
+    ],
+    "security_review": {
+      "status": "pass",
+      "zero_trust_summary": "Public UI stays non-authoritative, session/provider secrets are not stored in public localStorage, paid routes are blocked by policy unless explicitly approved and backend routes enforce owner scope.",
+      "must_not_do": [
+        "Do not make inkognitroz.github.io private while it is the GitHub Pages source unless deployment is moved.",
+        "Do not store provider API keys, cloud credentials or pairing tokens in public assets.",
+        "Do not let public JavaScript execute source mutation, rollback, paid provider or tunnel routes without protected backend confirmation."
+      ]
+    },
+    "ux_review": {
+      "status": "watch",
+      "best_current_path": "Free-first activation with MMIR Guide/browser helper fallback, guided local connector repair, model library handoff, first chat receipt and Progress Dashboard evidence.",
+      "main_gap": "The parts are present, but the user still needs one coherent canary that proves a new visitor can get a useful first answer without manual configuration or paid services."
+    },
+    "no_spend": {
+      "status": "pass",
+      "paid_services_used": false,
+      "requires_user_money": false,
+      "requires_manual_user_work_now": false
+    },
+    "next": {
+      "task": "D253",
+      "label": "end-to-end free activation canary",
+      "why": "The review gate shows the next highest user-fit risk is proving the whole no-spend first-use journey as one simple, useful flow."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -5082,7 +5274,7 @@
     }
   ],
   "next_queue": [
-    "D252"
+    "D253"
   ],
   "watchlist": [
     "D082",
@@ -8864,9 +9056,24 @@
       "best_practice": "Feature velocity is now high enough that architecture, security, UX and code-review findings need one repeatable gate that future Codex agents can trust",
       "done_when": "Owner sees current code-review, architecture, security and UX findings with pass/fail evidence, source repos, no-spend status and next corrective action",
       "covers": "review, architecture, security, automation, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress Dashboard now embeds a public-safe cross-repo code, architecture, security and UX review gate using public and backend test evidence.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D253",
+      "phase": "QA / Activation",
+      "priority": "P0",
+      "work_package": "End-to-end free activation canary",
+      "repos": "inkognitroz.github.io, mimir-backend-template, local node fixtures",
+      "concrete_work": "Add one no-spend canary that exercises first visit, free model route selection, first useful answer/proof, receipt creation and local/backend health evidence as one coherent user journey",
+      "best_practice": "D252 shows the main remaining user-fit risk is not individual controls, but proving the whole free-first path feels automatic and useful",
+      "done_when": "Owner sees one green canary receipt proving a new user can get value without manual configuration, provider keys or paid services",
+      "covers": "e2e, activation, free-first, qa, user-fit",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next hardening slice: turn code review, architecture review and public/private security review into a repeatable cross-repo dashboard gate.",
+      "evidence": "Next activation slice: add one no-spend end-to-end free activation canary from first visit to first useful answer receipt.",
       "estimate": "2-6h"
     }
   ]

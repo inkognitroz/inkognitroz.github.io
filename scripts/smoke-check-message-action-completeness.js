@@ -108,15 +108,15 @@ if (!progress.message_action_completeness_report || progress.message_action_comp
 }
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d215 = tasks.find((task) => task.seq === 'D215');
-const d237 = tasks.find((task) => task.seq === 'D252');
+const d237 = tasks.find((task) => task.seq === 'D253');
 if (!d215 || d215.status !== 'beta') {
   fail('Progress dashboard task D215 must be beta after message action completeness ships.');
 }
 if (!d237 || d237.status !== 'next') {
-  fail('Progress dashboard task D252 must become the next work item after D236 ships.');
+  fail('Progress dashboard task D253 must become the next work item after D236 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D252') {
-  fail('Progress dashboard next queue must prioritize D252 after D236 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D253') {
+  fail('Progress dashboard next queue must prioritize D253 after D236 ships.');
 }
 
 if (!process.exitCode) {
