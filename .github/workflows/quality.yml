@@ -238,6 +238,9 @@ jobs:
       - name: Smoke-check correction remediation knowledge rollback gates
         run: node scripts/smoke-check-correction-remediation-knowledge-rollback-gates.js
 
+      - name: Smoke-check correction remediation autopilot queue
+        run: node scripts/smoke-check-correction-remediation-autopilot-queue.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

@@ -6,6 +6,7 @@
   const SYNC_PREFIX='mimir-context-correction-sync-v1:';
   const REVIEW_PREFIX='mimir-context-correction-review-v1:';
   const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
+  const AUTOPILOT_PREFIX='mimir-context-correction-remediation-autopilot-v1:';
   const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
   const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
   const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
@@ -23,6 +24,7 @@
   function syncKey(){return SYNC_PREFIX+workspaceId();}
   function reviewKey(){return REVIEW_PREFIX+workspaceId();}
   function planKey(){return PLAN_PREFIX+workspaceId();}
+  function autopilotKey(){return AUTOPILOT_PREFIX+workspaceId();}
   function applyKey(){return APPLY_PREFIX+workspaceId();}
   function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
   function commitKey(){return COMMIT_PREFIX+workspaceId();}
@@ -103,6 +105,29 @@
   }
   function readPlanState(){
     const value=readJson(planKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeAutopilotState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_allowed:false,
+      source_mutation_executed:false,
+      ...value
+    };
+    try{localStorage.setItem(autopilotKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-autopilot-updated',{detail:state}));
+    return state;
+  }
+  function readAutopilotState(){
+    const value=readJson(autopilotKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function writeApplyState(value){
@@ -444,6 +469,9 @@
         queue,
         message:'Protected review queue loaded with '+count+' metadata item'+(count===1?'':'s')+'.'
       });
+      if(count&&filters.autopilot!==false){
+        window.setTimeout(()=>previewRemediationAutopilot({target:filters.target||'all',limit:Math.min(count,5)}),0);
+      }
       render();
       return state;
     }catch(error){
@@ -517,6 +545,84 @@
     const state=readPlanState();
     writePlanState({...state,status:'deferred',message:'Remediation plan deferred. No backend change or paid route was started.'});
     render();
+  }
+  async function remediationAutopilotRequest(mode='preview',filters={}){
+    const isRun=mode==='run';
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeAutopilotState({status:'needs-backend',message:'Choose an active protected backend before running remediation autopilot.',run:null});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      limit:filters.limit||5,
+      confirm:isRun,
+      run_safe_steps:isRun,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      provider_secrets_stored:false
+    };
+    if(filters.correction_id)body.correction_id=cleanString(filters.correction_id,120);
+    if(filters.target&&filters.target!=='all')body.target=cleanString(filters.target,40);
+    if(filters.decision)body.decision=cleanString(filters.decision,40);
+    if(filters.collection_id)body.collection_id=cleanString(filters.collection_id,120);
+    writeAutopilotState({
+      status:isRun?'running':'previewing',
+      backend_url:url,
+      backend_provider:profile.provider||'backend',
+      run:null,
+      message:isRun?'Running safe metadata-only remediation queue. Source mutation remains blocked.':'Previewing the automatic safe remediation queue.'
+    });
+    render();
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-autopilot/queue'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:12000
+      });
+      const run=response?.data||null;
+      const queueCount=Array.isArray(run?.queue)?run.queue.length:0;
+      const state=writeAutopilotState({
+        status:run?.status||'ready',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        target:body.target||'all',
+        correction_id:run?.correction_id||body.correction_id||'',
+        run,
+        safe_steps_executed:Boolean(run?.safe_steps_executed),
+        source_mutation_executed:Boolean(run?.source_mutation_executed),
+        source_mutation_allowed:Boolean(run?.policy?.source_mutation_allowed),
+        manual_stop:run?.manual_stop||null,
+        message:run?.status==='empty'
+          ? 'No correction item is waiting for automatic remediation.'
+          : run?.safe_steps_executed
+            ? 'Safe metadata-only remediation queue completed '+queueCount+' step'+(queueCount===1?'':'s')+' and stopped before source mutation.'
+            : 'Automatic remediation preview is ready with '+queueCount+' safe step'+(queueCount===1?'':'s')+'.'
+      });
+      if(isRun&&run?.safe_steps_executed)await loadReviewQueue({limit:10,include_undone:true,autopilot:false});
+      render();
+      return state;
+    }catch(error){
+      const state=writeAutopilotState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        run:null,
+        message:api.friendlyError?.(error)||error.message||'Could not run correction remediation autopilot.'
+      });
+      render();
+      return state;
+    }
+  }
+  function previewRemediationAutopilot(filters={}){
+    return remediationAutopilotRequest('preview',filters);
+  }
+  function runRemediationAutopilot(filters={}){
+    return remediationAutopilotRequest('run',filters);
   }
   function correctionIdForStep(plan,stepId){
     const id=cleanString(stepId,180);
@@ -1401,6 +1507,28 @@
       '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
+  function autopilotQueueHtml(){
+    const state=readAutopilotState();
+    const run=state?.run&&typeof state.run==='object'?state.run:null;
+    const queue=Array.isArray(run?.queue)?run.queue.slice(0,8):[];
+    const manual=run?.manual_stop||state?.manual_stop||null;
+    const status=state?.status||'idle';
+    return '<div class="context-correction-autopilot-status" data-state="'+safe(status)+'">'+
+      '<div><p class="eyebrow">Autopilot</p><h4>'+safe(run?.status?('Safe queue '+run.status):'Automatic safe queue')+'</h4>'+
+      '<small>'+safe(state?.message||'MMIR can preview the obvious remediation path and run safe metadata-only steps automatically, then stop before source mutation.')+'</small></div>'+
+      '<div class="context-correction-plan-actions">'+
+        '<button type="button" data-correction-autopilot="preview" data-target-filter="all">Preview auto</button>'+
+        '<button type="button" data-correction-autopilot="run" data-target-filter="all">Run safe queue</button>'+
+        '<button type="button" data-correction-autopilot="preview" data-target-filter="memory">Memory</button>'+
+        '<button type="button" data-correction-autopilot="preview" data-target-filter="knowledge">Knowledge</button>'+
+      '</div>'+
+      '<div class="context-correction-autopilot-queue">'+(queue.length?queue.map((step)=>
+        '<article data-step-status="'+safe(step.status||'ready')+'"><strong>'+safe(step.label||step.id||'safe step')+'</strong><p>'+safe(step.error||step.route||'Protected metadata-only step')+'</p><small>automatic_safe:'+safe(Boolean(step.automatic_safe))+' / source_mutation_executed:'+safe(Boolean(step.source_mutation_executed))+'</small></article>'
+      ).join(''):'<article><strong>No automatic queue yet</strong><p>Load or sync correction review items. The preview runs by itself when the backend has safe work available.</p><small>no_paid_routes_started:true / raw_prompt_stored:false / document_text_stored:false</small></article>')+'</div>'+
+      (manual?'<small class="context-correction-autopilot-stop">Manual stop: '+safe(manual.action||'review')+' via '+safe(manual.route||'/context/corrections/review')+' - '+safe(manual.reason||'Source mutation requires explicit confirmation.')+'</small>':'')+
+      '<small class="context-correction-review-policy">automatic_safe_steps:true / source_mutation_allowed:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
+    '</div>';
+  }
   function remediationPlanHtml(){
     const state=readPlanState();
     const applyState=readApplyState();
@@ -1424,6 +1552,7 @@
         '<small>'+safe(applyState?.message||'Each step can be explicitly confirmed against the protected backend. Public frontend authority remains false.')+'</small>'+
         (application?'<small>step:'+safe(application.step_kind||application.step_id||'recorded')+' / mutation_executed:'+safe(Boolean(application.mutation_executed))+' / source_mutation_executed:'+safe(Boolean(application.source_mutation_executed))+' / rollback:'+safe(application.rollback_hint||'manual review')+'</small>':'')+
       '</div>'+
+      autopilotQueueHtml()+
       adapterDraftHtml()+
       '<div class="context-correction-plan-steps">'+(steps.length?steps.map((step)=>
         '<article><strong>'+safe(step.title||step.id)+'</strong><p>'+safe(step.detail||'Review this step manually before any mutation.')+'</p><small>target:'+safe(step.target||'context')+' / execution_allowed:'+safe(Boolean(step.execution_allowed))+' / confirmation:'+safe(Boolean(step.requires_confirmation))+'</small><button type="button" data-correction-apply="apply" data-correction-id="'+safe(correctionIdForStep(plan,step.id||''))+'" data-step-id="'+safe(step.id||'')+'">Apply gate</button></article>'
@@ -1512,6 +1641,14 @@
     if(action==='defer')deferPlan();
   });
   document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-autopilot]');
+    if(!button)return;
+    const action=button.dataset.correctionAutopilot;
+    const filters={target:button.dataset.targetFilter||'all',limit:5};
+    if(action==='preview')previewRemediationAutopilot(filters);
+    if(action==='run')runRemediationAutopilot(filters);
+  });
+  document.addEventListener('click',(event)=>{
     const button=event.target.closest('[data-correction-apply]');
     if(!button)return;
     const action=button.dataset.correctionApply;
@@ -1565,10 +1702,10 @@
     if(action==='preview')previewKnowledgeRollback();
     if(action==='apply')applyKnowledgeRollback();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
 })();

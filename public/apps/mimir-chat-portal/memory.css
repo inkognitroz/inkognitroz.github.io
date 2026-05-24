@@ -614,6 +614,62 @@
   background: rgba(255, 255, 255, 0.82);
 }
 
+.context-correction-autopilot-status {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid rgba(16, 163, 127, 0.2);
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: #f0fdf9;
+}
+
+.context-correction-autopilot-status[data-state="preview"],
+.context-correction-autopilot-status[data-state="safe-steps-complete"],
+.context-correction-autopilot-status[data-state="ready"] {
+  border-color: rgba(21, 128, 61, 0.3);
+  background: #f8fffc;
+}
+
+.context-correction-autopilot-status[data-state="previewing"],
+.context-correction-autopilot-status[data-state="running"] {
+  border-color: rgba(14, 116, 144, 0.26);
+  background: #f0f9ff;
+}
+
+.context-correction-autopilot-status[data-state="blocked"],
+.context-correction-autopilot-status[data-state="error"],
+.context-correction-autopilot-status[data-state="needs-backend"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-autopilot-queue {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.context-correction-autopilot-queue article {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.context-correction-autopilot-queue article[data-step-status="recorded"],
+.context-correction-autopilot-queue article[data-step-status="ready"],
+.context-correction-autopilot-queue article[data-step-status="preview"] {
+  border-color: rgba(21, 128, 61, 0.24);
+}
+
+.context-correction-autopilot-queue article[data-step-status="blocked"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-autopilot-stop {
+  color: var(--mimir-muted, #6b7280);
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;

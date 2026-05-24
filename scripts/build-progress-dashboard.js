@@ -40,6 +40,7 @@ const correctionRemediationRollbackGatesReportPath = resolve(root, 'public', 'co
 const correctionRemediationKnowledgeSourceModelReportPath = resolve(root, 'public', 'correction-remediation-knowledge-source-model-report.json');
 const correctionRemediationKnowledgeExecutionGatesReportPath = resolve(root, 'public', 'correction-remediation-knowledge-execution-gates-report.json');
 const correctionRemediationKnowledgeRollbackGatesReportPath = resolve(root, 'public', 'correction-remediation-knowledge-rollback-gates-report.json');
+const correctionRemediationAutopilotQueueReportPath = resolve(root, 'public', 'correction-remediation-autopilot-queue-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -217,7 +218,8 @@ const overrides = new Map([
   ['D242', { status: 'beta', evidence: 'Backend and public UI now preview and record metadata-only knowledge source review/split models before any knowledge mutation execution.' }],
   ['D243', { status: 'beta', evidence: 'Backend and public UI now preview and apply supported knowledge source metadata repairs through backend-only execution gates with rollback metadata.' }],
   ['D244', { status: 'beta', evidence: 'Backend and public UI now preview and apply rollback for supported knowledge source metadata executions through backend-only gates.' }],
-  ['D245', { status: 'next', evidence: 'Next activation slice: add an automatic correction remediation queue that chains safe preview/apply steps without extra user choices.' }]
+  ['D245', { status: 'beta', evidence: 'Backend and public UI now preview and run a safe correction remediation autopilot queue that records non-destructive metadata receipts and stops before source mutation.' }],
+  ['D246', { status: 'next', evidence: 'Next activation slice: make autopilot source-mutation handoff gates clearer, resumable and auditable without giving GitHub Pages mutation authority.' }]
 ]);
 
 const repoMeta = [
@@ -501,6 +503,11 @@ function readCorrectionRemediationKnowledgeRollbackGatesReport() {
   return JSON.parse(readFileSync(correctionRemediationKnowledgeRollbackGatesReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationAutopilotQueueReport() {
+  if (!existsSync(correctionRemediationAutopilotQueueReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationAutopilotQueueReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -525,7 +532,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D245', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D246', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -580,6 +587,7 @@ const data = {
   correction_remediation_knowledge_source_model_report: readCorrectionRemediationKnowledgeSourceModelReport(),
   correction_remediation_knowledge_execution_gates_report: readCorrectionRemediationKnowledgeExecutionGatesReport(),
   correction_remediation_knowledge_rollback_gates_report: readCorrectionRemediationKnowledgeRollbackGatesReport(),
+  correction_remediation_autopilot_queue_report: readCorrectionRemediationAutopilotQueueReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,
