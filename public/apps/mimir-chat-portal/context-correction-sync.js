@@ -11,6 +11,7 @@
   const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
   const EXECUTION_PREFIX='mimir-context-correction-remediation-execution-v1:';
   const ROLLBACK_PREFIX='mimir-context-correction-remediation-rollback-v1:';
+  const KNOWLEDGE_SOURCE_PREFIX='mimir-context-correction-knowledge-source-model-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -25,6 +26,7 @@
   function commitKey(){return COMMIT_PREFIX+workspaceId();}
   function executionKey(){return EXECUTION_PREFIX+workspaceId();}
   function rollbackKey(){return ROLLBACK_PREFIX+workspaceId();}
+  function knowledgeSourceKey(){return KNOWLEDGE_SOURCE_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -204,6 +206,30 @@
   }
   function readRollbackState(){
     const value=readJson(rollbackKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeKnowledgeSourceState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_allowed:false,
+      source_mutation_executed:false,
+      knowledge_execution_supported:false,
+      ...value
+    };
+    try{localStorage.setItem(knowledgeSourceKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-knowledge-source-model-updated',{detail:state}));
+    return state;
+  }
+  function readKnowledgeSourceState(){
+    const value=readJson(knowledgeSourceKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -577,7 +603,10 @@
         commit:null,
         message:data?'Protected commit preview ready. Confirming records policy and rollback metadata only.':'Protected commit preview ready.'
       });
-      if(isCommit&&data?.id)await previewRemediationExecution(data.id);
+      if(isCommit&&data?.id){
+        if(data?.target==='knowledge')await previewKnowledgeSourceModel(data.id);
+        else await previewRemediationExecution(data.id);
+      }
       render();
       return state;
     }catch(error){
@@ -599,6 +628,93 @@
   }
   function commitRemediationAdapter(applicationId='',correctionId='',stepId=''){
     return commitPolicyRequest('commit',applicationId,correctionId,stepId);
+  }
+  async function knowledgeSourceModelRequest(mode='preview',commitId=''){
+    const commitState=readCommitState();
+    const sourceState=readKnowledgeSourceState();
+    const commit=commitState?.commit&&typeof commitState.commit==='object'?commitState.commit:null;
+    const cleanCommitId=cleanString(commitId||commit?.id,120);
+    const isRecord=mode==='record';
+    const decision=commit?.adapter==='knowledge-collection-split-adapter'?'split-collection':'review-source';
+    if(!cleanCommitId||commit?.target!=='knowledge'){
+      const state=writeKnowledgeSourceState({status:'needs-knowledge-commit',message:'Record a protected knowledge commit before preparing a source model.',commit_id:cleanCommitId});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeKnowledgeSourceState({status:'needs-backend',message:'Choose an active protected backend before preparing knowledge source models.',commit_id:cleanCommitId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      commit_id:cleanCommitId,
+      decision,
+      preview:!isRecord,
+      confirm:isRecord,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      provider_secrets_stored:false
+    };
+    if(isRecord){
+      const previewId=cleanString(sourceState?.preview?.id,120);
+      if(!previewId){
+        const state=writeKnowledgeSourceState({status:'needs-preview',message:'Preview the knowledge source model before recording it.',commit_id:cleanCommitId});
+        render();
+        return state;
+      }
+      body.knowledge_source_preview_id=previewId;
+      body.review_note='Public UI recorded a metadata-only knowledge source model. Knowledge execution remains blocked.';
+    }
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-knowledge-sources/model'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=isRecord?writeKnowledgeSourceState({
+        status:data?.status||'recorded',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        commit_id:cleanCommitId,
+        preview:sourceState?.preview||null,
+        model:data,
+        source_mutation_executed:false,
+        message:'Knowledge source model recorded. Future execution remains blocked until a dedicated backend-only knowledge mutation gate exists.'
+      }):writeKnowledgeSourceState({
+        status:data?.status||'preview',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        commit_id:cleanCommitId,
+        preview:data,
+        model:null,
+        source_mutation_allowed:false,
+        message:data?.supported?'Knowledge source model preview ready with metadata-only source status and rollback plan.':'Knowledge source model preview is blocked: '+(data?.blocked_reason||'missing knowledge source metadata.')
+      });
+      render();
+      return state;
+    }catch(error){
+      const state=writeKnowledgeSourceState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        commit_id:cleanCommitId,
+        message:api.friendlyError?.(error)||error.message||'Could not preview or record knowledge source model.'
+      });
+      render();
+      return state;
+    }
+  }
+  function previewKnowledgeSourceModel(commitId=''){
+    return knowledgeSourceModelRequest('preview',commitId);
+  }
+  function recordKnowledgeSourceModel(commitId=''){
+    return knowledgeSourceModelRequest('record',commitId);
   }
   async function executionPolicyRequest(mode='preview',commitId=''){
     const commitState=readCommitState();
@@ -954,6 +1070,30 @@
       '<small class="context-correction-review-policy">backend_only_rollback:true / preview_required:true / execute_rollback_required:true / public_frontend_authority:false / no_paid_routes_started:true</small>'+
     '</div>';
   }
+  function knowledgeSourceModelHtml(){
+    const commitState=readCommitState();
+    const state=readKnowledgeSourceState();
+    const commit=commitState?.commit&&typeof commitState.commit==='object'?commitState.commit:null;
+    const preview=state?.preview&&typeof state.preview==='object'?state.preview:null;
+    const model=state?.model&&typeof state.model==='object'?state.model:null;
+    const sources=Array.isArray(model?.sources)?model.sources.slice(0,4):(Array.isArray(preview?.sources)?preview.sources.slice(0,4):[]);
+    const checks=Array.isArray(preview?.checks)?preview.checks.slice(0,5):[];
+    const status=state?.status||'idle';
+    const canPreview=Boolean(commit&&commit.target==='knowledge');
+    const canRecord=Boolean(preview?.supported);
+    return '<div class="context-correction-knowledge-source-status" data-state="'+safe(status)+'">'+
+      '<div><strong>Knowledge source model: '+safe(model?.status||preview?.status||status)+'</strong><small>'+safe(state?.message||'Prepare metadata-only knowledge source decisions before any knowledge mutation can be enabled.')+'</small></div>'+
+      '<div class="context-correction-plan-actions"><button type="button" data-correction-knowledge-source="preview" '+(!canPreview?'disabled':'')+'>Preview source model</button><button type="button" data-correction-knowledge-source="record" '+(!canRecord?'disabled':'')+'>Record source model</button></div>'+
+      '<div class="context-correction-knowledge-source-checks">'+(checks.length?checks.map((check)=>
+        '<article data-check-status="'+safe(check.status||'pending')+'"><strong>'+safe(check.id||'check')+'</strong><p>'+safe(check.label||'Knowledge source check')+'</p></article>'
+      ).join(''):'<article><strong>No knowledge source model yet</strong><p>Record a knowledge commit, then preview owned source metadata, split decisions and rollback status before execution.</p></article>')+'</div>'+
+      '<div class="context-correction-knowledge-source-results">'+(sources.length?sources.map((source)=>
+        '<article><strong>'+safe(source.name||source.source_id||'source')+'</strong><small>known:'+safe(Boolean(source.known))+' / status:'+safe(source.current_status||source.status||'review')+' / raw_text_included:'+safe(Boolean(source.raw_text_included))+'</small></article>'
+      ).join(''):'')+'</div>'+
+      (preview?.collection_split?'<small>split:'+safe(preview.collection_split.proposed_collection_id||'planned')+' / mutation_allowed:'+safe(Boolean(preview.collection_split.mutation_allowed))+'</small>':'')+
+      '<small class="context-correction-review-policy">knowledge_execution_supported:false / source_mutation_allowed:false / source_mutation_executed:false / document_text_stored:false / public_frontend_authority:false</small>'+
+    '</div>';
+  }
   function adapterDraftHtml(){
     const state=readAdapterState();
     const applyState=readApplyState();
@@ -970,6 +1110,7 @@
       commitPolicyHtml()+
       executionGateHtml()+
       rollbackGateHtml()+
+      knowledgeSourceModelHtml()+
       '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
@@ -1116,10 +1257,17 @@
     if(action==='preview')previewRemediationRollback();
     if(action==='apply')applyRemediationRollback();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-knowledge-source]');
+    if(!button)return;
+    const action=button.dataset.correctionKnowledgeSource;
+    if(action==='preview')previewKnowledgeSourceModel();
+    if(action==='record')recordKnowledgeSourceModel();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readExecutionState,readRollbackState};
 })();
