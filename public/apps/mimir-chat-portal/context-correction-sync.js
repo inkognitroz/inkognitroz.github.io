@@ -7,6 +7,7 @@
   const REVIEW_PREFIX='mimir-context-correction-review-v1:';
   const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
   const AUTOPILOT_PREFIX='mimir-context-correction-remediation-autopilot-v1:';
+  const HANDOFF_PREFIX='mimir-context-correction-autopilot-handoff-v1:';
   const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
   const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
   const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
@@ -25,6 +26,7 @@
   function reviewKey(){return REVIEW_PREFIX+workspaceId();}
   function planKey(){return PLAN_PREFIX+workspaceId();}
   function autopilotKey(){return AUTOPILOT_PREFIX+workspaceId();}
+  function handoffKey(){return HANDOFF_PREFIX+workspaceId();}
   function applyKey(){return APPLY_PREFIX+workspaceId();}
   function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
   function commitKey(){return COMMIT_PREFIX+workspaceId();}
@@ -128,6 +130,30 @@
   }
   function readAutopilotState(){
     const value=readJson(autopilotKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeHandoffState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_allowed:false,
+      source_mutation_executed:false,
+      backend_only_execution:true,
+      ...value
+    };
+    try{localStorage.setItem(handoffKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-handoff-updated',{detail:state}));
+    return state;
+  }
+  function readHandoffState(){
+    const value=readJson(handoffKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function writeApplyState(value){
@@ -603,6 +629,7 @@
             ? 'Safe metadata-only remediation queue completed '+queueCount+' step'+(queueCount===1?'':'s')+' and stopped before source mutation.'
             : 'Automatic remediation preview is ready with '+queueCount+' safe step'+(queueCount===1?'':'s')+'.'
       });
+      if(isRun&&run?.safe_steps_executed)await prepareAutopilotHandoff({run});
       if(isRun&&run?.safe_steps_executed)await loadReviewQueue({limit:10,include_undone:true,autopilot:false});
       render();
       return state;
@@ -623,6 +650,85 @@
   }
   function runRemediationAutopilot(filters={}){
     return remediationAutopilotRequest('run',filters);
+  }
+  function autopilotQueueValue(run,key){
+    const queue=Array.isArray(run?.queue)?run.queue:[];
+    const item=queue.find((step)=>step&&step[key]);
+    return cleanString(item?.[key],120);
+  }
+  async function prepareAutopilotHandoff(filters={}){
+    const autopilotState=readAutopilotState();
+    const run=filters.run&&typeof filters.run==='object'?filters.run:(autopilotState?.run&&typeof autopilotState.run==='object'?autopilotState.run:null);
+    const commitId=cleanString(filters.commit_id||autopilotQueueValue(run,'commit_id'),120);
+    const modelId=cleanString(filters.model_id||autopilotQueueValue(run,'model_id'),120);
+    const correctionId=cleanString(filters.correction_id||run?.correction_id,120);
+    const target=cleanString(filters.target||run?.target,40);
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeHandoffState({status:'needs-backend',message:'Choose an active protected backend before preparing source-mutation handoff.',handoff:null});
+      render();
+      return state;
+    }
+    if(!commitId&&!modelId&&!correctionId){
+      const state=writeHandoffState({status:'needs-autopilot-run',message:'Run the safe autopilot queue before preparing a resumable source-mutation handoff.',handoff:null});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      provider_secrets_stored:false
+    };
+    if(modelId)body.model_id=modelId;
+    if(commitId)body.commit_id=commitId;
+    if(correctionId)body.correction_id=correctionId;
+    if(target&&target!=='all')body.target=target;
+    writeHandoffState({status:'preparing',backend_url:url,backend_provider:profile.provider||'backend',handoff:null,message:'Preparing backend-owned source-mutation handoff. No mutation is executed.'});
+    render();
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-autopilot/handoff'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=writeHandoffState({
+        status:data?.status||'ready',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        handoff:data,
+        route:data?.route||null,
+        manual_stop:data?.resume||null,
+        source_mutation_executed:Boolean(data?.policy?.source_mutation_executed),
+        message:data?.status==='ready'
+          ? 'Source-mutation handoff is ready. The next step still requires explicit protected backend confirmation.'
+          : (data?.blocked_reason||'Autopilot handoff prepared but blocked.')
+      });
+      if(data?.target==='memory'&&data?.preview){
+        writeCommitState({status:'handoff-ready',backend_url:url,backend_provider:profile.provider||'backend',commit:{id:data.commit_id,target:'memory'},message:'Autopilot handoff prepared a memory execution preview.'});
+        writeExecutionState({status:data.preview.status||'preview',backend_url:url,backend_provider:profile.provider||'backend',commit_id:data.commit_id,preview:data.preview,execution:null,source_mutation_allowed:Boolean(data.preview.supported),message:data.preview.supported?'Memory source execution preview is ready for explicit confirmation.':'Memory handoff is blocked: '+(data.preview.blocked_reason||'unsupported target.')});
+      }
+      if(data?.target==='knowledge'&&data?.preview){
+        writeKnowledgeSourceState({status:'handoff-ready',backend_url:url,backend_provider:profile.provider||'backend',commit_id:data.commit_id,model:{id:data.model_id,target:'knowledge'},message:'Autopilot handoff prepared a knowledge source execution preview.'});
+        writeKnowledgeExecutionState({status:data.preview.status||'preview',backend_url:url,backend_provider:profile.provider||'backend',model_id:data.model_id,preview:data.preview,execution:null,source_mutation_allowed:Boolean(data.preview.supported),knowledge_execution_supported:Boolean(data.preview.supported),message:data.preview.supported?'Knowledge source execution preview is ready for explicit confirmation.':'Knowledge handoff is blocked: '+(data.preview.blocked_reason||'unsupported source model.')});
+      }
+      render();
+      return state;
+    }catch(error){
+      const state=writeHandoffState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        handoff:null,
+        message:api.friendlyError?.(error)||error.message||'Could not prepare autopilot source-mutation handoff.'
+      });
+      render();
+      return state;
+    }
   }
   function correctionIdForStep(plan,stepId){
     const id=cleanString(stepId,180);
@@ -1509,22 +1615,32 @@
   }
   function autopilotQueueHtml(){
     const state=readAutopilotState();
+    const handoffState=readHandoffState();
     const run=state?.run&&typeof state.run==='object'?state.run:null;
+    const handoff=handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null;
     const queue=Array.isArray(run?.queue)?run.queue.slice(0,8):[];
     const manual=run?.manual_stop||state?.manual_stop||null;
     const status=state?.status||'idle';
+    const handoffPreview=handoff?.preview&&typeof handoff.preview==='object'?handoff.preview:null;
     return '<div class="context-correction-autopilot-status" data-state="'+safe(status)+'">'+
       '<div><p class="eyebrow">Autopilot</p><h4>'+safe(run?.status?('Safe queue '+run.status):'Automatic safe queue')+'</h4>'+
       '<small>'+safe(state?.message||'MMIR can preview the obvious remediation path and run safe metadata-only steps automatically, then stop before source mutation.')+'</small></div>'+
       '<div class="context-correction-plan-actions">'+
         '<button type="button" data-correction-autopilot="preview" data-target-filter="all">Preview auto</button>'+
         '<button type="button" data-correction-autopilot="run" data-target-filter="all">Run safe queue</button>'+
+        '<button type="button" data-correction-handoff="prepare" '+(!run?.safe_steps_executed?'disabled':'')+'>Prepare handoff</button>'+
         '<button type="button" data-correction-autopilot="preview" data-target-filter="memory">Memory</button>'+
         '<button type="button" data-correction-autopilot="preview" data-target-filter="knowledge">Knowledge</button>'+
       '</div>'+
       '<div class="context-correction-autopilot-queue">'+(queue.length?queue.map((step)=>
         '<article data-step-status="'+safe(step.status||'ready')+'"><strong>'+safe(step.label||step.id||'safe step')+'</strong><p>'+safe(step.error||step.route||'Protected metadata-only step')+'</p><small>automatic_safe:'+safe(Boolean(step.automatic_safe))+' / source_mutation_executed:'+safe(Boolean(step.source_mutation_executed))+'</small></article>'
       ).join(''):'<article><strong>No automatic queue yet</strong><p>Load or sync correction review items. The preview runs by itself when the backend has safe work available.</p><small>no_paid_routes_started:true / raw_prompt_stored:false / document_text_stored:false</small></article>')+'</div>'+
+      '<div class="context-correction-handoff-status" data-state="'+safe(handoffState?.status||'idle')+'">'+
+        '<strong>Source handoff: '+safe(handoff?.status||handoffState?.status||'idle')+'</strong>'+
+        '<small>'+safe(handoffState?.message||'After safe autopilot, prepare the exact backend-only confirmation step for source changes.')+'</small>'+
+        (handoff?.route?'<small>next:'+safe(handoff.route.method||'POST')+' '+safe(handoff.route.path||'')+' / target:'+safe(handoff.target||'')+'</small>':'')+
+        (handoffPreview?'<small>preview:'+safe(handoffPreview.id||'ready')+' / supported:'+safe(Boolean(handoffPreview.supported))+' / mutation_executed:false</small>':'')+
+      '</div>'+
       (manual?'<small class="context-correction-autopilot-stop">Manual stop: '+safe(manual.action||'review')+' via '+safe(manual.route||'/context/corrections/review')+' - '+safe(manual.reason||'Source mutation requires explicit confirmation.')+'</small>':'')+
       '<small class="context-correction-review-policy">automatic_safe_steps:true / source_mutation_allowed:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
     '</div>';
@@ -1649,6 +1765,12 @@
     if(action==='run')runRemediationAutopilot(filters);
   });
   document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-handoff]');
+    if(!button)return;
+    const action=button.dataset.correctionHandoff;
+    if(action==='prepare')prepareAutopilotHandoff();
+  });
+  document.addEventListener('click',(event)=>{
     const button=event.target.closest('[data-correction-apply]');
     if(!button)return;
     const action=button.dataset.correctionApply;
@@ -1702,10 +1824,10 @@
     if(action==='preview')previewKnowledgeRollback();
     if(action==='apply')applyKnowledgeRollback();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-handoff-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,prepareAutopilotHandoff,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readHandoffState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
 })();

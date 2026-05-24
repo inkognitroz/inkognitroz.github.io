@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T03:01:24.032Z",
+  "updated_at": "2026-05-24T03:22:59.639Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 246,
+    "total": 247,
     "done": 51,
-    "beta": 170,
+    "beta": 171,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1060,7 +1060,17 @@
         "phase": "Automation / UX",
         "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Automation / Trust UX",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -4020,6 +4030,115 @@
       "why": "After safe metadata steps are automatic, the next slice should make the required manual handoff for real source changes clearer, resumable and auditable."
     }
   },
+  "correction_remediation_autopilot_handoff_report": {
+    "title": "Autopilot Source-Mutation Handoff Gates",
+    "task": "D246",
+    "status": "beta",
+    "updated_at": "2026-05-24T05:45:00.000Z",
+    "backend_repo": "mimir-backend-template",
+    "backend_commit": "6c83644",
+    "public_repo_rule": "Public GitHub Pages stores only resumable handoff metadata; source mutation remains explicit, protected-backend-only and never carries raw prompts, document text or provider secrets.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-autopilot/handoff",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Prepare the next source-mutation confirmation route, preview ID and safe confirmation body after autopilot without executing mutation."
+    },
+    "local_storage": {
+      "handoff_state": "mimir-context-correction-autopilot-handoff-v1:{workspace}",
+      "stores_raw_prompt": false,
+      "stores_raw_response": false,
+      "stores_document_text": false,
+      "stores_provider_secrets": false,
+      "stores_paid_route_credentials": false
+    },
+    "ui_contract": {
+      "panel": ".context-correction-handoff-status",
+      "prepare_selector": "[data-correction-handoff=\"prepare\"]",
+      "event": "mmir-context-correction-handoff-updated",
+      "memory_execution_state": "mimir-context-correction-remediation-execution-v1:{workspace}",
+      "knowledge_execution_state": "mimir-context-correction-knowledge-execution-v1:{workspace}"
+    },
+    "handoff_policy": {
+      "preview_required": true,
+      "confirm_required": true,
+      "backend_only_execution": true,
+      "source_mutation_allowed": false,
+      "source_mutation_executed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false,
+      "no_paid_routes_started": true
+    },
+    "handoff_targets": [
+      {
+        "target": "memory",
+        "route": "/context/corrections/remediation-executions/apply",
+        "confirmation_body_fields": [
+          "workspace_id",
+          "commit_id",
+          "execution_preview_id",
+          "confirm",
+          "execute_source_mutation"
+        ],
+        "rollback_route": "/context/corrections/remediation-rollbacks/apply"
+      },
+      {
+        "target": "knowledge",
+        "route": "/context/corrections/remediation-knowledge-executions/apply",
+        "confirmation_body_fields": [
+          "workspace_id",
+          "model_id",
+          "execution_preview_id",
+          "confirm",
+          "execute_source_mutation"
+        ],
+        "rollback_route": "/context/corrections/remediation-knowledge-rollbacks/apply"
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "auto-handoff-after-safe-run",
+        "status": "ready",
+        "expected": "A completed safe autopilot run automatically asks the backend for a source-mutation handoff.",
+        "selector": ".context-correction-handoff-status",
+        "source_mutation_executed": false,
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "memory-handoff-resume",
+        "status": "ready",
+        "expected": "Memory handoff writes the execution preview into the existing memory execution state so explicit confirmation can resume.",
+        "selector": "[data-correction-execution=\"execute\"]",
+        "public_frontend_authority": false,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "knowledge-handoff-resume",
+        "status": "ready",
+        "expected": "Knowledge handoff writes the knowledge execution preview into the existing knowledge execution state without document text.",
+        "selector": "[data-correction-knowledge-execution=\"execute\"]",
+        "document_text_stored": false,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "no-secret-or-spend",
+        "status": "ready",
+        "expected": "The handoff flow stores no provider credentials, raw chat text or document text and starts no paid route.",
+        "selector": "mmir-api-routes.json",
+        "provider_secrets_stored": false,
+        "document_text_stored": false,
+        "no_paid_routes_started": true
+      }
+    ],
+    "next": {
+      "task": "D247",
+      "label": "autopilot rollback readiness cards",
+      "why": "After source-mutation handoff can resume cleanly, users need a simple rollback readiness view before and after explicit source changes."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -4070,7 +4189,7 @@
     }
   ],
   "next_queue": [
-    "D246"
+    "D247"
   ],
   "watchlist": [
     "D082",
@@ -7762,9 +7881,24 @@
       "best_practice": "Autopilot should feel automatic while still stopping clearly before irreversible or sensitive changes",
       "done_when": "Owner sees the next required source-mutation confirmation with preview evidence, rollback readiness, resume state, no raw data exposure and a clear reason when blocked",
       "covers": "automation, handoff, remediation, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend commit 6c83644 and public UI now prepare resumable source-mutation handoff previews after safe autopilot runs without giving GitHub Pages mutation authority.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D247",
+      "phase": "Automation / Trust UX",
+      "priority": "P1",
+      "work_package": "Autopilot rollback readiness cards",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Show simple rollback readiness before and after explicit source-mutation confirmations for memory and knowledge handoffs, including supported route, receipt, idempotency and blocked-reason evidence",
+      "best_practice": "Users will only trust automatic repair if the undo path is visible before the final confirmation",
+      "done_when": "Owner sees rollback status beside each handoff, with no raw data exposure, no paid routes and a clear next-safe action when rollback is unavailable",
+      "covers": "automation, rollback, remediation, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: make autopilot source-mutation handoff gates clearer, resumable and auditable without giving GitHub Pages mutation authority.",
+      "evidence": "Next activation slice: show rollback readiness before and after explicit source changes so owners trust the automation path.",
       "estimate": "0.5-2d"
     }
   ]

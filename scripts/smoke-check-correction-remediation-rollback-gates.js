@@ -125,18 +125,18 @@ for (const needle of [
 
 requireIncludes(files.qualityWorkflow, 'smoke-check-correction-remediation-rollback-gates.js', 'Quality workflow must run D241 correction remediation rollback gate QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-correction-remediation-rollback-gates.js', 'Pages workflow must run D241 correction remediation rollback gate QA.');
-requireIncludes(files.backlog, '| D246 |', 'Backlog must add D246 after D241.');
+requireIncludes(files.backlog, '| D247 |', 'Backlog must add D247 after D241.');
 requireIncludes(files.implementationLog, 'D241 is now beta', 'Implementation log must mark D241 beta.');
-requireIncludes(files.implementationLog, 'D246 is now next', 'Implementation log must mark D246 next.');
+requireIncludes(files.implementationLog, 'D247 is now next', 'Implementation log must mark D247 next.');
 
 const progress = json(files.progressData);
 requireTrue(progress.correction_remediation_rollback_gates_report?.title === report.title, 'Progress dashboard data must embed D241 remediation rollback gates report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d241 = tasks.find((task) => task.seq === 'D241');
-const d242 = tasks.find((task) => task.seq === 'D246');
+const d242 = tasks.find((task) => task.seq === 'D247');
 requireTrue(d241?.status === 'beta', 'Progress dashboard task D241 must be beta after rollback gates ship.');
-requireTrue(d242?.status === 'next', 'Progress dashboard task D246 must become next after D241 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D246', 'Progress dashboard next queue must prioritize D246 after D241 ships.');
+requireTrue(d242?.status === 'next', 'Progress dashboard task D247 must become next after D241 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D247', 'Progress dashboard next queue must prioritize D247 after D241 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

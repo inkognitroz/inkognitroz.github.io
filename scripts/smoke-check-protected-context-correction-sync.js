@@ -108,16 +108,16 @@ requireIncludes(files.qualityWorkflow, 'smoke-check-protected-context-correction
 requireIncludes(files.pagesWorkflow, 'smoke-check-protected-context-correction-sync.js', 'Pages workflow must run D233 protected correction sync QA.');
 requireIncludes(files.backlog, '| D235 |', 'Backlog must keep D235 as next sequential work after D234.');
 requireIncludes(files.implementationLog, 'D233 is now beta', 'Implementation log must mark D233 beta.');
-requireIncludes(files.implementationLog, 'D246 is now next', 'Implementation log must mark D246 next.');
+requireIncludes(files.implementationLog, 'D247 is now next', 'Implementation log must mark D247 next.');
 
 const progress = json(files.progressData);
 requireTrue(progress.protected_context_correction_sync_report?.title === report.title, 'Progress dashboard data must embed D233 protected sync report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d233 = tasks.find((task) => task.seq === 'D233');
-const d237 = tasks.find((task) => task.seq === 'D246');
+const d237 = tasks.find((task) => task.seq === 'D247');
 requireTrue(d233?.status === 'beta', 'Progress dashboard task D233 must be beta after backend contract ships.');
-requireTrue(d237?.status === 'next', 'Progress dashboard task D246 must become next after D236 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D246', 'Progress dashboard next queue must prioritize D246 after D236 ships.');
+requireTrue(d237?.status === 'next', 'Progress dashboard task D247 must become next after D236 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D247', 'Progress dashboard next queue must prioritize D247 after D236 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

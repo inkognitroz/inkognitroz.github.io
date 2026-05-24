@@ -237,14 +237,15 @@ Updated: 2026-05-23
 - D243 is now beta: backend commit `54adcaa` and public UI now preview and apply supported knowledge source metadata repairs through backend-only gates with rollback metadata and no document text exposure.
 - D244 is now beta: backend commit `b0ee399` and public UI now preview and apply rollback for supported knowledge source metadata executions through backend-only gates, restoring captured status and collection metadata without document text exposure.
 - D245 is now beta: backend commit `bc0ccc7` and public UI now preview and run a safe correction remediation autopilot queue that records non-destructive metadata receipts and stops before source mutation.
-- D246 is now next: make the autopilot source-mutation handoff clearer, resumable and auditable while preserving protected backend-only mutation authority.
+- D246 is now beta: backend commit `6c83644` and public UI now prepares a resumable source-mutation handoff after safe autopilot runs, writing only preview metadata into the existing explicit memory/knowledge execution gates.
+- D247 is now next: show rollback readiness before and after explicit source changes so owners can trust autopilot handoff without giving GitHub Pages mutation authority.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D246` autopilot source-mutation handoff gates.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D247` autopilot rollback readiness cards.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

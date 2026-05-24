@@ -670,6 +670,35 @@
   color: var(--mimir-muted, #6b7280);
 }
 
+.context-correction-handoff-status {
+  display: grid;
+  gap: 0.3rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.context-correction-handoff-status[data-state="ready"],
+.context-correction-handoff-status[data-state="handoff-ready"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-handoff-status[data-state="preparing"] {
+  border-color: rgba(14, 116, 144, 0.24);
+  background: #f0f9ff;
+}
+
+.context-correction-handoff-status[data-state="blocked"],
+.context-correction-handoff-status[data-state="error"],
+.context-correction-handoff-status[data-state="needs-backend"],
+.context-correction-handoff-status[data-state="needs-autopilot-run"],
+.context-correction-handoff-status[data-state="needs-source-model"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;
