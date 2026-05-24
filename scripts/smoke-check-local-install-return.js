@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector';
+const cacheKey = '20260524-quiet-first-paint-v3';
 
 const files = {
   mmir: join(publicDir, 'mmir.html'),
@@ -36,7 +37,7 @@ for (const file of [files.mac, files.windows, files.linux]) {
   requireIncludes(file, returnUrl, `${file} must return the user to MMIR local-node detection after install.`);
 }
 
-requireIncludes(files.mmir, 'local-connector.js?v=20260523-post-install-return', 'MMIR page must cache-bust the local connector post-install return code.');
+requireIncludes(files.mmir, `local-connector.js?v=${cacheKey}`, 'MMIR page must cache-bust the local connector post-install return code.');
 requireIncludes(files.localConnector, 'function isPostInstallReturn()', 'Local connector UI must detect installer return URLs.');
 requireIncludes(files.localConnector, "mmir_local_return')==='1'", 'Local connector UI must honor the mmir_local_return flag.');
 requireIncludes(files.localConnector, 'schedulePostInstallRefresh', 'Local connector UI must schedule repeated post-install refresh attempts.');
