@@ -6,6 +6,7 @@ const publicDir = resolve(root, 'public');
 const files = {
   deploy: join(publicDir, 'deploy-verification.json'),
   platform: join(publicDir, 'platform-status.json'),
+  platformStatusUi: join(publicDir, 'apps', 'mimir-chat-portal', 'platform-status.js'),
   progress: join(publicDir, 'progress-dashboard.json')
 };
 
@@ -34,6 +35,7 @@ function json(file) {
 const deploy = json(files.deploy);
 const platform = json(files.platform);
 const progress = json(files.progress);
+const platformStatusUi = text(files.platformStatusUi);
 
 if (deploy.commit_short !== 'c140ad6') fail('Deploy verification must record latest verified commit c140ad6.');
 if (!String(deploy.public_repo_rule || '').includes('No secrets')) fail('Deploy verification must state the public no-secrets boundary.');
@@ -60,6 +62,12 @@ if (platform.deploy_verification !== './deploy-verification.json') fail('Platfor
 const components = Array.isArray(platform.components) ? platform.components : [];
 for (const id of ['latest-deploy-verification', 'public-url-health']) {
   if (!components.some((component) => component.id === id)) fail(`Platform status missing component ${id}.`);
+}
+if (platformStatusUi.includes('api.github.com') || platformStatusUi.includes('actions/runs?')) {
+  fail('Public platform status UI must not call GitHub APIs from the browser.');
+}
+if (!platformStatusUi.includes('./deploy-verification.json')) {
+  fail('Public platform status UI must read the static deploy verification manifest.');
 }
 
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
