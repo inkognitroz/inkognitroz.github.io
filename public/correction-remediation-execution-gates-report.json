@@ -1,0 +1,100 @@
+{
+  "title": "Correction Remediation Execution Gates",
+  "task": "D240",
+  "status": "beta",
+  "backend_commit": "2f41c94",
+  "principle": "Source mutation must happen only through a protected backend execution gate after a commit receipt and a matching execution preview.",
+  "public_repo_rule": "GitHub Pages may request execution previews and show receipts. It never owns source mutation authority, stores raw content or starts paid routes.",
+  "backend_route": {
+    "method": "POST",
+    "path": "/context/corrections/remediation-executions/apply",
+    "auth": "protected-backend-auth",
+    "status": "beta",
+    "responses": ["context.correction_remediation_execution_preview", "context.correction_remediation_execution"],
+    "purpose": "Preview and execute supported remediation commit receipts through backend-only source mutation gates."
+  },
+  "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+  "local_storage": {
+    "commit_state": "mimir-context-correction-remediation-commit-v1:{workspace}",
+    "execution_state": "mimir-context-correction-remediation-execution-v1:{workspace}",
+    "metadata_only": true
+  },
+  "ui_contract": {
+    "panel": ".context-correction-execution-status",
+    "checks": ".context-correction-execution-checks",
+    "results": ".context-correction-execution-results",
+    "preview_selector": "[data-correction-execution=\"preview\"]",
+    "execute_selector": "[data-correction-execution=\"execute\"]",
+    "auto_preview": "commitRemediationAdapter automatically calls previewRemediationExecution when the backend returns a commit receipt"
+  },
+  "execution_policy": {
+    "preview_required": true,
+    "confirm_required": true,
+    "execute_source_mutation_required": true,
+    "backend_only_execution": true,
+    "source_mutation_allowed_for_memory_scope": true,
+    "knowledge_execution_supported": false,
+    "destructive_execution_allowed": false,
+    "automatic_mutation_allowed": false,
+    "public_frontend_authority": false,
+    "no_paid_routes_started": true,
+    "raw_prompt_stored": false,
+    "raw_response_stored": false,
+    "document_text_stored": false,
+    "provider_secrets_stored": false
+  },
+  "supported_execution": {
+    "adapter": "memory-scope-adapter",
+    "kind": "memory-scope-update",
+    "mutates": ["memory.scope", "memory.enabled", "memory.expires_at"],
+    "captures": ["source_id", "before.scope", "before.enabled", "before.expires_at", "after.scope", "after.enabled", "after.expires_at", "rollback_hint"]
+  },
+  "blocked_execution": {
+    "targets": ["knowledge", "context"],
+    "reason": "Knowledge and context repairs stay review-first until collection/source mutation models and rollback routes exist."
+  },
+  "checks": [
+    "commit-receipt",
+    "backend-only",
+    "target-supported",
+    "rollback-before-after",
+    "no-paid-route"
+  ],
+  "scenarios": [
+    {
+      "id": "auto-preview-after-commit",
+      "status": "ready",
+      "expected": "A recorded remediation commit automatically requests an execution preview.",
+      "selector": "commitRemediationAdapter -> previewRemediationExecution",
+      "backend_only_execution": true
+    },
+    {
+      "id": "memory-scope-execution",
+      "status": "ready",
+      "expected": "Supported memory scope repairs can be applied only after execution preview and confirmation.",
+      "selector": "[data-correction-execution=\"execute\"]",
+      "source_mutation_allowed_for_memory_scope": true,
+      "public_frontend_authority": false
+    },
+    {
+      "id": "knowledge-execution-blocked",
+      "status": "ready",
+      "expected": "Knowledge repairs render a blocked execution preview with a clear unsupported reason.",
+      "knowledge_execution_supported": false,
+      "source_mutation_executed": false
+    },
+    {
+      "id": "rollback-metadata-captured",
+      "status": "ready",
+      "expected": "Applied execution receipts expose public-safe before/after metadata and rollback hints.",
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "provider_secrets_stored": false
+    }
+  ],
+  "next": {
+    "task": "D241",
+    "label": "Remediation rollback gates",
+    "reason": "Execution receipts now mutate supported memory metadata. The next slice should add protected rollback execution for those receipts."
+  }
+}

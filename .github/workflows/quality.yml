@@ -223,6 +223,9 @@ jobs:
       - name: Smoke-check correction remediation commit policy
         run: node scripts/smoke-check-correction-remediation-commit-policy.js
 
+      - name: Smoke-check correction remediation execution gates
+        run: node scripts/smoke-check-correction-remediation-execution-gates.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

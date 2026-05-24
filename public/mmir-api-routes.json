@@ -25,6 +25,7 @@
     { "path": "/context/corrections/remediation-steps/apply", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Record explicitly confirmed correction remediation step gates through a protected backend." },
     { "path": "/context/corrections/remediation-adapters/prepare", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Prepare memory and knowledge remediation adapter drafts from confirmed apply receipts." },
     { "path": "/context/corrections/remediation-adapters/commit", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Preview and record remediation adapter commit receipts through backend-owned policy without source mutation from GitHub Pages." },
+    { "path": "/context/corrections/remediation-executions/apply", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Preview and execute supported remediation commit receipts through backend-only source mutation gates." },
     { "path": "/datasets", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Dataset registry root." },
     { "path": "/datasets/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Dataset dynamic route fragment." },
     { "path": "/doctor", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "Protected local activation health report with one next repair action." },

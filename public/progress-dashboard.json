@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T00:46:53.969Z",
+  "updated_at": "2026-05-24T01:01:30.227Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 240,
+    "total": 241,
     "done": 51,
-    "beta": 164,
+    "beta": 165,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 7,
+        "total": 8,
         "done": 0,
-        "beta": 6,
+        "beta": 7,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -3325,6 +3325,125 @@
       "reason": "Commit receipts now exist. The next slice should add backend-only execution gates for supported memory repairs while keeping knowledge mutations review-first."
     }
   },
+  "correction_remediation_execution_gates_report": {
+    "title": "Correction Remediation Execution Gates",
+    "task": "D240",
+    "status": "beta",
+    "backend_commit": "2f41c94",
+    "principle": "Source mutation must happen only through a protected backend execution gate after a commit receipt and a matching execution preview.",
+    "public_repo_rule": "GitHub Pages may request execution previews and show receipts. It never owns source mutation authority, stores raw content or starts paid routes.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-executions/apply",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "responses": [
+        "context.correction_remediation_execution_preview",
+        "context.correction_remediation_execution"
+      ],
+      "purpose": "Preview and execute supported remediation commit receipts through backend-only source mutation gates."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "commit_state": "mimir-context-correction-remediation-commit-v1:{workspace}",
+      "execution_state": "mimir-context-correction-remediation-execution-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_contract": {
+      "panel": ".context-correction-execution-status",
+      "checks": ".context-correction-execution-checks",
+      "results": ".context-correction-execution-results",
+      "preview_selector": "[data-correction-execution=\"preview\"]",
+      "execute_selector": "[data-correction-execution=\"execute\"]",
+      "auto_preview": "commitRemediationAdapter automatically calls previewRemediationExecution when the backend returns a commit receipt"
+    },
+    "execution_policy": {
+      "preview_required": true,
+      "confirm_required": true,
+      "execute_source_mutation_required": true,
+      "backend_only_execution": true,
+      "source_mutation_allowed_for_memory_scope": true,
+      "knowledge_execution_supported": false,
+      "destructive_execution_allowed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "no_paid_routes_started": true,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false
+    },
+    "supported_execution": {
+      "adapter": "memory-scope-adapter",
+      "kind": "memory-scope-update",
+      "mutates": [
+        "memory.scope",
+        "memory.enabled",
+        "memory.expires_at"
+      ],
+      "captures": [
+        "source_id",
+        "before.scope",
+        "before.enabled",
+        "before.expires_at",
+        "after.scope",
+        "after.enabled",
+        "after.expires_at",
+        "rollback_hint"
+      ]
+    },
+    "blocked_execution": {
+      "targets": [
+        "knowledge",
+        "context"
+      ],
+      "reason": "Knowledge and context repairs stay review-first until collection/source mutation models and rollback routes exist."
+    },
+    "checks": [
+      "commit-receipt",
+      "backend-only",
+      "target-supported",
+      "rollback-before-after",
+      "no-paid-route"
+    ],
+    "scenarios": [
+      {
+        "id": "auto-preview-after-commit",
+        "status": "ready",
+        "expected": "A recorded remediation commit automatically requests an execution preview.",
+        "selector": "commitRemediationAdapter -> previewRemediationExecution",
+        "backend_only_execution": true
+      },
+      {
+        "id": "memory-scope-execution",
+        "status": "ready",
+        "expected": "Supported memory scope repairs can be applied only after execution preview and confirmation.",
+        "selector": "[data-correction-execution=\"execute\"]",
+        "source_mutation_allowed_for_memory_scope": true,
+        "public_frontend_authority": false
+      },
+      {
+        "id": "knowledge-execution-blocked",
+        "status": "ready",
+        "expected": "Knowledge repairs render a blocked execution preview with a clear unsupported reason.",
+        "knowledge_execution_supported": false,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "rollback-metadata-captured",
+        "status": "ready",
+        "expected": "Applied execution receipts expose public-safe before/after metadata and rollback hints.",
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "provider_secrets_stored": false
+      }
+    ],
+    "next": {
+      "task": "D241",
+      "label": "Remediation rollback gates",
+      "reason": "Execution receipts now mutate supported memory metadata. The next slice should add protected rollback execution for those receipts."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -3375,7 +3494,7 @@
     }
   ],
   "next_queue": [
-    "D240"
+    "D241"
   ],
   "watchlist": [
     "D082",
@@ -6977,9 +7096,24 @@
       "best_practice": "Commit receipts should become real source repairs only where backend-owned stores can enforce owner scope and rollback metadata",
       "done_when": "Owners can execute one supported memory repair from a committed receipt with explicit confirmation, audit and rollback evidence while unsupported knowledge repairs stay blocked with a clear reason",
       "covers": "backend, memory, knowledge, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now preview and apply supported memory remediation executions through backend-only gates with before/after rollback metadata.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D241",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Remediation rollback execution gates",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add protected rollback gates for remediation execution receipts, restoring captured memory metadata with preview, confirmation and audit while leaving raw text untouched",
+      "best_practice": "Any source mutation must have a clear undo path before broader automation",
+      "done_when": "Owners can preview and apply one rollback for a remediation execution receipt with before/after metadata and idempotent audit receipts",
+      "covers": "backend, memory, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add backend-only source execution gates for supported remediation commits, starting with safe memory scope updates.",
+      "evidence": "Next activation slice: add protected rollback gates for remediation execution receipts.",
       "estimate": "0.5-2d"
     }
   ]
