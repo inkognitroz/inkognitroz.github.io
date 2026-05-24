@@ -50,7 +50,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/conversation-manager.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/data-analysis.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/scheduled-tasks.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css?v=20260524-cache-bust-v2" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css?v=20260524-quiet-first-paint-v3" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
   <header class="mimir-topbar">
@@ -385,16 +385,17 @@
       </div>
     </details>
   </main>
-  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-cache-bust-v2" defer></script>
-  <script src="./apps/mimir-chat-portal/api-client.js" defer></script>
-  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260524-cache-bust-v2" defer></script>
-  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260524-cache-bust-v2" defer></script>
-  <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-cache-bust-v2" defer></script>
+  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-quiet-first-paint-v3" defer></script>
+  <script src="./apps/mimir-chat-portal/api-client.js?v=20260524-quiet-first-paint-v3" defer></script>
+  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260524-quiet-first-paint-v3" defer></script>
+  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260524-quiet-first-paint-v3" defer></script>
+  <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-quiet-first-paint-v3" defer></script>
+  <script src="./apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-quiet-first-paint-v3" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[
     "./apps/mimir-chat-portal/demo-growth.js",
     "./apps/mimir-chat-portal/runtime-legacy-installer-guard.js",
     "./apps/mimir-chat-portal/composer-model-picker.js",
-    "./apps/mimir-chat-portal/local-connector.js?v=20260523-post-install-return",
+    "./apps/mimir-chat-portal/local-connector.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/beta-signup.js",
     "./apps/mimir-chat-portal/workspaces.js",
     "./apps/mimir-chat-portal/memory.js",
@@ -434,14 +435,14 @@
     "./apps/mimir-chat-portal/free-value-loops.js",
     "./apps/mimir-chat-portal/model-catalog-ui.js",
     "./apps/mimir-chat-portal/provider-status.js",
-    "./apps/mimir-chat-portal/platform-status.js",
+    "./apps/mimir-chat-portal/platform-status.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/activation-telemetry.js",
-    "./apps/mimir-chat-portal/activation-autopilot.js",
+    "./apps/mimir-chat-portal/activation-autopilot.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/first-screen-activation-hydration.js",
-    "./apps/mimir-chat-portal/progress-dashboard.js",
+    "./apps/mimir-chat-portal/progress-dashboard.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/user-journeys.js",
     "./apps/mimir-chat-portal/gui-parity-matrix.js",
-    "./apps/mimir-chat-portal/node-dashboard.js",
+    "./apps/mimir-chat-portal/node-dashboard.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/role-presets.js",
     "./apps/mimir-chat-portal/conversation-manager.js",
     "./apps/mimir-chat-portal/model-selection.js",
