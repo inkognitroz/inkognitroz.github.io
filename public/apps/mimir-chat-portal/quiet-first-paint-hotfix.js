@@ -17,6 +17,18 @@
     w[key]=Math.max(Number(w[key]||0),Date.now()+ms);
     w.dispatchEvent(new CustomEvent('mmir-local-probe-allowed',{detail:{reason,expires_at:new Date(w[key]).toISOString()}}));
   }
+  function shouldLandOnChat(){
+    if(returnIntent())return false;
+    const hash=String(w.location.hash||'').toLowerCase();
+    return !hash||hash==='#mimir-instant-start'||hash==='#app-factory'||hash==='#chat';
+  }
+  function landOnChat(){
+    if(!shouldLandOnChat())return;
+    if(!d.getElementById('mimir-chat-runtime'))return;
+    if(String(w.location.hash||'').toLowerCase()!=='#mimir-chat-runtime'){
+      w.location.hash='mimir-chat-runtime';
+    }
+  }
   if(!w.MimirAllowLocalProbes)w.MimirAllowLocalProbes=allow;
   const originalFetch=w.fetch;
   if(originalFetch&&!w.__MimirQuietFirstPaintFetchGuard){
@@ -35,4 +47,7 @@
     if(target)allow('user-click',30000);
   },true);
   if(returnIntent())allow('installer-return',60000);
+  if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',()=>setTimeout(landOnChat,120),{once:true});
+  else setTimeout(landOnChat,120);
+  w.addEventListener('load',()=>setTimeout(landOnChat,300),{once:true});
 })();
