@@ -1,25 +1,26 @@
 ---
 name: Content update
-about: Request updates to public/content.json and hub sections
+about: Request updates to public MMIR content, docs or status manifests
 title: "content: "
-labels: [content]
+labels: [type/docs]
 assignees: []
 ---
 
 ## Section
 - [ ] Home
-- [ ] Projects
-- [ ] SaaS ideas
-- [ ] Tools
-- [ ] Notes
-- [ ] Resources
-- [ ] Files / uploads
+- [ ] MMIR chat/onboarding
+- [ ] Local connector
+- [ ] API/control plane
+- [ ] Node/runtime docs
+- [ ] Architecture/security docs
 - [ ] Roadmap
-- [ ] Prompt inbox
-- [ ] Monetization ideas
+- [ ] Progress/status
 
 ## Requested change
 Describe exactly what should be added, edited, or removed.
 
-## Prompt (optional)
-Paste the prompt to use in Copilot, Codex, Claude Code, or ChatGPT.
+## Truth check
+Is this live, beta, planned or premium planned?
+
+## Agent prompt
+Paste the prompt to use in Codex, Copilot or ChatGPT 5.5.

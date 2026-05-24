@@ -2,6 +2,8 @@
 
 Use AI agents as structured engineering collaborators for MMIR, not as uncontrolled deployment authority.
 
+For the full multi-agent operating model, roles, label taxonomy and handoff template, see `docs/AI_AGENT_OPERATING_MODEL.md`.
+
 ## Source Of Truth
 
 Before creating new work, agents should inspect:
@@ -17,11 +19,13 @@ Before creating new work, agents should inspect:
 
 1. Confirm the active MMIR goal and repository boundary.
 2. Search existing issues/docs before proposing new work.
-3. Prefer the first user journey when prioritizing: open, connect local AI, install, ready, chat.
-4. Make small, testable changes.
-5. Run smoke checks.
-6. Commit through GitHub with clear evidence.
-7. Update or create issues only when work remains or should be picked up by another agent.
+3. Claim the issue with role, lane, planned files and expected PR size.
+4. Check active PRs for overlapping files before editing.
+5. Prefer the first user journey when prioritizing: open, connect local AI, install, ready, chat.
+6. Make small, testable changes.
+7. Run smoke checks.
+8. Commit through GitHub with clear evidence.
+9. Update or create issues only when work remains or should be picked up by another agent.
 
 ## Review Standard
 
@@ -40,6 +44,8 @@ Every meaningful change should be reviewed for:
 
 - Automate repeatable checks and safe fixes.
 - Do not start paid resources without owner approval.
+- Do not commit directly to `main` for agent work.
+- Do not force-push, rewrite history, delete production resources, or run destructive infrastructure actions without explicit owner approval for that action.
 - Do not put provider keys, GitHub tokens, billing secrets or long-lived credentials in public frontend files.
 - Do not expose raw local model runtimes publicly.
 - Keep paid/cloud/provider paths disabled until protected backend policy exists.

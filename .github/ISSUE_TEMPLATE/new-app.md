@@ -1,20 +1,27 @@
 ---
-name: New app
-about: Propose a new app/tool/dashboard for the factory
-title: "app: "
-labels: [app]
+name: MMIR feature or workflow
+about: Propose a MMIR feature, workflow or control-plane capability
+title: "feature: "
+labels: [type/feature]
 assignees: []
 ---
 
-## App name
+## Feature / workflow name
 
-## Outcome / business goal
+## User outcome
 
-## Core features (v1)
+## Strategic value
 
-## Stack suggestion
-- GitHub repo
-- Vercel or Netlify deploy
-- Supabase backend (future)
+## Target repo / lane
+- [ ] `inkognitroz.github.io` frontend
+- [ ] `mimir-backend-template` backend/API
+- [ ] `mmir-local-node` local runtime
+- [ ] security/governance
+- [ ] docs
+- [ ] infra
 
-## Prompt for PR
+## MVP scope
+
+## Acceptance criteria
+
+## Agent prompt
