@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d217-20260523-mobile-buttons';
+const CACHE_NAME='mmir-pwa-d218-20260523-mobile-buttons-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

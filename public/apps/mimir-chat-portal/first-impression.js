@@ -178,7 +178,7 @@ const profileReady=Boolean(profile?.url&&profile?.provider==='local-node');
 const nodeHealth=String(profile?.health||'unknown').toLowerCase();
 const nodeReady=['ready','degraded','testing'].includes(nodeHealth)||proofReady;
 if(!profileReady){
-return {state:'watch',title:'Create the free local profile',detail:'Prepares 127.0.0.1. Starter: '+starter.label+' for '+starter.device+'.',action:'Create local profile',target:'#connect-options',kind:'local-profile',starter};
+return {state:'watch',title:'Create the free local profile',detail:'Prepares 127.0.0.1. Starter: '+starter.label+' for '+starter.device+'.',action:'Create local profile',target:'#local-connector',kind:'local-profile',starter};
 }
 if(!nodeReady){
 return {state:nodeHealth==='offline'?'error':'watch',title:'Connect this device',detail:'Node not proven. Starter: '+starter.model+'.',action:'Open node health',target:'#node-dashboard',kind:'node-health',starter};
@@ -210,7 +210,7 @@ return strip;
 function handleActivationClosureAction(copy){
 if(copy.kind==='local-profile'){
 window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
-openPanel('#connect-options');
+openPanel('#local-connector');
 return;
 }
 if(copy.kind==='retry-proof'){
@@ -473,7 +473,7 @@ if(activationButtons.connect&&activationButtons.connect.dataset.firstImpressionB
 activationButtons.connect.dataset.firstImpressionBound='true';
 activationButtons.connect.addEventListener('click',()=>{
 window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
-openPanel('#connect-options');
+openPanel('#local-connector');
 });
 }
 if(activationButtons.models&&activationButtons.models.dataset.firstImpressionBound!=='true'){

@@ -50,7 +50,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/conversation-manager.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/data-analysis.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/scheduled-tasks.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css?v=20260523-mobile-chat" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/workflow-builder.css?v=20260523-mobile-buttons-v2" />
 </head>
 <body class="mimir-public-chat mimir-chat-first">
   <header class="mimir-topbar">
@@ -59,8 +59,8 @@
       <span><strong>MMIR.ai</strong><small id="active-badge">No backend selected</small></span>
     </a>
     <nav aria-label="Primary navigation">
-      <a href="#mimir-chat-runtime">Chat</a>
-      <a href="#connect-options">Connect</a>
+      <a href="#mimir-prompt">Chat</a>
+      <a href="#local-connector">Connect</a>
       <a href="#node-dashboard">Nodes</a>
       <a href="#model-library">Models</a>
       <a href="#workflow-builder">Workflows</a>
@@ -135,7 +135,7 @@
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="best-model" data-prompt="Choose the best free model route for me right now. Consider browser WebGPU, Ollama, local hardware, privacy, speed and install effort.">Pick my best model</button>
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Connect my first local model with the easiest free path. Give exact next actions for Windows, Mac, Linux and Raspberry Pi when relevant.">Connect my models</button>
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="first-workflow" data-prompt="Create my first useful MMIR workflow. Keep it automated, free-first, private by default and useful in under five minutes.">Create workflow</button>
-        <a href="#connect-options">Install node</a>
+        <a href="#local-connector">Install node</a>
         <a href="#model-library">Browse models</a>
       </div>
 
@@ -385,11 +385,11 @@
       </div>
     </details>
   </main>
-  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260522-doctrine" defer></script>
+  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260523-mobile-buttons-v2" defer></script>
   <script src="./apps/mimir-chat-portal/api-client.js" defer></script>
-  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260522-doctrine" defer></script>
-  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260522-doctrine" defer></script>
-  <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260522-doctrine" defer></script>
+  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260523-mobile-buttons-v2" defer></script>
+  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260523-mobile-buttons-v2" defer></script>
+  <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260523-mobile-buttons-v2" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[
     "./apps/mimir-chat-portal/demo-growth.js",
     "./apps/mimir-chat-portal/composer-model-picker.js",
