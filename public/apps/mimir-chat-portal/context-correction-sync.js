@@ -1727,6 +1727,8 @@
     const readinessState=readRollbackReadinessState();
     const executionState=readExecutionState();
     const knowledgeExecutionState=readKnowledgeExecutionState();
+    const rollbackState=readRollbackState();
+    const knowledgeRollbackState=readKnowledgeRollbackState();
     const run=state?.run&&typeof state.run==='object'?state.run:null;
     const handoff=handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null;
     const readiness=readinessState?.readiness&&typeof readinessState.readiness==='object'?readinessState.readiness:null;
@@ -1738,6 +1740,20 @@
     const handoffPreview=handoff?.preview&&typeof handoff.preview==='object'?handoff.preview:null;
     const rollbackPreview=readiness?.rollback_preview&&typeof readiness.rollback_preview==='object'?readiness.rollback_preview:null;
     const canCheckReadiness=Boolean(handoff||memoryExecution?.id||knowledgeExecution?.id);
+    const selectedTarget=cleanString(readiness?.target||handoff?.target||(knowledgeExecution?.id?'knowledge':'')||(memoryExecution?.id?'memory':''),40)||'all';
+    const selectedExecution=selectedTarget==='knowledge'?knowledgeExecution:memoryExecution;
+    const selectedRollbackState=selectedTarget==='knowledge'?knowledgeRollbackState:rollbackState;
+    const selectedRollbackPreview=selectedRollbackState?.preview&&typeof selectedRollbackState.preview==='object'?selectedRollbackState.preview:null;
+    const sourceMutationDone=Boolean(selectedExecution?.source_mutation_executed||readiness?.source_mutation_already_executed);
+    const canConfirmSource=Boolean(handoff?.status==='ready'&&handoffPreview?.supported&&!sourceMutationDone);
+    const canApplyUndo=Boolean(sourceMutationDone&&selectedRollbackPreview?.supported);
+    const timelineSteps=[
+      {id:'safe-queue',label:'Safe queue',state:run?.safe_steps_executed?'ready':(run?'watch':'idle'),detail:run?.safe_steps_executed?'Metadata-only safe steps are done.':'Run safe queue to prepare the path.'},
+      {id:'handoff',label:'Source gate',state:handoff?.status==='ready'?'ready':(run?.safe_steps_executed?'watch':'idle'),detail:handoff?.status==='ready'?'Backend-only confirmation is ready.':'Prepare handoff after safe queue.'},
+      {id:'confirm-source',label:'Confirm source',state:sourceMutationDone?'ready':(canConfirmSource?'watch':'idle'),detail:sourceMutationDone?'Protected backend executed the source change.':'Requires an explicit click; public app cannot mutate automatically.'},
+      {id:'readiness',label:'Rollback ready',state:readiness?.status==='ready'||readiness?.status==='planned'?'ready':(canCheckReadiness?'watch':'idle'),detail:readiness?.phase?('Phase '+readiness.phase+'.'):'Check rollback readiness through protected backend.'},
+      {id:'undo',label:'Undo path',state:canApplyUndo?'ready':(sourceMutationDone?'watch':'idle'),detail:canApplyUndo?'Rollback preview is ready for explicit apply.':'Undo stays disabled until backend preview is ready.'}
+    ];
     return '<div class="context-correction-autopilot-status" data-state="'+safe(status)+'">'+
       '<div><p class="eyebrow">Autopilot</p><h4>'+safe(run?.status?('Safe queue '+run.status):'Automatic safe queue')+'</h4>'+
       '<small>'+safe(state?.message||'MMIR can preview the obvious remediation path and run safe metadata-only steps automatically, then stop before source mutation.')+'</small></div>'+
@@ -1764,6 +1780,16 @@
         (readiness?.phase?'<small>phase:'+safe(readiness.phase)+' / target:'+safe(readiness.target||'')+' / rollback_now:'+safe(Boolean(readiness.rollback_available_now))+' / rollback_after_execution:'+safe(Boolean(readiness.rollback_available_after_execution))+' / source_mutation_already_executed:'+safe(Boolean(readiness.source_mutation_already_executed))+'</small>':'')+
         (readiness?.route?'<small>rollback:'+safe(readiness.route.method||'POST')+' '+safe(readiness.route.path||'')+' / backend_only_rollback:true</small>':'')+
         (rollbackPreview?'<small>preview:'+safe(rollbackPreview.id||'ready')+' / supported:'+safe(Boolean(rollbackPreview.supported))+' / mutation_executed:false</small>':'')+
+      '</div>'+
+      '<div class="context-correction-trust-timeline" data-state="'+safe(canApplyUndo?'undo-ready':(sourceMutationDone?'source-confirmed':(canConfirmSource?'confirm-ready':'watch')))+'" data-target="'+safe(selectedTarget)+'">'+
+        '<div><strong>Guided trust timeline</strong><small>Autopilot stays automatic for safe metadata work, then waits for explicit protected backend actions.</small></div>'+
+        '<div class="context-correction-trust-steps">'+timelineSteps.map((step)=>'<article data-step="'+safe(step.id)+'" data-state="'+safe(step.state)+'"><span>'+safe(step.label)+'</span><strong>'+safe(step.state)+'</strong><small>'+safe(step.detail)+'</small></article>').join('')+'</div>'+
+        '<div class="context-correction-plan-actions">'+
+          '<button type="button" data-correction-trust-timeline="confirm-source" '+(!canConfirmSource?'disabled':'')+'>Confirm source change</button>'+
+          '<button type="button" data-correction-trust-timeline="refresh-readiness" '+(!canCheckReadiness?'disabled':'')+'>Refresh rollback</button>'+
+          '<button type="button" data-correction-trust-timeline="apply-rollback" '+(!canApplyUndo?'disabled':'')+'>Apply undo</button>'+
+        '</div>'+
+        '<small>target:'+safe(selectedTarget)+' / public_frontend_authority:false / automatic_mutation_allowed:false / no_paid_routes_started:true</small>'+
       '</div>'+
       (manual?'<small class="context-correction-autopilot-stop">Manual stop: '+safe(manual.action||'review')+' via '+safe(manual.route||'/context/corrections/review')+' - '+safe(manual.reason||'Source mutation requires explicit confirmation.')+'</small>':'')+
       '<small class="context-correction-review-policy">automatic_safe_steps:true / source_mutation_allowed:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
@@ -1899,6 +1925,26 @@
     if(!button)return;
     const action=button.dataset.correctionRollbackReadiness;
     if(action==='check')prepareRollbackReadiness();
+  });
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-trust-timeline]');
+    if(!button)return;
+    const action=button.dataset.correctionTrustTimeline;
+    const handoffState=readHandoffState();
+    const readinessState=readRollbackReadinessState();
+    const executionState=readExecutionState();
+    const knowledgeExecutionState=readKnowledgeExecutionState();
+    const handoff=handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null;
+    const target=cleanString(readinessState?.target||handoff?.target||(knowledgeExecutionState?.execution?.id?'knowledge':'')||(executionState?.execution?.id?'memory':''),40);
+    if(action==='confirm-source'){
+      if(target==='knowledge')executeKnowledgeExecution(handoff?.model_id||'');
+      else executeRemediationCommit(handoff?.commit_id||'');
+    }
+    if(action==='refresh-readiness')prepareRollbackReadiness();
+    if(action==='apply-rollback'){
+      if(target==='knowledge')applyKnowledgeRollback();
+      else applyRemediationRollback();
+    }
   });
   document.addEventListener('click',(event)=>{
     const button=event.target.closest('[data-correction-apply]');

@@ -239,14 +239,15 @@ Updated: 2026-05-23
 - D245 is now beta: backend commit `bc0ccc7` and public UI now preview and run a safe correction remediation autopilot queue that records non-destructive metadata receipts and stops before source mutation.
 - D246 is now beta: backend commit `6c83644` and public UI now prepares a resumable source-mutation handoff after safe autopilot runs, writing only preview metadata into the existing explicit memory/knowledge execution gates.
 - D247 is now beta: backend commit `e648af0` and public UI now shows rollback readiness before and after explicit source changes, writing only readiness metadata and rollback previews while keeping mutation and rollback execution backend-only.
-- D248 is now next: combine autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline.
+- D248 is now beta: public UI now combines autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline without public mutation authority.
+- D249 is now next: add deterministic browser fixture and visual QA coverage for the guided autopilot trust timeline states.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D248` autopilot guided trust timeline.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D249` autopilot trust timeline browser QA.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

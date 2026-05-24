@@ -727,6 +727,52 @@
   background: #fff7ed;
 }
 
+.context-correction-trust-timeline {
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #ffffff;
+}
+
+.context-correction-trust-timeline[data-state="confirm-ready"],
+.context-correction-trust-timeline[data-state="source-confirmed"],
+.context-correction-trust-timeline[data-state="undo-ready"] {
+  border-color: rgba(21, 128, 61, 0.24);
+  background: #f8fffc;
+}
+
+.context-correction-trust-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+  gap: 0.4rem;
+}
+
+.context-correction-trust-steps article {
+  min-height: 78px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.context-correction-trust-steps article[data-state="ready"] {
+  border-color: rgba(21, 128, 61, 0.22);
+  background: #f8fffc;
+}
+
+.context-correction-trust-steps article[data-state="watch"] {
+  border-color: rgba(14, 116, 144, 0.22);
+  background: #f0f9ff;
+}
+
+.context-correction-trust-steps span,
+.context-correction-trust-steps strong,
+.context-correction-trust-steps small {
+  display: block;
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;
