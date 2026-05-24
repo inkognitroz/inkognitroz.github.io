@@ -10,6 +10,7 @@ const indexPath = join(publicDir, 'index.html');
 const apiClientPath = join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js');
 const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
 const runtimeControlsFixPath = join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js');
+const runtimeLegacyInstallerGuardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-legacy-installer-guard.js');
 
 const failures = [];
 
@@ -207,6 +208,7 @@ async function run() {
   const index = read(indexPath);
   const chatRuntime = read(chatRuntimePath);
   const runtimeFix = read(runtimeControlsFixPath);
+  const legacyInstallerGuard = read(runtimeLegacyInstallerGuardPath);
 
   requireTrue(html.includes('The orchestration layer for trusted AI.'), 'First viewport must state the MMIR trusted-AI identity.');
   requireTrue(!html.includes('SaaS Fabric'), 'MMIR page must not expose retired SaaS Fabric branding.');
@@ -222,11 +224,12 @@ async function run() {
   requireTrue(!chatRuntime.includes('mmir-local-node-macos-linux.sh'), 'Runtime model helper must not emit retired Mac/Linux local-node installer.');
   requireTrue(chatRuntime.includes('mmir-local-connector-windows.ps1'), 'Runtime model helper must generate the Windows Local Connector installer command.');
   requireTrue(chatRuntime.includes('mmir-local-connector-linux.sh'), 'Runtime model helper must generate the Linux/Raspberry Pi Local Connector installer command.');
-  requireTrue(runtimeFix.includes('mmir-local-node-windows.ps1'), 'Runtime guard must detect retired Windows local-node installer output.');
-  requireTrue(runtimeFix.includes('a[href*="mmir-local-node-"]'), 'Runtime guard must rewrite any retired local-node installer links.');
-  requireTrue(runtimeFix.includes('mmir-local-connector-windows.cmd'), 'Runtime guard must rewrite to the Windows Local Connector installer.');
-  requireTrue(runtimeFix.includes('mmir-local-connector-linux.sh'), 'Runtime guard must rewrite to the Linux/Raspberry Pi Local Connector installer.');
-  requireTrue(runtimeFix.includes('mmir-local-connector-install.html'), 'Runtime guard must still route any legacy UI to the universal connector installer.');
+  requireTrue(runtimeFix.includes('handleMobileTap'), 'Runtime guard must keep first-chat/mobile tap handling in the critical shell.');
+  requireTrue(legacyInstallerGuard.includes('mmir-local-node-windows.ps1'), 'Deferred runtime guard must detect retired Windows local-node installer output.');
+  requireTrue(legacyInstallerGuard.includes('a[href*="mmir-local-node-"]'), 'Deferred runtime guard must rewrite any retired local-node installer links.');
+  requireTrue(legacyInstallerGuard.includes('mmir-local-connector-windows.cmd'), 'Deferred runtime guard must rewrite to the Windows Local Connector installer.');
+  requireTrue(legacyInstallerGuard.includes('mmir-local-connector-linux.sh'), 'Deferred runtime guard must rewrite to the Linux/Raspberry Pi Local Connector installer.');
+  requireTrue(legacyInstallerGuard.includes('mmir-local-connector-install.html'), 'Deferred runtime guard must still route any legacy UI to the universal connector installer.');
 
   const site = await startServer(staticHandler);
   const connectorState = { token: 'mock-local-token', health: 0, status: 0, pair: 0, models: 0, chat: 0, badAuthorizationHeader: false };

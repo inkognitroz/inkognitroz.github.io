@@ -80,6 +80,7 @@ const files = {
   migration: join(publicDir, 'apps', 'mimir-chat-portal', 'migration-portability.js'),
   sharing: join(publicDir, 'apps', 'mimir-chat-portal', 'sharing-center.js'),
   runtimeControlsFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
+  runtimeLegacyInstallerGuard: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-legacy-installer-guard.js'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
   nodeDashboard: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js'),
   nodeDashboardCss: join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.css'),
@@ -416,11 +417,12 @@ requireIncludes(files.identityOrg, 'identity-activate-session', 'D161 needs iden
 requireIncludes(files.sharing, 'sharing-activity-summary', 'D162 needs share activity summaries in Safe Sharing.');
 requireIncludes(files.sharing, 'handoff_completed_count', 'D162 needs handoff activity counts.');
 requireIncludes(files.sharing, 'Revoked at', 'D162 needs revocation cues in the recipient/owner flow.');
-requireIncludes(files.runtimeControlsFix, 'rewriteLegacyInstallerUi', 'Runtime UI guard must rewrite retired local-node installer prompts.');
-requireIncludes(files.runtimeControlsFix, 'mmir-local-connector-install.html', 'Runtime UI guard must route users to the universal connector installer.');
-requireIncludes(files.runtimeControlsFix, 'mmir-local-node-windows.ps1', 'Runtime UI guard must detect retired local-node installer links.');
 requireIncludes(files.chatRuntime, 'mmir-local-connector-windows.ps1', 'Runtime model helper must generate the current Windows Local Connector command.');
 requireIncludes(files.chatRuntime, 'mmir-local-connector-linux.sh', 'Runtime model helper must generate the current Linux/Raspberry Pi Local Connector command.');
+requireIncludes(files.runtimeControlsFix, 'handleMobileTap', 'Critical runtime UI guard must keep first-chat/mobile tap handling available.');
+requireIncludes(files.runtimeLegacyInstallerGuard, 'rewriteLegacyInstallerUi', 'Deferred runtime UI guard must rewrite retired local-node installer prompts.');
+requireIncludes(files.runtimeLegacyInstallerGuard, 'mmir-local-connector-install.html', 'Deferred runtime UI guard must route users to the universal connector installer.');
+requireIncludes(files.runtimeLegacyInstallerGuard, 'mmir-local-node-windows.ps1', 'Deferred runtime UI guard must detect retired local-node installer links.');
 requireIncludes(files.promptRegistry, 'mimir-prompts-v1:', 'D140 needs free local prompt library fallback.');
 requireIncludes(files.promptRegistry, 'starter-repo-review', 'D140 needs reusable prompt starters.');
 requireIncludes(files.promptRegistry, 'prompt-registry-tags', 'D140 needs prompt tags.');
