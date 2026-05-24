@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Install MMIR Local Connector</title>
   <meta name="robots" content="noindex" />
+  <link rel="icon" href="../assets/mmir-icon.svg" type="image/svg+xml" />
   <style>
     :root {
       color-scheme: dark;
@@ -164,9 +165,9 @@
 
     <section class="grid" aria-label="Installer choices">
       <article class="card" data-platform="mac">
-        <div class="status" id="mac-dmg-badge">DMG prepared</div>
+        <div class="status" id="mac-dmg-badge">DMG app prepared</div>
         <h2>Mac</h2>
-        <p>Mac <code>.dmg</code> packaging is prepared in MMIR Local Node. Until a public DMG artifact is published, use the current command package for Mac hardware and macOS VMs.</p>
+        <p>Mac <code>.dmg</code> packaging is prepared in MMIR Local Node with an app bundle, Applications shortcut and command fallback. Until a public DMG artifact is published, use the current command package for Mac hardware and macOS VMs.</p>
         <a id="mac-install-link" href="./mmir-local-connector-mac.zip.html">Open Mac command package</a>
         <p class="manifest-note" id="mac-dmg-status">Checking release manifest for a public Mac DMG...</p>
       </article>
@@ -199,7 +200,7 @@
   <script>
     const releaseManifest = './mmir-local-connector-release.json';
     const targets = {
-      mac: { label: 'Install Mac Connector', href: './mmir-local-connector-mac.zip.html', download: false, text: 'Detected macOS. Use the current Mac command package until the public DMG artifact is published.' },
+      mac: { label: 'Install Mac Connector', href: './mmir-local-connector-mac.zip.html', download: false, text: 'Detected macOS. Use the current Mac command package until the app-bundle DMG artifact is published.' },
       windows: { label: 'Install Windows Connector', href: './mmir-local-connector-windows.cmd', download: true, text: 'Detected Windows. Use the Windows installer.' },
       linux: { label: 'Install Linux Connector', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux. Use the Linux installer.' },
       raspberry: { label: 'Install Raspberry Pi Node', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux ARM. Use the Raspberry Pi / Linux ARM node installer.' },
@@ -277,7 +278,7 @@
           status.textContent = 'Mac DMG is published from the MMIR Local Node release build.';
         } else {
           badge.textContent = 'DMG prepared';
-          status.textContent = dmg?.note || 'Mac DMG release build is prepared in mmir-local-node; public download stays on the command package until the real artifact is published.';
+          status.textContent = dmg?.note || 'Mac app-bundle DMG release build is prepared in mmir-local-node; public download stays on the command package until the real artifact is published.';
           setDownload(macLink, false);
         }
       } catch (error) {

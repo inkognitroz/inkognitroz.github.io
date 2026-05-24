@@ -247,6 +247,7 @@ Updated: 2026-05-23
 - D253 is now beta: chat-first free activation canary proves instant browser-helper chat, first-chat receipt coverage, Mac installer checksum alignment and local-node proof handoff without spend, while keeping real-device Mac QA as a watch item.
 - D254 is now next: tighten Open WebUI-style chat-first focus, active model/node strip and Mac package/app-bundle QA without spend.
 - D254 chat slice is now beta: Open WebUI-style chat-first focus now has a public-safe active route manifest, active node strip, free starter model rail, WebGPU/local-node handoff buttons and explicit tests proving the composer can use the shown routes without spend or frontend secrets.
+- D254 Mac package slice is now beta: `mmir-local-node` now builds a free-first macOS DMG contract with `MMIR Local Node Installer.app`, an Applications shortcut, package resources inside the app bundle, command fallback and tests proving the public site does not link a fake DMG before a real artifact exists.
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads from deferred UI instead of the critical runtime guard, preserving the autostart chat UX without breaking first-paint JS headroom.
 - Review follow-ups `D255-D256` were added for inline critical-shell budget accounting and DOM rendering hardening across escaped dynamic UI surfaces.

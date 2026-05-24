@@ -109,6 +109,12 @@ const dmg = artifacts.find((artifact) => artifact.id === 'mac-dmg-release-build'
 if (!dmg || dmg.path !== null || dmg.sha256 !== null || dmg.recommended !== false || dmg.status !== 'prepared') {
   fail('Mac DMG must stay prepared-but-unpublished until a real public artifact exists.');
 }
+if (dmg?.app_bundle !== 'MMIR Local Node Installer.app' || dmg?.applications_shortcut !== true || dmg?.drag_to_applications !== true) {
+  fail('Mac DMG manifest must document the app-bundle and drag-to-Applications release contract.');
+}
+if (manifest.upstream_local_node_release?.macos_dmg?.app_bundle !== 'MMIR Local Node Installer.app') {
+  fail('Upstream local-node release metadata must document the Mac app-bundle DMG shape.');
+}
 
 for (const file of [files.mac, files.windows, files.linux]) {
   requireIncludes(text(file), returnUrl, `${relative(root, file)} must reopen MMIR with mmir_local_return=1.`);
@@ -121,7 +127,9 @@ for (const file of [files.mac, files.windows, files.linux]) {
   'No paid cloud, provider route or managed compute starts',
   'mmir_local_return=1',
   'renderReleaseSummary',
-  'fake DMG'
+  'fake DMG',
+  'Applications shortcut',
+  'app-bundle DMG'
 ].forEach((needle) => requireIncludes(installPage, needle, `Installer page missing D205 release QA evidence: ${needle}`));
 
 [
