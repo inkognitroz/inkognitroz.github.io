@@ -31,6 +31,31 @@ function fail(file, message) {
   failures.push(`${relative(root, file)}: ${message}`);
 }
 
+function assertPattern(name, regex, value) {
+  regex.lastIndex = 0;
+  if (!regex.test(value)) {
+    throw new Error(`Public safety audit self-check failed for ${name}`);
+  }
+}
+
+function assertNoPattern(name, regex, value) {
+  regex.lastIndex = 0;
+  if (regex.test(value)) {
+    throw new Error(`Public safety audit self-check false positive for ${name}`);
+  }
+}
+
+function assertGateCoverage() {
+  assertPattern('GitHub token', tokenPatterns[0].regex, 'ghp_' + 'A'.repeat(36));
+  assertPattern('OpenAI-style secret', tokenPatterns[1].regex, 'sk-' + 'A'.repeat(32));
+  assertPattern('JWT-like token', tokenPatterns[2].regex, 'eyJ' + 'A'.repeat(12) + '.' + 'B'.repeat(12) + '.' + 'C'.repeat(12));
+  assertPattern('AWS access key', tokenPatterns[3].regex, 'AKIA' + 'A'.repeat(16));
+  assertPattern('real-looking secret assignment', secretAssignmentPattern, 'OPENAI_API_KEY=' + 'A'.repeat(32));
+  assertNoPattern('placeholder secret assignment', secretAssignmentPattern, 'OPENAI_API_KEY=your-key-here');
+  assertPattern('browser Bearer construction', browserBearerPattern, "headers['Authorization'] = 'Bearer ' + apiKey");
+  assertPattern('enabled public API key field', passwordApiKeyInputPattern, '<input id="api-key" type="password" />');
+}
+
 function walk(path) {
   const full = resolve(root, path);
   if (!existsSync(full)) return [];
@@ -50,6 +75,8 @@ function filesToScan() {
   }).filter((file) => textExtensions.has(extname(file)));
 }
 
+assertGateCoverage();
+
 for (const file of filesToScan()) {
   const text = readFileSync(file, 'utf8');
   for (const pattern of tokenPatterns) {
@@ -60,6 +87,7 @@ for (const file of filesToScan()) {
   secretAssignmentPattern.lastIndex = 0;
   if (secretAssignmentPattern.test(text)) fail(file, 'real-looking secret assignment found');
 
+  browserBearerPattern.lastIndex = 0;
   if (file.includes(`${join('public', 'apps')}`) && browserBearerPattern.test(text)) {
     fail(file, 'public browser app must not construct Authorization: Bearer from user input');
   }

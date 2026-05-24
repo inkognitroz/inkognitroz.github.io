@@ -79,6 +79,18 @@ flowchart TB
 - `inkognitroz.github.io` may stay public because it must remain harmless by construction.
 - Secrets belong in private/protected repos, local secure storage or managed secret stores.
 
+## D117 Public Safety Audit Gate
+
+`scripts/public-safety-audit.js` is the public repo gate for accidental secret and paid-route exposure. It scans public/docs/workflow files for:
+
+- Token-like strings: GitHub tokens, OpenAI-style secrets, JWT-like values and AWS access keys.
+- Real-looking secret assignments for provider, Stripe, AWS and GitHub secret names.
+- Browser-side `Authorization: Bearer` construction in public app code.
+- Enabled public API-key password fields.
+- Public paid-compute enablement.
+
+False positives should stay narrow. Placeholder values such as `your-key-here`, `example` and `placeholder` are allowed so docs can explain boundaries without carrying real credentials. If a new false positive appears, prefer rewriting the example to be obviously fake before adding any allowlist.
+
 ## Codex Work Rules
 
 - Add public UI only when it can degrade safely without a backend.
