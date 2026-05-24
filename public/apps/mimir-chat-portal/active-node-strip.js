@@ -148,10 +148,12 @@
     const action=starterAction(model);
     w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:model.id,action,source:'active-node-starter-rail',free:true,no_paid_routes_started:true}}));
     const promptEl=q('#mimir-prompt');
-    if(promptEl&&!String(promptEl.value||'').trim()&&action!=='install'){
-      promptEl.value='Start a free chat with '+(model.label||model.id)+'. Tell me what is active and what I can connect next.';
-      promptEl.dispatchEvent(new Event('input',{bubbles:true}));
-      promptEl.dispatchEvent(new Event('change',{bubbles:true}));
+    if(action!=='install'){
+      if(promptEl&&!String(promptEl.value||'').trim()){
+        promptEl.value='Start a free chat with '+(model.label||model.id)+'. Tell me what is active and what I can connect next.';
+        promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+        promptEl.dispatchEvent(new Event('change',{bubbles:true}));
+      }
       q('#primary-chat-link')?.click();
     }
   }

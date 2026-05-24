@@ -58,6 +58,7 @@ for (const needle of [
   'function bestNode(nodes,selected)',
   'function activateStarter(model)',
   "source:'active-node-starter-rail'",
+  "if(action!=='install')",
   'primary-chat-link',
   'free/public-safe routes that the composer can actually use'
 ]) {
