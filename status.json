@@ -10,7 +10,7 @@
   "first_click_path": "Open mmir.ai -> chat through free active node -> connect local AI -> add own models",
   "no_paid_routes_started": true,
   "backend_health_url": "https://api.mmir.ai/status",
-  "message": "Frontend mobile chat works in live smoke, SaaS Fabric copy is removed from MMIR path, api.mmir.ai exposes a free active Browser Guide node, and protected local/hosted node registration remains fail-closed until zero-trust registration is implemented.",
-  "known_caveat": "active-node-strip.js is updated on main and cache-busted in workflow config, but existing no-query GitHub Pages/CDN cache may serve the previous strip briefly; chat still falls back to Browser Guide while cache rolls.",
-  "last_updated": "2026-05-24T15:45:00-07:00"
+  "message": "P0 first-chat hardening is on main: Send is a real submit control, free starter route is synchronous, no-backend first chat falls back to MMIR Guide, and api.mmir.ai exposes a free active Browser Guide node.",
+  "known_caveat": "GitHub Pages/CDN can serve the previous HTML for a short window after deploy; cache-busted runtime files are on main and Pages deploy is retriggered by this status update.",
+  "last_updated": "2026-05-24T16:08:00-07:00"
 }
