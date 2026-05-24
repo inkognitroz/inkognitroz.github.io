@@ -44,7 +44,7 @@
   let pendingWorkspaceSwitch=false;
   let busy=false;
   let messages=[];
-  let starterModels=[];
+  let starterModels=fallbackStarterModels();
   let webllmModule=null;
   let webllmEngine=null;
   let webllmModelId='';
@@ -209,7 +209,6 @@
   }
 
   function openComposerModelPicker(){
-    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
     setComposerActionFeedback('Model picker opened. Free/browser/local routes stay first.','ready');
     if(window.MimirComposerModelPicker?.toggle){window.MimirComposerModelPicker.toggle();return;}
     if(window.MimirLoadDeferred){
@@ -778,11 +777,18 @@
   function ensureSendControl(){
     if(!primaryLink)return;
     primaryLink.textContent='\u2191';
-    primaryLink.setAttribute('href','#mimir-chat-runtime');
-    primaryLink.setAttribute('role','button');
-    primaryLink.setAttribute('aria-label','Send prompt to the active backend');
+    if(primaryLink.tagName==='BUTTON'){
+      primaryLink.type='submit';
+    }else{
+      primaryLink.setAttribute('href','#mimir-chat-runtime');
+      primaryLink.setAttribute('role','button');
+      primaryLink.removeAttribute('target');
+    }
+    primaryLink.classList.remove('disabled');
+    primaryLink.setAttribute('aria-disabled','false');
+    primaryLink.setAttribute('aria-label','Send prompt to the active MMIR route');
     primaryLink.setAttribute('title','Send');
-    primaryLink.removeAttribute('target');
+    primaryLink.removeAttribute('rel');
   }
 
   function installComposerDock(){
@@ -1949,10 +1955,14 @@
       await sendStarterMessage(starter,prompt);
       return;
     }
-    if(!profile||!url){setStatus('Activate a backend profile or choose a free guide/installable model.','error');return;}
     if(!model){
       await refreshState(true);
       model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
+      const refreshedStarter=starterFromValue(model);
+      if(refreshedStarter){
+        await sendStarterMessage(refreshedStarter,prompt);
+        return;
+      }
       if(!model){
         const fallback=noModelFallbackStarter();
         if(fallback){
@@ -1962,6 +1972,15 @@
         setStatus('No model route is visible yet. Open + Add model for free browser and local install choices.','error');
         return;
       }
+    }
+    if(!profile||!url){
+      const fallback=noModelFallbackStarter()||preferredStarterModel();
+      if(fallback){
+        await sendStarterMessage(fallback,prompt);
+        return;
+      }
+      setStatus('Activate a backend profile or choose a free guide/installable model.','error');
+      return;
     }
 
     stopRequested=false;

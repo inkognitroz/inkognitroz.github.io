@@ -10,8 +10,8 @@ const externalInitialJsByteBudget = 146500;
 const inlineFirstPaintJsByteBudget = 5000;
 const totalFirstPaintJsByteBudget = 151500;
 const cacheKey = '20260524-quiet-first-paint-v3';
-const runtimeCacheKey = '20260524-mobile-sticky-v1';
-const runtimeFixKey = '20260524-local-probe-v5';
+const runtimeCacheKey = '20260524-first-chat-p0-v1';
+const runtimeFixKey = '20260524-first-chat-p0-v1';
 
 function fail(message) {
   console.error(message);
