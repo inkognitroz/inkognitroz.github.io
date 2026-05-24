@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T02:07:57.789Z",
+  "updated_at": "2026-05-24T02:35:07.006Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 244,
+    "total": 245,
     "done": 51,
-    "beta": 168,
+    "beta": 169,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1040,8 +1040,8 @@
         "phase": "Backend / Team Trust",
         "total": 11,
         "done": 0,
-        "beta": 10,
-        "next": 1,
+        "beta": 11,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1052,6 +1052,16 @@
         "done": 0,
         "beta": 1,
         "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Automation / UX",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -3807,6 +3817,105 @@
       "reason": "Knowledge source metadata can now be changed through protected gates. The next slice should apply rollback from captured before/after source metadata."
     }
   },
+  "correction_remediation_knowledge_rollback_gates_report": {
+    "title": "Correction Remediation Knowledge Rollback Gates",
+    "task": "D244",
+    "status": "beta",
+    "updated_at": "2026-05-24T04:20:00.000Z",
+    "backend_repo": "mimir-backend-template",
+    "backend_commit": "b0ee399",
+    "public_repo_rule": "Public GitHub Pages stores only route metadata, UI state keys and public-safe receipts; document text, chunks and secrets stay behind protected backend auth.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-knowledge-rollbacks/apply",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Preview and apply rollback for supported knowledge source metadata executions using captured before metadata."
+    },
+    "local_storage": {
+      "knowledge_rollback_state": "mimir-context-correction-knowledge-rollback-v1:{workspace}",
+      "stores_raw_document_text": false,
+      "stores_provider_secrets": false,
+      "stores_paid_route_credentials": false
+    },
+    "ui_contract": {
+      "panel": ".context-correction-knowledge-rollback-status",
+      "checks": ".context-correction-knowledge-rollback-checks",
+      "results": ".context-correction-knowledge-rollback-results",
+      "preview_selector": "[data-correction-knowledge-rollback=\"preview\"]",
+      "apply_selector": "[data-correction-knowledge-rollback=\"apply\"]",
+      "event": "mmir-context-correction-knowledge-rollback-updated"
+    },
+    "rollback_policy": {
+      "preview_required": true,
+      "confirm_required": true,
+      "execute_rollback_required": true,
+      "backend_only_rollback": true,
+      "knowledge_rollback_supported": true,
+      "public_frontend_authority": false,
+      "automatic_mutation_allowed": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false,
+      "no_paid_routes_started": true
+    },
+    "supported_rollback": {
+      "kind": "knowledge-source-metadata-restore",
+      "restores": [
+        "knowledge.source_status",
+        "knowledge.collection_membership"
+      ],
+      "raw_text_included": false,
+      "requires_execution_receipt": true
+    },
+    "checks": [
+      "execution-receipt",
+      "mutation-executed",
+      "before-metadata",
+      "backend-only",
+      "metadata-only",
+      "no-raw-or-paid-route"
+    ],
+    "scenarios": [
+      {
+        "id": "auto-preview-after-knowledge-execution",
+        "status": "ready",
+        "expected": "A successful knowledge execution automatically requests a rollback preview for captured source metadata.",
+        "selector": ".context-correction-knowledge-rollback-status",
+        "backend_only_rollback": true,
+        "document_text_stored": false,
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "apply-knowledge-rollback",
+        "status": "ready",
+        "expected": "The Apply rollback action sends preview ID, confirm:true and execute_rollback:true to the protected backend.",
+        "selector": "[data-correction-knowledge-rollback=\"apply\"]",
+        "source_mutation_executed": true,
+        "public_frontend_authority": false
+      },
+      {
+        "id": "restore-source-metadata-only",
+        "status": "ready",
+        "expected": "Rollback restores source status and collection membership only; raw document text remains private.",
+        "selector": ".context-correction-knowledge-rollback-results",
+        "raw_text_included": false,
+        "document_text_stored": false
+      },
+      {
+        "id": "no-secret-or-spend",
+        "status": "ready",
+        "expected": "The public flow starts no paid compute route and stores no provider credentials.",
+        "selector": "mmir-api-routes.json",
+        "provider_secrets_stored": false,
+        "no_paid_routes_started": true
+      }
+    ],
+    "next": {
+      "task": "D245",
+      "label": "correction remediation autopilot queue",
+      "why": "Now that execution and rollback are reversible, the next improvement should reduce user choices by sequencing safe correction steps automatically."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -3857,7 +3966,7 @@
     }
   ],
   "next_queue": [
-    "D244"
+    "D245"
   ],
   "watchlist": [
     "D082",
@@ -7519,9 +7628,24 @@
       "best_practice": "Knowledge metadata mutation must be reversible before broader automation, marketplace workflows or team governance can rely on it",
       "done_when": "Owners can preview and apply rollback for one supported knowledge execution receipt with before/after metadata, idempotent audit and no document text exposure",
       "covers": "backend, knowledge, rollback, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now preview and apply rollback for supported knowledge source metadata executions through backend-only gates.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D245",
+      "phase": "Automation / UX",
+      "priority": "P1",
+      "work_package": "Correction remediation autopilot queue",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add a safe automatic queue that sequences correction review, plan, apply, adapter, commit, execution and rollback preview steps when prerequisites are ready, stopping at any destructive or unsupported gate",
+      "best_practice": "Users should not click through every safe metadata-only step; MMIR should do the obvious next action automatically and leave configuration for later",
+      "done_when": "Owner sees one remediation run with step status, skipped/blocked reasons, no paid routes, no raw prompt/document storage and manual confirmation only where source mutation is required",
+      "covers": "automation, remediation, user-fit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add rollback gates for supported knowledge remediation execution receipts.",
+      "evidence": "Next activation slice: add an automatic correction remediation queue that chains safe preview/apply steps without extra user choices.",
       "estimate": "0.5-2d"
     }
   ]

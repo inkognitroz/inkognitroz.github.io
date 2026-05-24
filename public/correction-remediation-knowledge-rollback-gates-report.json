@@ -1,0 +1,99 @@
+{
+  "title": "Correction Remediation Knowledge Rollback Gates",
+  "task": "D244",
+  "status": "beta",
+  "updated_at": "2026-05-24T04:20:00.000Z",
+  "backend_repo": "mimir-backend-template",
+  "backend_commit": "b0ee399",
+  "public_repo_rule": "Public GitHub Pages stores only route metadata, UI state keys and public-safe receipts; document text, chunks and secrets stay behind protected backend auth.",
+  "backend_route": {
+    "method": "POST",
+    "path": "/context/corrections/remediation-knowledge-rollbacks/apply",
+    "auth": "protected-backend-auth",
+    "status": "beta",
+    "purpose": "Preview and apply rollback for supported knowledge source metadata executions using captured before metadata."
+  },
+  "local_storage": {
+    "knowledge_rollback_state": "mimir-context-correction-knowledge-rollback-v1:{workspace}",
+    "stores_raw_document_text": false,
+    "stores_provider_secrets": false,
+    "stores_paid_route_credentials": false
+  },
+  "ui_contract": {
+    "panel": ".context-correction-knowledge-rollback-status",
+    "checks": ".context-correction-knowledge-rollback-checks",
+    "results": ".context-correction-knowledge-rollback-results",
+    "preview_selector": "[data-correction-knowledge-rollback=\"preview\"]",
+    "apply_selector": "[data-correction-knowledge-rollback=\"apply\"]",
+    "event": "mmir-context-correction-knowledge-rollback-updated"
+  },
+  "rollback_policy": {
+    "preview_required": true,
+    "confirm_required": true,
+    "execute_rollback_required": true,
+    "backend_only_rollback": true,
+    "knowledge_rollback_supported": true,
+    "public_frontend_authority": false,
+    "automatic_mutation_allowed": false,
+    "document_text_stored": false,
+    "provider_secrets_stored": false,
+    "no_paid_routes_started": true
+  },
+  "supported_rollback": {
+    "kind": "knowledge-source-metadata-restore",
+    "restores": [
+      "knowledge.source_status",
+      "knowledge.collection_membership"
+    ],
+    "raw_text_included": false,
+    "requires_execution_receipt": true
+  },
+  "checks": [
+    "execution-receipt",
+    "mutation-executed",
+    "before-metadata",
+    "backend-only",
+    "metadata-only",
+    "no-raw-or-paid-route"
+  ],
+  "scenarios": [
+    {
+      "id": "auto-preview-after-knowledge-execution",
+      "status": "ready",
+      "expected": "A successful knowledge execution automatically requests a rollback preview for captured source metadata.",
+      "selector": ".context-correction-knowledge-rollback-status",
+      "backend_only_rollback": true,
+      "document_text_stored": false,
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "apply-knowledge-rollback",
+      "status": "ready",
+      "expected": "The Apply rollback action sends preview ID, confirm:true and execute_rollback:true to the protected backend.",
+      "selector": "[data-correction-knowledge-rollback=\"apply\"]",
+      "source_mutation_executed": true,
+      "public_frontend_authority": false
+    },
+    {
+      "id": "restore-source-metadata-only",
+      "status": "ready",
+      "expected": "Rollback restores source status and collection membership only; raw document text remains private.",
+      "selector": ".context-correction-knowledge-rollback-results",
+      "raw_text_included": false,
+      "document_text_stored": false
+    },
+    {
+      "id": "no-secret-or-spend",
+      "status": "ready",
+      "expected": "The public flow starts no paid compute route and stores no provider credentials.",
+      "selector": "mmir-api-routes.json",
+      "provider_secrets_stored": false,
+      "no_paid_routes_started": true
+    }
+  ],
+  "next": {
+    "task": "D245",
+    "label": "correction remediation autopilot queue",
+    "why": "Now that execution and rollback are reversible, the next improvement should reduce user choices by sequencing safe correction steps automatically."
+  }
+}

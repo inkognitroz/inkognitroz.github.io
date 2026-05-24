@@ -13,6 +13,7 @@
   const ROLLBACK_PREFIX='mimir-context-correction-remediation-rollback-v1:';
   const KNOWLEDGE_SOURCE_PREFIX='mimir-context-correction-knowledge-source-model-v1:';
   const KNOWLEDGE_EXECUTION_PREFIX='mimir-context-correction-knowledge-execution-v1:';
+  const KNOWLEDGE_ROLLBACK_PREFIX='mimir-context-correction-knowledge-rollback-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -29,6 +30,7 @@
   function rollbackKey(){return ROLLBACK_PREFIX+workspaceId();}
   function knowledgeSourceKey(){return KNOWLEDGE_SOURCE_PREFIX+workspaceId();}
   function knowledgeExecutionKey(){return KNOWLEDGE_EXECUTION_PREFIX+workspaceId();}
+  function knowledgeRollbackKey(){return KNOWLEDGE_ROLLBACK_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -257,6 +259,31 @@
   }
   function readKnowledgeExecutionState(){
     const value=readJson(knowledgeExecutionKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeKnowledgeRollbackState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      backend_only_rollback:true,
+      source_mutation_allowed:false,
+      source_mutation_executed:false,
+      knowledge_rollback_supported:false,
+      ...value
+    };
+    try{localStorage.setItem(knowledgeRollbackKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-knowledge-rollback-updated',{detail:state}));
+    return state;
+  }
+  function readKnowledgeRollbackState(){
+    const value=readJson(knowledgeRollbackKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -812,6 +839,7 @@
         message:data?.supported?'Backend-only knowledge execution preview ready for owned source status and collection metadata.':'Knowledge execution preview is blocked: '+(data?.blocked_reason||'unsupported source model.')
       });
       if(isExecute)await loadReviewQueue({limit:10,include_undone:true});
+      if(isExecute&&data?.id)await previewKnowledgeRollback(data.id);
       render();
       return state;
     }catch(error){
@@ -831,6 +859,94 @@
   }
   function executeKnowledgeExecution(modelId=''){
     return knowledgeExecutionRequest('execute',modelId);
+  }
+  async function knowledgeRollbackRequest(mode='preview',executionId=''){
+    const executionState=readKnowledgeExecutionState();
+    const rollbackState=readKnowledgeRollbackState();
+    const execution=executionState?.execution&&typeof executionState.execution==='object'?executionState.execution:null;
+    const cleanExecutionId=cleanString(executionId||execution?.id,120);
+    const isApply=mode==='apply';
+    if(!cleanExecutionId){
+      const state=writeKnowledgeRollbackState({status:'needs-execution',message:'Apply a supported knowledge execution before previewing rollback.',execution_id:''});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeKnowledgeRollbackState({status:'needs-backend',message:'Choose an active protected backend before rolling back knowledge metadata.',execution_id:cleanExecutionId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      execution_id:cleanExecutionId,
+      preview:!isApply,
+      confirm:isApply,
+      execute_rollback:isApply,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      provider_secrets_stored:false
+    };
+    if(isApply){
+      const previewId=cleanString(rollbackState?.preview?.id,120);
+      if(!previewId){
+        const state=writeKnowledgeRollbackState({status:'needs-preview',message:'Preview backend-only knowledge rollback before restoring source metadata.',execution_id:cleanExecutionId});
+        render();
+        return state;
+      }
+      body.rollback_preview_id=previewId;
+    }
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-knowledge-rollbacks/apply'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=isApply?writeKnowledgeRollbackState({
+        status:data?.status||'rolled-back',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        execution_id:cleanExecutionId,
+        preview:rollbackState?.preview||null,
+        rollback:data,
+        source_mutation_executed:Boolean(data?.source_mutation_executed),
+        knowledge_rollback_supported:true,
+        message:data?.source_mutation_executed?'Rollback applied by protected backend and knowledge source metadata restored.':'Knowledge rollback recorded without source mutation.'
+      }):writeKnowledgeRollbackState({
+        status:data?.status||'preview',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        execution_id:cleanExecutionId,
+        preview:data,
+        rollback:null,
+        source_mutation_allowed:Boolean(data?.supported),
+        knowledge_rollback_supported:Boolean(data?.supported),
+        message:data?.supported?'Backend-only knowledge rollback preview ready for source status and collection restore.':'Knowledge rollback preview is blocked: '+(data?.blocked_reason||'unsupported rollback target.')
+      });
+      if(isApply)await loadReviewQueue({limit:10,include_undone:true});
+      render();
+      return state;
+    }catch(error){
+      const state=writeKnowledgeRollbackState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        execution_id:cleanExecutionId,
+        message:api.friendlyError?.(error)||error.message||'Could not preview or apply knowledge rollback gate.'
+      });
+      render();
+      return state;
+    }
+  }
+  function previewKnowledgeRollback(executionId=''){
+    return knowledgeRollbackRequest('preview',executionId);
+  }
+  function applyKnowledgeRollback(executionId=''){
+    return knowledgeRollbackRequest('apply',executionId);
   }
   async function executionPolicyRequest(mode='preview',commitId=''){
     const commitState=readCommitState();
@@ -1237,6 +1353,32 @@
       '<small class="context-correction-review-policy">backend_only_execution:true / preview_required:true / execute_source_mutation_required:true / document_text_stored:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
     '</div>';
   }
+  function knowledgeRollbackGateHtml(){
+    const executionState=readKnowledgeExecutionState();
+    const state=readKnowledgeRollbackState();
+    const execution=executionState?.execution&&typeof executionState.execution==='object'?executionState.execution:null;
+    const preview=state?.preview&&typeof state.preview==='object'?state.preview:null;
+    const rollback=state?.rollback&&typeof state.rollback==='object'?state.rollback:null;
+    const checks=Array.isArray(preview?.checks)?preview.checks.slice(0,5):[];
+    const results=Array.isArray(rollback?.results)?rollback.results.slice(0,4):[];
+    const restores=Array.isArray(preview?.rollback_plan?.restores)?preview.rollback_plan.restores.slice(0,4):[];
+    const status=state?.status||'idle';
+    const canApply=Boolean(preview?.supported);
+    return '<div class="context-correction-knowledge-rollback-status" data-state="'+safe(status)+'">'+
+      '<div><strong>Knowledge rollback: '+safe(rollback?.status||preview?.status||status)+'</strong><small>'+safe(state?.message||'Preview backend-only rollback before restoring captured knowledge source status and collection metadata.')+'</small></div>'+
+      '<div class="context-correction-plan-actions"><button type="button" data-correction-knowledge-rollback="preview" '+(!execution?'disabled':'')+'>Preview knowledge rollback</button><button type="button" data-correction-knowledge-rollback="apply" '+(!canApply?'disabled':'')+'>Apply rollback</button></div>'+
+      '<div class="context-correction-knowledge-rollback-checks">'+(checks.length?checks.map((check)=>
+        '<article data-check-status="'+safe(check.status||'pending')+'"><strong>'+safe(check.id||'check')+'</strong><p>'+safe(check.label||'Knowledge rollback check')+'</p></article>'
+      ).join(''):'<article><strong>No knowledge rollback preview yet</strong><p>Apply a supported knowledge execution, then preview backend-only metadata restore. Document text remains private.</p></article>')+'</div>'+
+      '<div class="context-correction-knowledge-rollback-results">'+(results.length?results.map((result)=>
+        '<article><strong>'+safe(result.source_id||'source')+' '+safe(result.status||'result')+'</strong><small>source_mutation_executed:'+safe(Boolean(result.source_mutation_executed))+' / raw_text_included:'+safe(Boolean(result.raw_text_included))+' / rollback:'+safe(result.rollback_hint||'restored metadata')+'</small></article>'
+      ).join(''):restores.length?restores.map((restore)=>
+        '<article><strong>'+safe(restore.source_id||'source')+'</strong><small>restore status:'+safe(restore.status||'active')+' / collection:'+safe(restore.collection_id||'uncategorized')+' / raw_text_included:'+safe(Boolean(restore.raw_text_included))+'</small></article>'
+      ).join(''):'')+'</div>'+
+      (preview&&!preview.supported?'<small>Blocked: '+safe(preview.blocked_reason||'unsupported knowledge rollback target')+'</small>':'')+
+      '<small class="context-correction-review-policy">backend_only_rollback:true / preview_required:true / execute_rollback_required:true / document_text_stored:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
+    '</div>';
+  }
   function adapterDraftHtml(){
     const state=readAdapterState();
     const applyState=readApplyState();
@@ -1255,6 +1397,7 @@
       rollbackGateHtml()+
       knowledgeSourceModelHtml()+
       knowledgeExecutionGateHtml()+
+      knowledgeRollbackGateHtml()+
       '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
@@ -1415,10 +1558,17 @@
     if(action==='preview')previewKnowledgeExecution();
     if(action==='execute')executeKnowledgeExecution();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-knowledge-rollback]');
+    if(!button)return;
+    const action=button.dataset.correctionKnowledgeRollback;
+    if(action==='preview')previewKnowledgeRollback();
+    if(action==='apply')applyKnowledgeRollback();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
 })();

@@ -235,14 +235,15 @@ Updated: 2026-05-23
 - D241 is now beta: backend commit `b9de2d9` and public UI now preview and apply rollback for supported memory remediation executions through backend-only gates, restoring captured metadata while leaving raw text untouched.
 - D242 is now beta: backend commit `bff2c3f` and public UI now preview and record metadata-only knowledge source review/split models before any knowledge mutation execution.
 - D243 is now beta: backend commit `54adcaa` and public UI now preview and apply supported knowledge source metadata repairs through backend-only gates with rollback metadata and no document text exposure.
-- D244 is now next: add protected rollback gates for supported knowledge remediation execution receipts.
+- D244 is now beta: backend commit `b0ee399` and public UI now preview and apply rollback for supported knowledge source metadata executions through backend-only gates, restoring captured status and collection metadata without document text exposure.
+- D245 is now next: add a safe correction remediation autopilot queue that automatically chains non-destructive metadata-only steps and stops at source mutation gates.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D244` knowledge remediation rollback gates.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D245` correction remediation autopilot queue.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

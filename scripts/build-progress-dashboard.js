@@ -39,6 +39,7 @@ const correctionRemediationExecutionGatesReportPath = resolve(root, 'public', 'c
 const correctionRemediationRollbackGatesReportPath = resolve(root, 'public', 'correction-remediation-rollback-gates-report.json');
 const correctionRemediationKnowledgeSourceModelReportPath = resolve(root, 'public', 'correction-remediation-knowledge-source-model-report.json');
 const correctionRemediationKnowledgeExecutionGatesReportPath = resolve(root, 'public', 'correction-remediation-knowledge-execution-gates-report.json');
+const correctionRemediationKnowledgeRollbackGatesReportPath = resolve(root, 'public', 'correction-remediation-knowledge-rollback-gates-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -215,7 +216,8 @@ const overrides = new Map([
   ['D241', { status: 'beta', evidence: 'Backend and public UI now preview and apply rollback for supported memory remediation executions through backend-only gates.' }],
   ['D242', { status: 'beta', evidence: 'Backend and public UI now preview and record metadata-only knowledge source review/split models before any knowledge mutation execution.' }],
   ['D243', { status: 'beta', evidence: 'Backend and public UI now preview and apply supported knowledge source metadata repairs through backend-only execution gates with rollback metadata.' }],
-  ['D244', { status: 'next', evidence: 'Next activation slice: add rollback gates for supported knowledge remediation execution receipts.' }]
+  ['D244', { status: 'beta', evidence: 'Backend and public UI now preview and apply rollback for supported knowledge source metadata executions through backend-only gates.' }],
+  ['D245', { status: 'next', evidence: 'Next activation slice: add an automatic correction remediation queue that chains safe preview/apply steps without extra user choices.' }]
 ]);
 
 const repoMeta = [
@@ -494,6 +496,11 @@ function readCorrectionRemediationKnowledgeExecutionGatesReport() {
   return JSON.parse(readFileSync(correctionRemediationKnowledgeExecutionGatesReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationKnowledgeRollbackGatesReport() {
+  if (!existsSync(correctionRemediationKnowledgeRollbackGatesReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationKnowledgeRollbackGatesReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -518,7 +525,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D244', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D245', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -572,6 +579,7 @@ const data = {
   correction_remediation_rollback_gates_report: readCorrectionRemediationRollbackGatesReport(),
   correction_remediation_knowledge_source_model_report: readCorrectionRemediationKnowledgeSourceModelReport(),
   correction_remediation_knowledge_execution_gates_report: readCorrectionRemediationKnowledgeExecutionGatesReport(),
+  correction_remediation_knowledge_rollback_gates_report: readCorrectionRemediationKnowledgeRollbackGatesReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

@@ -575,6 +575,45 @@
   background: rgba(255, 255, 255, 0.82);
 }
 
+.context-correction-knowledge-rollback-status {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: #f8fafc;
+}
+
+.context-correction-knowledge-rollback-status[data-state="preview"],
+.context-correction-knowledge-rollback-status[data-state="rolled-back"],
+.context-correction-knowledge-rollback-status[data-state="partial"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-knowledge-rollback-status[data-state="blocked"],
+.context-correction-knowledge-rollback-status[data-state="error"],
+.context-correction-knowledge-rollback-status[data-state="needs-backend"],
+.context-correction-knowledge-rollback-status[data-state="needs-execution"],
+.context-correction-knowledge-rollback-status[data-state="needs-preview"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-knowledge-rollback-checks,
+.context-correction-knowledge-rollback-results {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.context-correction-knowledge-rollback-checks article,
+.context-correction-knowledge-rollback-results article {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: rgba(255, 255, 255, 0.82);
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;
