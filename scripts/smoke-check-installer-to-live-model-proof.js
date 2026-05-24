@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const returnUrl = 'https://mmir.ai/mmir.html?mmir_local_return=1#local-connector';
+const cacheKey = '20260524-quiet-first-paint-v3';
 const files = {
   mmir: join(publicDir, 'mmir.html'),
   localConnector: join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js'),
@@ -348,7 +349,7 @@ async function run() {
   requireIncludes(files.backlog, '| D213 |', 'Backlog must keep a next sequential work item after D212.');
   requireIncludes(files.backlog, '| D214 |', 'Backlog must keep a next sequential work item after D213.');
   requireIncludes(files.backlog, '| D215 |', 'Backlog must keep a next sequential work item after D214.');
-  requireIncludes(files.mmir, 'local-connector.js?v=20260523-post-install-return', 'D206 product page must load the post-install return local connector code.');
+  requireIncludes(files.mmir, `local-connector.js?v=${cacheKey}`, 'D206 product page must load the post-install return local connector code.');
 
   await proveInstallerReturnToFirstChat();
 
