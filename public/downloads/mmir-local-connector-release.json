@@ -40,7 +40,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "6cc2d4949da69b25b9a49ed537ab8645971f2da0b104f894eef99a202a05f2bc",
+      "sha256": "d0c2738e8b87be896ad67c7cf43a0e6a4da5ad6e946e44f0d6c38c8c820cf47f",
       "recommended": true
     },
     {
@@ -48,7 +48,7 @@
       "platform": "macos",
       "kind": "browser-generated-zip",
       "path": "/downloads/mmir-local-connector-mac.zip.html",
-      "sha256": "61676feeec3cb518191844c26e8a580fadeb399878d7ad28d8a61003813ae18b",
+      "sha256": "0fccd1f45c54ea02bd70cd1269ebbeb7562f31a0de748400a7f67fc74d97fe5c",
       "recommended": true
     },
     {
@@ -127,7 +127,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-05-23T17:12:16.549Z",
+    "verified_at": "2026-05-24T18:15:24.911Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 9,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",

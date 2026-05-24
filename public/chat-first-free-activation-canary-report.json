@@ -1,0 +1,134 @@
+{
+  "title": "Chat-First Free Activation Canary",
+  "task": "D253",
+  "status": "beta",
+  "result": "green_static_contract_with_live_device_watch",
+  "principle": "A new user must be able to type, get a useful answer, and see the next automatic free/local path without provider keys, paid services or manual architecture choices.",
+  "no_spend": {
+    "paid_services_used": false,
+    "requires_user_money": false,
+    "provider_keys_required": false,
+    "cloud_compute_started": false
+  },
+  "public_repo_rule": "The public frontend may expose static app code, local installer handoffs and public-safe receipts only; provider secrets, billing, raw private data and remote execution authority stay out of GitHub Pages.",
+  "canary_path": [
+    {
+      "id": "open-site",
+      "surface": "first screen",
+      "expected": "Chat composer is the first useful action and the route floor is visible before advanced panels.",
+      "selector": "#mimir-prompt",
+      "status": "ready"
+    },
+    {
+      "id": "automatic-free-route",
+      "surface": "chat runtime",
+      "expected": "When no backend is live, MMIR selects the browser helper or browser/WebGPU starter route instead of a dead no-model state.",
+      "selector": "noModelFallbackStarter",
+      "status": "ready"
+    },
+    {
+      "id": "first-useful-answer",
+      "surface": "chat runtime",
+      "expected": "A free browser helper, browser WebGPU route or verified backend answer creates a first-chat receipt without raw prompt or response storage.",
+      "selector": "recordFirstChatReceipt",
+      "status": "ready"
+    },
+    {
+      "id": "local-node-mac-install",
+      "surface": "local connector installer",
+      "expected": "Mac installer package downloads a checked connector server, installs/starts Ollama and a starter model, starts localhost connector and returns to MMIR for proof.",
+      "selector": "mmir-local-connector-mac.zip.html",
+      "status": "beta"
+    },
+    {
+      "id": "model-proof",
+      "surface": "live proof",
+      "expected": "If a local node exposes a model, MMIR probes /chat/completions only on free/local-looking routes, selects the verified model and prepares first chat.",
+      "selector": "proveLiveRoute",
+      "status": "ready"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "J001",
+      "name": "Instant free chat",
+      "priority": "P0",
+      "status": "ready",
+      "user_goal": "Open MMIR and get a useful answer immediately.",
+      "automatic_path": "Browser helper is selected when no live backend exists; first answer writes a local receipt.",
+      "completion_signal": "first_chat_receipt.status=success; raw_prompt_stored:false; raw_response_stored:false"
+    },
+    {
+      "id": "J002",
+      "name": "Add Mac local node",
+      "priority": "P0",
+      "status": "beta_with_device_watch",
+      "user_goal": "Download one Mac package, run it, then see the node/model become active in chat.",
+      "automatic_path": "Mac package installs private Node runtime when needed, installs/starts Ollama, pulls a starter model, starts localhost connector and returns to MMIR.",
+      "completion_signal": "local_node_health=ready; /models returns at least one model; proof status verified"
+    },
+    {
+      "id": "J003",
+      "name": "Add Windows, Linux, Raspberry Pi or VM node",
+      "priority": "P0",
+      "status": "beta",
+      "user_goal": "Turn any owned device into a trusted MMIR node.",
+      "automatic_path": "Platform installers use localhost defaults, pairing, Ollama starter model and post-install return proof.",
+      "completion_signal": "node dashboard sees health, hardware, models and tunnel policy"
+    },
+    {
+      "id": "J004",
+      "name": "Choose or combine models",
+      "priority": "P1",
+      "status": "beta",
+      "user_goal": "Use live local models, browser helpers, WebGPU candidates and installable free models from one picker.",
+      "automatic_path": "Model picker keeps the free route floor visible and prefers verified live routes when available.",
+      "completion_signal": "selected model has live, browser-helper, browser-webgpu or installable-free state"
+    },
+    {
+      "id": "J005",
+      "name": "Connect paid/SaaS/API-key providers safely",
+      "priority": "P1",
+      "status": "blocked_until_protected_backend_policy",
+      "user_goal": "Use external providers without exposing keys in the public frontend.",
+      "automatic_path": "Provider routes stay behind protected backend auth, rate limits, audit and explicit cost policy.",
+      "completion_signal": "no provider key field or bearer construction exists in GitHub Pages"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "chat-composer",
+      "status": "pass",
+      "result": "The public page exposes #mimir-prompt, Send, Connect model and route-floor controls in the first screen.",
+      "scope": "inkognitroz.github.io"
+    },
+    {
+      "id": "receipt-coverage",
+      "status": "pass",
+      "result": "Browser helper, browser WebGPU and backend sends now call recordFirstChatReceipt with no raw prompt/response storage.",
+      "scope": "chat-runtime.js"
+    },
+    {
+      "id": "mac-installer-checksum",
+      "status": "pass",
+      "result": "Mac installer SERVER_SHA256 matches the published connector server LF SHA-256.",
+      "scope": "downloads"
+    },
+    {
+      "id": "free-route-cost-guard",
+      "status": "pass",
+      "result": "Live probes run only on free/local-looking routes; possible paid/provider routes are blocked from hidden proof calls.",
+      "scope": "zero-trust"
+    },
+    {
+      "id": "device-runtime",
+      "status": "watch",
+      "result": "Static installer contract is green; final Mac/Windows/Linux device execution still needs real-device QA before calling the install journey complete.",
+      "scope": "local-node"
+    }
+  ],
+  "next": {
+    "task": "D254",
+    "label": "Chat-first Open WebUI parity and Mac installer app packaging QA"
+  }
+}

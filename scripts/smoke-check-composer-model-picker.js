@@ -37,7 +37,7 @@ function json(file) {
 }
 
 function requireIncludes(source, needle, message) {
-  if (!source.includes(needle)) fail(message);
+  if (!source.replace(/\s+/g, '').includes(String(needle).replace(/\s+/g, ''))) fail(message);
 }
 
 const runtime = read(files.runtime);
@@ -133,8 +133,8 @@ const d207 = tasks.find((task) => task.seq === 'D207');
 if (!d207 || d207.status !== 'beta') {
   fail('Progress dashboard task D207 must be beta after free live-route hardening ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D253') {
-  fail('Progress dashboard next queue must prioritize D253 after D236 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
+  fail('Progress dashboard next queue must prioritize D254 after D236 ships.');
 }
 
 if (!process.exitCode) {

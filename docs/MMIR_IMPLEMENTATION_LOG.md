@@ -244,14 +244,15 @@ Updated: 2026-05-23
 - D250 is now beta: public UI now writes browser-local metadata receipts after trust timeline confirm, readiness refresh and rollback actions, including backend route, result status and next action.
 - D251 is now beta: public dashboard now embeds deterministic desktop/mobile browser QA fixtures for timeline receipt running, ready and error states, including confirm-source, readiness refresh, apply-rollback and backend-error scenarios.
 - D252 is now beta: Progress Dashboard now embeds a public-safe cross-repo code review, architecture review, security review and UX review gate using public smoke/safety evidence and backend test/route/secret-scan evidence.
-- D253 is now next: add an end-to-end no-spend activation canary from first visit to first useful answer receipt.
+- D253 is now beta: chat-first free activation canary proves instant browser-helper chat, first-chat receipt coverage, Mac installer checksum alignment and local-node proof handoff without spend, while keeping real-device Mac QA as a watch item.
+- D254 is now next: tighten Open WebUI-style chat-first focus, active model/node strip and Mac package/app-bundle QA without spend.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D253` end-to-end free activation canary.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D254` chat-first Open WebUI parity and Mac installer package QA.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

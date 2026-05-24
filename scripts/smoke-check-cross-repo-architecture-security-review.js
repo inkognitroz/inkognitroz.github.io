@@ -104,7 +104,7 @@ for (const needle of [
   'crossRepoArchitectureSecurityReviewReportPath',
   'readCrossRepoArchitectureSecurityReviewReport',
   "['D252', { status: 'beta'",
-  "['D253', { status: 'next'"
+  "['D254', { status: 'next'"
 ]) {
   requireIncludes(files.buildDashboard, needle, `D252 dashboard build missing ${needle}.`);
 }
@@ -122,16 +122,16 @@ requireIncludes(files.qualityWorkflow, 'smoke-check-cross-repo-architecture-secu
 requireIncludes(files.pagesWorkflow, 'smoke-check-cross-repo-architecture-security-review.js', 'Pages workflow must run D252 cross-repo review QA.');
 requireIncludes(files.backlog, '| D253 |', 'Backlog must add D253 after D252.');
 requireIncludes(files.implementationLog, 'D252 is now beta', 'Implementation log must mark D252 beta.');
-requireIncludes(files.implementationLog, 'D253 is now next', 'Implementation log must mark D253 next.');
+requireIncludes(files.implementationLog, 'D254 is now next', 'Implementation log must mark D254 next.');
 
 const progress = json(files.progressData);
 requireTrue(progress.cross_repo_architecture_security_review_report?.title === report.title, 'Progress dashboard data must embed D252 review report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d252 = tasks.find((task) => task.seq === 'D252');
-const d253 = tasks.find((task) => task.seq === 'D253');
+const d253 = tasks.find((task) => task.seq === 'D254');
 requireTrue(d252?.status === 'beta', 'Progress dashboard task D252 must be beta after review gate ships.');
-requireTrue(d253?.status === 'next', 'Progress dashboard task D253 must become next after D252 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D253', 'Progress dashboard next queue must prioritize D253 after D252 ships.');
+requireTrue(d253?.status === 'next', 'Progress dashboard task D254 must become next after D252 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D254', 'Progress dashboard next queue must prioritize D254 after D252 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

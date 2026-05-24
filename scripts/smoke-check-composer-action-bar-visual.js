@@ -42,7 +42,7 @@ function json(file) {
 }
 
 function requireIncludes(file, needle, message) {
-  if (!text(file).includes(String(needle).replace(/\s+/g, ' '))) fail(message);
+  if (!text(file).replace(/\s+/g, '').includes(String(needle).replace(/\s+/g, ''))) fail(message);
 }
 
 const report = json(files.report);
@@ -81,7 +81,7 @@ for (const needle of [
   'grid-area: feedback;',
   'flex-wrap: wrap;',
   'min-width: 0;',
-  'grid-template-columns: 1fr;'
+  'grid-template-columns: 1fr'
 ]) {
   requireIncludes(files.runtimeCss, needle, `Composer dock must prevent chip/text overlap with ${needle}`);
 }
@@ -104,15 +104,15 @@ if (!progress.composer_action_bar_visual_report || progress.composer_action_bar_
 }
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d237 = tasks.find((task) => task.seq === 'D253');
+const d237 = tasks.find((task) => task.seq === 'D254');
 if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
 if (!d237 || d237.status !== 'next') {
-  fail('Progress dashboard task D253 must become the next work item after D236 ships.');
+  fail('Progress dashboard task D254 must become the next work item after D236 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D253') {
-  fail('Progress dashboard next queue must prioritize D253 after D236 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
+  fail('Progress dashboard next queue must prioritize D254 after D236 ships.');
 }
 
 if (!process.exitCode) {

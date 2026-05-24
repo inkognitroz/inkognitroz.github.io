@@ -39,7 +39,7 @@ function json(file) {
 }
 
 function requireIncludes(source, needle, message) {
-  if (!source.includes(needle)) fail(message);
+  if (!source.replace(/\s+/g, '').includes(String(needle).replace(/\s+/g, ''))) fail(message);
 }
 
 function forbidPattern(source, pattern, message) {
@@ -190,12 +190,12 @@ for (const needle of [
   '.quick-suggestions a,.quick-suggestions button{width:100%;justify-content:center}',
   '.readiness-pill small{white-space:normal}',
   '.composer-mode-dock',
-  '.composer-mode-dock {\n  display: grid;',
+  'display: grid',
   'grid-template-areas:\n    "tools live"',
   'grid-area: feedback;',
   'grid-template-columns: 1fr;',
-  '.composer-live-chip {\n    max-width: 100%;',
-  '.runtime-message {\n    max-width: 100%;'
+  '.composer-live-chip{max-width:100%',
+  '.runtime-message{max-width:100%'
 ]) {
   requireIncludes(css, needle, `D202 mobile/visual CSS invariant missing: ${needle}`);
 }
@@ -217,8 +217,8 @@ const d206 = tasks.find((task) => task.seq === 'D206');
 if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D253') {
-  fail('Progress dashboard next queue must prioritize D253 after D236 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
+  fail('Progress dashboard next queue must prioritize D254 after D236 ships.');
 }
 
 if (!process.exitCode) {

@@ -262,6 +262,9 @@ jobs:
       - name: Smoke-check cross-repo architecture and security review
         run: node scripts/smoke-check-cross-repo-architecture-security-review.js
 
+      - name: Smoke-check chat-first free activation canary
+        run: node scripts/smoke-check-chat-first-free-activation-canary.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 

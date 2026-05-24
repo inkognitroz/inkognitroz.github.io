@@ -1,135 +1,48 @@
-.mimir-chat-runtime {
-  width: min(920px, 100%);
-  margin: 18px auto 0;
-  display: grid;
-  gap: 12px;
-}
+.mimir-chat-runtime{width:min(920px,100%);margin:18px auto 0;display:grid;gap:12px}
 
-.runtime-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(210px, 280px) repeat(4, auto);
-  gap: 8px;
-  align-items: center;
-  padding: 8px 10px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(255, 255, 255, 0.72);
-  border-radius: 22px;
-  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.05);
-}
+.runtime-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(210px,280px) repeat(4,auto);gap:8px;align-items:center;padding:8px 10px;border:1px solid rgba(148,163,184,.18);background:rgba(255,255,255,.72);border-radius:22px;box-shadow:0 10px 28px rgba(17,24,39,.05)}
 
-.runtime-toolbar span {
-  font-size: 0.9rem;
-  color: #334155;
-}
+.runtime-toolbar span{font-size:.9rem;color:#334155}
 
 .runtime-toolbar span[data-state="ready"] { color: #047857; }
 .runtime-toolbar span[data-state="error"] { color: #b91c1c; }
 .runtime-toolbar span[data-state="loading"] { color: #1d4ed8; }
 
-.runtime-toolbar label {
-  display: grid;
-  gap: 4px;
-  font-size: 0.76rem;
-  color: #64748b;
-}
+.runtime-toolbar label{display:grid;gap:4px;font-size:.76rem;color:#64748b}
 
 .runtime-toolbar select,
-.runtime-toolbar button {
-  min-height: 36px;
-  border: 1px solid rgba(100, 116, 139, 0.34);
-  border-radius: 999px;
-  background: #fff;
-  color: #0f172a;
-}
+.runtime-toolbar button{min-height:36px;border:1px solid rgba(100,116,139,.34);border-radius:999px;background:#fff;color:#0f172a}
 
-.runtime-toolbar button {
-  padding: 0 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
+.runtime-toolbar button{padding:0 13px;cursor:pointer;white-space:nowrap}
 
-.runtime-toolbar button:hover:not(:disabled) {
-  border-color: rgba(15, 23, 42, 0.46);
-}
+.runtime-toolbar button:hover:not(:disabled){border-color:rgba(15,23,42,.46)}
 
 .runtime-toolbar select:focus-visible,
 .runtime-toolbar button:focus-visible,
 .runtime-message-actions button:focus-visible,
-.runtime-code-header button:focus-visible {
-  outline: 3px solid rgba(16, 163, 127, 0.28);
-  outline-offset: 2px;
-  border-color: rgba(16, 163, 127, 0.72);
-}
+.runtime-code-header button:focus-visible{outline: 3px solid rgba(16,163,127,.28);outline-offset: 2px;border-color:rgba(16,163,127,.72)}
 
-.runtime-toolbar button:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
-}
+.runtime-toolbar button:disabled{cursor:not-allowed;opacity:.48}
 
-.runtime-context-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  color: #64748b;
-  font-size: 0.8rem;
-}
+.runtime-context-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:#64748b;font-size:.8rem}
 
-.runtime-context-controls label {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  font-weight: 750;
-}
+.runtime-context-controls label{display:inline-flex;gap:5px;align-items:center;font-weight:750}
 
-.runtime-context-controls input:focus-visible {
-  outline: 3px solid rgba(16, 163, 127, 0.28);
-  outline-offset: 2px;
-}
+.runtime-context-controls input:focus-visible{outline:3px solid rgba(16,163,127,.28);outline-offset:2px}
 
-.runtime-answer-context-receipt {
-  margin: 6px 0 0;
-  color: #4b5563;
-  font-size: 0.78rem;
-}
+.runtime-answer-context-receipt{margin:6px 0 0;color:#4b5563;font-size:.78rem}
 
-.runtime-answer-context-receipt summary {
-  cursor: pointer;
-}
+.runtime-answer-context-receipt summary{cursor:pointer}
 
-.runtime-answer-context-receipt dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 2px 8px;
-  margin: 5px 0;
-}
+.runtime-answer-context-receipt dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 8px;margin:5px 0}
 
-.runtime-answer-context-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 5px 0;
-}
+.runtime-answer-context-actions{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0}
 
-.runtime-answer-context-actions button {
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-size: 0.76rem;
-}
+.runtime-answer-context-actions button{padding:4px 8px;border-radius:999px;font-size:.76rem}
 
-.context-correction-retry-badge {
-  color: #1d4ed8;
-  font-weight: 700;
-}
+.context-correction-retry-badge{color:#1d4ed8;font-weight:700}
 
-.runtime-live-proof {
-  display: grid;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.78);
-}
+.runtime-live-proof{display:grid;gap:8px;padding:10px 12px;border:1px solid rgba(148,163,184,.24);border-radius:18px;background:rgba(255,255,255,.78)}
 
 .runtime-activation-replay {
   align-items: center;
@@ -324,29 +237,9 @@
   color: #b91c1c;
 }
 
-.composer-mode-dock {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "tools live"
-    "feedback feedback";
-  align-items: center;
-  justify-content: space-between;
-  min-width: 0;
-  gap: 10px;
-  padding: 7px 6px 9px;
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
-}
+.composer-mode-dock{align-items:center;border-top:1px solid rgba(148,163,184,.18);display:grid;gap:10px;grid-template-areas:"tools live" "feedback feedback";grid-template-columns:minmax(0,1fr) auto;justify-content:space-between;min-width:0;padding:7px 6px 9px}
 
-.composer-action-feedback {
-  grid-area: feedback;
-  min-width: 0;
-  width: 100%;
-  color: #64748b;
-  font-size: 0.78rem;
-  line-height: 1.35;
-  padding: 0 4px;
-}
+.composer-action-feedback{color:#64748b;font-size:.78rem;grid-area:feedback;line-height:1.35;min-width:0;padding:0 4px;width:100%}
 
 .composer-action-feedback[data-state="ready"] {
   color: #047857;
@@ -356,59 +249,18 @@
   color: #b91c1c;
 }
 
-.composer-tool-cluster,
-.composer-live-cluster {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
-.composer-tool-cluster {
-  grid-area: tools;
-  justify-content: flex-start;
-}
-
-.composer-live-cluster {
-  grid-area: live;
-  justify-content: flex-end;
-}
-
-.composer-icon-button,
-.composer-mode-button,
-.composer-live-chip {
-  min-height: 32px;
-  border: 1px solid rgba(100, 116, 139, 0.24);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  color: #475569;
-  font-size: 0.82rem;
-  font-weight: 650;
-  line-height: 1;
-  white-space: nowrap;
-  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
-}
+.composer-tool-cluster,.composer-live-cluster{align-items:center;display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.composer-tool-cluster{grid-area:tools;justify-content:flex-start}
+.composer-live-cluster{grid-area:live;justify-content:flex-end}
+.composer-icon-button,.composer-mode-button,.composer-live-chip{background:rgba(255,255,255,.82);border:1px solid rgba(100,116,139,.24);border-radius:999px;color:#475569;font-size:.82rem;font-weight:650;line-height:1;min-height:32px;transition:border-color 120ms ease,background 120ms ease,color 120ms ease;white-space:nowrap}
 
 .composer-icon-button,
 .composer-mode-button {
   cursor: pointer;
 }
 
-.composer-icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  padding: 0 10px;
-}
-
-.composer-mode-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-}
+.composer-icon-button{align-items:center;display:inline-flex;justify-content:center;min-width:32px;padding:0 10px}
+.composer-mode-button{align-items:center;display:inline-flex;justify-content:center;padding:0 10px}
 
 .composer-mode-button.is-active {
   border-color: rgba(16, 163, 127, 0.42);
@@ -416,32 +268,12 @@
   color: #047857;
 }
 
-.composer-live-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 0;
-  max-width: min(280px, 44vw);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
-  padding: 0 10px;
-  background: rgba(248, 250, 252, 0.86);
-}
+.composer-live-chip{align-items:center;background:rgba(248,250,252,.86);display:inline-flex;justify-content:flex-start;max-width:min(280px,44vw);min-width:0;overflow:hidden;padding:0 10px;text-align:left;text-overflow:ellipsis}
 
-.composer-chip-button {
-  cursor: pointer;
-}
+.composer-chip-button{cursor:pointer}
 
-#runtime-model-chip {
-  color: #0f172a;
-  max-width: min(310px, 42vw);
-}
-
-#runtime-resource-chip {
-  justify-content: center;
-  max-width: 190px;
-}
+#runtime-model-chip{color:#0f172a;max-width:min(310px,42vw)}
+#runtime-resource-chip{justify-content:center;max-width:190px}
 
 #primary-chat-link.btn-primary {
   width: 44px;
@@ -553,12 +385,7 @@
   cursor: pointer;
 }
 
-.runtime-code-block pre {
-  margin: 0;
-  max-width: 100%;
-  overflow: auto;
-  padding: 10px;
-}
+.runtime-code-block pre{margin:0;max-width:100%;overflow:auto;padding:10px}
 
 .runtime-code-block code {
   color: #f8fafc;
@@ -619,50 +446,14 @@
   color: #92400e;
 }
 
-@media (max-width: 720px) {
-  .composer-mode-dock {
-    align-items: stretch;
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "tools"
-      "live"
-      "feedback";
-  }
-
-  .composer-tool-cluster,
-  .composer-live-cluster {
-    justify-content: flex-start;
-    width: 100%;
-  }
-
-  .composer-mode-button,
-  .composer-live-chip {
-    flex: 1 1 auto;
-  }
-
-  .runtime-message-actions button {
-    flex: 1 1 92px;
-  }
-
-  .composer-live-chip {
-    max-width: 100%;
-  }
-
-  .runtime-activation-replay {
-    align-items: stretch;
-    display: grid;
-  }
-
-  .runtime-toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .runtime-toolbar button,
-  .runtime-toolbar select {
-    width: 100%;
-  }
-
-  .runtime-message {
-    max-width: 100%;
-  }
+@media (max-width:720px){
+  .composer-mode-dock{align-items:stretch;grid-template-areas:"tools" "live" "feedback";grid-template-columns:1fr}
+  .composer-tool-cluster,.composer-live-cluster{justify-content:flex-start;width:100%}
+  .composer-mode-button,.composer-live-chip{flex:1 1 auto}
+  .runtime-message-actions button{flex:1 1 92px}
+  .composer-live-chip{max-width:100%}
+  .runtime-activation-replay{align-items:stretch;display:grid}
+  .runtime-toolbar{grid-template-columns:1fr}
+  .runtime-toolbar button,.runtime-toolbar select{width:100%}
+  .runtime-message{max-width:100%}
 }

@@ -294,6 +294,9 @@
     writeFirstChatReceipt(receipt);
     return receipt;
   }
+  function uReceipt(model,route,prompt,response){
+    recordFirstChatReceipt('success',{model,route,prompt_chars:(prompt||'').length,response_chars:(response||'').length});
+  }
 
   function contextState(local,backend,off){return off?'off':local&&backend?'local+backend':local?'local':backend?'backend':'none';}
 
@@ -1299,7 +1302,6 @@
         'chmod +x mmir-local-connector-linux.sh',
         'MMIR_MODEL='+envValue+' ./mmir-local-connector-linux.sh'
       ],
-      ollama:ollamaModel?['ollama pull '+ollamaModel]:[]
     };
   }
 
@@ -1343,7 +1345,8 @@
       isWebLlm?'<p>Real browser LLM: WebGPU, no API key or cloud cost. First use downloads weights and may take time.</p>':
         '<div class="runtime-install-grid">'+
           '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
-          '<div><strong>Mac / Linux</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
+          '<div><strong>Mac</strong><p><a href="./downloads/mmir-local-connector-mac.zip.html">Download Mac installer</a> and open it.</p></div>'+
+          '<div><strong>Linux / Raspberry Pi</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
         '</div>'+
         '<div class="runtime-helper-actions">'+
           '<a class="button-link" href="./downloads/mmir-local-connector-install.html">Choose installer</a>'+
@@ -1698,6 +1701,7 @@
         }
       }
       updateMessage(assistant.message.id,content||'Browser model returned an empty response.',starter.label);
+      uReceipt(starter.label||starter.model||'browser WebGPU','browser-webgpu',prompt,content);
       setStatus(stopRequested?'Browser generation stopped.':'Browser model response received.','ready');
     }catch(error){
       const fallback='Browser model could not start: '+(error?.message||'unknown error')+'\n\nUse the free Ollama install path, or choose MMIR Guide for setup help.';
@@ -1712,38 +1716,36 @@
   function guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,emptyPrompt){
     const guideName=starter.label||'MMIR Guide';
     const parts=[
-      guideName+' is active in this browser: free guidance, not a remote LLM call. Provider keys, prompts and billing data stay out of MMIR cloud.',
-      'Useful now: choose a free route, install a local model, then prove a real live model.'
+      guideName+' is active: free browser guidance, not a remote LLM. No provider keys or billing data enter MMIR cloud.',
+      'Useful now: chat, pick a free route, install local AI and prove a live model.'
     ];
     if(helperId==='mmir-model-picker'||wantsModel||emptyPrompt){
-      parts.push('Best free model path: Gemma 3 270M or SmolLM2 135M on weak devices; Gemma 3 1B or Llama 3.2 1B on laptops; DeepSeek-R1 1.5B or Phi-4 Mini for stronger reasoning.');
+      parts.push('Best free model path: Gemma 3 270M or SmolLM2 on weak devices; Llama 3.2 1B/3B or Phi-4 Mini on laptops.');
     }
     if(helperId==='mmir-setup-coach'||wantsConnect||emptyPrompt){
-      parts.push('Setup path: + Add model, choose an installable-free Ollama model, run free Local Node for Windows/Mac/Linux/Raspberry Pi/Linux ARM or VM, then verify /health, /models and first chat on http://127.0.0.1:3000.');
+      parts.push('Setup path: + Add model, pick free Ollama, run Local Node for Mac/Windows/Linux/Pi/VM, then verify health, models and chat on 127.0.0.1:3000.');
     }
     if(helperId==='mmir-security-coach'){
-      parts.push('Security rule: public frontend stays secret-free. Local models use 127.0.0.1 plus pairing. Provider keys, paid models, teams and billing need protected backend auth, limits, audit and cost policy.');
+      parts.push('Security rule: public frontend stays secret-free. Local models use 127.0.0.1 plus pairing; paid routes need backend auth, limits, audit and cost policy.');
     }
     if(helperId==='mmir-growth-coach'||wantsBusiness){
-      parts.push('Growth ladder: keep free useful first, then sell managed VM/GPU nodes, premium provider routing, team governance, marketplace listings, evals and enterprise.');
+      parts.push('Growth ladder: free useful chat first; later sell managed nodes, premium routing, team governance, marketplace and evals.');
     }
     const primary=wantsBusiness?'Open progress; keep free local chat green before premium routes.':(wantsConnect||emptyPrompt?'Press + Add model and run the free Local Node installer.':'Choose a free starter model.');
     parts.push('Primary next action: '+primary);
-    parts.push('No paid route starts here. To use SaaS/provider models later, connect them through a protected backend, never by pasting keys into the public page.');
+    parts.push('No paid route starts here. SaaS/provider keys belong behind a protected backend, never in this public page.');
     return parts.join('\n\n');
   }
 
   function installResponseText(model,commands){
     return [
       model.label+' is selected as a free local model.',
-      'It becomes live when MMIR Local Node and Ollama run locally and /models reports it.',
+      'It becomes live when Local Node and Ollama expose it in /models.',
       'Windows:',
       '```powershell\n'+commands.windows.join('\n')+'\n```',
       'Mac / Linux:',
       '```bash\n'+commands.unix.join('\n')+'\n```',
-      'Direct Ollama test if Ollama is already installed:',
-      '```bash\n'+commands.ollama.join('\n')+'\n```',
-      'After install: use + Add model, keep the local profile active, and press Refresh. The model should move from installable-free to live.'
+      'After install: keep the local profile active and press Refresh. The model should move from installable-free to live.'
     ].join('\n\n');
   }
 
@@ -1772,6 +1774,7 @@
     promptEl.value='';
     const answer=starter.runtime==='browser-guide'?guideResponse(prompt,starter):installResponse(starter);
     appendMessage('assistant',answer,meta,{retryPrompt:prompt,model:starter.label});
+    uReceipt(starter.label||starter.model||'MMIR starter',starter.runtime==='browser-guide'?'browser-helper':'installable-local',prompt,answer);
     setStatus(starter.runtime==='browser-guide'?'Guide answered locally. Choose + Add model to activate a real model.':'Install path generated.','ready');
     setBusy(false);
   }
@@ -1986,12 +1989,7 @@
       });
       updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta);
       writeActiveProfilePatch({health:'ready'});
-      recordFirstChatReceipt('success',{
-        model:selectedModel,
-        route:profile.provider||profile.name||'backend',
-        prompt_chars:prompt.length,
-        response_chars:String(content||'').length
-      });
+      uReceipt(selectedModel,profile.provider||profile.name||'backend',prompt,content);
       renderLiveProof('First verified chat answered. Save it or keep building.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('answered'));
       setStatus('First answer received.','ready');
     }catch(error){
