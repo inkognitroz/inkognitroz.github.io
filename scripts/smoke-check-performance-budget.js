@@ -8,6 +8,7 @@ const mmirPath = join(publicDir, 'mmir.html');
 const indexPath = join(publicDir, 'index.html');
 const initialJsByteBudget = 155000;
 const cacheKey = '20260524-quiet-first-paint-v3';
+const runtimeCacheKey = '20260524-mobile-sticky-v1';
 const runtimeFixKey = '20260524-local-probe-v5';
 
 function fail(message) {
@@ -99,7 +100,7 @@ for (const src of deferredScripts) {
 
 for (const required of [
   `./apps/mimir-chat-portal/api-client.js?v=${cacheKey}`,
-  `./apps/mimir-chat-portal/chat-runtime.js?v=${cacheKey}`,
+  `./apps/mimir-chat-portal/chat-runtime.js?v=${runtimeCacheKey}`,
   `./apps/mimir-chat-portal/first-impression.js?v=${cacheKey}`,
   `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`
 ]) {
