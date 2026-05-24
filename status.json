@@ -1,12 +1,16 @@
 {
-  "service": "MMIR AI Backend",
-  "status": "waiting_for_oci_capacity",
-  "provider": "Oracle Cloud Infrastructure",
-  "region": "eu-stockholm-1",
-  "shape": "VM.Standard.A1.Flex",
-  "target": "Ollama + Open WebUI + Gemma-compatible models",
-  "frontend": "https://mmir.ai",
-  "backend_health_url": null,
-  "message": "Infrastructure automation is ready. Waiting for OCI Ampere A1 capacity in Stockholm. MMIR mobile chat viewport hotfix is ready for Pages deploy.",
-  "last_updated": "2026-05-24T15:10:00-07:00"
+  "service": "MMIR AI Control Plane",
+  "status": "bootstrap_free_route_online",
+  "identity": "The orchestration layer for trusted AI",
+  "frontend": "https://mmir.ai/mmir.html",
+  "managed_api": "https://api.mmir.ai",
+  "managed_api_version": "2026-05-24-free-active-node-v3",
+  "free_active_node": "browser-guide",
+  "target": "World-class MMIR chat + active AI nodes + local/hosted model orchestration",
+  "first_click_path": "Open mmir.ai -> chat through free active node -> connect local AI -> add own models",
+  "no_paid_routes_started": true,
+  "backend_health_url": "https://api.mmir.ai/status",
+  "message": "Frontend mobile chat works in live smoke, SaaS Fabric copy is removed from MMIR path, api.mmir.ai exposes a free active Browser Guide node, and protected local/hosted node registration remains fail-closed until zero-trust registration is implemented.",
+  "known_caveat": "active-node-strip.js is updated on main and cache-busted in workflow config, but existing no-query GitHub Pages/CDN cache may serve the previous strip briefly; chat still falls back to Browser Guide while cache rolls.",
+  "last_updated": "2026-05-24T15:45:00-07:00"
 }
