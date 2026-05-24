@@ -3,7 +3,6 @@
   const grid=document.getElementById('platform-status-grid');
   const summary=document.getElementById('platform-status-summary');
   const refreshButton=document.getElementById('refresh-platform-status');
-  const GITHUB_RUNS_URL='https://api.github.com/repos/inkognitroz/inkognitroz.github.io/actions/runs?per_page=12';
   if(!grid)return;
 
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
@@ -53,44 +52,51 @@
   }
 
   function runNotes(run){
-    if(!run)return 'No recent public GitHub Actions run was found.';
-    const sha=String(run.head_sha||'').slice(0,7);
-    const finished=run.updated_at?new Date(run.updated_at).toLocaleString():'not finished yet';
+    if(!run)return 'No public deploy verification run is recorded yet.';
+    const url=String(run.url||'');
+    const finished=run.updated_at||run.completed_at||run.checked_at;
+    const suffix=finished?' at '+new Date(finished).toLocaleString():'';
     if(run.status==='completed'){
-      return 'Latest run '+sha+' completed with '+(run.conclusion||'unknown')+' at '+finished+'.';
+      return 'Recorded run completed with '+(run.conclusion||'unknown')+suffix+'.';
     }
-    return 'Latest run '+sha+' is '+(run.status||'unknown')+' and was updated at '+finished+'.';
+    return 'Recorded run is '+(run.status||'unknown')+suffix+'.';
   }
 
-  async function githubActionsComponents(){
+  function componentFromRun(id,label,run){
+    return {
+      id,
+      label,
+      status:runStatus(run),
+      route:run?.url||run?.html_url||'./deploy-verification.json',
+      notes:runNotes(run)
+    };
+  }
+
+  async function publicDeployComponents(platformManifest){
     try{
-      const data=await fetchStatusJson(GITHUB_RUNS_URL,7000);
-      const runs=Array.isArray(data?.workflow_runs)?data.workflow_runs:[];
-      const deploy=runs.find(run=>run.name==='Deploy GitHub Pages');
-      const quality=runs.find(run=>run.name==='Static quality gates');
+      const deploy=await fetchStatusJson('./deploy-verification.json',5000);
+      const runs=Array.isArray(deploy?.ci)?deploy.ci:[];
+      const deployRun=runs.find(run=>run.name==='Deploy GitHub Pages');
+      const qualityRun=runs.find(run=>run.name==='Static quality gates');
+      const commit=deploy?.commit_short||platformManifest?.latest_verified_commit||'unknown';
       return [
+        componentFromRun('static-quality-gates','Static quality gates',qualityRun),
+        componentFromRun('pages-deploy-run','Pages deploy run',deployRun),
         {
-          id:'static-quality-gates',
-          label:'Static quality gates',
-          status:runStatus(quality),
-          route:quality?.html_url||'GitHub Actions',
-          notes:runNotes(quality)
-        },
-        {
-          id:'pages-deploy-run',
-          label:'Pages deploy run',
-          status:runStatus(deploy),
-          route:deploy?.html_url||'GitHub Actions',
-          notes:runNotes(deploy)
+          id:'public-deploy-verification',
+          label:'Public deploy verification',
+          status:deploy?.result==='green_with_network_watch'||deploy?.public_repo_rule?'online':'watch',
+          route:'./deploy-verification.json',
+          notes:'Public-safe manifest loaded for commit '+commit+'. Browser does not call GitHub APIs or require a token.'
         }
       ];
     }catch(error){
       return [{
-        id:'github-actions-api',
-        label:'GitHub Actions API',
+        id:'public-deploy-verification',
+        label:'Public deploy verification',
         status:'watch',
-        route:'api.github.com',
-        notes:'Public deploy checks could not be loaded from this browser. This can be a rate limit, network block or temporary GitHub API issue.'
+        route:'./deploy-verification.json',
+        notes:'Static deploy verification could not be loaded from this browser. No external GitHub API request was made.'
       }];
     }
   }
@@ -135,20 +141,21 @@
 
   async function init(){
     if(refreshButton)refreshButton.disabled=true;
-    setSummary('Checking public site, deploy pipeline and active backend...','loading');
+    setSummary('Checking public site, deploy manifest and active backend...','loading');
+    let manifest=null;
     let components=[];
     try{
-      const manifest=await fetchStatusJson('./platform-status.json',5000);
+      manifest=await fetchStatusJson('./platform-status.json',5000);
       components=Array.isArray(manifest.components)?manifest.components:[];
     }catch(error){
       components=[{id:'status-manifest',label:'Status manifest',status:'degraded',route:'./platform-status.json',notes:'The public status manifest could not be loaded.'}];
     }
     components.unshift(currentSessionComponent());
-    components.push(...await githubActionsComponents());
+    components.push(...await publicDeployComponents(manifest));
     components.push(await activeBackendStatus());
     render(components);
     const hasProblem=components.some(component=>['offline','degraded'].includes(component.status));
-    setSummary('Checked '+clock()+'. Public deploy checks are automated; active backend checks stay local to this browser.',hasProblem?'error':'ready');
+    setSummary('Checked '+clock()+'. Public deploy checks use static manifests; active backend checks stay local to this browser.',hasProblem?'error':'ready');
     if(refreshButton)refreshButton.disabled=false;
   }
 
