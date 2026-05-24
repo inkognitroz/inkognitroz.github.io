@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "description": "Public-safe active chat routes that the static MMIR frontend can actually attach to. No provider secrets, raw prompts, paid routes or private node tokens belong here.",
+  "nodes": [
+    {
+      "id": "browser-guide",
+      "name": "MMIR Guide",
+      "type": "free",
+      "status": "online",
+      "trust_level": "public-free",
+      "cost": { "mode": "free", "requires_approval": false },
+      "route": { "kind": "starter", "starter_id": "mmir-guide" },
+      "capabilities": ["chat.completions", "onboarding", "routing.free"],
+      "models": [
+        {
+          "id": "mmir-guide",
+          "name": "MMIR Guide",
+          "status": "available",
+          "provider": "mmir",
+          "source": "browser-helper"
+        }
+      ]
+    },
+    {
+      "id": "browser-webgpu-qwen",
+      "name": "Browser WebGPU",
+      "type": "browser",
+      "status": "available_if_supported",
+      "trust_level": "browser-local",
+      "cost": { "mode": "free", "requires_approval": false },
+      "route": { "kind": "starter", "starter_id": "webllm-qwen25-05b", "requires": ["webgpu", "secure_context"] },
+      "capabilities": ["chat.completions", "browser.llm"],
+      "models": [
+        {
+          "id": "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+          "name": "Qwen2.5 0.5B",
+          "status": "available_if_supported",
+          "provider": "webllm",
+          "source": "browser-webgpu"
+        }
+      ]
+    },
+    {
+      "id": "local-node",
+      "name": "MMIR Local Node",
+      "type": "local",
+      "status": "auto_detect",
+      "trust_level": "paired-local",
+      "cost": { "mode": "free-local", "requires_approval": false },
+      "route": { "kind": "local-node", "url": "http://127.0.0.1:3000" },
+      "capabilities": ["health", "models", "hardware", "chat.completions", "models.pull", "tunnels.status"],
+      "models": []
+    }
+  ]
+}

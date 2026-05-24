@@ -87,6 +87,8 @@
   function firstChatReceiptStorageKey(){return FIRST_CHAT_RECEIPT_PREFIX+activeWorkspaceId();}
   function activationReplayStorageKey(){return ACTIVATION_REPLAY_PREFIX+activeWorkspaceId();}
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
+  function scrollTranscriptToBottom(){if(transcriptEl)requestAnimationFrame(()=>transcriptEl.scrollTop=transcriptEl.scrollHeight);}
+  function updateChatSurfaceState(){const hasChat=messages.some(m=>m.content&&(m.role==='user'||m.role==='assistant'));document.body.classList.toggle('mimir-has-chat',hasChat);if(transcriptEl)transcriptEl.dataset.empty=String(!hasChat);}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function readActivationReplay(){
     try{
@@ -1014,9 +1016,7 @@
     if(message.meta){const small=document.createElement('small');small.textContent=message.meta;bubble.appendChild(small);}
     renderMessageActions(bubble,message);
     transcriptEl.appendChild(bubble);
-    requestAnimationFrame(()=>{
-      if(transcriptEl)transcriptEl.scrollTop=transcriptEl.scrollHeight;
-    });
+    scrollTranscriptToBottom();
     return body;
   }
 
@@ -1024,6 +1024,7 @@
     if(!transcriptEl)return;
     transcriptEl.innerHTML='';
     for(const message of messages){renderMessage(message);}
+    updateChatSurfaceState();
   }
 
   function appendMessage(role,content,meta,extra){
@@ -1032,6 +1033,7 @@
     messages=messages.slice(-MAX_STORED_MESSAGES);
     saveMessages();
     const body=renderMessage(message);
+    updateChatSurfaceState();
     return {message,body};
   }
 
@@ -1049,6 +1051,8 @@
     if(bubble&&meta!==undefined&&!small&&meta){small=document.createElement('small');bubble.appendChild(small);}
     if(small&&meta!==undefined)small.textContent=String(meta||'');
     if(bubble&&message)renderMessageActions(bubble,message);
+    scrollTranscriptToBottom();
+    updateChatSurfaceState();
   }
 
   function clearConversation(){
@@ -1056,6 +1060,7 @@
     messages=[];
     saveMessages();
     if(transcriptEl)transcriptEl.innerHTML='';
+    updateChatSurfaceState();
     setStatus('Conversation cleared for this workspace.','idle');
     if(promptEl)promptEl.focus();
   }
@@ -1091,12 +1096,11 @@
 
   function defaultMmirInstruction(){
     return [
-      'You are the MMIR.ai platform assistant.',
-      'MMIR is the orchestration layer for trusted AI: local-first chat, model connections, nodes, tunnels, workspaces, memory and workflows.',
-      'Goal: useful now with free/local defaults; config can wait.',
-      'Answer as MMIR support unless the user asks for another meaning.',
-      'Security: no secrets in public frontend; provider keys stay behind protected backend; prefer paired 127.0.0.1 local node; never expose raw runtimes.',
-      'Match the user language and name the free local step for Ollama, MMIR Local Node or cloudflared.'
+      'You are MMIR.ai support.',
+      'MMIR is the orchestration layer for trusted AI.',
+      'Use free/local defaults.',
+      'No frontend secrets; prefer paired 127.0.0.1.',
+      'Match the user.'
     ].join('\n');
   }
 
@@ -1712,9 +1716,9 @@
       uReceipt(starter.label||starter.model||'browser WebGPU','browser-webgpu',prompt,content);
       setStatus(stopRequested?'Browser generation stopped.':'Browser model response received.','ready');
     }catch(error){
-      const fallback='Browser model could not start: '+(error?.message||'unknown error')+'\n\nUse the free Ollama install path, or choose MMIR Guide for setup help.';
+      const fallback='MMIR automatically fell back to the free browser guide.\n\n'+guideResponse(prompt,{id:'mmir-guide',label:'MMIR Guide'});
       updateMessage(assistant.message.id,fallback,'browser model unavailable');
-      setStatus('Browser model unavailable. Use local install path or guide.','error');
+      setStatus('WebGPU unavailable. MMIR Guide answered.','ready');
     }finally{
       currentAbortController=null;
       setBusy(false);

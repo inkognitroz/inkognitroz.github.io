@@ -13,6 +13,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
+  './active-chat-nodes.json',
   './apps/mimir-chat-portal/repair-resume.css',
   './apps/mimir-chat-portal/pwa.css',
   './apps/mimir-chat-portal/pwa.js',

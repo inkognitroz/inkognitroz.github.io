@@ -312,6 +312,25 @@
   scrollbar-gutter: stable;
 }
 
+.runtime-transcript[data-empty="true"] {
+  min-height: 0;
+  padding-block: 0;
+}
+
+.mimir-has-chat .runtime-transcript {
+  min-height: min(46vh, 420px);
+  max-height: min(62vh, 640px);
+  padding: 10px 6px 4px;
+}
+
+.mimir-has-chat .runtime-live-proof {
+  padding: 8px 10px;
+}
+
+.mimir-has-chat .runtime-live-proof p {
+  font-size: 0.8rem;
+}
+
 .runtime-message {
   display: grid;
   gap: 6px;

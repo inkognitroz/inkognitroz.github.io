@@ -34,6 +34,16 @@ MMIR is the orchestration layer for trusted AI. The contract must support a worl
 | `POST` | `/control-plane/provider/plan` | managed API | Validate hosted/provider setup before secrets or spend |
 | `POST` | `/chat` | legacy only | Temporary adapter route until replaced |
 
+## Public Static Route Manifest
+
+Until the managed `/nodes` control plane is live, the public frontend may load `public/active-chat-nodes.json` as a public-safe route manifest. This manifest is not runtime authority. It may only describe routes the static chat can actually attach to without secrets or spend, such as:
+
+- browser helper routes that run inside the page
+- browser WebGPU starters that require user browser support and free model downloads
+- local-node discovery at `127.0.0.1` with pairing before protected model/chat calls
+
+The manifest must not contain provider keys, tunnel secrets, pairing tokens, raw prompts, raw responses, billing IDs or private endpoint credentials. Managed/hosted/provider routes still require `/nodes`, `/routing/decision`, protected backend auth, cost policy and audit logging before the frontend can call them.
+
 ## Common Response Fields
 
 Responses should use these fields where relevant:

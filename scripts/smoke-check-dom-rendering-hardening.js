@@ -57,11 +57,11 @@ for (const needle of ['message.content</', '${message.content}', '+message.conte
 
 for (const needle of [
   'safe=v=>String(v||\'\')',
-  'safe(s.title)',
-  'safe(s.detail)',
-  'safe(s.status)',
-  'safe(s.model)',
-  'safe(s.trust)'
+  'safe(node.name)',
+  'safe(nodeDetail(node))',
+  'safe(status)',
+  'safe(model)',
+  'safe(String(node.trust_level'
 ]) {
   requireIncludes(activeNodeStrip, needle, `Active node strip must escape dynamic route/model text: ${needle}`);
 }
