@@ -298,9 +298,12 @@ return String(model.text||model.value||'MMIR guide').replace(/\s+-\s+live$/i,'')
 }
 
 function openPanel(target){
-const targetEl=document.querySelector(target);
+let nextTarget=target;
+if(nextTarget==='#connect-options'&&!document.querySelector(nextTarget))nextTarget='#local-connector';
+const targetEl=document.querySelector(nextTarget);
 if(targetEl&&'open' in targetEl)targetEl.open=true;
-if(targetEl)targetEl.scrollIntoView({block:'start',behavior:'smooth'});
+if(targetEl){targetEl.scrollIntoView({block:'start',behavior:'smooth'});return;}
+if(window.MimirLoadDeferred)window.MimirLoadDeferred().then(()=>openPanel(target));
 }
 
 function syncActivationCockpit(model,kind){
@@ -460,6 +463,12 @@ window.setTimeout(()=>primaryLink?.click(),40);
 }
 
 function bindActivationActions(){
+if(activationButtons.chat&&activationButtons.chat.dataset.firstImpressionBound!=='true'){
+activationButtons.chat.dataset.firstImpressionBound='true';
+activationButtons.chat.addEventListener('click',()=>{
+sendPrompt('Start with the safest free MMIR chat route. Explain what is active now, what is local, and what I can do next without paying or configuring anything first.');
+});
+}
 if(activationButtons.connect&&activationButtons.connect.dataset.firstImpressionBound!=='true'){
 activationButtons.connect.dataset.firstImpressionBound='true';
 activationButtons.connect.addEventListener('click',()=>{
