@@ -20,13 +20,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply MMIR mobile chat viewport and active-node cache hotfix
+      - name: Apply MMIR first-chat and active-node cache hotfix
         run: |
           node <<'NODE'
           const fs = require('node:fs');
           const htmlPath = 'public/mmir.html';
           const cssPath = 'public/apps/mimir-chat-portal/mimir-chat-portal.css';
           const runtimePath = 'public/apps/mimir-chat-portal/chat-runtime.js';
+          const runtimeFixPath = 'public/apps/mimir-chat-portal/runtime-controls-fix.js';
+          const performanceSmokePath = 'scripts/smoke-check-performance-budget.js';
+          const mobileFirstSmokePath = 'scripts/smoke-check-mobile-first-chat-journey.js';
 
           let html = fs.readFileSync(htmlPath, 'utf8');
           html = html.replace(/\n  <script data-mimir-chat-first>[\s\S]*?<\/script>/, '');
@@ -37,17 +40,59 @@ jobs:
             html = html.replace(marker, `${chatFirst}\n  ${marker}`);
           }
           html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260525-front-chat-order-v1');
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260524-first-chat-p0-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/runtime-controls-fix\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-first-chat-p0-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g, './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/active-node-strip\.js(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/active-node-strip.js?v=20260524-active-node-api-v1');
+          html = html.replace(
+            /<a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Send<\/a>/,
+            '<button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to the active route">Send</button>'
+          );
           fs.writeFileSync(htmlPath, html, 'utf8');
 
           let runtime = fs.readFileSync(runtimePath, 'utf8');
+          runtime = runtime.replace('  let starterModels=[];', '  let starterModels=fallbackStarterModels();');
+          runtime = runtime.replace(
+            "  function openComposerModelPicker(){\n    window.MimirBackendProfiles?.ensureFreeLocalProfile?.();\n    setComposerActionFeedback('Model picker opened. Free/browser/local routes stay first.','ready');",
+            "  function openComposerModelPicker(){\n    setComposerActionFeedback('Model picker opened. Free/browser/local routes stay first.','ready');"
+          );
+          runtime = runtime.replace(
+            "  function ensureSendControl(){\n    if(!primaryLink)return;\n    primaryLink.textContent='\\u2191';\n    primaryLink.setAttribute('href','#mimir-chat-runtime');\n    primaryLink.setAttribute('role','button');\n    primaryLink.setAttribute('aria-label','Send prompt to the active backend');\n    primaryLink.setAttribute('title','Send');\n    primaryLink.removeAttribute('target');\n  }",
+            "  function ensureSendControl(){\n    if(!primaryLink)return;\n    primaryLink.textContent='\\u2191';\n    if(primaryLink.tagName==='BUTTON'){\n      primaryLink.type='submit';\n    }else{\n      primaryLink.setAttribute('href','#mimir-chat-runtime');\n      primaryLink.setAttribute('role','button');\n      primaryLink.removeAttribute('target');\n    }\n    primaryLink.classList.remove('disabled');\n    primaryLink.setAttribute('aria-disabled','false');\n    primaryLink.setAttribute('aria-label','Send prompt to the active MMIR route');\n    primaryLink.setAttribute('title','Send');\n    primaryLink.removeAttribute('rel');\n  }"
+          );
+          runtime = runtime.replace(
+            "    if(!profile||!url){setStatus('Activate a backend profile or choose a free guide/installable model.','error');return;}\n    if(!model){\n      await refreshState(true);\n      model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';\n      if(!model){",
+            "    if(!model){\n      await refreshState(true);\n      model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';\n      const refreshedStarter=starterFromValue(model);\n      if(refreshedStarter){\n        await sendStarterMessage(refreshedStarter,prompt);\n        return;\n      }\n      if(!model){"
+          );
+          runtime = runtime.replace(
+            "        return;\n      }\n    }\n\n    stopRequested=false;",
+            "        return;\n      }\n    }\n    if(!profile||!url){\n      const fallback=noModelFallbackStarter()||preferredStarterModel();\n      if(fallback){\n        await sendStarterMessage(fallback,prompt);\n        return;\n      }\n      setStatus('Activate a backend profile or choose a free guide/installable model.','error');\n      return;\n    }\n\n    stopRequested=false;"
+          );
           runtime = runtime.replace(
             "    transcriptEl.appendChild(bubble);\n    bubble.scrollIntoView({block:'nearest'});\n    return body;",
             "    transcriptEl.appendChild(bubble);\n    requestAnimationFrame(()=>{\n      if(transcriptEl)transcriptEl.scrollTop=transcriptEl.scrollHeight;\n    });\n    return body;"
           );
           fs.writeFileSync(runtimePath, runtime, 'utf8');
+
+          let runtimeFix = fs.readFileSync(runtimeFixPath, 'utf8');
+          runtimeFix = runtimeFix.replace(
+            "function repairPrimarySend(){const link=q('#primary-chat-link');if(!link)return;link.classList.remove('disabled');setAttr(link,'href',R);setAttr(link,'role','button');setAttr(link,'aria-disabled','false');link.removeAttribute('target');link.removeAttribute('rel')}",
+            "function repairPrimarySend(){const link=q('#primary-chat-link');if(!link)return;link.classList.remove('disabled');setAttr(link,'aria-disabled','false');if(link.tagName==='BUTTON'){link.type='submit';link.removeAttribute('href');link.removeAttribute('target');link.removeAttribute('rel');return}setAttr(link,'href',R);setAttr(link,'role','button');link.removeAttribute('target');link.removeAttribute('rel')}"
+          );
+          fs.writeFileSync(runtimeFixPath, runtimeFix, 'utf8');
+
+          let performanceSmoke = fs.readFileSync(performanceSmokePath, 'utf8');
+          performanceSmoke = performanceSmoke
+            .replace("const runtimeCacheKey = '20260524-mobile-sticky-v1';", "const runtimeCacheKey = '20260524-first-chat-p0-v1';")
+            .replace("const runtimeFixKey = '20260524-local-probe-v5';", "const runtimeFixKey = '20260524-first-chat-p0-v1';");
+          fs.writeFileSync(performanceSmokePath, performanceSmoke, 'utf8');
+
+          let mobileFirstSmoke = fs.readFileSync(mobileFirstSmokePath, 'utf8');
+          mobileFirstSmoke = mobileFirstSmoke.replace(
+            "runtime-controls-fix.js?v=20260524-local-probe-v5', 'Runtime control fix must remain in the critical shell with a fresh mobile cache key.",
+            "runtime-controls-fix.js?v=20260524-first-chat-p0-v1', 'Runtime control fix must remain in the critical shell with a fresh first-chat cache key."
+          );
+          fs.writeFileSync(mobileFirstSmokePath, mobileFirstSmoke, 'utf8');
 
           let css = fs.readFileSync(cssPath, 'utf8');
           css = css.replace('.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem}', '.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem;scroll-margin-top:96px}');
@@ -57,6 +102,7 @@ jobs:
 
           const finalRuntime = fs.readFileSync(runtimePath, 'utf8');
           const finalCss = fs.readFileSync(cssPath, 'utf8');
+          const finalRuntimeFix = fs.readFileSync(runtimeFixPath, 'utf8');
           const finalHtml = fs.readFileSync(htmlPath, 'utf8');
           if (finalRuntime.includes("bubble.scrollIntoView({block:'nearest'});")) throw new Error('Bubble scrollIntoView still present');
           if (!finalRuntime.includes('transcriptEl.scrollTop=transcriptEl.scrollHeight')) throw new Error('Transcript-only scroll missing');
@@ -64,7 +110,13 @@ jobs:
           if (!finalHtml.includes('mimir-chat-portal.css?v=20260525-front-chat-order-v1')) throw new Error('CSS cache bust missing');
           if (finalHtml.includes('data-mimir-chat-first')) throw new Error('Inline chat-first scroll should stay external');
           if (!finalHtml.includes('chat-first-scroll.js?v=20260524-chat-first-scroll-v1')) throw new Error('External chat-first scroll missing');
-          if (!finalHtml.includes('chat-runtime.js?v=20260524-mobile-sticky-v1')) throw new Error('Runtime cache bust missing');
+          if (!finalRuntime.includes('let starterModels=fallbackStarterModels();')) throw new Error('Synchronous free starter route missing');
+          if (finalRuntime.includes('window.MimirBackendProfiles?.ensureFreeLocalProfile?.();\n    setComposerActionFeedback')) throw new Error('Model picker still activates local profile on open');
+          if (!finalRuntime.includes('const refreshedStarter=starterFromValue(model);')) throw new Error('Refreshed starter first-chat fallback missing');
+          if (!finalRuntimeFix.includes("if(link.tagName==='BUTTON')")) throw new Error('Button send repair missing');
+          if (!finalHtml.includes('<button id="primary-chat-link" type="submit"')) throw new Error('Primary chat control must be a real submit button');
+          if (!finalHtml.includes('chat-runtime.js?v=20260524-first-chat-p0-v1')) throw new Error('Runtime cache bust missing');
+          if (!finalHtml.includes('runtime-controls-fix.js?v=20260524-first-chat-p0-v1')) throw new Error('Runtime fix cache bust missing');
           if (!finalHtml.includes('active-node-strip.js?v=20260524-active-node-api-v1')) throw new Error('Active node strip cache bust missing');
           NODE
       - name: Commit and push hotfix
@@ -75,8 +127,8 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/mmir.html public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/mimir-chat-portal.css
-          git commit -m "fix: stabilize MMIR mobile chat and active-node cache"
+          git add public/mmir.html public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/runtime-controls-fix.js public/apps/mimir-chat-portal/mimir-chat-portal.css scripts/smoke-check-performance-budget.js scripts/smoke-check-mobile-first-chat-journey.js
+          git commit -m "fix: stabilize MMIR first chat and active-node cache"
           git push origin HEAD:main
       - name: Run targeted smoke checks after commit
         continue-on-error: true
