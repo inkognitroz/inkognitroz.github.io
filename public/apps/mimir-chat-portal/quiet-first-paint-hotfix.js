@@ -31,7 +31,7 @@
     };
   }
   d.addEventListener('click',event=>{
-    const target=event.target?.closest?.('#runtime-refresh,#refresh-node-dashboard,#refresh-platform-status,#progress-activation-autopilot,#primary-chat-link,[data-local-action="refresh"],[data-local-action="tunnel"],[data-local-action="stop-tunnel"],[data-proof-action="retry"]');
+    const target=event.target?.closest?.('#runtime-refresh,#refresh-node-dashboard,#refresh-platform-status,#progress-activation-autopilot,[data-local-action="refresh"],[data-local-action="tunnel"],[data-local-action="stop-tunnel"],[data-proof-action="retry"]');
     if(target)allow('user-click',30000);
   },true);
   if(returnIntent())allow('installer-return',60000);
