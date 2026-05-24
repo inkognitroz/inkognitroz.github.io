@@ -39,6 +39,7 @@ const mmir = text(files.mmir);
 const first = text(files.firstScreen);
 const hydration = text(files.hydration);
 const coverage = text(files.coverage);
+const performance = text(files.performance);
 const tasks = Array.isArray(progressData.tasks) ? progressData.tasks : [];
 
 if (!mmir.includes('"./apps/mimir-chat-portal/first-screen-activation-hydration.js"')) {
@@ -75,10 +76,11 @@ for (const needle of [
 
 for (const needle of [
   'initialJsByteBudget = 155000',
-  'first-impression.js?v=20260524-quiet-first-paint-v3',
+  "const cacheKey = '20260524-quiet-first-paint-v3'",
+  './apps/mimir-chat-portal/first-impression.js?v=${cacheKey}',
   'Critical first-journey script must load immediately'
 ]) {
-  if (!text(files.performance).includes(needle)) fail(`Performance budget guard missing evidence: ${needle}`);
+  if (!performance.includes(needle)) fail(`Performance budget guard missing evidence: ${needle}`);
 }
 
 for (const needle of [
