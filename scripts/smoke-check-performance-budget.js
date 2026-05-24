@@ -7,6 +7,7 @@ const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const indexPath = join(publicDir, 'index.html');
 const initialJsByteBudget = 155000;
+const cacheKey = '20260524-quiet-first-paint-v3';
 
 function fail(message) {
   console.error(message);
@@ -96,10 +97,10 @@ for (const src of deferredScripts) {
 }
 
 for (const required of [
-  './apps/mimir-chat-portal/api-client.js',
-  './apps/mimir-chat-portal/chat-runtime.js?v=20260524-cache-bust-v2',
-  './apps/mimir-chat-portal/first-impression.js?v=20260524-cache-bust-v2',
-  './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-cache-bust-v2'
+  `./apps/mimir-chat-portal/api-client.js?v=${cacheKey}`,
+  `./apps/mimir-chat-portal/chat-runtime.js?v=${cacheKey}`,
+  `./apps/mimir-chat-portal/first-impression.js?v=${cacheKey}`,
+  `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${cacheKey}`
 ]) {
   if (!initialScripts.includes(required)) fail(`Critical first-journey script must load immediately: ${required}`);
 }
@@ -108,8 +109,8 @@ for (const required of [
   './apps/mimir-chat-portal/workspaces.js',
   './apps/mimir-chat-portal/memory.js',
   './apps/mimir-chat-portal/knowledge.js',
-  './apps/mimir-chat-portal/progress-dashboard.js',
-  './apps/mimir-chat-portal/node-dashboard.js',
+  `./apps/mimir-chat-portal/progress-dashboard.js?v=${cacheKey}`,
+  `./apps/mimir-chat-portal/node-dashboard.js?v=${cacheKey}`,
   './apps/mimir-chat-portal/model-comparison.js',
   './apps/mimir-chat-portal/workflow-builder.js'
 ]) {
