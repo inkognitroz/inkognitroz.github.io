@@ -67,17 +67,29 @@
 }
 
 @media (max-width: 560px) {
-  .workspace-switcher,
+  .workspace-switcher {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 32px;
+    align-items: end;
+  }
+
   .workspace-switcher label,
   .workspace-switcher select,
   .workspace-create-form,
   .workspace-create-form label,
   .workspace-create-form input {
     width: 100%;
+    min-width: 0;
   }
 
   .workspace-create-form {
+    grid-column: 1 / -1;
     display: grid;
+  }
+
+  .workspace-create-form[hidden] {
+    display: none;
   }
 
   .workspace-create-form button {

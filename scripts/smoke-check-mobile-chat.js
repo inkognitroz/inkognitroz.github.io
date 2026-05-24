@@ -28,11 +28,11 @@ requireCss('.quick-suggestions{order:4', 'Mobile quick actions must stay above s
 requireCss('.mimir-instant-start{order:5', 'Ground Zero card must not push the chat below the first mobile screen.');
 requireCss('env(safe-area-inset-bottom)', 'Mobile layout must respect browser/device bottom safe area.');
 
-if (!html.includes('mimir-chat-portal.css?v=20260524-mobile-sticky-v1')) {
+if (!html.includes('mimir-chat-portal.css?v=20260525-front-chat-order-v1')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d222-20260524-quiet-first-paint-v3'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d223-20260525-front-chat-order-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

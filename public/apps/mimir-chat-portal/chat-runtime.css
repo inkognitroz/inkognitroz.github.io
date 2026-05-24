@@ -447,9 +447,11 @@
 }
 
 @media (max-width:720px){
-  .composer-mode-dock{align-items:stretch;grid-template-areas:"tools" "live" "feedback";grid-template-columns:1fr}
-  .composer-tool-cluster,.composer-live-cluster{justify-content:flex-start;width:100%}
-  .composer-mode-button,.composer-live-chip{flex:1 1 auto}
+  .composer-mode-dock{align-items:stretch;gap:6px;grid-template-areas:"tools" "live" "feedback";grid-template-columns:1fr}
+  .composer-tool-cluster,.composer-live-cluster{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;width:100%}
+  .composer-tool-cluster::-webkit-scrollbar,.composer-live-cluster::-webkit-scrollbar{display:none}
+  .composer-mode-button,.composer-live-chip{flex:0 0 auto}
+  .composer-action-feedback{font-size:.74rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .runtime-message-actions button{flex:1 1 92px}
   .composer-live-chip{max-width:100%}
   .runtime-activation-replay{align-items:stretch;display:grid}

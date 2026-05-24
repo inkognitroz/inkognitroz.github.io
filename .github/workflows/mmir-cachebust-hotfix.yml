@@ -29,15 +29,14 @@ jobs:
           const runtimePath = 'public/apps/mimir-chat-portal/chat-runtime.js';
 
           let html = fs.readFileSync(htmlPath, 'utf8');
-          const chatFirst = `<script data-mimir-chat-first>!function(){function v(){const e=document.getElementById('mimir-prompt')||document.querySelector('textarea[placeholder*=\"Ask MMIR\"],textarea');if(!e)return;const r=e.getBoundingClientRect();if(r.top>=96&&r.bottom<=innerHeight-24)return;scrollTo(0,Math.max(0,r.top+scrollY-160))}function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime';setTimeout(v,80);setTimeout(v,420)}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>`;
-          if (html.includes('data-mimir-chat-first')) {
-            html = html.replace(/<script data-mimir-chat-first>[\s\S]*?<\/script>/, chatFirst);
-          } else {
-            const marker = '</script>\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js';
+          html = html.replace(/\n  <script data-mimir-chat-first>[\s\S]*?<\/script>/, '');
+          const chatFirst = '<script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>';
+          if (!html.includes('chat-first-scroll.js?v=20260524-chat-first-scroll-v1')) {
+            const marker = '<script src="./apps/mimir-chat-portal/mimir-chat-portal.js';
             if (!html.includes(marker)) throw new Error('MMIR page missing chat script marker');
-            html = html.replace(marker, `</script>\n  ${chatFirst}\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js`);
+            html = html.replace(marker, `${chatFirst}\n  ${marker}`);
           }
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260524-mobile-sticky-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260525-front-chat-order-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g, './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/active-node-strip\.js(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/active-node-strip.js?v=20260524-active-node-api-v1');
@@ -62,7 +61,9 @@ jobs:
           if (finalRuntime.includes("bubble.scrollIntoView({block:'nearest'});")) throw new Error('Bubble scrollIntoView still present');
           if (!finalRuntime.includes('transcriptEl.scrollTop=transcriptEl.scrollHeight')) throw new Error('Transcript-only scroll missing');
           if (!finalCss.includes('position:sticky') || !finalCss.includes('scroll-margin-top:96px')) throw new Error('Mobile sticky composer CSS missing');
-          if (!finalHtml.includes('mimir-chat-portal.css?v=20260524-mobile-sticky-v1')) throw new Error('CSS cache bust missing');
+          if (!finalHtml.includes('mimir-chat-portal.css?v=20260525-front-chat-order-v1')) throw new Error('CSS cache bust missing');
+          if (finalHtml.includes('data-mimir-chat-first')) throw new Error('Inline chat-first scroll should stay external');
+          if (!finalHtml.includes('chat-first-scroll.js?v=20260524-chat-first-scroll-v1')) throw new Error('External chat-first scroll missing');
           if (!finalHtml.includes('chat-runtime.js?v=20260524-mobile-sticky-v1')) throw new Error('Runtime cache bust missing');
           if (!finalHtml.includes('active-node-strip.js?v=20260524-active-node-api-v1')) throw new Error('Active node strip cache bust missing');
           NODE
@@ -83,4 +84,5 @@ jobs:
           node scripts/smoke-check-deploy-verification.js
           node scripts/smoke-check-performance-budget.js
           node scripts/smoke-check-mobile-first-chat-journey.js
+          node scripts/smoke-check-frontpage-chat-usability.js
           node scripts/smoke-check-public-no-model-deploy-verification.js

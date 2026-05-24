@@ -22,9 +22,9 @@
       "height": 844,
       "expected": [
         "composer mode dock stacks vertically",
-        "tool and live clusters wrap without overlap",
-        "mode and live chips can flex on small screens",
-        "feedback text remains readable",
+        "tool and live clusters stay in compact single rows without overlap",
+        "mode and live chips keep stable tap targets with horizontal overflow only when needed",
+        "feedback text remains readable without pushing the chat down",
         "primary send button remains visible"
       ]
     }
@@ -52,7 +52,9 @@
     "grid-area: feedback",
     "flex-wrap: wrap",
     "grid-template-columns: 1fr",
-    "flex: 1 1 auto"
+    "flex-wrap: nowrap",
+    "overflow-x: auto",
+    "flex: 0 0 auto"
   ],
   "copy_contract": [
     "Ready: free browser helper first, local model when connected.",

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d222-20260524-quiet-first-paint-v3';
+const CACHE_NAME='mmir-pwa-d223-20260525-front-chat-order-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

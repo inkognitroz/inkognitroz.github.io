@@ -109,6 +109,9 @@ jobs:
       - name: Smoke-check mobile first-chat journey
         run: node scripts/smoke-check-mobile-first-chat-journey.js
 
+      - name: Smoke-check frontpage chat usability
+        run: node scripts/smoke-check-frontpage-chat-usability.js
+
       - name: Smoke-check MMIR performance budget
         run: node scripts/smoke-check-performance-budget.js
 
