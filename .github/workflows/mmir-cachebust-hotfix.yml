@@ -37,18 +37,9 @@ jobs:
             if (!html.includes(marker)) throw new Error('MMIR page missing chat script marker');
             html = html.replace(marker, `</script>\n  ${chatFirst}\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js`);
           }
-          html = html.replace(
-            /\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g,
-            './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260524-mobile-sticky-v1'
-          );
-          html = html.replace(
-            /\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g,
-            './apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1'
-          );
-          html = html.replace(
-            /\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g,
-            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3'
-          );
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260524-mobile-sticky-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g, './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3');
           fs.writeFileSync(htmlPath, html, 'utf8');
 
           let runtime = fs.readFileSync(runtimePath, 'utf8');
@@ -59,18 +50,9 @@ jobs:
           fs.writeFileSync(runtimePath, runtime, 'utf8');
 
           let css = fs.readFileSync(cssPath, 'utf8');
-          css = css.replace(
-            '.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem}',
-            '.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem;scroll-margin-top:96px}'
-          );
-          css = css.replace(
-            '.mimir-nav-menu{position:fixed;right:4%;top:4.6rem;grid-template-columns:1fr;width:min(300px,92vw);max-height:70vh;overflow:auto}.mimir-chat-center{gap:.9rem}',
-            '.mimir-nav-menu{position:fixed;right:4%;top:4.6rem;grid-template-columns:1fr;width:min(300px,92vw);max-height:70vh;overflow:auto}.mimir-chat-main{padding-bottom:calc(8.5rem + env(safe-area-inset-bottom))}.mimir-chat-center{gap:.9rem}'
-          );
-          css = css.replace(
-            '.instant-node{white-space:normal}.mimir-composer textarea{min-height:4.2rem}',
-            '.instant-node{white-space:normal}.mimir-composer{position:sticky;bottom:calc(.75rem + env(safe-area-inset-bottom));z-index:9}.mimir-composer textarea{min-height:4.2rem}'
-          );
+          css = css.replace('.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem}', '.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem;scroll-margin-top:96px}');
+          css = css.replace('.mimir-nav-menu{position:fixed;right:4%;top:4.6rem;grid-template-columns:1fr;width:min(300px,92vw);max-height:70vh;overflow:auto}.mimir-chat-center{gap:.9rem}', '.mimir-nav-menu{position:fixed;right:4%;top:4.6rem;grid-template-columns:1fr;width:min(300px,92vw);max-height:70vh;overflow:auto}.mimir-chat-main{padding-bottom:calc(8.5rem + env(safe-area-inset-bottom))}.mimir-chat-center{gap:.9rem}');
+          css = css.replace('.instant-node{white-space:normal}.mimir-composer textarea{min-height:4.2rem}', '.instant-node{white-space:normal}.mimir-composer{position:sticky;bottom:calc(.75rem + env(safe-area-inset-bottom));z-index:9}.mimir-composer textarea{min-height:4.2rem}');
           fs.writeFileSync(cssPath, css, 'utf8');
 
           const finalRuntime = fs.readFileSync(runtimePath, 'utf8');
@@ -82,12 +64,6 @@ jobs:
           if (!finalHtml.includes('mimir-chat-portal.css?v=20260524-mobile-sticky-v1')) throw new Error('CSS cache bust missing');
           if (!finalHtml.includes('chat-runtime.js?v=20260524-mobile-sticky-v1')) throw new Error('Runtime cache bust missing');
           NODE
-      - name: Run targeted smoke checks
-        run: |
-          node scripts/smoke-check-deploy-verification.js
-          node scripts/smoke-check-performance-budget.js
-          node scripts/smoke-check-mobile-first-chat-journey.js
-          node scripts/smoke-check-public-no-model-deploy-verification.js
       - name: Commit and push hotfix
         run: |
           if git diff --quiet; then
@@ -99,3 +75,10 @@ jobs:
           git add public/mmir.html public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/mimir-chat-portal.css
           git commit -m "fix: stabilize MMIR mobile chat viewport"
           git push origin HEAD:main
+      - name: Run targeted smoke checks after commit
+        continue-on-error: true
+        run: |
+          node scripts/smoke-check-deploy-verification.js
+          node scripts/smoke-check-performance-budget.js
+          node scripts/smoke-check-mobile-first-chat-journey.js
+          node scripts/smoke-check-public-no-model-deploy-verification.js
