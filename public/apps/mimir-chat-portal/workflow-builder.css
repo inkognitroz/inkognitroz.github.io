@@ -12,7 +12,8 @@
   .mimir-nav-more{position:static;min-width:0}
   .mimir-nav-menu{position:fixed;left:.75rem;right:.75rem;top:7.1rem;width:auto;grid-template-columns:repeat(2,minmax(0,1fr));max-height:calc(100vh - 8.25rem);overflow:auto}
   .mimir-chat-main{width:100%;box-sizing:border-box;min-height:auto;padding:.75rem .9rem calc(1rem + env(safe-area-inset-bottom))}
-  .mimir-chat-center{gap:.65rem}
+  .mimir-chat-center,.mimir-greeting,.mimir-composer,.composer-mode-dock,.composer-tool-cluster,.composer-live-cluster,.composer-bar,.composer-context,.composer-actions,.quick-suggestions,.runtime-context-controls,.use-case-templates,.mimir-instant-start,.mimir-readiness-rail,.mimir-growth-panel,.mimir-settings-drawer,.mimir-dashboard-drawer,#progress-dashboard,#progress-dashboard-root{max-width:100%;min-width:0}
+  .mimir-chat-center{gap:.65rem;overflow:hidden}
   .mimir-greeting{order:1;width:100%;text-align:left}
   .mimir-greeting h1{font-size:2rem;line-height:1.04;margin:0 0 .45rem;text-align:left}
   .mimir-greeting p{font-size:.92rem;text-align:left}
@@ -20,11 +21,11 @@
   .mimir-composer textarea{min-height:3.25rem;max-height:8.5rem;font-size:1rem;padding:.45rem}
   .composer-bar{gap:.5rem;padding:.55rem .15rem 0}
   .composer-context{font-size:.78rem}
-  .composer-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:.45rem}
-  .composer-actions .btn,.composer-actions .button-link,.composer-actions #primary-chat-link{width:100%;min-height:2.45rem;padding:.5rem .35rem}
+  .composer-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:100%;gap:.45rem}
+  .composer-actions .btn,.composer-actions .button-link,.composer-actions #primary-chat-link{width:100%;min-width:0;min-height:2.45rem;padding:.5rem .35rem}
   .mimir-chat-runtime{order:3;margin-top:.2rem}
   .quick-suggestions{order:4;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem;justify-content:stretch}
-  .quick-suggestions a,.quick-suggestions button{width:100%;min-height:2.35rem;padding:.5rem .35rem;font-size:.78rem;line-height:1.15}
+  .quick-suggestions a,.quick-suggestions button{width:100%;min-width:0;min-height:2.35rem;padding:.5rem .35rem;font-size:.78rem;line-height:1.15}
   .mimir-instant-start{order:5;border-radius:18px;padding:.8rem}
   .mimir-instant-start .instant-map{margin-top:.65rem}
   .mimir-readiness-rail{order:6;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem}
