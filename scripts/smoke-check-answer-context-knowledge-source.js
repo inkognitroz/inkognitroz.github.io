@@ -100,10 +100,10 @@ const progress = json(files.progressData);
 requireTrue(progress.answer_context_knowledge_source_report?.title === report.title, 'Progress dashboard data must embed D228 knowledge source report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d228 = tasks.find((task) => task.seq === 'D228');
-const d237 = tasks.find((task) => task.seq === 'D238');
+const d237 = tasks.find((task) => task.seq === 'D239');
 requireTrue(d228?.status === 'beta', 'Progress dashboard task D228 must be beta after knowledge source receipts ship.');
-requireTrue(d237?.status === 'next', 'Progress dashboard task D238 must become next after D236 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D238', 'Progress dashboard next queue must prioritize D238 after D236 ships.');
+requireTrue(d237?.status === 'next', 'Progress dashboard task D239 must become next after D236 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D239', 'Progress dashboard next queue must prioritize D239 after D236 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

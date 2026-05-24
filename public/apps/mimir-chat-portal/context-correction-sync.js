@@ -7,6 +7,7 @@
   const REVIEW_PREFIX='mimir-context-correction-review-v1:';
   const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
   const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
+  const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -17,6 +18,7 @@
   function reviewKey(){return REVIEW_PREFIX+workspaceId();}
   function planKey(){return PLAN_PREFIX+workspaceId();}
   function applyKey(){return APPLY_PREFIX+workspaceId();}
+  function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -110,6 +112,28 @@
   }
   function readApplyState(){
     const value=readJson(applyKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeAdapterState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_executed:false,
+      execution_allowed:false,
+      ...value
+    };
+    try{localStorage.setItem(adapterKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-adapter-updated',{detail:state}));
+    return state;
+  }
+  function readAdapterState(){
+    const value=readJson(adapterKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -349,6 +373,68 @@
     const ids=Array.isArray(plan?.correction_ids)?plan.correction_ids.map((item)=>cleanString(item,120)).filter(Boolean):[];
     return ids.find((item)=>id===item||id.startsWith(item+':'))||cleanString(id.split(':')[0],120);
   }
+  async function prepareRemediationAdapter(applicationId='',correctionId='',stepId=''){
+    const applyState=readApplyState();
+    const application=applyState?.application&&typeof applyState.application==='object'?applyState.application:null;
+    const cleanApplicationId=cleanString(applicationId||application?.id,120);
+    const cleanCorrectionId=cleanString(correctionId||application?.correction_id,120);
+    const cleanStepId=cleanString(stepId||application?.step_id,180);
+    if(!cleanApplicationId){
+      const state=writeAdapterState({status:'needs-application',message:'Apply one remediation gate before preparing a protected adapter draft.',application_id:'',correction_id:cleanCorrectionId,step_id:cleanStepId});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeAdapterState({status:'needs-backend',message:'Choose an active protected backend before preparing remediation adapters.',application_id:cleanApplicationId,correction_id:cleanCorrectionId,step_id:cleanStepId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      application_id:cleanApplicationId,
+      confirm:true,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false
+    };
+    if(cleanCorrectionId)body.correction_id=cleanCorrectionId;
+    if(cleanStepId)body.step_id=cleanStepId;
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-adapters/prepare'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const draft=response?.data||null;
+      const state=writeAdapterState({
+        status:draft?.status||'draft',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        application_id:cleanApplicationId,
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        draft,
+        message:draft?'Protected '+(draft.adapter||'remediation adapter')+' draft prepared. Review proposed changes before any source mutation.':'Protected remediation adapter draft prepared.'
+      });
+      render();
+      return state;
+    }catch(error){
+      const state=writeAdapterState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        application_id:cleanApplicationId,
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        message:api.friendlyError?.(error)||error.message||'Could not prepare protected remediation adapter draft.'
+      });
+      render();
+      return state;
+    }
+  }
   async function applyRemediationStep(stepId,correctionId){
     const planState=readPlanState();
     const plan=planState?.plan&&typeof planState.plan==='object'?planState.plan:null;
@@ -396,6 +482,7 @@
         source_mutation_executed:sourceMutation,
         message:mutation?'Protected correction undo gate applied. Source data was not mutated by the public frontend.':'Protected remediation gate recorded. Review the manual target before any source data is changed.'
       });
+      if(application?.id)await prepareRemediationAdapter(application.id,application.correction_id,application.step_id);
       await loadReviewQueue({limit:10,include_undone:true});
       render();
       return state;
@@ -463,6 +550,22 @@
       '<small class="context-correction-review-policy">public_frontend_authority:false / no_paid_routes_started:true / raw_prompt_stored:false / raw_response_stored:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
+  function adapterDraftHtml(){
+    const state=readAdapterState();
+    const applyState=readApplyState();
+    const application=applyState?.application&&typeof applyState.application==='object'?applyState.application:null;
+    const draft=state?.draft&&typeof state.draft==='object'?state.draft:null;
+    const changes=Array.isArray(draft?.proposed_changes)?draft.proposed_changes.slice(0,4):[];
+    const status=state?.status||'idle';
+    return '<div class="context-correction-adapter-status" data-state="'+safe(status)+'">'+
+      '<div><strong>Repair draft: '+safe(draft?.adapter||status)+'</strong><small>'+safe(state?.message||'Apply a gate to automatically prepare a protected memory/knowledge repair draft.')+'</small></div>'+
+      '<div class="context-correction-plan-actions"><button type="button" data-correction-adapter="prepare" '+(!application?'disabled':'')+'>Prepare adapter</button></div>'+
+      '<div class="context-correction-adapter-changes">'+(changes.length?changes.map((change)=>
+        '<article><strong>'+safe(change.type||'metadata-draft')+'</strong><p>'+safe(change.note||change.suggested_policy||'Review this backend-owned metadata draft before changing source state.')+'</p><small>source_ids:'+safe((change.source_ids||change.memory_ids||[]).join(', ')||'none')+' / manual_review_required:'+safe(Boolean(change.manual_review_required))+'</small></article>'
+      ).join(''):'<article><strong>No adapter draft yet</strong><p>Confirmed apply receipts can be converted into memory scope drafts, knowledge source packets or collection split proposals.</p><small>execution_allowed:false / source_mutation_executed:false</small></article>')+'</div>'+
+      '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
+    '</div>';
+  }
   function remediationPlanHtml(){
     const state=readPlanState();
     const applyState=readApplyState();
@@ -486,6 +589,7 @@
         '<small>'+safe(applyState?.message||'Each step can be explicitly confirmed against the protected backend. Public frontend authority remains false.')+'</small>'+
         (application?'<small>step:'+safe(application.step_kind||application.step_id||'recorded')+' / mutation_executed:'+safe(Boolean(application.mutation_executed))+' / source_mutation_executed:'+safe(Boolean(application.source_mutation_executed))+' / rollback:'+safe(application.rollback_hint||'manual review')+'</small>':'')+
       '</div>'+
+      adapterDraftHtml()+
       '<div class="context-correction-plan-steps">'+(steps.length?steps.map((step)=>
         '<article><strong>'+safe(step.title||step.id)+'</strong><p>'+safe(step.detail||'Review this step manually before any mutation.')+'</p><small>target:'+safe(step.target||'context')+' / execution_allowed:'+safe(Boolean(step.execution_allowed))+' / confirmation:'+safe(Boolean(step.requires_confirmation))+'</small><button type="button" data-correction-apply="apply" data-correction-id="'+safe(correctionIdForStep(plan,step.id||''))+'" data-step-id="'+safe(step.id||'')+'">Apply gate</button></article>'
       ).join(''):'<article><strong>No plan steps</strong><p>Create a draft plan after loading correction review items.</p><small>execution_allowed:false / destructive_execution_allowed:false</small></article>')+'</div>'+
@@ -578,10 +682,16 @@
     const action=button.dataset.correctionApply;
     if(action==='apply')applyRemediationStep(button.dataset.stepId||'',button.dataset.correctionId||'');
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-adapter]');
+    if(!button)return;
+    const action=button.dataset.correctionAdapter;
+    if(action==='prepare')prepareRemediationAdapter();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,readSyncState,readReviewState,readPlanState,readApplyState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState};
 })();

@@ -23,6 +23,7 @@
     { "path": "/context/corrections/review", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Load metadata-only correction review queues from a protected backend." },
     { "path": "/context/corrections/remediation-plans", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Create non-executing correction remediation plan drafts through a protected backend." },
     { "path": "/context/corrections/remediation-steps/apply", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Record explicitly confirmed correction remediation step gates through a protected backend." },
+    { "path": "/context/corrections/remediation-adapters/prepare", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Prepare memory and knowledge remediation adapter drafts from confirmed apply receipts." },
     { "path": "/datasets", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Dataset registry root." },
     { "path": "/datasets/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Dataset dynamic route fragment." },
     { "path": "/doctor", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "Protected local activation health report with one next repair action." },

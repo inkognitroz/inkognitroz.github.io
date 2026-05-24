@@ -116,6 +116,8 @@ jobs:
         run: node scripts/smoke-check-correction-remediation-plan.js
       - name: Smoke check correction remediation apply gates
         run: node scripts/smoke-check-correction-remediation-apply-gates.js
+      - name: Smoke check correction remediation adapters
+        run: node scripts/smoke-check-correction-remediation-adapters.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

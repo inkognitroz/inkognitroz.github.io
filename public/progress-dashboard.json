@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T00:07:58.743Z",
+  "updated_at": "2026-05-24T00:27:27.037Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 238,
+    "total": 239,
     "done": 51,
-    "beta": 162,
+    "beta": 163,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 5,
+        "total": 6,
         "done": 0,
-        "beta": 4,
+        "beta": 5,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -3122,6 +3122,103 @@
       "reason": "Apply gates now record confirmed intent. The next slice should connect those records to protected memory and knowledge adapters that can prepare exact source-scope updates behind backend policy."
     }
   },
+  "correction_remediation_adapters_report": {
+    "title": "Correction Remediation Adapters",
+    "task": "D238",
+    "status": "beta",
+    "backend_commit": "8cff2e0",
+    "principle": "Confirmed remediation intent should become concrete private repair drafts without letting the public frontend mutate memory or knowledge sources.",
+    "public_repo_rule": "GitHub Pages may render adapter draft metadata only. Raw memory text, document chunks, transcripts, provider keys and session tokens stay behind protected backend routes.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-adapters/prepare",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Prepare memory scope drafts, knowledge source review packets and collection split proposals from confirmed application receipts."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "apply_state": "mimir-context-correction-remediation-apply-v1:{workspace}",
+      "adapter_state": "mimir-context-correction-remediation-adapter-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_contract": {
+      "panel": ".context-correction-adapter-status",
+      "changes": ".context-correction-adapter-changes",
+      "prepare_selector": "[data-correction-adapter=\"prepare\"]",
+      "auto_prepare": "applyRemediationStep automatically calls prepareRemediationAdapter when the backend returns an application receipt"
+    },
+    "adapter_policy": {
+      "execution_allowed": false,
+      "destructive_execution_allowed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "source_mutation_executed": false,
+      "no_paid_routes_started": true,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "provider_secrets_stored": false
+    },
+    "adapter_types": [
+      "memory-scope-adapter",
+      "knowledge-source-review-adapter",
+      "knowledge-collection-split-adapter",
+      "context-policy-adapter"
+    ],
+    "blocked_fields": [
+      "prompt",
+      "raw_prompt",
+      "response",
+      "raw_response",
+      "messages",
+      "transcript",
+      "api_key",
+      "access_token",
+      "refresh_token",
+      "secret",
+      "document_text"
+    ],
+    "scenarios": [
+      {
+        "id": "auto-prepare-after-apply",
+        "status": "ready",
+        "expected": "A successful Apply gate automatically requests a protected adapter draft from the active backend.",
+        "selector": "applyRemediationStep -> prepareRemediationAdapter",
+        "execution_allowed": false,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "manual-prepare-retry",
+        "status": "ready",
+        "expected": "Users can retry adapter preparation from the latest apply receipt without entering secrets or raw content.",
+        "selector": "[data-correction-adapter=\"prepare\"]",
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "memory-repair-draft",
+        "status": "ready",
+        "expected": "Memory corrections prepare scope/expiry review drafts with memory IDs and manual review gates only.",
+        "adapter": "memory-scope-adapter",
+        "execution_allowed": false,
+        "public_frontend_authority": false
+      },
+      {
+        "id": "knowledge-repair-draft",
+        "status": "ready",
+        "expected": "Knowledge corrections prepare source review packets or collection split proposals with source IDs only.",
+        "adapter": "knowledge-collection-split-adapter",
+        "execution_allowed": false,
+        "public_frontend_authority": false
+      }
+    ],
+    "next": {
+      "task": "D239",
+      "label": "Protected remediation commit policy",
+      "reason": "Adapter drafts now exist. The next slice should add explicit backend policy for committing selected memory/knowledge repairs with preview, audit and rollback."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -3172,7 +3269,7 @@
     }
   ],
   "next_queue": [
-    "D238"
+    "D239"
   ],
   "watchlist": [
     "D082",
@@ -6744,9 +6841,24 @@
       "best_practice": "Apply gates are useful only when they guide concrete private repair work behind policy",
       "done_when": "Owners can turn recorded correction intent into safe backend-owned memory/knowledge repair drafts with source IDs, rollback metadata and no public frontend authority",
       "covers": "backend, memory, knowledge, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now convert confirmed remediation receipts into protected memory/knowledge adapter drafts with source IDs, rollback metadata and source_mutation_executed:false.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D239",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Protected remediation commit policy",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add explicit backend policy for committing selected remediation adapter drafts to memory or knowledge with preview, confirmation, audit and rollback gates",
+      "best_practice": "Repair drafts should become real fixes only through inspectable, reversible backend authority",
+      "done_when": "Owners can preview and commit selected memory/knowledge repairs through protected routes while public UI remains a zero-trust client",
+      "covers": "backend, memory, knowledge, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: connect confirmed remediation receipts to protected memory and knowledge adapters that prepare exact source-scope updates behind backend policy.",
+      "evidence": "Next activation slice: add protected commit policy for selected remediation adapter drafts with preview, audit and rollback gates.",
       "estimate": "0.5-2d"
     }
   ]

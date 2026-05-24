@@ -921,6 +921,23 @@
     '</section>';
   }
 
+  function renderCorrectionRemediationAdaptersReport(data){
+    const report=data.correction_remediation_adapters_report||{};
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    const types=Array.isArray(report.adapter_types)?report.adapter_types:[];
+    if(!scenarios.length&&!types.length)return '';
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&(scenario.execution_allowed===false||scenario.source_mutation_executed===false||scenario.public_frontend_authority===false));
+    return '<section id="progress-correction-remediation-adapters" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Repair adapters</p><h2>'+safe(report.title||'Correction Remediation Adapters')+'</h2></div><small>'+safe(report.principle||'Confirmed remediation intent becomes backend-owned repair drafts.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+
+        (report.backend_route?'<article class="progress-no-model-scenario" data-route="'+safe(report.backend_route.method+' '+report.backend_route.path)+'"><span>'+safe(label(report.backend_route.status||'beta'))+'</span><h3>'+safe(report.backend_route.method+' '+report.backend_route.path)+'</h3><p>'+safe(report.backend_route.purpose||'Protected remediation adapter route.')+'</p><strong>'+safe(report.backend_route.auth||'protected-backend-auth')+'</strong><small>backend:'+safe(report.backend_commit||'tracked')+' / execution_allowed:false</small></article>':'')+
+        types.map((type)=>'<article class="progress-no-model-scenario" data-adapter="'+safe(type)+'"><span>adapter</span><h3>'+safe(type)+'</h3><p>Prepares metadata-only repair drafts behind backend auth.</p><strong>source_mutation_executed:false</strong><small>public_frontend_authority:false</small></article>').join('')+
+        scenarios.map((scenario)=>'<article class="progress-no-model-scenario" data-scenario="'+safe(scenario.id)+'"><span>'+safe(label(scenario.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(scenario.id)+'</h3><p>'+safe(scenario.expected||'Remediation adapter scenario.')+'</p><strong>'+safe(scenario.selector||scenario.adapter||'adapter draft')+'</strong><small>execution_allowed:'+safe(Boolean(scenario.execution_allowed))+' / public_frontend_authority:'+safe(Boolean(scenario.public_frontend_authority))+'</small></article>').join('')+
+      '</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe remediation adapter evidence only.')+' Next: '+safe(report.next?.task||'D239')+' '+safe(report.next?.label||'commit policy')+'.</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -1176,7 +1193,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderProtectedCorrectionReviewQueueReport(dashboard)+renderCorrectionRemediationPlanReport(dashboard)+renderCorrectionRemediationApplyGatesReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderProtectedCorrectionReviewQueueReport(dashboard)+renderCorrectionRemediationPlanReport(dashboard)+renderCorrectionRemediationApplyGatesReport(dashboard)+renderCorrectionRemediationAdaptersReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     window.dispatchEvent(new CustomEvent('mmir-progress-dashboard-rendered',{detail:{task_count:Array.isArray(dashboard.tasks)?dashboard.tasks.length:0}}));
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();

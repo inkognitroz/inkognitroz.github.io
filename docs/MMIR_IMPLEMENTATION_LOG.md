@@ -229,14 +229,15 @@ Updated: 2026-05-23
 - D235 is now beta: backend commit `8b61243` and public UI now expose protected `/context/corrections/review`, owner-safe memory/knowledge/include-undone filters, prioritized raw-content-free review items and safe panel handoff actions.
 - D236 is now beta: backend commit `5d44915` and public UI now create explicit non-executing correction remediation plan drafts from review items, with local approve/defer notes, plan steps and `execution_allowed:false`.
 - D237 is now beta: backend commit `85617d8` and public UI now expose protected remediation step apply gates with `confirm:true`, owner-scoped plan-step validation, application receipts, rollback hints and no public frontend authority or source mutation from GitHub Pages.
-- D238 is now next: connect confirmed remediation receipts to protected memory and knowledge adapters that prepare exact source-scope repair drafts behind backend policy.
+- D238 is now beta: backend commit `8cff2e0` and public UI now turn confirmed remediation receipts into protected memory/knowledge adapter drafts, with source IDs, rollback metadata, automatic prepare-after-apply and `source_mutation_executed:false`.
+- D239 is now next: add protected commit policy for selected remediation adapter drafts with preview, audit and rollback gates.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D238` memory and knowledge remediation adapters.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D239` protected remediation commit policy.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
