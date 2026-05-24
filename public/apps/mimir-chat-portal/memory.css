@@ -328,6 +328,28 @@
   padding: 0.4rem 0.65rem;
 }
 
+.context-correction-apply-status {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: #fff;
+}
+
+.context-correction-apply-status[data-state="recorded"],
+.context-correction-apply-status[data-state="applied"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f0fdf4;
+}
+
+.context-correction-apply-status[data-state="error"],
+.context-correction-apply-status[data-state="needs-backend"],
+.context-correction-apply-status[data-state="needs-plan"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;
@@ -343,6 +365,13 @@
 .context-correction-plan-steps strong,
 .context-correction-plan-steps small {
   display: block;
+}
+
+.context-correction-plan-steps button {
+  justify-self: start;
+  min-height: 30px;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.6rem;
 }
 
 .memory-panel textarea:focus-visible,

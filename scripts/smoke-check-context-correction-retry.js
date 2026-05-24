@@ -93,10 +93,10 @@ const progress = json(files.progressData);
 requireTrue(progress.context_correction_retry_report?.title === report.title, 'Progress dashboard data must embed D231 context correction retry report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d231 = tasks.find((task) => task.seq === 'D231');
-const d237 = tasks.find((task) => task.seq === 'D237');
+const d237 = tasks.find((task) => task.seq === 'D238');
 requireTrue(d231?.status === 'beta', 'Progress dashboard task D231 must be beta after correction retry ships.');
-requireTrue(d237?.status === 'next', 'Progress dashboard task D237 must become next after D236 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D237', 'Progress dashboard next queue must prioritize D237 after D236 ships.');
+requireTrue(d237?.status === 'next', 'Progress dashboard task D238 must become next after D236 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D238', 'Progress dashboard next queue must prioritize D238 after D236 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

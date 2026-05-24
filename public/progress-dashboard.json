@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T23:50:01.466Z",
+  "updated_at": "2026-05-24T00:07:58.743Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 237,
+    "total": 238,
     "done": 51,
-    "beta": 161,
+    "beta": 162,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 4,
+        "total": 5,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -3026,6 +3026,102 @@
       "reason": "After draft plans exist, MMIR needs protected apply gates for specific approved memory/knowledge changes with audit and rollback."
     }
   },
+  "correction_remediation_apply_gates_report": {
+    "title": "Correction Remediation Apply Gates",
+    "task": "D237",
+    "status": "beta",
+    "backend_commit": "85617d8",
+    "principle": "Remediation execution must be explicit, owner-scoped, auditable and reversible. Public UI can request an apply gate only after a protected backend plan exists, and it must never mutate private source data directly.",
+    "public_repo_rule": "GitHub Pages stores only remediation gate metadata and the latest application receipt. Raw prompts, raw responses, transcripts, provider keys, session tokens and document text remain outside public storage.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-steps/apply",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "purpose": "Record confirmed remediation step applications and apply correction undo follow-through without allowing public frontend source mutations."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "plan_state": "mimir-context-correction-remediation-plan-v1:{workspace}",
+      "apply_state": "mimir-context-correction-remediation-apply-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_contract": {
+      "panel": ".context-correction-plan-panel",
+      "apply_status": ".context-correction-apply-status",
+      "step_button": "[data-correction-apply=\"apply\"]",
+      "step_id_attribute": "data-step-id",
+      "correction_id_attribute": "data-correction-id"
+    },
+    "apply_policy": {
+      "confirm_required": true,
+      "public_frontend_authority": false,
+      "automatic_mutation_allowed": false,
+      "source_mutation_executed": false,
+      "no_paid_routes_started": true,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "provider_secrets_stored": false
+    },
+    "safe_outcomes": [
+      "Recorded manual review target for memory scope remediation",
+      "Recorded manual review target for knowledge source remediation",
+      "Recorded knowledge collection split proposal without changing documents",
+      "Applied correction undo follow-through against the correction trail only"
+    ],
+    "blocked_fields": [
+      "prompt",
+      "raw_prompt",
+      "response",
+      "raw_response",
+      "messages",
+      "transcript",
+      "api_key",
+      "access_token",
+      "refresh_token",
+      "secret",
+      "document_text"
+    ],
+    "scenarios": [
+      {
+        "id": "apply-gate-visible",
+        "status": "ready",
+        "expected": "Every draft remediation step exposes an Apply gate control after plan creation.",
+        "selector": "[data-correction-apply=\"apply\"][data-step-id][data-correction-id]",
+        "confirm_required": true,
+        "public_frontend_authority": false
+      },
+      {
+        "id": "protected-apply-route",
+        "status": "ready",
+        "expected": "Apply gate calls the protected backend route with correction_id, step_id and confirm:true only.",
+        "route": "/context/corrections/remediation-steps/apply",
+        "no_paid_routes_started": true,
+        "provider_secrets_stored": false,
+        "raw_prompt_stored": false,
+        "raw_response_stored": false
+      },
+      {
+        "id": "manual-target-receipt",
+        "status": "ready",
+        "expected": "Non-undo remediation applications are rendered as recorded receipts with rollback hints and manual targets.",
+        "source_mutation_executed": false,
+        "automatic_mutation_allowed": false
+      },
+      {
+        "id": "undo-follow-through",
+        "status": "ready",
+        "expected": "Prepare-undo steps can mark the correction trail as undone while source data remains protected.",
+        "mutation_executed_scope": "context-correction",
+        "source_mutation_executed": false
+      }
+    ],
+    "next": {
+      "task": "D238",
+      "label": "Memory and knowledge remediation adapters",
+      "reason": "Apply gates now record confirmed intent. The next slice should connect those records to protected memory and knowledge adapters that can prepare exact source-scope updates behind backend policy."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -3076,7 +3172,7 @@
     }
   ],
   "next_queue": [
-    "D237"
+    "D238"
   ],
   "watchlist": [
     "D082",
@@ -6633,9 +6729,24 @@
       "best_practice": "Plans must remain useful without becoming hidden automation",
       "done_when": "Owners can apply one approved remediation step at a time through protected routes with audit, rollback hints and no public frontend authority",
       "covers": "backend, frontend, memory, knowledge, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now expose protected remediation step apply gates with explicit confirmation, audit receipts, rollback hints and no public frontend authority.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D238",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Memory and knowledge remediation adapters",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Connect confirmed remediation gate receipts to protected backend adapters that prepare exact memory scope updates, knowledge source review packets and collection split proposals without exposing raw content",
+      "best_practice": "Apply gates are useful only when they guide concrete private repair work behind policy",
+      "done_when": "Owners can turn recorded correction intent into safe backend-owned memory/knowledge repair drafts with source IDs, rollback metadata and no public frontend authority",
+      "covers": "backend, memory, knowledge, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add protected apply gates for approved memory/knowledge remediation steps with audit and rollback.",
+      "evidence": "Next activation slice: connect confirmed remediation receipts to protected memory and knowledge adapters that prepare exact source-scope updates behind backend policy.",
       "estimate": "0.5-2d"
     }
   ]

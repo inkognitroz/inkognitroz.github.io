@@ -6,6 +6,7 @@
   const SYNC_PREFIX='mimir-context-correction-sync-v1:';
   const REVIEW_PREFIX='mimir-context-correction-review-v1:';
   const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
+  const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -15,6 +16,7 @@
   function syncKey(){return SYNC_PREFIX+workspaceId();}
   function reviewKey(){return REVIEW_PREFIX+workspaceId();}
   function planKey(){return PLAN_PREFIX+workspaceId();}
+  function applyKey(){return APPLY_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -87,6 +89,27 @@
   }
   function readPlanState(){
     const value=readJson(planKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeApplyState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_executed:false,
+      ...value
+    };
+    try{localStorage.setItem(applyKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-apply-updated',{detail:state}));
+    return state;
+  }
+  function readApplyState(){
+    const value=readJson(applyKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -313,13 +336,81 @@
   function approvePlan(){
     const state=readPlanState();
     if(!state?.plan)return;
-    writePlanState({...state,status:'approved-local',message:'Plan approval note stored locally. Backend execution is still disabled until an explicit apply route exists.'});
+    writePlanState({...state,status:'approved-local',message:'Plan approval note stored locally. Use Apply gate on one step to send an explicit protected confirmation.'});
     render();
   }
   function deferPlan(){
     const state=readPlanState();
     writePlanState({...state,status:'deferred',message:'Remediation plan deferred. No backend change or paid route was started.'});
     render();
+  }
+  function correctionIdForStep(plan,stepId){
+    const id=cleanString(stepId,180);
+    const ids=Array.isArray(plan?.correction_ids)?plan.correction_ids.map((item)=>cleanString(item,120)).filter(Boolean):[];
+    return ids.find((item)=>id===item||id.startsWith(item+':'))||cleanString(id.split(':')[0],120);
+  }
+  async function applyRemediationStep(stepId,correctionId){
+    const planState=readPlanState();
+    const plan=planState?.plan&&typeof planState.plan==='object'?planState.plan:null;
+    const cleanStepId=cleanString(stepId,180);
+    const cleanCorrectionId=cleanString(correctionId||correctionIdForStep(plan,cleanStepId),120);
+    if(!plan||!cleanStepId||!cleanCorrectionId){
+      const state=writeApplyState({status:'needs-plan',message:'Create a remediation plan before applying a protected step gate.',step_id:cleanStepId,correction_id:cleanCorrectionId});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeApplyState({status:'needs-backend',message:'Choose an active protected backend before applying remediation gates.',step_id:cleanStepId,correction_id:cleanCorrectionId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      correction_id:cleanCorrectionId,
+      step_id:cleanStepId,
+      confirm:true,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false
+    };
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-steps/apply'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const application=response?.data||null;
+      const mutation=Boolean(application?.mutation_executed);
+      const sourceMutation=Boolean(application?.source_mutation_executed);
+      const state=writeApplyState({
+        status:application?.status||'recorded',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        application,
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        mutation_executed:mutation,
+        source_mutation_executed:sourceMutation,
+        message:mutation?'Protected correction undo gate applied. Source data was not mutated by the public frontend.':'Protected remediation gate recorded. Review the manual target before any source data is changed.'
+      });
+      await loadReviewQueue({limit:10,include_undone:true});
+      render();
+      return state;
+    }catch(error){
+      const state=writeApplyState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        message:api.friendlyError?.(error)||error.message||'Could not apply the protected remediation gate.'
+      });
+      render();
+      return state;
+    }
   }
   function deferSync(){
     writeSyncState({status:'deferred',message:'Correction trails remain browser-local. You can sync later when a protected backend is active.',event_count:syncPreview().length});
@@ -374,9 +465,12 @@
   }
   function remediationPlanHtml(){
     const state=readPlanState();
+    const applyState=readApplyState();
     const plan=state?.plan&&typeof state.plan==='object'?state.plan:null;
     const steps=Array.isArray(plan?.steps)?plan.steps.slice(0,6):[];
     const status=state?.status||'idle';
+    const application=applyState?.application&&typeof applyState.application==='object'?applyState.application:null;
+    const applyStatus=applyState?.status||'idle';
     return '<div class="context-correction-plan-panel" data-state="'+safe(status)+'">'+
       '<div><p class="eyebrow">Remediation plan</p><h4>'+safe(plan?.status?('Plan '+plan.status):'No draft plan yet')+'</h4>'+
       '<small>'+safe(state?.message||'Create an explicit repair plan from the protected review queue. Plans do not execute changes from GitHub Pages.')+'</small></div>'+
@@ -387,10 +481,15 @@
         '<button type="button" data-correction-plan="approve" '+(!plan?'disabled':'')+'>Approve note</button>'+
         '<button type="button" data-correction-plan="defer">Defer</button>'+
       '</div>'+
+      '<div class="context-correction-apply-status" data-state="'+safe(applyStatus)+'">'+
+        '<strong>Apply gate: '+safe(applyStatus)+'</strong>'+
+        '<small>'+safe(applyState?.message||'Each step can be explicitly confirmed against the protected backend. Public frontend authority remains false.')+'</small>'+
+        (application?'<small>step:'+safe(application.step_kind||application.step_id||'recorded')+' / mutation_executed:'+safe(Boolean(application.mutation_executed))+' / source_mutation_executed:'+safe(Boolean(application.source_mutation_executed))+' / rollback:'+safe(application.rollback_hint||'manual review')+'</small>':'')+
+      '</div>'+
       '<div class="context-correction-plan-steps">'+(steps.length?steps.map((step)=>
-        '<article><strong>'+safe(step.title||step.id)+'</strong><p>'+safe(step.detail||'Review this step manually before any mutation.')+'</p><small>target:'+safe(step.target||'context')+' / execution_allowed:'+safe(Boolean(step.execution_allowed))+' / confirmation:'+safe(Boolean(step.requires_confirmation))+'</small></article>'
+        '<article><strong>'+safe(step.title||step.id)+'</strong><p>'+safe(step.detail||'Review this step manually before any mutation.')+'</p><small>target:'+safe(step.target||'context')+' / execution_allowed:'+safe(Boolean(step.execution_allowed))+' / confirmation:'+safe(Boolean(step.requires_confirmation))+'</small><button type="button" data-correction-apply="apply" data-correction-id="'+safe(correctionIdForStep(plan,step.id||''))+'" data-step-id="'+safe(step.id||'')+'">Apply gate</button></article>'
       ).join(''):'<article><strong>No plan steps</strong><p>Create a draft plan after loading correction review items.</p><small>execution_allowed:false / destructive_execution_allowed:false</small></article>')+'</div>'+
-      '<small class="context-correction-review-policy">execution_allowed:false / destructive_execution_allowed:false / automatic_mutation_allowed:false / public_frontend_authority:false</small>'+
+      '<small class="context-correction-review-policy">public_frontend_authority:false / automatic_mutation_allowed:false / source_mutation_executed:false / no_paid_routes_started:true</small>'+
     '</div>';
   }
   function surfaceHtml(surface){
@@ -473,10 +572,16 @@
     if(action==='approve')approvePlan();
     if(action==='defer')deferPlan();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-apply]');
+    if(!button)return;
+    const action=button.dataset.correctionApply;
+    if(action==='apply')applyRemediationStep(button.dataset.stepId||'',button.dataset.correctionId||'');
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,readSyncState,readReviewState,readPlanState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,readSyncState,readReviewState,readPlanState,readApplyState};
 })();

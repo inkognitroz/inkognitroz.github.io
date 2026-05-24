@@ -32,6 +32,7 @@ const protectedContextCorrectionSyncReportPath = resolve(root, 'public', 'protec
 const protectedCorrectionSyncUiReportPath = resolve(root, 'public', 'protected-correction-sync-ui-report.json');
 const protectedCorrectionReviewQueueReportPath = resolve(root, 'public', 'protected-correction-review-queue-report.json');
 const correctionRemediationPlanReportPath = resolve(root, 'public', 'correction-remediation-plan-report.json');
+const correctionRemediationApplyGatesReportPath = resolve(root, 'public', 'correction-remediation-apply-gates-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -201,7 +202,8 @@ const overrides = new Map([
   ['D234', { status: 'beta', evidence: 'Public UI now previews correction metadata, checks active backend context.corrections capability, syncs sanitized events to /context/corrections and lets users keep trails local without storing secrets.' }],
   ['D235', { status: 'beta', evidence: 'Backend and public UI now expose protected /context/corrections/review with owner-safe filters, prioritized metadata-only review items, safe next actions and no raw prompt/response/secret storage.' }],
   ['D236', { status: 'beta', evidence: 'Backend and public UI now create explicit non-executing correction remediation plans from review items, with local approve/defer notes and execution_allowed:false safety gates.' }],
-  ['D237', { status: 'next', evidence: 'Next activation slice: add protected apply gates for approved memory/knowledge remediation steps with audit and rollback.' }]
+  ['D237', { status: 'beta', evidence: 'Backend and public UI now expose protected remediation step apply gates with explicit confirmation, audit receipts, rollback hints and no public frontend authority.' }],
+  ['D238', { status: 'next', evidence: 'Next activation slice: connect confirmed remediation receipts to protected memory and knowledge adapters that prepare exact source-scope updates behind backend policy.' }]
 ]);
 
 const repoMeta = [
@@ -445,6 +447,11 @@ function readCorrectionRemediationPlanReport() {
   return JSON.parse(readFileSync(correctionRemediationPlanReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationApplyGatesReport() {
+  if (!existsSync(correctionRemediationApplyGatesReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationApplyGatesReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -469,7 +476,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D237', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D238', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -516,6 +523,7 @@ const data = {
   protected_correction_sync_ui_report: readProtectedCorrectionSyncUiReport(),
   protected_correction_review_queue_report: readProtectedCorrectionReviewQueueReport(),
   correction_remediation_plan_report: readCorrectionRemediationPlanReport(),
+  correction_remediation_apply_gates_report: readCorrectionRemediationApplyGatesReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,
