@@ -6,7 +6,9 @@ const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const indexPath = join(publicDir, 'index.html');
-const initialJsByteBudget = 155000;
+const externalInitialJsByteBudget = 146500;
+const inlineFirstPaintJsByteBudget = 5000;
+const totalFirstPaintJsByteBudget = 151500;
 const cacheKey = '20260524-quiet-first-paint-v3';
 const runtimeCacheKey = '20260524-mobile-sticky-v1';
 const runtimeFixKey = '20260524-local-probe-v5';
@@ -53,6 +55,16 @@ function scriptQueue(html) {
   }
 }
 
+function inlineExecutableScripts(html) {
+  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .map((match) => ({ attributes: attrs(`<script ${match[1]}>`), body: match[2] || '' }))
+    .filter((script) => !script.attributes.src)
+    .filter((script) => {
+      const type = String(script.attributes.type || '').trim().toLowerCase();
+      return !type || type === 'text/javascript' || type === 'application/javascript' || type === 'module';
+    });
+}
+
 function deferredLoaderBody(html) {
   const match = html.match(/<script>\s*([\s\S]*?window\.MimirLoadDeferred[\s\S]*?)<\/script>/);
   return match ? match[1] : '';
@@ -66,9 +78,12 @@ const blockingCss = cssTags.filter((tag) => attrs(tag).media !== 'print');
 const deferredCss = cssTags.filter((tag) => attrs(tag).media === 'print' && tag.includes('data-mimir-deferred-style'));
 const initialScripts = scriptTags.map((tag) => attrs(tag).src).filter(Boolean);
 const deferredScripts = scriptQueue(html);
+const inlineScripts = inlineExecutableScripts(html);
 const loaderBody = deferredLoaderBody(html);
 const blockingCssBytes = blockingCss.reduce((sum, tag) => sum + assetSize(mmirPath, attrs(tag).href), 0);
 const initialJsBytes = initialScripts.reduce((sum, src) => sum + assetSize(mmirPath, src), 0);
+const inlineFirstPaintJsBytes = inlineScripts.reduce((sum, script) => sum + Buffer.byteLength(script.body, 'utf8'), 0);
+const totalFirstPaintJsBytes = initialJsBytes + inlineFirstPaintJsBytes;
 
 if (!index.includes('./mmir.html#mimir-instant-start')) fail('Root page must keep the MMIR first-journey redirect target.');
 if (!html.includes('The orchestration layer for trusted AI.')) fail('First viewport identity must stay in the critical shell.');
@@ -81,7 +96,9 @@ if (deferredCss.length < 24) fail(`Advanced CSS should be non-render-blocking; f
 if (initialScripts.length > 9) fail(`Initial JS budget exceeded: ${initialScripts.length} scripts.`);
 if (deferredScripts.length < 35) fail(`Advanced modules should load progressively; found only ${deferredScripts.length} deferred scripts.`);
 if (blockingCssBytes > 65000) fail(`Blocking CSS budget exceeded: ${blockingCssBytes} bytes.`);
-if (initialJsBytes > initialJsByteBudget) fail(`Initial JS budget exceeded: ${initialJsBytes} bytes.`);
+if (initialJsBytes > externalInitialJsByteBudget) fail(`External initial JS budget exceeded: ${initialJsBytes} bytes.`);
+if (inlineFirstPaintJsBytes > inlineFirstPaintJsByteBudget) fail(`Inline first-paint JS budget exceeded: ${inlineFirstPaintJsBytes} bytes.`);
+if (totalFirstPaintJsBytes > totalFirstPaintJsByteBudget) fail(`Total first-paint JS budget exceeded: ${totalFirstPaintJsBytes} bytes.`);
 
 if (loaderBody) {
   try {
@@ -102,6 +119,7 @@ for (const required of [
   `./apps/mimir-chat-portal/api-client.js?v=${cacheKey}`,
   `./apps/mimir-chat-portal/chat-runtime.js?v=${runtimeCacheKey}`,
   `./apps/mimir-chat-portal/first-impression.js?v=${cacheKey}`,
+  './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
   `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`
 ]) {
   if (!initialScripts.includes(required)) fail(`Critical first-journey script must load immediately: ${required}`);
@@ -120,5 +138,5 @@ for (const required of [
 }
 
 if (!process.exitCode) {
-  console.log(`MMIR performance budget passed: ${blockingCss.length} blocking CSS (${blockingCssBytes} bytes), ${initialScripts.length} initial scripts (${initialJsBytes} bytes), ${deferredScripts.length} deferred scripts.`);
+  console.log(`MMIR performance budget passed: ${blockingCss.length} blocking CSS (${blockingCssBytes} bytes), ${initialScripts.length} initial scripts (${initialJsBytes} external bytes + ${inlineFirstPaintJsBytes} inline bytes = ${totalFirstPaintJsBytes} first-paint JS bytes), ${deferredScripts.length} deferred scripts.`);
 }

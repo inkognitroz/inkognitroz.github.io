@@ -7,7 +7,7 @@ const files = {
   mmir: join(publicDir, 'mmir.html'),
   runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   runtimeFix: join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'),
-  mobileCss: join(publicDir, 'apps', 'mimir-chat-portal', 'workflow-builder.css'),
+  mobileCss: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'),
   pagesWorkflow: join(root, '.github', 'workflows', 'pages.yml'),
   qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml')
 };

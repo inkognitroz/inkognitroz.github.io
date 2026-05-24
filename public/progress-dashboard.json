@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T18:23:04.959Z",
+  "updated_at": "2026-05-24T22:04:42.599Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 254,
+    "total": 256,
     "done": 51,
-    "beta": 178,
+    "beta": 180,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1125,6 +1125,26 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Performance / Architecture",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Security / Frontend Quality",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1686,7 +1706,8 @@
         "width": 1440,
         "height": 900,
         "expected": [
-          "tool cluster and live cluster share one compact row when space allows",
+          "tool cluster and live cluster sit in separate grid areas when space allows",
+          "composer feedback occupies its own row and cannot squeeze chips",
           "send button keeps stable 44px dimensions",
           "composer feedback line is visible but secondary",
           "resource chip is a clickable control, not decorative text"
@@ -1717,11 +1738,17 @@
     "css_contract": [
       ".composer-action-feedback",
       ".composer-mode-dock",
+      "grid-template-areas",
+      "minmax(0, 1fr) auto",
       ".composer-tool-cluster",
       ".composer-live-cluster",
       "#primary-chat-link.btn-primary",
       "@media (max-width: 720px)",
-      "flex-direction: column",
+      "grid-area: tools",
+      "grid-area: live",
+      "grid-area: feedback",
+      "flex-wrap: wrap",
+      "grid-template-columns: 1fr",
       "flex: 1 1 auto"
     ],
     "copy_contract": [
@@ -9234,6 +9261,36 @@
       "status_note": "Next implementation slice for Codex work.",
       "evidence": "Next activation slice: tighten Open WebUI-style first chat focus, active model/node strip and Mac app-bundle/package QA.",
       "estimate": "2-6h"
+    },
+    {
+      "seq": "D255",
+      "phase": "Performance / Architecture",
+      "priority": "P0",
+      "work_package": "Count inline first-paint guards in critical-shell budget",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Extend the performance smoke gate to count inline bootstrap scripts and move any non-essential guard logic into deferred, measured assets",
+      "best_practice": "Critical-shell headroom should not be recovered by hiding bytes in inline HTML; the first paint budget must reflect what the browser actually executes",
+      "done_when": "CI reports external and inline first-paint JS separately, and chat-first/local-probe behavior remains green under the stricter budget",
+      "covers": "performance, architecture, first-paint, qa",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Performance gates now count inline first-paint JavaScript separately from external critical scripts, preserve chat-first scroll as a critical external asset and enforce a combined first-paint JS budget.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D256",
+      "phase": "Security / Frontend Quality",
+      "priority": "P1",
+      "work_package": "DOM rendering hardening pass",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Review high-traffic innerHTML surfaces, keep only escaped/static template usage, and replace risky dynamic rendering with DOM helpers where it touches user, model, file, connector or sharing content",
+      "best_practice": "The public UI is static-safe only if dynamic content is escaped consistently as the product grows",
+      "done_when": "Public safety audit or a focused smoke gate proves user/model/provider text cannot become executable markup in core chat, model, sharing, memory and knowledge surfaces",
+      "covers": "security, frontend-quality, xss, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.",
+      "estimate": "Verify + polish"
     }
   ]
 }

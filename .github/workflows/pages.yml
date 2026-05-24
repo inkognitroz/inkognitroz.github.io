@@ -190,6 +190,8 @@ jobs:
         run: node scripts/smoke-check-visible-control-dead-ends.js
       - name: Smoke check critical-shell headroom recovery
         run: node scripts/smoke-check-critical-shell-headroom-recovery.js
+      - name: Smoke check DOM rendering hardening
+        run: node scripts/smoke-check-dom-rendering-hardening.js
       - name: Smoke check deploy verification
         run: node scripts/smoke-check-deploy-verification.js
       - name: Smoke check first-screen visual QA

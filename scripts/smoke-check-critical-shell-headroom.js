@@ -75,8 +75,14 @@ for (const needle of [
 }
 
 for (const needle of [
-  'initialJsByteBudget = 155000',
+  'externalInitialJsByteBudget = 146500',
+  'inlineFirstPaintJsByteBudget = 5000',
+  'totalFirstPaintJsByteBudget = 151500',
+  'inlineExecutableScripts(html)',
+  'inlineFirstPaintJsBytes',
+  'totalFirstPaintJsBytes',
   "const cacheKey = '20260524-quiet-first-paint-v3'",
+  './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
   './apps/mimir-chat-portal/first-impression.js?v=${cacheKey}',
   'Critical first-journey script must load immediately'
 ]) {

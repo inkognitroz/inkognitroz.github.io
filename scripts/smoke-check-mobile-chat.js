@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const root = process.cwd();
-const cssPath = join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workflow-builder.css');
+const cssPath = join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css');
 const htmlPath = join(resolve(root, 'public', 'mmir.html'));
 const swPath = join(resolve(root, 'public'), 'sw.js');
 const css = readFileSync(cssPath, 'utf8');
@@ -28,7 +28,7 @@ requireCss('.quick-suggestions{order:4', 'Mobile quick actions must stay above s
 requireCss('.mimir-instant-start{order:5', 'Ground Zero card must not push the chat below the first mobile screen.');
 requireCss('env(safe-area-inset-bottom)', 'Mobile layout must respect browser/device bottom safe area.');
 
-if (!html.includes('workflow-builder.css?v=20260524-quiet-first-paint-v3')) {
+if (!html.includes('mimir-chat-portal.css?v=20260524-mobile-sticky-v1')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 

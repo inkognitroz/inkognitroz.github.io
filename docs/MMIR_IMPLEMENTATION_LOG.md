@@ -249,6 +249,9 @@ Updated: 2026-05-23
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads from deferred UI instead of the critical runtime guard, preserving the autostart chat UX without breaking first-paint JS headroom.
 - Review follow-ups `D255-D256` were added for inline critical-shell budget accounting and DOM rendering hardening across escaped dynamic UI surfaces.
+- D255 is now beta: performance and critical-shell recovery gates count inline executable first-paint JavaScript separately from external critical scripts and enforce a combined first-paint JS budget.
+- D256 is now beta: a focused DOM rendering hardening gate protects core chat, active route strip, model picker and safe sharing surfaces from raw dynamic HTML regressions, and both deploy/quality workflows run it.
+- Rebased prompt-visibility work kept the chat-first scroll behavior as a critical external asset instead of inline HTML, preserving first-chat UX while restoring inline first-paint headroom.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 

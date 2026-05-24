@@ -6,6 +6,8 @@ const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const progressDataPath = join(publicDir, 'progress-dashboard.json');
 const recoveredInitialJsBudget = 146500;
+const recoveredInlineJsBudget = 5000;
+const recoveredTotalFirstPaintJsBudget = 151500;
 
 function fail(message) {
   console.error(message);
@@ -48,6 +50,16 @@ function scriptQueue(html) {
   }
 }
 
+function inlineExecutableScripts(html) {
+  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .map((match) => ({ attributes: attrs(`<script ${match[1]}>`), body: match[2] || '' }))
+    .filter((script) => !script.attributes.src)
+    .filter((script) => {
+      const type = String(script.attributes.type || '').trim().toLowerCase();
+      return !type || type === 'text/javascript' || type === 'application/javascript' || type === 'module';
+    });
+}
+
 function json(file) {
   try {
     return JSON.parse(read(file));
@@ -62,6 +74,8 @@ const progressData = json(progressDataPath);
 const scriptTags = [...html.matchAll(/<script\b[^>]*src=["'][^"']+["'][^>]*>/gi)].map((match) => match[0]);
 const initialScripts = scriptTags.map((tag) => attrs(tag).src).filter(Boolean);
 const initialJsBytes = initialScripts.reduce((sum, src) => sum + assetSize(mmirPath, src), 0);
+const inlineJsBytes = inlineExecutableScripts(html).reduce((sum, script) => sum + Buffer.byteLength(script.body, 'utf8'), 0);
+const totalFirstPaintJsBytes = initialJsBytes + inlineJsBytes;
 const deferredScripts = scriptQueue(html);
 
 if (initialScripts.includes('./apps/mimir-chat-portal/demo-growth.js')) {
@@ -72,6 +86,12 @@ if (!deferredScripts.includes('./apps/mimir-chat-portal/demo-growth.js')) {
 }
 if (initialJsBytes > recoveredInitialJsBudget) {
   fail(`D200 recovered initial JS budget exceeded: ${initialJsBytes} bytes.`);
+}
+if (inlineJsBytes > recoveredInlineJsBudget) {
+  fail(`D255 inline first-paint JS budget exceeded: ${inlineJsBytes} bytes.`);
+}
+if (totalFirstPaintJsBytes > recoveredTotalFirstPaintJsBudget) {
+  fail(`D255 total first-paint JS budget exceeded: ${totalFirstPaintJsBytes} bytes.`);
 }
 for (const needle of [
   "event.target.closest('#try-demo-mode')",
@@ -106,5 +126,5 @@ if (!d206 || d206.status !== 'beta') {
 }
 
 if (!process.exitCode) {
-  console.log(`Critical-shell headroom recovery smoke check passed at ${initialJsBytes} initial JS bytes.`);
+  console.log(`Critical-shell headroom recovery smoke check passed at ${initialJsBytes} external JS bytes, ${inlineJsBytes} inline JS bytes, ${totalFirstPaintJsBytes} total first-paint JS bytes.`);
 }

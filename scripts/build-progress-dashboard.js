@@ -237,7 +237,9 @@ const overrides = new Map([
   ['D251', { status: 'beta', evidence: 'Public dashboard now embeds deterministic desktop/mobile browser QA fixtures for timeline receipt running, ready and error states.' }],
   ['D252', { status: 'beta', evidence: 'Progress Dashboard now embeds a public-safe cross-repo code, architecture, security and UX review gate using public and backend test evidence.' }],
   ['D253', { status: 'beta', evidence: 'Chat-first free activation canary now proves instant free browser-helper chat, first-chat receipt coverage, Mac installer checksum alignment and local-node proof handoff without spend.' }],
-  ['D254', { status: 'next', evidence: 'Next activation slice: tighten Open WebUI-style first chat focus, active model/node strip and Mac app-bundle/package QA.' }]
+  ['D254', { status: 'next', evidence: 'Next activation slice: tighten Open WebUI-style first chat focus, active model/node strip and Mac app-bundle/package QA.' }],
+  ['D255', { status: 'beta', evidence: 'Performance gates now count inline first-paint JavaScript separately from external critical scripts, preserve chat-first scroll as a critical external asset and enforce a combined first-paint JS budget.' }],
+  ['D256', { status: 'beta', evidence: 'A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.' }]
 ]);
 
 const repoMeta = [
