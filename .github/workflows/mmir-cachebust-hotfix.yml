@@ -20,28 +20,67 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply MMIR chat-first landing hotfix
+      - name: Apply MMIR mobile chat viewport hotfix
         run: |
           node <<'NODE'
           const fs = require('node:fs');
-          const path = 'public/mmir.html';
-          let source = fs.readFileSync(path, 'utf8');
-          const chatFirst = `<script data-mimir-chat-first>!function(){function v(){const e=document.getElementById('mimir-prompt')||document.querySelector('textarea[placeholder*="Ask MMIR"],textarea');if(!e)return;const r=e.getBoundingClientRect();if(r.top>=96&&r.bottom<=innerHeight-24)return;scrollTo(0,Math.max(0,r.top+scrollY-160))}function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime';setTimeout(v,80);setTimeout(v,420)}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>`;
-          if (source.includes('data-mimir-chat-first')) {
-            source = source.replace(/<script data-mimir-chat-first>[\s\S]*?<\/script>/, chatFirst);
+          const htmlPath = 'public/mmir.html';
+          const cssPath = 'public/apps/mimir-chat-portal/mimir-chat-portal.css';
+          const runtimePath = 'public/apps/mimir-chat-portal/chat-runtime.js';
+
+          let html = fs.readFileSync(htmlPath, 'utf8');
+          const chatFirst = `<script data-mimir-chat-first>!function(){function v(){const e=document.getElementById('mimir-prompt')||document.querySelector('textarea[placeholder*=\"Ask MMIR\"],textarea');if(!e)return;const r=e.getBoundingClientRect();if(r.top>=96&&r.bottom<=innerHeight-24)return;scrollTo(0,Math.max(0,r.top+scrollY-160))}function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime';setTimeout(v,80);setTimeout(v,420)}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>`;
+          if (html.includes('data-mimir-chat-first')) {
+            html = html.replace(/<script data-mimir-chat-first>[\s\S]*?<\/script>/, chatFirst);
           } else {
             const marker = '</script>\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js';
-            if (!source.includes(marker)) throw new Error('MMIR page missing chat script marker');
-            source = source.replace(marker, `</script>\n  ${chatFirst}\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js`);
+            if (!html.includes(marker)) throw new Error('MMIR page missing chat script marker');
+            html = html.replace(marker, `</script>\n  ${chatFirst}\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js`);
           }
-          source = source.replace(
-            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-local-probe-v5',
-            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3'
-          ).replace(
-            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v2',
+          html = html.replace(
+            /\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g,
+            './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260524-mobile-sticky-v1'
+          );
+          html = html.replace(
+            /\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g,
+            './apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1'
+          );
+          html = html.replace(
+            /\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g,
             './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3'
           );
-          fs.writeFileSync(path, source, 'utf8');
+          fs.writeFileSync(htmlPath, html, 'utf8');
+
+          let runtime = fs.readFileSync(runtimePath, 'utf8');
+          runtime = runtime.replace(
+            "    transcriptEl.appendChild(bubble);\n    bubble.scrollIntoView({block:'nearest'});\n    return body;",
+            "    transcriptEl.appendChild(bubble);\n    requestAnimationFrame(()=>{\n      if(transcriptEl)transcriptEl.scrollTop=transcriptEl.scrollHeight;\n    });\n    return body;"
+          );
+          fs.writeFileSync(runtimePath, runtime, 'utf8');
+
+          let css = fs.readFileSync(cssPath, 'utf8');
+          css = css.replace(
+            '.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem}',
+            '.mimir-composer{background:var(--mimir-surface);border:1px solid var(--mimir-line);border-radius:28px;box-shadow:0 18px 60px rgba(17,24,39,.10);padding:.78rem;scroll-margin-top:96px}'
+          );
+          css = css.replace(
+            '.mimir-nav-menu{position:fixed;right:4%;top:4.6rem;grid-template-columns:1fr;width:min(300px,92vw);max-height:70vh;overflow:auto}.mimir-chat-center{gap:.9rem}',
+            '.mimir-nav-menu{position:fixed;right:4%;top:4.6rem;grid-template-columns:1fr;width:min(300px,92vw);max-height:70vh;overflow:auto}.mimir-chat-main{padding-bottom:calc(8.5rem + env(safe-area-inset-bottom))}.mimir-chat-center{gap:.9rem}'
+          );
+          css = css.replace(
+            '.instant-node{white-space:normal}.mimir-composer textarea{min-height:4.2rem}',
+            '.instant-node{white-space:normal}.mimir-composer{position:sticky;bottom:calc(.75rem + env(safe-area-inset-bottom));z-index:9}.mimir-composer textarea{min-height:4.2rem}'
+          );
+          fs.writeFileSync(cssPath, css, 'utf8');
+
+          const finalRuntime = fs.readFileSync(runtimePath, 'utf8');
+          const finalCss = fs.readFileSync(cssPath, 'utf8');
+          const finalHtml = fs.readFileSync(htmlPath, 'utf8');
+          if (finalRuntime.includes("bubble.scrollIntoView({block:'nearest'});")) throw new Error('Bubble scrollIntoView still present');
+          if (!finalRuntime.includes('transcriptEl.scrollTop=transcriptEl.scrollHeight')) throw new Error('Transcript-only scroll missing');
+          if (!finalCss.includes('position:sticky') || !finalCss.includes('scroll-margin-top:96px')) throw new Error('Mobile sticky composer CSS missing');
+          if (!finalHtml.includes('mimir-chat-portal.css?v=20260524-mobile-sticky-v1')) throw new Error('CSS cache bust missing');
+          if (!finalHtml.includes('chat-runtime.js?v=20260524-mobile-sticky-v1')) throw new Error('Runtime cache bust missing');
           NODE
       - name: Run targeted smoke checks
         run: |
@@ -57,6 +96,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/mmir.html
-          git commit -m "fix: keep MMIR chat prompt visible"
+          git add public/mmir.html public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/mimir-chat-portal.css
+          git commit -m "fix: stabilize MMIR mobile chat viewport"
           git push origin HEAD:main
