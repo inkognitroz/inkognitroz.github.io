@@ -242,14 +242,15 @@ Updated: 2026-05-23
 - D248 is now beta: public UI now combines autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline without public mutation authority.
 - D249 is now beta: public dashboard now embeds deterministic desktop/mobile browser QA fixtures for guided trust timeline states and action enablement, with no live secrets, raw data or paid routes.
 - D250 is now beta: public UI now writes browser-local metadata receipts after trust timeline confirm, readiness refresh and rollback actions, including backend route, result status and next action.
-- D251 is now next: add deterministic browser fixture coverage for timeline receipt running, ready and error states.
+- D251 is now beta: public dashboard now embeds deterministic desktop/mobile browser QA fixtures for timeline receipt running, ready and error states, including confirm-source, readiness refresh, apply-rollback and backend-error scenarios.
+- D252 is now next: create a repeatable cross-repo code review, architecture review, security review and UX review gate with public-safe findings and next actions.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D251` autopilot receipt browser QA.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D252` cross-repo architecture and security review gate.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

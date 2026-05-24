@@ -1,0 +1,141 @@
+{
+  "title": "Autopilot Timeline Receipt Browser Fixture",
+  "updated_at": "2026-05-24T04:42:00.000Z",
+  "public_repo_rule": "Receipt browser QA uses deterministic browser-local metadata only; it does not call live source mutation, rollback, provider, tunnel or paid routes.",
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900,
+      "expected": "Receipt sits inside the trust timeline without crowding route, result or next-action text."
+    },
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844,
+      "expected": "Receipt text wraps, action buttons remain reachable and no route text overflows the panel."
+    }
+  ],
+  "selectors": {
+    "timeline_panel": ".context-correction-trust-timeline",
+    "receipt_panel": ".context-correction-trust-receipt",
+    "receipt_ready": ".context-correction-trust-receipt[data-state=\"ready\"]",
+    "receipt_running": ".context-correction-trust-receipt[data-state=\"running\"]",
+    "receipt_error": ".context-correction-trust-receipt[data-state=\"error\"]",
+    "confirm_source": "[data-correction-trust-timeline=\"confirm-source\"]",
+    "refresh_readiness": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+    "apply_rollback": "[data-correction-trust-timeline=\"apply-rollback\"]"
+  },
+  "states": [
+    {
+      "id": "running-confirm-source",
+      "label": "Running confirm source",
+      "expected_receipt_state": "running",
+      "expected_action": "confirm-source",
+      "expected_route": "/context/corrections/remediation-executions/apply",
+      "expected_result_status": "pending",
+      "expected_next_action": "wait for receipt",
+      "storage": {
+        "trust_receipt": {
+          "status": "running",
+          "action": "confirm-source",
+          "target": "memory",
+          "route": "/context/corrections/remediation-executions/apply",
+          "result_status": "pending",
+          "message": "Working through protected backend gate. No raw data, secrets or paid routes are stored.",
+          "next_action": "wait for receipt"
+        }
+      }
+    },
+    {
+      "id": "ready-confirm-source",
+      "label": "Ready confirm source",
+      "expected_receipt_state": "ready",
+      "expected_action": "confirm-source",
+      "expected_route": "/context/corrections/remediation-executions/apply",
+      "expected_result_status": "applied",
+      "expected_next_action": "refresh rollback",
+      "storage": {
+        "trust_receipt": {
+          "status": "ready",
+          "action": "confirm-source",
+          "target": "memory",
+          "route": "/context/corrections/remediation-executions/apply",
+          "result_status": "applied",
+          "message": "Source change confirmed through protected backend gate.",
+          "next_action": "refresh rollback"
+        }
+      }
+    },
+    {
+      "id": "ready-refresh-readiness",
+      "label": "Ready refresh readiness",
+      "expected_receipt_state": "ready",
+      "expected_action": "refresh-readiness",
+      "expected_route": "/context/corrections/remediation-autopilot/rollback-readiness",
+      "expected_result_status": "ready",
+      "expected_next_action": "review undo path",
+      "storage": {
+        "trust_receipt": {
+          "status": "ready",
+          "action": "refresh-readiness",
+          "target": "memory",
+          "route": "/context/corrections/remediation-autopilot/rollback-readiness",
+          "result_status": "ready",
+          "message": "Rollback readiness refreshed without executing mutation.",
+          "next_action": "review undo path"
+        }
+      }
+    },
+    {
+      "id": "ready-apply-rollback",
+      "label": "Ready apply rollback",
+      "expected_receipt_state": "ready",
+      "expected_action": "apply-rollback",
+      "expected_route": "/context/corrections/remediation-rollbacks/apply",
+      "expected_result_status": "rolled-back",
+      "expected_next_action": "review restored state",
+      "storage": {
+        "trust_receipt": {
+          "status": "ready",
+          "action": "apply-rollback",
+          "target": "memory",
+          "route": "/context/corrections/remediation-rollbacks/apply",
+          "result_status": "rolled-back",
+          "message": "Rollback applied through protected backend gate.",
+          "next_action": "review restored state"
+        }
+      }
+    },
+    {
+      "id": "error-backend",
+      "label": "Backend unavailable",
+      "expected_receipt_state": "error",
+      "expected_action": "refresh-readiness",
+      "expected_route": "/context/corrections/remediation-autopilot/rollback-readiness",
+      "expected_result_status": "error",
+      "expected_next_action": "review backend connection",
+      "storage": {
+        "trust_receipt": {
+          "status": "error",
+          "action": "refresh-readiness",
+          "target": "memory",
+          "route": "/context/corrections/remediation-autopilot/rollback-readiness",
+          "result_status": "error",
+          "message": "Backend connection unavailable. Nothing was changed.",
+          "next_action": "review backend connection"
+        }
+      }
+    }
+  ],
+  "privacy": {
+    "raw_prompt_stored": false,
+    "raw_response_stored": false,
+    "document_text_stored": false,
+    "provider_secrets_stored": false,
+    "paid_route_credentials_stored": false,
+    "no_paid_routes_started": true,
+    "public_frontend_authority": false,
+    "automatic_mutation_allowed": false
+  }
+}

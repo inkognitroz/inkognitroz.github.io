@@ -1,0 +1,88 @@
+{
+  "title": "Autopilot Timeline Receipt Browser QA",
+  "task": "D251",
+  "status": "beta",
+  "updated_at": "2026-05-24T04:43:00.000Z",
+  "fixture": "./correction-remediation-autopilot-timeline-receipts-browser-fixture.json",
+  "public_repo_rule": "Receipt browser QA is public-safe fixture evidence only; no live backend mutation, rollback, tunnel, provider key or paid route is triggered.",
+  "qa_policy": {
+    "deterministic_fixture": true,
+    "desktop_mobile_coverage": true,
+    "receipt_state_coverage": true,
+    "action_selector_coverage": true,
+    "visual_overlap_guard": true,
+    "protected_backend_route_required": true,
+    "public_frontend_authority": false,
+    "automatic_mutation_allowed": false,
+    "provider_secrets_stored": false,
+    "document_text_stored": false,
+    "no_paid_routes_started": true
+  },
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "ready",
+      "checks": ["receipt visible", "route text wraps", "next action visible", "buttons remain reachable"]
+    },
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844,
+      "status": "ready",
+      "checks": ["receipt wraps", "state colors visible", "no overflow", "actions reachable"]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "running-confirm-source",
+      "status": "ready",
+      "expected": "Confirm source immediately shows a running receipt before the protected backend response returns.",
+      "selector": ".context-correction-trust-receipt[data-state=\"running\"]",
+      "action": "confirm-source"
+    },
+    {
+      "id": "ready-confirm-source",
+      "status": "ready",
+      "expected": "Confirm source success shows applied result and tells the user to refresh rollback readiness.",
+      "selector": ".context-correction-trust-receipt[data-state=\"ready\"]",
+      "action": "confirm-source"
+    },
+    {
+      "id": "ready-refresh-readiness",
+      "status": "ready",
+      "expected": "Refresh readiness success shows the protected readiness route and the undo review next action.",
+      "selector": ".context-correction-trust-receipt[data-state=\"ready\"]",
+      "action": "refresh-readiness"
+    },
+    {
+      "id": "ready-apply-rollback",
+      "status": "ready",
+      "expected": "Apply undo success shows rollback route, result status and restored-state review next action.",
+      "selector": ".context-correction-trust-receipt[data-state=\"ready\"]",
+      "action": "apply-rollback"
+    },
+    {
+      "id": "error-backend",
+      "status": "ready",
+      "expected": "Backend failures show an error receipt and preserve no-mutation/no-spend boundaries.",
+      "selector": ".context-correction-trust-receipt[data-state=\"error\"]",
+      "action": "refresh-readiness"
+    }
+  ],
+  "selectors": {
+    "receipt_panel": ".context-correction-trust-receipt",
+    "receipt_ready": ".context-correction-trust-receipt[data-state=\"ready\"]",
+    "receipt_running": ".context-correction-trust-receipt[data-state=\"running\"]",
+    "receipt_error": ".context-correction-trust-receipt[data-state=\"error\"]",
+    "confirm_source": "[data-correction-trust-timeline=\"confirm-source\"]",
+    "refresh_readiness": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+    "apply_rollback": "[data-correction-trust-timeline=\"apply-rollback\"]"
+  },
+  "next": {
+    "task": "D252",
+    "label": "cross-repo architecture and security review gate",
+    "why": "After the trust timeline is covered, the next no-spend hardening pass should turn code review, architecture review and public/private security review into a repeatable dashboard gate."
+  }
+}

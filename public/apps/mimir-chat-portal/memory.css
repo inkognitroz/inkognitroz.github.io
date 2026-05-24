@@ -776,10 +776,17 @@
 .context-correction-trust-receipt {
   display: grid;
   gap: 0.25rem;
+  min-height: 68px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 8px;
   padding: 0.5rem;
   background: rgba(248, 250, 252, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.context-correction-trust-receipt strong,
+.context-correction-trust-receipt small {
+  display: block;
 }
 
 .context-correction-trust-receipt[data-state="ready"] {

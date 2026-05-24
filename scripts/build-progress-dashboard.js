@@ -47,6 +47,8 @@ const correctionRemediationAutopilotTrustTimelineReportPath = resolve(root, 'pub
 const correctionRemediationAutopilotTrustTimelineBrowserFixturePath = resolve(root, 'public', 'correction-remediation-autopilot-trust-timeline-browser-fixture.json');
 const correctionRemediationAutopilotTrustTimelineBrowserQaReportPath = resolve(root, 'public', 'correction-remediation-autopilot-trust-timeline-browser-qa-report.json');
 const correctionRemediationAutopilotTimelineReceiptsReportPath = resolve(root, 'public', 'correction-remediation-autopilot-timeline-receipts-report.json');
+const correctionRemediationAutopilotTimelineReceiptsBrowserFixturePath = resolve(root, 'public', 'correction-remediation-autopilot-timeline-receipts-browser-fixture.json');
+const correctionRemediationAutopilotTimelineReceiptsBrowserQaReportPath = resolve(root, 'public', 'correction-remediation-autopilot-timeline-receipts-browser-qa-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -230,7 +232,8 @@ const overrides = new Map([
   ['D248', { status: 'beta', evidence: 'Public UI now combines autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline without public mutation authority.' }],
   ['D249', { status: 'beta', evidence: 'Public dashboard now embeds deterministic desktop/mobile browser QA fixtures for guided trust timeline states and action enablement.' }],
   ['D250', { status: 'beta', evidence: 'Public UI now writes browser-local metadata receipts after trust timeline confirm, readiness refresh and rollback actions.' }],
-  ['D251', { status: 'next', evidence: 'Next activation slice: add browser fixture coverage for timeline receipt running, ready and error states.' }]
+  ['D251', { status: 'beta', evidence: 'Public dashboard now embeds deterministic desktop/mobile browser QA fixtures for timeline receipt running, ready and error states.' }],
+  ['D252', { status: 'next', evidence: 'Next hardening slice: turn code review, architecture review and public/private security review into a repeatable cross-repo dashboard gate.' }]
 ]);
 
 const repoMeta = [
@@ -549,6 +552,16 @@ function readCorrectionRemediationAutopilotTimelineReceiptsReport() {
   return JSON.parse(readFileSync(correctionRemediationAutopilotTimelineReceiptsReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationAutopilotTimelineReceiptsBrowserFixture() {
+  if (!existsSync(correctionRemediationAutopilotTimelineReceiptsBrowserFixturePath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationAutopilotTimelineReceiptsBrowserFixturePath, 'utf8'));
+}
+
+function readCorrectionRemediationAutopilotTimelineReceiptsBrowserQaReport() {
+  if (!existsSync(correctionRemediationAutopilotTimelineReceiptsBrowserQaReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationAutopilotTimelineReceiptsBrowserQaReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -573,7 +586,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D251', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D252', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -635,6 +648,8 @@ const data = {
   correction_remediation_autopilot_trust_timeline_browser_fixture: readCorrectionRemediationAutopilotTrustTimelineBrowserFixture(),
   correction_remediation_autopilot_trust_timeline_browser_qa_report: readCorrectionRemediationAutopilotTrustTimelineBrowserQaReport(),
   correction_remediation_autopilot_timeline_receipts_report: readCorrectionRemediationAutopilotTimelineReceiptsReport(),
+  correction_remediation_autopilot_timeline_receipts_browser_fixture: readCorrectionRemediationAutopilotTimelineReceiptsBrowserFixture(),
+  correction_remediation_autopilot_timeline_receipts_browser_qa_report: readCorrectionRemediationAutopilotTimelineReceiptsBrowserQaReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

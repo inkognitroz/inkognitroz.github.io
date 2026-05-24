@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T04:25:45.747Z",
+  "updated_at": "2026-05-24T04:36:42.716Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 251,
+    "total": 252,
     "done": 51,
-    "beta": 175,
+    "beta": 176,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1080,8 +1080,8 @@
         "phase": "UX / QA",
         "total": 2,
         "done": 0,
-        "beta": 1,
-        "next": 1,
+        "beta": 2,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1092,6 +1092,16 @@
         "done": 0,
         "beta": 1,
         "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Review / Architecture",
+        "total": 1,
+        "done": 0,
+        "beta": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -4783,6 +4793,245 @@
       "why": "After receipts exist, add deterministic fixture coverage for running, ready and error receipt states on desktop and mobile."
     }
   },
+  "correction_remediation_autopilot_timeline_receipts_browser_fixture": {
+    "title": "Autopilot Timeline Receipt Browser Fixture",
+    "updated_at": "2026-05-24T04:42:00.000Z",
+    "public_repo_rule": "Receipt browser QA uses deterministic browser-local metadata only; it does not call live source mutation, rollback, provider, tunnel or paid routes.",
+    "viewports": [
+      {
+        "id": "desktop",
+        "width": 1440,
+        "height": 900,
+        "expected": "Receipt sits inside the trust timeline without crowding route, result or next-action text."
+      },
+      {
+        "id": "mobile",
+        "width": 390,
+        "height": 844,
+        "expected": "Receipt text wraps, action buttons remain reachable and no route text overflows the panel."
+      }
+    ],
+    "selectors": {
+      "timeline_panel": ".context-correction-trust-timeline",
+      "receipt_panel": ".context-correction-trust-receipt",
+      "receipt_ready": ".context-correction-trust-receipt[data-state=\"ready\"]",
+      "receipt_running": ".context-correction-trust-receipt[data-state=\"running\"]",
+      "receipt_error": ".context-correction-trust-receipt[data-state=\"error\"]",
+      "confirm_source": "[data-correction-trust-timeline=\"confirm-source\"]",
+      "refresh_readiness": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+      "apply_rollback": "[data-correction-trust-timeline=\"apply-rollback\"]"
+    },
+    "states": [
+      {
+        "id": "running-confirm-source",
+        "label": "Running confirm source",
+        "expected_receipt_state": "running",
+        "expected_action": "confirm-source",
+        "expected_route": "/context/corrections/remediation-executions/apply",
+        "expected_result_status": "pending",
+        "expected_next_action": "wait for receipt",
+        "storage": {
+          "trust_receipt": {
+            "status": "running",
+            "action": "confirm-source",
+            "target": "memory",
+            "route": "/context/corrections/remediation-executions/apply",
+            "result_status": "pending",
+            "message": "Working through protected backend gate. No raw data, secrets or paid routes are stored.",
+            "next_action": "wait for receipt"
+          }
+        }
+      },
+      {
+        "id": "ready-confirm-source",
+        "label": "Ready confirm source",
+        "expected_receipt_state": "ready",
+        "expected_action": "confirm-source",
+        "expected_route": "/context/corrections/remediation-executions/apply",
+        "expected_result_status": "applied",
+        "expected_next_action": "refresh rollback",
+        "storage": {
+          "trust_receipt": {
+            "status": "ready",
+            "action": "confirm-source",
+            "target": "memory",
+            "route": "/context/corrections/remediation-executions/apply",
+            "result_status": "applied",
+            "message": "Source change confirmed through protected backend gate.",
+            "next_action": "refresh rollback"
+          }
+        }
+      },
+      {
+        "id": "ready-refresh-readiness",
+        "label": "Ready refresh readiness",
+        "expected_receipt_state": "ready",
+        "expected_action": "refresh-readiness",
+        "expected_route": "/context/corrections/remediation-autopilot/rollback-readiness",
+        "expected_result_status": "ready",
+        "expected_next_action": "review undo path",
+        "storage": {
+          "trust_receipt": {
+            "status": "ready",
+            "action": "refresh-readiness",
+            "target": "memory",
+            "route": "/context/corrections/remediation-autopilot/rollback-readiness",
+            "result_status": "ready",
+            "message": "Rollback readiness refreshed without executing mutation.",
+            "next_action": "review undo path"
+          }
+        }
+      },
+      {
+        "id": "ready-apply-rollback",
+        "label": "Ready apply rollback",
+        "expected_receipt_state": "ready",
+        "expected_action": "apply-rollback",
+        "expected_route": "/context/corrections/remediation-rollbacks/apply",
+        "expected_result_status": "rolled-back",
+        "expected_next_action": "review restored state",
+        "storage": {
+          "trust_receipt": {
+            "status": "ready",
+            "action": "apply-rollback",
+            "target": "memory",
+            "route": "/context/corrections/remediation-rollbacks/apply",
+            "result_status": "rolled-back",
+            "message": "Rollback applied through protected backend gate.",
+            "next_action": "review restored state"
+          }
+        }
+      },
+      {
+        "id": "error-backend",
+        "label": "Backend unavailable",
+        "expected_receipt_state": "error",
+        "expected_action": "refresh-readiness",
+        "expected_route": "/context/corrections/remediation-autopilot/rollback-readiness",
+        "expected_result_status": "error",
+        "expected_next_action": "review backend connection",
+        "storage": {
+          "trust_receipt": {
+            "status": "error",
+            "action": "refresh-readiness",
+            "target": "memory",
+            "route": "/context/corrections/remediation-autopilot/rollback-readiness",
+            "result_status": "error",
+            "message": "Backend connection unavailable. Nothing was changed.",
+            "next_action": "review backend connection"
+          }
+        }
+      }
+    ],
+    "privacy": {
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false,
+      "paid_route_credentials_stored": false,
+      "no_paid_routes_started": true,
+      "public_frontend_authority": false,
+      "automatic_mutation_allowed": false
+    }
+  },
+  "correction_remediation_autopilot_timeline_receipts_browser_qa_report": {
+    "title": "Autopilot Timeline Receipt Browser QA",
+    "task": "D251",
+    "status": "beta",
+    "updated_at": "2026-05-24T04:43:00.000Z",
+    "fixture": "./correction-remediation-autopilot-timeline-receipts-browser-fixture.json",
+    "public_repo_rule": "Receipt browser QA is public-safe fixture evidence only; no live backend mutation, rollback, tunnel, provider key or paid route is triggered.",
+    "qa_policy": {
+      "deterministic_fixture": true,
+      "desktop_mobile_coverage": true,
+      "receipt_state_coverage": true,
+      "action_selector_coverage": true,
+      "visual_overlap_guard": true,
+      "protected_backend_route_required": true,
+      "public_frontend_authority": false,
+      "automatic_mutation_allowed": false,
+      "provider_secrets_stored": false,
+      "document_text_stored": false,
+      "no_paid_routes_started": true
+    },
+    "viewports": [
+      {
+        "id": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "ready",
+        "checks": [
+          "receipt visible",
+          "route text wraps",
+          "next action visible",
+          "buttons remain reachable"
+        ]
+      },
+      {
+        "id": "mobile",
+        "width": 390,
+        "height": 844,
+        "status": "ready",
+        "checks": [
+          "receipt wraps",
+          "state colors visible",
+          "no overflow",
+          "actions reachable"
+        ]
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "running-confirm-source",
+        "status": "ready",
+        "expected": "Confirm source immediately shows a running receipt before the protected backend response returns.",
+        "selector": ".context-correction-trust-receipt[data-state=\"running\"]",
+        "action": "confirm-source"
+      },
+      {
+        "id": "ready-confirm-source",
+        "status": "ready",
+        "expected": "Confirm source success shows applied result and tells the user to refresh rollback readiness.",
+        "selector": ".context-correction-trust-receipt[data-state=\"ready\"]",
+        "action": "confirm-source"
+      },
+      {
+        "id": "ready-refresh-readiness",
+        "status": "ready",
+        "expected": "Refresh readiness success shows the protected readiness route and the undo review next action.",
+        "selector": ".context-correction-trust-receipt[data-state=\"ready\"]",
+        "action": "refresh-readiness"
+      },
+      {
+        "id": "ready-apply-rollback",
+        "status": "ready",
+        "expected": "Apply undo success shows rollback route, result status and restored-state review next action.",
+        "selector": ".context-correction-trust-receipt[data-state=\"ready\"]",
+        "action": "apply-rollback"
+      },
+      {
+        "id": "error-backend",
+        "status": "ready",
+        "expected": "Backend failures show an error receipt and preserve no-mutation/no-spend boundaries.",
+        "selector": ".context-correction-trust-receipt[data-state=\"error\"]",
+        "action": "refresh-readiness"
+      }
+    ],
+    "selectors": {
+      "receipt_panel": ".context-correction-trust-receipt",
+      "receipt_ready": ".context-correction-trust-receipt[data-state=\"ready\"]",
+      "receipt_running": ".context-correction-trust-receipt[data-state=\"running\"]",
+      "receipt_error": ".context-correction-trust-receipt[data-state=\"error\"]",
+      "confirm_source": "[data-correction-trust-timeline=\"confirm-source\"]",
+      "refresh_readiness": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+      "apply_rollback": "[data-correction-trust-timeline=\"apply-rollback\"]"
+    },
+    "next": {
+      "task": "D252",
+      "label": "cross-repo architecture and security review gate",
+      "why": "After the trust timeline is covered, the next no-spend hardening pass should turn code review, architecture review and public/private security review into a repeatable dashboard gate."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -4833,7 +5082,7 @@
     }
   ],
   "next_queue": [
-    "D251"
+    "D252"
   ],
   "watchlist": [
     "D082",
@@ -8600,10 +8849,25 @@
       "best_practice": "Receipts are now user-facing trust objects and need the same no-overlap, no-dead-button treatment as the timeline",
       "done_when": "Owner sees verified receipt state fixtures and selector coverage for confirm, refresh and undo outcomes without live backend mutation",
       "covers": "qa, receipts, automation, trust, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Public dashboard now embeds deterministic desktop/mobile browser QA fixtures for timeline receipt running, ready and error states.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D252",
+      "phase": "Review / Architecture",
+      "priority": "P0",
+      "work_package": "Cross-repo architecture and security review gate",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Generate a public-safe review digest from route manifests, public safety audit, backend protected-route tests, frontend UI evidence and public/private repo boundaries, then surface findings and next actions in the Progress Dashboard",
+      "best_practice": "Feature velocity is now high enough that architecture, security, UX and code-review findings need one repeatable gate that future Codex agents can trust",
+      "done_when": "Owner sees current code-review, architecture, security and UX findings with pass/fail evidence, source repos, no-spend status and next corrective action",
+      "covers": "review, architecture, security, automation, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add browser fixture coverage for timeline receipt running, ready and error states.",
-      "estimate": "0.5-2d"
+      "evidence": "Next hardening slice: turn code review, architecture review and public/private security review into a repeatable cross-repo dashboard gate.",
+      "estimate": "2-6h"
     }
   ]
 }
