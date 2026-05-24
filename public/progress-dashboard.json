@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T04:12:28.972Z",
+  "updated_at": "2026-05-24T04:25:45.747Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 250,
+    "total": 251,
     "done": 51,
-    "beta": 174,
+    "beta": 175,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1078,10 +1078,10 @@
       },
       {
         "phase": "UX / QA",
-        "total": 1,
+        "total": 2,
         "done": 0,
         "beta": 1,
-        "next": 0,
+        "next": 1,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -1090,8 +1090,8 @@
         "phase": "UX / Trust",
         "total": 1,
         "done": 0,
-        "beta": 0,
-        "next": 1,
+        "beta": 1,
+        "next": 0,
         "watch": 0,
         "blocked": 0,
         "planned": 0
@@ -4690,6 +4690,99 @@
       "why": "After selector and visual contracts are guarded, the timeline should show clearer receipts after confirm, refresh and undo actions."
     }
   },
+  "correction_remediation_autopilot_timeline_receipts_report": {
+    "title": "Autopilot Timeline Post-Action Receipts",
+    "task": "D250",
+    "status": "beta",
+    "updated_at": "2026-05-24T04:25:00.000Z",
+    "public_repo_rule": "Timeline receipts are browser-local metadata only; source mutation, rollback and readiness checks remain protected backend actions.",
+    "local_storage": {
+      "receipt_state": "mimir-context-correction-autopilot-trust-receipt-v1:{workspace}",
+      "stores_raw_prompt": false,
+      "stores_raw_response": false,
+      "stores_document_text": false,
+      "stores_provider_secrets": false,
+      "stores_paid_route_credentials": false
+    },
+    "ui_contract": {
+      "panel": ".context-correction-trust-receipt",
+      "event": "mmir-context-correction-trust-receipt-updated",
+      "export": "readTrustReceiptState",
+      "actions": [
+        "confirm-source",
+        "refresh-readiness",
+        "apply-rollback"
+      ]
+    },
+    "receipt_policy": {
+      "browser_local_metadata_only": true,
+      "protected_backend_route_required": true,
+      "explicit_user_action_required": true,
+      "public_frontend_authority": false,
+      "automatic_mutation_allowed": false,
+      "provider_secrets_stored": false,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "document_text_stored": false,
+      "no_paid_routes_started": true
+    },
+    "routes": [
+      {
+        "action": "confirm-source",
+        "memory_route": "/context/corrections/remediation-executions/apply",
+        "knowledge_route": "/context/corrections/remediation-knowledge-executions/apply",
+        "next_action": "refresh rollback"
+      },
+      {
+        "action": "refresh-readiness",
+        "route": "/context/corrections/remediation-autopilot/rollback-readiness",
+        "next_action": "review undo path"
+      },
+      {
+        "action": "apply-rollback",
+        "memory_route": "/context/corrections/remediation-rollbacks/apply",
+        "knowledge_route": "/context/corrections/remediation-knowledge-rollbacks/apply",
+        "next_action": "review restored state"
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "confirm-source-receipt",
+        "status": "ready",
+        "expected": "Confirm source writes a running receipt, awaits the protected backend execution gate and records result status plus next action.",
+        "selector": "[data-correction-trust-timeline=\"confirm-source\"]",
+        "automatic_mutation_allowed": false
+      },
+      {
+        "id": "refresh-readiness-receipt",
+        "status": "ready",
+        "expected": "Refresh rollback writes a route-specific readiness receipt without executing mutation or rollback.",
+        "selector": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+        "source_mutation_executed": false
+      },
+      {
+        "id": "apply-rollback-receipt",
+        "status": "ready",
+        "expected": "Apply undo writes a receipt for the protected rollback gate and records the restored-state next action.",
+        "selector": "[data-correction-trust-timeline=\"apply-rollback\"]",
+        "backend_only_rollback": true
+      },
+      {
+        "id": "no-secret-or-spend",
+        "status": "ready",
+        "expected": "Receipts store only action, route, result status and next action; no raw data, provider credentials or paid routes.",
+        "selector": ".context-correction-trust-receipt",
+        "provider_secrets_stored": false,
+        "document_text_stored": false,
+        "no_paid_routes_started": true
+      }
+    ],
+    "next": {
+      "task": "D251",
+      "label": "autopilot timeline receipt browser QA",
+      "why": "After receipts exist, add deterministic fixture coverage for running, ready and error receipt states on desktop and mobile."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -4740,7 +4833,7 @@
     }
   ],
   "next_queue": [
-    "D250"
+    "D251"
   ],
   "watchlist": [
     "D082",
@@ -8492,9 +8585,24 @@
       "best_practice": "Users need immediate confidence that the click worked, what changed and what remains safe or manual",
       "done_when": "Owner sees a compact action receipt with backend route, result state, rollback readiness and next action, without raw data, secrets or paid routes",
       "covers": "receipts, automation, trust, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Public UI now writes browser-local metadata receipts after trust timeline confirm, readiness refresh and rollback actions.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D251",
+      "phase": "UX / QA",
+      "priority": "P1",
+      "work_package": "Autopilot receipt browser QA",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add deterministic fixture coverage for running, ready and error receipt states across desktop/mobile so timeline feedback stays stable",
+      "best_practice": "Receipts are now user-facing trust objects and need the same no-overlap, no-dead-button treatment as the timeline",
+      "done_when": "Owner sees verified receipt state fixtures and selector coverage for confirm, refresh and undo outcomes without live backend mutation",
+      "covers": "qa, receipts, automation, trust, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: show clearer post-action receipts after trust timeline confirm, refresh and undo actions.",
+      "evidence": "Next activation slice: add browser fixture coverage for timeline receipt running, ready and error states.",
       "estimate": "0.5-2d"
     }
   ]

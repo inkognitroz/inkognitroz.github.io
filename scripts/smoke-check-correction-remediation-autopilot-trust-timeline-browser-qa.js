@@ -121,19 +121,19 @@ for (const needle of [
 
 requireIncludes(files.qualityWorkflow, 'smoke-check-correction-remediation-autopilot-trust-timeline-browser-qa.js', 'Quality workflow must run D249 browser QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-correction-remediation-autopilot-trust-timeline-browser-qa.js', 'Pages workflow must run D249 browser QA.');
-requireIncludes(files.backlog, '| D250 |', 'Backlog must add D250 after D249.');
+requireIncludes(files.backlog, '| D251 |', 'Backlog must add D251 after D249.');
 requireIncludes(files.implementationLog, 'D249 is now beta', 'Implementation log must mark D249 beta.');
-requireIncludes(files.implementationLog, 'D250 is now next', 'Implementation log must mark D250 next.');
+requireIncludes(files.implementationLog, 'D251 is now next', 'Implementation log must mark D251 next.');
 
 const progress = json(files.progressData);
 requireTrue(progress.correction_remediation_autopilot_trust_timeline_browser_fixture?.title === fixture.title, 'Progress dashboard data must embed D249 browser fixture.');
 requireTrue(progress.correction_remediation_autopilot_trust_timeline_browser_qa_report?.title === report.title, 'Progress dashboard data must embed D249 browser QA report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d249 = tasks.find((task) => task.seq === 'D249');
-const d250 = tasks.find((task) => task.seq === 'D250');
+const d250 = tasks.find((task) => task.seq === 'D251');
 requireTrue(d249?.status === 'beta', 'Progress dashboard task D249 must be beta after browser QA ships.');
-requireTrue(d250?.status === 'next', 'Progress dashboard task D250 must become next after D249 ships.');
-requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D250', 'Progress dashboard next queue must prioritize D250 after D249 ships.');
+requireTrue(d250?.status === 'next', 'Progress dashboard task D251 must become next after D249 ships.');
+requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D251', 'Progress dashboard next queue must prioritize D251 after D249 ships.');
 
 if (failures.length) {
   process.exitCode = 1;

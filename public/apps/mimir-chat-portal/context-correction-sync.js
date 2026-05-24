@@ -9,6 +9,7 @@
   const AUTOPILOT_PREFIX='mimir-context-correction-remediation-autopilot-v1:';
   const HANDOFF_PREFIX='mimir-context-correction-autopilot-handoff-v1:';
   const ROLLBACK_READINESS_PREFIX='mimir-context-correction-autopilot-rollback-readiness-v1:';
+  const TRUST_RECEIPT_PREFIX='mimir-context-correction-autopilot-trust-receipt-v1:';
   const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
   const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
   const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
@@ -29,6 +30,7 @@
   function autopilotKey(){return AUTOPILOT_PREFIX+workspaceId();}
   function handoffKey(){return HANDOFF_PREFIX+workspaceId();}
   function rollbackReadinessKey(){return ROLLBACK_READINESS_PREFIX+workspaceId();}
+  function trustReceiptKey(){return TRUST_RECEIPT_PREFIX+workspaceId();}
   function applyKey(){return APPLY_PREFIX+workspaceId();}
   function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
   function commitKey(){return COMMIT_PREFIX+workspaceId();}
@@ -179,6 +181,27 @@
   }
   function readRollbackReadinessState(){
     const value=readJson(rollbackReadinessKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeTrustReceiptState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      ...value,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false
+    };
+    try{localStorage.setItem(trustReceiptKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-trust-receipt-updated',{detail:state}));
+    return state;
+  }
+  function readTrustReceiptState(){
+    const value=readJson(trustReceiptKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function writeApplyState(value){
@@ -1729,6 +1752,7 @@
     const knowledgeExecutionState=readKnowledgeExecutionState();
     const rollbackState=readRollbackState();
     const knowledgeRollbackState=readKnowledgeRollbackState();
+    const trustReceiptState=readTrustReceiptState();
     const run=state?.run&&typeof state.run==='object'?state.run:null;
     const handoff=handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null;
     const readiness=readinessState?.readiness&&typeof readinessState.readiness==='object'?readinessState.readiness:null;
@@ -1790,6 +1814,7 @@
           '<button type="button" data-correction-trust-timeline="apply-rollback" '+(!canApplyUndo?'disabled':'')+'>Apply undo</button>'+
         '</div>'+
         '<small>target:'+safe(selectedTarget)+' / public_frontend_authority:false / automatic_mutation_allowed:false / no_paid_routes_started:true</small>'+
+        (trustReceiptState?'<div class="context-correction-trust-receipt" data-state="'+safe(trustReceiptState.status||'idle')+'"><strong>'+safe(trustReceiptState.action||'timeline action')+': '+safe(trustReceiptState.status||'idle')+'</strong><small>'+safe(trustReceiptState.message||'Timeline receipt recorded.')+'</small><small>route:'+safe(trustReceiptState.route||'local')+' / result:'+safe(trustReceiptState.result_status||'pending')+' / next:'+safe(trustReceiptState.next_action||'review timeline')+'</small></div>':'')+
       '</div>'+
       (manual?'<small class="context-correction-autopilot-stop">Manual stop: '+safe(manual.action||'review')+' via '+safe(manual.route||'/context/corrections/review')+' - '+safe(manual.reason||'Source mutation requires explicit confirmation.')+'</small>':'')+
       '<small class="context-correction-review-policy">automatic_safe_steps:true / source_mutation_allowed:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
@@ -1926,7 +1951,7 @@
     const action=button.dataset.correctionRollbackReadiness;
     if(action==='check')prepareRollbackReadiness();
   });
-  document.addEventListener('click',(event)=>{
+  document.addEventListener('click',async (event)=>{
     const button=event.target.closest('[data-correction-trust-timeline]');
     if(!button)return;
     const action=button.dataset.correctionTrustTimeline;
@@ -1936,15 +1961,27 @@
     const knowledgeExecutionState=readKnowledgeExecutionState();
     const handoff=handoffState?.handoff&&typeof handoffState.handoff==='object'?handoffState.handoff:null;
     const target=cleanString(readinessState?.target||handoff?.target||(knowledgeExecutionState?.execution?.id?'knowledge':'')||(executionState?.execution?.id?'memory':''),40);
+    const route=action==='refresh-readiness'?'/context/corrections/remediation-autopilot/rollback-readiness':
+      (action==='apply-rollback'?(target==='knowledge'?'/context/corrections/remediation-knowledge-rollbacks/apply':'/context/corrections/remediation-rollbacks/apply'):
+      (target==='knowledge'?'/context/corrections/remediation-knowledge-executions/apply':'/context/corrections/remediation-executions/apply'));
+    writeTrustReceiptState({status:'running',action,target:target||'memory',route,result_status:'pending',message:'Working through protected backend gate. No raw data, secrets or paid routes are stored.',next_action:'wait for receipt'});
+    try{
+      let result=null;
     if(action==='confirm-source'){
-      if(target==='knowledge')executeKnowledgeExecution(handoff?.model_id||'');
-      else executeRemediationCommit(handoff?.commit_id||'');
+        if(target==='knowledge')result=await executeKnowledgeExecution(handoff?.model_id||'');
+        else result=await executeRemediationCommit(handoff?.commit_id||'');
     }
-    if(action==='refresh-readiness')prepareRollbackReadiness();
+      if(action==='refresh-readiness')result=await prepareRollbackReadiness();
     if(action==='apply-rollback'){
-      if(target==='knowledge')applyKnowledgeRollback();
-      else applyRemediationRollback();
+        if(target==='knowledge')result=await applyKnowledgeRollback();
+        else result=await applyRemediationRollback();
     }
+      const resultStatus=result?.status||'done';
+      writeTrustReceiptState({status:resultStatus==='error'?'error':'ready',action,target:target||'memory',route,result_status:resultStatus,message:result?.message||'Timeline action completed through protected backend gate.',next_action:action==='confirm-source'?'refresh rollback':(action==='refresh-readiness'?'review undo path':'review restored state')});
+    }catch(error){
+      writeTrustReceiptState({status:'error',action,target:target||'memory',route,result_status:'error',message:api.friendlyError?.(error)||error.message||'Timeline action failed.',next_action:'review backend connection'});
+    }
+    render();
   });
   document.addEventListener('click',(event)=>{
     const button=event.target.closest('[data-correction-apply]');
@@ -2000,10 +2037,10 @@
     if(action==='preview')previewKnowledgeRollback();
     if(action==='apply')applyKnowledgeRollback();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-handoff-updated','mmir-context-correction-rollback-readiness-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-autopilot-updated','mmir-context-correction-handoff-updated','mmir-context-correction-rollback-readiness-updated','mmir-context-correction-trust-receipt-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-context-correction-knowledge-rollback-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,prepareAutopilotHandoff,prepareRollbackReadiness,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readHandoffState,readRollbackReadinessState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,previewRemediationAutopilot,runRemediationAutopilot,prepareAutopilotHandoff,prepareRollbackReadiness,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewKnowledgeRollback,applyKnowledgeRollback,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readAutopilotState,readHandoffState,readRollbackReadinessState,readTrustReceiptState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readKnowledgeRollbackState,readExecutionState,readRollbackState};
 })();
