@@ -51,19 +51,34 @@ requireBefore(mmir, 'class="mimir-composer"', '<details id="local-connector"', '
 
 for (const needle of [
   'focusChatTarget',
+  'handleMobileTap',
+  'sendPrompt',
   'bindPrimaryAnchors',
   'repairMobileFirstChatDom',
   'runtimeAnchorBound',
-  "setAttribute('href','#mimir-prompt')",
-  "setAttribute('href','#local-connector')",
+  'data-mobile-buttons-ready',
+  "qa('a[href=\"#mimir-chat-runtime\"]').forEach",
+  "setAttr(link,'href',P)",
+  "setAttr(link,'href',L)",
+  "event.target.closest?.('[data-prompt-action]')",
+  '#activation-chat-now,#activation-connect-local,#activation-open-models,#activation-open-node-dashboard',
   'center.insertBefore(composer,instant)',
   'center.insertBefore(quick,instant)',
   "composer.dataset.mobileFirstChatReady='true'",
   'mmir-mobile-chat-target-opened',
-  "target==='#connect-options'&&!document.querySelector(target))target='#local-connector'",
+  "return target===C&&!q(C)?L:target",
   'a[href="#mimir-prompt"],a[href="#mimir-chat-runtime"],a[href="#local-connector"],a[href="#connect-options"],a[href="#backend-settings"]'
 ]) {
   requireIncludes(runtimeFix, needle, `Runtime control guard missing mobile/tap evidence: ${needle}`);
+}
+
+for (const needle of [
+  'activationButtons.chat',
+  'sendPrompt(',
+  "if(nextTarget==='#connect-options'&&!document.querySelector(nextTarget))nextTarget='#local-connector'",
+  'window.MimirLoadDeferred'
+]) {
+  requireIncludes(read(join(publicDir, 'apps', 'mimir-chat-portal', 'first-impression.js')), needle, `First impression must keep mobile activation buttons working: ${needle}`);
 }
 
 for (const needle of [
