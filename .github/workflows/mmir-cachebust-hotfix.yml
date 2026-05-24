@@ -26,15 +26,20 @@ jobs:
           const fs = require('node:fs');
           const path = 'public/mmir.html';
           let source = fs.readFileSync(path, 'utf8');
-          const chatFirst = `<script data-mimir-chat-first>!function(){function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime'}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>`;
-          if (!source.includes('data-mimir-chat-first')) {
+          const chatFirst = `<script data-mimir-chat-first>!function(){function v(){const e=document.getElementById('mimir-prompt')||document.querySelector('textarea[placeholder*="Ask MMIR"],textarea');if(!e)return;const r=e.getBoundingClientRect();if(r.top>=96&&r.bottom<=innerHeight-24)return;scrollTo(0,Math.max(0,r.top+scrollY-160))}function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime';setTimeout(v,80);setTimeout(v,420)}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>`;
+          if (source.includes('data-mimir-chat-first')) {
+            source = source.replace(/<script data-mimir-chat-first>[\s\S]*?<\/script>/, chatFirst);
+          } else {
             const marker = '</script>\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js';
             if (!source.includes(marker)) throw new Error('MMIR page missing chat script marker');
             source = source.replace(marker, `</script>\n  ${chatFirst}\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js`);
           }
           source = source.replace(
             './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-local-probe-v5',
-            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v2'
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3'
+          ).replace(
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v2',
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3'
           );
           fs.writeFileSync(path, source, 'utf8');
           NODE
@@ -53,5 +58,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/mmir.html
-          git commit -m "fix: land MMIR first visitors on chat"
+          git commit -m "fix: keep MMIR chat prompt visible"
           git push origin HEAD:main
