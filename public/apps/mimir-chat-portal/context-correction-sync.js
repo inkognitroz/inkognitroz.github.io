@@ -8,6 +8,7 @@
   const PLAN_PREFIX='mimir-context-correction-remediation-plan-v1:';
   const APPLY_PREFIX='mimir-context-correction-remediation-apply-v1:';
   const ADAPTER_PREFIX='mimir-context-correction-remediation-adapter-v1:';
+  const COMMIT_PREFIX='mimir-context-correction-remediation-commit-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -19,6 +20,7 @@
   function planKey(){return PLAN_PREFIX+workspaceId();}
   function applyKey(){return APPLY_PREFIX+workspaceId();}
   function adapterKey(){return ADAPTER_PREFIX+workspaceId();}
+  function commitKey(){return COMMIT_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -134,6 +136,28 @@
   }
   function readAdapterState(){
     const value=readJson(adapterKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeCommitState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      source_mutation_executed:false,
+      source_mutation_allowed:false,
+      ...value
+    };
+    try{localStorage.setItem(commitKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-commit-updated',{detail:state}));
+    return state;
+  }
+  function readCommitState(){
+    const value=readJson(commitKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -419,6 +443,7 @@
         draft,
         message:draft?'Protected '+(draft.adapter||'remediation adapter')+' draft prepared. Review proposed changes before any source mutation.':'Protected remediation adapter draft prepared.'
       });
+      if(draft?.application_id)await previewRemediationCommit(draft.application_id,draft.correction_id,draft.step_id);
       render();
       return state;
     }catch(error){
@@ -434,6 +459,99 @@
       render();
       return state;
     }
+  }
+  async function commitPolicyRequest(mode='preview',applicationId='',correctionId='',stepId=''){
+    const adapterState=readAdapterState();
+    const applyState=readApplyState();
+    const commitState=readCommitState();
+    const draft=adapterState?.draft&&typeof adapterState.draft==='object'?adapterState.draft:null;
+    const application=applyState?.application&&typeof applyState.application==='object'?applyState.application:null;
+    const cleanApplicationId=cleanString(applicationId||draft?.application_id||application?.id,120);
+    const cleanCorrectionId=cleanString(correctionId||draft?.correction_id||application?.correction_id,120);
+    const cleanStepId=cleanString(stepId||draft?.step_id||application?.step_id,180);
+    const isCommit=mode==='commit';
+    if(!cleanApplicationId){
+      const state=writeCommitState({status:'needs-application',message:'Prepare a protected adapter draft before previewing commit policy.',application_id:'',correction_id:cleanCorrectionId,step_id:cleanStepId});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeCommitState({status:'needs-backend',message:'Choose an active protected backend before previewing remediation commit policy.',application_id:cleanApplicationId,correction_id:cleanCorrectionId,step_id:cleanStepId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      application_id:cleanApplicationId,
+      preview:!isCommit,
+      confirm:isCommit,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      provider_secrets_stored:false
+    };
+    if(cleanCorrectionId)body.correction_id=cleanCorrectionId;
+    if(cleanStepId)body.step_id=cleanStepId;
+    if(isCommit){
+      const previewId=cleanString(commitState?.preview?.id,120);
+      if(!previewId){
+        const state=writeCommitState({status:'needs-preview',message:'Preview the protected commit policy before recording a commit receipt.',application_id:cleanApplicationId,correction_id:cleanCorrectionId,step_id:cleanStepId});
+        render();
+        return state;
+      }
+      body.preview_id=previewId;
+    }
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-adapters/commit'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=isCommit?writeCommitState({
+        status:data?.status||'committed',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        application_id:cleanApplicationId,
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        preview:commitState?.preview||null,
+        commit:data,
+        message:data?'Protected remediation commit receipt recorded. Source mutation remains disabled until a backend-only execution policy exists.':'Protected remediation commit receipt recorded.'
+      }):writeCommitState({
+        status:data?.status||'preview',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        application_id:cleanApplicationId,
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        preview:data,
+        commit:null,
+        message:data?'Protected commit preview ready. Confirming records policy and rollback metadata only.':'Protected commit preview ready.'
+      });
+      render();
+      return state;
+    }catch(error){
+      const state=writeCommitState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        application_id:cleanApplicationId,
+        correction_id:cleanCorrectionId,
+        step_id:cleanStepId,
+        message:api.friendlyError?.(error)||error.message||'Could not preview or commit remediation policy.'
+      });
+      render();
+      return state;
+    }
+  }
+  function previewRemediationCommit(applicationId='',correctionId='',stepId=''){
+    return commitPolicyRequest('preview',applicationId,correctionId,stepId);
+  }
+  function commitRemediationAdapter(applicationId='',correctionId='',stepId=''){
+    return commitPolicyRequest('commit',applicationId,correctionId,stepId);
   }
   async function applyRemediationStep(stepId,correctionId){
     const planState=readPlanState();
@@ -550,6 +668,28 @@
       '<small class="context-correction-review-policy">public_frontend_authority:false / no_paid_routes_started:true / raw_prompt_stored:false / raw_response_stored:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
+  function commitPolicyHtml(){
+    const state=readCommitState();
+    const adapterState=readAdapterState();
+    const draft=adapterState?.draft&&typeof adapterState.draft==='object'?adapterState.draft:null;
+    const preview=state?.preview&&typeof state.preview==='object'?state.preview:null;
+    const commit=state?.commit&&typeof state.commit==='object'?state.commit:null;
+    const checks=Array.isArray(preview?.checks)?preview.checks.slice(0,5):[];
+    const changes=Array.isArray(commit?.committed_changes)?commit.committed_changes.slice(0,3):(Array.isArray(preview?.proposed_changes)?preview.proposed_changes.slice(0,3):[]);
+    const status=state?.status||'idle';
+    return '<div class="context-correction-commit-status" data-state="'+safe(status)+'">'+
+      '<div><strong>Commit policy: '+safe(commit?.status||preview?.status||status)+'</strong><small>'+safe(state?.message||'Preview protected commit policy before recording a backend-owned remediation receipt.')+'</small></div>'+
+      '<div class="context-correction-plan-actions"><button type="button" data-correction-commit="preview" '+(!draft?'disabled':'')+'>Preview commit</button><button type="button" data-correction-commit="commit" '+(!preview?'disabled':'')+'>Record commit</button></div>'+
+      '<div class="context-correction-commit-checks">'+(checks.length?checks.map((check)=>
+        '<article data-check-status="'+safe(check.status||'pending')+'"><strong>'+safe(check.id||'check')+'</strong><p>'+safe(check.label||'Policy check')+'</p></article>'
+      ).join(''):'<article><strong>No commit preview yet</strong><p>Prepare an adapter draft, then preview the commit policy. This stores no source text and performs no source mutation.</p></article>')+'</div>'+
+      '<div class="context-correction-commit-changes">'+(changes.length?changes.map((change)=>
+        '<article><strong>'+safe(change.type||'commit-policy')+'</strong><small>commit_record_only:'+safe(Boolean(change.commit_record_only))+' / source_mutation_executed:'+safe(Boolean(change.source_mutation_executed))+'</small></article>'
+      ).join(''):'')+'</div>'+
+      (commit?'<small>receipt:'+safe(commit.id||'recorded')+' / rollback:'+safe(commit.rollback?.rollback_action||'compensating commit required')+'</small>':'')+
+      '<small class="context-correction-review-policy">preview_required:true / commit_record_allowed:true / source_mutation_allowed:false / public_frontend_authority:false</small>'+
+    '</div>';
+  }
   function adapterDraftHtml(){
     const state=readAdapterState();
     const applyState=readApplyState();
@@ -563,6 +703,7 @@
       '<div class="context-correction-adapter-changes">'+(changes.length?changes.map((change)=>
         '<article><strong>'+safe(change.type||'metadata-draft')+'</strong><p>'+safe(change.note||change.suggested_policy||'Review this backend-owned metadata draft before changing source state.')+'</p><small>source_ids:'+safe((change.source_ids||change.memory_ids||[]).join(', ')||'none')+' / manual_review_required:'+safe(Boolean(change.manual_review_required))+'</small></article>'
       ).join(''):'<article><strong>No adapter draft yet</strong><p>Confirmed apply receipts can be converted into memory scope drafts, knowledge source packets or collection split proposals.</p><small>execution_allowed:false / source_mutation_executed:false</small></article>')+'</div>'+
+      commitPolicyHtml()+
       '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
@@ -688,10 +829,17 @@
     const action=button.dataset.correctionAdapter;
     if(action==='prepare')prepareRemediationAdapter();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-commit]');
+    if(!button)return;
+    const action=button.dataset.correctionCommit;
+    if(action==='preview')previewRemediationCommit();
+    if(action==='commit')commitRemediationAdapter();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState};
 })();

@@ -383,6 +383,43 @@
   background: rgba(255, 255, 255, 0.78);
 }
 
+.context-correction-commit-status {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: #f8fafc;
+}
+
+.context-correction-commit-status[data-state="preview"],
+.context-correction-commit-status[data-state="committed"] {
+  border-color: rgba(21, 128, 61, 0.26);
+  background: #f8fffc;
+}
+
+.context-correction-commit-status[data-state="error"],
+.context-correction-commit-status[data-state="needs-backend"],
+.context-correction-commit-status[data-state="needs-application"],
+.context-correction-commit-status[data-state="needs-preview"] {
+  border-color: rgba(185, 28, 28, 0.2);
+  background: #fff7ed;
+}
+
+.context-correction-commit-checks,
+.context-correction-commit-changes {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.context-correction-commit-checks article,
+.context-correction-commit-changes article {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: rgba(255, 255, 255, 0.82);
+}
+
 .context-correction-plan-steps {
   display: grid;
   gap: 0.45rem;

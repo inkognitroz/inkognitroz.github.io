@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T00:27:27.037Z",
+  "updated_at": "2026-05-24T00:46:53.969Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 239,
+    "total": 240,
     "done": 51,
-    "beta": 163,
+    "beta": 164,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 6,
+        "total": 7,
         "done": 0,
-        "beta": 5,
+        "beta": 6,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -3219,6 +3219,112 @@
       "reason": "Adapter drafts now exist. The next slice should add explicit backend policy for committing selected memory/knowledge repairs with preview, audit and rollback."
     }
   },
+  "correction_remediation_commit_policy_report": {
+    "title": "Correction Remediation Commit Policy",
+    "task": "D239",
+    "status": "beta",
+    "backend_commit": "038766f",
+    "principle": "Adapter drafts become useful only when a protected backend can preview and record the selected repair policy before any source mutation exists.",
+    "public_repo_rule": "GitHub Pages may request previews and render commit receipts. It must not store raw memory text, document chunks, transcripts, provider keys, session tokens or execute source mutation.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-adapters/commit",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "responses": [
+        "context.correction_remediation_commit_preview",
+        "context.correction_remediation_commit"
+      ],
+      "purpose": "Preview and record explicitly confirmed remediation adapter commit receipts with rollback metadata."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "adapter_state": "mimir-context-correction-remediation-adapter-v1:{workspace}",
+      "commit_state": "mimir-context-correction-remediation-commit-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_contract": {
+      "panel": ".context-correction-commit-status",
+      "checks": ".context-correction-commit-checks",
+      "changes": ".context-correction-commit-changes",
+      "preview_selector": "[data-correction-commit=\"preview\"]",
+      "commit_selector": "[data-correction-commit=\"commit\"]",
+      "auto_preview": "prepareRemediationAdapter automatically calls previewRemediationCommit when the backend returns an adapter draft"
+    },
+    "commit_policy": {
+      "preview_required": true,
+      "confirm_required": true,
+      "commit_record_allowed": true,
+      "source_mutation_allowed": false,
+      "destructive_execution_allowed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "source_mutation_executed": false,
+      "no_paid_routes_started": true,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false
+    },
+    "checks": [
+      "owner-scope",
+      "metadata-only",
+      "no-raw-or-secrets",
+      "no-automatic-mutation",
+      "rollback-captured"
+    ],
+    "blocked_fields": [
+      "prompt",
+      "raw_prompt",
+      "response",
+      "raw_response",
+      "messages",
+      "transcript",
+      "document_text",
+      "private_document",
+      "api_key",
+      "access_token",
+      "refresh_token",
+      "secret",
+      "signed_url"
+    ],
+    "scenarios": [
+      {
+        "id": "auto-preview-after-adapter",
+        "status": "ready",
+        "expected": "A prepared adapter draft automatically requests a protected commit preview.",
+        "selector": "prepareRemediationAdapter -> previewRemediationCommit",
+        "source_mutation_allowed": false
+      },
+      {
+        "id": "manual-preview-retry",
+        "status": "ready",
+        "expected": "Users can retry a protected commit preview from the latest adapter draft.",
+        "selector": "[data-correction-commit=\"preview\"]",
+        "provider_secrets_stored": false
+      },
+      {
+        "id": "record-commit-receipt",
+        "status": "ready",
+        "expected": "Users can record a backend-owned commit receipt only after a preview exists.",
+        "selector": "[data-correction-commit=\"commit\"]",
+        "commit_record_allowed": true,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "rollback-metadata-visible",
+        "status": "ready",
+        "expected": "The receipt renders rollback metadata and marks compensating commit requirements.",
+        "source_mutation_allowed": false,
+        "public_frontend_authority": false
+      }
+    ],
+    "next": {
+      "task": "D240",
+      "label": "Backend-only remediation source execution",
+      "reason": "Commit receipts now exist. The next slice should add backend-only execution gates for supported memory repairs while keeping knowledge mutations review-first."
+    }
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -3269,7 +3375,7 @@
     }
   ],
   "next_queue": [
-    "D239"
+    "D240"
   ],
   "watchlist": [
     "D082",
@@ -6856,9 +6962,24 @@
       "best_practice": "Repair drafts should become real fixes only through inspectable, reversible backend authority",
       "done_when": "Owners can preview and commit selected memory/knowledge repairs through protected routes while public UI remains a zero-trust client",
       "covers": "backend, memory, knowledge, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now preview and record protected remediation adapter commit receipts with rollback metadata and source_mutation_allowed:false.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D240",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Backend-only remediation source execution gates",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add final protected execution gates for supported remediation commits, starting with safe memory scope updates and leaving knowledge source mutation review-first until collection/source models exist",
+      "best_practice": "Commit receipts should become real source repairs only where backend-owned stores can enforce owner scope and rollback metadata",
+      "done_when": "Owners can execute one supported memory repair from a committed receipt with explicit confirmation, audit and rollback evidence while unsupported knowledge repairs stay blocked with a clear reason",
+      "covers": "backend, memory, knowledge, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add protected commit policy for selected remediation adapter drafts with preview, audit and rollback gates.",
+      "evidence": "Next activation slice: add backend-only source execution gates for supported remediation commits, starting with safe memory scope updates.",
       "estimate": "0.5-2d"
     }
   ]

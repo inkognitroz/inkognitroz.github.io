@@ -230,14 +230,15 @@ Updated: 2026-05-23
 - D236 is now beta: backend commit `5d44915` and public UI now create explicit non-executing correction remediation plan drafts from review items, with local approve/defer notes, plan steps and `execution_allowed:false`.
 - D237 is now beta: backend commit `85617d8` and public UI now expose protected remediation step apply gates with `confirm:true`, owner-scoped plan-step validation, application receipts, rollback hints and no public frontend authority or source mutation from GitHub Pages.
 - D238 is now beta: backend commit `8cff2e0` and public UI now turn confirmed remediation receipts into protected memory/knowledge adapter drafts, with source IDs, rollback metadata, automatic prepare-after-apply and `source_mutation_executed:false`.
-- D239 is now next: add protected commit policy for selected remediation adapter drafts with preview, audit and rollback gates.
+- D239 is now beta: backend commit `038766f` and public UI now preview and record protected remediation adapter commit receipts, with deterministic preview IDs, rollback metadata, automatic preview-after-adapter and `source_mutation_allowed:false`.
+- D240 is now next: add backend-only source execution gates for supported remediation commits, starting with safe memory scope updates while knowledge repairs stay review-first.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D239` protected remediation commit policy.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D240` backend-only remediation source execution gates.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes
