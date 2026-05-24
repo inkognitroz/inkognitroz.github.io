@@ -1,20 +1,23 @@
 ---
-name: New SaaS idea
-about: Capture and evaluate a new SaaS concept
-title: "saas-idea: "
-labels: [saas, idea]
+name: MMIR strategy idea
+about: Capture and evaluate a MMIR product, revenue or platform strategy idea
+title: "strategy: "
+labels: [type/strategy]
 assignees: []
 ---
 
 ## Idea title
 
-## Problem solved
+## Problem solved for MMIR users
 
 ## Target users
 
 ## Monetization model
 
+## Alignment with trusted AI control plane
+
 ## MVP scope
 
-## Next step prompt
-Paste this into your AI coding tool to create a PR updating `public/content.json` and docs.
+## Risks / non-goals
+
+## Next agent prompt
