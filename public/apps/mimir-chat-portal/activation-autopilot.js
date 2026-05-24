@@ -89,11 +89,27 @@
     if(now-Number(state.last_run_ms||0)<MIN_INTERVAL_MS&&reason!=='manual')return;
     running=true;
     const actions=[];
+    const canTouchLocalRoutes=['manual','connector-refresh','live-proof-failed','first-chat-failed'].includes(reason);
     try{
-      safeDefaults(actions);
+      if(!canTouchLocalRoutes&&reason!=='manual'){
+        writeState({
+          ...state,
+          runs:Number(state.runs||0)+1,
+          last_run_at:new Date(now).toISOString(),
+          last_run_ms:now,
+          last_reason:reason,
+          actions:[],
+          no_paid_routes_started:true,
+          provider_secrets_stored:false,
+          raw_prompt_stored:false,
+          raw_response_stored:false
+        });
+        return;
+      }
       ensurePrivateMode(actions);
-      clickIfReady('#runtime-refresh',actions,'refresh-models');
-      if(shouldRetryProof(reason)){
+      if(canTouchLocalRoutes)safeDefaults(actions);
+      if(canTouchLocalRoutes)clickIfReady('#runtime-refresh',actions,'refresh-models');
+      if(canTouchLocalRoutes&&shouldRetryProof(reason)){
         clickIfReady('#runtime-live-proof [data-proof-action="retry"]',actions,'retry-live-proof');
       }
       const nextState={
