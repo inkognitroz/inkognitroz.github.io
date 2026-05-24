@@ -32,7 +32,7 @@ if (!html.includes('mimir-chat-portal.css?v=20260525-front-chat-order-v1')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d223-20260525-front-chat-order-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d254-20260525-free-model-rail-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

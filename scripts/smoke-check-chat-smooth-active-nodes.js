@@ -48,11 +48,16 @@ const workflows = `${read(files.qualityWorkflow)}\n${read(files.pagesWorkflow)}`
 
 for (const needle of [
   "const MANIFEST_URL='./active-chat-nodes.json'",
+  "const STARTER_CATALOG='./free-model-starters.json'",
   'mmir-runtime-starter-handoff',
   'data-active-node-action',
+  'data-active-starter-id',
+  'active-node-starter-rail',
   'localReady()',
   'webGpuReady()',
   'function bestNode(nodes,selected)',
+  'function activateStarter(model)',
+  "source:'active-node-starter-rail'",
   'primary-chat-link',
   'free/public-safe routes that the composer can actually use'
 ]) {
@@ -89,7 +94,8 @@ for (const needle of [
   requireIncludes(runtimeCss, needle, `Runtime CSS must keep a smooth transcript surface: ${needle}`);
 }
 
-requireIncludes(mmir, './apps/mimir-chat-portal/active-node-strip.js', 'MMIR page must load the active chat node strip.');
+requireIncludes(mmir, './apps/mimir-chat-portal/active-node-strip.js?v=20260525-free-model-rail-v1', 'MMIR page must load the active chat node strip with the free-model rail cache key.');
+requireIncludes(mmir, 'if(u.origin===location.origin)return false', 'Quiet local probe guard must allow same-origin static JSON/assets on localhost dev servers.');
 requireIncludes(workflows, 'smoke-check-chat-smooth-active-nodes.js', 'GitHub workflows must run the smooth active-node chat gate.');
 
 if (!process.exitCode) {

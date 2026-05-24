@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T22:04:42.599Z",
+  "updated_at": "2026-05-24T23:22:05.404Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -1719,9 +1719,9 @@
         "height": 844,
         "expected": [
           "composer mode dock stacks vertically",
-          "tool and live clusters wrap without overlap",
-          "mode and live chips can flex on small screens",
-          "feedback text remains readable",
+          "tool and live clusters stay in compact single rows without overlap",
+          "mode and live chips keep stable tap targets with horizontal overflow only when needed",
+          "feedback text remains readable without pushing the chat down",
           "primary send button remains visible"
         ]
       }
@@ -1749,7 +1749,9 @@
       "grid-area: feedback",
       "flex-wrap: wrap",
       "grid-template-columns: 1fr",
-      "flex: 1 1 auto"
+      "flex-wrap: nowrap",
+      "overflow-x: auto",
+      "flex: 0 0 auto"
     ],
     "copy_contract": [
       "Ready: free browser helper first, local model when connected.",
@@ -9259,7 +9261,7 @@
       "covers": "chat, open-webui-parity, mac, installer, activation, no-spend",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: tighten Open WebUI-style first chat focus, active model/node strip and Mac app-bundle/package QA.",
+      "evidence": "Chat slice now has public-safe active routes, a free model starter rail and tested WebGPU/local-node handoff. Continue Mac app-bundle/package QA and deeper Open WebUI polish.",
       "estimate": "2-6h"
     },
     {

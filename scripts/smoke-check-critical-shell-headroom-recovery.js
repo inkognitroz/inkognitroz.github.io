@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize, relative, resolve } from 'node:path';
 
 const root = process.cwd();
@@ -36,7 +36,7 @@ function localAssetPath(fromFile, asset) {
 function assetSize(fromFile, asset) {
   const file = localAssetPath(fromFile, asset);
   if (!file || !file.startsWith(publicDir) || !existsSync(file)) return 0;
-  return statSync(file).size;
+  return Buffer.byteLength(readFileSync(file, 'utf8').replace(/\r\n/g, '\n'), 'utf8');
 }
 
 function scriptQueue(html) {

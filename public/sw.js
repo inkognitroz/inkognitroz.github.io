@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d223-20260525-front-chat-order-v1';
+const CACHE_NAME='mmir-pwa-d254-20260525-free-model-rail-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -14,6 +14,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
   './active-chat-nodes.json',
+  './free-model-starters.json',
   './apps/mimir-chat-portal/repair-resume.css',
   './apps/mimir-chat-portal/pwa.css',
   './apps/mimir-chat-portal/pwa.js',
