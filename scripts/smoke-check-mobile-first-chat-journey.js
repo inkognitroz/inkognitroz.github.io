@@ -45,7 +45,7 @@ const qualityWorkflow = read(files.qualityWorkflow);
 requireIncludes(mmir, '<a href="#mimir-prompt">Chat</a>', 'Static Chat nav must target the composer before runtime JS exists.');
 requireIncludes(mmir, '<a href="#local-connector">Connect</a>', 'Static Connect nav must target the real local connector panel before runtime JS exists.');
 requireIncludes(mmir, '<a href="#local-connector">Install node</a>', 'Static install quick action must target the real local connector panel before runtime JS exists.');
-requireIncludes(mmir, 'runtime-controls-fix.js?v=20260524-cache-bust-v2', 'Runtime control fix must remain in the critical shell with a fresh mobile cache key.');
+requireIncludes(mmir, 'runtime-controls-fix.js?v=20260524-quiet-first-paint-v3', 'Runtime control fix must remain in the critical shell with a fresh mobile cache key.');
 requireBefore(mmir, 'id="mimir-instant-start"', 'class="mimir-composer"', 'Ground Zero may stay first statically, but the runtime guard must move chat above it on mobile startup.');
 requireBefore(mmir, 'class="mimir-composer"', '<details id="local-connector"', 'Composer must stay before secondary setup panels.');
 
