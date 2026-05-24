@@ -7,6 +7,6 @@
   "target": "Ollama + Open WebUI + Gemma-compatible models",
   "frontend": "https://mmir.ai",
   "backend_health_url": null,
-  "message": "Infrastructure automation is ready. Waiting for OCI Ampere A1 capacity in Stockholm.",
-  "last_updated": "2026-05-24T14:42:30-07:00"
+  "message": "Infrastructure automation is ready. Waiting for OCI Ampere A1 capacity in Stockholm. MMIR mobile chat viewport hotfix is ready for Pages deploy.",
+  "last_updated": "2026-05-24T15:10:00-07:00"
 }
