@@ -1,0 +1,74 @@
+{
+  "title": "Autopilot Trust Timeline Browser QA",
+  "task": "D249",
+  "status": "beta",
+  "updated_at": "2026-05-24T04:16:00.000Z",
+  "fixture": "./correction-remediation-autopilot-trust-timeline-browser-fixture.json",
+  "public_repo_rule": "Browser QA uses deterministic local fixture state only; it does not call live mutation, rollback, paid provider or tunnel routes.",
+  "qa_policy": {
+    "deterministic_fixture": true,
+    "desktop_mobile_coverage": true,
+    "click_handlers_required": true,
+    "disabled_until_ready_required": true,
+    "visual_overlap_guard": true,
+    "public_frontend_authority": false,
+    "automatic_mutation_allowed": false,
+    "provider_secrets_stored": false,
+    "document_text_stored": false,
+    "no_paid_routes_started": true
+  },
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "ready",
+      "checks": ["panel visible", "steps fit grid", "buttons visible", "no overlap contract"]
+    },
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844,
+      "status": "ready",
+      "checks": ["steps wrap", "buttons reachable", "text wraps", "no overlap contract"]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "idle",
+      "status": "ready",
+      "expected": "Timeline renders with all destructive actions disabled before safe autopilot state exists.",
+      "enabled_actions": []
+    },
+    {
+      "id": "confirm-ready",
+      "status": "ready",
+      "expected": "Confirm source and refresh rollback are enabled only after supported handoff and readiness metadata exist.",
+      "enabled_actions": ["confirm-source", "refresh-readiness"]
+    },
+    {
+      "id": "source-confirmed",
+      "status": "ready",
+      "expected": "Confirm source disables after backend source mutation is reflected, while readiness refresh remains available.",
+      "enabled_actions": ["refresh-readiness"]
+    },
+    {
+      "id": "undo-ready",
+      "status": "ready",
+      "expected": "Apply undo enables only after backend execution and rollback preview metadata are present.",
+      "enabled_actions": ["refresh-readiness", "apply-rollback"]
+    }
+  ],
+  "selectors": {
+    "panel": ".context-correction-trust-timeline",
+    "steps": ".context-correction-trust-steps article",
+    "confirm_source": "[data-correction-trust-timeline=\"confirm-source\"]",
+    "refresh_readiness": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+    "apply_rollback": "[data-correction-trust-timeline=\"apply-rollback\"]"
+  },
+  "next": {
+    "task": "D250",
+    "label": "autopilot timeline post-action receipts",
+    "why": "After selector and visual contracts are guarded, the timeline should show clearer receipts after confirm, refresh and undo actions."
+  }
+}

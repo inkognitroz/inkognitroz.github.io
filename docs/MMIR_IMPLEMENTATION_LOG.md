@@ -240,14 +240,15 @@ Updated: 2026-05-23
 - D246 is now beta: backend commit `6c83644` and public UI now prepares a resumable source-mutation handoff after safe autopilot runs, writing only preview metadata into the existing explicit memory/knowledge execution gates.
 - D247 is now beta: backend commit `e648af0` and public UI now shows rollback readiness before and after explicit source changes, writing only readiness metadata and rollback previews while keeping mutation and rollback execution backend-only.
 - D248 is now beta: public UI now combines autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline without public mutation authority.
-- D249 is now next: add deterministic browser fixture and visual QA coverage for the guided autopilot trust timeline states.
+- D249 is now beta: public dashboard now embeds deterministic desktop/mobile browser QA fixtures for guided trust timeline states and action enablement, with no live secrets, raw data or paid routes.
+- D250 is now next: show clearer post-action receipts after trust timeline confirm, refresh and undo actions.
 - Review-discovered launch hardening items `D082-D093` were added to the delivery backlog.
 - Activation/revenue items `D097-D104` were added to the delivery backlog for free starter models, one-click local installs, expanded open-source catalog, marketplace objects, premium gates, free guide assistants, browser WebGPU models and automatic first-run defaults.
 
 ## Still Next In Sequence
 
 - D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
-- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D249` autopilot trust timeline browser QA.
+- Validate latest frontend/backend/local-node CI after the new commits, then continue with `D250` autopilot timeline post-action receipts.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 
 ## Notes

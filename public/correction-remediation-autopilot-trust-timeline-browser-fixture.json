@@ -1,0 +1,88 @@
+{
+  "title": "Autopilot Trust Timeline Browser Fixture",
+  "updated_at": "2026-05-24T04:15:00.000Z",
+  "public_repo_rule": "Fixture data is deterministic, browser-local and contains no user prompt, response, document text, provider secret, token or paid route credential.",
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900,
+      "expected": "Timeline steps fit as a calm horizontal grid with three action buttons visible."
+    },
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844,
+      "expected": "Timeline steps wrap into stable cards and action buttons remain reachable without overlap."
+    }
+  ],
+  "selectors": {
+    "panel": ".context-correction-trust-timeline",
+    "steps": ".context-correction-trust-steps article",
+    "confirm_source": "[data-correction-trust-timeline=\"confirm-source\"]",
+    "refresh_readiness": "[data-correction-trust-timeline=\"refresh-readiness\"]",
+    "apply_rollback": "[data-correction-trust-timeline=\"apply-rollback\"]"
+  },
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle",
+      "expected_panel_state": "watch",
+      "expected_enabled_actions": [],
+      "storage": {
+        "autopilot": { "status": "idle", "run": null },
+        "handoff": null,
+        "readiness": null,
+        "execution": null,
+        "rollback": null
+      }
+    },
+    {
+      "id": "confirm-ready",
+      "label": "Confirm ready",
+      "expected_panel_state": "confirm-ready",
+      "expected_enabled_actions": ["confirm-source", "refresh-readiness"],
+      "storage": {
+        "autopilot": { "status": "ran", "run": { "status": "manual-stop", "safe_steps_executed": true } },
+        "handoff": { "status": "ready", "handoff": { "target": "memory", "commit_id": "commit_fixture", "status": "ready", "preview": { "supported": true } } },
+        "readiness": { "status": "planned", "target": "memory", "readiness": { "target": "memory", "status": "planned", "phase": "before-source-mutation", "rollback_available_now": false, "rollback_available_after_execution": true, "source_mutation_already_executed": false } },
+        "execution": null,
+        "rollback": null
+      }
+    },
+    {
+      "id": "source-confirmed",
+      "label": "Source confirmed",
+      "expected_panel_state": "source-confirmed",
+      "expected_enabled_actions": ["refresh-readiness"],
+      "storage": {
+        "autopilot": { "status": "ran", "run": { "status": "manual-stop", "safe_steps_executed": true } },
+        "handoff": { "status": "ready", "handoff": { "target": "memory", "commit_id": "commit_fixture", "status": "ready", "preview": { "supported": true } } },
+        "readiness": { "status": "ready", "target": "memory", "readiness": { "target": "memory", "status": "ready", "phase": "after-source-mutation", "rollback_available_now": true, "rollback_available_after_execution": true, "source_mutation_already_executed": true } },
+        "execution": { "status": "applied", "execution": { "id": "execution_fixture", "target": "memory", "source_mutation_executed": true } },
+        "rollback": null
+      }
+    },
+    {
+      "id": "undo-ready",
+      "label": "Undo ready",
+      "expected_panel_state": "undo-ready",
+      "expected_enabled_actions": ["refresh-readiness", "apply-rollback"],
+      "storage": {
+        "autopilot": { "status": "ran", "run": { "status": "manual-stop", "safe_steps_executed": true } },
+        "handoff": { "status": "ready", "handoff": { "target": "memory", "commit_id": "commit_fixture", "status": "ready", "preview": { "supported": true } } },
+        "readiness": { "status": "ready", "target": "memory", "readiness": { "target": "memory", "status": "ready", "phase": "after-source-mutation", "rollback_available_now": true, "rollback_available_after_execution": true, "source_mutation_already_executed": true, "rollback_preview": { "id": "rollback_preview_fixture", "supported": true } } },
+        "execution": { "status": "applied", "execution": { "id": "execution_fixture", "target": "memory", "source_mutation_executed": true } },
+        "rollback": { "status": "preview", "preview": { "id": "rollback_preview_fixture", "supported": true } }
+      }
+    }
+  ],
+  "privacy": {
+    "raw_prompt_stored": false,
+    "raw_response_stored": false,
+    "document_text_stored": false,
+    "provider_secrets_stored": false,
+    "paid_route_credentials_stored": false,
+    "no_paid_routes_started": true
+  }
+}

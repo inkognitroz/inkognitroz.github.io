@@ -44,6 +44,8 @@ const correctionRemediationAutopilotQueueReportPath = resolve(root, 'public', 'c
 const correctionRemediationAutopilotHandoffReportPath = resolve(root, 'public', 'correction-remediation-autopilot-handoff-report.json');
 const correctionRemediationAutopilotRollbackReadinessReportPath = resolve(root, 'public', 'correction-remediation-autopilot-rollback-readiness-report.json');
 const correctionRemediationAutopilotTrustTimelineReportPath = resolve(root, 'public', 'correction-remediation-autopilot-trust-timeline-report.json');
+const correctionRemediationAutopilotTrustTimelineBrowserFixturePath = resolve(root, 'public', 'correction-remediation-autopilot-trust-timeline-browser-fixture.json');
+const correctionRemediationAutopilotTrustTimelineBrowserQaReportPath = resolve(root, 'public', 'correction-remediation-autopilot-trust-timeline-browser-qa-report.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -225,7 +227,8 @@ const overrides = new Map([
   ['D246', { status: 'beta', evidence: 'Backend commit 6c83644 and public UI now prepare resumable source-mutation handoff previews after safe autopilot runs without giving GitHub Pages mutation authority.' }],
   ['D247', { status: 'beta', evidence: 'Backend commit e648af0 and public UI now show rollback readiness before and after explicit source changes without executing mutation or rollback from GitHub Pages.' }],
   ['D248', { status: 'beta', evidence: 'Public UI now combines autopilot handoff, explicit source confirmation, rollback readiness refresh and undo cue into one guided trust timeline without public mutation authority.' }],
-  ['D249', { status: 'next', evidence: 'Next activation slice: add browser fixture and visual QA for the guided autopilot trust timeline states.' }]
+  ['D249', { status: 'beta', evidence: 'Public dashboard now embeds deterministic desktop/mobile browser QA fixtures for guided trust timeline states and action enablement.' }],
+  ['D250', { status: 'next', evidence: 'Next activation slice: show clearer post-action receipts after trust timeline confirm, refresh and undo actions.' }]
 ]);
 
 const repoMeta = [
@@ -529,6 +532,16 @@ function readCorrectionRemediationAutopilotTrustTimelineReport() {
   return JSON.parse(readFileSync(correctionRemediationAutopilotTrustTimelineReportPath, 'utf8'));
 }
 
+function readCorrectionRemediationAutopilotTrustTimelineBrowserFixture() {
+  if (!existsSync(correctionRemediationAutopilotTrustTimelineBrowserFixturePath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationAutopilotTrustTimelineBrowserFixturePath, 'utf8'));
+}
+
+function readCorrectionRemediationAutopilotTrustTimelineBrowserQaReport() {
+  if (!existsSync(correctionRemediationAutopilotTrustTimelineBrowserQaReportPath)) return null;
+  return JSON.parse(readFileSync(correctionRemediationAutopilotTrustTimelineBrowserQaReportPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -553,7 +566,7 @@ function summarize(tasks) {
 }
 
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
-const prioritizedNextIds = ['D249', 'D117', 'D116', 'D118', 'D119'];
+const prioritizedNextIds = ['D250', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
 const prioritizedNextQueue = [
   ...prioritizedNextIds.filter((id) => nextTasks.some((task) => task.seq === id)),
@@ -612,6 +625,8 @@ const data = {
   correction_remediation_autopilot_handoff_report: readCorrectionRemediationAutopilotHandoffReport(),
   correction_remediation_autopilot_rollback_readiness_report: readCorrectionRemediationAutopilotRollbackReadinessReport(),
   correction_remediation_autopilot_trust_timeline_report: readCorrectionRemediationAutopilotTrustTimelineReport(),
+  correction_remediation_autopilot_trust_timeline_browser_fixture: readCorrectionRemediationAutopilotTrustTimelineBrowserFixture(),
+  correction_remediation_autopilot_trust_timeline_browser_qa_report: readCorrectionRemediationAutopilotTrustTimelineBrowserQaReport(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,
