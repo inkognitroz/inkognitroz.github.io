@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T01:43:28.510Z",
+  "updated_at": "2026-05-24T02:07:57.789Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 243,
+    "total": 244,
     "done": 51,
-    "beta": 167,
+    "beta": 168,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1038,9 +1038,9 @@
       },
       {
         "phase": "Backend / Team Trust",
-        "total": 10,
+        "total": 11,
         "done": 0,
-        "beta": 9,
+        "beta": 10,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -3636,7 +3636,7 @@
         "knowledge-source-mutation",
         "knowledge-collection-mutation"
       ],
-      "reason": "D242 records the source model only. Actual knowledge mutation stays blocked until a dedicated backend-only execution and rollback gate exists."
+      "reason": "D242 records the source model only. D243 adds the dedicated backend-only execution gate; rollback remains the next protected slice."
     },
     "checks": [
       "knowledge-correction",
@@ -3679,9 +3679,132 @@
       }
     ],
     "next": {
-      "task": "D243",
-      "label": "Knowledge remediation execution gates",
-      "reason": "Knowledge source models are now recorded. The next slice can add backend-only execution and rollback gates for safe metadata mutation."
+      "task": "D244",
+      "label": "Knowledge remediation rollback gates",
+      "reason": "Knowledge source models and execution gates now exist. The next slice should add rollback gates for safe metadata restoration."
+    }
+  },
+  "correction_remediation_knowledge_execution_gates_report": {
+    "title": "Correction Remediation Knowledge Execution Gates",
+    "task": "D243",
+    "status": "beta",
+    "backend_commit": "54adcaa",
+    "principle": "Knowledge source mutation must be backend-only, metadata-only, owner-scoped and preview-confirmed before it changes source state.",
+    "public_repo_rule": "GitHub Pages may request previews and send explicit confirmation to a protected backend. It never receives document text, stores provider secrets, starts paid routes or mutates knowledge directly.",
+    "backend_route": {
+      "method": "POST",
+      "path": "/context/corrections/remediation-knowledge-executions/apply",
+      "auth": "protected-backend-auth",
+      "status": "beta",
+      "responses": [
+        "context.correction_knowledge_execution_preview",
+        "context.correction_knowledge_execution"
+      ],
+      "purpose": "Preview and execute supported knowledge source status and collection metadata updates through backend-only source mutation gates."
+    },
+    "frontend_module": "./apps/mimir-chat-portal/context-correction-sync.js",
+    "local_storage": {
+      "knowledge_source_state": "mimir-context-correction-knowledge-source-model-v1:{workspace}",
+      "knowledge_execution_state": "mimir-context-correction-knowledge-execution-v1:{workspace}",
+      "metadata_only": true
+    },
+    "ui_contract": {
+      "panel": ".context-correction-knowledge-execution-status",
+      "checks": ".context-correction-knowledge-execution-checks",
+      "results": ".context-correction-knowledge-execution-results",
+      "preview_selector": "[data-correction-knowledge-execution=\"preview\"]",
+      "execute_selector": "[data-correction-knowledge-execution=\"execute\"]",
+      "auto_preview": "recordKnowledgeSourceModel automatically calls previewKnowledgeExecution when the backend returns a recorded source model"
+    },
+    "execution_policy": {
+      "preview_required": true,
+      "confirm_required": true,
+      "execute_source_mutation_required": true,
+      "backend_only_execution": true,
+      "knowledge_execution_supported": true,
+      "source_mutation_allowed": true,
+      "destructive_execution_allowed": false,
+      "automatic_mutation_allowed": false,
+      "public_frontend_authority": false,
+      "no_paid_routes_started": true,
+      "raw_prompt_stored": false,
+      "raw_response_stored": false,
+      "document_text_stored": false,
+      "provider_secrets_stored": false
+    },
+    "supported_execution": {
+      "kind": "knowledge-source-metadata-update",
+      "mutates": [
+        "knowledge.source_status",
+        "knowledge.collection_membership"
+      ],
+      "requires": [
+        "recorded knowledge source model",
+        "matching execution preview id",
+        "confirm:true",
+        "execute_source_mutation:true"
+      ],
+      "captures": [
+        "source_id",
+        "before status",
+        "before collection",
+        "after status",
+        "after collection",
+        "rollback metadata"
+      ],
+      "raw_text_included": false
+    },
+    "rollback_metadata": {
+      "captured": true,
+      "raw_text_included": false,
+      "next_gate": "D244 knowledge remediation rollback gates"
+    },
+    "checks": [
+      "source-model",
+      "owner-scope",
+      "backend-only",
+      "metadata-only",
+      "rollback-before-after"
+    ],
+    "scenarios": [
+      {
+        "id": "auto-preview-after-source-model",
+        "status": "ready",
+        "expected": "A recorded knowledge source model automatically requests a knowledge execution preview.",
+        "selector": "recordKnowledgeSourceModel -> previewKnowledgeExecution",
+        "backend_only_execution": true,
+        "source_mutation_executed": false
+      },
+      {
+        "id": "execute-metadata-repair",
+        "status": "ready",
+        "expected": "Owners can apply supported source status and collection metadata updates only after preview confirmation.",
+        "selector": "[data-correction-knowledge-execution=\"execute\"]",
+        "source_mutation_allowed": true,
+        "public_frontend_authority": false
+      },
+      {
+        "id": "capture-rollback-metadata",
+        "status": "ready",
+        "expected": "Execution receipts include before/after public-safe metadata for a later rollback gate.",
+        "rollback_metadata_captured": true,
+        "raw_text_included": false
+      },
+      {
+        "id": "no-document-text-or-spend",
+        "status": "ready",
+        "expected": "Knowledge execution receipts expose metadata only and never document text, provider secrets or paid route execution.",
+        "raw_prompt_stored": false,
+        "raw_response_stored": false,
+        "document_text_stored": false,
+        "provider_secrets_stored": false,
+        "no_paid_routes_started": true
+      }
+    ],
+    "next": {
+      "task": "D244",
+      "label": "Knowledge remediation rollback gates",
+      "reason": "Knowledge source metadata can now be changed through protected gates. The next slice should apply rollback from captured before/after source metadata."
     }
   },
   "repos": [
@@ -3734,7 +3857,7 @@
     }
   ],
   "next_queue": [
-    "D243"
+    "D244"
   ],
   "watchlist": [
     "D082",
@@ -7381,9 +7504,24 @@
       "best_practice": "Knowledge mutation should happen only after source model preview, confirmation, owner scope and rollback metadata are proven",
       "done_when": "Owners can execute one supported knowledge metadata repair with explicit confirmation, audit and rollback evidence while raw document text stays untouched",
       "covers": "backend, knowledge, audit, zero-trust",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Backend and public UI now preview and apply supported knowledge source metadata repairs through backend-only execution gates with rollback metadata.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D244",
+      "phase": "Backend / Team Trust",
+      "priority": "P1",
+      "work_package": "Knowledge remediation rollback gates",
+      "repos": "inkognitroz.github.io, mimir-backend-template",
+      "concrete_work": "Add protected rollback gates for knowledge execution receipts, restoring captured source status and collection metadata with preview, confirmation and audit",
+      "best_practice": "Knowledge metadata mutation must be reversible before broader automation, marketplace workflows or team governance can rely on it",
+      "done_when": "Owners can preview and apply rollback for one supported knowledge execution receipt with before/after metadata, idempotent audit and no document text exposure",
+      "covers": "backend, knowledge, rollback, audit, zero-trust",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Next activation slice: add backend-only knowledge remediation execution gates with rollback metadata.",
+      "evidence": "Next activation slice: add rollback gates for supported knowledge remediation execution receipts.",
       "estimate": "0.5-2d"
     }
   ]

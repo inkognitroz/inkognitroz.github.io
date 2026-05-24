@@ -1022,6 +1022,28 @@
     '</section>';
   }
 
+  function renderCorrectionRemediationKnowledgeExecutionGatesReport(data){
+    const report=data.correction_remediation_knowledge_execution_gates_report||{};
+    const scenarios=Array.isArray(report.scenarios)?report.scenarios:[];
+    const checks=Array.isArray(report.checks)?report.checks:[];
+    if(!scenarios.length&&!checks.length)return '';
+    const policy=report.execution_policy||{};
+    const supported=report.supported_execution||{};
+    const rollback=report.rollback_metadata||{};
+    const ready=scenarios.every((scenario)=>scenario.status==='ready'&&(scenario.backend_only_execution===true||scenario.public_frontend_authority===false||scenario.document_text_stored===false||scenario.provider_secrets_stored===false||scenario.no_paid_routes_started===true||scenario.raw_text_included===false));
+    return '<section id="progress-correction-remediation-knowledge-execution-gates" class="progress-no-model-fixture" data-state="'+(ready?'ready':'watch')+'">'+
+      '<div class="progress-route-map-head"><div><p class="eyebrow">Knowledge execution</p><h2>'+safe(report.title||'Correction Remediation Knowledge Execution Gates')+'</h2></div><small>'+safe(report.principle||'Knowledge source mutation is backend-only and metadata-only.')+'</small></div>'+
+      '<div class="progress-no-model-grid">'+
+        (report.backend_route?'<article class="progress-no-model-scenario" data-route="'+safe(report.backend_route.method+' '+report.backend_route.path)+'"><span>'+safe(label(report.backend_route.status||'beta'))+'</span><h3>'+safe(report.backend_route.method+' '+report.backend_route.path)+'</h3><p>'+safe(report.backend_route.purpose||'Protected knowledge execution route.')+'</p><strong>'+safe(report.backend_route.auth||'protected-backend-auth')+'</strong><small>backend:'+safe(report.backend_commit||'tracked')+' / backend_only:'+safe(Boolean(policy.backend_only_execution))+'</small></article>':'')+
+        (supported.kind?'<article class="progress-no-model-scenario" data-supported="'+safe(supported.kind)+'"><span>supported</span><h3>'+safe(supported.kind)+'</h3><p>'+safe((supported.mutates||[]).join(', ')||'source metadata')+'</p><strong>raw_text_included:'+safe(Boolean(supported.raw_text_included))+'</strong><small>requires preview + confirm</small></article>':'')+
+        (rollback.captured?'<article class="progress-no-model-scenario" data-rollback="knowledge-metadata"><span>rollback</span><h3>Before/after metadata</h3><p>'+safe(rollback.next_gate||'Knowledge rollback gate follows.')+'</p><strong>raw_text_included:'+safe(Boolean(rollback.raw_text_included))+'</strong><small>captured:true</small></article>':'')+
+        checks.map((check)=>'<article class="progress-no-model-scenario" data-check="'+safe(check)+'"><span>check</span><h3>'+safe(check)+'</h3><p>Knowledge execution gate must pass before source metadata mutation.</p><strong>backend_only_execution:true</strong><small>document_text_stored:false</small></article>').join('')+
+        scenarios.map((scenario)=>'<article class="progress-no-model-scenario" data-scenario="'+safe(scenario.id)+'"><span>'+safe(label(scenario.status==='ready'?'ready':'watch'))+'</span><h3>'+safe(scenario.id)+'</h3><p>'+safe(scenario.expected||'Knowledge execution scenario.')+'</p><strong>'+safe(scenario.selector||'knowledge execution gate')+'</strong><small>source_mutation_allowed:'+safe(Boolean(scenario.source_mutation_allowed))+' / source_mutation_executed:'+safe(Boolean(scenario.source_mutation_executed))+'</small></article>').join('')+
+      '</div>'+
+      '<small class="progress-activation-privacy">'+safe(report.public_repo_rule||'Public-safe knowledge execution evidence only.')+' Next: '+safe(report.next?.task||'D244')+' '+safe(report.next?.label||'knowledge rollback gates')+'.</small>'+
+    '</section>';
+  }
+
   function renderActivationSimulator(data){
     const simulator=data.activation_simulator||{};
     const scenarios=Array.isArray(simulator.scenarios)?simulator.scenarios:[];
@@ -1277,7 +1299,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderProtectedCorrectionReviewQueueReport(dashboard)+renderCorrectionRemediationPlanReport(dashboard)+renderCorrectionRemediationApplyGatesReport(dashboard)+renderCorrectionRemediationAdaptersReport(dashboard)+renderCorrectionRemediationCommitPolicyReport(dashboard)+renderCorrectionRemediationExecutionGatesReport(dashboard)+renderCorrectionRemediationRollbackGatesReport(dashboard)+renderCorrectionRemediationKnowledgeSourceModelReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderProtectedCorrectionReviewQueueReport(dashboard)+renderCorrectionRemediationPlanReport(dashboard)+renderCorrectionRemediationApplyGatesReport(dashboard)+renderCorrectionRemediationAdaptersReport(dashboard)+renderCorrectionRemediationCommitPolicyReport(dashboard)+renderCorrectionRemediationExecutionGatesReport(dashboard)+renderCorrectionRemediationRollbackGatesReport(dashboard)+renderCorrectionRemediationKnowledgeSourceModelReport(dashboard)+renderCorrectionRemediationKnowledgeExecutionGatesReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     window.dispatchEvent(new CustomEvent('mmir-progress-dashboard-rendered',{detail:{task_count:Array.isArray(dashboard.tasks)?dashboard.tasks.length:0}}));
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();
@@ -1309,6 +1331,7 @@
   window.addEventListener('hashchange',openHashDetails);
   window.addEventListener('mmir-first-chat-receipt-updated',render);
   window.addEventListener('mmir-context-corrections-updated',render);
+  window.addEventListener('mmir-context-correction-knowledge-execution-updated',render);
   window.addEventListener('mmir-activation-telemetry-updated',render);
   window.addEventListener('mmir-activation-autopilot-updated',render);
   window.addEventListener('mmir-activation-replay-updated',render);

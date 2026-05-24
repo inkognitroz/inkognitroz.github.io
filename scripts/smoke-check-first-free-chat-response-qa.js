@@ -94,7 +94,7 @@ const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d212 = tasks.find((task) => task.seq === 'D212');
 const d213 = tasks.find((task) => task.seq === 'D213');
 const d214 = tasks.find((task) => task.seq === 'D214');
-const d237 = tasks.find((task) => task.seq === 'D243');
+const d237 = tasks.find((task) => task.seq === 'D244');
 if (!d212 || d212.status !== 'beta') {
   fail('Progress dashboard task D212 must be beta after first free chat response QA ships.');
 }
@@ -105,10 +105,10 @@ if (!d214 || d214.status !== 'beta') {
   fail('Progress dashboard task D214 must be beta after composer action bar visual QA ships.');
 }
 if (!d237 || d237.status !== 'next') {
-  fail('Progress dashboard task D243 must become the next work item after D236 ships.');
+  fail('Progress dashboard task D244 must become the next work item after D236 ships.');
 }
-if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D243') {
-  fail('Progress dashboard next queue must prioritize D243 after D236 ships.');
+if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D244') {
+  fail('Progress dashboard next queue must prioritize D244 after D236 ships.');
 }
 
 if (!process.exitCode) {

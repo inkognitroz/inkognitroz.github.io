@@ -12,6 +12,7 @@
   const EXECUTION_PREFIX='mimir-context-correction-remediation-execution-v1:';
   const ROLLBACK_PREFIX='mimir-context-correction-remediation-rollback-v1:';
   const KNOWLEDGE_SOURCE_PREFIX='mimir-context-correction-knowledge-source-model-v1:';
+  const KNOWLEDGE_EXECUTION_PREFIX='mimir-context-correction-knowledge-execution-v1:';
   const MAX_SYNC_EVENTS=50;
   if(!api)return;
 
@@ -27,6 +28,7 @@
   function executionKey(){return EXECUTION_PREFIX+workspaceId();}
   function rollbackKey(){return ROLLBACK_PREFIX+workspaceId();}
   function knowledgeSourceKey(){return KNOWLEDGE_SOURCE_PREFIX+workspaceId();}
+  function knowledgeExecutionKey(){return KNOWLEDGE_EXECUTION_PREFIX+workspaceId();}
   function cleanString(value,max=160){return String(value||'').trim().slice(0,max);}
   function cleanIds(value,max=24){
     const seen=new Set();
@@ -230,6 +232,31 @@
   }
   function readKnowledgeSourceState(){
     const value=readJson(knowledgeSourceKey(),null);
+    return value&&typeof value==='object'?value:null;
+  }
+  function writeKnowledgeExecutionState(value){
+    const state={
+      workspace_id:workspaceId(),
+      updated_at:new Date().toISOString(),
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      no_paid_routes_started:true,
+      public_frontend_authority:false,
+      automatic_mutation_allowed:false,
+      backend_only_execution:true,
+      source_mutation_allowed:false,
+      source_mutation_executed:false,
+      knowledge_execution_supported:false,
+      ...value
+    };
+    try{localStorage.setItem(knowledgeExecutionKey(),JSON.stringify(state));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-context-correction-knowledge-execution-updated',{detail:state}));
+    return state;
+  }
+  function readKnowledgeExecutionState(){
+    const value=readJson(knowledgeExecutionKey(),null);
     return value&&typeof value==='object'?value:null;
   }
   function readCorrections(){
@@ -666,7 +693,7 @@
         return state;
       }
       body.knowledge_source_preview_id=previewId;
-      body.review_note='Public UI recorded a metadata-only knowledge source model. Knowledge execution remains blocked.';
+      body.review_note='Public UI recorded a metadata-only knowledge source model. Knowledge execution requires a separate backend-only preview and confirmation.';
     }
     try{
       const token=await tokenFor(profile,url);
@@ -685,7 +712,7 @@
         preview:sourceState?.preview||null,
         model:data,
         source_mutation_executed:false,
-        message:'Knowledge source model recorded. Future execution remains blocked until a dedicated backend-only knowledge mutation gate exists.'
+        message:'Knowledge source model recorded. Preview the backend-only knowledge execution gate before any source metadata mutation.'
       }):writeKnowledgeSourceState({
         status:data?.status||'preview',
         backend_url:url,
@@ -696,6 +723,7 @@
         source_mutation_allowed:false,
         message:data?.supported?'Knowledge source model preview ready with metadata-only source status and rollback plan.':'Knowledge source model preview is blocked: '+(data?.blocked_reason||'missing knowledge source metadata.')
       });
+      if(isRecord&&data?.id)await previewKnowledgeExecution(data.id);
       render();
       return state;
     }catch(error){
@@ -715,6 +743,94 @@
   }
   function recordKnowledgeSourceModel(commitId=''){
     return knowledgeSourceModelRequest('record',commitId);
+  }
+  async function knowledgeExecutionRequest(mode='preview',modelId=''){
+    const sourceState=readKnowledgeSourceState();
+    const executionState=readKnowledgeExecutionState();
+    const model=sourceState?.model&&typeof sourceState.model==='object'?sourceState.model:null;
+    const cleanModelId=cleanString(modelId||model?.id,120);
+    const isExecute=mode==='execute';
+    if(!cleanModelId){
+      const state=writeKnowledgeExecutionState({status:'needs-source-model',message:'Record a protected knowledge source model before previewing execution.',model_id:''});
+      render();
+      return state;
+    }
+    const {profile,url}=currentBackend();
+    if(!profile||!url){
+      const state=writeKnowledgeExecutionState({status:'needs-backend',message:'Choose an active protected backend before executing knowledge source metadata changes.',model_id:cleanModelId});
+      render();
+      return state;
+    }
+    const body={
+      workspace_id:workspaceId(),
+      model_id:cleanModelId,
+      preview:!isExecute,
+      confirm:isExecute,
+      execute_source_mutation:isExecute,
+      raw_prompt_stored:false,
+      raw_response_stored:false,
+      document_text_stored:false,
+      provider_secrets_stored:false
+    };
+    if(isExecute){
+      const previewId=cleanString(executionState?.preview?.id,120);
+      if(!previewId){
+        const state=writeKnowledgeExecutionState({status:'needs-preview',message:'Preview backend-only knowledge execution before applying source metadata updates.',model_id:cleanModelId});
+        render();
+        return state;
+      }
+      body.execution_preview_id=previewId;
+    }
+    try{
+      const token=await tokenFor(profile,url);
+      const response=await api.fetchJson(api.joinUrl(url,'/context/corrections/remediation-knowledge-executions/apply'),{
+        method:'POST',
+        headers:api.authHeaders(token),
+        body:JSON.stringify(body),
+        timeoutMs:10000
+      });
+      const data=response?.data||null;
+      const state=isExecute?writeKnowledgeExecutionState({
+        status:data?.status||'applied',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        model_id:cleanModelId,
+        preview:executionState?.preview||null,
+        execution:data,
+        source_mutation_executed:Boolean(data?.source_mutation_executed),
+        knowledge_execution_supported:true,
+        message:data?.source_mutation_executed?'Backend-only knowledge metadata repair applied with rollback metadata captured.':'Knowledge execution recorded without source mutation.'
+      }):writeKnowledgeExecutionState({
+        status:data?.status||'preview',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        model_id:cleanModelId,
+        preview:data,
+        execution:null,
+        source_mutation_allowed:Boolean(data?.policy?.source_mutation_allowed),
+        knowledge_execution_supported:Boolean(data?.supported),
+        message:data?.supported?'Backend-only knowledge execution preview ready for owned source status and collection metadata.':'Knowledge execution preview is blocked: '+(data?.blocked_reason||'unsupported source model.')
+      });
+      if(isExecute)await loadReviewQueue({limit:10,include_undone:true});
+      render();
+      return state;
+    }catch(error){
+      const state=writeKnowledgeExecutionState({
+        status:'error',
+        backend_url:url,
+        backend_provider:profile.provider||'backend',
+        model_id:cleanModelId,
+        message:api.friendlyError?.(error)||error.message||'Could not preview or execute knowledge source metadata gate.'
+      });
+      render();
+      return state;
+    }
+  }
+  function previewKnowledgeExecution(modelId=''){
+    return knowledgeExecutionRequest('preview',modelId);
+  }
+  function executeKnowledgeExecution(modelId=''){
+    return knowledgeExecutionRequest('execute',modelId);
   }
   async function executionPolicyRequest(mode='preview',commitId=''){
     const commitState=readCommitState();
@@ -1094,6 +1210,33 @@
       '<small class="context-correction-review-policy">knowledge_execution_supported:false / source_mutation_allowed:false / source_mutation_executed:false / document_text_stored:false / public_frontend_authority:false</small>'+
     '</div>';
   }
+  function knowledgeExecutionGateHtml(){
+    const sourceState=readKnowledgeSourceState();
+    const state=readKnowledgeExecutionState();
+    const model=sourceState?.model&&typeof sourceState.model==='object'?sourceState.model:null;
+    const preview=state?.preview&&typeof state.preview==='object'?state.preview:null;
+    const execution=state?.execution&&typeof state.execution==='object'?state.execution:null;
+    const checks=Array.isArray(preview?.checks)?preview.checks.slice(0,5):[];
+    const results=Array.isArray(execution?.results)?execution.results.slice(0,4):[];
+    const updates=Array.isArray(preview?.execution_plan?.source_status_updates)?preview.execution_plan.source_status_updates.slice(0,4):[];
+    const status=state?.status||'idle';
+    const canPreview=Boolean(model?.id);
+    const canExecute=Boolean(preview?.supported);
+    return '<div class="context-correction-knowledge-execution-status" data-state="'+safe(status)+'">'+
+      '<div><strong>Knowledge execution: '+safe(execution?.status||preview?.status||status)+'</strong><small>'+safe(state?.message||'Preview backend-only knowledge metadata execution before applying source status or collection changes.')+'</small></div>'+
+      '<div class="context-correction-plan-actions"><button type="button" data-correction-knowledge-execution="preview" '+(!canPreview?'disabled':'')+'>Preview knowledge execution</button><button type="button" data-correction-knowledge-execution="execute" '+(!canExecute?'disabled':'')+'>Apply metadata repair</button></div>'+
+      '<div class="context-correction-knowledge-execution-checks">'+(checks.length?checks.map((check)=>
+        '<article data-check-status="'+safe(check.status||'pending')+'"><strong>'+safe(check.id||'check')+'</strong><p>'+safe(check.label||'Knowledge execution check')+'</p></article>'
+      ).join(''):'<article><strong>No knowledge execution preview yet</strong><p>Record a knowledge source model, then preview backend-only metadata execution. Document text remains private.</p></article>')+'</div>'+
+      '<div class="context-correction-knowledge-execution-results">'+(results.length?results.map((result)=>
+        '<article><strong>'+safe(result.source_id||'source')+' '+safe(result.status||'result')+'</strong><small>source_mutation_executed:'+safe(Boolean(result.source_mutation_executed))+' / raw_text_included:'+safe(Boolean(result.raw_text_included))+' / rollback:'+safe(result.rollback_hint||'captured metadata')+'</small></article>'
+      ).join(''):updates.length?updates.map((update)=>
+        '<article><strong>'+safe(update.source_id||'source')+'</strong><small>status:'+safe(update.proposed_status||'review-required')+' / collection:'+safe(update.proposed_collection_id||'unchanged')+' / raw_text_included:'+safe(Boolean(update.raw_text_included))+'</small></article>'
+      ).join(''):'')+'</div>'+
+      (preview&&!preview.supported?'<small>Blocked: '+safe(preview.blocked_reason||'unsupported knowledge execution target')+'</small>':'')+
+      '<small class="context-correction-review-policy">backend_only_execution:true / preview_required:true / execute_source_mutation_required:true / document_text_stored:false / public_frontend_authority:false / no_paid_routes_started:true</small>'+
+    '</div>';
+  }
   function adapterDraftHtml(){
     const state=readAdapterState();
     const applyState=readApplyState();
@@ -1111,6 +1254,7 @@
       executionGateHtml()+
       rollbackGateHtml()+
       knowledgeSourceModelHtml()+
+      knowledgeExecutionGateHtml()+
       '<small class="context-correction-review-policy">execution_allowed:false / source_mutation_executed:false / public_frontend_authority:false / provider_secrets_stored:false</small>'+
     '</div>';
   }
@@ -1264,10 +1408,17 @@
     if(action==='preview')previewKnowledgeSourceModel();
     if(action==='record')recordKnowledgeSourceModel();
   });
-  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
+  document.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-correction-knowledge-execution]');
+    if(!button)return;
+    const action=button.dataset.correctionKnowledgeExecution;
+    if(action==='preview')previewKnowledgeExecution();
+    if(action==='execute')executeKnowledgeExecution();
+  });
+  ['mmir-context-corrections-updated','mmir-context-correction-sync-updated','mmir-context-correction-review-updated','mmir-context-correction-plan-updated','mmir-context-correction-apply-updated','mmir-context-correction-adapter-updated','mmir-context-correction-commit-updated','mmir-context-correction-execution-updated','mmir-context-correction-rollback-updated','mmir-context-correction-knowledge-source-model-updated','mmir-context-correction-knowledge-execution-updated','mmir-backend-profiles-updated','mmir-managed-session-updated','mmir-progress-dashboard-rendered','toggle'].forEach((eventName)=>{
     window.addEventListener(eventName,()=>window.setTimeout(render,0));
   });
   document.addEventListener('DOMContentLoaded',()=>window.setTimeout(render,0));
   window.setTimeout(render,800);
-  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readExecutionState,readRollbackState};
+  window.MimirContextCorrectionSync={syncPreview,checkRoute,syncNow,deferSync,loadReviewQueue,createRemediationPlan,approvePlan,deferPlan,applyRemediationStep,prepareRemediationAdapter,previewRemediationCommit,commitRemediationAdapter,previewKnowledgeSourceModel,recordKnowledgeSourceModel,previewKnowledgeExecution,executeKnowledgeExecution,previewRemediationExecution,executeRemediationCommit,previewRemediationRollback,applyRemediationRollback,readSyncState,readReviewState,readPlanState,readApplyState,readAdapterState,readCommitState,readKnowledgeSourceState,readKnowledgeExecutionState,readExecutionState,readRollbackState};
 })();

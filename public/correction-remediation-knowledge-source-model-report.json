@@ -50,7 +50,7 @@
   },
   "blocked_execution": {
     "targets": ["knowledge-source-mutation", "knowledge-collection-mutation"],
-    "reason": "D242 records the source model only. Actual knowledge mutation stays blocked until a dedicated backend-only execution and rollback gate exists."
+    "reason": "D242 records the source model only. D243 adds the dedicated backend-only execution gate; rollback remains the next protected slice."
   },
   "checks": [
     "knowledge-correction",
@@ -93,8 +93,8 @@
     }
   ],
   "next": {
-    "task": "D243",
-    "label": "Knowledge remediation execution gates",
-    "reason": "Knowledge source models are now recorded. The next slice can add backend-only execution and rollback gates for safe metadata mutation."
+    "task": "D244",
+    "label": "Knowledge remediation rollback gates",
+    "reason": "Knowledge source models and execution gates now exist. The next slice should add rollback gates for safe metadata restoration."
   }
 }

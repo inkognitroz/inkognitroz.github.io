@@ -232,6 +232,9 @@ jobs:
       - name: Smoke-check correction remediation knowledge source model
         run: node scripts/smoke-check-correction-remediation-knowledge-source-model.js
 
+      - name: Smoke-check correction remediation knowledge execution gates
+        run: node scripts/smoke-check-correction-remediation-knowledge-execution-gates.js
+
       - name: Smoke-check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
 
