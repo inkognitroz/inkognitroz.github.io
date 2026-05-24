@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply MMIR mobile chat viewport hotfix
+      - name: Apply MMIR mobile chat viewport and active-node cache hotfix
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -40,6 +40,7 @@ jobs:
           html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260524-mobile-sticky-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260524-mobile-sticky-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g, './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/active-node-strip\.js(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/active-node-strip.js?v=20260524-active-node-api-v1');
           fs.writeFileSync(htmlPath, html, 'utf8');
 
           let runtime = fs.readFileSync(runtimePath, 'utf8');
@@ -63,6 +64,7 @@ jobs:
           if (!finalCss.includes('position:sticky') || !finalCss.includes('scroll-margin-top:96px')) throw new Error('Mobile sticky composer CSS missing');
           if (!finalHtml.includes('mimir-chat-portal.css?v=20260524-mobile-sticky-v1')) throw new Error('CSS cache bust missing');
           if (!finalHtml.includes('chat-runtime.js?v=20260524-mobile-sticky-v1')) throw new Error('Runtime cache bust missing');
+          if (!finalHtml.includes('active-node-strip.js?v=20260524-active-node-api-v1')) throw new Error('Active node strip cache bust missing');
           NODE
       - name: Commit and push hotfix
         run: |
@@ -73,7 +75,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/mmir.html public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/mimir-chat-portal.css
-          git commit -m "fix: stabilize MMIR mobile chat viewport"
+          git commit -m "fix: stabilize MMIR mobile chat and active-node cache"
           git push origin HEAD:main
       - name: Run targeted smoke checks after commit
         continue-on-error: true
