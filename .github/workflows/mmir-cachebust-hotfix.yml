@@ -20,19 +20,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply MMIR platform status cache bust
+      - name: Apply MMIR chat-first landing hotfix
         run: |
           node <<'NODE'
           const fs = require('node:fs');
           const path = 'public/mmir.html';
-          const from = './apps/mimir-chat-portal/platform-status.js?v=20260524-quiet-first-paint-v3';
-          const to = './apps/mimir-chat-portal/platform-status.js?v=20260524-status-static-v1';
-          const source = fs.readFileSync(path, 'utf8');
-          if (!source.includes(from)) {
-            if (source.includes(to)) process.exit(0);
-            throw new Error('MMIR page missing platform-status cache key');
+          let source = fs.readFileSync(path, 'utf8');
+          const chatFirst = `<script data-mimir-chat-first>!function(){function r(){const p=new URLSearchParams(location.search),h=String(location.hash||'').toLowerCase(),ret=p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready');if(ret)return;if(h&&h!=='#mimir-instant-start'&&h!=='#app-factory'&&h!=='#chat')return;if(!document.getElementById('mimir-chat-runtime'))return;if(h!=='#mimir-chat-runtime')location.hash='mimir-chat-runtime'}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(r,120),{once:true}):setTimeout(r,120);addEventListener('load',()=>setTimeout(r,300),{once:true})}()</script>`;
+          if (!source.includes('data-mimir-chat-first')) {
+            const marker = '</script>\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js';
+            if (!source.includes(marker)) throw new Error('MMIR page missing chat script marker');
+            source = source.replace(marker, `</script>\n  ${chatFirst}\n  <script src="./apps/mimir-chat-portal/mimir-chat-portal.js`);
           }
-          fs.writeFileSync(path, source.replace(from, to), 'utf8');
+          source = source.replace(
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-local-probe-v5',
+            './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v2'
+          );
+          fs.writeFileSync(path, source, 'utf8');
           NODE
       - name: Run targeted smoke checks
         run: |
@@ -49,5 +53,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/mmir.html
-          git commit -m "fix: bust MMIR platform status cache"
+          git commit -m "fix: land MMIR first visitors on chat"
           git push origin HEAD:main
