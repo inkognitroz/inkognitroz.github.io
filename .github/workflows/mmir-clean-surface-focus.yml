@@ -1,0 +1,96 @@
+name: MMIR clean surface focus hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/mmir-clean-surface-focus.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mmir-clean-surface-focus
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply clean chat surface focus patch
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          function read(path) {
+            return fs.readFileSync(path, 'utf8');
+          }
+
+          function write(path, value) {
+            fs.writeFileSync(path, value);
+          }
+
+          function replaceOrFail(path, before, after, label) {
+            const source = read(path);
+            if (source.includes(after)) return;
+            if (!source.includes(before)) throw new Error(`${label} not found in ${path}`);
+            write(path, source.replace(before, after));
+          }
+
+          const portalPath = 'public/apps/mimir-chat-portal/mimir-chat-portal.css';
+          const runtimeCssPath = 'public/apps/mimir-chat-portal/chat-runtime.css';
+          const runtimeFixPath = 'public/apps/mimir-chat-portal/runtime-controls-fix.js';
+          const mobileJourneyPath = 'scripts/smoke-check-mobile-first-chat-journey.js';
+
+          const oldPortal = `body.mimir-public-chat{background:#fff;color:#0f172a}body.mimir-public-chat .mimir-topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);border-bottom:1px solid #e5e7eb}body.mimir-public-chat .mimir-topbar nav>a:nth-of-type(n+5){display:none}body.mimir-public-chat .mimir-chat-main{width:min(960px,calc(100% - 32px));min-height:calc(100vh - 4.75rem);align-content:start;padding:clamp(1rem,5vh,4rem) 0 2rem}body.mimir-public-chat .mimir-chat-center{gap:.72rem;overflow:visible}body.mimir-public-chat .mimir-greeting{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}body.mimir-public-chat .mimir-composer{order:1;width:min(820px,100%);margin:0 auto;padding:.75rem;display:grid;border-radius:18px;overflow:hidden}body.mimir-public-chat .mimir-composer textarea{min-height:6rem}body.mimir-public-chat #mmir-active-nodes-bar,body.mimir-public-chat .mimir-chat-center>.quick-suggestions,body.mimir-chat-first #mimir-instant-start:not(:target),body.mimir-chat-first #growth-demo:not(:target),body.mimir-chat-first #mimir-readiness-rail,body.mimir-chat-first #activation-closure-strip,body.mimir-chat-first #first-screen-starter-funnel,body.mimir-chat-first #activation-cockpit,body.mimir-chat-first #use-case-templates,body.mimir-chat-first #free-value-loops,body.mimir-chat-first #first-run-onboarding,body.mimir-chat-first:not(.mimir-has-chat) .mimir-chat-main>details:not(:target),body.mimir-chat-first #composer-new-chat,body.mimir-chat-first [data-chat-mode="boost"],body.mimir-chat-first [data-chat-mode="super"],body.mimir-chat-first [data-chat-mode="vision"],body.mimir-chat-first #composer-action-feedback,body.mimir-chat-first .composer-context{display:none!important}body.mimir-has-chat #mimir-chat-runtime{order:2}body.mimir-has-chat .mimir-composer{order:3;position:sticky;bottom:calc(.85rem + env(safe-area-inset-bottom))}@media(max-width:720px){body.mimir-public-chat .mimir-chat-main{width:100%;padding:.8rem .85rem calc(1rem + env(safe-area-inset-bottom))}body.mimir-public-chat .mimir-composer textarea{min-height:4.75rem}}`;
+          const newPortal = `body.mimir-public-chat{background:#fff;color:#0f172a}.mimir-public-chat .mimir-topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);border-bottom:1px solid #e5e7eb}.mimir-public-chat .mimir-topbar nav>a:nth-of-type(n+5){display:none}.mimir-public-chat .mimir-chat-main{width:min(960px,calc(100% - 32px));min-height:calc(100vh - 4.75rem);align-content:start;padding:clamp(1rem,5vh,4rem) 0 2rem}.mimir-public-chat .mimir-greeting{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.mimir-public-chat .mimir-composer{order:1;width:min(820px,100%);margin:0 auto;padding:.75rem;display:grid;border-radius:18px;overflow:hidden}.mimir-public-chat .mimir-composer textarea{min-height:6rem}.mimir-public-chat :is(#mmir-active-nodes-bar,.mimir-chat-center>.quick-suggestions,.mimir-chat-main>details:not(:target)),.mimir-chat-first :is(#mimir-instant-start:not(:target),#growth-demo:not(:target),#mimir-readiness-rail,#activation-closure-strip,#first-screen-starter-funnel,#activation-cockpit,#use-case-templates,#free-value-loops,#first-run-onboarding,#composer-new-chat,[data-chat-mode="boost"],[data-chat-mode="super"],[data-chat-mode="vision"],#composer-action-feedback,.composer-context){display:none!important}body.mimir-has-chat #mimir-chat-runtime{order:2}body.mimir-has-chat .mimir-composer{order:3;position:sticky;bottom:calc(.85rem + env(safe-area-inset-bottom))}@media(max-width:720px){.mimir-public-chat .mimir-chat-main{width:100%;padding:.8rem .85rem calc(1rem + env(safe-area-inset-bottom))}.mimir-public-chat .mimir-composer textarea{min-height:4.75rem}}`;
+          replaceOrFail(portalPath, oldPortal, newPortal, 'clean portal CSS block');
+
+          const oldRuntimeCss = `body.mimir-public-chat .mimir-chat-runtime{order:3;width:min(820px,100%);margin:.2rem auto 0}body.mimir-public-chat .runtime-toolbar,body.mimir-public-chat .runtime-live-proof,body.mimir-public-chat .runtime-proof-rail,body.mimir-public-chat .runtime-proof-actions,body.mimir-public-chat .runtime-message-actions,body.mimir-public-chat .runtime-answer-context-receipt,body.mimir-public-chat .runtime-message-action-status,body.mimir-chat-first #runtime-context-controls,body.mimir-chat-first .runtime-model-helper,body.mimir-chat-first #runtime-resource-chip{display:none!important}body.mimir-public-chat .composer-mode-dock{position:static;display:grid;grid-template-areas:"tools live";grid-template-columns:auto minmax(0,1fr);border-top:1px solid #e5e7eb;padding:.55rem .3rem .3rem}body.mimir-public-chat .composer-tool-cluster,body.mimir-public-chat .composer-live-cluster{flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}body.mimir-public-chat .composer-live-cluster{justify-content:flex-end}body.mimir-public-chat #runtime-model-chip{max-width:min(230px,46vw)}body.mimir-public-chat .composer-bar{border-top:0;display:flex;justify-content:flex-end}body.mimir-public-chat .composer-actions{display:flex;width:auto}body.mimir-public-chat .composer-actions .btn,body.mimir-public-chat .composer-actions #primary-chat-link{width:44px;min-width:44px;min-height:44px;padding:0}body.mimir-has-chat .mimir-chat-runtime{order:2}@media(max-width:720px){body.mimir-public-chat .composer-mode-dock{grid-template-areas:"tools live";grid-template-columns:auto minmax(0,1fr)}}`;
+          const newRuntimeCss = `.mimir-public-chat .mimir-chat-runtime{order:3;width:min(820px,100%);margin:.2rem auto 0}.mimir-public-chat :is(.runtime-toolbar,.runtime-live-proof,.runtime-proof-rail,.runtime-proof-actions,.runtime-message-actions,.runtime-answer-context-receipt,.runtime-message-action-status,#runtime-resource-chip),.mimir-chat-first :is(#runtime-context-controls,.runtime-model-helper){display:none!important}.mimir-public-chat .composer-mode-dock{position:static;display:grid;grid-template-areas:"tools live";grid-template-columns:auto minmax(0,1fr);border-top:1px solid #e5e7eb;padding:.55rem .3rem .3rem}.mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}.mimir-public-chat .composer-live-cluster{justify-content:flex-end}.mimir-public-chat #runtime-model-chip{max-width:min(230px,46vw)}.mimir-public-chat .composer-bar{border-top:0;display:flex;justify-content:flex-end}.mimir-public-chat .composer-actions{display:flex;width:auto}.mimir-public-chat .composer-actions :is(.btn,#primary-chat-link){width:44px;min-width:44px;min-height:44px;padding:0}body.mimir-has-chat .mimir-chat-runtime{order:2}@media(max-width:720px){.mimir-public-chat .composer-mode-dock{grid-template-areas:"tools live";grid-template-columns:auto minmax(0,1fr)}}`;
+          replaceOrFail(runtimeCssPath, oldRuntimeCss, newRuntimeCss, 'clean runtime CSS block');
+
+          let runtimeFix = read(runtimeFixPath);
+          if (!runtimeFix.includes('function openHash()')) {
+            runtimeFix = runtimeFix.replace(
+              `function openTarget(t){const n=normalizeTarget(t);if((t===L||t===C||n===L)&&w.MimirBackendProfiles?.ensureFreeLocalProfile)w.MimirBackendProfiles.ensureFreeLocalProfile();const f=()=>openEl(q(t)||q(n));if(!f()&&w.MimirLoadDeferred)w.MimirLoadDeferred().then(f)}\nfunction focusChatTarget()`,
+              `function openTarget(t){const n=normalizeTarget(t);if((t===L||t===C||n===L)&&w.MimirBackendProfiles?.ensureFreeLocalProfile)w.MimirBackendProfiles.ensureFreeLocalProfile();const f=()=>openEl(q(t)||q(n));if(!f()&&w.MimirLoadDeferred)w.MimirLoadDeferred().then(f)}\nfunction openHash(){const h=location.hash;if(h&&h!==P&&h!==R)openTarget(h)}\nfunction focusChatTarget()`
+            );
+          }
+          runtimeFix = runtimeFix.replace(
+            `function run(){cleanShell();fixSend();label();markMobileFirstChatReady();bindPrimaryAnchors()}\nd.readyState==='loading'?d.addEventListener('DOMContentLoaded',run):run();d.addEventListener('click',handleMobileTap,true);w.addEventListener('load',run,{once:true});`,
+            `function run(){cleanShell();fixSend();label();markMobileFirstChatReady();bindPrimaryAnchors();openHash()}\nd.readyState==='loading'?d.addEventListener('DOMContentLoaded',run):run();d.addEventListener('click',handleMobileTap,true);w.addEventListener('hashchange',openHash);w.addEventListener('load',run,{once:true});`
+          );
+          if (!runtimeFix.includes('openHash')) throw new Error('runtime hash opener was not installed');
+          write(runtimeFixPath, runtimeFix);
+
+          const oldKeyLine = `requireIncludes(mmir, 'runtime-controls-fix.js?v=20260524-first-chat-p0-v1', 'Runtime control fix must remain in the critical shell with a fresh first-chat cache key.');`;
+          const newKeyLine = `requireIncludes(mmir, 'runtime-controls-fix.js?v=20260525-clean-shell-guard-v1', 'Runtime control fix must remain in the critical shell with a fresh clean-shell cache key.');`;
+          replaceOrFail(mobileJourneyPath, oldKeyLine, newKeyLine, 'mobile first-chat runtime key assertion');
+          NODE
+      - name: Verify clean shell gates
+        run: |
+          node --check public/apps/mimir-chat-portal/runtime-controls-fix.js
+          node scripts/smoke-check-performance-budget.js
+          node scripts/smoke-check-frontpage-chat-usability.js
+          node scripts/smoke-check-mobile-chat.js
+          node scripts/smoke-check-mobile-first-chat-journey.js
+          node scripts/smoke-check-user-journeys.js
+          node scripts/smoke-check-first-journey-mock-local.js
+          node scripts/smoke-check-launch-progress-dashboard.js
+          node scripts/smoke-check-visible-control-dead-ends.js
+          node scripts/smoke-check-first-screen-visual-qa.js
+          node scripts/smoke-check-domain-availability-watch.js
+      - name: Commit clean surface focus patch
+        run: |
+          if git diff --quiet; then
+            echo "No clean surface focus changes needed."
+            exit 0
+          fi
+          git config user.name "mmir-codex-agent"
+          git config user.email "mmir-codex-agent@users.noreply.github.com"
+          git add public/apps/mimir-chat-portal/chat-runtime.css public/apps/mimir-chat-portal/mimir-chat-portal.css public/apps/mimir-chat-portal/runtime-controls-fix.js scripts/smoke-check-mobile-first-chat-journey.js
+          git commit -m "fix: keep MMIR clean chat surface focused"
+          git push
