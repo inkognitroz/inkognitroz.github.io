@@ -832,6 +832,12 @@ function buildLaunchProgress() {
     last_green_evidence: [
       {
         repo: 'inkognitroz.github.io',
+        commit: '3c247c1',
+        label: 'Model picker empty-result recovery',
+        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
         commit: 'f4e8196',
         label: 'Desktop model picker search focus',
         result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
