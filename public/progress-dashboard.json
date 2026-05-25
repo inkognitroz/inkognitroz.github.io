@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T12:22:27.447Z",
+  "updated_at": "2026-05-25T13:05:30.972Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 288,
+    "total": 289,
     "done": 51,
-    "beta": 212,
+    "beta": 213,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1118,9 +1118,9 @@
       },
       {
         "phase": "Chat UX / Activation",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1381,6 +1381,12 @@
         "label": "Plus opens useful chat tools",
         "status": "beta",
         "evidence": "D288 turns the composer plus into a compact tools drawer for models, local install, knowledge, new chat, voice and settings, while preserving no-spend and fallback model-picker behavior."
+      },
+      {
+        "id": "composer-quick-chat-now",
+        "label": "Plus drawer can start useful chat",
+        "status": "beta",
+        "evidence": "D289 adds Ready now route status and Chat now to the quick actions drawer, so opening tools still gives an automatic free first-value path."
       },
       {
         "id": "local-node-package",
@@ -2309,7 +2315,7 @@
   "composer_quick_actions_report": {
     "version": 1,
     "title": "Composer Quick Actions Drawer",
-    "scope": "D288 Open WebUI-style composer plus menu",
+    "scope": "D288-D289 Open WebUI-style composer plus menu and ready action",
     "status": "beta",
     "principle": "The first chat surface keeps one calm plus button while useful model, node, knowledge, voice, settings and reset actions stay one click away.",
     "public_repo_rule": "Public-safe UI evidence only. No prompts, responses, cookies, provider keys, pairing tokens, billing data or private node telemetry.",
@@ -2321,7 +2327,36 @@
         "evidence": [
           "MimirComposerQuickActions",
           "stopImmediatePropagation",
-          "composer-quick-actions"
+          "composer-quick-actions",
+          "renderMenuContent",
+          "#composer-add-model"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "composer-quick-status",
+        "selector": ".composer-quick-status",
+        "expected": "Shows the current selected model, route/device summary and no-paid-route boundary before the action buttons.",
+        "evidence": [
+          "composer-quick-status",
+          "selectedModelLabel",
+          "resourceSummary",
+          "escapeHtml(model)",
+          "no paid route"
+        ],
+        "status": "ready",
+        "no_paid_routes_started": true
+      },
+      {
+        "id": "composer-quick-chat-now",
+        "selector": "[data-composer-quick-action=\"chat-now\"]",
+        "expected": "Starts the safest free chat route immediately and seeds a useful prompt only when the composer is empty.",
+        "evidence": [
+          "data-composer-quick-action=\"chat-now\"",
+          "function chatNow()",
+          "Start the safest free MMIR chat now.",
+          "primary-chat-link"
         ],
         "status": "ready",
         "no_paid_routes_started": true
@@ -10609,6 +10644,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer plus button now opens an Open WebUI-style quick actions drawer for models, local node install, knowledge, new chat, voice and settings with no hidden spend.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D289",
+      "phase": "Chat UX / Activation",
+      "priority": "P0",
+      "work_package": "Quick actions ready-state and Chat now",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a Ready now status line and primary Chat now action to the composer plus drawer, using the safest free route and seeding a useful prompt only when the composer is empty",
+      "best_practice": "If a new user opens tools before typing, MMIR should still show immediate value instead of making setup feel mandatory",
+      "done_when": "Smoke gates prove the drawer exposes selected model/resource/no-paid-route status, Chat now starts through the existing guarded send path, and all setup actions remain optional",
+      "covers": "chat, activation, open-webui-parity, first-value, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer quick actions drawer now leads with Ready now status and a Chat now action that seeds the safest free prompt only when empty.",
       "estimate": "Verify + polish"
     }
   ]

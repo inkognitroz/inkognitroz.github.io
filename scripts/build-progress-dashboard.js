@@ -273,7 +273,8 @@ const overrides = new Map([
   ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }],
   ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }],
   ['D287', { status: 'beta', evidence: 'Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.' }],
-  ['D288', { status: 'beta', evidence: 'The composer plus button now opens an Open WebUI-style quick actions drawer for models, local node install, knowledge, new chat, voice and settings with no hidden spend.' }]
+  ['D288', { status: 'beta', evidence: 'The composer plus button now opens an Open WebUI-style quick actions drawer for models, local node install, knowledge, new chat, voice and settings with no hidden spend.' }],
+  ['D289', { status: 'beta', evidence: 'The composer quick actions drawer now leads with Ready now status and a Chat now action that seeds the safest free prompt only when empty.' }]
 ]);
 
 const repoMeta = [
@@ -750,6 +751,12 @@ function buildLaunchProgress() {
       label: 'Plus opens useful chat tools',
       status: 'beta',
       evidence: 'D288 turns the composer plus into a compact tools drawer for models, local install, knowledge, new chat, voice and settings, while preserving no-spend and fallback model-picker behavior.'
+    },
+    {
+      id: 'composer-quick-chat-now',
+      label: 'Plus drawer can start useful chat',
+      status: 'beta',
+      evidence: 'D289 adds Ready now route status and Chat now to the quick actions drawer, so opening tools still gives an automatic free first-value path.'
     },
     {
       id: 'local-node-package',

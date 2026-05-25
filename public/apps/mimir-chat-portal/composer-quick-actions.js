@@ -6,6 +6,7 @@
   let menu=null;
 
   function q(selector){return d.querySelector(selector);}
+  function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function workspaceId(){return localStorage.getItem(WORKSPACE_KEY)||'personal';}
   function setFeedback(message,state){
     const feedback=q('#composer-action-feedback');
@@ -64,6 +65,30 @@
     w.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
     return target;
   }
+  function selectedModelLabel(){
+    const select=q('#runtime-model');
+    const label=String(select?.selectedOptions?.[0]?.textContent||q('#runtime-model-chip')?.textContent||'MMIR Guide').trim();
+    return label.replace(/\s+-\s+(live|ready now|browser helper|active in browser).*$/i,'').slice(0,52)||'MMIR Guide';
+  }
+  function resourceSummary(){
+    const value=String(q('#runtime-resource-chip')?.textContent||'Free browser route').trim();
+    return value.replace(/\s+/g,' ').slice(0,48)||'Free browser route';
+  }
+  function renderMenuContent(){
+    const model=selectedModelLabel();
+    const resource=resourceSummary();
+    return ''+
+      '<div class="composer-quick-status" role="status" aria-live="polite">'+
+        '<strong>Ready now</strong><span>'+escapeHtml(model)+' / '+escapeHtml(resource)+' / no paid route</span>'+
+      '</div>'+
+      '<button type="button" role="menuitem" class="composer-quick-primary" data-composer-quick-action="chat-now"><span>Chat now</span><small>Start with the safest free route</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Free, live and local routes</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="install-node"><span>Install node</span><small>Mac, Windows, Linux or Pi</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="knowledge"><span>Knowledge</span><small>Add files or sources locally</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="new-chat"><span>New chat</span><small>Reset local conversation</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="voice"><span>Voice</span><small>Browser-local speech tools</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="settings"><span>Settings</span><small>Temperature and context</small></button>';
+  }
   function ensureMenu(){
     if(menu)return menu;
     const form=q('.mimir-composer');
@@ -74,13 +99,7 @@
     menu.hidden=true;
     menu.setAttribute('role','menu');
     menu.setAttribute('aria-label','Composer quick actions');
-    menu.innerHTML=''+
-      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Free, live and local routes</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="install-node"><span>Install node</span><small>Mac, Windows, Linux or Pi</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="knowledge"><span>Knowledge</span><small>Add files or sources locally</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="new-chat"><span>New chat</span><small>Reset local conversation</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="voice"><span>Voice</span><small>Browser-local speech tools</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="settings"><span>Settings</span><small>Temperature and context</small></button>';
+    menu.innerHTML=renderMenuContent();
     const dock=q('#composer-mode-dock');
     if(dock&&dock.nextSibling)form.insertBefore(menu,dock.nextSibling);
     else if(dock)form.appendChild(menu);
@@ -113,8 +132,9 @@
     el.hidden=!open;
     setExpanded(open);
     if(open){
+      el.innerHTML=renderMenuContent();
       w.MimirComposerModelPicker?.close?.();
-      setFeedback('Tools opened. Choose models, local node, knowledge, voice, settings or a new chat.','ready');
+      setFeedback('Tools opened. Chat now uses the safest free route; setup stays optional.','ready');
       if(!(w.matchMedia&&w.matchMedia('(pointer: coarse)').matches)){
         setTimeout(()=>el.querySelector('[data-composer-quick-action]')?.focus({preventScroll:true}),0);
       }
@@ -140,7 +160,22 @@
     focusPrompt(true);
     setFeedback('New local chat ready. Free guide/model routes stay available.','ready');
   }
+  function chatNow(){
+    closeMenu(false);
+    const prompt=q('#mimir-prompt');
+    if(prompt&&!String(prompt.value||'').trim()){
+      prompt.value='Start the safest free MMIR chat now. Explain what is active and one useful next action.';
+      prompt.dispatchEvent(new Event('input',{bubbles:true}));
+      prompt.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    setFeedback('Starting chat with the safest free route.','ready');
+    setTimeout(()=>q('#primary-chat-link')?.click(),80);
+  }
   function runQuickAction(action){
+    if(action==='chat-now'){
+      chatNow();
+      return;
+    }
     if(action==='models'){
       openModels();
       return;

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "Composer Quick Actions Drawer",
-  "scope": "D288 Open WebUI-style composer plus menu",
+  "scope": "D288-D289 Open WebUI-style composer plus menu and ready action",
   "status": "beta",
   "principle": "The first chat surface keeps one calm plus button while useful model, node, knowledge, voice, settings and reset actions stay one click away.",
   "public_repo_rule": "Public-safe UI evidence only. No prompts, responses, cookies, provider keys, pairing tokens, billing data or private node telemetry.",
@@ -10,7 +10,23 @@
       "id": "composer-plus-tools",
       "selector": "#composer-add-model",
       "expected": "Opens a compact tools drawer after deferred assets load; before that it still falls back to the model picker.",
-      "evidence": ["MimirComposerQuickActions", "stopImmediatePropagation", "composer-quick-actions"],
+      "evidence": ["MimirComposerQuickActions", "stopImmediatePropagation", "composer-quick-actions", "renderMenuContent", "#composer-add-model"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-status",
+      "selector": ".composer-quick-status",
+      "expected": "Shows the current selected model, route/device summary and no-paid-route boundary before the action buttons.",
+      "evidence": ["composer-quick-status", "selectedModelLabel", "resourceSummary", "escapeHtml(model)", "no paid route"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-chat-now",
+      "selector": "[data-composer-quick-action=\"chat-now\"]",
+      "expected": "Starts the safest free chat route immediately and seeds a useful prompt only when the composer is empty.",
+      "evidence": ["data-composer-quick-action=\"chat-now\"", "function chatNow()", "Start the safest free MMIR chat now.", "primary-chat-link"],
       "status": "ready",
       "no_paid_routes_started": true
     },

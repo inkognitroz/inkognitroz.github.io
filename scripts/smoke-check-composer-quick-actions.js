@@ -66,6 +66,14 @@ for (const control of report.controls || []) {
 
 for (const needle of [
   'composer-quick-actions',
+  'composer-quick-status',
+  'selectedModelLabel',
+  'resourceSummary',
+  'escapeHtml(model)',
+  'escapeHtml(resource)',
+  'Ready now',
+  'no paid route',
+  'data-composer-quick-action="chat-now"',
   'data-composer-quick-action="models"',
   'data-composer-quick-action="install-node"',
   'data-composer-quick-action="knowledge"',
@@ -74,6 +82,9 @@ for (const needle of [
   'data-composer-quick-action="settings"',
   'event.stopImmediatePropagation()',
   'writeRepairResume',
+  'function chatNow()',
+  'Start the safest free MMIR chat now.',
+  'primary-chat-link',
   'mmir-local-connector-install.html?source=composer-quick-actions',
   "openDeferredPanel('#knowledge-panel')",
   "q('#composer-new-chat')",
@@ -92,6 +103,13 @@ for (const needle of [
   '.composer-quick-actions',
   '.composer-quick-actions[hidden]',
   '.composer-quick-actions button',
+  '.composer-quick-status',
+  '.composer-quick-status span',
+  '.composer-quick-actions .composer-quick-primary',
+  'body.mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock',
+  'body.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster',
+  'body.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model)',
+  'body.mimir-public-chat:not(.mimir-has-chat) #composer-add-model',
   '.composer-quick-actions button:hover',
   '.composer-quick-actions small',
   '@media (max-width: 720px)'
@@ -100,8 +118,8 @@ for (const needle of [
 }
 
 for (const needle of [
-  'composer-quick-actions.css?v=20260525-quick-actions-v1',
-  'composer-quick-actions.js?v=20260525-quick-actions-v1'
+  'composer-quick-actions.css?v=20260525-quick-actions-v2',
+  'composer-quick-actions.js?v=20260525-quick-actions-v2'
 ]) {
   requireIncludes(html, needle, `MMIR page must load quick-actions asset: ${needle}`);
 }
@@ -116,9 +134,12 @@ for (const needle of [
 for (const needle of [
   '"id": "composer-quick-actions"',
   '#composer-quick-actions',
+  '[data-composer-quick-action=\\"chat-now\\"]',
   '[data-composer-quick-action=\\"models\\"]',
   'MimirComposerQuickActions',
+  'renderMenuContent',
   'runQuickAction',
+  'function chatNow()',
   'mmir-local-connector-install.html?source=composer-quick-actions',
   "openDeferredPanel('#knowledge-panel')",
   "openDeferredPanel('#runtime-settings-panel')",
@@ -128,8 +149,11 @@ for (const needle of [
 }
 
 requireIncludes(text(files.visualQa), 'D288 composer quick actions drawer', 'Visual QA report must mention D288 quick actions.');
+requireIncludes(text(files.visualQa), 'D289 composer quick Chat now status', 'Visual QA report must mention D289 quick Chat now status.');
 requireIncludes(text(files.backlog), '| D288 | Chat UX / Composer | P0 | Open WebUI-style plus quick actions drawer |', 'Backlog must include D288.');
+requireIncludes(text(files.backlog), '| D289 | Chat UX / Activation | P0 | Quick actions ready-state and Chat now |', 'Backlog must include D289.');
 requireIncludes(text(files.log), 'D288 is now beta', 'Implementation log must include D288.');
+requireIncludes(text(files.log), 'D289 is now beta', 'Implementation log must include D289.');
 requireIncludes(text(files.buildDashboard), 'composerQuickActionsReportPath', 'Progress dashboard build must read D288 report.');
 requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-composer-quick-actions.js', 'GitHub workflows must run D288 quick-actions smoke gate.');
 
@@ -138,8 +162,13 @@ if (!progress.composer_quick_actions_report || progress.composer_quick_actions_r
 }
 const d288 = (progress.tasks || []).find((task) => task.seq === 'D288');
 if (!d288 || d288.status !== 'beta') fail('Progress dashboard task D288 must be beta.');
+const d289 = (progress.tasks || []).find((task) => task.seq === 'D289');
+if (!d289 || d289.status !== 'beta') fail('Progress dashboard task D289 must be beta.');
 if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-actions-drawer')) {
   fail('Launch progress must expose the quick actions drawer checkpoint.');
+}
+if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-chat-now')) {
+  fail('Launch progress must expose the quick Chat now checkpoint.');
 }
 
 if (!process.exitCode) {

@@ -70,6 +70,11 @@
       "id": "D288 composer quick actions drawer",
       "status": "guarded",
       "evidence": "Plus opens a compact Open WebUI-style tools drawer for model, node, knowledge, new chat, voice and settings actions with mobile-safe wrapping."
+    },
+    {
+      "id": "D289 composer quick Chat now status",
+      "status": "guarded",
+      "evidence": "Clean first paint keeps only the subtle plus entry visible; the drawer shows Ready now, selected route, no-paid-route boundary and a primary Chat now action before setup-oriented tools."
     }
   ],
   "known_limitations": [
