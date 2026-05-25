@@ -28,13 +28,6 @@
       "description": "Open local node setup.",
       "url": "./mmir.html#local-connector",
       "icons": [{ "src": "./assets/mmir-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Progress",
-      "short_name": "Progress",
-      "description": "Open MMIR delivery dashboard.",
-      "url": "./mmir.html#progress-dashboard",
-      "icons": [{ "src": "./assets/mmir-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
     }
   ],
   "icons": [

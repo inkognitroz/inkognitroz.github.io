@@ -163,9 +163,9 @@
     }
   }
   function openAdmin(){
-    const target=document.getElementById('admin-governance')||document.getElementById('progress-dashboard');
+    const target=document.getElementById('admin-governance')||document.getElementById('platform-status');
     if(target)target.open=true;
-    location.hash=target?.id||'progress-dashboard';
+    location.hash=target?.id||'platform-status';
     setStatus('Opened governance panel.','ready');
   }
   function selectOptions(values,current){

@@ -237,8 +237,8 @@
     lastActivationReplaySignature=signature;
     banner.hidden=false;
     banner.dataset.state=String(replay.state||'demo');
-    const target=String(replay.next_target||'#progress-dashboard');
-    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#progress-dashboard" data-activation-replay-open>Open replay</a></div>';
+    const target=String(replay.next_target||'#platform-status');
+    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#platform-status" data-activation-replay-open>Open replay</a></div>';
     banner.querySelector('[data-activation-replay-jump]')?.addEventListener('click',(event)=>{
       if(target.startsWith('#')){
         event.preventDefault();
@@ -253,7 +253,7 @@
     });
     banner.querySelector('[data-activation-replay-open]')?.addEventListener('click',(event)=>{
       event.preventDefault();
-      openPanel('#progress-dashboard');
+      openPanel('#platform-status');
     });
   }
 

@@ -21,7 +21,7 @@
   </style>
   <script>
     (function(){
-      var allowed = new Set(['#connect-options','#mimir-instant-start','#mimir-chat-portal','#node-dashboard','#model-library','#progress-dashboard','#platform-status','#pwa-install','#identity-orgs']);
+      var allowed = new Set(['#connect-options','#mimir-instant-start','#mimir-chat-portal','#node-dashboard','#model-library','#platform-status','#pwa-install','#identity-orgs']);
       var legacy = new Set(['#app-factory','#apps','#roadmap','#about']);
       var target = new URL('./mmir.html', window.location.href);
       target.hash = allowed.has(window.location.hash) && !legacy.has(window.location.hash) ? window.location.hash : '#mimir-instant-start';

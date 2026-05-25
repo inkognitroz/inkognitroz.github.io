@@ -375,9 +375,9 @@
     setStatus('Invite id inserted. Paste the one-time code to accept.','ready');
   }
   function openSharing(){
-    const target=document.getElementById('sharing-center')||document.getElementById('progress-dashboard');
+    const target=document.getElementById('sharing-center')||document.getElementById('platform-status');
     if(target)target.open=true;
-    location.hash=target?.id||'progress-dashboard';
+    location.hash=target?.id||'platform-status';
     setStatus('Opened sharing panel.','ready');
   }
   function bindControls(){

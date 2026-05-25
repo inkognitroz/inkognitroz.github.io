@@ -26,219 +26,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: 24
-      - name: Smoke check static site
-        run: node scripts/smoke-check-pages.js
-      - name: Check MMIR API route manifest
-        run: node scripts/check-api-route-manifest.js
-      - name: Smoke check UI action coverage
-        run: node scripts/smoke-check-ui-actions.js
-      - name: Smoke check mobile chat layout
-        run: node scripts/smoke-check-mobile-chat.js
-      - name: Smoke check mobile first-chat journey
-        run: node scripts/smoke-check-mobile-first-chat-journey.js
-      - name: Smoke check frontpage chat usability
-        run: node scripts/smoke-check-frontpage-chat-usability.js
-      - name: Smoke check performance budget
-        run: node scripts/smoke-check-performance-budget.js
-      - name: Smoke check first journey with mock local connector
-        run: node scripts/smoke-check-first-journey-mock-local.js
-      - name: Smoke check local install return
-        run: node scripts/smoke-check-local-install-return.js
-      - name: Smoke check installer release QA
-        run: node scripts/smoke-check-installer-release-qa.js
-      - name: Smoke check installer-to-live-model proof
-        run: node scripts/smoke-check-installer-to-live-model-proof.js
-      - name: Smoke check free live-route hardening
-        run: node scripts/smoke-check-free-live-route-hardening.js
-      - name: Smoke check no-model dead-end browser gate
-        run: node scripts/smoke-check-no-model-dead-end-browser.js
-      - name: Smoke check first-chat no-model DOM fixture
-        run: node scripts/smoke-check-first-chat-no-model-dom-fixture.js
-      - name: Smoke check no-model visual pass
-        run: node scripts/smoke-check-no-model-visual-pass.js
 
-      - name: Smoke check public no-model deploy verification
-        run: node scripts/smoke-check-public-no-model-deploy-verification.js
+      - name: Check public boundary
+        run: node scripts/check-public-boundary.js
 
-      - name: Smoke check first free chat response QA
-        run: node scripts/smoke-check-first-free-chat-response-qa.js
+      - name: Check public safety
+        run: node scripts/public-safety-audit.js
 
-      - name: Smoke check composer action bar usefulness
-        run: node scripts/smoke-check-composer-action-bar-usefulness.js
+      - name: Check MMIR branding
+        run: node scripts/ensure-mmir-public-branding.js --check
 
-      - name: Smoke check composer action bar visual
-        run: node scripts/smoke-check-composer-action-bar-visual.js
-      - name: Smoke check composer quick actions
-        run: node scripts/smoke-check-composer-quick-actions.js
-      - name: Smoke check composer quick route fixture
-        run: node scripts/smoke-check-composer-quick-route-fixture.js
-      - name: Smoke check composer fallback affordance
-        run: node scripts/smoke-check-composer-fallback-affordance.js
-      - name: Smoke check pre-chat plus survives
-        run: node scripts/smoke-check-prechat-plus-survives.js
-      - name: Smoke check runtime CSS headroom
-        run: node scripts/smoke-check-runtime-css-headroom.js
-      - name: Smoke check early send replay
-        run: node scripts/smoke-check-early-send-replay.js
-      - name: Smoke check message action completeness
-        run: node scripts/smoke-check-message-action-completeness.js
-      - name: Smoke check message action visual
-        run: node scripts/smoke-check-message-action-visual.js
-      - name: Smoke check message action browser fixture
-        run: node scripts/smoke-check-message-action-browser-fixture.js
-      - name: Smoke check message action accessibility
-        run: node scripts/smoke-check-message-action-accessibility.js
-      - name: Smoke check conversation handoff
-        run: node scripts/smoke-check-conversation-handoff.js
-      - name: Smoke check saved chat memory handoff
-        run: node scripts/smoke-check-saved-chat-memory-handoff.js
-      - name: Smoke check promoted context next answer
-        run: node scripts/smoke-check-promoted-context-next-answer.js
-      - name: Smoke check context controls
-        run: node scripts/smoke-check-context-controls.js
-      - name: Smoke check answer context receipt
-        run: node scripts/smoke-check-answer-context-receipt.js
-      - name: Smoke check answer context drill-down
-        run: node scripts/smoke-check-answer-context-drilldown.js
-      - name: Smoke check answer context highlight
-        run: node scripts/smoke-check-answer-context-highlight.js
-      - name: Smoke check answer context source filter
-        run: node scripts/smoke-check-answer-context-source-filter.js
-      - name: Smoke check answer context filter consumption
-        run: node scripts/smoke-check-answer-context-filter-consumption.js
-      - name: Smoke check answer context knowledge source
-        run: node scripts/smoke-check-answer-context-knowledge-source.js
-      - name: Smoke check answer context source correction
-        run: node scripts/smoke-check-answer-context-source-correction.js
-      - name: Smoke check context correction audit
-        run: node scripts/smoke-check-context-correction-audit.js
-      - name: Smoke check context correction retry
-        run: node scripts/smoke-check-context-correction-retry.js
-      - name: Smoke check context correction suggestions
-        run: node scripts/smoke-check-context-correction-suggestions.js
-      - name: Smoke check protected context correction sync
-        run: node scripts/smoke-check-protected-context-correction-sync.js
-      - name: Smoke check protected correction sync UI
-        run: node scripts/smoke-check-protected-correction-sync-ui.js
-      - name: Smoke check protected correction review queue
-        run: node scripts/smoke-check-protected-correction-review-queue.js
-      - name: Smoke check correction remediation plan
-        run: node scripts/smoke-check-correction-remediation-plan.js
-      - name: Smoke check correction remediation apply gates
-        run: node scripts/smoke-check-correction-remediation-apply-gates.js
-      - name: Smoke check correction remediation adapters
-        run: node scripts/smoke-check-correction-remediation-adapters.js
-      - name: Smoke check correction remediation commit policy
-        run: node scripts/smoke-check-correction-remediation-commit-policy.js
-      - name: Smoke check correction remediation execution gates
-        run: node scripts/smoke-check-correction-remediation-execution-gates.js
-      - name: Smoke check correction remediation rollback gates
-        run: node scripts/smoke-check-correction-remediation-rollback-gates.js
-      - name: Smoke check correction remediation knowledge source model
-        run: node scripts/smoke-check-correction-remediation-knowledge-source-model.js
-      - name: Smoke check correction remediation knowledge execution gates
-        run: node scripts/smoke-check-correction-remediation-knowledge-execution-gates.js
-      - name: Smoke check correction remediation knowledge rollback gates
-        run: node scripts/smoke-check-correction-remediation-knowledge-rollback-gates.js
-      - name: Smoke check correction remediation autopilot queue
-        run: node scripts/smoke-check-correction-remediation-autopilot-queue.js
-      - name: Smoke check correction remediation autopilot handoff
-        run: node scripts/smoke-check-correction-remediation-autopilot-handoff.js
-      - name: Smoke check correction remediation autopilot rollback readiness
-        run: node scripts/smoke-check-correction-remediation-autopilot-rollback-readiness.js
-      - name: Smoke check correction remediation autopilot trust timeline
-        run: node scripts/smoke-check-correction-remediation-autopilot-trust-timeline.js
-      - name: Smoke check correction remediation autopilot trust timeline browser QA
-        run: node scripts/smoke-check-correction-remediation-autopilot-trust-timeline-browser-qa.js
-      - name: Smoke check correction remediation autopilot timeline receipts
-        run: node scripts/smoke-check-correction-remediation-autopilot-timeline-receipts.js
-      - name: Smoke check correction remediation autopilot timeline receipts browser QA
-        run: node scripts/smoke-check-correction-remediation-autopilot-timeline-receipts-browser-qa.js
-      - name: Smoke check cross-repo architecture and security review
-        run: node scripts/smoke-check-cross-repo-architecture-security-review.js
-      - name: Smoke check chat-first free activation canary
-        run: node scripts/smoke-check-chat-first-free-activation-canary.js
-      - name: Smoke check smooth active-node chat
-        run: node scripts/smoke-check-chat-smooth-active-nodes.js
-      - name: Smoke check startup free LLM nodes
-        run: node scripts/smoke-check-startup-free-llm-nodes.js
-      - name: Smoke check startup free LLM click fixture
-        run: node scripts/smoke-check-startup-free-llm-click-fixture.js
-      - name: Smoke check local connector auto-probe
-        run: node scripts/smoke-check-local-connector-auto-probe.js
-      - name: Smoke check active node style headroom
-        run: node scripts/smoke-check-active-node-style-headroom.js
-      - name: Smoke check launch progress dashboard
-        run: node scripts/smoke-check-launch-progress-dashboard.js
-      - name: Smoke check activation simulator
-        run: node scripts/smoke-check-activation-simulator.js
-      - name: Smoke check activation replay render
-        run: node scripts/smoke-check-activation-replay-render.js
-      - name: Smoke check activation route map
-        run: node scripts/smoke-check-activation-route-map.js
-      - name: Smoke check activation closure
-        run: node scripts/smoke-check-activation-closure.js
-      - name: Smoke check first screen activation closure
-        run: node scripts/smoke-check-first-screen-activation-closure.js
-      - name: Smoke check device starter recommendation
-        run: node scripts/smoke-check-device-starter-recommendation.js
-      - name: Smoke check recommended starter telemetry
-        run: node scripts/smoke-check-recommended-starter-telemetry.js
-      - name: Smoke check critical shell headroom
-        run: node scripts/smoke-check-critical-shell-headroom.js
-      - name: Smoke check starter to proof funnel
-        run: node scripts/smoke-check-starter-to-proof-funnel.js
-      - name: Smoke check starter funnel continue
-        run: node scripts/smoke-check-starter-funnel-continue.js
-      - name: Smoke check first screen starter funnel
-        run: node scripts/smoke-check-first-screen-starter-funnel.js
-      - name: Smoke check first screen starter funnel continue
-        run: node scripts/smoke-check-first-screen-starter-funnel-continue.js
-      - name: Smoke check recommended starter model focus
-        run: node scripts/smoke-check-recommended-starter-model-focus.js
-      - name: Smoke check recommended starter install handoff
-        run: node scripts/smoke-check-recommended-starter-install-handoff.js
-      - name: Smoke check starter install repair fallback
-        run: node scripts/smoke-check-starter-install-repair-fallback.js
-      - name: Smoke check starter install retry after repair
-        run: node scripts/smoke-check-starter-install-retry-after-repair.js
-      - name: Smoke check starter retry success closure
-        run: node scripts/smoke-check-starter-retry-success-closure.js
-      - name: Smoke check first-answer send handoff
-        run: node scripts/smoke-check-first-answer-send-handoff.js
-      - name: Smoke check first-answer next step
-        run: node scripts/smoke-check-first-answer-next-step.js
-      - name: Smoke check visible-control dead ends
-        run: node scripts/smoke-check-visible-control-dead-ends.js
-      - name: Smoke check critical-shell headroom recovery
-        run: node scripts/smoke-check-critical-shell-headroom-recovery.js
-      - name: Smoke check DOM rendering hardening
-        run: node scripts/smoke-check-dom-rendering-hardening.js
-      - name: Smoke check deploy verification
-        run: node scripts/smoke-check-deploy-verification.js
-      - name: Smoke check domain availability watch
-        run: node scripts/smoke-check-domain-availability-watch.js
-      - name: Smoke check first-screen visual QA
-        run: node scripts/smoke-check-first-screen-visual-qa.js
-      - name: Smoke check composer model picker
-        run: node scripts/smoke-check-composer-model-picker.js
-      - name: Smoke check node tunnel handoff
-        run: node scripts/smoke-check-node-tunnel-handoff.js
-      - name: Smoke check user journeys
-        run: node scripts/smoke-check-user-journeys.js
-      - name: Setup Pages
+      - name: Smoke check public shell
+        run: node scripts/smoke-check-public-shell.js
+
+      - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./public
-          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: public
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}

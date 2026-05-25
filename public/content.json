@@ -138,11 +138,11 @@
     ],
     "dashboards": [
       {
-        "title": "Progress Dashboard",
-        "description": "Public-safe delivery status for MMIR journeys, controls and backlog.",
-        "link": "./mmir.html#progress-dashboard",
+        "title": "Platform Status",
+        "description": "Public-safe status by layer for the site, local node path and protected API boundary.",
+        "link": "./mmir.html#platform-status",
         "badge": "Live",
-        "tags": ["delivery", "roadmap", "status"]
+        "tags": ["status", "public", "safety"]
       }
     ],
     "promptInbox": [
