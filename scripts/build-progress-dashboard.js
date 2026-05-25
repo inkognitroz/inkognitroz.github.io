@@ -267,7 +267,8 @@ const overrides = new Map([
   ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }],
   ['D282', { status: 'beta', evidence: 'The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.' }],
   ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }],
-  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }]
+  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
+  ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }]
 ]);
 
 const repoMeta = [
@@ -710,6 +711,12 @@ function buildLaunchProgress() {
       label: 'Full-project review snapshot is current',
       status: 'beta',
       evidence: 'D284 records the latest public Pages CI, 87 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks.'
+    },
+    {
+      id: 'connect-model-picker-first',
+      label: 'Connect model opens the compact picker first',
+      status: 'beta',
+      evidence: 'D285 routes Connect/Add model through the compact picker before falling back to the model library, while preserving the free local profile and no-spend boundary.'
     },
     {
       id: 'local-node-package',

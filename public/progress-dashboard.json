@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T10:31:37.778Z",
+  "updated_at": "2026-05-25T11:07:09.148Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 284,
+    "total": 285,
     "done": 51,
-    "beta": 208,
+    "beta": 209,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -868,9 +868,9 @@
       },
       {
         "phase": "Chat UX / Model Activation",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1357,6 +1357,12 @@
         "label": "Full-project review snapshot is current",
         "status": "beta",
         "evidence": "D284 records the latest public Pages CI, 87 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks."
+      },
+      {
+        "id": "connect-model-picker-first",
+        "label": "Connect model opens the compact picker first",
+        "status": "beta",
+        "evidence": "D285 routes Connect/Add model through the compact picker before falling back to the model library, while preserving the free local profile and no-spend boundary."
       },
       {
         "id": "local-node-package",
@@ -10323,6 +10329,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D285",
+      "phase": "Chat UX / Model Activation",
+      "priority": "P0",
+      "work_package": "Connect model opens compact picker first",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Route the legacy Connect Model action through the compact composer model picker when available, while preserving a model-library fallback while deferred assets load",
+      "best_practice": "Users should never land in an old configuration-only path when the modern Open WebUI-style picker can show ready/browser/local/installable routes immediately",
+      "done_when": "Visible-control and first-screen smoke gates prove Connect/Add model prepares the free local profile, opens the compact picker first, falls back safely and starts no paid/provider route",
+      "covers": "chat, model-picker, connect-model, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.",
       "estimate": "Verify + polish"
     }
   ]

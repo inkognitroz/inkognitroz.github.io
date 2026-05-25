@@ -51,12 +51,12 @@
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
   function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
-  function openBackendSettings(){
-    const drawer=document.getElementById('model-library');
-    if(drawer){
-      drawer.open=true;
-      drawer.scrollIntoView({block:'start',behavior:'smooth'});
-    }
+  function openModelLibraryFallback(){
+    const drawer=document.getElementById('model-library');if(drawer){drawer.open=true;drawer.scrollIntoView({block:'start',behavior:'smooth'});}
+  }
+  function openBackendSettings(surface){
+    if(surface==='model-picker'&&window.MimirChatRuntimeBridge?.openModelPicker){window.MimirChatRuntimeBridge.openModelPicker();return;}
+    openModelLibraryFallback();
   }
 
   function renderList(){
@@ -144,14 +144,14 @@
     writeProfiles(profiles);
     return profile;
   }
-  function createProfile(){const profile=ensureFreeLocalProfile();setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Run the installer, then Refresh models.'));render();}
-  function ensureFreeLocalProfile(){
+  function createProfile(){const profile=ensureFreeLocalProfile({surface:'model-picker'});setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Pick a free route or run the installer, then Refresh models.'));render();}
+  function ensureFreeLocalProfile(options={}){
     const profile=upsertFreeLocalProfile();
     selectedId=profile.id;
     writeActive(profile.id);
     setStatus('Free local profile is active.');
     render();
-    openBackendSettings();
+    openBackendSettings(options.surface);
     return profile;
   }
   function ensureAutomaticDefaults(){

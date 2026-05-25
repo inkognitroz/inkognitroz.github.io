@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:45:00+02:00",
+  "updated_at": "2026-05-25T12:00:00+02:00",
   "principle": "Every visible MMIR control must either complete a useful free/local action, open the exact next surface, or explain a protected/planned boundary.",
   "public_repo_rule": "Public-safe audit only. It must not contain secrets, user prompts, provider keys, billing configuration or private telemetry.",
   "controls": [
@@ -18,8 +18,8 @@
       "surface": "First screen",
       "selector": "#new-backend",
       "status": "wired",
-      "result": "Creates or reuses the free local-node profile and opens the model library so the user can pick a real free model path.",
-      "source_evidence": ["newBtn.addEventListener('click',createProfile)", "document.getElementById('model-library')"],
+      "result": "Creates or reuses the free local-node profile, opens the compact composer model picker when it is available, and falls back to the model library if deferred assets are still loading.",
+      "source_evidence": ["newBtn.addEventListener('click',createProfile)", "surface:'model-picker'", "MimirChatRuntimeBridge?.openModelPicker", "document.getElementById('model-library')"],
       "no_spend": true
     },
     {

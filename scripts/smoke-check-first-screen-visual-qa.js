@@ -126,6 +126,9 @@ if (mmir.includes('<script src="./apps/mimir-chat-portal/demo-growth.js" defer><
 
 for (const needle of [
   "const drawer=document.getElementById('model-library')",
+  "surface:'model-picker'",
+  'MimirChatRuntimeBridge?.openModelPicker',
+  'openModelLibraryFallback()',
   "newBtn.addEventListener('click',createProfile)",
   'ensureAutomaticDefaults();render();'
 ]) {

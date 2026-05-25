@@ -26,7 +26,7 @@
       "status": "live",
       "user_result": "The + Connect Model controls create or reuse the free local-node profile, make it active and open the composer model picker or model library/setup path instead of a dead configuration stop.",
       "selectors": ["#new-backend", "#composer-add-model", "#composer-model-picker", "#model-library", "#connect-options", "#backend-settings"],
-      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openComposerModelPicker", "MimirComposerModelPicker", "composer-model-picker", "document.getElementById('model-library')", "section.id='connect-options'", "openStarterInstaller", "starter-install-installer-opened", "mmir-local-connector-install.html"]
+      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "surface:'model-picker'", "MimirChatRuntimeBridge?.openModelPicker", "openComposerModelPicker", "MimirComposerModelPicker", "composer-model-picker", "document.getElementById('model-library')", "section.id='connect-options'", "openStarterInstaller", "starter-install-installer-opened", "mmir-local-connector-install.html"]
     },
     {
       "id": "first-run-checklist",

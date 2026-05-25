@@ -68,6 +68,8 @@ for (const control of controls) {
 for (const needle of [
   "openPanel('#model-library')",
   "document.getElementById('model-library')",
+  'MimirChatRuntimeBridge?.openModelPicker',
+  'openModelLibraryFallback',
   "newBtn.addEventListener('click',createProfile)",
   'firstAnswerNextStep',
   'proofRepairActions',

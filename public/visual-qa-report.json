@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23",
+  "updated_at": "2026-05-25",
   "scope": "D202 first-screen visual verification",
   "status": "beta",
   "cost_policy": "free-first; no paid services, provider keys or cloud compute used",
   "public_repo_rule": "Safe for inkognitroz.github.io: no secrets, tokens, provider keys, raw prompts or private node data.",
-  "method": "Deterministic DOM, CSS and action-path checks for the first screen, chat composer, model-library handoff, no-model fallback and mobile layout.",
+  "method": "Deterministic DOM, CSS and action-path checks for the first screen, chat composer, compact model-picker handoff, model-library fallback, no-model fallback and mobile layout.",
   "browser_attempt": {
     "status": "attempted",
     "result": "Local browser inspection was attempted; deterministic CI checks remain the release gate for this slice."
@@ -17,7 +17,7 @@
       "checks": [
         "First screen keeps MMIR identity, Ground Zero card, composer, quick actions and demo path before secondary panels.",
         "Composer has stable width, fixed send control dimensions and a model-connect handoff.",
-        "Model library handoff opens the model library instead of a dead configuration stop."
+        "Connect/Add model prioritizes the compact model picker and keeps the model library as fallback instead of a dead configuration stop."
       ]
     },
     {
@@ -39,7 +39,7 @@
     {
       "id": "connect-model",
       "status": "guarded",
-      "evidence": "new-backend and composer-add-model prepare the free local profile and open model-library."
+      "evidence": "new-backend and composer-add-model prepare the free local profile, open the compact model picker when loaded, and fall back to model-library."
     },
     {
       "id": "demo-mode",
