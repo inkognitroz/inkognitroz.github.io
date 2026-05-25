@@ -33,7 +33,7 @@ function requireIncludes(source, needle, message) {
 
 const manifest = JSON.parse(read(files.manifest));
 const nodes = Array.isArray(manifest.nodes) ? manifest.nodes : [];
-for (const id of ['browser-guide', 'browser-webgpu-qwen', 'browser-webgpu-gemma', 'browser-webgpu-llama32', 'browser-webgpu-phi35', 'local-node']) {
+for (const id of ['browser-guide', 'managed-api-bootstrap', 'browser-webgpu-qwen', 'browser-webgpu-gemma', 'browser-webgpu-llama32', 'browser-webgpu-phi35', 'local-node']) {
   const node = nodes.find((item) => item.id === id);
   if (!node) fail(`Active chat node manifest missing ${id}.`);
   if (node?.cost?.requires_approval !== false) fail(`Active chat node ${id} must be no-approval/free-first.`);
@@ -43,6 +43,16 @@ const localNode = nodes.find((item) => item.id === 'local-node');
 for (const capability of ['openai.v1.models', 'openai.v1.chat.completions']) {
   if (!localNode?.capabilities?.includes(capability)) {
     fail(`Active local-node manifest must advertise ${capability}.`);
+  }
+}
+
+const managedNode = nodes.find((item) => item.id === 'managed-api-bootstrap');
+if (managedNode?.route?.url !== 'https://api.mmir.ai') {
+  fail('Active managed API bootstrap node must route through https://api.mmir.ai.');
+}
+for (const capability of ['openai.v1.models', 'openai.v1.chat.completions', 'chat.compare', 'chat.discussions']) {
+  if (!managedNode?.capabilities?.includes(capability)) {
+    fail(`Active managed-api-bootstrap manifest must advertise ${capability}.`);
   }
 }
 
@@ -71,6 +81,8 @@ for (const needle of [
   'webGpuReady()',
   'function needsWebGpu(node)',
   'function bestNode(nodes,selected)',
+  "node.id==='managed-api-bootstrap'",
+  'ensureManagedApiProfile',
   'function activateStarter(model)',
   'function writeLocalInstallResume(source)',
   'function openInstaller(source)',
@@ -99,7 +111,7 @@ for (const needle of [
   "transcriptEl.dataset.empty=String(!hasChat)",
   'scrollTranscriptToBottom()',
   'MMIR automatically fell back to the free browser guide',
-  'Free \'+s.label+\' ready. Local node optional.',
+  'Free '+s.label+' ready. Local node optional.',
   'WebGPU unavailable; guide/install ready.',
   "detail:sr?'optional':'repair local node'",
   'function defaultFirstPrompt()',
