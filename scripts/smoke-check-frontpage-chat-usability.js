@@ -45,7 +45,7 @@ const qualityWorkflow = read(files.qualityWorkflow);
 
 requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontpage must keep the chat-first shell class.');
 requireIncludes(html, 'mimir-chat-portal.css?v=20260525-critical-active-routes-v1', 'MMIR frontpage must ship the fresh chat order CSS cache key.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d255-20260525-critical-active-routes-v1'", 'Service worker cache must be bumped for the frontpage usability fix.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d255-20260525-quiet-runtime-v1'", 'Service worker cache must be bumped for the frontpage usability fix.');
 
 for (const needle of [
   '.mimir-chat-first .mimir-greeting{order:1}',
@@ -66,7 +66,10 @@ requireBefore(css, '.mimir-chat-first #runtime-context-controls,.mimir-chat-firs
 for (const needle of [
   '.composer-tool-cluster,.composer-live-cluster{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto',
   '.composer-mode-button,.composer-live-chip{flex:0 0 auto}',
-  '.composer-action-feedback{font-size:.74rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+  '.composer-action-feedback{font-size:.74rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+  '.mimir-chat-first:not(.mimir-has-chat) .runtime-toolbar',
+  '.mimir-chat-first:not(.mimir-has-chat) .runtime-live-proof[data-state="idle"]',
+  '.mimir-chat-first:not(.mimir-has-chat) .runtime-transcript[data-empty="true"]'
 ]) {
   requireIncludes(runtimeCss, needle, `Mobile composer controls must stay compact: ${needle}`);
 }

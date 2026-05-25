@@ -44,6 +44,12 @@
 
 .runtime-live-proof{display:grid;gap:8px;padding:10px 12px;border:1px solid rgba(148,163,184,.24);border-radius:18px;background:rgba(255,255,255,.78)}
 
+.mimir-chat-first:not(.mimir-has-chat) .runtime-toolbar,
+.mimir-chat-first:not(.mimir-has-chat) .runtime-live-proof[data-state="idle"],
+.mimir-chat-first:not(.mimir-has-chat) .runtime-transcript[data-empty="true"] {
+  display: none;
+}
+
 .runtime-activation-replay {
   align-items: center;
   background: #eff6ff;
