@@ -147,6 +147,13 @@
     document.getElementById('composer-add-model')?.setAttribute('aria-expanded',String(open));
     document.getElementById('runtime-model-chip')?.setAttribute('aria-expanded',String(open));
   }
+  function closePicker(refocus){
+    const el=ensurePicker();
+    if(!el)return;
+    el.hidden=true;
+    setExpanded(false);
+    if(refocus)promptEl()?.focus({preventScroll:true});
+  }
   function card(option){
     const select=modelSelect();
     const value=String(option.value||'');
@@ -171,11 +178,14 @@
     const options=freeRouteFloor(rawOptions);
     const floorActive=options.length>rawOptions.length;
     if(!options.length){
-      el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose a model</strong><p>MMIR is loading free browser and local model routes. No paid route starts here.</p></div><a href="#model-library">Full library</a></div>';
+      el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose a model</strong><p>MMIR is loading free browser and local model routes. No paid route starts here.</p></div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>';
+      el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
+      el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
       return;
     }
-    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><a href="#model-library">Full library</a></div>'+recommendationCards()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div>';
-    el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>toggle(false));
+    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div>';
+    el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
+    el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
     el.querySelectorAll('[data-picker-model-value]').forEach(button=>{
       button.addEventListener('click',()=>selectModel(button.getAttribute('data-picker-model-value')||'',button.getAttribute('data-picker-action')||'select'));
     });
@@ -219,11 +229,22 @@
       window.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:id,action:action==='install'?'install':'select',source:'composer-model-picker',route_floor:'composer-model-picker-free-route-floor',free:true,no_paid_routes_started:true}}));
     }
     toggle(false);
-    promptEl()?.focus();
+    promptEl()?.focus({preventScroll:true});
     autoStartComposerRecommendation(starter,action);
   }
 
-  window.MimirComposerModelPicker={render,toggle,open:()=>toggle(true),close:()=>toggle(false),freeRouteFloor:()=>freeRouteFloor(Array.from(modelSelect()?.options||[])),starterCatalogLoaded:()=>starterCatalogLoaded};
+  document.addEventListener('keydown',(event)=>{
+    if(event.key!=='Escape'||!picker||picker.hidden)return;
+    event.preventDefault();
+    closePicker(true);
+  },true);
+  document.addEventListener('pointerdown',(event)=>{
+    if(!picker||picker.hidden)return;
+    if(picker.contains(event.target)||event.target?.closest?.('#composer-add-model,#runtime-model-chip'))return;
+    closePicker(false);
+  },true);
+
+  window.MimirComposerModelPicker={render,toggle,open:()=>toggle(true),close:()=>closePicker(false),freeRouteFloor:()=>freeRouteFloor(Array.from(modelSelect()?.options||[])),starterCatalogLoaded:()=>starterCatalogLoaded};
   document.addEventListener('change',(event)=>{if(event.target?.id==='runtime-model')render();});
   window.addEventListener('mmir-backend-profiles-updated',render);
   window.addEventListener('mmir-live-model-proof-updated',render);

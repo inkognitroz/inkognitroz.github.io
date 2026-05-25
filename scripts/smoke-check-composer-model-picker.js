@@ -82,6 +82,13 @@ for (const needle of [
   'aria-pressed',
   'aria-current',
   'Selected route',
+  'data-picker-close',
+  'Close model picker',
+  "event.key!=='Escape'",
+  'closePicker(true)',
+  "event.target?.closest?.('#composer-add-model,#runtime-model-chip')",
+  'picker.contains(event.target)',
+  'promptEl()?.focus({preventScroll:true})',
   "action:'chat'",
   'primary-chat-link',
   'Chat now',
@@ -104,8 +111,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260525-selected-route-v1',
-  'composer-model-picker.js?v=20260525-selected-route-v1'
+  'composer-model-picker.css?v=20260525-picker-close-v1',
+  'composer-model-picker.js?v=20260525-picker-close-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -114,6 +121,8 @@ for (const needle of [
   '.composer-model-picker{',
   '.composer-model-picker[hidden]',
   '.composer-model-picker-head',
+  '.composer-model-picker-head-actions',
+  '.composer-model-picker-head-actions button',
   '.composer-model-recommendations',
   'repeat(auto-fit,minmax(150px,1fr))',
   '.composer-model-recommendations button[data-picker-state="ready"]',

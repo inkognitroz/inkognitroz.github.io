@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d277-20260525-selected-route-v1';
+const CACHE_NAME='mmir-pwa-d278-20260525-picker-close-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

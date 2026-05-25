@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T06:28:33.185Z",
+  "updated_at": "2026-05-25T06:57:14.367Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 277,
+    "total": 278,
     "done": 51,
-    "beta": 201,
+    "beta": 202,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1305,6 +1305,12 @@
         "label": "Selected model route is obvious",
         "status": "beta",
         "evidence": "Composer model recommendations and route cards expose selected badges plus aria pressed/current state without starting paid routes."
+      },
+      {
+        "id": "model-picker-close-flow",
+        "label": "Model picker returns to chat cleanly",
+        "status": "beta",
+        "evidence": "Close, Escape and outside click collapse the picker, while chat-oriented close paths return focus to the prompt without starting paid routes."
       },
       {
         "id": "local-node-package",
@@ -10018,6 +10024,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D278",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Smooth close and return-to-chat flow",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Let users close the composer model picker with an explicit Close action, Escape or an outside click, and return focus to the prompt when the close path is chat-oriented",
+      "best_practice": "Open WebUI-style model drawers should feel temporary and lightweight; users should never get stranded in the picker after choosing or inspecting a route",
+      "done_when": "Composer picker smoke gates prove close controls, Escape handling, outside-click dismissal, safe prompt refocus, cache-busted assets and service-worker rotation without paid/backend side effects",
+      "covers": "chat, model-picker, open-webui-parity, accessibility, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.",
       "estimate": "Verify + polish"
     }
   ]

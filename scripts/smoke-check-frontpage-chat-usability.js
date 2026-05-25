@@ -67,9 +67,9 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js',
 requireIncludes(html, './apps/mimir-chat-portal/composer-autofocus.js', 'Composer autofocus must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-refocus-after-send.js', 'Composer refocus after send must load through the deferred queue.');
 requireIncludes(html, 'chat-runtime.css?v=20260525-proof-compact-v1', 'Chat runtime CSS must be cache-busted for compact proof polish.');
-requireIncludes(html, 'composer-model-picker.css?v=20260525-selected-route-v1', 'Composer model picker CSS must be cache-busted for selected-route polish.');
-requireIncludes(html, 'composer-model-picker.js?v=20260525-selected-route-v1', 'Composer model picker JS must be cache-busted for selected-route polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d277-20260525-selected-route-v1'", 'Service worker cache must be bumped for the selected route model picker fix.');
+requireIncludes(html, 'composer-model-picker.css?v=20260525-picker-close-v1', 'Composer model picker CSS must be cache-busted for picker close-flow polish.');
+requireIncludes(html, 'composer-model-picker.js?v=20260525-picker-close-v1', 'Composer model picker JS must be cache-busted for picker close-flow polish.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d278-20260525-picker-close-v1'", 'Service worker cache must be bumped for the model picker close-flow fix.');
 
 for (const needle of [
   'resize:none',

@@ -260,7 +260,8 @@ const overrides = new Map([
   ['D274', { status: 'beta', evidence: 'A deferred desktop-safe autofocus module now puts the cursor in the composer on first load when there is no deep link, while avoiding mobile keyboard popups and critical first-paint JavaScript growth.' }],
   ['D275', { status: 'beta', evidence: 'A deferred composer refocus module now returns focus to the prompt after send/submit/Enter for smooth follow-up chat, while avoiding mobile keyboard popups unless the prompt was recently active.' }],
   ['D276', { status: 'beta', evidence: 'Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.' }],
-  ['D277', { status: 'beta', evidence: 'The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.' }]
+  ['D277', { status: 'beta', evidence: 'The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.' }],
+  ['D278', { status: 'beta', evidence: 'The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.' }]
 ]);
 
 const repoMeta = [
@@ -661,6 +662,12 @@ function buildLaunchProgress() {
       label: 'Selected model route is obvious',
       status: 'beta',
       evidence: 'Composer model recommendations and route cards expose selected badges plus aria pressed/current state without starting paid routes.'
+    },
+    {
+      id: 'model-picker-close-flow',
+      label: 'Model picker returns to chat cleanly',
+      status: 'beta',
+      evidence: 'Close, Escape and outside click collapse the picker, while chat-oriented close paths return focus to the prompt without starting paid routes.'
     },
     {
       id: 'local-node-package',
