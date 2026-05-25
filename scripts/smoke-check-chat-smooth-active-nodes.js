@@ -84,9 +84,16 @@ for (const needle of [
   "document.body.classList.toggle('mimir-has-chat',hasChat)",
   "transcriptEl.dataset.empty=String(!hasChat)",
   'scrollTranscriptToBottom()',
-  'MMIR automatically fell back to the free browser guide'
+  'MMIR automatically fell back to the free browser guide',
+  'function defaultFirstPrompt()',
+  'Starting the safest free chat automatically',
+  'No setup needed. MMIR is starting a free browser chat automatically.'
 ]) {
   requireIncludes(runtime, needle, `Chat runtime must keep smooth chat state and fallback behavior: ${needle}`);
+}
+
+if (runtime.includes("setStatus('Write a message first.'")) {
+  fail('Empty send must start the free browser chat instead of becoming a dead validation error.');
 }
 
 for (const needle of [
@@ -108,6 +115,7 @@ for (const needle of [
 }
 
 requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-critical-active-routes-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
+requireIncludes(mmir, 'Press send to start automatically', 'Composer placeholder must tell users they can start without setup or typing.');
 if (deferredQueue.some((item) => String(item).includes('active-node-strip.js'))) {
   fail('Active chat node strip must not wait for the deferred feature queue.');
 }

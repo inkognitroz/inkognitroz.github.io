@@ -228,6 +228,10 @@
     feedback.textContent=message;
   }
 
+  function defaultFirstPrompt(){
+    return 'Start MMIR automatically. Tell me what chat route and model are active now, what I can do next for free, and how I can connect my own local model when I am ready.';
+  }
+
   function composerModeLabel(mode){
     if(mode==='private')return 'Private';
     if(mode==='boost')return 'Boost 5.5';
@@ -1959,9 +1963,17 @@
     if(busy)return;
     const profile=activeProfile();
     const url=cleanUrl(profile?.url);
-    const prompt=String(promptEl?.value||'').trim();
+    let prompt=String(promptEl?.value||'').trim();
     let model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
-    if(!prompt){setStatus('Write a message first.','error');return;}
+    if(!prompt){
+      prompt=defaultFirstPrompt();
+      if(promptEl){
+        promptEl.value=prompt;
+        promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      setStatus('Starting the safest free chat automatically...','loading');
+      setComposerActionFeedback('No setup needed. MMIR is starting a free browser chat automatically.','ready');
+    }
     const starter=starterFromValue(model);
     if(starter){
       await sendStarterMessage(starter,prompt);

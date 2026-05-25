@@ -240,7 +240,8 @@ const overrides = new Map([
   ['D254', { status: 'next', evidence: 'Current launch-critical slice: chat now has critical compact active route chips directly under the composer, public-safe free model starters, tested WebGPU/local-node handoff and Mac app-bundle DMG contract evidence without publishing a fake artifact. Continue real-device release QA and deeper Open WebUI polish.' }],
   ['D255', { status: 'beta', evidence: 'Performance gates now count inline first-paint JavaScript separately from external critical scripts, preserve chat-first scroll as a critical external asset and enforce a combined first-paint JS budget.' }],
   ['D256', { status: 'beta', evidence: 'A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.' }],
-  ['D257', { status: 'beta', evidence: 'Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.' }]
+  ['D257', { status: 'beta', evidence: 'Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.' }],
+  ['D258', { status: 'beta', evidence: 'Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.' }]
 ]);
 
 const repoMeta = [
@@ -623,6 +624,12 @@ function buildLaunchProgress() {
       label: 'Useful free route before setup',
       status: 'done',
       evidence: 'No-model fallback, MMIR Guide and free starter choices prevent an empty first chat.'
+    },
+    {
+      id: 'empty-send-autostart',
+      label: 'Send works without typing first',
+      status: 'done',
+      evidence: 'Empty composer send starts the safest free browser chat automatically instead of asking the user to configure or write first.'
     },
     {
       id: 'model-picker',

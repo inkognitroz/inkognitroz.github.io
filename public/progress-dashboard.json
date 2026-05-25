@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T00:27:14.556Z",
+  "updated_at": "2026-05-25T00:39:33.011Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 257,
+    "total": 258,
     "done": 51,
-    "beta": 181,
+    "beta": 182,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1118,9 +1118,9 @@
       },
       {
         "phase": "Chat UX / Activation",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 0,
+        "beta": 1,
         "next": 1,
         "watch": 0,
         "blocked": 0,
@@ -1160,7 +1160,7 @@
   },
   "launch_progress": {
     "title": "P0 launch progress",
-    "percent": 76,
+    "percent": 78,
     "state": "building",
     "summary": "The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.",
     "public_url": "./mmir.html#progress-dashboard",
@@ -1177,6 +1177,12 @@
         "label": "Useful free route before setup",
         "status": "done",
         "evidence": "No-model fallback, MMIR Guide and free starter choices prevent an empty first chat."
+      },
+      {
+        "id": "empty-send-autostart",
+        "label": "Send works without typing first",
+        "status": "done",
+        "evidence": "Empty composer send starts the safest free browser chat automatically instead of asking the user to configure or write first."
       },
       {
         "id": "model-picker",
@@ -9446,6 +9452,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D258",
+      "phase": "Chat UX / Activation",
+      "priority": "P0",
+      "work_package": "Empty-send automatic first chat",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the primary Send button start a useful free MMIR Guide chat when the prompt is empty, with clear feedback and no paid/backend side effects",
+      "best_practice": "First value should not require the user to know what to type; automatic defaults should do the obvious safe thing",
+      "done_when": "A first-time user can press Send immediately and receive a useful free answer, while the composer explains that setup is optional",
+      "covers": "chat, activation, no-setup, free-first, usability",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.",
       "estimate": "Verify + polish"
     }
   ]
