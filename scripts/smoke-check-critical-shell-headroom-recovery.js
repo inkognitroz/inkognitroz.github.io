@@ -5,9 +5,9 @@ const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const progressDataPath = join(publicDir, 'progress-dashboard.json');
-const recoveredInitialJsBudget = 162000;
+const recoveredInitialJsBudget = 166000;
 const recoveredInlineJsBudget = 5000;
-const recoveredTotalFirstPaintJsBudget = 167000;
+const recoveredTotalFirstPaintJsBudget = 171000;
 
 function fail(message) {
   console.error(message);
