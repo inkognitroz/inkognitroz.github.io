@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T01:42:03.888Z",
+  "updated_at": "2026-05-25T01:46:51.652Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 266,
+    "total": 267,
     "done": 51,
-    "beta": 190,
+    "beta": 191,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1218,6 +1218,16 @@
       },
       {
         "phase": "Chat UX / Proof",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Local Install / Cross-OS",
         "total": 1,
         "done": 0,
         "beta": 1,
@@ -9705,6 +9715,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "When local-node proof fails, the chat runtime now keeps ready browser-guide/WebGPU starter routes green instead of making first chat look broken.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D267",
+      "phase": "Local Install / Cross-OS",
+      "priority": "P0",
+      "work_package": "Selected model installers for Windows Linux Pi",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Extend the universal installer so Windows, Linux and Raspberry Pi downloads can preserve the selected free Ollama model through generated no-spend wrapper installers, not only Mac",
+      "best_practice": "All first local-node journeys should keep the user's model choice across OS/device handoff",
+      "done_when": "Installer page validates safe model ids, generates platform wrappers with MMIR_MODEL, falls back to static installers when no model is selected and keeps public release hashes green",
+      "covers": "windows, linux, raspberry-pi, installer, local-node, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Universal installer page can now generate selected-model wrappers for Windows, Linux and Raspberry Pi, preserving MMIR_MODEL across the local-node handoff without paid services.",
       "estimate": "Verify + polish"
     }
   ]

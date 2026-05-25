@@ -183,19 +183,19 @@
         <div class="status">Live beta</div>
         <h2>Windows PC</h2>
         <p>One <code>.cmd</code> launcher that installs the connector, private Node runtime when needed, Ollama, starter model and startup shortcut.</p>
-        <a href="./mmir-local-connector-windows.cmd" download>Download Windows installer</a>
+        <a id="windows-install-link" href="./mmir-local-connector-windows.cmd" download>Download Windows installer</a>
       </article>
       <article class="card" data-platform="linux">
         <div class="status">Live beta</div>
         <h2>Linux / VM</h2>
         <p>One shell installer for Linux desktops, servers and VMs. It installs the connector as a user service when systemd is available.</p>
-        <a href="./mmir-local-connector-linux.sh" download>Download Linux installer</a>
+        <a id="linux-install-link" href="./mmir-local-connector-linux.sh" download>Download Linux installer</a>
       </article>
       <article class="card" data-platform="raspberry-pi">
         <div class="status">Live beta</div>
         <h2>Raspberry Pi / Linux ARM</h2>
         <p>Use 64-bit Raspberry Pi OS or another arm64 Linux device. The installer keeps the node private, pulls a small starter model and marks it as an edge node.</p>
-        <a href="./mmir-local-connector-linux.sh" download>Download Raspberry Pi installer</a>
+        <a id="raspberry-install-link" href="./mmir-local-connector-linux.sh" download>Download Raspberry Pi installer</a>
       </article>
       <article class="card" data-platform="android">
         <div class="status">Client mode</div>
@@ -282,8 +282,45 @@
     function renderSelectedModel() {
       const model = selectedInstallModel();
       if (model) {
-        selectedModelEl.textContent = 'Selected free starter model: ' + model + '. The Mac command package will preserve this choice; other installers still choose a safe free model unless MMIR_MODEL is set locally.';
+        selectedModelEl.textContent = 'Selected free starter model: ' + model + '. MMIR preserves this choice in Mac, Windows, Linux and Raspberry Pi installer downloads when your browser allows generated files.';
       }
+    }
+
+    function safeModelValue() {
+      const model = selectedInstallModel();
+      return /^[A-Za-z0-9._:-]{1,80}$/.test(model) ? model : '';
+    }
+
+    function downloadTextFile(name, text, type) {
+      const blob = new Blob([text], { type: type || 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function generatedInstaller(platform) {
+      const model = safeModelValue();
+      if (!model) return '';
+      if (platform === 'windows') {
+        return `@echo off\r\nsetlocal\r\nset "MMIR_MODEL=${model}"\r\nset "MMIR_INSTALLER=%TEMP%\\mmir-local-connector-windows.ps1"\r\necho Downloading MMIR Local Connector for Windows with ${model}...\r\npowershell -NoProfile -ExecutionPolicy Bypass -Command "try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://mmir.ai/downloads/mmir-local-connector-windows.ps1' -OutFile $env:MMIR_INSTALLER -UseBasicParsing } catch { Write-Error $_; exit 1 }"\r\nif errorlevel 1 pause & exit /b 1\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%MMIR_INSTALLER%"\r\nif errorlevel 1 pause & exit /b 1\r\necho.\r\necho MMIR Local Connector installer completed.\r\npause\r\n`;
+      }
+      return '#!/bin/sh\nset -eu\nexport MMIR_MODEL=' + "'" + model.replace(/'/g, "'\"'\"'") + "'" + '\necho "Downloading MMIR Local Connector for ' + (platform === 'raspberry' ? 'Raspberry Pi / Linux ARM' : 'Linux') + ' with $MMIR_MODEL..."\ncurl -fsSL https://mmir.ai/downloads/mmir-local-connector-linux.sh -o mmir-local-connector-linux.sh\nchmod +x mmir-local-connector-linux.sh\n./mmir-local-connector-linux.sh\n';
+    }
+
+    function bindGeneratedInstaller(id, platform, fileName, mimeType) {
+      const link = document.getElementById(id);
+      if (!link) return;
+      link.addEventListener('click', (event) => {
+        const body = generatedInstaller(platform);
+        if (!body) return;
+        event.preventDefault();
+        downloadTextFile(fileName, body, mimeType);
+      });
     }
 
     function renderReleaseSummary(data) {
@@ -348,6 +385,9 @@
     }
 
     applyPrimary(pickedKey);
+    bindGeneratedInstaller('windows-install-link', 'windows', 'mmir-local-connector-windows-selected.cmd', 'application/x-msdownload');
+    bindGeneratedInstaller('linux-install-link', 'linux', 'mmir-local-connector-linux-selected.sh', 'text/x-shellscript');
+    bindGeneratedInstaller('raspberry-install-link', 'raspberry', 'mmir-local-connector-raspberry-pi-selected.sh', 'text/x-shellscript');
     hydrateReleaseManifest();
   </script>
 </body>

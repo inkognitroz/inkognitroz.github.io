@@ -249,7 +249,8 @@ const overrides = new Map([
   ['D263', { status: 'beta', evidence: 'Ready-now composer recommendations now seed a useful prompt and click Send automatically, so Chat now and Browser WebGPU choices produce first value instead of stopping at selection.' }],
   ['D264', { status: 'beta', evidence: 'Installable local starter choices now open the universal no-spend installer when localhost is missing, preserve a repair resume and carry the selected Ollama model into the generated Mac command package.' }],
   ['D265', { status: 'beta', evidence: 'Progress Dashboard launch evidence now includes the latest selected-model installer handoff commit, green Pages deploy and refreshed next queue.' }],
-  ['D266', { status: 'beta', evidence: 'When local-node proof fails, the chat runtime now keeps ready browser-guide/WebGPU starter routes green instead of making first chat look broken.' }]
+  ['D266', { status: 'beta', evidence: 'When local-node proof fails, the chat runtime now keeps ready browser-guide/WebGPU starter routes green instead of making first chat look broken.' }],
+  ['D267', { status: 'beta', evidence: 'Universal installer page can now generate selected-model wrappers for Windows, Linux and Raspberry Pi, preserving MMIR_MODEL across the local-node handoff without paid services.' }]
 ]);
 
 const repoMeta = [

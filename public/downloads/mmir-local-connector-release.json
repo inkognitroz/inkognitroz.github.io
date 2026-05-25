@@ -103,7 +103,7 @@
       "platform": "browser",
       "kind": "installer-selector",
       "path": "/downloads/mmir-local-connector-install.html",
-      "sha256": "1077bd28e7514f2cc408d1e1f04b110b81e8cb376e1dab9125c1128ff1978c53",
+      "sha256": "fbfdac7fc0a729940e32dc1e79fb66fefabbd82e2a80fc7ca1440b3711369457",
       "recommended": true
     },
     {
@@ -133,7 +133,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-05-25T01:24:39.332Z",
+    "verified_at": "2026-05-25T01:46:57.990Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 9,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",

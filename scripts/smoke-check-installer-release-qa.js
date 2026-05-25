@@ -129,6 +129,12 @@ for (const file of [files.mac, files.windows, files.linux]) {
   'renderReleaseSummary',
   'selectedInstallModel',
   'appendModelParams',
+  'safeModelValue',
+  'generatedInstaller',
+  'bindGeneratedInstaller',
+  'windows-install-link',
+  'raspberry-install-link',
+  'MMIR_MODEL',
   'Selected free starter model',
   'fake DMG',
   'Applications shortcut',
@@ -176,6 +182,10 @@ if (!d206 || d206.status !== 'beta') {
 const d264 = tasks.find((task) => task.seq === 'D264');
 if (!d264 || d264.status !== 'beta') {
   fail('Progress dashboard task D264 must be beta after selected-model installer handoff ships.');
+}
+const d267 = tasks.find((task) => task.seq === 'D267');
+if (!d267 || d267.status !== 'beta') {
+  fail('Progress dashboard task D267 must be beta after cross-OS selected model wrappers ship.');
 }
 if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
   fail('Progress dashboard next queue must prioritize D254 after D236 ships.');
