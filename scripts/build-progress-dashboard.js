@@ -239,7 +239,8 @@ const overrides = new Map([
   ['D253', { status: 'beta', evidence: 'Chat-first free activation canary now proves instant free browser-helper chat, first-chat receipt coverage, Mac installer checksum alignment and local-node proof handoff without spend.' }],
   ['D254', { status: 'next', evidence: 'Current launch-critical slice: chat now has critical compact active route chips directly under the composer, public-safe free model starters, tested WebGPU/local-node handoff and Mac app-bundle DMG contract evidence without publishing a fake artifact. Continue real-device release QA and deeper Open WebUI polish.' }],
   ['D255', { status: 'beta', evidence: 'Performance gates now count inline first-paint JavaScript separately from external critical scripts, preserve chat-first scroll as a critical external asset and enforce a combined first-paint JS budget.' }],
-  ['D256', { status: 'beta', evidence: 'A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.' }]
+  ['D256', { status: 'beta', evidence: 'A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.' }],
+  ['D257', { status: 'beta', evidence: 'Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.' }]
 ]);
 
 const repoMeta = [
@@ -601,6 +602,149 @@ function summarize(tasks) {
   };
 }
 
+function progressWeight(status) {
+  if (status === 'done') return 1;
+  if (status === 'beta') return 0.75;
+  if (status === 'next') return 0.35;
+  if (status === 'watch') return 0.2;
+  return 0;
+}
+
+function buildLaunchProgress() {
+  const checkpoints = [
+    {
+      id: 'chat-first-ui',
+      label: 'Chat is the first product surface',
+      status: 'done',
+      evidence: 'Composer, smooth transcript state and compact active route chips are critical UI, not deferred widgets.'
+    },
+    {
+      id: 'free-route-floor',
+      label: 'Useful free route before setup',
+      status: 'done',
+      evidence: 'No-model fallback, MMIR Guide and free starter choices prevent an empty first chat.'
+    },
+    {
+      id: 'model-picker',
+      label: 'Model picker has obvious choices',
+      status: 'done',
+      evidence: 'Chat now, Browser LLM and Install local lead the picker before the full model catalog.'
+    },
+    {
+      id: 'local-node-package',
+      label: 'Local node package contract',
+      status: 'beta',
+      evidence: 'Mac app-bundle DMG contract and universal installer manifest are built and tested; real-device signing/notarization remains later.'
+    },
+    {
+      id: 'installer-return',
+      label: 'Install return to first local answer',
+      status: 'beta',
+      evidence: 'Mock local-node proof covers health, models and automatic first local answer after a successful install return.'
+    },
+    {
+      id: 'active-node-chat',
+      label: 'Active nodes connect to chat path',
+      status: 'beta',
+      evidence: 'Browser helper, WebGPU candidate and local-node route floor are wired through smoke tests without paid/provider keys.'
+    },
+    {
+      id: 'zero-trust-public',
+      label: 'Public site stays secret-free',
+      status: 'done',
+      evidence: 'Public safety audit blocks token-like strings, browser Bearer-key construction and paid compute enablement.'
+    },
+    {
+      id: 'real-browser-qa',
+      label: 'Real browser usability QA',
+      status: 'watch',
+      evidence: 'Local static checks are green; in-app browser automation has timed out before page inspection and needs another pass.'
+    },
+    {
+      id: 'open-webui-polish',
+      label: 'Open WebUI / ChatGPT smoothness polish',
+      status: 'next',
+      evidence: 'Continue D254: reduce noise, keep advanced features lower, and make first chat feel instant and calm.'
+    }
+  ];
+  const total = checkpoints.length || 1;
+  const percent = Math.round((checkpoints.reduce((sum, item) => sum + progressWeight(item.status), 0) / total) * 100);
+  return {
+    title: 'P0 launch progress',
+    percent,
+    state: percent >= 85 ? 'green' : 'building',
+    summary: 'The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.',
+    public_url: './mmir.html#progress-dashboard',
+    local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
+    checkpoints,
+    last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: '428ad3b',
+        label: 'Auto-send first local answer after install',
+        result: 'GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
+        commit: '997af71',
+        label: 'Recommended model picker paths',
+        result: 'Local smoke + GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
+        commit: 'b842e34',
+        label: 'Quiet first chat runtime chrome',
+        result: 'Local smoke + GitHub Actions green'
+      },
+      {
+        repo: 'mmir-local-node',
+        commit: '54fe834',
+        label: 'macOS installer app bundle contract',
+        result: 'Node tests, lint, secrets and release package green'
+      }
+    ],
+    next_actions: [
+      {
+        id: 'D254-real-browser-qa',
+        label: 'Verify first-chat flow in a real browser',
+        estimate: '1-2h',
+        status: 'next'
+      },
+      {
+        id: 'D254-mac-device-qa',
+        label: 'Run real-device Mac install and return proof',
+        estimate: '2-4h',
+        status: 'watch'
+      },
+      {
+        id: 'D254-openwebui-polish',
+        label: 'Tighten chat UI toward Open WebUI / ChatGPT smoothness',
+        estimate: '2-6h',
+        status: 'next'
+      },
+      {
+        id: 'D255-D256-guardrails',
+        label: 'Keep performance and DOM-safety gates green',
+        estimate: 'ongoing',
+        status: 'beta'
+      }
+    ],
+    blockers: [
+      {
+        label: '100% claim needs real device/browser proof',
+        status: 'watch',
+        detail: 'Static and mock-local gates are green; true launch confidence needs live browser and installer QA.'
+      },
+      {
+        label: 'No-spend policy blocks paid live cloud nodes',
+        status: 'blocked',
+        detail: 'No-spend mode stays active: free/local/browser routes can run now. Paid provider, GPU, SaaS and hosted model routes stay gated until cost approval.'
+      }
+    ],
+    completion_rule: 'Call P0 complete only when first free chat, add/connect model, local node install return, active model selection, privacy boundaries, mobile layout and deploy checks are all green with real browser evidence.'
+  };
+}
+
 const tasks = parseBacklog(readFileSync(backlogPath, 'utf8'));
 const prioritizedNextIds = ['D254', 'D117', 'D116', 'D118', 'D119'];
 const nextTasks = tasks.filter((task) => task.status === 'next');
@@ -621,6 +765,7 @@ const data = {
   ],
   status_legend: statusNotes,
   summary: summarize(tasks),
+  launch_progress: buildLaunchProgress(),
   activation_simulator: readActivationSimulator(),
   no_model_dead_end_report: readNoModelDeadEndReport(),
   no_model_public_deploy_verification: readNoModelPublicDeployVerification(),

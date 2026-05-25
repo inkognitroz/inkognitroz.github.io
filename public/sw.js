@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d255-20260525-quiet-runtime-v1';
+const CACHE_NAME='mmir-pwa-d257-20260525-launch-progress-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

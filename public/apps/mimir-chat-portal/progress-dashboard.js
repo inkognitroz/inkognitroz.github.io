@@ -1255,6 +1255,37 @@
     '</section>';
   }
 
+  function renderLaunchProgress(data){
+    const launch=data.launch_progress||{};
+    const checkpoints=Array.isArray(launch.checkpoints)?launch.checkpoints:[];
+    if(!checkpoints.length)return '';
+    const percent=Math.max(0,Math.min(100,Math.round(Number(launch.percent)||0)));
+    const evidence=Array.isArray(launch.last_green_evidence)?launch.last_green_evidence:[];
+    const next=Array.isArray(launch.next_actions)?launch.next_actions:[];
+    const blockers=Array.isArray(launch.blockers)?launch.blockers:[];
+    const doneCount=checkpoints.filter((item)=>item.status==='done'||item.status==='beta').length;
+    return '<section id="progress-launch-progress" class="progress-launch-progress" data-state="'+safe(launch.state||'building')+'">'+
+      '<div class="progress-launch-head"><div><p class="eyebrow">Owner view</p><h2>'+safe(launch.title||'P0 launch progress')+'</h2><p>'+safe(launch.summary||'Current launch-critical delivery status.')+'</p></div>'+
+      '<div class="progress-launch-score"><strong>'+safe(percent)+'%</strong><span>'+safe(doneCount)+'/'+safe(checkpoints.length)+' green or beta</span></div></div>'+
+      '<div class="progress-launch-meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+safe(percent)+'" aria-label="P0 launch progress"><span style="width:'+safe(percent)+'%"></span></div>'+
+      '<div class="progress-launch-links"><a href="'+safe(launch.public_url||'./mmir.html#progress-dashboard')+'">Public dashboard</a><a href="'+safe(launch.local_url||'http://localhost:4173/mmir.html#progress-dashboard')+'">Local dashboard</a><span>'+safe(launch.completion_rule||'Complete only when live user journeys are verified.')+'</span></div>'+
+      '<div class="progress-launch-grid">'+checkpoints.map((item)=>
+        '<article class="progress-launch-row" data-state="'+safe(item.status||'planned')+'"><div>'+chip(item.status||'planned')+'<h3>'+safe(item.label||item.id)+'</h3><p>'+safe(item.evidence||'No evidence recorded yet.')+'</p></div></article>'
+      ).join('')+'</div>'+
+      '<div class="progress-launch-columns">'+
+        '<div><h3>Latest green evidence</h3>'+(evidence.length?evidence.map((item)=>
+          '<p><strong>'+safe(item.commit||item.repo)+'</strong> '+safe(item.label||'Evidence')+' <span>'+safe(item.result||'tracked')+'</span></p>'
+        ).join(''):'<p>No recent evidence recorded.</p>')+'</div>'+
+        '<div><h3>Next queue</h3>'+(next.length?next.map((item)=>
+          '<p>'+chip(item.status||'next')+' <strong>'+safe(item.label||item.id)+'</strong> <span>'+safe(item.estimate||'estimate pending')+'</span></p>'
+        ).join(''):'<p>No next actions recorded.</p>')+'</div>'+
+        '<div><h3>Blockers</h3>'+(blockers.length?blockers.map((item)=>
+          '<p>'+chip(item.status||'watch')+' <strong>'+safe(item.label||'Blocker')+'</strong> <span>'+safe(item.detail||'Needs follow-up.')+'</span></p>'
+        ).join(''):'<p>No launch blockers recorded.</p>')+'</div>'+
+      '</div>'+
+    '</section>';
+  }
+
   function renderSummary(data){
     const summaryData=data.summary||{};
     return '<div class="progress-summary-grid">'+
@@ -1486,7 +1517,7 @@
 
   function render(){
     if(!dashboard)return;
-    root.innerHTML=renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderProtectedCorrectionReviewQueueReport(dashboard)+renderCorrectionRemediationPlanReport(dashboard)+renderCorrectionRemediationApplyGatesReport(dashboard)+renderCorrectionRemediationAdaptersReport(dashboard)+renderCorrectionRemediationCommitPolicyReport(dashboard)+renderCorrectionRemediationExecutionGatesReport(dashboard)+renderCorrectionRemediationRollbackGatesReport(dashboard)+renderCorrectionRemediationKnowledgeSourceModelReport(dashboard)+renderCorrectionRemediationKnowledgeExecutionGatesReport(dashboard)+renderCorrectionRemediationKnowledgeRollbackGatesReport(dashboard)+renderCorrectionRemediationAutopilotQueueReport(dashboard)+renderCorrectionRemediationAutopilotHandoffReport(dashboard)+renderCorrectionRemediationAutopilotRollbackReadinessReport(dashboard)+renderCorrectionRemediationAutopilotTrustTimelineReport(dashboard)+renderCorrectionRemediationAutopilotTrustTimelineBrowserQaReport(dashboard)+renderCorrectionRemediationAutopilotTimelineReceiptsReport(dashboard)+renderCorrectionRemediationAutopilotTimelineReceiptBrowserQaReport(dashboard)+renderCrossRepoArchitectureSecurityReviewReport(dashboard)+renderChatFirstFreeActivationCanaryReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
+    root.innerHTML=renderLaunchProgress(dashboard)+renderFirstChatReceipt()+renderFirstAnswerNextStep()+renderActivationTelemetry()+renderStarterFunnel()+renderActivationSimulator(dashboard)+renderNoModelDeadEndReport(dashboard)+renderNoModelPublicDeployVerification(dashboard)+renderFirstFreeChatResponseReport(dashboard)+renderComposerActionBarReport(dashboard)+renderComposerActionBarVisualReport(dashboard)+renderMessageActionCompletenessReport(dashboard)+renderMessageActionVisualReport(dashboard)+renderMessageActionBrowserFixtureReport(dashboard)+renderMessageActionAccessibilityReport(dashboard)+renderConversationHandoffReport(dashboard)+renderSavedChatMemoryHandoffReport(dashboard)+renderPromotedContextNextAnswerReport(dashboard)+renderContextControlsReport(dashboard)+renderAnswerContextReceiptReport(dashboard)+renderAnswerContextDrilldownReport(dashboard)+renderAnswerContextHighlightReport(dashboard)+renderAnswerContextSourceFilterReport(dashboard)+renderAnswerContextFilterConsumptionReport(dashboard)+renderAnswerContextKnowledgeSourceReport(dashboard)+renderAnswerContextSourceCorrectionReport(dashboard)+renderContextCorrectionAuditReport(dashboard)+renderContextCorrectionRetryReport(dashboard)+renderContextCorrectionSuggestionsReport(dashboard)+renderProtectedContextCorrectionSyncReport(dashboard)+renderProtectedCorrectionSyncUiReport(dashboard)+renderProtectedCorrectionReviewQueueReport(dashboard)+renderCorrectionRemediationPlanReport(dashboard)+renderCorrectionRemediationApplyGatesReport(dashboard)+renderCorrectionRemediationAdaptersReport(dashboard)+renderCorrectionRemediationCommitPolicyReport(dashboard)+renderCorrectionRemediationExecutionGatesReport(dashboard)+renderCorrectionRemediationRollbackGatesReport(dashboard)+renderCorrectionRemediationKnowledgeSourceModelReport(dashboard)+renderCorrectionRemediationKnowledgeExecutionGatesReport(dashboard)+renderCorrectionRemediationKnowledgeRollbackGatesReport(dashboard)+renderCorrectionRemediationAutopilotQueueReport(dashboard)+renderCorrectionRemediationAutopilotHandoffReport(dashboard)+renderCorrectionRemediationAutopilotRollbackReadinessReport(dashboard)+renderCorrectionRemediationAutopilotTrustTimelineReport(dashboard)+renderCorrectionRemediationAutopilotTrustTimelineBrowserQaReport(dashboard)+renderCorrectionRemediationAutopilotTimelineReceiptsReport(dashboard)+renderCorrectionRemediationAutopilotTimelineReceiptBrowserQaReport(dashboard)+renderCrossRepoArchitectureSecurityReviewReport(dashboard)+renderChatFirstFreeActivationCanaryReport(dashboard)+renderLiveGapChecklist()+renderSummary(dashboard)+renderPhases(dashboard)+renderQueue(dashboard)+renderRepos(dashboard)+renderTasks(dashboard);
     window.dispatchEvent(new CustomEvent('mmir-progress-dashboard-rendered',{detail:{task_count:Array.isArray(dashboard.tasks)?dashboard.tasks.length:0}}));
     bindFirstChatReceipt();
     bindFirstAnswerNextStep();

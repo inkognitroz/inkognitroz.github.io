@@ -152,6 +152,8 @@ jobs:
         run: node scripts/smoke-check-chat-first-free-activation-canary.js
       - name: Smoke check smooth active-node chat
         run: node scripts/smoke-check-chat-smooth-active-nodes.js
+      - name: Smoke check launch progress dashboard
+        run: node scripts/smoke-check-launch-progress-dashboard.js
       - name: Smoke check activation simulator
         run: node scripts/smoke-check-activation-simulator.js
       - name: Smoke check activation replay render

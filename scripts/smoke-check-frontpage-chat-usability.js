@@ -45,7 +45,7 @@ const qualityWorkflow = read(files.qualityWorkflow);
 
 requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontpage must keep the chat-first shell class.');
 requireIncludes(html, 'mimir-chat-portal.css?v=20260525-critical-active-routes-v1', 'MMIR frontpage must ship the fresh chat order CSS cache key.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d255-20260525-quiet-runtime-v1'", 'Service worker cache must be bumped for the frontpage usability fix.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d257-20260525-launch-progress-v1'", 'Service worker cache must be bumped for the frontpage usability fix.');
 
 for (const needle of [
   '.mimir-chat-first .mimir-greeting{order:1}',

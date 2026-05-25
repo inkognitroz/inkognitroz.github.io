@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T00:17:40.786Z",
+  "updated_at": "2026-05-25T00:27:14.556Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 256,
+    "total": 257,
     "done": 51,
-    "beta": 180,
+    "beta": 181,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1145,8 +1145,147 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Owner Ops / Progress",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
+  },
+  "launch_progress": {
+    "title": "P0 launch progress",
+    "percent": 76,
+    "state": "building",
+    "summary": "The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.",
+    "public_url": "./mmir.html#progress-dashboard",
+    "local_url": "http://localhost:4173/mmir.html#progress-dashboard",
+    "checkpoints": [
+      {
+        "id": "chat-first-ui",
+        "label": "Chat is the first product surface",
+        "status": "done",
+        "evidence": "Composer, smooth transcript state and compact active route chips are critical UI, not deferred widgets."
+      },
+      {
+        "id": "free-route-floor",
+        "label": "Useful free route before setup",
+        "status": "done",
+        "evidence": "No-model fallback, MMIR Guide and free starter choices prevent an empty first chat."
+      },
+      {
+        "id": "model-picker",
+        "label": "Model picker has obvious choices",
+        "status": "done",
+        "evidence": "Chat now, Browser LLM and Install local lead the picker before the full model catalog."
+      },
+      {
+        "id": "local-node-package",
+        "label": "Local node package contract",
+        "status": "beta",
+        "evidence": "Mac app-bundle DMG contract and universal installer manifest are built and tested; real-device signing/notarization remains later."
+      },
+      {
+        "id": "installer-return",
+        "label": "Install return to first local answer",
+        "status": "beta",
+        "evidence": "Mock local-node proof covers health, models and automatic first local answer after a successful install return."
+      },
+      {
+        "id": "active-node-chat",
+        "label": "Active nodes connect to chat path",
+        "status": "beta",
+        "evidence": "Browser helper, WebGPU candidate and local-node route floor are wired through smoke tests without paid/provider keys."
+      },
+      {
+        "id": "zero-trust-public",
+        "label": "Public site stays secret-free",
+        "status": "done",
+        "evidence": "Public safety audit blocks token-like strings, browser Bearer-key construction and paid compute enablement."
+      },
+      {
+        "id": "real-browser-qa",
+        "label": "Real browser usability QA",
+        "status": "watch",
+        "evidence": "Local static checks are green; in-app browser automation has timed out before page inspection and needs another pass."
+      },
+      {
+        "id": "open-webui-polish",
+        "label": "Open WebUI / ChatGPT smoothness polish",
+        "status": "next",
+        "evidence": "Continue D254: reduce noise, keep advanced features lower, and make first chat feel instant and calm."
+      }
+    ],
+    "last_green_evidence": [
+      {
+        "repo": "inkognitroz.github.io",
+        "commit": "428ad3b",
+        "label": "Auto-send first local answer after install",
+        "result": "GitHub Actions green"
+      },
+      {
+        "repo": "inkognitroz.github.io",
+        "commit": "997af71",
+        "label": "Recommended model picker paths",
+        "result": "Local smoke + GitHub Actions green"
+      },
+      {
+        "repo": "inkognitroz.github.io",
+        "commit": "b842e34",
+        "label": "Quiet first chat runtime chrome",
+        "result": "Local smoke + GitHub Actions green"
+      },
+      {
+        "repo": "mmir-local-node",
+        "commit": "54fe834",
+        "label": "macOS installer app bundle contract",
+        "result": "Node tests, lint, secrets and release package green"
+      }
+    ],
+    "next_actions": [
+      {
+        "id": "D254-real-browser-qa",
+        "label": "Verify first-chat flow in a real browser",
+        "estimate": "1-2h",
+        "status": "next"
+      },
+      {
+        "id": "D254-mac-device-qa",
+        "label": "Run real-device Mac install and return proof",
+        "estimate": "2-4h",
+        "status": "watch"
+      },
+      {
+        "id": "D254-openwebui-polish",
+        "label": "Tighten chat UI toward Open WebUI / ChatGPT smoothness",
+        "estimate": "2-6h",
+        "status": "next"
+      },
+      {
+        "id": "D255-D256-guardrails",
+        "label": "Keep performance and DOM-safety gates green",
+        "estimate": "ongoing",
+        "status": "beta"
+      }
+    ],
+    "blockers": [
+      {
+        "label": "100% claim needs real device/browser proof",
+        "status": "watch",
+        "detail": "Static and mock-local gates are green; true launch confidence needs live browser and installer QA."
+      },
+      {
+        "label": "No-spend policy blocks paid live cloud nodes",
+        "status": "blocked",
+        "detail": "No-spend mode stays active: free/local/browser routes can run now. Paid provider, GPU, SaaS and hosted model routes stay gated until cost approval."
+      }
+    ],
+    "completion_rule": "Call P0 complete only when first free chat, add/connect model, local node install return, active model selection, privacy boundaries, mobile layout and deploy checks are all green with real browser evidence."
   },
   "activation_simulator": {
     "version": 1,
@@ -9292,6 +9431,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D257",
+      "phase": "Owner Ops / Progress",
+      "priority": "P0",
+      "work_package": "P0 launch progress dashboard",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Put a clear launch progress bar, latest green evidence, next queue and blockers at the top of the Progress Dashboard so project status is visible without reading docs or asking for a manual update",
+      "best_practice": "High-velocity autonomous work needs owner-visible, public-safe status that separates green evidence, beta work, next work and true blockers",
+      "done_when": "Owner can open the dashboard and see percent complete, what shipped, what is next, what is blocked, and what must be true before claiming 100%",
+      "covers": "progress, owner-ops, automation, qa, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.",
       "estimate": "Verify + polish"
     }
   ]

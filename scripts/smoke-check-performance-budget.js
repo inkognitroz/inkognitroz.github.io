@@ -12,6 +12,7 @@ const totalFirstPaintJsByteBudget = 167000;
 const cacheKey = '20260524-quiet-first-paint-v3';
 const runtimeCacheKey = '20260525-critical-active-routes-v1';
 const activeRoutesCacheKey = '20260525-critical-active-routes-v1';
+const progressCacheKey = '20260525-launch-progress-v1';
 const runtimeFixKey = '20260524-first-chat-p0-v1';
 
 function fail(message) {
@@ -131,7 +132,7 @@ for (const required of [
   './apps/mimir-chat-portal/workspaces.js',
   './apps/mimir-chat-portal/memory.js',
   './apps/mimir-chat-portal/knowledge.js',
-  `./apps/mimir-chat-portal/progress-dashboard.js?v=${cacheKey}`,
+  `./apps/mimir-chat-portal/progress-dashboard.js?v=${progressCacheKey}`,
   `./apps/mimir-chat-portal/node-dashboard.js?v=${cacheKey}`,
   './apps/mimir-chat-portal/model-comparison.js',
   './apps/mimir-chat-portal/workflow-builder.js'
