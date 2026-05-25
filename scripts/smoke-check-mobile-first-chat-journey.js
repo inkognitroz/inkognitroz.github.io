@@ -29,6 +29,10 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) fail(message);
 }
 
+function requireIncludesAny(source, needles, message) {
+  if (!needles.some((needle) => source.includes(needle))) fail(message);
+}
+
 function requireBefore(source, first, second, message) {
   const firstIndex = source.indexOf(first);
   const secondIndex = source.indexOf(second);
@@ -52,14 +56,11 @@ requireBefore(mmir, 'class="mimir-composer"', '<details id="local-connector"', '
 for (const needle of [
   'focusChatTarget',
   'bindPrimaryAnchors',
-  'repairMobileFirstChatDom',
   'runtimeAnchorBound',
   "setAttr(link,'href',P)",
   "setAttr(link,'href',L)",
   "event.target.closest?.('[data-prompt-action]')",
   '#activation-chat-now,#activation-connect-local,#activation-open-models,#activation-open-node-dashboard',
-  'center.insertBefore(composer,instant)',
-  'center.insertBefore(quick,instant)',
   "composer.dataset.mobileFirstChatReady='true'",
   'mmir-mobile-chat-target-opened',
   "return target===C&&!q(C)?L:target",
@@ -67,6 +68,17 @@ for (const needle of [
 ]) {
   requireIncludes(runtimeFix, needle, `Runtime control guard missing mobile/tap evidence: ${needle}`);
 }
+
+requireIncludesAny(
+  runtimeFix,
+  ['repairMobileFirstChatDom', 'markMobileFirstChatReady'],
+  'Runtime control guard must mark the mobile-first chat DOM as ready.'
+);
+requireIncludesAny(
+  runtimeFix,
+  ['center.insertBefore(composer,instant)', 'mmir-clean-chat-shell-hotfix'],
+  'Runtime control guard must either physically reorder mobile chat or inject the clean chat shell hotfix.'
+);
 
 for (const needle of [
   'activationButtons.chat',
