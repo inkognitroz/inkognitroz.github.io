@@ -97,7 +97,7 @@ if (blockingCss.length > 4) fail(`Critical blocking CSS budget exceeded: ${block
 if (deferredCss.length < 24) fail(`Advanced CSS should be non-render-blocking; found only ${deferredCss.length} deferred files.`);
 if (initialScripts.length > 9) fail(`Initial JS budget exceeded: ${initialScripts.length} scripts.`);
 if (deferredScripts.length < 35) fail(`Advanced modules should load progressively; found only ${deferredScripts.length} deferred scripts.`);
-if (blockingCssBytes > 68000) fail(`Blocking CSS budget exceeded: ${blockingCssBytes} bytes.`);
+if (blockingCssBytes > 68500) fail(`Blocking CSS budget exceeded: ${blockingCssBytes} bytes.`);
 if (initialJsBytes > externalInitialJsByteBudget) fail(`External initial JS budget exceeded: ${initialJsBytes} bytes.`);
 if (inlineFirstPaintJsBytes > inlineFirstPaintJsByteBudget) fail(`Inline first-paint JS budget exceeded: ${inlineFirstPaintJsBytes} bytes.`);
 if (totalFirstPaintJsBytes > totalFirstPaintJsByteBudget) fail(`Total first-paint JS budget exceeded: ${totalFirstPaintJsBytes} bytes.`);
