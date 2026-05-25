@@ -1,6 +1,6 @@
 {
   "service": "MMIR AI Control Plane",
-  "status": "bootstrap_free_route_online",
+  "status": "clean_chat_shell_hotfix_online",
   "identity": "The orchestration layer for trusted AI",
   "frontend": "https://mmir.ai/mmir.html",
   "managed_api": "https://api.mmir.ai",
@@ -10,7 +10,7 @@
   "first_click_path": "Open mmir.ai -> chat through free active node -> connect local AI -> add own models",
   "no_paid_routes_started": true,
   "backend_health_url": "https://api.mmir.ai/status",
-  "message": "P0 first-chat hardening is on main: Send is a real submit control, free starter route is synchronous, no-backend first chat falls back to MMIR Guide, and api.mmir.ai exposes a free active Browser Guide node.",
-  "known_caveat": "GitHub Pages/CDN can serve the previous HTML for a short window after deploy; cache-busted runtime files are on main and Pages deploy is retriggered by this status update.",
-  "last_updated": "2026-05-24T16:08:00-07:00"
+  "message": "Clean chat hotfix is on main: first screen is chat-first, advanced MMIR capabilities are pushed behind More/drawers, composer controls no longer overlap, and free first chat works through MMIR Guide.",
+  "known_caveat": "GitHub Pages/CDN can serve the previous JavaScript for a short window after deploy; the existing runtime-controls-fix.js path now injects the clean chat shell so HTML does not need a risky large hotfix.",
+  "last_updated": "2026-05-25T03:09:55-07:00"
 }
