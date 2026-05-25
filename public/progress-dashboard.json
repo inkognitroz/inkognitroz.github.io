@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T01:53:31.150Z",
+  "updated_at": "2026-05-25T02:27:42.972Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 268,
+    "total": 269,
     "done": 51,
-    "beta": 192,
+    "beta": 193,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1238,6 +1238,16 @@
       },
       {
         "phase": "Chat UX / Focus",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Composer",
         "total": 1,
         "done": 0,
         "beta": 1,
@@ -9755,6 +9765,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "After a conversation starts, chat focus mode hides quick suggestions and collapses active-node details so the transcript and composer stay primary.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D269",
+      "phase": "Chat UX / Composer",
+      "priority": "P0",
+      "work_package": "Open WebUI-style auto-growing composer",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the main chat input auto-grow for longer prompts, cap height cleanly, remove manual drag resizing and reset height after send/selection actions without adding critical first-paint JavaScript",
+      "best_practice": "Writing should feel as smooth as ChatGPT/Open WebUI while keeping MMIR fast and calm on mobile and desktop",
+      "done_when": "CSS and a deferred fallback script prove the composer expands naturally, scrolls only after a sensible cap and resets after send/model actions with no paid/backend side effects",
+      "covers": "chat, composer, open-webui-parity, usability, performance, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The main composer now auto-grows like a modern chat surface, caps height cleanly and resets after send/model actions through CSS plus a deferred fallback script without adding critical first-paint JavaScript.",
       "estimate": "Verify + polish"
     }
   ]

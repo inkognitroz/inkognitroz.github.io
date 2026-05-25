@@ -5,6 +5,7 @@ const root = process.cwd();
 const files = {
   html: join(resolve(root, 'public'), 'mmir.html'),
   css: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'),
+  composerAutosize: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-autosize.js'),
   runtimeCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspacesCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workspaces.css'),
   sw: join(resolve(root, 'public'), 'sw.js'),
@@ -37,6 +38,7 @@ function requireBefore(source, first, second, message) {
 
 const html = read(files.html);
 const css = read(files.css).replace(/\s+/g, ' ');
+const composerAutosize = read(files.composerAutosize);
 const runtimeCss = read(files.runtimeCss).replace(/\s+/g, ' ');
 const workspacesCss = read(files.workspacesCss).replace(/\s+/g, ' ');
 const sw = read(files.sw);
@@ -44,10 +46,14 @@ const pagesWorkflow = read(files.pagesWorkflow);
 const qualityWorkflow = read(files.qualityWorkflow);
 
 requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontpage must keep the chat-first shell class.');
-requireIncludes(html, 'mimir-chat-portal.css?v=20260525-chat-focus-v1', 'MMIR frontpage must ship the fresh chat focus CSS cache key.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d268-20260525-chat-focus-v1'", 'Service worker cache must be bumped for the chat focus fix.');
+requireIncludes(html, 'mimir-chat-portal.css?v=20260525-composer-autosize-v1', 'MMIR frontpage must ship the fresh composer autosize CSS cache key.');
+requireIncludes(html, './apps/mimir-chat-portal/composer-autosize.js', 'Composer autosize fallback must load through the deferred queue.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d269-20260525-composer-autosize-v1'", 'Service worker cache must be bumped for the composer autosize fix.');
 
 for (const needle of [
+  'resize:none',
+  'field-sizing:content',
+  'max-height:14rem',
   '.mimir-chat-first .mimir-greeting{order:1}',
   '.mimir-chat-first .mimir-composer{order:2}',
   '.mimir-chat-first #mmir-active-nodes-bar{order:3}',
@@ -57,6 +63,15 @@ for (const needle of [
   '.mimir-chat-first #use-case-templates,.mimir-chat-first #free-value-loops,.mimir-chat-first #first-run-onboarding,.mimir-chat-first #growth-demo{order:20}'
 ]) {
   requireIncludes(css, needle, `Frontpage chat-first CSS order missing: ${needle}`);
+}
+
+for (const needle of [
+  'window.MimirAutosizeComposer=resize',
+  "event.target&&event.target.id==='mimir-chat-form'",
+  'setTimeout(resize,80)',
+  "event.target?.closest?.('#primary-chat-link,[data-prompt-action],.composer-model-card button,.model-card button')"
+]) {
+  requireIncludes(composerAutosize, needle, `Composer autosize fallback must reset smoothly: ${needle}`);
 }
 
 for (const needle of [

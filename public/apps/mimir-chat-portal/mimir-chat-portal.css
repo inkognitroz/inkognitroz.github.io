@@ -30,3 +30,4 @@ body.mimir-public-chat::before{display:none}body.mimir-public-chat a{color:var(-
 .mimir-has-chat .quick-suggestions{display:none;order:4}
 .mimir-has-chat #mmir-active-nodes-bar{order:5}
 .mimir-has-chat #mmir-active-nodes-bar .mmir-active-starter-rail,.mimir-has-chat #mmir-active-nodes-bar .mmir-active-node-grid{display:none}
+.mimir-composer textarea{max-height:14rem;resize:none;overflow-y:auto;field-sizing:content;box-sizing:border-box;line-height:1.45}

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d268-20260525-chat-focus-v1';
+const CACHE_NAME='mmir-pwa-d269-20260525-composer-autosize-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -11,6 +11,7 @@ const SHELL_ASSETS=[
   './assets/mmir-maskable-icon.svg',
   './apps/mimir-chat-portal/mimir-chat-portal.css',
   './apps/mimir-chat-portal/chat-runtime.css',
+  './apps/mimir-chat-portal/composer-autosize.js',
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
   './active-chat-nodes.json',
