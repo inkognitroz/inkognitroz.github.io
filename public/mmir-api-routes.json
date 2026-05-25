@@ -57,6 +57,8 @@
     { "path": "/node/identity", "owner": "local-node", "auth": "public-safe", "status": "beta", "purpose": "Public-safe node identity metadata." },
     { "path": "/pair", "owner": "local-node", "auth": "public-safe", "status": "beta", "purpose": "Local or one-time-code pairing token route." },
     { "path": "/pairing/sessions", "owner": "local-node", "auth": "public-safe", "status": "beta", "purpose": "Create local one-time cross-device pairing code." },
+    { "path": "/v1/chat/completions", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "OpenAI-style local-node chat alias for Open WebUI-compatible clients." },
+    { "path": "/v1/models", "owner": "local-node", "auth": "paired-local-token", "status": "beta", "purpose": "OpenAI-style local-node model-list alias for Open WebUI-compatible clients." },
     { "path": "/prompts", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Protected prompt registry root." },
     { "path": "/prompts/", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "kind": "dynamic-fragment", "purpose": "Prompt dynamic route fragment." },
     { "path": "/research/plans", "owner": "managed-api", "auth": "protected-backend-auth", "status": "beta", "purpose": "Planning-only research runs with sources, citations and approval gates before browsing." },
