@@ -233,7 +233,7 @@ function response(body) {
   };
 }
 
-async function setupContext() {
+async function setupContext({ webgpu = true } = {}) {
   const document = new FakeDocument();
   const shell = new FakeElement(document, 'main');
   const composer = new FakeElement(document, 'form');
@@ -257,7 +257,7 @@ async function setupContext() {
   const events = [];
   const localStorage = makeStorage();
   const location = { href: 'http://127.0.0.1:4173/mmir.html' };
-  const navigator = { gpu: {} };
+  const navigator = webgpu ? { gpu: {} } : {};
   const window = {
     document,
     isSecureContext: true,
@@ -338,6 +338,23 @@ if (!hasHandoff(webgpu.events, 'webllm-qwen25-05b', 'select')) fail('WebGPU star
 if (!webgpu.prompt.value.includes('Qwen2.5 0.5B')) fail('WebGPU startup starter must seed the selected model prompt.');
 if (webgpu.primary.clicked !== 1) fail('WebGPU startup starter must click Send once.');
 
+const noGpu = await setupContext({ webgpu: false });
+if (!noGpu.bar.innerHTML.includes('data-route-state="setup"') || !noGpu.bar.innerHTML.includes('Needs WebGPU Qwen2.5 0.5B')) {
+  fail('No-WebGPU startup rail must label browser LLM starters as setup, not ready.');
+}
+starterButton(noGpu.bar, 'webllm-qwen25-05b')?.click();
+if (!noGpu.events.some((event) => event.type === 'mmir-runtime-starter-handoff'
+  && event.detail.starter_id === 'mmir-guide'
+  && event.detail.action === 'select'
+  && event.detail.fallback_for === 'webllm-qwen25-05b'
+  && event.detail.no_paid_routes_started === true)) {
+  fail('No-WebGPU startup starter must fall back to MMIR Guide with selected WebGPU model preserved as context.');
+}
+if (!noGpu.prompt.value.includes('needs WebGPU here') || !noGpu.prompt.value.includes('Local Node')) {
+  fail('No-WebGPU startup fallback must seed a useful no-cost guide prompt.');
+}
+if (noGpu.primary.clicked !== 1) fail('No-WebGPU startup fallback must still send one useful guide chat.');
+
 const local = await setupContext();
 starterButton(local.bar, 'ollama-qwen3-06b')?.click();
 if (!hasHandoff(local.events, 'ollama-qwen3-06b', 'install')) fail('Ollama startup starter must dispatch an install handoff.');
@@ -361,9 +378,13 @@ if (local.primary.clicked) fail('Ollama startup installer path must not pretend 
 
 const workflows = `${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`;
 requireIncludes(text(files.backlog), '| D299 | Chat QA / Free Models | P0 | Startup free LLM click fixture |', 'Backlog must include D299 startup free LLM click fixture.');
+requireIncludes(text(files.backlog), '| D300 | Chat UX / Free Models | P0 | Startup WebGPU fallback clarity |', 'Backlog must include D300 startup WebGPU fallback clarity.');
 requireIncludes(text(files.log), 'D299 is now beta', 'Implementation log must include D299.');
+requireIncludes(text(files.log), 'D300 is now beta', 'Implementation log must include D300.');
 requireIncludes(text(files.buildDashboard), "['D299'", 'Progress dashboard build must mark D299 status.');
+requireIncludes(text(files.buildDashboard), "['D300'", 'Progress dashboard build must mark D300 status.');
 requireIncludes(text(files.visualQa), 'D299 startup free LLM click fixture', 'Visual QA report must mention D299.');
+requireIncludes(text(files.visualQa), 'D300 startup WebGPU fallback clarity', 'Visual QA report must mention D300.');
 requireIncludes(workflows, 'smoke-check-startup-free-llm-click-fixture.js', 'GitHub workflows must run D299 startup free LLM click fixture.');
 
 if (!process.exitCode) {

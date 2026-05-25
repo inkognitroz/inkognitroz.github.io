@@ -264,6 +264,7 @@ Updated: 2026-05-23
 - D297 is now beta: the static first-paint Send button now records an immediate click and chat-runtime replays it through the guarded automatic free chat path once handlers are ready, preventing an eaten first click.
 - D298 is now beta: the startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog, removes the old 14-item cap and sends the selected installable model into the universal no-spend installer.
 - D299 is now beta: a dependency-free startup rail DOM fixture clicks MMIR Guide, Browser WebGPU and Qwen3 Ollama starter buttons, proving handoff, first-chat send, selected-model installer resume and no-spend/no-secret boundaries.
+- D300 is now beta: startup WebGPU starters now show setup state when WebGPU is unavailable and route clicks to a useful MMIR Guide answer that preserves the chosen browser model as context without paid routes.
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads as critical chat UI with compact route chips directly under the composer, so free browser/WebGPU/local-node choices are visible before secondary platform sections.
 - D254 chat polish is tightened again: active routes no longer wait for the deferred feature queue, mobile/desktop order keeps composer -> active routes -> runtime proof, and the performance budget was raised narrowly for this critical model-choice code.

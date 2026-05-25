@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T19:12:40.704Z",
+  "updated_at": "2026-05-25T19:24:14.224Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 299,
+    "total": 300,
     "done": 51,
-    "beta": 223,
+    "beta": 224,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1178,9 +1178,9 @@
       },
       {
         "phase": "Chat UX / Free Models",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1517,6 +1517,12 @@
         "label": "Startup free LLM buttons are clickable",
         "status": "beta",
         "evidence": "D299 clicks the startup Guide, WebGPU and Ollama starter buttons in CI and proves chat send, starter handoff, selected-model installer resume and no-spend boundaries."
+      },
+      {
+        "id": "startup-webgpu-fallback",
+        "label": "Unsupported browser LLMs stay truthful",
+        "status": "beta",
+        "evidence": "D300 labels WebGPU starters as setup-only when WebGPU is missing and sends a free MMIR Guide answer instead of pretending the browser LLM is live."
       },
       {
         "id": "local-node-package",
@@ -10972,6 +10978,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "A dependency-free startup rail click fixture now proves MMIR Guide and WebGPU starters send chat, while Ollama starters open the selected-model installer with no-spend/no-secret boundaries.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D300",
+      "phase": "Chat UX / Free Models",
+      "priority": "P0",
+      "work_package": "Startup WebGPU fallback clarity",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Mark browser WebGPU starters as setup-only when the current browser/device cannot run WebGPU, and route those clicks to a useful MMIR Guide answer that preserves the selected model as context",
+      "best_practice": "Unsupported devices should not make browser LLMs look live; the user should still get a useful automatic free answer and a no-cost path to Local Node or WebGPU",
+      "done_when": "The startup click fixture proves no-WebGPU browsers label WebGPU starters honestly, fall back to MMIR Guide, send one useful chat, preserve no-spend boundaries and rotate caches",
+      "covers": "chat, free-models, webgpu, mobile, activation, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.",
       "estimate": "Verify + polish"
     }
   ]

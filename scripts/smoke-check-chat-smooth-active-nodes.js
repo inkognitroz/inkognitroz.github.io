@@ -151,7 +151,7 @@ for (const needle of [
   requireIncludes(runtimeCss, needle, `Runtime CSS must keep a smooth transcript surface: ${needle}`);
 }
 
-requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-startup-free-llm-nodes-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
+requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-startup-webgpu-fallback-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
 requireIncludes(mmir, 'Press send to start automatically', 'Composer placeholder must tell users they can start without setup or typing.');
 if (deferredQueue.some((item) => String(item).includes('active-node-strip.js'))) {
   fail('Active chat node strip must not wait for the deferred feature queue.');

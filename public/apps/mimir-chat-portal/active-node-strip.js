@@ -89,12 +89,13 @@
   }
   function style(){
     if(q('#mmir-active-node-strip-style'))return;
-    const el=d.createElement('style');el.id='mmir-active-node-strip-style';el.textContent=`#mmir-active-nodes-bar{border:1px solid #10a37f38;background:#ffffffe6;border-radius:18px;padding:.56rem;margin:.35rem 0;display:grid;gap:.42rem;box-shadow:0 10px 28px #0f172a0e}.mmir-active-node-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap}.mmir-active-node-title{display:grid;gap:.08rem;min-width:0}.mmir-active-node-title span,.mmir-active-node-card span{font-size:.64rem;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:#047857}.mmir-active-node-title strong,.mmir-active-node-card strong{display:block;color:#0f172a;line-height:1.15}.mmir-active-node-title strong{font-size:.9rem}.mmir-active-node-title small,.mmir-active-node-card small{display:block;color:#64748b;font-size:.73rem;line-height:1.24;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mmir-active-node-pill,.mmir-active-starter-rail button,.mmir-active-node-card button{border-radius:999px;font-weight:800;white-space:nowrap}.mmir-active-node-pill{border:1px solid #10a37f47;background:#ecfdf5;color:#047857;padding:.23rem .5rem;font-size:.72rem}.mmir-active-starter-rail,.mmir-active-node-grid{display:flex;gap:.42rem;overflow:auto;scrollbar-width:thin;padding:.03rem .02rem .12rem}.mmir-active-starter-rail button{border:1px solid #10a37f38;background:#fff;color:#0f172a;padding:.32rem .52rem;font-size:.73rem;cursor:pointer}.mmir-active-starter-rail button[data-starter-runtime="browser-guide"],.mmir-active-starter-rail button[data-starter-runtime="webllm"]{background:#ecfdf5;color:#047857}.mmir-active-node-card{align-items:center;border:1px solid #94a3b838;background:#fff;border-radius:999px;display:grid;grid-template-columns:minmax(150px,1fr) auto;gap:.52rem;min-width:min(260px,82vw);padding:.43rem .5rem .43rem .66rem}.mmir-active-node-card[data-node-state="online"]{border-color:#10a37f52;background:#f6fffb}.mmir-active-node-card strong{font-size:.84rem}.mmir-active-node-card dl{display:none}.mmir-active-node-card button{min-height:30px;border:1px solid #0f172a1f;background:#0f172a;color:#fff;font-size:.74rem;padding:0 .7rem;cursor:pointer}.mmir-active-node-card[data-node-state="setup"] button{background:#fff;color:#0f172a}.mmir-active-node-card[data-node-state="offline"] button{background:#fff7ed;color:#92400e;border-color:#fed7aa}@media(max-width:760px){#mmir-active-nodes-bar{padding:.5rem}.mmir-active-node-head small{display:none}.mmir-active-node-card{min-width:min(235px,78vw);grid-template-columns:minmax(120px,1fr) auto}}`;
+    const el=d.createElement('style');el.id='mmir-active-node-strip-style';el.textContent=`#mmir-active-nodes-bar{border:1px solid #10a37f38;background:#ffffffe6;border-radius:18px;padding:.56rem;margin:.35rem 0;display:grid;gap:.42rem;box-shadow:0 10px 28px #0f172a0e}.mmir-active-node-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap}.mmir-active-node-title{display:grid;gap:.08rem;min-width:0}.mmir-active-node-title span,.mmir-active-node-card span{font-size:.64rem;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:#047857}.mmir-active-node-title strong,.mmir-active-node-card strong{display:block;color:#0f172a;line-height:1.15}.mmir-active-node-title strong{font-size:.9rem}.mmir-active-node-title small,.mmir-active-node-card small{display:block;color:#64748b;font-size:.73rem;line-height:1.24;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mmir-active-node-pill,.mmir-active-starter-rail button,.mmir-active-node-card button{border-radius:999px;font-weight:800;white-space:nowrap}.mmir-active-node-pill{border:1px solid #10a37f47;background:#ecfdf5;color:#047857;padding:.23rem .5rem;font-size:.72rem}.mmir-active-starter-rail,.mmir-active-node-grid{display:flex;gap:.42rem;overflow:auto;scrollbar-width:thin;padding:.03rem .02rem .12rem}.mmir-active-starter-rail button{border:1px solid #10a37f38;background:#fff;color:#0f172a;padding:.32rem .52rem;font-size:.73rem;cursor:pointer}.mmir-active-starter-rail button[data-starter-runtime="browser-guide"],.mmir-active-starter-rail button[data-starter-runtime="webllm"]{background:#ecfdf5;color:#047857}.mmir-active-starter-rail button[data-route-state="setup"]{background:#fff7ed;color:#92400e;border-color:#fed7aa}.mmir-active-node-card{align-items:center;border:1px solid #94a3b838;background:#fff;border-radius:999px;display:grid;grid-template-columns:minmax(150px,1fr) auto;gap:.52rem;min-width:min(260px,82vw);padding:.43rem .5rem .43rem .66rem}.mmir-active-node-card[data-node-state="online"]{border-color:#10a37f52;background:#f6fffb}.mmir-active-node-card strong{font-size:.84rem}.mmir-active-node-card dl{display:none}.mmir-active-node-card button{min-height:30px;border:1px solid #0f172a1f;background:#0f172a;color:#fff;font-size:.74rem;padding:0 .7rem;cursor:pointer}.mmir-active-node-card[data-node-state="setup"] button{background:#fff;color:#0f172a}.mmir-active-node-card[data-node-state="offline"] button{background:#fff7ed;color:#92400e;border-color:#fed7aa}@media(max-width:760px){#mmir-active-nodes-bar{padding:.5rem}.mmir-active-node-head small{display:none}.mmir-active-node-card{min-width:min(235px,78vw);grid-template-columns:minmax(120px,1fr) auto}}`;
     d.head.appendChild(el);
   }
+  function handoff(detail){w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{free:true,no_paid_routes_started:true,...detail}}));}
   function selectStarter(node,prompt){
     const id=starterId(node);
-    if(id)w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:id,action:'select',source:'active-node-strip',free:true,no_paid_routes_started:true}}));
+    if(id)handoff({starter_id:id,action:'select',source:'active-node-strip'});
     const promptEl=q('#mimir-prompt');
     if(promptEl&&prompt){
       promptEl.value=prompt;
@@ -165,8 +166,9 @@
     if(model.runtime==='ollama')return 'install';
     return 'select';
   }
+  function starterState(model){return model.runtime==='webllm'&&!webGpuReady()?'setup':'ready';}
   function starterLabel(model){
-    const prefix=model.runtime==='ollama'?'Install':(model.runtime==='webllm'?'WebGPU':'Now');
+    const prefix=model.runtime==='ollama'?'Install':(model.runtime==='webllm'?(webGpuReady()?'WebGPU':'Needs WebGPU'):'Now');
     return prefix+' '+String(model.label||model.id||'model').replace(/\s+-\s+(active in browser|free browser helper|live helper|tiny free local|tiny reasoning local|small multilingual|balanced free local|local assistant|tiny local chat|reasoning local|long-context business local|compact premium-feel local|code assistant).*$/i,'');
   }
   function starterRail(){
@@ -174,13 +176,25 @@
     const visible=starterModels.filter(model=>['browser-guide','webllm','ollama'].includes(model.runtime));
     if(!visible.length)return '';
     return '<div class="mmir-active-starter-rail" aria-label="Free model starters" data-free-starter-count="'+String(visible.length)+'">'+visible.map(model=>
-      '<button type="button" data-active-starter-id="'+safe(model.id)+'" data-starter-runtime="'+safe(model.runtime)+'" title="'+safe(model.install_note||model.best_for||model.label)+'">'+safe(starterLabel(model))+'</button>'
+      '<button type="button" data-active-starter-id="'+safe(model.id)+'" data-starter-runtime="'+safe(model.runtime)+'" data-route-state="'+safe(starterState(model))+'" title="'+safe(model.install_note||model.best_for||model.label)+'">'+safe(starterLabel(model))+'</button>'
     ).join('')+'</div>';
   }
   function activateStarter(model){
     if(!model?.id)return;
+    if(model.runtime==='webllm'&&!webGpuReady()){
+      const guide=starterModels.find(item=>item.id==='mmir-guide')||{id:'mmir-guide'};
+      handoff({starter_id:guide.id,action:'select',source:'active-node-starter-rail',fallback_for:model.id});
+      const promptEl=q('#mimir-prompt');
+      if(promptEl&&!String(promptEl.value||'').trim()){
+        promptEl.value=(model.label||model.id)+' needs WebGPU here. Start the free guide and show the no-cost path to run it with WebGPU or Local Node.';
+        promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+        promptEl.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      q('#primary-chat-link')?.click();
+      return;
+    }
     const action=starterAction(model);
-    w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:model.id,action,source:'active-node-starter-rail',free:true,no_paid_routes_started:true}}));
+    handoff({starter_id:model.id,action,source:'active-node-starter-rail'});
     const promptEl=q('#mimir-prompt');
     if(action==='install'&&!localReady()){
       openInstaller('active-node-starter-rail',model);

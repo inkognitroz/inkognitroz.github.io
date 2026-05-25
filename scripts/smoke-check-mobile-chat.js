@@ -41,7 +41,7 @@ if (!html.includes('composer-model-picker.css?v=20260525-picker-empty-reset-v1')
   fail('MMIR page must cache-bust the model picker empty-reset CSS.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d298-20260525-startup-free-llm-nodes-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d300-20260525-startup-webgpu-fallback-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 
