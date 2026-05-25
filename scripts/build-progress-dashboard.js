@@ -51,6 +51,7 @@ const correctionRemediationAutopilotTimelineReceiptsBrowserFixturePath = resolve
 const correctionRemediationAutopilotTimelineReceiptsBrowserQaReportPath = resolve(root, 'public', 'correction-remediation-autopilot-timeline-receipts-browser-qa-report.json');
 const crossRepoArchitectureSecurityReviewReportPath = resolve(root, 'public', 'cross-repo-architecture-security-review-report.json');
 const chatFirstFreeActivationCanaryReportPath = resolve(root, 'public', 'chat-first-free-activation-canary-report.json');
+const domainAvailabilityWatchPath = resolve(root, 'public', 'domain-availability-watch.json');
 
 const statusNotes = {
   done: 'Shipped and guarded by local or CI checks for the current scope.',
@@ -269,7 +270,8 @@ const overrides = new Map([
   ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }],
   ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
   ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }],
-  ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }]
+  ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }],
+  ['D287', { status: 'beta', evidence: 'Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.' }]
 ]);
 
 const repoMeta = [
@@ -608,6 +610,11 @@ function readChatFirstFreeActivationCanaryReport() {
   return JSON.parse(readFileSync(chatFirstFreeActivationCanaryReportPath, 'utf8'));
 }
 
+function readDomainAvailabilityWatch() {
+  if (!existsSync(domainAvailabilityWatchPath)) return null;
+  return JSON.parse(readFileSync(domainAvailabilityWatchPath, 'utf8'));
+}
+
 function summarize(tasks) {
   const counts = tasks.reduce((acc, task) => {
     acc[task.status] = (acc[task.status] || 0) + 1;
@@ -724,6 +731,12 @@ function buildLaunchProgress() {
       label: 'Composer mode chips are compact',
       status: 'beta',
       evidence: 'D286 gives the first chat composer Open WebUI-style Auto review and 5.5 Extra high chips while hiding heavier MMIR++/Vision controls from the clean first-screen shell.'
+    },
+    {
+      id: 'domain-availability-watch-refresh',
+      label: 'Domain availability is separated from chat health',
+      status: 'watch',
+      evidence: 'D287 records f69d128 as the latest green Pages commit, Cloudflare DNS/CNAME evidence and the local 503 state as an off-network domain watch instead of a frontend/chat failure.'
     },
     {
       id: 'local-node-package',
@@ -851,6 +864,12 @@ function buildLaunchProgress() {
     local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
     checkpoints,
     last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: 'f69d128',
+        label: 'Compact composer mode chips',
+        result: 'Static quality gates, branding migration and Pages deploy green; D287 keeps domain availability as a separate watch'
+      },
       {
         repo: 'inkognitroz.github.io',
         commit: 'edf0b25',
@@ -1100,6 +1119,7 @@ const data = {
   correction_remediation_autopilot_timeline_receipts_browser_qa_report: readCorrectionRemediationAutopilotTimelineReceiptsBrowserQaReport(),
   cross_repo_architecture_security_review_report: readCrossRepoArchitectureSecurityReviewReport(),
   chat_first_free_activation_canary_report: readChatFirstFreeActivationCanaryReport(),
+  domain_availability_watch: readDomainAvailabilityWatch(),
   repos: repoMeta,
   repo_decisions: repoDecisions,
   next_queue: prioritizedNextQueue,

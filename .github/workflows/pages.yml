@@ -200,6 +200,8 @@ jobs:
         run: node scripts/smoke-check-dom-rendering-hardening.js
       - name: Smoke check deploy verification
         run: node scripts/smoke-check-deploy-verification.js
+      - name: Smoke check domain availability watch
+        run: node scripts/smoke-check-domain-availability-watch.js
       - name: Smoke check first-screen visual QA
         run: node scripts/smoke-check-first-screen-visual-qa.js
       - name: Smoke check composer model picker

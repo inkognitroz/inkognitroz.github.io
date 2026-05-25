@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-25T11:36:07.962Z",
+  "scope": "D287 domain availability watch",
+  "public_repo_rule": "Public-safe diagnostics only: no cookies, secrets, private traffic, provider keys or paid routes.",
+  "latest_green_commit": "f69d1282315ad1ea8fc9116b8bb70af304bc2ee2",
+  "latest_green_commit_short": "f69d128",
+  "custom_domain": "mmir.ai",
+  "cname_file": "public/CNAME",
+  "cname_value": "mmir.ai",
+  "dns_observed": {
+    "mmir.ai": {
+      "provider": "Cloudflare",
+      "a": [
+        "104.21.63.238",
+        "172.67.173.27"
+      ],
+      "aaaa": [
+        "2606:4700:3036::ac43:ad1b",
+        "2606:4700:3031::6815:3fee"
+      ]
+    },
+    "www.mmir.ai": {
+      "provider": "Cloudflare",
+      "a": [
+        "104.21.63.238",
+        "172.67.173.27"
+      ],
+      "aaaa": [
+        "2606:4700:3036::ac43:ad1b",
+        "2606:4700:3031::6815:3fee"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "id": "latest-github-pages-actions",
+      "label": "Deploy GitHub Pages",
+      "status": "green",
+      "evidence": "Static quality gates, Branding and Deploy GitHub Pages completed successfully for f69d128.",
+      "urls": [
+        "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26398285805",
+        "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26398285802",
+        "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26398285744"
+      ]
+    },
+    {
+      "id": "public-cname",
+      "label": "Public CNAME",
+      "status": "green",
+      "evidence": "public/CNAME is present and points at mmir.ai."
+    },
+    {
+      "id": "mmir-ai-dns",
+      "label": "mmir.ai DNS",
+      "status": "green",
+      "evidence": "mmir.ai resolves to Cloudflare A and AAAA records from this environment."
+    },
+    {
+      "id": "www-mmir-ai-dns",
+      "label": "www.mmir.ai DNS",
+      "status": "green",
+      "evidence": "www.mmir.ai resolves to the same Cloudflare A and AAAA records from this environment."
+    },
+    {
+      "id": "mmir-ai-local-shell",
+      "label": "Local shell fetch for mmir.ai",
+      "status": "watch",
+      "evidence": "This environment returns 503 or connection failure for https://mmir.ai/mmir.html. Treat as domain/CDN/network watch until verified off-network."
+    },
+    {
+      "id": "www-mmir-ai-local-shell",
+      "label": "Local shell fetch for www.mmir.ai",
+      "status": "watch",
+      "evidence": "This environment returns 503 for https://www.mmir.ai/mmir.html. Treat as domain/CDN/network watch until verified off-network."
+    },
+    {
+      "id": "github-pages-direct-local-shell",
+      "label": "Local shell fetch for inkognitroz.github.io",
+      "status": "watch",
+      "evidence": "This environment also returns 503 for the direct Pages URL, so the local fetch result is not enough to prove a frontend regression."
+    },
+    {
+      "id": "no-spend-domain-path",
+      "label": "No-spend availability work",
+      "status": "green",
+      "evidence": "The domain watch uses existing GitHub Pages, DNS checks and public static diagnostics only."
+    }
+  ],
+  "diagnosis": "GitHub Pages deploy is green and DNS resolves through Cloudflare, but this environment cannot prove public browser availability because local fetches return 503 or connection failures. Keep this as a domain/network watch, not a chat or frontend-code failure, until an off-network browser confirms the deployed UI.",
+  "next_actions": [
+    "Test https://mmir.ai/mmir.html from mobile data or another off-network browser.",
+    "In Cloudflare, verify that mmir.ai and www.mmir.ai route to the GitHub Pages custom domain and that SSL/TLS mode is compatible with Pages.",
+    "In GitHub Pages settings, keep source on GitHub Actions and custom domain set to mmir.ai.",
+    "Keep secrets, API keys, cookies and paid provider routes out of this public repository."
+  ],
+  "completion_rule": "Mark D082/D287 healthy only when a non-local network loads the MMIR UI from https://mmir.ai/ or the Cloudflare/GitHub Pages route has a documented repair with green follow-up checks."
+}

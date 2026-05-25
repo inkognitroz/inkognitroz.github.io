@@ -251,6 +251,7 @@ Updated: 2026-05-23
 - D284 is now beta: the full-project review snapshot now covers the public Pages app, local-node connector, managed backend template, OCI runtime template and AWS runtime template with public-safe dashboard evidence, no-spend boundaries, 87 public smoke gates, 63 local-node tests, 188 backend tests, route/security checks and proxy syntax checks.
 - D285 is now beta: the legacy Connect Model action now prepares the free local profile and routes users into the compact composer model picker first, with the model library kept only as a safe deferred-asset fallback.
 - D286 is now beta: the first chat composer now presents compact Open WebUI-style `Auto review` and `5.5 Extra high` chips, keeps MMIR++/Vision quieter in the clean shell and preserves the no-spend mode toggle contract.
+- D287 is now beta: domain availability watch now records latest green Pages commit `f69d128`, public CNAME/Cloudflare DNS evidence, local 503/watch observations and off-network verification steps in public dashboard/status data without exposing secrets or implying paid routes.
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads as critical chat UI with compact route chips directly under the composer, so free browser/WebGPU/local-node choices are visible before secondary platform sections.
 - D254 chat polish is tightened again: active routes no longer wait for the deferred feature queue, mobile/desktop order keeps composer -> active routes -> runtime proof, and the performance budget was raised narrowly for this critical model-choice code.
@@ -264,7 +265,7 @@ Updated: 2026-05-23
 
 ## Still Next In Sequence
 
-- D082: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
+- D082/D287: verify `https://mmir.ai/` from an off-network connection and allowlist/communicate around newly registered domain filtering where needed.
 - Validate latest frontend/backend/local-node CI after the new commits, then continue with `D254` Mac installer package/app-bundle QA and deeper Open WebUI parity polish.
 - D070-D081: full training pipelines, desktop/voice/screen experience, marketplace, enterprise controls and compute mesh foundations after stronger product validation.
 

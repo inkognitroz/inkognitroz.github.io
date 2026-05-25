@@ -343,6 +343,9 @@ jobs:
       - name: Smoke-check deploy verification
         run: node scripts/smoke-check-deploy-verification.js
 
+      - name: Smoke-check domain availability watch
+        run: node scripts/smoke-check-domain-availability-watch.js
+
       - name: Smoke-check first-screen visual QA
         run: node scripts/smoke-check-first-screen-visual-qa.js
 

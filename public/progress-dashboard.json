@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T11:29:07.217Z",
+  "updated_at": "2026-05-25T11:42:17.460Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 286,
+    "total": 287,
     "done": 51,
-    "beta": 210,
+    "beta": 211,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -218,9 +218,9 @@
       },
       {
         "phase": "Launch Reliability",
-        "total": 2,
+        "total": 3,
         "done": 1,
-        "beta": 0,
+        "beta": 1,
         "next": 0,
         "watch": 1,
         "blocked": 0,
@@ -1280,7 +1280,7 @@
   },
   "launch_progress": {
     "title": "P0 launch progress",
-    "percent": 76,
+    "percent": 74,
     "state": "building",
     "summary": "The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.",
     "public_url": "./mmir.html#progress-dashboard",
@@ -1369,6 +1369,12 @@
         "label": "Composer mode chips are compact",
         "status": "beta",
         "evidence": "D286 gives the first chat composer Open WebUI-style Auto review and 5.5 Extra high chips while hiding heavier MMIR++/Vision controls from the clean first-screen shell."
+      },
+      {
+        "id": "domain-availability-watch-refresh",
+        "label": "Domain availability is separated from chat health",
+        "status": "watch",
+        "evidence": "D287 records f69d128 as the latest green Pages commit, Cloudflare DNS/CNAME evidence and the local 503 state as an off-network domain watch instead of a frontend/chat failure."
       },
       {
         "id": "local-node-package",
@@ -1486,6 +1492,12 @@
       }
     ],
     "last_green_evidence": [
+      {
+        "repo": "inkognitroz.github.io",
+        "commit": "f69d128",
+        "label": "Compact composer mode chips",
+        "result": "Static quality gates, branding migration and Pages deploy green; D287 keeps domain availability as a separate watch"
+      },
       {
         "repo": "inkognitroz.github.io",
         "commit": "edf0b25",
@@ -6032,6 +6044,104 @@
       "label": "Chat-first Open WebUI parity and Mac installer app packaging QA"
     }
   },
+  "domain_availability_watch": {
+    "version": 1,
+    "updated_at": "2026-05-25T11:36:07.962Z",
+    "scope": "D287 domain availability watch",
+    "public_repo_rule": "Public-safe diagnostics only: no cookies, secrets, private traffic, provider keys or paid routes.",
+    "latest_green_commit": "f69d1282315ad1ea8fc9116b8bb70af304bc2ee2",
+    "latest_green_commit_short": "f69d128",
+    "custom_domain": "mmir.ai",
+    "cname_file": "public/CNAME",
+    "cname_value": "mmir.ai",
+    "dns_observed": {
+      "mmir.ai": {
+        "provider": "Cloudflare",
+        "a": [
+          "104.21.63.238",
+          "172.67.173.27"
+        ],
+        "aaaa": [
+          "2606:4700:3036::ac43:ad1b",
+          "2606:4700:3031::6815:3fee"
+        ]
+      },
+      "www.mmir.ai": {
+        "provider": "Cloudflare",
+        "a": [
+          "104.21.63.238",
+          "172.67.173.27"
+        ],
+        "aaaa": [
+          "2606:4700:3036::ac43:ad1b",
+          "2606:4700:3031::6815:3fee"
+        ]
+      }
+    },
+    "checks": [
+      {
+        "id": "latest-github-pages-actions",
+        "label": "Deploy GitHub Pages",
+        "status": "green",
+        "evidence": "Static quality gates, Branding and Deploy GitHub Pages completed successfully for f69d128.",
+        "urls": [
+          "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26398285805",
+          "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26398285802",
+          "https://github.com/inkognitroz/inkognitroz.github.io/actions/runs/26398285744"
+        ]
+      },
+      {
+        "id": "public-cname",
+        "label": "Public CNAME",
+        "status": "green",
+        "evidence": "public/CNAME is present and points at mmir.ai."
+      },
+      {
+        "id": "mmir-ai-dns",
+        "label": "mmir.ai DNS",
+        "status": "green",
+        "evidence": "mmir.ai resolves to Cloudflare A and AAAA records from this environment."
+      },
+      {
+        "id": "www-mmir-ai-dns",
+        "label": "www.mmir.ai DNS",
+        "status": "green",
+        "evidence": "www.mmir.ai resolves to the same Cloudflare A and AAAA records from this environment."
+      },
+      {
+        "id": "mmir-ai-local-shell",
+        "label": "Local shell fetch for mmir.ai",
+        "status": "watch",
+        "evidence": "This environment returns 503 or connection failure for https://mmir.ai/mmir.html. Treat as domain/CDN/network watch until verified off-network."
+      },
+      {
+        "id": "www-mmir-ai-local-shell",
+        "label": "Local shell fetch for www.mmir.ai",
+        "status": "watch",
+        "evidence": "This environment returns 503 for https://www.mmir.ai/mmir.html. Treat as domain/CDN/network watch until verified off-network."
+      },
+      {
+        "id": "github-pages-direct-local-shell",
+        "label": "Local shell fetch for inkognitroz.github.io",
+        "status": "watch",
+        "evidence": "This environment also returns 503 for the direct Pages URL, so the local fetch result is not enough to prove a frontend regression."
+      },
+      {
+        "id": "no-spend-domain-path",
+        "label": "No-spend availability work",
+        "status": "green",
+        "evidence": "The domain watch uses existing GitHub Pages, DNS checks and public static diagnostics only."
+      }
+    ],
+    "diagnosis": "GitHub Pages deploy is green and DNS resolves through Cloudflare, but this environment cannot prove public browser availability because local fetches return 503 or connection failures. Keep this as a domain/network watch, not a chat or frontend-code failure, until an off-network browser confirms the deployed UI.",
+    "next_actions": [
+      "Test https://mmir.ai/mmir.html from mobile data or another off-network browser.",
+      "In Cloudflare, verify that mmir.ai and www.mmir.ai route to the GitHub Pages custom domain and that SSL/TLS mode is compatible with Pages.",
+      "In GitHub Pages settings, keep source on GitHub Actions and custom domain set to mmir.ai.",
+      "Keep secrets, API keys, cookies and paid provider routes out of this public repository."
+    ],
+    "completion_rule": "Mark D082/D287 healthy only when a non-local network loads the MMIR UI from https://mmir.ai/ or the Cloudflare/GitHub Pages route has a documented repair with green follow-up checks."
+  },
   "repos": [
     {
       "name": "inkognitroz.github.io",
@@ -10377,6 +10487,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D287",
+      "phase": "Launch Reliability",
+      "priority": "P0",
+      "work_package": "Domain availability watch refresh",
+      "repos": "inkognitroz.github.io, DNS/Cloudflare",
+      "concrete_work": "Record the latest green Pages commit, public CNAME/DNS observations, local 503/watch state and off-network verification steps in a public-safe dashboard report",
+      "best_practice": "Users need to know whether a public URL issue is deploy, DNS/CDN, network filtering or frontend code before chat work gets blamed incorrectly",
+      "done_when": "Progress Dashboard, Platform Status and CI smoke gate expose the domain/network watch, latest green deploy evidence, no-spend boundary and concrete off-network repair/verification steps",
+      "covers": "deploy, domain, dashboard, reliability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.",
       "estimate": "Verify + polish"
     }
   ]
