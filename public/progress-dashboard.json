@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T09:12:35.818Z",
+  "updated_at": "2026-05-25T09:24:59.024Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 281,
+    "total": 282,
     "done": 51,
-    "beta": 205,
+    "beta": 206,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 6,
+        "total": 7,
         "done": 0,
-        "beta": 6,
+        "beta": 7,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1329,6 +1329,12 @@
         "label": "Model filters are easy to recover from",
         "status": "beta",
         "evidence": "Reset clears the search query, returns the picker to All routes and keeps focus in the model discovery flow."
+      },
+      {
+        "id": "model-picker-search-focus",
+        "label": "Desktop model search is ready immediately",
+        "status": "beta",
+        "evidence": "Opening the picker on fine-pointer devices focuses search after render; coarse-pointer devices are guarded to avoid mobile keyboard surprise."
       },
       {
         "id": "local-node-package",
@@ -10126,6 +10132,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D282",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Desktop-ready search focus on picker open",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Focus the model search field automatically when the composer model picker opens on desktop/fine-pointer devices, while avoiding mobile keyboard popups and preserving no-spend behavior",
+      "best_practice": "Model discovery should feel instant: desktop users can type immediately after opening the picker, and mobile users are not surprised by an unsolicited keyboard",
+      "done_when": "Composer picker smoke gates prove desktop-safe focus handoff, coarse-pointer guard, cache-busted assets and service-worker rotation without network/provider side effects",
+      "covers": "chat, model-picker, model-discovery, open-webui-parity, accessibility, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.",
       "estimate": "Verify + polish"
     }
   ]

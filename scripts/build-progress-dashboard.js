@@ -264,7 +264,8 @@ const overrides = new Map([
   ['D278', { status: 'beta', evidence: 'The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.' }],
   ['D279', { status: 'beta', evidence: 'The composer model picker now includes a local-only search field that filters the full route grid by model, runtime, route type and action with count/empty-state feedback.' }],
   ['D280', { status: 'beta', evidence: 'The composer model picker now has local-only route filter chips for All, Ready, Browser, Local and Live paths, combined with search and mobile-safe overflow.' }],
-  ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }]
+  ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }],
+  ['D282', { status: 'beta', evidence: 'The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.' }]
 ]);
 
 const repoMeta = [
@@ -689,6 +690,12 @@ function buildLaunchProgress() {
       label: 'Model filters are easy to recover from',
       status: 'beta',
       evidence: 'Reset clears the search query, returns the picker to All routes and keeps focus in the model discovery flow.'
+    },
+    {
+      id: 'model-picker-search-focus',
+      label: 'Desktop model search is ready immediately',
+      status: 'beta',
+      evidence: 'Opening the picker on fine-pointer devices focuses search after render; coarse-pointer devices are guarded to avoid mobile keyboard surprise.'
     },
     {
       id: 'local-node-package',

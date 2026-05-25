@@ -230,6 +230,10 @@
     });
     applySearchFilter(el);
   }
+  function focusPickerSearchOnOpen(el){
+    if(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches)return;
+    window.setTimeout(()=>el?.querySelector?.('[data-picker-search]')?.focus({preventScroll:true}),0);
+  }
   function card(option){
     const select=modelSelect();
     const value=String(option.value||'');
@@ -274,7 +278,10 @@
     const open=typeof force==='boolean'?force:el.hidden;
     el.hidden=!open;
     setExpanded(open);
-    if(open)render();
+    if(open){
+      render();
+      focusPickerSearchOnOpen(el);
+    }
   }
   function autoStartComposerRecommendation(model,action){
     if(action!=='chat'||!model)return;

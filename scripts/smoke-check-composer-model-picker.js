@@ -80,6 +80,7 @@ for (const needle of [
   'function routeFilterControls()',
   'function wireFilters(el)',
   'function wireSearch(el)',
+  'function focusPickerSearchOnOpen(el)',
   'function recommendedWebGpuIds()',
   'function webGpuStarterModels()',
   'data-picker-recommend',
@@ -106,6 +107,8 @@ for (const needle of [
   "pickerRouteFilter='all'",
   "search.value=''",
   "focus({preventScroll:true})",
+  "window.matchMedia('(pointer: coarse)').matches",
+  "focusPickerSearchOnOpen(el)",
   "card.getAttribute('data-picker-runtime')===pickerRouteFilter",
   ".composer-model-card:not([hidden]) [data-picker-model-value]",
   "event.key!=='Escape'",
@@ -135,8 +138,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260525-picker-reset-v1',
-  'composer-model-picker.js?v=20260525-picker-reset-v1'
+  'composer-model-picker.css?v=20260525-picker-search-focus-v1',
+  'composer-model-picker.js?v=20260525-picker-search-focus-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
