@@ -5,6 +5,7 @@
   let picker=null;
   let starterModels=fallbackStarterModels();
   let starterCatalogLoaded=false;
+  let pickerSearchQuery='';
 
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function modelSelect(){return document.getElementById('runtime-model');}
@@ -154,6 +155,48 @@
     setExpanded(false);
     if(refocus)promptEl()?.focus({preventScroll:true});
   }
+  function searchText(option){
+    const kind=optionKind(option);
+    return [
+      cleanTitle(option?.textContent,option?.value),
+      option?.value,
+      option?.parentElement?.label,
+      option?.dataset?.runtime,
+      kind.label,
+      kind.detail,
+      kind.action
+    ].join(' ').toLowerCase();
+  }
+  function applySearchFilter(el){
+    const query=String(pickerSearchQuery||'').trim().toLowerCase();
+    const cards=Array.from(el?.querySelectorAll?.('.composer-model-card')||[]);
+    let visible=0;
+    for(const card of cards){
+      const match=!query||String(card.getAttribute('data-picker-search-text')||'').includes(query);
+      card.hidden=!match;
+      if(match)visible+=1;
+    }
+    const count=el?.querySelector?.('[data-picker-search-count]');
+    if(count)count.textContent=query?(visible+' of '+cards.length+' routes'):(cards.length+' routes');
+    const empty=el?.querySelector?.('[data-picker-search-empty]');
+    if(empty)empty.hidden=visible>0;
+  }
+  function wireSearch(el){
+    const search=el?.querySelector?.('[data-picker-search]');
+    if(!search)return;
+    search.value=pickerSearchQuery;
+    search.addEventListener('input',()=>{
+      pickerSearchQuery=search.value;
+      applySearchFilter(el);
+    });
+    search.addEventListener('keydown',(event)=>{
+      if(event.key==='Enter'){
+        event.preventDefault();
+        el.querySelector('.composer-model-card:not([hidden]) [data-picker-model-value]')?.focus({preventScroll:true});
+      }
+    });
+    applySearchFilter(el);
+  }
   function card(option){
     const select=modelSelect();
     const value=String(option.value||'');
@@ -163,7 +206,7 @@
     const title=cleanTitle(option.textContent,value);
     const cost=/live/i.test(group)?'active backend':kind.state==='install'?'free local':'free browser';
     const action=kind.state==='install'?'install':kind.state==='live'?'select-live':'select';
-    return '<article class="composer-model-card '+(selected?'is-selected':'')+'" data-picker-state="'+escapeHtml(kind.state)+'" data-picker-selected="'+String(selected)+'" aria-current="'+(selected?'true':'false')+'">'+
+    return '<article class="composer-model-card '+(selected?'is-selected':'')+'" data-picker-state="'+escapeHtml(kind.state)+'" data-picker-search-text="'+escapeHtml(searchText(option))+'" data-picker-selected="'+String(selected)+'" aria-current="'+(selected?'true':'false')+'">'+
       '<div><strong>'+escapeHtml(title)+'</strong><span>'+escapeHtml(kind.label)+' - '+escapeHtml(cost)+'</span></div>'+
       (selected?'<em class="composer-model-selected-badge">Selected route</em>':'')+'<p>'+escapeHtml(kind.detail)+'</p>'+
       '<small>'+escapeHtml(group)+'</small>'+
@@ -183,9 +226,10 @@
       el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
       return;
     }
-    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div>';
+    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, WebGPU or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label><div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><p class="composer-model-empty" data-picker-search-empty hidden>No matching route. Try qwen, gemma, browser, local or live.</p>';
     el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
     el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
+    wireSearch(el);
     el.querySelectorAll('[data-picker-model-value]').forEach(button=>{
       button.addEventListener('click',()=>selectModel(button.getAttribute('data-picker-model-value')||'',button.getAttribute('data-picker-action')||'select'));
     });

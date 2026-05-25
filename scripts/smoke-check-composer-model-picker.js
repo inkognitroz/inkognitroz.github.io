@@ -74,16 +74,26 @@ for (const needle of [
   'function card(option)',
   'function recommendationCards()',
   'function selectedValue()',
+  'function searchText(option)',
+  'function applySearchFilter(el)',
+  'function wireSearch(el)',
   'function recommendedWebGpuIds()',
   'function webGpuStarterModels()',
   'data-picker-recommend',
   'data-picker-runtime',
+  'data-picker-search',
+  'data-picker-search-text',
+  'data-picker-search-count',
+  'data-picker-search-empty',
   'data-picker-selected',
   'aria-pressed',
   'aria-current',
   'Selected route',
   'data-picker-close',
   'Close model picker',
+  'Search model routes',
+  'No matching route',
+  ".composer-model-card:not([hidden]) [data-picker-model-value]",
   "event.key!=='Escape'",
   'closePicker(true)',
   "event.target?.closest?.('#composer-add-model,#runtime-model-chip')",
@@ -111,8 +121,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260525-picker-close-v1',
-  'composer-model-picker.js?v=20260525-picker-close-v1'
+  'composer-model-picker.css?v=20260525-picker-search-v1',
+  'composer-model-picker.js?v=20260525-picker-search-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -123,6 +133,10 @@ for (const needle of [
   '.composer-model-picker-head',
   '.composer-model-picker-head-actions',
   '.composer-model-picker-head-actions button',
+  '.composer-model-search',
+  '.composer-model-search input',
+  '.composer-model-card[hidden]',
+  '.composer-model-empty',
   '.composer-model-recommendations',
   'repeat(auto-fit,minmax(150px,1fr))',
   '.composer-model-recommendations button[data-picker-state="ready"]',
@@ -145,6 +159,9 @@ for (const needle of [
   '#composer-model-picker',
   '#runtime-model-chip',
   '[data-picker-model-value]',
+  'data-picker-search',
+  'data-picker-search-text',
+  'applySearchFilter',
   'data-picker-selected',
   'MimirComposerModelPicker',
   'selectModel(value,action)',
@@ -158,6 +175,9 @@ for (const needle of [
   'compact composer model picker',
   'data-picker-model-value',
   'data-picker-runtime',
+  'data-picker-search',
+  'data-picker-search-text',
+  'applySearchFilter',
   'no_paid_routes_started:true'
 ]) {
   requireIncludes(visibleAudit, needle, `D203 visible-control audit must include: ${needle}`);

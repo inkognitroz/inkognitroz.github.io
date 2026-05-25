@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T07:05:03.081Z",
+  "updated_at": "2026-05-25T07:27:30.641Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 278,
+    "total": 279,
     "done": 51,
-    "beta": 202,
+    "beta": 203,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1311,6 +1311,12 @@
         "label": "Model picker returns to chat cleanly",
         "status": "beta",
         "evidence": "Close, Escape and outside click collapse the picker, while chat-oriented close paths return focus to the prompt without starting paid routes."
+      },
+      {
+        "id": "model-picker-search",
+        "label": "Model choices are searchable",
+        "status": "beta",
+        "evidence": "The composer picker can filter model routes locally by name, runtime, free/local/live path and install action without provider calls or paid routes."
       },
       {
         "id": "local-node-package",
@@ -10045,6 +10051,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D279",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Searchable model picker grid",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a local-only search field to the composer model picker so users can filter free browser, WebGPU, local, live and installable model routes without opening deeper setup panels",
+      "best_practice": "A platform with many model choices must stay simple: users should be able to type qwen, gemma, local, browser or live and immediately find the route they need",
+      "done_when": "Composer picker smoke gates prove search input, count, empty state, keyboard handoff, hidden-card filtering, mobile styling, cache-busted assets and service-worker rotation without network/provider side effects",
+      "covers": "chat, model-picker, model-discovery, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer model picker now includes a local-only search field that filters the full route grid by model, runtime, route type and action with count/empty-state feedback.",
       "estimate": "Verify + polish"
     }
   ]

@@ -261,7 +261,8 @@ const overrides = new Map([
   ['D275', { status: 'beta', evidence: 'A deferred composer refocus module now returns focus to the prompt after send/submit/Enter for smooth follow-up chat, while avoiding mobile keyboard popups unless the prompt was recently active.' }],
   ['D276', { status: 'beta', evidence: 'Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.' }],
   ['D277', { status: 'beta', evidence: 'The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.' }],
-  ['D278', { status: 'beta', evidence: 'The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.' }]
+  ['D278', { status: 'beta', evidence: 'The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.' }],
+  ['D279', { status: 'beta', evidence: 'The composer model picker now includes a local-only search field that filters the full route grid by model, runtime, route type and action with count/empty-state feedback.' }]
 ]);
 
 const repoMeta = [
@@ -668,6 +669,12 @@ function buildLaunchProgress() {
       label: 'Model picker returns to chat cleanly',
       status: 'beta',
       evidence: 'Close, Escape and outside click collapse the picker, while chat-oriented close paths return focus to the prompt without starting paid routes.'
+    },
+    {
+      id: 'model-picker-search',
+      label: 'Model choices are searchable',
+      status: 'beta',
+      evidence: 'The composer picker can filter model routes locally by name, runtime, free/local/live path and install action without provider calls or paid routes.'
     },
     {
       id: 'local-node-package',
