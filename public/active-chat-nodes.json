@@ -105,7 +105,7 @@
       "trust_level": "paired-local",
       "cost": { "mode": "free-local", "requires_approval": false },
       "route": { "kind": "local-node", "url": "http://127.0.0.1:3000" },
-      "capabilities": ["health", "models", "hardware", "chat.completions", "models.pull", "tunnels.status"],
+      "capabilities": ["health", "models", "openai.v1.models", "hardware", "chat.completions", "openai.v1.chat.completions", "models.pull", "tunnels.status"],
       "models": []
     }
   ]
