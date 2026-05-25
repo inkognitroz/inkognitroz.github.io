@@ -1,5 +1,6 @@
 {
   "version": "2026-05-25-clean-shell-v1",
+  "surface_patch": "2026-05-25-clean-surface-focus-v1",
   "identity": "The orchestration layer for trusted AI",
   "current_user_journey": [
     "open_mmir_ai",
@@ -72,7 +73,7 @@
     }
   ],
   "next_p0": [
-    "deploy_clean_shell_and_verify_mmir_ai",
+    "verify_public_clean_shell_deploy",
     "implement_api_gateway_contract_skeleton",
     "verify_local_node_installer_to_chat_loop",
     "create_agent_ready_issues_for_frontend_backend_local_node_security_qa"
