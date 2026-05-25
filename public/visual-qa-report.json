@@ -150,6 +150,11 @@
       "id": "D305 Windows local-node installer path",
       "status": "guarded",
       "evidence": "Windows install/start copy and local-node installer tests now prefer npm.cmd, preventing the common npm.ps1 PowerShell execution-policy stop during local-node setup."
+    },
+    {
+      "id": "D306 remembered local-node auto-probe",
+      "status": "guarded",
+      "evidence": "The local connector card now checks only the fixed localhost node path, remembers successful local proof with a time-limited secret-free marker and can auto-refresh known local models on later visits."
     }
   ],
   "known_limitations": [

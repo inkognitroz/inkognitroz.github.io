@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T21:34:18.907Z",
+  "updated_at": "2026-05-25T22:02:40.384Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 304,
+    "total": 305,
     "done": 51,
-    "beta": 228,
+    "beta": 229,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1375,6 +1375,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / Local Node",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1577,6 +1587,12 @@
         "label": "Windows local node starts safely",
         "status": "beta",
         "evidence": "D305 makes the Windows installer use npm.cmd instead of the PowerShell-blocked npm.ps1 shim, with local-node tests, dry-run, conformance and secret scan green."
+      },
+      {
+        "id": "remembered-local-node-auto-probe",
+        "label": "Known local node appears automatically",
+        "status": "beta",
+        "evidence": "D306 makes the connector card probe only 127.0.0.1:3000, remember successful local-node proof without secrets and auto-refresh live local models on later visits."
       },
       {
         "id": "local-node-package",
@@ -11119,6 +11135,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D306",
+      "phase": "Chat UX / Local Node",
+      "priority": "P0",
+      "work_package": "Remembered local node auto-probe",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the public chat automatically retry 127.0.0.1:3000 after a previous successful local-node install/proof, and make the local connector card always check localhost instead of the currently active managed/backend profile",
+      "best_practice": "Users who already installed Local Node should see live local models appear automatically on return; the public page must still avoid arbitrary localhost probing before a trusted local-node intent exists",
+      "done_when": "Smoke gate proves remembered local intent is time-limited and secret-free, localhost is the only probed URL, active managed profiles cannot hijack local-node checks, and successful local proof activates the free local profile",
+      "covers": "chat, local-node, activation, automation, zero-trust, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.",
       "estimate": "Verify + polish"
     }
   ]

@@ -168,6 +168,8 @@ jobs:
         run: node scripts/smoke-check-startup-free-llm-nodes.js
       - name: Smoke check startup free LLM click fixture
         run: node scripts/smoke-check-startup-free-llm-click-fixture.js
+      - name: Smoke check local connector auto-probe
+        run: node scripts/smoke-check-local-connector-auto-probe.js
       - name: Smoke check active node style headroom
         run: node scripts/smoke-check-active-node-style-headroom.js
       - name: Smoke check launch progress dashboard

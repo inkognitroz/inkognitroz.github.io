@@ -289,7 +289,8 @@ const overrides = new Map([
   ['D301', { status: 'beta', evidence: 'Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.' }],
   ['D303', { status: 'beta', evidence: 'The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.' }],
   ['D304', { status: 'beta', evidence: 'LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.' }],
-  ['D305', { status: 'beta', evidence: 'mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.' }]
+  ['D305', { status: 'beta', evidence: 'mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.' }],
+  ['D306', { status: 'beta', evidence: 'The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.' }]
 ]);
 
 const repoMeta = [
@@ -862,6 +863,12 @@ function buildLaunchProgress() {
       label: 'Windows local node starts safely',
       status: 'beta',
       evidence: 'D305 makes the Windows installer use npm.cmd instead of the PowerShell-blocked npm.ps1 shim, with local-node tests, dry-run, conformance and secret scan green.'
+    },
+    {
+      id: 'remembered-local-node-auto-probe',
+      label: 'Known local node appears automatically',
+      status: 'beta',
+      evidence: 'D306 makes the connector card probe only 127.0.0.1:3000, remember successful local-node proof without secrets and auto-refresh live local models on later visits.'
     },
     {
       id: 'local-node-package',

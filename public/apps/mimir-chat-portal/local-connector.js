@@ -6,6 +6,8 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const AUTO_PROBE_KEY='mimir-local-auto-probe-v1';
+  const AUTO_PROBE_TTL_MS=14*24*60*60*1000;
   let guideSteps=[];
   let liveState={status:'idle',message:'Checking local node...',models:[],tunnel:null,url:DEFAULT_LOCAL_URL};
 
@@ -62,6 +64,34 @@
     const next={...current,...patch,updated_at:new Date().toISOString()};
     try{localStorage.setItem(repairResumeKey(),JSON.stringify(next));}catch(error){}
     return next;
+  }
+  function rememberAutoProbeConsent(state){
+    if(!state||!['online','degraded'].includes(String(state.status||'')))return null;
+    const value={
+      url:DEFAULT_LOCAL_URL,
+      status:String(state.status||'online'),
+      model_count:Array.isArray(state.models)?state.models.length:0,
+      at:new Date().toISOString(),
+      expires_at:new Date(Date.now()+AUTO_PROBE_TTL_MS).toISOString(),
+      no_paid_routes_started:true,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false
+    };
+    try{localStorage.setItem(AUTO_PROBE_KEY,JSON.stringify(value));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-local-auto-probe-remembered',{detail:value}));
+    return value;
+  }
+  function allowRememberedAutoProbe(){
+    try{
+      const value=JSON.parse(localStorage.getItem(AUTO_PROBE_KEY)||'null');
+      if(!value||String(value.url||DEFAULT_LOCAL_URL).replace(/\/$/,'')!==DEFAULT_LOCAL_URL)return false;
+      if(Date.parse(value.expires_at||0)<=Date.now())return false;
+      window.MimirAllowLocalProbes?.('remembered-local-node',60000);
+      return true;
+    }catch(error){
+      return false;
+    }
   }
   function updateRepairResumeAfterCheck(state){
     const resume=readRepairResume();
@@ -152,11 +182,17 @@
     bindLocalActions();
   }
 
-  async function pairedLocalConnection(){
+  function localNodeProfile(){
     if(!api)throw new Error('MMIR API client is not loaded.');
-    const profile=api.activeProfile?.()||null;
-    const url=api.cleanUrl(profile?.url)||DEFAULT_LOCAL_URL;
-    const token=await api.pairIfNeeded(profile||{provider:'local-node'},url);
+    const profiles=api.readProfiles?.()||[];
+    return profiles.find(profile=>profile?.provider==='local-node'&&api.cleanUrl(profile?.url)===DEFAULT_LOCAL_URL)||
+      {name:'MMIR Local Node',provider:'local-node',url:DEFAULT_LOCAL_URL};
+  }
+
+  async function pairedLocalConnection(){
+    const profile=localNodeProfile();
+    const url=DEFAULT_LOCAL_URL;
+    const token=await api.pairIfNeeded(profile,url);
     return {url,headers:api.authHeaders(token),profile};
   }
 
@@ -179,6 +215,8 @@
         tunnel,
         url
       };
+      rememberAutoProbeConsent(liveState);
+      window.MimirBackendProfiles?.ensureFreeLocalProfile?.();
     }catch(error){
       liveState={
         status:'error',
@@ -310,6 +348,7 @@
   }
 
   async function init(){
+    allowRememberedAutoProbe();
     loadConnectOptions();
     loadFeatureCatalog();
     try{
