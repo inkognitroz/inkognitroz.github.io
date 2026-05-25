@@ -258,6 +258,7 @@ async function setupContext({ webgpu = true } = {}) {
   const localStorage = makeStorage();
   const location = { href: 'http://127.0.0.1:4173/mmir.html' };
   const navigator = webgpu ? { gpu: {} } : {};
+  let deferredLoads = 0;
   const window = {
     document,
     isSecureContext: true,
@@ -267,6 +268,17 @@ async function setupContext({ webgpu = true } = {}) {
       ensureFreeLocalProfile() {
         window.freeLocalProfileEnsured = true;
       }
+    },
+    MimirLoadDeferred() {
+      deferredLoads += 1;
+      window.MimirBackendProfiles.ensureFreeOpenAiLocalProfile = (profile) => {
+        window.freeOpenAiLocalProfile = profile;
+        return profile;
+      };
+      return Promise.resolve();
+    },
+    get deferredLoads() {
+      return deferredLoads;
     },
     dispatchEvent(event) {
       events.push({ type: event.type, detail: event.detail || {} });
@@ -305,6 +317,12 @@ async function setupContext({ webgpu = true } = {}) {
 function starterButton(bar, starterId) {
   const button = bar.querySelectorAll('[data-active-starter-id]').find((item) => item.getAttribute('data-active-starter-id') === starterId);
   if (!button) fail(`Startup rail missing clickable starter: ${starterId}`);
+  return button;
+}
+
+function nodeButton(bar, nodeId) {
+  const button = bar.querySelectorAll('[data-active-node-action]').find((item) => item.getAttribute('data-active-node-action') === nodeId);
+  if (!button) fail(`Active node rail missing clickable node: ${nodeId}`);
   return button;
 }
 
@@ -354,6 +372,19 @@ if (!noGpu.prompt.value.includes('needs WebGPU here') || !noGpu.prompt.value.inc
   fail('No-WebGPU startup fallback must seed a useful no-cost guide prompt.');
 }
 if (noGpu.primary.clicked !== 1) fail('No-WebGPU startup fallback must still send one useful guide chat.');
+
+const localAdapter = await setupContext();
+nodeButton(localAdapter.bar, 'local-lm-studio')?.click();
+for (let i = 0; i < 4; i += 1) await Promise.resolve();
+if (localAdapter.window.deferredLoads !== 1) fail('Local adapter click must load the deferred backend module before chat.');
+if (localAdapter.window.freeOpenAiLocalProfile?.url !== 'http://127.0.0.1:1234') fail('Local adapter click must activate the selected free local OpenAI-compatible profile.');
+if (!localAdapter.events.some((event) => event.type === 'mmir-free-local-adapter-selected'
+  && event.detail.node_id === 'local-lm-studio'
+  && event.detail.no_paid_routes_started === true)) {
+  fail('Local adapter click must emit a no-spend adapter selection event.');
+}
+if (!localAdapter.prompt.value.includes('free local /v1 node')) fail('Local adapter click must seed a useful /v1 prompt.');
+if (localAdapter.primary.clicked !== 1) fail('Local adapter click must send chat after the profile handoff is ready.');
 
 const local = await setupContext();
 starterButton(local.bar, 'ollama-qwen3-06b')?.click();

@@ -166,13 +166,12 @@
         openInstaller('active-node-ollama-direct',{id:'ollama-qwen3-06b',model:'qwen3:0.6b'});
         return;
       }
-      const profile={name:node.name,url:adapterUrl(node),models:modelFromNode(node),source:node.id};
-      const run=()=>w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile?.(profile);
-      if(!run()&&w.MimirLoadDeferred)w.MimirLoadDeferred().then(run);
       w.dispatchEvent(new CustomEvent('mmir-free-local-adapter-selected',{detail:{node_id:node.id,url:adapterUrl(node),free:true,no_paid_routes_started:true}}));
       const promptEl=q('#mimir-prompt');
-      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Check this free local /v1 node and chat if a model is available.';
-      q('#primary-chat-link')?.click();
+      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Check free local /v1 node.';
+      const profile={name:node.name,url:adapterUrl(node),models:modelFromNode(node),source:node.id};
+      const go=()=>{w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile?.(profile);q('#primary-chat-link')?.click()};
+      if(w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile)go();else if(w.MimirLoadDeferred)w.MimirLoadDeferred().then(go);
       return;
     }
     if(needsWebGpu(node)&&!webGpuReady()){
