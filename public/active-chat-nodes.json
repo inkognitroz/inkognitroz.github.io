@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "description": "Public-safe active chat routes that the static MMIR frontend can actually attach to. No provider secrets, raw prompts, paid routes or private node tokens belong here.",
+  "description": "Public-safe active chat routes for the static MMIR frontend.",
   "nodes": [
     {
       "id": "browser-guide",
-      "name": "MMIR Guide",
+      "name": "Browser Helper",
       "type": "free",
       "status": "online",
       "trust_level": "public-free",
@@ -13,8 +13,8 @@
       "capabilities": ["chat.completions", "onboarding", "routing.free"],
       "models": [
         {
-          "id": "mmir-guide",
-          "name": "MMIR Guide",
+          "id": "browser-helper",
+          "name": "Browser Helper",
           "status": "available",
           "provider": "mmir",
           "source": "browser-helper"
