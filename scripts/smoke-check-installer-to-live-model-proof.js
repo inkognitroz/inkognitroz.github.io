@@ -325,6 +325,8 @@ async function run() {
     'tinyChatProbe',
     'mmir-install-to-first-chat-ready',
     'first_chat_ready:true',
+    'pendingAutoFirstAnswer',
+    "window.setTimeout(()=>primaryLink?.click(),80)",
     'Send first answer'
   ]) {
     requireIncludes(files.chatRuntime, needle, `D206 chat runtime needs installer-to-proof evidence: ${needle}`);

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T00:12:57.623Z",
+  "updated_at": "2026-05-25T00:17:40.786Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -8541,7 +8541,7 @@
       "covers": "activation, proof, local chat, QA",
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
-      "evidence": "Installer-return-to-live-model proof now has a deterministic mock local-node gate covering health, pairing, model inventory, first chat readiness, next action and no-spend/no-secret boundaries.",
+      "evidence": "Installer-return-to-live-model proof now has a deterministic mock local-node gate covering health, pairing, model inventory, first chat readiness, automatic first local answer for empty chats and no-spend/no-secret boundaries.",
       "estimate": "Verify + polish"
     },
     {

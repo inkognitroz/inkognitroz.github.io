@@ -55,6 +55,7 @@
   let verifiedLiveModel=null;
   let preferredProofModel='';
   let pendingStarterHandoff=null;
+  let pendingAutoFirstAnswer=false;
 
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
@@ -1859,6 +1860,7 @@
         updateRuntimeChips();
         updateRuntimeModelActions();
       }
+      const shouldAutoFirstAnswer=pendingAutoFirstAnswer&&bridgeModel&&promptEl&&!String(promptEl.value||'').trim()&&!messages.some(message=>message.role==='user'||message.role==='assistant');
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.placeholder='Ask '+firstModel.id+' anything. This verified free route is selected.';
         if(bridgeModel)promptEl.value='Give first answer from '+firstModel.id+'.';
@@ -1869,6 +1871,11 @@
       if(bridgeModel){
         preferredProofModel='';
         window.dispatchEvent(new CustomEvent('mmir-install-to-first-chat-ready',{detail:{model:firstModel.id,first_chat_ready:true}}));
+        if(shouldAutoFirstAnswer){
+          pendingAutoFirstAnswer=false;
+          promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+          window.setTimeout(()=>primaryLink?.click(),80);
+        }
       }
     }catch(error){
       lastProofSignature='';
@@ -1943,6 +1950,7 @@
     const resume=readRepairResume();
     if(resume?.starter_id)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);
+    if(!messages.some(message=>message.role==='user'||message.role==='assistant'))pendingAutoFirstAnswer=true;
     lastProofSignature='';
     refreshState(true);
   }

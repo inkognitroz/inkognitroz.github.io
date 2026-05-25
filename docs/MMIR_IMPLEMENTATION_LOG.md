@@ -197,7 +197,7 @@ Updated: 2026-05-23
 - D203 is now beta: the chat composer plus/model chip opens a compact model picker with live backend, browser helper, WebGPU and installable free local model choices, with install/proof handoff and no paid-route side effects.
 - D204 is now beta: Node Dashboard renders one automatic node/tunnel handoff from installer to pairing, model install, proof/chat and optional outbound tunnel across desktop, VM and Raspberry Pi/Linux ARM paths.
 - D205 is now beta: universal installer release QA verifies artifact checksums against the public manifest, keeps fake DMG links blocked, shows installer trust boundaries and records no-spend installer QA metadata.
-- D206 is now beta: installer-return-to-live-model proof has a deterministic mock local-node gate covering health, pairing, live free model inventory, first chat readiness, one useful next action and no-spend/no-secret boundaries.
+- D206 is now beta: installer-return-to-live-model proof has a deterministic mock local-node gate covering health, pairing, live free model inventory, first chat readiness, automatic first local answer for empty chats and no-spend/no-secret boundaries.
 - D207 is now beta: composer model picker keeps a free route floor visible with ready-now browser helpers, WebGPU candidates and installable free Ollama models even while live backend discovery catches up.
 - D208 is now beta: chat send flow falls back to a useful free starter when no live model route is selected, and CI guards first chat/model DOM against empty no-model dead ends.
 - D209 is now beta: Progress Dashboard renders a public-safe no-model dead-end browser fixture with loading, offline-node and no-live-model scenarios, each with one free primary action.
