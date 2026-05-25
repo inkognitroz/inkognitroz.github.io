@@ -247,7 +247,8 @@ const overrides = new Map([
   ['D261', { status: 'beta', evidence: 'Active chat manifest now lists Qwen, Gemma, Llama and Phi browser WebGPU routes as free/no-approval nodes, and the active strip routes selected starters to the exact browser/local fallback path.' }],
   ['D262', { status: 'beta', evidence: 'Composer model picker recommendations now expose multiple free Browser WebGPU LLM choices directly, with UI action coverage and visible-control audit proving no-spend routing.' }],
   ['D263', { status: 'beta', evidence: 'Ready-now composer recommendations now seed a useful prompt and click Send automatically, so Chat now and Browser WebGPU choices produce first value instead of stopping at selection.' }],
-  ['D264', { status: 'beta', evidence: 'Installable local starter choices now open the universal no-spend installer when localhost is missing, preserve a repair resume and carry the selected Ollama model into the generated Mac command package.' }]
+  ['D264', { status: 'beta', evidence: 'Installable local starter choices now open the universal no-spend installer when localhost is missing, preserve a repair resume and carry the selected Ollama model into the generated Mac command package.' }],
+  ['D265', { status: 'beta', evidence: 'Progress Dashboard launch evidence now includes the latest selected-model installer handoff commit, green Pages deploy and refreshed next queue.' }]
 ]);
 
 const repoMeta = [
@@ -680,6 +681,12 @@ function buildLaunchProgress() {
       evidence: 'Ready-now recommendations seed a truthful prompt and trigger the primary chat action without paid/provider side effects.'
     },
     {
+      id: 'selected-local-installer-handoff',
+      label: 'Selected local model reaches installer',
+      status: 'beta',
+      evidence: 'Composer and Model Library install actions preserve the chosen free Ollama starter, write a browser-local repair resume and carry the model into the generated Mac command package.'
+    },
+    {
       id: 'critical-shell-headroom',
       label: 'Chat shell performance headroom',
       status: 'beta',
@@ -715,6 +722,24 @@ function buildLaunchProgress() {
     local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
     checkpoints,
     last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: 'fd8162b',
+        label: 'Selected local model installer handoff',
+        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
+        commit: '2500d59',
+        label: 'Recommended model chat auto-start',
+        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
+        commit: '594be44',
+        label: 'Multi WebGPU composer recommendations',
+        result: 'Static quality gates and Pages deploy green'
+      },
       {
         repo: 'inkognitroz.github.io',
         commit: 'acab3a2',
