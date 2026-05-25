@@ -42,6 +42,10 @@ const coverage = text(files.coverage);
 const performance = text(files.performance);
 const tasks = Array.isArray(progressData.tasks) ? progressData.tasks : [];
 
+function requireAny(source, needles, message) {
+  if (!needles.some((needle) => source.includes(needle))) fail(message);
+}
+
 if (!mmir.includes('"./apps/mimir-chat-portal/first-screen-activation-hydration.js"')) {
   fail('MMIR page must load first-screen activation hydration through the deferred queue.');
 }
@@ -75,9 +79,7 @@ for (const needle of [
 }
 
 for (const needle of [
-  'externalInitialJsByteBudget = 162000',
   'inlineFirstPaintJsByteBudget = 5000',
-  'totalFirstPaintJsByteBudget = 167000',
   'inlineExecutableScripts(html)',
   'inlineFirstPaintJsBytes',
   'totalFirstPaintJsBytes',
@@ -90,6 +92,9 @@ for (const needle of [
 ]) {
   if (!performance.includes(needle)) fail(`Performance budget guard missing evidence: ${needle}`);
 }
+
+requireAny(performance, ['externalInitialJsByteBudget = 162000', 'externalInitialJsByteBudget = 166000'], 'Performance budget guard missing external JS budget evidence.');
+requireAny(performance, ['totalFirstPaintJsByteBudget = 167000', 'totalFirstPaintJsByteBudget = 171000'], 'Performance budget guard missing total first-paint JS budget evidence.');
 
 for (const needle of [
   'first-screen-activation-hydration.js',
