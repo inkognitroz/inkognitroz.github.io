@@ -298,6 +298,9 @@ jobs:
       - name: Smoke-check startup free LLM click fixture
         run: node scripts/smoke-check-startup-free-llm-click-fixture.js
 
+      - name: Smoke-check active node style headroom
+        run: node scripts/smoke-check-active-node-style-headroom.js
+
       - name: Smoke-check launch progress dashboard
         run: node scripts/smoke-check-launch-progress-dashboard.js
 

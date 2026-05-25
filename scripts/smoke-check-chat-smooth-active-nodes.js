@@ -8,6 +8,7 @@ const files = {
   activeStrip: join(publicDir, 'apps', 'mimir-chat-portal', 'active-node-strip.js'),
   runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
+  deferredCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime-deferred.css'),
   shellCss: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'),
   mmir: join(publicDir, 'mmir.html'),
   qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml'),
@@ -59,6 +60,7 @@ for (const capability of ['openai.v1.models', 'openai.v1.chat.completions', 'cha
 const activeStrip = read(files.activeStrip);
 const runtime = read(files.runtime);
 const runtimeCss = read(files.runtimeCss);
+const deferredCss = read(files.deferredCss);
 const shellCss = read(files.shellCss);
 const mmir = read(files.mmir);
 const workflows = `${read(files.qualityWorkflow)}\n${read(files.pagesWorkflow)}`;
@@ -100,11 +102,18 @@ for (const needle of [
   'primary-chat-link',
   'free/public-safe routes that the composer can actually use',
   'composer.parentNode.insertBefore(bar,composer.nextSibling)',
-  'grid-template-columns:minmax(150px,1fr) auto',
   'display:flex;gap:.42rem;overflow:auto',
   'data-free-starter-count'
 ]) {
   requireIncludes(activeStrip, needle, `Active node strip must wire real chat routes: ${needle}`);
+}
+
+for (const needle of [
+  'grid-template-columns:minmax(150px,1fr) auto',
+  '.mmir-active-starter-rail button[data-route-state="setup"]',
+  '.mmir-active-node-card[data-node-state="online"]'
+]) {
+  requireIncludes(deferredCss, needle, `Deferred CSS must own active-node polish after D301: ${needle}`);
 }
 
 if (activeStrip.includes('https://api.mmir.ai/nodes')) {
@@ -151,7 +160,7 @@ for (const needle of [
   requireIncludes(runtimeCss, needle, `Runtime CSS must keep a smooth transcript surface: ${needle}`);
 }
 
-requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-startup-webgpu-fallback-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
+requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-active-node-style-headroom-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
 requireIncludes(mmir, 'Press send to start automatically', 'Composer placeholder must tell users they can start without setup or typing.');
 if (deferredQueue.some((item) => String(item).includes('active-node-strip.js'))) {
   fail('Active chat node strip must not wait for the deferred feature queue.');

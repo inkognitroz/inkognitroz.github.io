@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T19:24:14.224Z",
+  "updated_at": "2026-05-25T19:32:31.468Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 300,
+    "total": 301,
     "done": 51,
-    "beta": 224,
+    "beta": 225,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1168,9 +1168,9 @@
       },
       {
         "phase": "Performance / Chat UX",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1523,6 +1523,12 @@
         "label": "Unsupported browser LLMs stay truthful",
         "status": "beta",
         "evidence": "D300 labels WebGPU starters as setup-only when WebGPU is missing and sends a free MMIR Guide answer instead of pretending the browser LLM is live."
+      },
+      {
+        "id": "active-node-style-headroom",
+        "label": "Active node rail keeps JS headroom",
+        "status": "beta",
+        "evidence": "D301 moves decorative active-node rail styling into deferred CSS, leaving only a minimal layout guard in critical JS so future chat work has room."
       },
       {
         "id": "local-node-package",
@@ -10993,6 +10999,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D301",
+      "phase": "Performance / Chat UX",
+      "priority": "P0",
+      "work_package": "Active node style headroom split",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Move decorative active-node rail styling out of critical active-node JavaScript and into deferred runtime CSS, leaving only a tiny layout guard in first-paint JS",
+      "best_practice": "More startup model UX must not consume the remaining first-paint budget; future chat work needs headroom",
+      "done_when": "Performance gates prove active-node critical JS is back under a safer limit, deferred CSS owns polish/setup-state styling, caches rotate and startup click behavior stays green",
+      "covers": "performance, chat, active-node, first-paint, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.",
       "estimate": "Verify + polish"
     }
   ]

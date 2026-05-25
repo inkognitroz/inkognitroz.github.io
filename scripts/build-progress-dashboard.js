@@ -285,7 +285,8 @@ const overrides = new Map([
   ['D297', { status: 'beta', evidence: 'The static first-paint Send control now queues an immediate click and chat-runtime replays it through the guarded free-route send path once handlers are ready.' }],
   ['D298', { status: 'beta', evidence: 'The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.' }],
   ['D299', { status: 'beta', evidence: 'A dependency-free startup rail click fixture now proves MMIR Guide and WebGPU starters send chat, while Ollama starters open the selected-model installer with no-spend/no-secret boundaries.' }],
-  ['D300', { status: 'beta', evidence: 'Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.' }]
+  ['D300', { status: 'beta', evidence: 'Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.' }],
+  ['D301', { status: 'beta', evidence: 'Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.' }]
 ]);
 
 const repoMeta = [
@@ -834,6 +835,12 @@ function buildLaunchProgress() {
       label: 'Unsupported browser LLMs stay truthful',
       status: 'beta',
       evidence: 'D300 labels WebGPU starters as setup-only when WebGPU is missing and sends a free MMIR Guide answer instead of pretending the browser LLM is live.'
+    },
+    {
+      id: 'active-node-style-headroom',
+      label: 'Active node rail keeps JS headroom',
+      status: 'beta',
+      evidence: 'D301 moves decorative active-node rail styling into deferred CSS, leaving only a minimal layout guard in critical JS so future chat work has room.'
     },
     {
       id: 'local-node-package',

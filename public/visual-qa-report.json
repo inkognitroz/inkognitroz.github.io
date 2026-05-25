@@ -130,6 +130,11 @@
       "id": "D300 startup WebGPU fallback clarity",
       "status": "guarded",
       "evidence": "Unsupported WebGPU starter buttons show setup state and route to a useful MMIR Guide answer that explains the no-cost WebGPU or Local Node path instead of presenting the browser LLM as live."
+    },
+    {
+      "id": "D301 active node style headroom split",
+      "status": "guarded",
+      "evidence": "The active-node rail keeps only minimal first-paint layout in JavaScript while deferred runtime CSS owns the polished badges, setup-state chips, cards and mobile adjustments."
     }
   ],
   "known_limitations": [

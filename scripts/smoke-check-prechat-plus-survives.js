@@ -55,7 +55,7 @@ if (css.includes('.mimir-public-chat:not(.mimir-has-chat) :is(.composer-mode-doc
   fail('Critical runtime CSS must not hide the whole composer dock before chat.');
 }
 
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d300-20260525-startup-webgpu-fallback-v1'", 'Service worker cache must rotate for the pre-chat plus fix.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d301-20260525-active-node-style-headroom-v1'", 'Service worker cache must rotate for the pre-chat plus fix.');
 requireIncludes(text(files.backlog), '| D295 | Chat UX / First Paint | P0 | Pre-chat plus survives deferred styling |', 'Backlog must include D295 pre-chat plus survival.');
 requireIncludes(text(files.buildDashboard), "['D295'", 'Progress dashboard build must mark D295 status.');
 requireIncludes(workflows, 'smoke-check-prechat-plus-survives.js', 'GitHub workflows must run the pre-chat plus smoke gate.');
