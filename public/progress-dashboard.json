@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T03:28:00.215Z",
+  "updated_at": "2026-05-25T03:53:17.373Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 271,
+    "total": 272,
     "done": 51,
-    "beta": 195,
+    "beta": 196,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1248,9 +1248,9 @@
       },
       {
         "phase": "Chat UX / Composer",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -9846,6 +9846,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "A deferred transcript scroll guard now keeps new messages pinned to bottom by default, preserves scroll position when the user reads older context and exposes a Latest jump action without adding critical first-paint JavaScript.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D272",
+      "phase": "Chat UX / Composer",
+      "priority": "P0",
+      "work_package": "Composer-level new chat shortcut",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a compact New chat action directly in the composer dock that reuses the existing runtime clear control, blocks while a response is running, resets the prompt and keeps free/local routes ready",
+      "best_practice": "Starting over should be one obvious action in the primary chat surface, not hidden in secondary runtime controls",
+      "done_when": "Deferred composer action proves New chat calls the existing clear path, focuses the prompt, gives feedback and adds no critical first-paint JavaScript or paid/backend side effects",
+      "covers": "chat, composer, new-chat, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.",
       "estimate": "Verify + polish"
     }
   ]

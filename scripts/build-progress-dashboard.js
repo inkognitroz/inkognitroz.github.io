@@ -254,7 +254,8 @@ const overrides = new Map([
   ['D268', { status: 'beta', evidence: 'After a conversation starts, chat focus mode hides quick suggestions and collapses active-node details so the transcript and composer stay primary.' }],
   ['D269', { status: 'beta', evidence: 'The main composer now auto-grows like a modern chat surface, caps height cleanly and resets after send/model actions through CSS plus a deferred fallback script without adding critical first-paint JavaScript.' }],
   ['D270', { status: 'beta', evidence: 'The main composer action now hands off to the existing stop control while a cancellable response is running, giving the primary button an Open WebUI/ChatGPT-like stop state without adding critical first-paint JavaScript.' }],
-  ['D271', { status: 'beta', evidence: 'A deferred transcript scroll guard now keeps new messages pinned to bottom by default, preserves scroll position when the user reads older context and exposes a Latest jump action without adding critical first-paint JavaScript.' }]
+  ['D271', { status: 'beta', evidence: 'A deferred transcript scroll guard now keeps new messages pinned to bottom by default, preserves scroll position when the user reads older context and exposes a Latest jump action without adding critical first-paint JavaScript.' }],
+  ['D272', { status: 'beta', evidence: 'A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.' }]
 ]);
 
 const repoMeta = [

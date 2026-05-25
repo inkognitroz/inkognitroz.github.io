@@ -8,6 +8,7 @@ const files = {
   composerAutosize: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-autosize.js'),
   composerStop: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-stop-handoff.js'),
   transcriptScrollGuard: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'transcript-scroll-guard.js'),
+  composerNewChat: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-new-chat.js'),
   runtimeCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspacesCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workspaces.css'),
   sw: join(resolve(root, 'public'), 'sw.js'),
@@ -43,6 +44,7 @@ const css = read(files.css).replace(/\s+/g, ' ');
 const composerAutosize = read(files.composerAutosize);
 const composerStop = read(files.composerStop);
 const transcriptScrollGuard = read(files.transcriptScrollGuard);
+const composerNewChat = read(files.composerNewChat);
 const runtimeCss = read(files.runtimeCss).replace(/\s+/g, ' ');
 const workspacesCss = read(files.workspacesCss).replace(/\s+/g, ' ');
 const sw = read(files.sw);
@@ -54,8 +56,9 @@ requireIncludes(html, 'mimir-chat-portal.css?v=20260525-composer-stop-v1', 'MMIR
 requireIncludes(html, './apps/mimir-chat-portal/composer-autosize.js', 'Composer autosize fallback must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-stop-handoff.js', 'Composer stop handoff must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/transcript-scroll-guard.js', 'Transcript scroll guard must load through the deferred queue.');
-requireIncludes(html, 'chat-runtime.css?v=20260525-transcript-pin-v1', 'Chat runtime CSS must be cache-busted for transcript pinning.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d271-20260525-transcript-pin-v1'", 'Service worker cache must be bumped for the transcript pinning fix.');
+requireIncludes(html, './apps/mimir-chat-portal/composer-new-chat.js', 'Composer new chat shortcut must load through the deferred queue.');
+requireIncludes(html, 'chat-runtime.css?v=20260525-composer-new-chat-v1', 'Chat runtime CSS must be cache-busted for composer new chat polish.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d272-20260525-composer-new-chat-v1'", 'Service worker cache must be bumped for the composer new chat fix.');
 
 for (const needle of [
   'resize:none',
@@ -116,6 +119,20 @@ for (const needle of [
 ]) {
   requireIncludes(runtimeCss, needle, `Transcript latest jump control needs visible styling: ${needle}`);
 }
+
+for (const needle of [
+  "button.id='composer-new-chat'",
+  "button.setAttribute('aria-label','Start a new local chat')",
+  "const clear=q('#runtime-clear')",
+  'if(clear)clear.click()',
+  "setFeedback('Stop the current answer before starting a new chat.','error')",
+  "setFeedback('New local chat ready. Free guide/model routes stay available.','ready')",
+  'window.MimirAutosizeComposer?.()'
+]) {
+  requireIncludes(composerNewChat, needle, `Composer new chat shortcut must reuse safe runtime clear path: ${needle}`);
+}
+
+requireIncludes(runtimeCss, '.composer-new-chat-button', 'Composer new chat button needs visible styling.');
 
 for (const needle of [
   '.mimir-has-chat .quick-suggestions{display:none;order:4}',
