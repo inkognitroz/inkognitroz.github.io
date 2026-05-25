@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T00:43:39.471Z",
+  "updated_at": "2026-05-25T00:54:10.721Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 259,
+    "total": 260,
     "done": 51,
-    "beta": 183,
+    "beta": 184,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1165,12 +1165,22 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Performance / Chat UX",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
   "launch_progress": {
     "title": "P0 launch progress",
-    "percent": 78,
+    "percent": 77,
     "state": "building",
     "summary": "The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.",
     "public_url": "./mmir.html#progress-dashboard",
@@ -1225,6 +1235,12 @@
         "evidence": "Browser helper, WebGPU candidate and local-node route floor are wired through smoke tests without paid/provider keys."
       },
       {
+        "id": "critical-shell-headroom",
+        "label": "Chat shell performance headroom",
+        "status": "beta",
+        "evidence": "Critical active-node JavaScript was reduced; quality gates report 161244 external JS bytes and 165610 total first-paint JS bytes."
+      },
+      {
         "id": "zero-trust-public",
         "label": "Public site stays secret-free",
         "status": "done",
@@ -1246,20 +1262,20 @@
     "last_green_evidence": [
       {
         "repo": "inkognitroz.github.io",
-        "commit": "428ad3b",
-        "label": "Auto-send first local answer after install",
-        "result": "GitHub Actions green"
+        "commit": "acab3a2",
+        "label": "Active chat critical-shell headroom recovery",
+        "result": "87 local smoke gates, public safety audit and GitHub Actions green"
       },
       {
         "repo": "inkognitroz.github.io",
-        "commit": "997af71",
-        "label": "Recommended model picker paths",
+        "commit": "1ae6d07",
+        "label": "Active route install handoff",
         "result": "Local smoke + GitHub Actions green"
       },
       {
         "repo": "inkognitroz.github.io",
-        "commit": "b842e34",
-        "label": "Quiet first chat runtime chrome",
+        "commit": "e7aaf44",
+        "label": "Empty-send automatic first chat",
         "result": "Local smoke + GitHub Actions green"
       },
       {
@@ -9498,6 +9514,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D260",
+      "phase": "Performance / Chat UX",
+      "priority": "P0",
+      "work_package": "Active chat critical-shell headroom recovery",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Reduce the active route strip critical JavaScript while preserving the free starter rail, Local Node install handoff and browser/WebGPU chat routes",
+      "best_practice": "Fast first paint is part of usability; chat-first polish must not slowly erode the critical shell",
+      "done_when": "CI reports restored first-paint JS headroom and active-node/chat smoke tests remain green",
+      "covers": "performance, chat, activation, qa",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.",
       "estimate": "Verify + polish"
     }
   ]

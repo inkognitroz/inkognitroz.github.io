@@ -242,7 +242,8 @@ const overrides = new Map([
   ['D256', { status: 'beta', evidence: 'A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.' }],
   ['D257', { status: 'beta', evidence: 'Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.' }],
   ['D258', { status: 'beta', evidence: 'Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.' }],
-  ['D259', { status: 'beta', evidence: 'Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.' }]
+  ['D259', { status: 'beta', evidence: 'Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.' }],
+  ['D260', { status: 'beta', evidence: 'Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.' }]
 ]);
 
 const repoMeta = [
@@ -663,6 +664,12 @@ function buildLaunchProgress() {
       evidence: 'Browser helper, WebGPU candidate and local-node route floor are wired through smoke tests without paid/provider keys.'
     },
     {
+      id: 'critical-shell-headroom',
+      label: 'Chat shell performance headroom',
+      status: 'beta',
+      evidence: 'Critical active-node JavaScript was reduced; quality gates report 161244 external JS bytes and 165610 total first-paint JS bytes.'
+    },
+    {
       id: 'zero-trust-public',
       label: 'Public site stays secret-free',
       status: 'done',
@@ -694,20 +701,20 @@ function buildLaunchProgress() {
     last_green_evidence: [
       {
         repo: 'inkognitroz.github.io',
-        commit: '428ad3b',
-        label: 'Auto-send first local answer after install',
-        result: 'GitHub Actions green'
+        commit: 'acab3a2',
+        label: 'Active chat critical-shell headroom recovery',
+        result: '87 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
-        commit: '997af71',
-        label: 'Recommended model picker paths',
+        commit: '1ae6d07',
+        label: 'Active route install handoff',
         result: 'Local smoke + GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
-        commit: 'b842e34',
-        label: 'Quiet first chat runtime chrome',
+        commit: 'e7aaf44',
+        label: 'Empty-send automatic first chat',
         result: 'Local smoke + GitHub Actions green'
       },
       {

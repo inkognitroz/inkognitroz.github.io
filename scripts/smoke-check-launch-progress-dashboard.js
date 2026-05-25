@@ -59,7 +59,7 @@ requireTrue(launch.public_url === './mmir.html#progress-dashboard', 'Launch prog
 requireTrue(checkpoints.length >= 8, 'Launch progress must track at least eight launch-critical checkpoints.');
 requireTrue(checkpoints.some((item) => item.id === 'open-webui-polish' && item.status === 'next'), 'Launch progress must keep Open WebUI polish as next work.');
 requireTrue(checkpoints.some((item) => item.id === 'real-browser-qa' && item.status === 'watch'), 'Launch progress must keep real browser QA visible as a watch item.');
-requireTrue(evidence.some((item) => item.commit === '428ad3b'), 'Launch progress must include the latest public green commit evidence.');
+requireTrue(evidence.some((item) => item.commit === 'acab3a2'), 'Launch progress must include the latest public green commit evidence.');
 requireTrue(evidence.some((item) => item.repo === 'mmir-local-node' && item.commit === '54fe834'), 'Launch progress must include local-node package evidence.');
 requireTrue(next.some((item) => item.id === 'D254-openwebui-polish'), 'Launch progress next queue must include D254 Open WebUI polish.');
 requireTrue(blockers.some((item) => item.status === 'blocked' && String(item.detail || '').includes('No-spend')), 'Launch progress must explain why paid live cloud nodes are blocked.');
