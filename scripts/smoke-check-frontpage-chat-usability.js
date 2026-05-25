@@ -66,8 +66,8 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-new-chat.js', 'Composer
 requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js', 'Composer keyboard shortcuts must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-autofocus.js', 'Composer autofocus must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-refocus-after-send.js', 'Composer refocus after send must load through the deferred queue.');
-requireIncludes(html, 'chat-runtime.css?v=20260525-composer-new-chat-v1', 'Chat runtime CSS must be cache-busted for composer new chat polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d275-20260525-composer-refocus-v1'", 'Service worker cache must be bumped for the composer refocus fix.');
+requireIncludes(html, 'chat-runtime.css?v=20260525-proof-compact-v1', 'Chat runtime CSS must be cache-busted for compact proof polish.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d276-20260525-proof-compact-v1'", 'Service worker cache must be bumped for the compact proof fix.');
 
 for (const needle of [
   'resize:none',
@@ -187,6 +187,14 @@ for (const needle of [
   requireIncludes(css, needle, `Post-first-message focus mode missing: ${needle}`);
 }
 
+for (const needle of [
+  '.mimir-has-chat .runtime-live-proof[data-state="ready"]',
+  '.mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-rail { display: none;',
+  '.mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-actions { flex-wrap: nowrap;'
+]) {
+  requireIncludes(runtimeCss, needle, `Post-first-message runtime proof compacting missing: ${needle}`);
+}
+
 requireBefore(css, '.mimir-chat-first .mimir-composer{order:2}', '.mimir-chat-first #mmir-active-nodes-bar{order:3}', 'Composer must stay directly above active route choices.');
 requireBefore(css, '.mimir-chat-first #mmir-active-nodes-bar{order:3}', '.mimir-chat-first #runtime-context-controls,.mimir-chat-first #mimir-chat-runtime{order:4}', 'Active routes must stay close to the composer before deeper runtime proof details.');
 requireBefore(css, '.mimir-chat-first #runtime-context-controls,.mimir-chat-first #mimir-chat-runtime{order:4}', '.mimir-chat-first .quick-suggestions{order:5}', 'Live runtime must stay before secondary quick actions.');
@@ -197,7 +205,8 @@ for (const needle of [
   '.composer-action-feedback{font-size:.74rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
   '.mimir-chat-first:not(.mimir-has-chat) .runtime-toolbar',
   '.mimir-chat-first:not(.mimir-has-chat) .runtime-live-proof[data-state="idle"]',
-  '.mimir-chat-first:not(.mimir-has-chat) .runtime-transcript[data-empty="true"]'
+  '.mimir-chat-first:not(.mimir-has-chat) .runtime-transcript[data-empty="true"]',
+  '.mimir-has-chat .runtime-live-proof[data-state="ready"]{border-radius:18px;grid-template-columns:1fr}'
 ]) {
   requireIncludes(runtimeCss, needle, `Mobile composer controls must stay compact: ${needle}`);
 }

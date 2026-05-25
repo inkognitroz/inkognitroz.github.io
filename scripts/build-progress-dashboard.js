@@ -258,7 +258,8 @@ const overrides = new Map([
   ['D272', { status: 'beta', evidence: 'A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.' }],
   ['D273', { status: 'beta', evidence: 'A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.' }],
   ['D274', { status: 'beta', evidence: 'A deferred desktop-safe autofocus module now puts the cursor in the composer on first load when there is no deep link, while avoiding mobile keyboard popups and critical first-paint JavaScript growth.' }],
-  ['D275', { status: 'beta', evidence: 'A deferred composer refocus module now returns focus to the prompt after send/submit/Enter for smooth follow-up chat, while avoiding mobile keyboard popups unless the prompt was recently active.' }]
+  ['D275', { status: 'beta', evidence: 'A deferred composer refocus module now returns focus to the prompt after send/submit/Enter for smooth follow-up chat, while avoiding mobile keyboard popups unless the prompt was recently active.' }],
+  ['D276', { status: 'beta', evidence: 'Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.' }]
 ]);
 
 const repoMeta = [
@@ -725,6 +726,12 @@ function buildLaunchProgress() {
       label: 'Follow-up chat stays frictionless',
       status: 'beta',
       evidence: 'After send/submit/Enter, MMIR returns focus to the prompt for follow-up drafting without adding critical first-paint JavaScript or mobile keyboard surprise.'
+    },
+    {
+      id: 'compact-ready-proof',
+      label: 'Green proof stays quiet after chat starts',
+      status: 'beta',
+      evidence: 'Ready-state proof becomes a compact status line in active conversations, keeping the transcript primary while preserving actions and leaving repair/error states expanded.'
     },
     {
       id: 'transcript-scroll-guard',

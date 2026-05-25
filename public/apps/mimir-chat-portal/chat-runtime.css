@@ -365,6 +365,47 @@
   font-size: 0.8rem;
 }
 
+.mimir-has-chat .runtime-live-proof[data-state="ready"] {
+  align-items: center;
+  border-radius: 999px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 6px 8px 6px 12px;
+}
+
+.mimir-has-chat .runtime-live-proof[data-state="ready"] > div:first-child {
+  min-width: 0;
+}
+
+.mimir-has-chat .runtime-live-proof[data-state="ready"] strong {
+  display: inline;
+  font-size: 0.78rem;
+}
+
+.mimir-has-chat .runtime-live-proof[data-state="ready"] p {
+  display: inline;
+  margin-left: 0.35rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-rail {
+  display: none;
+}
+
+.mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-actions {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-actions button {
+  font-size: 0.74rem;
+  min-height: 28px;
+  padding: 0 9px;
+}
+
 .runtime-message {
   display: grid;
   gap: 6px;
@@ -507,6 +548,9 @@
   .composer-action-feedback{font-size:.74rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .runtime-message-actions button{flex:1 1 92px}
   .composer-live-chip{max-width:100%}
+  .mimir-has-chat .runtime-live-proof[data-state="ready"]{border-radius:18px;grid-template-columns:1fr}
+  .mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-actions{overflow-x:auto;scrollbar-width:none}
+  .mimir-has-chat .runtime-live-proof[data-state="ready"] .runtime-proof-actions::-webkit-scrollbar{display:none}
   .runtime-activation-replay{align-items:stretch;display:grid}
   .runtime-toolbar{grid-template-columns:1fr}
   .runtime-toolbar button,.runtime-toolbar select{width:100%}

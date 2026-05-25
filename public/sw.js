@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d275-20260525-composer-refocus-v1';
+const CACHE_NAME='mmir-pwa-d276-20260525-proof-compact-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
