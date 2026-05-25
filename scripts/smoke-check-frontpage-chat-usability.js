@@ -69,7 +69,7 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-refocus-after-send.js',
 requireIncludes(html, 'chat-runtime.css?v=20260525-clean-runtime-v1', 'Chat runtime CSS must be cache-busted for compact proof polish.');
 requireIncludes(html, 'composer-model-picker.css?v=20260525-picker-empty-reset-v1', 'Composer model picker CSS must be cache-busted for picker empty-reset polish.');
 requireIncludes(html, 'composer-model-picker.js?v=20260525-picker-empty-reset-v1', 'Composer model picker JS must be cache-busted for picker empty-reset polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d284-20260525-clean-shell-v1'", 'Service worker cache must be bumped for the model picker empty-reset fix.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d293-20260525-progress-window-v1'", 'Service worker cache must be bumped for the latest chat shell and progress dashboard fixes.');
 
 for (const needle of [
   'resize:none',

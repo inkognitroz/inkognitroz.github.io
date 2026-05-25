@@ -311,6 +311,34 @@
   padding-right: 2px;
 }
 
+.progress-task-window {
+  align-items: center;
+  color: var(--mimir-muted, #6b7280);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  gap: 8px;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.progress-task-window button {
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 999px;
+  color: var(--mimir-text, #111827);
+  cursor: pointer;
+  font-weight: 750;
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.progress-task-window button:focus-visible {
+  border-color: rgba(16, 163, 127, 0.72);
+  outline: 3px solid rgba(16, 163, 127, 0.28);
+  outline-offset: 2px;
+}
+
 .progress-task {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 8px;

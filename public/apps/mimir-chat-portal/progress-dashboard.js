@@ -15,6 +15,9 @@
   let dashboard=null;
   let filterStatus='all';
   let filterText='';
+  let showAllTasks=false;
+  let filterRenderTimer=null;
+  const TASK_RENDER_LIMIT=72;
 
   if(!root)return;
 
@@ -1352,19 +1355,30 @@
 
   function renderTasks(data){
     const tasks=filteredTasks(data);
+    const visibleTasks=showAllTasks?tasks:tasks.slice(0,TASK_RENDER_LIMIT);
+    const hiddenCount=Math.max(0,tasks.length-visibleTasks.length);
     return '<section><div class="dashboard-heading"><div><p class="eyebrow">Full backlog</p><h2>All delivery tasks</h2></div></div>'+
       '<div class="progress-toolbar"><input id="progress-search" type="search" placeholder="Search tasks, repos, phase..." value="'+safe(filterText)+'" />'+
       '<select id="progress-status-filter" aria-label="Filter by status">'+
         ['all','done','beta','next','watch','blocked','planned'].map((status)=>'<option value="'+status+'" '+(status===filterStatus?'selected':'')+'>'+label(status)+'</option>').join('')+
       '</select></div>'+
-      '<div class="progress-list" aria-live="polite">'+(tasks.length?tasks.map((task)=>taskCard(task,false)).join(''):'<p class="dashboard-note">No tasks match this filter.</p>')+'</div></section>';
+      '<div class="progress-task-window" data-windowed="'+safe(Boolean(hiddenCount))+'"><span>'+safe(visibleTasks.length)+' of '+safe(tasks.length)+' tasks rendered</span>'+
+      (hiddenCount?'<button id="progress-show-all-tasks" type="button">Show all '+safe(tasks.length)+'</button>':'')+'</div>'+
+      '<div class="progress-list" aria-live="polite">'+(visibleTasks.length?visibleTasks.map((task)=>taskCard(task,false)).join(''):'<p class="dashboard-note">No tasks match this filter.</p>')+'</div></section>';
+  }
+
+  function scheduleRender(){
+    window.clearTimeout(filterRenderTimer);
+    filterRenderTimer=window.setTimeout(render,120);
   }
 
   function bindFilters(){
     const search=document.getElementById('progress-search');
     const status=document.getElementById('progress-status-filter');
-    if(search)search.addEventListener('input',()=>{filterText=search.value;render();});
-    if(status)status.addEventListener('change',()=>{filterStatus=status.value;render();});
+    const showAll=document.getElementById('progress-show-all-tasks');
+    if(search)search.addEventListener('input',()=>{filterText=search.value;showAllTasks=false;scheduleRender();});
+    if(status)status.addEventListener('change',()=>{filterStatus=status.value;showAllTasks=false;render();});
+    if(showAll)showAll.addEventListener('click',()=>{showAllTasks=true;render();});
   }
 
   function openTarget(target){

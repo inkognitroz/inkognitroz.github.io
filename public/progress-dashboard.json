@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T15:37:49.150Z",
+  "updated_at": "2026-05-25T15:50:48.313Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 292,
+    "total": 293,
     "done": 51,
-    "beta": 216,
+    "beta": 217,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1305,6 +1305,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Owner Ops / Responsiveness",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1435,6 +1445,12 @@
         "label": "Free route defaults stay fast",
         "status": "beta",
         "evidence": "D292 keeps managed API/local defaults first-paint critical through a small backend-profiles module and defers the heavier backend settings UI."
+      },
+      {
+        "id": "progress-dashboard-window",
+        "label": "Progress dashboard stays responsive",
+        "status": "beta",
+        "evidence": "D293 renders the full backlog through a bounded first window with Show all and debounced filters, keeping deep links to owner status from blocking the chat shell."
       },
       {
         "id": "local-node-package",
@@ -10785,6 +10801,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Critical managed/free-local profile defaults now load from a small first-paint module while the heavier backend settings UI is deferred, restoring performance headroom.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D293",
+      "phase": "Owner Ops / Responsiveness",
+      "priority": "P0",
+      "work_package": "Progressive backlog rendering",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Render the progress-dashboard backlog in a bounded first window with an explicit Show all control, debounce filter input and rotate cache keys so the owner view cannot freeze the chat-first page",
+      "best_practice": "Owner visibility is useful only if it does not make the public chat feel slow or stuck, especially when deep-linked to #progress-dashboard",
+      "done_when": "Smoke gates prove the dashboard uses a render window, keeps all tasks available on demand, and updates cache/service-worker versions without adding paid routes or secrets",
+      "covers": "performance, owner-dashboard, responsiveness, chat-first, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The progress dashboard now renders the backlog progressively with a 72-task window, Show all control and debounced filters so owner tracking cannot freeze the chat-first page.",
       "estimate": "Verify + polish"
     }
   ]

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d284-20260525-clean-shell-v1';
+const CACHE_NAME='mmir-pwa-d293-20260525-progress-window-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

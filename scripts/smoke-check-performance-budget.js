@@ -12,7 +12,7 @@ const totalFirstPaintJsByteBudget = 168000;
 const cacheKey = '20260524-quiet-first-paint-v3';
 const runtimeCacheKey = '20260525-critical-active-routes-v1';
 const activeRoutesCacheKey = '20260525-critical-active-routes-v1';
-const progressCacheKey = '20260525-launch-progress-v1';
+const progressCacheKey = '20260525-progress-window-v1';
 const runtimeFixKey = '20260525-clean-shell-guard-v1';
 const backendProfilesCriticalKey = '20260525-free-api-default-v1';
 

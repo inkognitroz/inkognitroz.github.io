@@ -90,6 +90,11 @@
       "id": "D292 critical backend defaults split",
       "status": "guarded",
       "evidence": "Free API/local defaults stay first-paint critical through backend-profiles-critical.js while the heavier backend settings UI is deferred to keep chat fast."
+    },
+    {
+      "id": "D293 progressive progress dashboard",
+      "status": "guarded",
+      "evidence": "The owner progress dashboard now renders only the first 72 backlog items by default, exposes Show all for the full queue and debounces search so the chat-first page stays responsive."
     }
   ],
   "known_limitations": [

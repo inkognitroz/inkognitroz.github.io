@@ -277,7 +277,8 @@ const overrides = new Map([
   ['D289', { status: 'beta', evidence: 'The composer quick actions drawer now leads with Ready now status and a Chat now action that seeds the safest free prompt only when empty.' }],
   ['D290', { status: 'beta', evidence: 'The composer quick actions drawer now exposes direct no-spend route chips for MMIR Guide, Browser WebGPU and Qwen3 local install before the heavier model picker.' }],
   ['D291', { status: 'beta', evidence: 'A dependency-free quick-route DOM fixture now clicks Guide, Browser WebGPU and Local install chips and proves prompt seeding, starter handoff, send click, installer resume and no-spend boundaries.' }],
-  ['D292', { status: 'beta', evidence: 'Critical managed/free-local profile defaults now load from a small first-paint module while the heavier backend settings UI is deferred, restoring performance headroom.' }]
+  ['D292', { status: 'beta', evidence: 'Critical managed/free-local profile defaults now load from a small first-paint module while the heavier backend settings UI is deferred, restoring performance headroom.' }],
+  ['D293', { status: 'beta', evidence: 'The progress dashboard now renders the backlog progressively with a 72-task window, Show all control and debounced filters so owner tracking cannot freeze the chat-first page.' }]
 ]);
 
 const repoMeta = [
@@ -778,6 +779,12 @@ function buildLaunchProgress() {
       label: 'Free route defaults stay fast',
       status: 'beta',
       evidence: 'D292 keeps managed API/local defaults first-paint critical through a small backend-profiles module and defers the heavier backend settings UI.'
+    },
+    {
+      id: 'progress-dashboard-window',
+      label: 'Progress dashboard stays responsive',
+      status: 'beta',
+      evidence: 'D293 renders the full backlog through a bounded first window with Show all and debounced filters, keeping deep links to owner status from blocking the chat shell.'
     },
     {
       id: 'local-node-package',
