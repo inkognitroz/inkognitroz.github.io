@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T23:02:36.888Z",
+  "updated_at": "2026-05-25T23:33:28.707Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 307,
+    "total": 308,
     "done": 51,
-    "beta": 231,
+    "beta": 232,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 8,
+        "total": 9,
         "done": 0,
-        "beta": 8,
+        "beta": 9,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1605,6 +1605,12 @@
         "label": "Plus drawer uses live local model",
         "status": "beta",
         "evidence": "D308 makes the compact plus drawer switch its Local chip from install to ready when Local Node reports a model, then starts chat through the guarded runtime bridge."
+      },
+      {
+        "id": "model-picker-live-local",
+        "label": "Model picker recommends live local model",
+        "status": "beta",
+        "evidence": "D309 makes the compact model picker recommend Local ready instead of Install local when Local Node reports a live private model."
       },
       {
         "id": "local-node-package",
@@ -11198,6 +11204,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer plus drawer now listens for Local Node model events, switches the Local chip from install to ready and starts the live private model through chat-runtime without reopening the installer.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D309",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Model picker recommends live local model",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the compact composer model picker listen for Local Node model events, replace the Install local recommendation with a Local ready recommendation when a private model is live, and start that model through the chat runtime bridge",
+      "best_practice": "The model picker should agree with the active route strip and plus drawer: once a real local model is ready, the next action is chat, not reinstall",
+      "done_when": "Dedicated DOM fixture proves a live Local Node model creates a clickable Local ready recommendation, hides the install recommendation, refreshes/sends through chat-runtime and does not redirect to installer",
+      "covers": "chat, model-picker, local-node, activation, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.",
       "estimate": "Verify + polish"
     }
   ]

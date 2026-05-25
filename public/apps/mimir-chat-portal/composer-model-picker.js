@@ -7,6 +7,7 @@
   let starterCatalogLoaded=false;
   let pickerSearchQuery='';
   let pickerRouteFilter='all';
+  let localState={status:'checking',models:[]};
 
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function modelSelect(){return document.getElementById('runtime-model');}
@@ -100,6 +101,14 @@
       starterModels.find(model=>model.runtime==='ollama')||
       null;
   }
+  function localModel(){return (localState.models||[]).map(model=>String(model?.id||model?.name||model?.model||'').trim()).find(Boolean)||'';}
+  function localReady(){return localState.status==='online'&&Boolean(localModel());}
+  function liveLocalValue(){
+    const model=localModel();
+    if(!model)return '';
+    const options=Array.from(modelSelect()?.options||[]);
+    return options.find(option=>option.value===model)?.value||model;
+  }
   function recommendedWebGpuIds(){
     return ['webllm-qwen25-05b','webllm-gemma3-1b','webllm-llama32-1b','webllm-phi35-mini'];
   }
@@ -119,13 +128,14 @@
     const guide=starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
     const webgpuModels=webGpuStarterModels();
     const local=firstInstallableStarter();
+    const liveLocal=localReady()&&{id:'live-local',label:'Local ready',detail:'Private Local Node model. No installer needed.',model:{id:'live-local',label:localModel(),runtime:'live-local'},value:liveLocalValue(),action:'chat-local',state:'live'};
     const items=[
       guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'chat',state:'ready'},
       ...webgpuModels.map((model,index)=>({id:'browser-llm-'+model.id,label:webGpuLabel(model,index),detail:'Free browser-local WebGPU route. First use downloads weights.',model,action:'chat',state:'ready'})),
-      local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'}
+      liveLocal||(local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'})
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>{
-      const value=starterValue(item.model);
+      const value=item.value||starterValue(item.model);
       const selected=current===value;
       return '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'" data-picker-runtime="'+escapeHtml(item.model.runtime||'starter')+'" data-picker-selected="'+String(selected)+'" aria-pressed="'+String(selected)+'">'+
         '<strong>'+escapeHtml(item.label)+'</strong><span>'+escapeHtml(cleanTitle(item.model.label,item.model.id))+'</span>'+(selected?'<em>Selected</em>':'')+'<small>'+escapeHtml(item.detail)+'</small>'+
@@ -307,6 +317,20 @@
       select.dispatchEvent(new Event('change',{bubbles:true}));
     }
     window.MimirActivationTelemetry?.record?.('composer-model-picker',{status:action,model:id||value,route:'composer model picker',free:true,note:'Composer model picker selected '+(id||value)+'. no_paid_routes_started:true.'});
+    if(action==='chat-local'&&localReady()){
+      const model=value||localModel();
+      const prompt=promptEl();
+      if(prompt&&!String(prompt.value||'').trim()){
+        prompt.value='Answer from '+model+'.';
+        prompt.dispatchEvent(new Event('input',{bubbles:true}));
+        prompt.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      toggle(false);
+      const bridge=window.MimirChatRuntimeBridge;
+      if(bridge?.refresh&&bridge?.send){bridge.setStatus?.('Starting '+model+'...','loading');bridge.refresh().then(()=>bridge.send());}
+      else window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),80);
+      return;
+    }
     if(id){
       if(action==='install'&&starter?.runtime==='ollama'){
         openStarterInstaller(starter,'composer-model-picker');
@@ -334,6 +358,11 @@
   document.addEventListener('change',(event)=>{if(event.target?.id==='runtime-model')render();});
   window.addEventListener('mmir-backend-profiles-updated',render);
   window.addEventListener('mmir-live-model-proof-updated',render);
+  window.addEventListener('mmir-local-connector-refreshed',(event)=>{
+    const detail=event?.detail||{};
+    localState={status:detail.status||detail.health||localState.status,models:Array.isArray(detail.models)?detail.models:[]};
+    render();
+  });
   loadStarterModels();
   render();
 })();

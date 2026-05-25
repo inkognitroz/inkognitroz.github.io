@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d308-20260526-quick-actions-live-local-v1';
+const CACHE_NAME='mmir-pwa-d309-20260526-picker-live-local-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

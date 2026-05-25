@@ -11,7 +11,13 @@ const files = {
   mmir: join(publicDir, 'mmir.html'),
   uiCoverage: join(publicDir, 'ui-action-coverage.json'),
   visibleAudit: join(publicDir, 'visible-control-audit.json'),
-  progress: join(publicDir, 'progress-dashboard.json')
+  progress: join(publicDir, 'progress-dashboard.json'),
+  backlog: join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'),
+  log: join(root, 'docs', 'MMIR_IMPLEMENTATION_LOG.md'),
+  visualQa: join(publicDir, 'visual-qa-report.json'),
+  liveLocalFixture: join(root, 'scripts', 'smoke-check-composer-model-picker-live-local.js'),
+  qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml'),
+  pagesWorkflow: join(root, '.github', 'workflows', 'pages.yml')
 };
 
 function fail(message) {
@@ -73,6 +79,8 @@ for (const needle of [
   'starter-install-installer-opened',
   'function card(option)',
   'function recommendationCards()',
+  'function localReady()',
+  'function liveLocalValue()',
   'function selectedValue()',
   'function searchText(option)',
   'function applySearchFilter(el)',
@@ -119,6 +127,10 @@ for (const needle of [
   'picker.contains(event.target)',
   'promptEl()?.focus({preventScroll:true})',
   "action:'chat'",
+  "action:'chat-local'",
+  'MimirChatRuntimeBridge',
+  'mmir-local-connector-refreshed',
+  'Local ready',
   'primary-chat-link',
   'Chat now',
   'Browser LLM',
@@ -138,10 +150,19 @@ for (const needle of [
 }
 
 for (const needle of [
+  'Composer model picker live-local fixture passed.',
+  "getAttribute('data-picker-recommend') === 'live-local'",
+  'bridgeRefreshes',
+  'must not reopen the installer'
+]) {
+  requireIncludes(read(files.liveLocalFixture), needle, `D309 live-local model picker fixture missing: ${needle}`);
+}
+
+for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260525-picker-empty-reset-v1',
-  'composer-model-picker.js?v=20260525-picker-empty-reset-v1'
+  'composer-model-picker.css?v=20260526-picker-live-local-v1',
+  'composer-model-picker.js?v=20260526-picker-live-local-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -226,9 +247,18 @@ const d207 = tasks.find((task) => task.seq === 'D207');
 if (!d207 || d207.status !== 'beta') {
   fail('Progress dashboard task D207 must be beta after free live-route hardening ships.');
 }
+const d309 = tasks.find((task) => task.seq === 'D309');
+if (!d309 || d309.status !== 'beta') {
+  fail('Progress dashboard task D309 must be beta after live local model picker recommendation ships.');
+}
 if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
   fail('Progress dashboard next queue must prioritize D254 after D236 ships.');
 }
+
+requireIncludes(read(files.backlog), '| D309 | Chat UX / Model Picker | P0 | Model picker recommends live local model |', 'Backlog must include D309 live local model picker recommendation.');
+requireIncludes(read(files.log), 'D309 is now beta', 'Implementation log must include D309.');
+requireIncludes(read(files.visualQa), 'D309 model picker live local recommendation', 'Visual QA must mention D309.');
+requireIncludes(`${read(files.qualityWorkflow)}\n${read(files.pagesWorkflow)}`, 'smoke-check-composer-model-picker-live-local.js', 'GitHub workflows must run D309 live-local model picker fixture.');
 
 if (!process.exitCode) {
   console.log('Composer model picker smoke check passed.');

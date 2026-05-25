@@ -165,6 +165,11 @@
       "id": "D308 quick actions live local route",
       "status": "guarded",
       "evidence": "The plus drawer Local chip now changes from Install local to Local ready when Local Node reports a model, and the same chip starts local chat instead of reopening the installer."
+    },
+    {
+      "id": "D309 model picker live local recommendation",
+      "status": "guarded",
+      "evidence": "The compact model picker now recommends Local ready when Local Node reports a model and the DOM fixture proves it starts chat without reinstall redirect."
     }
   ],
   "known_limitations": [

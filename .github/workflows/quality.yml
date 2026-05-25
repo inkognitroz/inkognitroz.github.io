@@ -382,5 +382,8 @@ jobs:
       - name: Smoke-check composer model picker
         run: node scripts/smoke-check-composer-model-picker.js
 
+      - name: Smoke-check composer model picker live local
+        run: node scripts/smoke-check-composer-model-picker-live-local.js
+
       - name: Smoke-check node tunnel handoff
         run: node scripts/smoke-check-node-tunnel-handoff.js
