@@ -36,8 +36,8 @@
       "surface": "Chat composer",
       "selector": "#composer-model-picker",
       "status": "wired",
-      "result": "Lets users choose Chat now, multiple free Browser WebGPU LLMs or Install local first, then live backend, browser helper, WebGPU or installable free local models without starting paid routes.",
-      "source_evidence": ["MimirComposerModelPicker", "recommendationCards", "webGpuStarterModels", "data-picker-recommend", "data-picker-runtime", "selectModel(value,action)", "data-picker-model-value", "webllm-gemma3-1b", "webllm-llama32-1b", "webllm-phi35-mini", "no_paid_routes_started:true"],
+      "result": "Lets users choose Chat now, multiple free Browser WebGPU LLMs or Install local first; ready recommendations can auto-start the first chat while keeping paid routes blocked.",
+      "source_evidence": ["MimirComposerModelPicker", "recommendationCards", "webGpuStarterModels", "autoStartComposerRecommendation", "action:'chat'", "primary-chat-link", "data-picker-recommend", "data-picker-runtime", "selectModel(value,action)", "data-picker-model-value", "webllm-gemma3-1b", "webllm-llama32-1b", "webllm-phi35-mini", "no_paid_routes_started:true"],
       "no_spend": true
     },
     {

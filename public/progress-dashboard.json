@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T01:11:26.475Z",
+  "updated_at": "2026-05-25T01:16:30.266Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 262,
+    "total": 263,
     "done": 51,
-    "beta": 186,
+    "beta": 187,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1195,6 +1195,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / Automation",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1259,6 +1269,12 @@
         "label": "Multiple free browser LLMs in picker",
         "status": "beta",
         "evidence": "Composer model picker now recommends several WebGPU starters directly instead of hiding them behind one generic Browser LLM path."
+      },
+      {
+        "id": "recommended-chat-autostart",
+        "label": "Recommended model choices auto-start chat",
+        "status": "beta",
+        "evidence": "Ready-now recommendations seed a truthful prompt and trigger the primary chat action without paid/provider side effects."
       },
       {
         "id": "critical-shell-headroom",
@@ -9585,6 +9601,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Composer model picker recommendations now expose multiple free Browser WebGPU LLM choices directly, with UI action coverage and visible-control audit proving no-spend routing.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D263",
+      "phase": "Chat UX / Automation",
+      "priority": "P0",
+      "work_package": "One-click recommended model chat start",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make ready-now composer model recommendations seed a useful prompt and send automatically, while installable local choices still route to install/proof without paid side effects",
+      "best_practice": "Recommended actions should do the obvious safe thing immediately and leave configuration for later",
+      "done_when": "Clicking Chat now or a Browser WebGPU recommendation starts the first no-spend chat path with a truthful prompt, and smoke tests guard the handoff",
+      "covers": "chat, automation, model-picker, first-value, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Ready-now composer recommendations now seed a useful prompt and click Send automatically, so Chat now and Browser WebGPU choices produce first value instead of stopping at selection.",
       "estimate": "Verify + polish"
     }
   ]

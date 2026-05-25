@@ -34,6 +34,10 @@
       __starterFloor:true
     };
   }
+  function starterByValue(value){
+    const id=starterId(value);
+    return id?starterModels.find(model=>model.id===id)||null:null;
+  }
   function freeRouteFloor(options){
     const existing=new Set((options||[]).map(option=>String(option.value||'')));
     const floor=[];
@@ -93,8 +97,8 @@
     const webgpuModels=webGpuStarterModels();
     const local=firstInstallableStarter();
     const items=[
-      guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'select',state:'ready'},
-      ...webgpuModels.map((model,index)=>({id:'browser-llm-'+model.id,label:webGpuLabel(model,index),detail:'Free browser-local WebGPU route. First use downloads weights.',model,action:'select',state:'ready'})),
+      guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'chat',state:'ready'},
+      ...webgpuModels.map((model,index)=>({id:'browser-llm-'+model.id,label:webGpuLabel(model,index),detail:'Free browser-local WebGPU route. First use downloads weights.',model,action:'chat',state:'ready'})),
       local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'}
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>
@@ -161,10 +165,23 @@
     setExpanded(open);
     if(open)render();
   }
+  function autoStartComposerRecommendation(model,action){
+    if(action!=='chat'||!model)return;
+    const prompt=promptEl();
+    if(prompt&&!String(prompt.value||'').trim()){
+      prompt.value=model.runtime==='webllm'
+        ?'Start a free browser WebGPU chat with '+cleanTitle(model.label,model.id)+'. Tell me what model is active and what I can connect next.'
+        :'Start the safest free MMIR chat now. Explain what is active and one useful next action.';
+      prompt.dispatchEvent(new Event('input',{bubbles:true}));
+      prompt.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),120);
+  }
   function selectModel(value,action){
     const select=modelSelect();
     if(!select||!value)return;
     const id=starterId(value);
+    const starter=starterByValue(value);
     const optionExists=Array.from(select.options||[]).some(option=>option.value===value);
     if(optionExists){
       select.value=value;
@@ -176,6 +193,7 @@
     }
     toggle(false);
     promptEl()?.focus();
+    autoStartComposerRecommendation(starter,action);
   }
 
   window.MimirComposerModelPicker={render,toggle,open:()=>toggle(true),close:()=>toggle(false),freeRouteFloor:()=>freeRouteFloor(Array.from(modelSelect()?.options||[])),starterCatalogLoaded:()=>starterCatalogLoaded};
