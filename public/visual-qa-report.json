@@ -160,6 +160,11 @@
       "id": "D307 live local model chat start",
       "status": "guarded",
       "evidence": "A connector event with a live Local Node model now promotes that model in the active chat route and routes the Local Node button through refresh/send before exactly one first chat send."
+    },
+    {
+      "id": "D308 quick actions live local route",
+      "status": "guarded",
+      "evidence": "The plus drawer Local chip now changes from Install local to Local ready when Local Node reports a model, and the same chip starts local chat instead of reopening the installer."
     }
   ],
   "known_limitations": [

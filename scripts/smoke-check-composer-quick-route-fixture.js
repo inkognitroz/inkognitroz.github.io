@@ -169,6 +169,7 @@ function setupContext({ webgpu = true } = {}) {
 
   const storage = new Map();
   const events = [];
+  const listeners = {};
   const location = { href: 'http://127.0.0.1:4173/mmir.html#chat' };
   const window = {
     document,
@@ -176,12 +177,29 @@ function setupContext({ webgpu = true } = {}) {
     navigator: webgpu ? { gpu: {} } : {},
     location,
     MimirComposerModelPicker: { close() {} },
+    MimirChatRuntimeBridge: {
+      setStatus(message, state) {
+        window.bridgeStatus = { message, state };
+      },
+      refresh() {
+        window.bridgeRefreshes = (window.bridgeRefreshes || 0) + 1;
+        return Promise.resolve([{ id: 'qwen3:0.6b' }]);
+      },
+      send() {
+        window.bridgeSent = true;
+        primary.click();
+      }
+    },
     MimirAutosizeComposer() {},
     matchMedia: () => ({ matches: false }),
     dispatchEvent(event) {
       events.push({ type: event.type, detail: event.detail || {} });
+      for (const handler of listeners[event.type] || []) handler(event);
     },
-    addEventListener() {}
+    addEventListener(type, handler) {
+      listeners[type] = listeners[type] || [];
+      listeners[type].push(handler);
+    }
   };
   const localStorage = {
     getItem(key) {
@@ -258,6 +276,22 @@ if (resume.starter_id !== 'ollama-qwen3-06b' || resume.model !== 'qwen3:0.6b') f
 if (resume.no_paid_routes_started !== true || resume.provider_secrets_stored !== false || resume.raw_prompt_stored !== false || resume.raw_response_stored !== false) {
   fail('Repair resume must preserve no-spend/no-secret/no-raw-data boundaries.');
 }
+
+const liveLocal = setupContext();
+liveLocal.window.dispatchEvent(new FakeCustomEvent('mmir-local-connector-refreshed', {
+  detail: { status: 'online', models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
+}));
+const liveLocalMenu = menuFrom(liveLocal.document, liveLocal.window);
+if (!String(liveLocalMenu.innerHTML || '').includes('Local ready') || !String(liveLocalMenu.innerHTML || '').includes('qwen3:0.6b')) {
+  fail('Live local fixture should switch the local route chip from installer to ready model.');
+}
+liveLocalMenu.listeners.click(routeClickEvent('local'));
+await Promise.resolve();
+if (!liveLocal.prompt.value.includes('qwen3:0.6b')) fail('Live local quick route must seed the active local model prompt.');
+if (liveLocal.window.bridgeRefreshes !== 1) fail('Live local quick route must refresh through chat-runtime before send.');
+if (!liveLocal.window.bridgeSent) fail('Live local quick route must send through chat-runtime.');
+if (liveLocal.primary.clicked !== 1) fail('Live local quick route must start exactly one chat send.');
+if (liveLocal.location.href.includes('mmir-local-connector-install.html')) fail('Live local quick route must not reopen installer when a model is already ready.');
 
 const noGpu = setupContext({ webgpu: false });
 const noGpuMenu = menuFrom(noGpu.document, noGpu.window);

@@ -36,8 +36,8 @@
       "surface": "Chat composer",
       "selector": "#composer-quick-actions",
       "status": "wired",
-      "result": "After deferred assets load, the plus button opens a compact tools drawer with ready-state proof, direct free route chips for guide, WebGPU and local install, Chat now, model choice, local node install, knowledge, new chat, voice and runtime settings without starting paid routes.",
-      "source_evidence": ["MimirComposerQuickActions", "renderMenuContent", "composer-quick-status", "composer-quick-route-strip", "runQuickAction", "runQuickRoute", "data-composer-quick-route=\"guide\"", "data-composer-quick-route=\"webgpu\"", "data-composer-quick-route=\"local\"", "webllm-qwen25-05b", "ollama-qwen3-06b", "function chatNow()", "mmir-local-connector-install.html?source=composer-quick-actions", "openDeferredPanel('#knowledge-panel')", "openDeferredPanel('#runtime-settings-panel')", "no_paid_routes_started:true"],
+      "result": "After deferred assets load, the plus button opens a compact tools drawer with ready-state proof, direct free route chips for guide, WebGPU and adaptive local install/live local chat, Chat now, model choice, local node install, knowledge, new chat, voice and runtime settings without starting paid routes.",
+      "source_evidence": ["MimirComposerQuickActions", "renderMenuContent", "composer-quick-status", "composer-quick-route-strip", "runQuickAction", "runQuickRoute", "data-composer-quick-route=\"guide\"", "data-composer-quick-route=\"webgpu\"", "data-composer-quick-route=\"local\"", "localReady", "Local ready", "mmir-local-connector-refreshed", "MimirChatRuntimeBridge", "webllm-qwen25-05b", "ollama-qwen3-06b", "function chatNow()", "mmir-local-connector-install.html?source=composer-quick-actions", "openDeferredPanel('#knowledge-panel')", "openDeferredPanel('#runtime-settings-panel')", "no_paid_routes_started:true"],
       "no_spend": true
     },
     {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T22:34:10.925Z",
+  "updated_at": "2026-05-25T23:02:36.888Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 306,
+    "total": 307,
     "done": 51,
-    "beta": 230,
+    "beta": 231,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1248,9 +1248,9 @@
       },
       {
         "phase": "Chat UX / Composer",
-        "total": 7,
+        "total": 8,
         "done": 0,
-        "beta": 7,
+        "beta": 8,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1599,6 +1599,12 @@
         "label": "Live local model starts from chat",
         "status": "beta",
         "evidence": "D307 promotes the discovered Local Node model in the active route headline and uses the chat-runtime refresh/send bridge for the Local Node action."
+      },
+      {
+        "id": "quick-actions-live-local",
+        "label": "Plus drawer uses live local model",
+        "status": "beta",
+        "evidence": "D308 makes the compact plus drawer switch its Local chip from install to ready when Local Node reports a model, then starts chat through the guarded runtime bridge."
       },
       {
         "id": "local-node-package",
@@ -2525,9 +2531,9 @@
     ]
   },
   "composer_quick_actions_report": {
-    "version": 3,
+    "version": 4,
     "title": "Composer Quick Actions Drawer",
-    "scope": "D288-D291 Open WebUI-style composer plus menu, ready action, free route strip and click fixture",
+    "scope": "D288-D291 and D308 Open WebUI-style composer plus menu, ready action, adaptive free/local route strip and click fixture",
     "status": "beta",
     "principle": "The first chat surface keeps one calm plus button while useful free chat routes, model, node, knowledge, voice, settings and reset actions stay one click away.",
     "public_repo_rule": "Public-safe UI evidence only. No prompts, responses, cookies, provider keys, pairing tokens, billing data or private node telemetry.",
@@ -2576,13 +2582,16 @@
       {
         "id": "composer-quick-free-route-strip",
         "selector": ".composer-quick-route-strip",
-        "expected": "Shows direct no-spend route choices for MMIR Guide, Browser WebGPU and Qwen3 local install inside the plus drawer.",
+        "expected": "Shows direct no-spend route choices for MMIR Guide, Browser WebGPU and local route state, switching from Qwen3 install to Local ready when Local Node reports a model.",
         "evidence": [
           "composer-quick-route-strip",
           "data-composer-quick-route=\"guide\"",
           "data-composer-quick-route=\"webgpu\"",
           "data-composer-quick-route=\"local\"",
           "runQuickRoute",
+          "localReady",
+          "Local ready",
+          "MimirChatRuntimeBridge",
           "webllm-qwen25-05b",
           "ollama-qwen3-06b",
           "source:'composer-quick-route-strip'"
@@ -2593,13 +2602,16 @@
       {
         "id": "composer-quick-route-click-fixture",
         "selector": "[data-composer-quick-route]",
-        "expected": "A dependency-free DOM fixture clicks Guide, Browser WebGPU and Local install route chips and proves starter handoff, prompt seeding, send click, installer resume and no-spend boundaries.",
+        "expected": "A dependency-free DOM fixture clicks Guide, Browser WebGPU, Local install and live Local ready route chips and proves starter handoff, prompt seeding, send click, installer resume and no-spend boundaries.",
         "evidence": [
           "clickRoute('guide')",
           "clickRoute('webgpu')",
           "clickRoute('local')",
           "mmir-runtime-starter-handoff",
           "mimir-repair-resume-v1:",
+          "mmir-local-connector-refreshed",
+          "bridgeRefreshes",
+          "Local ready",
           "Composer quick route fixture smoke check passed."
         ],
         "status": "ready",
@@ -11171,6 +11183,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D308",
+      "phase": "Chat UX / Composer",
+      "priority": "P0",
+      "work_package": "Quick actions switch from install to live local chat",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the Open WebUI-style plus drawer listen for Local Node model events, replace the Local install chip with a Local ready chip when a private model is live, and route that chip through the chat runtime refresh/send bridge",
+      "best_practice": "Users should not be sent back to installation after MMIR already knows a local model is ready; the smallest visible controls should adapt automatically to the real route state",
+      "done_when": "Quick route fixture proves the same Local chip opens the installer before a model is live, but starts the live local model with one refresh/send and no installer redirect once Local Node reports a model",
+      "covers": "chat, composer, local-node, activation, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer plus drawer now listens for Local Node model events, switches the Local chip from install to ready and starts the live private model through chat-runtime without reopening the installer.",
       "estimate": "Verify + polish"
     }
   ]

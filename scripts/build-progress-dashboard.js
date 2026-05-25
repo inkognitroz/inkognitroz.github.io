@@ -291,7 +291,8 @@ const overrides = new Map([
   ['D304', { status: 'beta', evidence: 'LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.' }],
   ['D305', { status: 'beta', evidence: 'mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.' }],
   ['D306', { status: 'beta', evidence: 'The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.' }],
-  ['D307', { status: 'beta', evidence: 'When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.' }]
+  ['D307', { status: 'beta', evidence: 'When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.' }],
+  ['D308', { status: 'beta', evidence: 'The composer plus drawer now listens for Local Node model events, switches the Local chip from install to ready and starts the live private model through chat-runtime without reopening the installer.' }]
 ]);
 
 const repoMeta = [
@@ -876,6 +877,12 @@ function buildLaunchProgress() {
       label: 'Live local model starts from chat',
       status: 'beta',
       evidence: 'D307 promotes the discovered Local Node model in the active route headline and uses the chat-runtime refresh/send bridge for the Local Node action.'
+    },
+    {
+      id: 'quick-actions-live-local',
+      label: 'Plus drawer uses live local model',
+      status: 'beta',
+      evidence: 'D308 makes the compact plus drawer switch its Local chip from install to ready when Local Node reports a model, then starts chat through the guarded runtime bridge.'
     },
     {
       id: 'local-node-package',
