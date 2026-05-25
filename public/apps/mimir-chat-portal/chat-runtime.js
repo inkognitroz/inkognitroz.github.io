@@ -2069,7 +2069,7 @@
     ensureSendControl();
     messages=loadMessages();
     renderStoredMessages();
-    if(primaryLink){primaryLink.addEventListener('click',(event)=>{event.preventDefault();sendMessage();});}
+    if(primaryLink){primaryLink.addEventListener('click',(event)=>{event.preventDefault();window.__MimirEarlySend=false;sendMessage();});}
     formEl.addEventListener('submit',(event)=>{event.preventDefault();sendMessage();});
     promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}});
     window.addEventListener('mmir-active-role-changed',()=>{const role=activeRole();setStatus(role?'Role set: '+role.label+'.':'Role preset cleared.','idle');});
@@ -2083,6 +2083,7 @@
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
     window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));
     window.addEventListener('storage',()=>{renderActivationReplayGate();refreshState(true);});
+    if(window.__MimirEarlySend){window.__MimirEarlySend=false;setComposerActionFeedback('Starting from your first click. Free route stays automatic.','ready');window.setTimeout(()=>sendMessage(),40);}
     loadStarterModels().then(()=>{refreshState(true);handleRepairResumeChecked({detail:readRepairResume()});});
     setInterval(()=>refreshState(false),3000);
     window.addEventListener('focus',()=>refreshState(true));

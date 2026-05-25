@@ -82,6 +82,8 @@ jobs:
         run: node scripts/smoke-check-prechat-plus-survives.js
       - name: Smoke check runtime CSS headroom
         run: node scripts/smoke-check-runtime-css-headroom.js
+      - name: Smoke check early send replay
+        run: node scripts/smoke-check-early-send-replay.js
       - name: Smoke check message action completeness
         run: node scripts/smoke-check-message-action-completeness.js
       - name: Smoke check message action visual

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d296-20260525-runtime-css-headroom-v1';
+const CACHE_NAME='mmir-pwa-d297-20260525-early-send-replay-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

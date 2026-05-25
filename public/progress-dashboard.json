@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T18:01:21.880Z",
+  "updated_at": "2026-05-25T18:15:35.987Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 296,
+    "total": 297,
     "done": 51,
-    "beta": 220,
+    "beta": 221,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1318,9 +1318,9 @@
       },
       {
         "phase": "Chat UX / First Paint",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1489,6 +1489,12 @@
         "label": "First chat keeps CSS headroom",
         "status": "beta",
         "evidence": "D296 defers runtime model-helper and installer-status styling, rotates cache and guards blocking CSS below 67 KB so future chat polish does not slow the first screen."
+      },
+      {
+        "id": "early-send-replay",
+        "label": "First Send click cannot vanish",
+        "status": "beta",
+        "evidence": "D297 records an immediate first-paint Send click in the static shell and replays it through chat-runtime when the automatic free route is ready."
       },
       {
         "id": "local-node-package",
@@ -10899,6 +10905,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Runtime model-helper and install-status styling now loads as deferred CSS, restoring first-paint blocking CSS headroom under a tighter 67 KB guard.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D297",
+      "phase": "Chat UX / First Paint",
+      "priority": "P0",
+      "work_package": "Early send click replay",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Capture an immediate first-paint Send click before chat-runtime event handlers finish binding, then replay it once the runtime is ready through the same guarded free-route send path",
+      "best_practice": "The first visible Send control must never eat a click; if a user presses it instantly, MMIR should start the automatic free chat instead of doing nothing",
+      "done_when": "Smoke gates prove the static send control records early clicks, chat-runtime replays and clears the flag, cache is rotated and no paid/backend route starts",
+      "covers": "chat, first-paint, activation, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The static first-paint Send control now queues an immediate click and chat-runtime replays it through the guarded free-route send path once handlers are ready.",
       "estimate": "Verify + polish"
     }
   ]

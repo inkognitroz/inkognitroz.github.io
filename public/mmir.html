@@ -128,7 +128,7 @@
         <textarea id="mimir-prompt" rows="2" placeholder="Press send to start automatically, or ask MMIR anything..." aria-label="Message MMIR"></textarea>
         <div class="composer-bar">
           <div class="composer-context"><span id="active-chat-title">Auto route: free browser first, local node when available.</span></div>
-          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary" aria-label="Add or connect model" title="Add model">+</button><button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to the active route" title="Send">&#8593;</button></div>
+          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary" aria-label="Add or connect model" title="Add model">+</button><button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to the active route" title="Send" onclick="window.__MimirEarlySend=1">&#8593;</button></div>
         </div>
       </form>
 
@@ -392,7 +392,7 @@
   <script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>
   <script src="./apps/mimir-chat-portal/backend-profiles-critical.js?v=20260525-free-api-default-v1" defer></script>
   <script src="./apps/mimir-chat-portal/api-client.js?v=20260524-quiet-first-paint-v3" defer></script>
-  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260525-composer-affordance-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260525-early-send-replay-v1" defer></script>
   <script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-critical-active-routes-v1" defer></script>
   <script src="./apps/mimir-chat-portal/first-impression.js?v=20260524-quiet-first-paint-v3" defer></script>
   <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260525-clean-shell-guard-v1" defer></script>

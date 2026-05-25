@@ -110,6 +110,11 @@
       "id": "D296 runtime CSS headroom",
       "status": "guarded",
       "evidence": "Runtime model-helper and installer-status styling now loads as deferred CSS, keeping the first chat shell under the tighter blocking CSS guard while preserving plus/tools visibility."
+    },
+    {
+      "id": "D297 early send replay",
+      "status": "guarded",
+      "evidence": "The static first-paint Send control records an immediate click and chat-runtime replays it through the automatic free route once event handlers are ready."
     }
   ],
   "known_limitations": [

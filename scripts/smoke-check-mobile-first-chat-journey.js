@@ -92,7 +92,7 @@ for (const needle of [
 
 for (const needle of [
   "if(formEl&&formEl.nextSibling){chatCenter.insertBefore(runtime,formEl.nextSibling);}",
-  "primaryLink.addEventListener('click',(event)=>{event.preventDefault();sendMessage();})",
+  "primaryLink.addEventListener('click',(event)=>{event.preventDefault();window.__MimirEarlySend=false;sendMessage();})",
   "formEl.addEventListener('submit',(event)=>{event.preventDefault();sendMessage();})",
   "promptEl.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}})"
 ]) {
