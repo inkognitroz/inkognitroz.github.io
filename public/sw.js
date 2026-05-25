@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d274-20260525-composer-autofocus-v1';
+const CACHE_NAME='mmir-pwa-d275-20260525-composer-refocus-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -17,6 +17,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/composer-new-chat.js',
   './apps/mimir-chat-portal/composer-keyboard-shortcuts.js',
   './apps/mimir-chat-portal/composer-autofocus.js',
+  './apps/mimir-chat-portal/composer-refocus-after-send.js',
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
   './active-chat-nodes.json',

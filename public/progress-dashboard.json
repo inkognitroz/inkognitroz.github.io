@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T04:56:20.400Z",
+  "updated_at": "2026-05-25T05:24:23.050Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 274,
+    "total": 275,
     "done": 51,
-    "beta": 198,
+    "beta": 199,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1248,9 +1248,9 @@
       },
       {
         "phase": "Chat UX / Composer",
-        "total": 4,
+        "total": 5,
         "done": 0,
-        "beta": 4,
+        "beta": 5,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1355,6 +1355,12 @@
         "label": "Composer is ready on open",
         "status": "beta",
         "evidence": "Desktop first load focuses the prompt only when there is no deep link or user interaction, avoiding mobile keyboard popups and paid/backend side effects."
+      },
+      {
+        "id": "composer-follow-up-focus",
+        "label": "Follow-up chat stays frictionless",
+        "status": "beta",
+        "evidence": "After send/submit/Enter, MMIR returns focus to the prompt for follow-up drafting without adding critical first-paint JavaScript or mobile keyboard surprise."
       },
       {
         "id": "transcript-scroll-guard",
@@ -9927,6 +9933,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "A deferred desktop-safe autofocus module now puts the cursor in the composer on first load when there is no deep link, while avoiding mobile keyboard popups and critical first-paint JavaScript growth.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D275",
+      "phase": "Chat UX / Composer",
+      "priority": "P0",
+      "work_package": "Follow-up prompt focus after send",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Return focus to the composer after send/submit so users can keep typing follow-up prompts smoothly, while avoiding mobile keyboard popups unless the prompt was already recently active",
+      "best_practice": "Modern chat should invite the next message immediately and preserve drafts during streaming without stealing focus from mobile users",
+      "done_when": "Deferred refocus module proves primary-send, submit and Enter paths refocus safely through existing controls, emit public-safe telemetry and keep critical first-paint JavaScript unchanged",
+      "covers": "chat, composer, follow-up, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A deferred composer refocus module now returns focus to the prompt after send/submit/Enter for smooth follow-up chat, while avoiding mobile keyboard popups unless the prompt was recently active.",
       "estimate": "Verify + polish"
     }
   ]
