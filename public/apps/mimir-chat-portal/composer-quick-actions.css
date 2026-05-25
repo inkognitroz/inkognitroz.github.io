@@ -53,3 +53,14 @@
     padding: 7px 8px;
   }
 }
+
+body.mimir-public-chat:not(.mimir-has-chat) :is(
+  .composer-mode-dock,
+  .composer-tool-cluster,
+  .composer-live-cluster,
+  [data-chat-mode],
+  #runtime-model-chip,
+  #runtime-resource-chip
+) {
+  display: none !important;
+}
