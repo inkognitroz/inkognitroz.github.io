@@ -140,6 +140,11 @@
       "id": "D303 expanded free node and LLM catalog",
       "status": "guarded",
       "evidence": "The active-node rail now includes local OpenAI-compatible LM Studio, llama.cpp and vLLM adapters, plus the startup model picker has at least 28 no-spend chat starters before paid/provider routes."
+    },
+    {
+      "id": "D304 local adapter live-model bridge",
+      "status": "guarded",
+      "evidence": "LM Studio, llama.cpp and vLLM clicks now activate the local OpenAI-compatible profile, hand off to chat-runtime, refresh /v1/models and send only after a real local model is visible."
     }
   ],
   "known_limitations": [

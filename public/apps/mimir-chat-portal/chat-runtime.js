@@ -754,7 +754,7 @@
     return Boolean(verifiedLiveModel)||/\b(webgpu|browser|local|ollama|live)\b/i.test(activeModelLabel());
   }
   function runtimeBridge(){
-    return {workspaceId:activeWorkspaceId,messages:runtimeMessageSnapshot,setMessages:replaceRuntimeMessages,setStatus,setMessageActionStatus,recordAction:recordMessageAction,openPanel:openDeferredPanel,openModelPicker:openComposerModelPicker,hasUsableLiveModel};
+    return {workspaceId:activeWorkspaceId,messages:runtimeMessageSnapshot,setMessages:replaceRuntimeMessages,setStatus,setMessageActionStatus,recordAction:recordMessageAction,openPanel:openDeferredPanel,openModelPicker:openComposerModelPicker,hasUsableLiveModel,refresh:()=>refreshState(true),send:sendMessage};
   }
   window.MimirChatRuntimeBridge=runtimeBridge();
   function runDeferredMessageAction(action,message){
@@ -1925,7 +1925,7 @@
       renderModels([]);
       renderLiveProof('No backend is active yet. Browser helper works now; use Connect model to prepare a free local profile automatically.','idle',baseProofItems(''),proofRepairActions('offline'));
       setStatus('Free guide and installable local models are ready. Connect a backend to make models live.','ready');
-      return;
+      return [];
     }
     const url=cleanUrl(profile.url);
     try{
@@ -1944,6 +1944,7 @@
       writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
       setStatus(normalized.length?'Backend ready.':'Backend online. Free installable models are still available below.',normalized.length?'ready':'idle');
       proveLiveRoute(profile,url,headers,normalized);
+      return normalized;
     }catch(error){
       renderModels([]);
       if(resourceChipEl)resourceChipEl.textContent='CPU/RAM offline';
@@ -1959,6 +1960,7 @@
       }else{
         setStatus(friendlyError(error),'error');
       }
+      return [];
     }
   }
 

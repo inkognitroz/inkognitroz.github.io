@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T20:45:47.043Z",
+  "updated_at": "2026-05-25T20:59:55.129Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 302,
+    "total": 303,
     "done": 51,
-    "beta": 226,
+    "beta": 227,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1355,12 +1355,22 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / Local Adapters",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
   "launch_progress": {
     "title": "P0 launch progress",
-    "percent": 74,
+    "percent": 75,
     "state": "building",
     "summary": "The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.",
     "public_url": "./mmir.html#progress-dashboard",
@@ -1545,6 +1555,12 @@
         "label": "More free local LLMs and nodes",
         "status": "beta",
         "evidence": "D303 expands startup to 28 free chat starters and adds local OpenAI-compatible adapter nodes for LM Studio, llama.cpp and vLLM without paid/provider secrets."
+      },
+      {
+        "id": "local-adapter-autochat",
+        "label": "Local adapters wait for live models",
+        "status": "beta",
+        "evidence": "D304 routes LM Studio, llama.cpp and vLLM clicks through chat-runtime, refreshes /v1/models and sends only after a real local model is selected."
       },
       {
         "id": "local-node-package",
@@ -11057,6 +11073,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D304",
+      "phase": "Chat UX / Local Adapters",
+      "priority": "P0",
+      "work_package": "Local adapter click waits for live model inventory",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Route LM Studio, llama.cpp and vLLM clicks through the chat-runtime bridge, refresh /v1/models, select the first live local model and only then auto-start chat; show a clear start/CORS hint when the adapter is not reachable",
+      "best_practice": "A local adapter button must never look successful while silently falling back to the browser guide; it should either start the selected local model or explain the exact local runtime step",
+      "done_when": "Startup click and smooth active-node gates prove profile activation, runtime bridge handoff, live-model refresh, no-spend metadata and no browser secrets before sending chat",
+      "covers": "chat, local-adapters, openai-compatible, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.",
       "estimate": "Verify + polish"
     }
   ]

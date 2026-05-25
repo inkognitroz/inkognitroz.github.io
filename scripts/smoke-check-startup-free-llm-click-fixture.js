@@ -269,6 +269,19 @@ async function setupContext({ webgpu = true } = {}) {
         window.freeLocalProfileEnsured = true;
       }
     },
+    MimirChatRuntimeBridge: {
+      setStatus(message, state) {
+        window.bridgeStatus = { message, state };
+      },
+      refresh() {
+        window.bridgeRefreshes = (window.bridgeRefreshes || 0) + 1;
+        return Promise.resolve([{ id: 'fixture-local-model' }]);
+      },
+      send() {
+        window.bridgeSent = true;
+        primary.click();
+      }
+    },
     MimirLoadDeferred() {
       deferredLoads += 1;
       window.MimirBackendProfiles.ensureFreeOpenAiLocalProfile = (profile) => {
@@ -347,7 +360,7 @@ if (!base.bar.innerHTML.includes(`data-free-starter-count="${expectedStartup}"`)
 const guide = await setupContext();
 starterButton(guide.bar, 'mmir-guide')?.click();
 if (!hasHandoff(guide.events, 'mmir-guide', 'select')) fail('MMIR Guide startup starter must dispatch a select handoff.');
-if (!guide.prompt.value.includes('Start a free chat with')) fail('MMIR Guide startup starter must seed a useful first prompt.');
+if (!guide.prompt.value.includes('Chat with')) fail('MMIR Guide startup starter must seed a useful first prompt.');
 if (guide.primary.clicked !== 1) fail('MMIR Guide startup starter must click Send once.');
 
 const webgpu = await setupContext();
@@ -368,7 +381,7 @@ if (!noGpu.events.some((event) => event.type === 'mmir-runtime-starter-handoff'
   && event.detail.no_paid_routes_started === true)) {
   fail('No-WebGPU startup starter must fall back to MMIR Guide with selected WebGPU model preserved as context.');
 }
-if (!noGpu.prompt.value.includes('needs WebGPU here') || !noGpu.prompt.value.includes('Local Node')) {
+if (!noGpu.prompt.value.includes('needs WebGPU') || !noGpu.prompt.value.includes('free local path')) {
   fail('No-WebGPU startup fallback must seed a useful no-cost guide prompt.');
 }
 if (noGpu.primary.clicked !== 1) fail('No-WebGPU startup fallback must still send one useful guide chat.');
@@ -378,12 +391,14 @@ nodeButton(localAdapter.bar, 'local-lm-studio')?.click();
 for (let i = 0; i < 4; i += 1) await Promise.resolve();
 if (localAdapter.window.deferredLoads !== 1) fail('Local adapter click must load the deferred backend module before chat.');
 if (localAdapter.window.freeOpenAiLocalProfile?.url !== 'http://127.0.0.1:1234') fail('Local adapter click must activate the selected free local OpenAI-compatible profile.');
+if (localAdapter.window.bridgeRefreshes !== 1) fail('Local adapter click must refresh live model inventory through the runtime bridge before chat.');
+if (!localAdapter.window.bridgeSent) fail('Local adapter click must send through the runtime bridge after a live local model is visible.');
 if (!localAdapter.events.some((event) => event.type === 'mmir-free-local-adapter-selected'
   && event.detail.node_id === 'local-lm-studio'
   && event.detail.no_paid_routes_started === true)) {
   fail('Local adapter click must emit a no-spend adapter selection event.');
 }
-if (!localAdapter.prompt.value.includes('free local /v1 node')) fail('Local adapter click must seed a useful /v1 prompt.');
+if (!localAdapter.prompt.value.includes('fixture-local-model') || !localAdapter.prompt.value.includes('LM Studio Local Server')) fail('Local adapter click must seed a useful prompt for the discovered local model.');
 if (localAdapter.primary.clicked !== 1) fail('Local adapter click must send chat after the profile handoff is ready.');
 
 const local = await setupContext();
@@ -410,12 +425,16 @@ if (local.primary.clicked) fail('Ollama startup installer path must not pretend 
 const workflows = `${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`;
 requireIncludes(text(files.backlog), '| D299 | Chat QA / Free Models | P0 | Startup free LLM click fixture |', 'Backlog must include D299 startup free LLM click fixture.');
 requireIncludes(text(files.backlog), '| D300 | Chat UX / Free Models | P0 | Startup WebGPU fallback clarity |', 'Backlog must include D300 startup WebGPU fallback clarity.');
+requireIncludes(text(files.backlog), '| D304 | Chat UX / Local Adapters | P0 | Local adapter click waits for live model inventory |', 'Backlog must include D304 local adapter live-model bridge.');
 requireIncludes(text(files.log), 'D299 is now beta', 'Implementation log must include D299.');
 requireIncludes(text(files.log), 'D300 is now beta', 'Implementation log must include D300.');
+requireIncludes(text(files.log), 'D304 is now beta', 'Implementation log must include D304.');
 requireIncludes(text(files.buildDashboard), "['D299'", 'Progress dashboard build must mark D299 status.');
 requireIncludes(text(files.buildDashboard), "['D300'", 'Progress dashboard build must mark D300 status.');
+requireIncludes(text(files.buildDashboard), "['D304'", 'Progress dashboard build must mark D304 status.');
 requireIncludes(text(files.visualQa), 'D299 startup free LLM click fixture', 'Visual QA report must mention D299.');
 requireIncludes(text(files.visualQa), 'D300 startup WebGPU fallback clarity', 'Visual QA report must mention D300.');
+requireIncludes(text(files.visualQa), 'D304 local adapter live-model bridge', 'Visual QA report must mention D304.');
 requireIncludes(workflows, 'smoke-check-startup-free-llm-click-fixture.js', 'GitHub workflows must run D299 startup free LLM click fixture.');
 
 if (!process.exitCode) {

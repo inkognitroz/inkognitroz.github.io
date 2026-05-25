@@ -287,7 +287,8 @@ const overrides = new Map([
   ['D299', { status: 'beta', evidence: 'A dependency-free startup rail click fixture now proves MMIR Guide and WebGPU starters send chat, while Ollama starters open the selected-model installer with no-spend/no-secret boundaries.' }],
   ['D300', { status: 'beta', evidence: 'Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.' }],
   ['D301', { status: 'beta', evidence: 'Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.' }],
-  ['D303', { status: 'beta', evidence: 'The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.' }]
+  ['D303', { status: 'beta', evidence: 'The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.' }],
+  ['D304', { status: 'beta', evidence: 'LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.' }]
 ]);
 
 const repoMeta = [
@@ -848,6 +849,12 @@ function buildLaunchProgress() {
       label: 'More free local LLMs and nodes',
       status: 'beta',
       evidence: 'D303 expands startup to 28 free chat starters and adds local OpenAI-compatible adapter nodes for LM Studio, llama.cpp and vLLM without paid/provider secrets.'
+    },
+    {
+      id: 'local-adapter-autochat',
+      label: 'Local adapters wait for live models',
+      status: 'beta',
+      evidence: 'D304 routes LM Studio, llama.cpp and vLLM clicks through chat-runtime, refreshes /v1/models and sends only after a real local model is selected.'
     },
     {
       id: 'local-node-package',

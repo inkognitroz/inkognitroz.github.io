@@ -112,11 +112,13 @@ for (const needle of [
   "openInstaller('active-node-ollama-direct'",
   "openInstaller('active-node-webgpu-fallback')",
   'mmir-free-local-adapter-selected',
+  'b.refresh().then(models=>',
+  'b.send()',
   'w.location.href=resume.target',
   "no_paid_routes_started:true",
   "if(action!=='install')",
   'primary-chat-link',
-  'free/public-safe routes that the composer can actually use',
+  'free usable routes',
   'composer.parentNode.insertBefore(bar,composer.nextSibling)',
   'display:flex;gap:.42rem;overflow:auto',
   'data-free-starter-count'
@@ -145,6 +147,7 @@ for (const needle of [
 
 for (const needle of [
   'function updateChatSurfaceState()',
+  'refresh:()=>refreshState(true),send:sendMessage',
   "document.body.classList.toggle('mimir-has-chat',hasChat)",
   "transcriptEl.dataset.empty=String(!hasChat)",
   'scrollTranscriptToBottom()',

@@ -8,7 +8,7 @@
   let manifestNodes=[];
   let starterModels=[];
   let liveModels=[];
-  let localState={status:'checking',hardware:'CPU/RAM checking',url:DEFAULT_LOCAL_URL};
+  let localState={status:'checking',url:DEFAULT_LOCAL_URL};
   let manifestLoaded=false;
   let catalogLoaded=false;
 
@@ -17,7 +17,6 @@
   function needsWebGpu(node){const requires=Array.isArray(node?.route?.requires)?node.route.requires:[];return node?.type==='browser'||requires.includes('webgpu')||String(node?.id||'').startsWith('browser-webgpu');}
   function isLocalAdapter(node){return node?.type==='local-adapter'||['local-openai-compatible','ollama-direct'].includes(String(node?.route?.kind||''));}
   function adapterUrl(node){return String(node?.route?.url||'').replace(/\/$/,'');}
-  function costText(node){const mode=node?.cost?.mode||'free';return mode==='free-local'?'Free local':mode==='free'?'Free':String(mode);}
   function modelFromNode(node){const model=Array.isArray(node?.models)?node.models[0]:null;return model?.name||model?.id||'Auto';}
   function starterId(node){return String(node?.route?.starter_id||'');}
   function localReady(){return localState.status==='online'&&liveModels.length>0;}
@@ -28,24 +27,24 @@
     return 'online';
   }
   function nodeModel(node){
-    if(node.id==='local-node')return liveModels[0]?.id||liveModels[0]?.name||'Install one free model';
-    if(isLocalAdapter(node))return modelFromNode(node)||'Auto-discovered when running';
-    if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU browser';
+    if(node.id==='local-node')return liveModels[0]?.id||liveModels[0]?.name||'Install model';
+    if(isLocalAdapter(node))return modelFromNode(node)||'Auto when running';
+    if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU';
     return modelFromNode(node);
   }
   function nodeDetail(node){
-    if(node?.route?.kind==='managed-api')return 'Free api.mmir.ai. No key.';
+    if(node?.route?.kind==='managed-api')return 'Free api.mmir.ai; no key.';
     if(node.id==='local-node'){
-      if(localReady())return 'Private paired node. Chat can use it now.';
-      if(localState.status==='offline')return 'Not running. Install/start Local Node; browser chat still works.';
-      return 'Checking localhost. Pairing keeps models private.';
+      if(localReady())return 'Private paired node ready.';
+      if(localState.status==='offline')return 'Start Local Node; browser chat still works.';
+      return 'Checking localhost; paired/private.';
     }
     if(isLocalAdapter(node)){
-      if(node?.route?.kind==='ollama-direct')return 'Free Ollama runtime. Local Node adds pairing, /v1 aliases and policy.';
-      return 'Free local /v1 server. Connects when running and CORS allows it.';
+      if(node?.route?.kind==='ollama-direct')return 'Use Local Node for Ollama pairing.';
+      return 'Free local /v1 server; needs CORS.';
     }
-    if(needsWebGpu(node))return webGpuReady()?'Browser-local LLM. First use downloads weights.':'Free route for secure WebGPU browsers.';
-    return 'Works now in this browser. No paid route or key.';
+    if(needsWebGpu(node))return webGpuReady()?'Browser LLM; first use downloads.':'Needs secure WebGPU browser.';
+    return 'Works in browser. No key/spend.';
   }
   function card(node){
     const status=nodeStatus(node);
@@ -74,8 +73,6 @@
   function fallbackStarters(){
     return [
       {id:'mmir-guide',label:'MMIR Guide',runtime:'browser-guide',model:''},
-      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B',runtime:'webllm',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC'},
-      {id:'ollama-gemma3-270m',label:'Gemma 3 270M',runtime:'ollama',model:'gemma3:270m'},
       {id:'ollama-qwen3-06b',label:'Qwen3 0.6B',runtime:'ollama',model:'qwen3:0.6b'}
     ];
   }
@@ -149,7 +146,7 @@
     if(node.id==='local-node'){
       if(localReady()){
         const promptEl=q('#mimir-prompt');
-        if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start a private local chat and tell me which local model is answering.';
+        if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start private local chat.';
         q('#primary-chat-link')?.click();
       }else openInstaller('active-node-local-install');
       return;
@@ -157,7 +154,7 @@
     if(node?.route?.kind==='managed-api'){
       w.MimirBackendProfiles?.ensureManagedApiProfile?.();
       const promptEl=q('#mimir-prompt');
-      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start free chat through api.mmir.ai and tell me which MMIR node is answering.';
+      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start free api.mmir.ai chat.';
       q('#primary-chat-link')?.click();
       return;
     }
@@ -166,11 +163,31 @@
         openInstaller('active-node-ollama-direct',{id:'ollama-qwen3-06b',model:'qwen3:0.6b'});
         return;
       }
-      w.dispatchEvent(new CustomEvent('mmir-free-local-adapter-selected',{detail:{node_id:node.id,url:adapterUrl(node),free:true,no_paid_routes_started:true}}));
+      const u=adapterUrl(node);
+      w.dispatchEvent(new CustomEvent('mmir-free-local-adapter-selected',{detail:{node_id:node.id,url:u,free:true,no_paid_routes_started:true}}));
       const promptEl=q('#mimir-prompt');
-      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Check free local /v1 node.';
-      const profile={name:node.name,url:adapterUrl(node),models:modelFromNode(node),source:node.id};
-      const go=()=>{w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile?.(profile);q('#primary-chat-link')?.click()};
+      const profile={name:node.name,url:u,models:modelFromNode(node),source:node.id};
+      const go=()=>{
+        w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile?.(profile);
+        const b=w.MimirChatRuntimeBridge;
+        if(b?.refresh&&b?.send){
+          b.setStatus?.('Checking '+node.name+'...','loading');
+          b.refresh().then(models=>{
+            const live=Array.isArray(models)&&models.find(model=>model?.id);
+            if(live){
+              if(promptEl&&!String(promptEl.value||'').trim()){
+                promptEl.value='Give me a short response from '+live.id+' through '+node.name+'.';
+                promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+              }
+              b.setStatus?.('Starting '+live.id+'...','loading');
+              b.send();
+            }else b.setStatus?.('Start '+node.name+' at '+u+' and allow CORS, then retry.','error');
+          });
+          return;
+        }
+        if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Check local /v1.';
+        q('#primary-chat-link')?.click();
+      };
       if(w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile)go();else if(w.MimirLoadDeferred)w.MimirLoadDeferred().then(go);
       return;
     }
@@ -178,7 +195,7 @@
       openInstaller('active-node-webgpu-fallback');
       return;
     }
-    selectStarter(node,'Start free chat. Tell me which node and model are active.');
+    selectStarter(node,'Start free chat.');
   }
   function starterAction(model){
     if(model.runtime==='ollama')return 'install';
@@ -193,7 +210,7 @@
     if(!starterModels.length)return '';
     const visible=starterModels.filter(model=>['browser-guide','webllm','ollama'].includes(model.runtime));
     if(!visible.length)return '';
-    return '<div class="mmir-active-starter-rail" aria-label="Free model starters" data-free-starter-count="'+String(visible.length)+'">'+visible.map(model=>
+    return '<div class="mmir-active-starter-rail" aria-label="Free starters" data-free-starter-count="'+String(visible.length)+'">'+visible.map(model=>
       '<button type="button" data-active-starter-id="'+safe(model.id)+'" data-starter-runtime="'+safe(model.runtime)+'" data-route-state="'+safe(starterState(model))+'" title="'+safe(model.install_note||model.best_for||model.label)+'">'+safe(starterLabel(model))+'</button>'
     ).join('')+'</div>';
   }
@@ -204,7 +221,7 @@
       handoff({starter_id:guide.id,action:'select',source:'active-node-starter-rail',fallback_for:model.id});
       const promptEl=q('#mimir-prompt');
       if(promptEl&&!String(promptEl.value||'').trim()){
-        promptEl.value=(model.label||model.id)+' needs WebGPU here. Show the free WebGPU or Local Node path.';
+        promptEl.value=(model.label||model.id)+' needs WebGPU. Show free local path.';
         promptEl.dispatchEvent(new Event('input',{bubbles:true}));
         promptEl.dispatchEvent(new Event('change',{bubbles:true}));
       }
@@ -220,7 +237,7 @@
     }
     if(action!=='install'){
       if(promptEl&&!String(promptEl.value||'').trim()){
-        promptEl.value='Start a free chat with '+(model.label||model.id)+'. Tell me what is active.';
+        promptEl.value='Chat with '+(model.label||model.id)+'.';
         promptEl.dispatchEvent(new Event('input',{bubbles:true}));
         promptEl.dispatchEvent(new Event('change',{bubbles:true}));
       }
@@ -235,10 +252,10 @@
     const selected=selectedModel();
     const best=bestNode(nodes,selected);
     bar.dataset.state=nodeStatus(best);
-    bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active chat routes</span><strong>'+safe(best.name)+'</strong><small>free/public-safe routes that the composer can actually use. '+safe(selected.label||'MMIR Guide')+'</small></div><div class="mmir-active-node-pill">'+safe(nodeStatus(best)==='online'?'Ready':'Setup')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';
+    bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active chat routes</span><strong>'+safe(best.name)+'</strong><small>free usable routes. '+safe(selected.label||'MMIR Guide')+'</small></div><div class="mmir-active-node-pill">'+safe(nodeStatus(best)==='online'?'Ready':'Setup')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';
     q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);
     q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - chat now.');
-    q('#active-chat-description')&&(q('#active-chat-description').textContent='Chat is ready through free browser routing. Local nodes can be added.');
+    q('#active-chat-description')&&(q('#active-chat-description').textContent='Chat ready. Add local nodes anytime.');
     bar.querySelectorAll('[data-active-node-action]').forEach(button=>button.addEventListener('click',()=>activateNode(nodes.find(node=>node.id===button.getAttribute('data-active-node-action')))));
     bar.querySelectorAll('[data-active-starter-id]').forEach(button=>button.addEventListener('click',()=>activateStarter(starterModels.find(model=>model.id===button.getAttribute('data-active-starter-id')))));
   }
@@ -246,7 +263,7 @@
     const detail=event?.detail||{};
     const models=Array.isArray(detail.models)?detail.models:[];
     liveModels=models.map(model=>({id:model.id||model.name||model.model||'',name:model.name||model.label||model.id||model.model||''})).filter(model=>model.id||model.name);
-    localState={...localState,status:detail.status||detail.health||localState.status||'checking',url:detail.url||localState.url,hardware:detail.hardware||localState.hardware};
+    localState={...localState,status:detail.status||detail.health||localState.status||'checking',url:detail.url||localState.url};
     render();
   }
   function init(){
