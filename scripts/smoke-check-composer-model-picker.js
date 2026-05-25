@@ -91,6 +91,7 @@ for (const needle of [
   'data-picker-search-empty',
   'data-picker-filter',
   'data-picker-filter-reset',
+  'data-picker-empty-reset',
   'data-picker-selected',
   'aria-pressed',
   'aria-current',
@@ -103,6 +104,7 @@ for (const needle of [
   'Browser',
   'Local',
   'Reset model filters',
+  'Show all routes',
   'pickerRouteFilter',
   "pickerRouteFilter='all'",
   "search.value=''",
@@ -138,8 +140,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260525-picker-search-focus-v1',
-  'composer-model-picker.js?v=20260525-picker-search-focus-v1'
+  'composer-model-picker.css?v=20260525-picker-empty-reset-v1',
+  'composer-model-picker.js?v=20260525-picker-empty-reset-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -158,6 +160,7 @@ for (const needle of [
   '.composer-model-filters [data-picker-filter-reset]',
   '.composer-model-card[hidden]',
   '.composer-model-empty',
+  '.composer-model-empty button',
   '.composer-model-recommendations',
   'repeat(auto-fit,minmax(150px,1fr))',
   '.composer-model-recommendations button[data-picker-state="ready"]',
@@ -184,6 +187,7 @@ for (const needle of [
   'data-picker-search-text',
   'data-picker-filter',
   'data-picker-filter-reset',
+  'data-picker-empty-reset',
   'applySearchFilter',
   'data-picker-selected',
   'MimirComposerModelPicker',
@@ -202,6 +206,7 @@ for (const needle of [
   'data-picker-search-text',
   'data-picker-filter',
   'data-picker-filter-reset',
+  'data-picker-empty-reset',
   'applySearchFilter',
   'no_paid_routes_started:true'
 ]) {

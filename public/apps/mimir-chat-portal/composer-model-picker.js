@@ -213,6 +213,7 @@
       });
     });
     el?.querySelector?.('[data-picker-filter-reset]')?.addEventListener('click',()=>resetPickerFilters(el,true));
+    el?.querySelector?.('[data-picker-empty-reset]')?.addEventListener('click',()=>resetPickerFilters(el,true));
   }
   function wireSearch(el){
     const search=el?.querySelector?.('[data-picker-search]');
@@ -263,7 +264,7 @@
       el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
       return;
     }
-    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, WebGPU or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label>'+routeFilterControls()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><p class="composer-model-empty" data-picker-search-empty hidden>No matching route. Try all routes, qwen, gemma, browser, local or live.</p>';
+    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, WebGPU or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label>'+routeFilterControls()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><div class="composer-model-empty" data-picker-search-empty hidden><span>No matching route. Try all routes, qwen, gemma, browser, local or live.</span><button type="button" data-picker-empty-reset>Show all routes</button></div>';
     el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
     el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
     wireFilters(el);

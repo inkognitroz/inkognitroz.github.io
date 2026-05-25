@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T09:38:37.674Z",
+  "updated_at": "2026-05-25T09:49:11.381Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 282,
+    "total": 283,
     "done": 51,
-    "beta": 206,
+    "beta": 207,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 7,
+        "total": 8,
         "done": 0,
-        "beta": 7,
+        "beta": 8,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1335,6 +1335,12 @@
         "label": "Desktop model search is ready immediately",
         "status": "beta",
         "evidence": "Opening the picker on fine-pointer devices focuses search after render; coarse-pointer devices are guarded to avoid mobile keyboard surprise."
+      },
+      {
+        "id": "model-picker-empty-recovery",
+        "label": "Empty model results are recoverable",
+        "status": "beta",
+        "evidence": "No-result states include a Show all routes action that clears search/filter locally and keeps users in model discovery."
       },
       {
         "id": "local-node-package",
@@ -10153,6 +10159,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D283",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Empty result recovery in model picker",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add an actionable empty-state reset button when model search/filter returns no routes, so users can show all routes again without hunting through controls",
+      "best_practice": "A model marketplace/control plane must be forgiving: empty states should explain recovery and perform the recovery in one click while staying local-only",
+      "done_when": "Composer picker smoke gates prove empty reset control, reset handoff, empty-state styling, cache-busted assets and service-worker rotation without network/provider side effects",
+      "covers": "chat, model-picker, model-discovery, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.",
       "estimate": "Verify + polish"
     }
   ]
