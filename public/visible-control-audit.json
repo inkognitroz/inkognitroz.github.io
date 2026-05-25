@@ -45,8 +45,8 @@
       "surface": "Chat composer",
       "selector": "[data-chat-mode]",
       "status": "wired",
-      "result": "Toggles Private, Boost, MMIR++ and Vision mode locally, applies the mode instruction on the next answer, and shows a composer feedback line with the exact boundary or next surface.",
-      "source_evidence": ["writeModes(modes)", "function modeInstruction()", "afterComposerModeToggle", "composer-action-feedback"],
+      "result": "Toggles compact Auto review and 5.5 Extra high modes locally, keeps MMIR++ and Vision as quieter advanced controls, applies the mode instruction on the next answer, and shows a composer feedback line with the exact boundary or next surface.",
+      "source_evidence": ["Auto review v", "5.5 Extra high v", "writeModes(modes)", "function modeInstruction()", "afterComposerModeToggle", "composer-action-feedback"],
       "no_spend": true
     },
     {

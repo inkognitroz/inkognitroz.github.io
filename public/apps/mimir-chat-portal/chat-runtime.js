@@ -806,12 +806,12 @@
     dock.innerHTML=''+
       '<div class="composer-tool-cluster" aria-label="Chat tools">'+
         '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true" title="Prefer private/local routing">Private</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Prioritize the highest-leverage next action">Boost 5.5</button>'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true" title="Private auto review">Auto review v</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false" title="Combine product, architecture, security and implementation">MMIR++</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false" title="Open image/screenshot boundary controls">Vision</button>'+
       '</div>'+
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
+        '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Boost 5.5 Extra high">5.5 Extra high v</button>'+
         '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
         '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">CPU/RAM checking</button>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+

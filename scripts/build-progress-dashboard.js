@@ -268,7 +268,8 @@ const overrides = new Map([
   ['D282', { status: 'beta', evidence: 'The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.' }],
   ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }],
   ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
-  ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }]
+  ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }],
+  ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }]
 ]);
 
 const repoMeta = [
@@ -717,6 +718,12 @@ function buildLaunchProgress() {
       label: 'Connect model opens the compact picker first',
       status: 'beta',
       evidence: 'D285 routes Connect/Add model through the compact picker before falling back to the model library, while preserving the free local profile and no-spend boundary.'
+    },
+    {
+      id: 'compact-composer-mode-chips',
+      label: 'Composer mode chips are compact',
+      status: 'beta',
+      evidence: 'D286 gives the first chat composer Open WebUI-style Auto review and 5.5 Extra high chips while hiding heavier MMIR++/Vision controls from the clean first-screen shell.'
     },
     {
       id: 'local-node-package',

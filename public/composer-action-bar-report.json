@@ -15,8 +15,8 @@
     {
       "id": "mode-buttons",
       "selector": "[data-chat-mode]",
-      "expected": "Private, Boost, MMIR++ and Vision toggle locally and show feedback.",
-      "evidence": ["afterComposerModeToggle", "composer-action-feedback", "modeInstruction"],
+      "expected": "Compact Auto review and 5.5 Extra high chips toggle locally, while MMIR++ and Vision stay available but visually quieter on the clean first chat screen.",
+      "evidence": ["Auto review v", "5.5 Extra high v", "Private auto review", "Boost 5.5 Extra high", "afterComposerModeToggle", "composer-action-feedback", "modeInstruction"],
       "status": "ready",
       "no_paid_routes_started": true
     },
@@ -58,6 +58,8 @@
     ".composer-tool-cluster",
     ".composer-live-cluster",
     ".composer-mode-button",
+    ".composer-mode-button[data-chat-mode=\"private\"]",
+    ".composer-mode-button[data-chat-mode=\"boost\"]",
     ".composer-live-chip",
     ".composer-action-feedback"
   ]
