@@ -145,6 +145,11 @@
       "id": "D304 local adapter live-model bridge",
       "status": "guarded",
       "evidence": "LM Studio, llama.cpp and vLLM clicks now activate the local OpenAI-compatible profile, hand off to chat-runtime, refresh /v1/models and send only after a real local model is visible."
+    },
+    {
+      "id": "D305 Windows local-node installer path",
+      "status": "guarded",
+      "evidence": "Windows install/start copy and local-node installer tests now prefer npm.cmd, preventing the common npm.ps1 PowerShell execution-policy stop during local-node setup."
     }
   ],
   "known_limitations": [

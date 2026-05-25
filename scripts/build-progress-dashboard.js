@@ -288,7 +288,8 @@ const overrides = new Map([
   ['D300', { status: 'beta', evidence: 'Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.' }],
   ['D301', { status: 'beta', evidence: 'Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.' }],
   ['D303', { status: 'beta', evidence: 'The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.' }],
-  ['D304', { status: 'beta', evidence: 'LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.' }]
+  ['D304', { status: 'beta', evidence: 'LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.' }],
+  ['D305', { status: 'beta', evidence: 'mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.' }]
 ]);
 
 const repoMeta = [
@@ -855,6 +856,12 @@ function buildLaunchProgress() {
       label: 'Local adapters wait for live models',
       status: 'beta',
       evidence: 'D304 routes LM Studio, llama.cpp and vLLM clicks through chat-runtime, refreshes /v1/models and sends only after a real local model is selected.'
+    },
+    {
+      id: 'windows-local-node-installer',
+      label: 'Windows local node starts safely',
+      status: 'beta',
+      evidence: 'D305 makes the Windows installer use npm.cmd instead of the PowerShell-blocked npm.ps1 shim, with local-node tests, dry-run, conformance and secret scan green.'
     },
     {
       id: 'local-node-package',

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T20:59:55.129Z",
+  "updated_at": "2026-05-25T21:34:18.907Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 303,
+    "total": 304,
     "done": 51,
-    "beta": 227,
+    "beta": 228,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1365,6 +1365,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Local Node / Windows Install",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1561,6 +1571,12 @@
         "label": "Local adapters wait for live models",
         "status": "beta",
         "evidence": "D304 routes LM Studio, llama.cpp and vLLM clicks through chat-runtime, refreshes /v1/models and sends only after a real local model is selected."
+      },
+      {
+        "id": "windows-local-node-installer",
+        "label": "Windows local node starts safely",
+        "status": "beta",
+        "evidence": "D305 makes the Windows installer use npm.cmd instead of the PowerShell-blocked npm.ps1 shim, with local-node tests, dry-run, conformance and secret scan green."
       },
       {
         "id": "local-node-package",
@@ -11088,6 +11104,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D305",
+      "phase": "Local Node / Windows Install",
+      "priority": "P0",
+      "work_package": "PowerShell installer uses npm.cmd safely",
+      "repos": "mmir-local-node, inkognitroz.github.io",
+      "concrete_work": "Make the Windows one-click/local-node installer prefer npm.cmd, use a private Node runtime fallback when Node/npm is missing and document the PowerShell-safe start path so Windows users are not blocked by npm.ps1 execution policy",
+      "best_practice": "The local node install must feel like a normal app: opening the installer should not require users to understand PowerShell execution policy, Node paths or npm wrappers",
+      "done_when": "Local-node tests prove full and lightweight Windows installers use npm.cmd, docs show the safe command, dry-run plans private Node fallback and conformance/security checks stay green",
+      "covers": "local-node, windows, installer, one-click, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.",
       "estimate": "Verify + polish"
     }
   ]

@@ -21,7 +21,7 @@ This is the short execution backlog for the current launch-critical slice. The f
    - Mac: publish a free-first DMG contract with an app bundle, Applications shortcut and unsigned/notarized-later language.
    - Windows/Linux/Raspberry Pi: keep one-file launchers and local proof path.
    - Do not claim a public DMG exists until the real artifact is published.
-   - Current evidence: `mmir-local-node` builds the app-bundle DMG contract; public site documents prepared-but-unpublished DMG honestly.
+   - Current evidence: `mmir-local-node` builds the app-bundle DMG contract; public site documents prepared-but-unpublished DMG honestly; Windows installers now use `npm.cmd` so PowerShell policy does not block startup.
 
 4. **Install return becomes chat proof automatically** - **beta / real-device proof next**
    - Installer return must reopen MMIR with local proof enabled.
