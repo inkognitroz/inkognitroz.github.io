@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "description": "Public-safe active chat routes for the static MMIR frontend.",
+  "description": "Public-safe active chat routes that the static MMIR frontend can actually attach to. No provider secrets, raw prompts, paid routes or private node tokens belong here.",
   "nodes": [
     {
       "id": "browser-guide",
-      "name": "Browser Helper",
+      "name": "MMIR Guide",
       "type": "free",
       "status": "online",
       "trust_level": "public-free",
@@ -13,11 +13,30 @@
       "capabilities": ["chat.completions", "onboarding", "routing.free"],
       "models": [
         {
-          "id": "browser-helper",
-          "name": "Browser Helper",
+          "id": "mmir-guide",
+          "name": "MMIR Guide",
           "status": "available",
           "provider": "mmir",
           "source": "browser-helper"
+        }
+      ]
+    },
+    {
+      "id": "managed-api-bootstrap",
+      "name": "MMIR Free Control Plane",
+      "type": "managed-api",
+      "status": "online",
+      "trust_level": "public-free",
+      "cost": { "mode": "free", "requires_approval": false },
+      "route": { "kind": "managed-api", "url": "https://api.mmir.ai", "chat_path": "/chat/completions", "openai_chat_path": "/v1/chat/completions" },
+      "capabilities": ["health", "status", "models", "openai.v1.models", "chat.completions", "openai.v1.chat.completions", "chat.compare", "chat.discussions", "routing.free"],
+      "models": [
+        {
+          "id": "mmir-guide",
+          "name": "MMIR Browser Guide",
+          "status": "available",
+          "provider": "mmir",
+          "source": "api.mmir.ai"
         }
       ]
     },
