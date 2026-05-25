@@ -39,6 +39,13 @@ for (const id of ['browser-guide', 'browser-webgpu-qwen', 'browser-webgpu-gemma'
   if (node?.cost?.requires_approval !== false) fail(`Active chat node ${id} must be no-approval/free-first.`);
 }
 
+const localNode = nodes.find((item) => item.id === 'local-node');
+for (const capability of ['openai.v1.models', 'openai.v1.chat.completions']) {
+  if (!localNode?.capabilities?.includes(capability)) {
+    fail(`Active local-node manifest must advertise ${capability}.`);
+  }
+}
+
 const activeStrip = read(files.activeStrip);
 const runtime = read(files.runtime);
 const runtimeCss = read(files.runtimeCss);
