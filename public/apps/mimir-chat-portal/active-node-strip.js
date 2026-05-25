@@ -30,6 +30,7 @@
     return modelFromNode(node);
   }
   function nodeDetail(node){
+    if(node?.route?.kind==='managed-api')return 'Live free api.mmir.ai route. No provider key or paid call.';
     if(node.id==='local-node'){
       if(localReady())return 'Private local node is paired. Chat can use it now.';
       if(localState.status==='offline')return 'Not running. Install or start MMIR Local Node; browser chat still works.';
@@ -118,7 +119,12 @@
   function bestNode(nodes,selected){
     const label=String(selected.label||'');
     const selectedStarter=String(selected.value||'').replace(/^starter:/,'');
+    if(localStorage.getItem('mimir-chat-active-backend')==='mmir-api-bootstrap'){
+      const managed=nodes.find(node=>node.id==='managed-api-bootstrap');
+      if(managed)return managed;
+    }
     if(selectedStarter){const byStarter=nodes.find(node=>starterId(node)===selectedStarter);if(byStarter)return byStarter;}
+    if((selected.runtime==='live'||selected.value==='mmir-guide')&&/MMIR Browser Guide|mmir-guide|MMIR Guide/i.test(label))return nodes.find(node=>node.id==='managed-api-bootstrap')||nodes.find(node=>node.id==='browser-guide')||nodes[0];
     if(selected.runtime==='browser-guide'||/MMIR Guide|Model Picker|Setup Coach|Security Coach|Growth Coach/i.test(label))return nodes.find(node=>node.id==='browser-guide')||nodes[0];
     if(selected.runtime==='webllm'||/WebGPU|Qwen2.5 0.5B|Gemma 3 1B|Llama 3.2 1B|Phi 3.5/i.test(label))return nodes.find(node=>needsWebGpu(node)&&nodeStatus(node)==='online')||nodes.find(needsWebGpu)||nodes[0];
     if(localReady()&&(selected.runtime==='live'||/local|ollama|live/i.test(label)))return nodes.find(node=>node.id==='local-node')||nodes[0];
@@ -132,6 +138,13 @@
         if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start a private local chat and tell me which local model is answering.';
         q('#primary-chat-link')?.click();
       }else openInstaller('active-node-local-install');
+      return;
+    }
+    if(node?.route?.kind==='managed-api'){
+      w.MimirBackendProfiles?.ensureManagedApiProfile?.();
+      const promptEl=q('#mimir-prompt');
+      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start free chat through api.mmir.ai and tell me which MMIR node is answering.';
+      q('#primary-chat-link')?.click();
       return;
     }
     if(needsWebGpu(node)&&!webGpuReady()){
