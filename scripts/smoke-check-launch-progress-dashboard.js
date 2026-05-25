@@ -97,7 +97,7 @@ for (const needle of [
 
 requireIncludes(text(files.mmir), 'Track progress', 'MMIR first screen must offer a direct progress link.');
 requireIncludes(text(files.mmir), 'progress-dashboard.js?v=20260525-progress-window-v1', 'MMIR page must cache-bust the updated progress dashboard script.');
-requireIncludes(text(files.serviceWorker), 'mmir-pwa-d293-20260525-progress-window-v1', 'Service worker cache must rotate for progress-window assets.');
+requireIncludes(text(files.serviceWorker), 'mmir-pwa-d294-20260525-composer-affordance-v1', 'Service worker cache must rotate for progress-window and composer-affordance assets.');
 requireIncludes(text(files.backlog), '| D257 | Owner Ops / Progress | P0 | P0 launch progress dashboard |', 'Backlog must include D257 launch progress tracking.');
 requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-launch-progress-dashboard.js', 'GitHub workflows must run the launch progress smoke gate.');
 

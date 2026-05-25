@@ -299,7 +299,8 @@
 #runtime-model-chip{color:#0f172a;max-width:min(310px,42vw)}
 #runtime-resource-chip{justify-content:center;max-width:190px}
 
-#primary-chat-link.btn-primary {
+#primary-chat-link.btn-primary,
+.composer-actions #new-backend {
   width: 44px;
   min-width: 44px;
   height: 44px;
@@ -316,7 +317,7 @@
   font-size: 1.05rem;
 }
 
-.composer-actions #new-backend {
+body.mimir-composer-dock-ready .composer-actions #new-backend {
   display: none;
 }
 

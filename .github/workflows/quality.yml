@@ -160,6 +160,9 @@ jobs:
       - name: Smoke-check composer quick route fixture
         run: node scripts/smoke-check-composer-quick-route-fixture.js
 
+      - name: Smoke-check composer fallback affordance
+        run: node scripts/smoke-check-composer-fallback-affordance.js
+
       - name: Smoke-check message action completeness
         run: node scripts/smoke-check-message-action-completeness.js
 

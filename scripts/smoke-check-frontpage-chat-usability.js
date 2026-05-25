@@ -66,10 +66,10 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-new-chat.js', 'Composer
 requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js', 'Composer keyboard shortcuts must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-autofocus.js', 'Composer autofocus must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-refocus-after-send.js', 'Composer refocus after send must load through the deferred queue.');
-requireIncludes(html, 'chat-runtime.css?v=20260525-clean-runtime-v1', 'Chat runtime CSS must be cache-busted for compact proof polish.');
+requireIncludes(html, 'chat-runtime.css?v=20260525-composer-affordance-v1', 'Chat runtime CSS must be cache-busted for compact proof and composer affordance polish.');
 requireIncludes(html, 'composer-model-picker.css?v=20260525-picker-empty-reset-v1', 'Composer model picker CSS must be cache-busted for picker empty-reset polish.');
 requireIncludes(html, 'composer-model-picker.js?v=20260525-picker-empty-reset-v1', 'Composer model picker JS must be cache-busted for picker empty-reset polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d293-20260525-progress-window-v1'", 'Service worker cache must be bumped for the latest chat shell and progress dashboard fixes.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d294-20260525-composer-affordance-v1'", 'Service worker cache must be bumped for the latest chat shell and composer affordance fixes.');
 
 for (const needle of [
   'resize:none',

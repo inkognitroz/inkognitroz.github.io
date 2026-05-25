@@ -95,6 +95,11 @@
       "id": "D293 progressive progress dashboard",
       "status": "guarded",
       "evidence": "The owner progress dashboard now renders only the first 72 backlog items by default, exposes Show all for the full queue and debounces search so the chat-first page stays responsive."
+    },
+    {
+      "id": "D294 composer fallback affordance",
+      "status": "guarded",
+      "evidence": "The first-paint composer now shows a compact plus and circular arrow send affordance, with runtime CSS/JS hiding the fallback plus after the richer dock is installed."
     }
   ],
   "known_limitations": [

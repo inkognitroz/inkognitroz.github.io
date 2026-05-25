@@ -803,6 +803,7 @@
     const dock=document.createElement('div');
     dock.id='composer-mode-dock';
     dock.className='composer-mode-dock';
+    document.body.classList.add('mimir-composer-dock-ready');
     dock.innerHTML=''+
       '<div class="composer-tool-cluster" aria-label="Chat tools">'+
         '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+

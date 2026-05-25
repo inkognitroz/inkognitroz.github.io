@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T15:50:48.313Z",
+  "updated_at": "2026-05-25T17:23:34.962Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 293,
+    "total": 294,
     "done": 51,
-    "beta": 217,
+    "beta": 218,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1315,6 +1315,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / First Paint",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1451,6 +1461,12 @@
         "label": "Progress dashboard stays responsive",
         "status": "beta",
         "evidence": "D293 renders the full backlog through a bounded first window with Show all and debounced filters, keeping deep links to owner status from blocking the chat shell."
+      },
+      {
+        "id": "composer-fallback-affordance",
+        "label": "Composer feels chat-ready on first paint",
+        "status": "beta",
+        "evidence": "D294 gives the static composer a compact plus and arrow-send fallback, then lets the richer runtime dock take over without duplicate visible controls."
       },
       {
         "id": "local-node-package",
@@ -10816,6 +10832,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The progress dashboard now renders the backlog progressively with a 72-task window, Show all control and debounced filters so owner tracking cannot freeze the chat-first page.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D294",
+      "phase": "Chat UX / First Paint",
+      "priority": "P0",
+      "work_package": "Composer fallback affordance",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the first-paint composer show a compact plus button and circular arrow send button before deferred chat modules finish, then hide the fallback plus when the richer Open WebUI-style composer dock is installed",
+      "best_practice": "The first impression should look like a real chat product immediately, even while progressive assets load",
+      "done_when": "Smoke gates prove the fallback plus, send arrow, runtime dock handoff and cache rotation are wired without paid routes, provider keys or duplicate visible controls",
+      "covers": "chat, first-paint, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The first-paint composer now exposes a compact plus fallback and circular arrow send affordance, then hides the fallback plus when the richer Open WebUI-style dock is ready.",
       "estimate": "Verify + polish"
     }
   ]
