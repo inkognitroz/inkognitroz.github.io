@@ -269,13 +269,15 @@ const overrides = new Map([
   ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }],
   ['D282', { status: 'beta', evidence: 'The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.' }],
   ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }],
-  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 89 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
+  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 90 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
   ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }],
   ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }],
   ['D287', { status: 'beta', evidence: 'Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.' }],
   ['D288', { status: 'beta', evidence: 'The composer plus button now opens an Open WebUI-style quick actions drawer for models, local node install, knowledge, new chat, voice and settings with no hidden spend.' }],
   ['D289', { status: 'beta', evidence: 'The composer quick actions drawer now leads with Ready now status and a Chat now action that seeds the safest free prompt only when empty.' }],
-  ['D290', { status: 'beta', evidence: 'The composer quick actions drawer now exposes direct no-spend route chips for MMIR Guide, Browser WebGPU and Qwen3 local install before the heavier model picker.' }]
+  ['D290', { status: 'beta', evidence: 'The composer quick actions drawer now exposes direct no-spend route chips for MMIR Guide, Browser WebGPU and Qwen3 local install before the heavier model picker.' }],
+  ['D291', { status: 'beta', evidence: 'A dependency-free quick-route DOM fixture now clicks Guide, Browser WebGPU and Local install chips and proves prompt seeding, starter handoff, send click, installer resume and no-spend boundaries.' }],
+  ['D292', { status: 'beta', evidence: 'Critical managed/free-local profile defaults now load from a small first-paint module while the heavier backend settings UI is deferred, restoring performance headroom.' }]
 ]);
 
 const repoMeta = [
@@ -727,7 +729,7 @@ function buildLaunchProgress() {
       id: 'fresh-cross-repo-review',
       label: 'Full-project review snapshot is current',
       status: 'beta',
-      evidence: 'D284 records the latest public Pages CI, 89 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks.'
+      evidence: 'D284 records the latest public Pages CI, 90 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks.'
     },
     {
       id: 'connect-model-picker-first',
@@ -764,6 +766,18 @@ function buildLaunchProgress() {
       label: 'Plus drawer shows free model routes',
       status: 'beta',
       evidence: 'D290 adds one-click MMIR Guide, Browser WebGPU and Qwen3 local install route chips inside the plus drawer with no paid/provider side effects.'
+    },
+    {
+      id: 'composer-quick-route-fixture',
+      label: 'Quick route clicks are tested',
+      status: 'beta',
+      evidence: 'D291 adds a DOM click fixture that proves Guide, Browser WebGPU and Local install route chips seed prompts, dispatch starter handoffs, click Send or write installer resume without spend.'
+    },
+    {
+      id: 'critical-backend-profile-defaults',
+      label: 'Free route defaults stay fast',
+      status: 'beta',
+      evidence: 'D292 keeps managed API/local defaults first-paint critical through a small backend-profiles module and defers the heavier backend settings UI.'
     },
     {
       id: 'local-node-package',

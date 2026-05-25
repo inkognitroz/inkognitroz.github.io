@@ -80,6 +80,16 @@
       "id": "D290 composer quick free route strip",
       "status": "guarded",
       "evidence": "The plus drawer now exposes three compact no-spend route chips for MMIR Guide, Browser WebGPU and Qwen3 local install, with one-column mobile stacking and no first-paint control noise."
+    },
+    {
+      "id": "D291 composer quick route click fixture",
+      "status": "guarded",
+      "evidence": "A dependency-free DOM fixture clicks all three quick route chips and proves prompt seeding, starter handoff, send click, installer resume and no-spend/no-secret boundaries."
+    },
+    {
+      "id": "D292 critical backend defaults split",
+      "status": "guarded",
+      "evidence": "Free API/local defaults stay first-paint critical through backend-profiles-critical.js while the heavier backend settings UI is deferred to keep chat fast."
     }
   ],
   "known_limitations": [

@@ -1,7 +1,7 @@
 {
-  "version": 2,
+  "version": 3,
   "title": "Composer Quick Actions Drawer",
-  "scope": "D288-D290 Open WebUI-style composer plus menu, ready action and free route strip",
+  "scope": "D288-D291 Open WebUI-style composer plus menu, ready action, free route strip and click fixture",
   "status": "beta",
   "principle": "The first chat surface keeps one calm plus button while useful free chat routes, model, node, knowledge, voice, settings and reset actions stay one click away.",
   "public_repo_rule": "Public-safe UI evidence only. No prompts, responses, cookies, provider keys, pairing tokens, billing data or private node telemetry.",
@@ -35,6 +35,14 @@
       "selector": ".composer-quick-route-strip",
       "expected": "Shows direct no-spend route choices for MMIR Guide, Browser WebGPU and Qwen3 local install inside the plus drawer.",
       "evidence": ["composer-quick-route-strip", "data-composer-quick-route=\"guide\"", "data-composer-quick-route=\"webgpu\"", "data-composer-quick-route=\"local\"", "runQuickRoute", "webllm-qwen25-05b", "ollama-qwen3-06b", "source:'composer-quick-route-strip'"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-route-click-fixture",
+      "selector": "[data-composer-quick-route]",
+      "expected": "A dependency-free DOM fixture clicks Guide, Browser WebGPU and Local install route chips and proves starter handoff, prompt seeding, send click, installer resume and no-spend boundaries.",
+      "evidence": ["clickRoute('guide')", "clickRoute('webgpu')", "clickRoute('local')", "mmir-runtime-starter-handoff", "mimir-repair-resume-v1:", "Composer quick route fixture smoke check passed."],
       "status": "ready",
       "no_paid_routes_started": true
     },

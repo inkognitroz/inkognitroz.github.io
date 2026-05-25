@@ -16,6 +16,7 @@ const files = {
   backlog: join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'),
   log: join(root, 'docs', 'MMIR_IMPLEMENTATION_LOG.md'),
   buildDashboard: join(root, 'scripts', 'build-progress-dashboard.js'),
+  routeFixture: join(root, 'scripts', 'smoke-check-composer-quick-route-fixture.js'),
   qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml'),
   pagesWorkflow: join(root, '.github', 'workflows', 'pages.yml')
 };
@@ -51,6 +52,7 @@ const script = text(files.script);
 const css = text(files.css);
 const html = text(files.html);
 const progress = json(files.progress);
+const routeFixture = text(files.routeFixture);
 
 if (report.title !== 'Composer Quick Actions Drawer') fail('D288 report must name the quick actions drawer.');
 if (!String(report.public_repo_rule || '').includes('No prompts')) fail('D288 report must preserve public-safe no prompt/no secret boundary.');
@@ -60,7 +62,7 @@ for (const control of report.controls || []) {
     fail(`D288 control ${control.id || '<missing>'} must be ready and no-spend.`);
   }
   for (const evidence of control.evidence || []) {
-    requireIncludes(script, evidence, `D288 control ${control.id || '<missing>'} missing source evidence: ${evidence}`);
+    requireIncludes(`${script}\n${routeFixture}`, evidence, `D288 control ${control.id || '<missing>'} missing source evidence: ${evidence}`);
   }
 }
 
@@ -170,14 +172,33 @@ for (const needle of [
 requireIncludes(text(files.visualQa), 'D288 composer quick actions drawer', 'Visual QA report must mention D288 quick actions.');
 requireIncludes(text(files.visualQa), 'D289 composer quick Chat now status', 'Visual QA report must mention D289 quick Chat now status.');
 requireIncludes(text(files.visualQa), 'D290 composer quick free route strip', 'Visual QA report must mention D290 quick route strip.');
+requireIncludes(text(files.visualQa), 'D291 composer quick route click fixture', 'Visual QA report must mention D291 quick route fixture.');
 requireIncludes(text(files.backlog), '| D288 | Chat UX / Composer | P0 | Open WebUI-style plus quick actions drawer |', 'Backlog must include D288.');
 requireIncludes(text(files.backlog), '| D289 | Chat UX / Activation | P0 | Quick actions ready-state and Chat now |', 'Backlog must include D289.');
 requireIncludes(text(files.backlog), '| D290 | Chat UX / Model Routes | P0 | Quick actions free route strip |', 'Backlog must include D290.');
+requireIncludes(text(files.backlog), '| D291 | Chat QA / Model Routes | P0 | Quick route click fixture |', 'Backlog must include D291.');
 requireIncludes(text(files.log), 'D288 is now beta', 'Implementation log must include D288.');
 requireIncludes(text(files.log), 'D289 is now beta', 'Implementation log must include D289.');
 requireIncludes(text(files.log), 'D290 is now beta', 'Implementation log must include D290.');
+requireIncludes(text(files.log), 'D291 is now beta', 'Implementation log must include D291.');
 requireIncludes(text(files.buildDashboard), 'composerQuickActionsReportPath', 'Progress dashboard build must read D288 report.');
 requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-composer-quick-actions.js', 'GitHub workflows must run D288 quick-actions smoke gate.');
+requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-composer-quick-route-fixture.js', 'GitHub workflows must run D291 quick-route fixture gate.');
+
+for (const needle of [
+  'clickRoute(\'guide\')',
+  'clickRoute(\'webgpu\')',
+  'clickRoute(\'local\')',
+  'mmir-runtime-starter-handoff',
+  'mimir-repair-resume-v1:',
+  'no_paid_routes_started',
+  'provider_secrets_stored',
+  'raw_prompt_stored',
+  'raw_response_stored',
+  'Composer quick route fixture smoke check passed.'
+]) {
+  requireIncludes(routeFixture, needle, `D291 route fixture missing: ${needle}`);
+}
 
 if (!progress.composer_quick_actions_report || progress.composer_quick_actions_report.title !== report.title) {
   fail('Progress dashboard data must embed D288 quick actions report.');
@@ -188,6 +209,8 @@ const d289 = (progress.tasks || []).find((task) => task.seq === 'D289');
 if (!d289 || d289.status !== 'beta') fail('Progress dashboard task D289 must be beta.');
 const d290 = (progress.tasks || []).find((task) => task.seq === 'D290');
 if (!d290 || d290.status !== 'beta') fail('Progress dashboard task D290 must be beta.');
+const d291 = (progress.tasks || []).find((task) => task.seq === 'D291');
+if (!d291 || d291.status !== 'beta') fail('Progress dashboard task D291 must be beta.');
 if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-actions-drawer')) {
   fail('Launch progress must expose the quick actions drawer checkpoint.');
 }
@@ -196,6 +219,9 @@ if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'c
 }
 if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-free-routes')) {
   fail('Launch progress must expose the quick free route strip checkpoint.');
+}
+if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-route-fixture')) {
+  fail('Launch progress must expose the quick route fixture checkpoint.');
 }
 
 if (!process.exitCode) {

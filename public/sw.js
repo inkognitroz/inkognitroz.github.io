@@ -11,6 +11,7 @@ const SHELL_ASSETS=[
   './assets/mmir-maskable-icon.svg',
   './apps/mimir-chat-portal/mimir-chat-portal.css',
   './apps/mimir-chat-portal/chat-runtime.css',
+  './apps/mimir-chat-portal/backend-profiles-critical.js',
   './apps/mimir-chat-portal/composer-autosize.js',
   './apps/mimir-chat-portal/composer-stop-handoff.js',
   './apps/mimir-chat-portal/transcript-scroll-guard.js',
