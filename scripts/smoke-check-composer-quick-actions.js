@@ -73,6 +73,14 @@ for (const needle of [
   'escapeHtml(resource)',
   'Ready now',
   'no paid route',
+  'composer-quick-route-strip',
+  'data-composer-quick-route="guide"',
+  'data-composer-quick-route="webgpu"',
+  'data-composer-quick-route="local"',
+  'function runQuickRoute(route)',
+  'webllm-qwen25-05b',
+  'ollama-qwen3-06b',
+  "source:'composer-quick-route-strip'",
   'data-composer-quick-action="chat-now"',
   'data-composer-quick-action="models"',
   'data-composer-quick-action="install-node"',
@@ -105,6 +113,10 @@ for (const needle of [
   '.composer-quick-actions button',
   '.composer-quick-status',
   '.composer-quick-status span',
+  '.composer-quick-route-strip',
+  '.composer-quick-actions .composer-quick-route',
+  '.composer-quick-actions .composer-quick-route[data-route-state="setup"]',
+  '.composer-quick-actions .composer-quick-route[data-route-state="install"]',
   '.composer-quick-actions .composer-quick-primary',
   'body.mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock',
   'body.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster',
@@ -118,8 +130,8 @@ for (const needle of [
 }
 
 for (const needle of [
-  'composer-quick-actions.css?v=20260525-quick-actions-v2',
-  'composer-quick-actions.js?v=20260525-quick-actions-v2'
+  'composer-quick-actions.css?v=20260525-quick-actions-v3',
+  'composer-quick-actions.js?v=20260525-quick-actions-v3'
 ]) {
   requireIncludes(html, needle, `MMIR page must load quick-actions asset: ${needle}`);
 }
@@ -136,11 +148,18 @@ for (const needle of [
   '#composer-quick-actions',
   '[data-composer-quick-action=\\"chat-now\\"]',
   '[data-composer-quick-action=\\"models\\"]',
+  '[data-composer-quick-route=\\"guide\\"]',
+  '[data-composer-quick-route=\\"webgpu\\"]',
+  '[data-composer-quick-route=\\"local\\"]',
   'MimirComposerQuickActions',
   'renderMenuContent',
   'runQuickAction',
+  'runQuickRoute',
   'function chatNow()',
   'mmir-local-connector-install.html?source=composer-quick-actions',
+  'composer-quick-route-strip',
+  'webllm-qwen25-05b',
+  'ollama-qwen3-06b',
   "openDeferredPanel('#knowledge-panel')",
   "openDeferredPanel('#runtime-settings-panel')",
   'no_paid_routes_started:true'
@@ -150,10 +169,13 @@ for (const needle of [
 
 requireIncludes(text(files.visualQa), 'D288 composer quick actions drawer', 'Visual QA report must mention D288 quick actions.');
 requireIncludes(text(files.visualQa), 'D289 composer quick Chat now status', 'Visual QA report must mention D289 quick Chat now status.');
+requireIncludes(text(files.visualQa), 'D290 composer quick free route strip', 'Visual QA report must mention D290 quick route strip.');
 requireIncludes(text(files.backlog), '| D288 | Chat UX / Composer | P0 | Open WebUI-style plus quick actions drawer |', 'Backlog must include D288.');
 requireIncludes(text(files.backlog), '| D289 | Chat UX / Activation | P0 | Quick actions ready-state and Chat now |', 'Backlog must include D289.');
+requireIncludes(text(files.backlog), '| D290 | Chat UX / Model Routes | P0 | Quick actions free route strip |', 'Backlog must include D290.');
 requireIncludes(text(files.log), 'D288 is now beta', 'Implementation log must include D288.');
 requireIncludes(text(files.log), 'D289 is now beta', 'Implementation log must include D289.');
+requireIncludes(text(files.log), 'D290 is now beta', 'Implementation log must include D290.');
 requireIncludes(text(files.buildDashboard), 'composerQuickActionsReportPath', 'Progress dashboard build must read D288 report.');
 requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-composer-quick-actions.js', 'GitHub workflows must run D288 quick-actions smoke gate.');
 
@@ -164,11 +186,16 @@ const d288 = (progress.tasks || []).find((task) => task.seq === 'D288');
 if (!d288 || d288.status !== 'beta') fail('Progress dashboard task D288 must be beta.');
 const d289 = (progress.tasks || []).find((task) => task.seq === 'D289');
 if (!d289 || d289.status !== 'beta') fail('Progress dashboard task D289 must be beta.');
+const d290 = (progress.tasks || []).find((task) => task.seq === 'D290');
+if (!d290 || d290.status !== 'beta') fail('Progress dashboard task D290 must be beta.');
 if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-actions-drawer')) {
   fail('Launch progress must expose the quick actions drawer checkpoint.');
 }
 if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-chat-now')) {
   fail('Launch progress must expose the quick Chat now checkpoint.');
+}
+if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-free-routes')) {
+  fail('Launch progress must expose the quick free route strip checkpoint.');
 }
 
 if (!process.exitCode) {

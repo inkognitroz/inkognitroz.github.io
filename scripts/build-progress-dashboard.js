@@ -269,12 +269,13 @@ const overrides = new Map([
   ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }],
   ['D282', { status: 'beta', evidence: 'The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.' }],
   ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }],
-  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
+  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 89 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
   ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }],
   ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }],
   ['D287', { status: 'beta', evidence: 'Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.' }],
   ['D288', { status: 'beta', evidence: 'The composer plus button now opens an Open WebUI-style quick actions drawer for models, local node install, knowledge, new chat, voice and settings with no hidden spend.' }],
-  ['D289', { status: 'beta', evidence: 'The composer quick actions drawer now leads with Ready now status and a Chat now action that seeds the safest free prompt only when empty.' }]
+  ['D289', { status: 'beta', evidence: 'The composer quick actions drawer now leads with Ready now status and a Chat now action that seeds the safest free prompt only when empty.' }],
+  ['D290', { status: 'beta', evidence: 'The composer quick actions drawer now exposes direct no-spend route chips for MMIR Guide, Browser WebGPU and Qwen3 local install before the heavier model picker.' }]
 ]);
 
 const repoMeta = [
@@ -726,7 +727,7 @@ function buildLaunchProgress() {
       id: 'fresh-cross-repo-review',
       label: 'Full-project review snapshot is current',
       status: 'beta',
-      evidence: 'D284 records the latest public Pages CI, 87 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks.'
+      evidence: 'D284 records the latest public Pages CI, 89 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks.'
     },
     {
       id: 'connect-model-picker-first',
@@ -757,6 +758,12 @@ function buildLaunchProgress() {
       label: 'Plus drawer can start useful chat',
       status: 'beta',
       evidence: 'D289 adds Ready now route status and Chat now to the quick actions drawer, so opening tools still gives an automatic free first-value path.'
+    },
+    {
+      id: 'composer-quick-free-routes',
+      label: 'Plus drawer shows free model routes',
+      status: 'beta',
+      evidence: 'D290 adds one-click MMIR Guide, Browser WebGPU and Qwen3 local install route chips inside the plus drawer with no paid/provider side effects.'
     },
     {
       id: 'local-node-package',
@@ -894,109 +901,109 @@ function buildLaunchProgress() {
         repo: 'inkognitroz.github.io',
         commit: 'edf0b25',
         label: 'Full-project review baseline',
-        result: 'GitHub Actions green; 87 local smoke gates, public safety audit, JS syntax, local-node, backend, OCI and AWS no-spend gates green'
+        result: 'GitHub Actions green; 89 local smoke gates, public safety audit, JS syntax, local-node, backend, OCI and AWS no-spend gates green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '3c247c1',
         label: 'Model picker empty-result recovery',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: 'f4e8196',
         label: 'Desktop model picker search focus',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '0ac4ae6',
         label: 'Model picker reset flow',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '0900123',
         label: 'Model picker route filters',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: 'ed25ecb',
         label: 'Searchable composer model picker',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '0b2e1ac',
         label: 'Smooth model picker close flow',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '9d6097b',
         label: 'Selected composer model route clarity',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '4e6058b',
         label: 'Compact ready proof after chat starts',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '113808b',
         label: 'Composer follow-up refocus after send',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: 'ce6fb0a',
         label: 'Desktop composer ready-on-open',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '4366d4a',
         label: 'Composer keyboard shortcuts',
-        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: 'e58c75d',
         label: 'Composer New chat shortcut',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '7a4e768',
         label: 'Pinned transcript scroll guard',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '51e8181',
         label: 'Primary composer send/stop handoff',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '739a663',
         label: 'Open WebUI-style auto-growing composer',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: 'fd8162b',
         label: 'Selected local model installer handoff',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
         commit: '2500d59',
         label: 'Recommended model chat auto-start',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',
@@ -1008,7 +1015,7 @@ function buildLaunchProgress() {
         repo: 'inkognitroz.github.io',
         commit: 'acab3a2',
         label: 'Active chat critical-shell headroom recovery',
-        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+        result: '89 local smoke gates, public safety audit and GitHub Actions green'
       },
       {
         repo: 'inkognitroz.github.io',

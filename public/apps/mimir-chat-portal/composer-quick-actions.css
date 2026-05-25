@@ -54,6 +54,29 @@
   white-space: nowrap;
 }
 
+.composer-quick-route-strip {
+  display: grid;
+  gap: 6px;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.composer-quick-actions .composer-quick-route {
+  background: #f8fffb;
+  border-color: rgba(16, 163, 127, 0.26);
+  min-height: 42px;
+}
+
+.composer-quick-actions .composer-quick-route[data-route-state="setup"] {
+  background: #f8fafc;
+  border-color: rgba(100, 116, 139, 0.22);
+}
+
+.composer-quick-actions .composer-quick-route[data-route-state="install"] {
+  background: #fff7ed;
+  border-color: rgba(251, 146, 60, 0.32);
+}
+
 .composer-quick-actions .composer-quick-primary {
   background: #0f172a;
   border-color: #0f172a;
@@ -86,6 +109,10 @@
   .composer-quick-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     overflow: visible;
+  }
+
+  .composer-quick-route-strip {
+    grid-template-columns: 1fr;
   }
 
   .composer-quick-status {

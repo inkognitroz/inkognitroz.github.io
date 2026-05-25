@@ -47,14 +47,21 @@
     }
     openPanel(target);
   }
-  function writeRepairResume(){
-    const target='./downloads/mmir-local-connector-install.html?source=composer-quick-actions';
+  function writeRepairResume(overrides={}){
+    const source=String(overrides.source||'composer-quick-actions');
+    const params=new URLSearchParams({source});
+    if(overrides.starter_id)params.set('starter',overrides.starter_id);
+    if(overrides.model)params.set('model',overrides.model);
+    const defaultTarget='./downloads/mmir-local-connector-install.html?source=composer-quick-actions';
+    const target=source==='composer-quick-actions'&&!overrides.starter_id&&!overrides.model?defaultTarget:'./downloads/mmir-local-connector-install.html?'+params.toString();
     const resume={
-      source:'composer-quick-actions',
-      action:'install-local-node',
+      source,
+      action:overrides.action||'install-local-node',
       status:'pending',
       target,
-      next_action:'installer-download',
+      starter_id:overrides.starter_id||'',
+      model:overrides.model||'',
+      next_action:overrides.next_action||'installer-download',
       at:new Date().toISOString(),
       no_paid_routes_started:true,
       provider_secrets_stored:false,
@@ -74,6 +81,17 @@
     const value=String(q('#runtime-resource-chip')?.textContent||'Free browser route').trim();
     return value.replace(/\s+/g,' ').slice(0,48)||'Free browser route';
   }
+  function webGpuReady(){return Boolean(w.isSecureContext&&w.navigator?.gpu);}
+  function webGpuLabel(){
+    return webGpuReady()?'Browser LLM ready':'Browser LLM option';
+  }
+  function renderRouteStrip(){
+    return '<div class="composer-quick-route-strip" aria-label="Free chat routes">'+
+      '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>MMIR Guide</span><small>Free now</small></button>'+
+      '<button type="button" class="composer-quick-route" data-composer-quick-route="webgpu" data-route-state="'+(webGpuReady()?'ready':'setup')+'"><span>'+webGpuLabel()+'</span><small>Qwen WebGPU</small></button>'+
+      '<button type="button" class="composer-quick-route" data-composer-quick-route="local" data-route-state="install"><span>Install local</span><small>Qwen3 0.6B</small></button>'+
+    '</div>';
+  }
   function renderMenuContent(){
     const model=selectedModelLabel();
     const resource=resourceSummary();
@@ -81,6 +99,7 @@
       '<div class="composer-quick-status" role="status" aria-live="polite">'+
         '<strong>Ready now</strong><span>'+escapeHtml(model)+' / '+escapeHtml(resource)+' / no paid route</span>'+
       '</div>'+
+      renderRouteStrip()+
       '<button type="button" role="menuitem" class="composer-quick-primary" data-composer-quick-action="chat-now"><span>Chat now</span><small>Start with the safest free route</small></button>'+
       '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Free, live and local routes</small></button>'+
       '<button type="button" role="menuitem" data-composer-quick-action="install-node"><span>Install node</span><small>Mac, Windows, Linux or Pi</small></button>'+
@@ -106,7 +125,9 @@
     else form.insertBefore(menu,form.querySelector('.composer-bar')||null);
     menu.addEventListener('click',(event)=>{
       const action=event.target?.closest?.('[data-composer-quick-action]')?.getAttribute('data-composer-quick-action');
+      const route=event.target?.closest?.('[data-composer-quick-route]')?.getAttribute('data-composer-quick-route');
       if(action)runQuickAction(action);
+      else if(route)runQuickRoute(route);
     });
     return menu;
   }
@@ -170,6 +191,41 @@
     }
     setFeedback('Starting chat with the safest free route.','ready');
     setTimeout(()=>q('#primary-chat-link')?.click(),80);
+  }
+  function startStarterRoute(starterId,promptText,feedback){
+    closeMenu(false);
+    const prompt=q('#mimir-prompt');
+    if(prompt&&!String(prompt.value||'').trim()){
+      prompt.value=promptText;
+      prompt.dispatchEvent(new Event('input',{bubbles:true}));
+      prompt.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:starterId,action:'select',source:'composer-quick-route-strip',free:true,no_paid_routes_started:true}}));
+    setFeedback(feedback,'ready');
+    setTimeout(()=>q('#primary-chat-link')?.click(),140);
+  }
+  function startLocalRoute(){
+    closeMenu(false);
+    const target=writeRepairResume({
+      source:'composer-quick-route-strip',
+      action:'starter-install-repair',
+      starter_id:'ollama-qwen3-06b',
+      model:'qwen3:0.6b',
+      next_action:'installer-download'
+    });
+    setFeedback('Opening free Local Node installer for Qwen3 0.6B. No paid route starts.','ready');
+    w.location.href=target;
+  }
+  function runQuickRoute(route){
+    if(route==='guide'){
+      startStarterRoute('mmir-guide','Start free chat with MMIR Guide. Tell me what is active and what I can do next.','Starting free MMIR Guide chat.');
+      return;
+    }
+    if(route==='webgpu'){
+      startStarterRoute('webllm-qwen25-05b','Start a free browser WebGPU chat with Qwen2.5 0.5B. If WebGPU is unavailable, explain the safest fallback.','Starting free Browser LLM route.');
+      return;
+    }
+    if(route==='local')startLocalRoute();
   }
   function runQuickAction(action){
     if(action==='chat-now'){

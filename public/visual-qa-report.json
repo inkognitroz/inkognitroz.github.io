@@ -75,6 +75,11 @@
       "id": "D289 composer quick Chat now status",
       "status": "guarded",
       "evidence": "Clean first paint keeps only the subtle plus entry visible; the drawer shows Ready now, selected route, no-paid-route boundary and a primary Chat now action before setup-oriented tools."
+    },
+    {
+      "id": "D290 composer quick free route strip",
+      "status": "guarded",
+      "evidence": "The plus drawer now exposes three compact no-spend route chips for MMIR Guide, Browser WebGPU and Qwen3 local install, with one-column mobile stacking and no first-paint control noise."
     }
   ],
   "known_limitations": [
