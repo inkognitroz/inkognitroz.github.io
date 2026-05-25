@@ -263,7 +263,8 @@ const overrides = new Map([
   ['D277', { status: 'beta', evidence: 'The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.' }],
   ['D278', { status: 'beta', evidence: 'The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.' }],
   ['D279', { status: 'beta', evidence: 'The composer model picker now includes a local-only search field that filters the full route grid by model, runtime, route type and action with count/empty-state feedback.' }],
-  ['D280', { status: 'beta', evidence: 'The composer model picker now has local-only route filter chips for All, Ready, Browser, Local and Live paths, combined with search and mobile-safe overflow.' }]
+  ['D280', { status: 'beta', evidence: 'The composer model picker now has local-only route filter chips for All, Ready, Browser, Local and Live paths, combined with search and mobile-safe overflow.' }],
+  ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }]
 ]);
 
 const repoMeta = [
@@ -682,6 +683,12 @@ function buildLaunchProgress() {
       label: 'Model routes can be narrowed instantly',
       status: 'beta',
       evidence: 'All, Ready, Browser, Local and Live chips filter the route grid locally and combine with search without starting network/provider work.'
+    },
+    {
+      id: 'model-picker-reset',
+      label: 'Model filters are easy to recover from',
+      status: 'beta',
+      evidence: 'Reset clears the search query, returns the picker to All routes and keeps focus in the model discovery flow.'
     },
     {
       id: 'local-node-package',

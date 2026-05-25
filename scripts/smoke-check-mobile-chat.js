@@ -37,11 +37,11 @@ if (!html.includes('chat-runtime.css?v=20260525-proof-compact-v1')) {
   fail('MMIR page must cache-bust the compact proof chat runtime CSS.');
 }
 
-if (!html.includes('composer-model-picker.css?v=20260525-picker-filters-v1')) {
-  fail('MMIR page must cache-bust the model picker route-filter CSS.');
+if (!html.includes('composer-model-picker.css?v=20260525-picker-reset-v1')) {
+  fail('MMIR page must cache-bust the model picker reset CSS.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d280-20260525-picker-filters-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d281-20260525-picker-reset-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

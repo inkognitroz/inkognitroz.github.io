@@ -179,9 +179,18 @@
       if(match)visible+=1;
     }
     const count=el?.querySelector?.('[data-picker-search-count]');
-    if(count)count.textContent=query?(visible+' of '+cards.length+' routes'):(cards.length+' routes');
+    if(count)count.textContent=(query||pickerRouteFilter!=='all')?(visible+' of '+cards.length+' routes'):(cards.length+' routes');
     const empty=el?.querySelector?.('[data-picker-search-empty]');
     if(empty)empty.hidden=visible>0;
+  }
+  function resetPickerFilters(el,focusSearch){
+    pickerSearchQuery='';
+    pickerRouteFilter='all';
+    const search=el?.querySelector?.('[data-picker-search]');
+    if(search)search.value='';
+    el?.querySelectorAll?.('[data-picker-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.getAttribute('data-picker-filter')==='all')));
+    applySearchFilter(el);
+    if(focusSearch)search?.focus({preventScroll:true});
   }
   function routeFilterControls(){
     const filters=[
@@ -193,7 +202,7 @@
     ];
     return '<div class="composer-model-filters" aria-label="Filter model routes">'+filters.map(filter=>
       '<button type="button" data-picker-filter="'+escapeHtml(filter.id)+'" aria-pressed="'+String(pickerRouteFilter===filter.id)+'">'+escapeHtml(filter.label)+'</button>'
-    ).join('')+'</div>';
+    ).join('')+'<button type="button" data-picker-filter-reset aria-label="Reset model filters">Reset</button></div>';
   }
   function wireFilters(el){
     el?.querySelectorAll?.('[data-picker-filter]').forEach(button=>{
@@ -203,6 +212,7 @@
         applySearchFilter(el);
       });
     });
+    el?.querySelector?.('[data-picker-filter-reset]')?.addEventListener('click',()=>resetPickerFilters(el,true));
   }
   function wireSearch(el){
     const search=el?.querySelector?.('[data-picker-search]');

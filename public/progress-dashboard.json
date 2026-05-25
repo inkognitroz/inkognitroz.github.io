@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T08:01:39.357Z",
+  "updated_at": "2026-05-25T08:39:49.123Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 280,
+    "total": 281,
     "done": 51,
-    "beta": 204,
+    "beta": 205,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 5,
+        "total": 6,
         "done": 0,
-        "beta": 5,
+        "beta": 6,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1323,6 +1323,12 @@
         "label": "Model routes can be narrowed instantly",
         "status": "beta",
         "evidence": "All, Ready, Browser, Local and Live chips filter the route grid locally and combine with search without starting network/provider work."
+      },
+      {
+        "id": "model-picker-reset",
+        "label": "Model filters are easy to recover from",
+        "status": "beta",
+        "evidence": "Reset clears the search query, returns the picker to All routes and keeps focus in the model discovery flow."
       },
       {
         "id": "local-node-package",
@@ -10099,6 +10105,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The composer model picker now has local-only route filter chips for All, Ready, Browser, Local and Live paths, combined with search and mobile-safe overflow.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D281",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Reset model picker search and filters",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a reset action that clears the model search query, returns the route filter to All and refocuses the search field so users can recover from narrowed results immediately",
+      "best_practice": "Discovery UIs must never make users think capabilities disappeared; reset keeps the model picker forgiving, obvious and fast while staying fully local",
+      "done_when": "Composer picker smoke gates prove reset control, reset state mutation, count accuracy for filtered views, focus handoff, styling, cache-busted assets and service-worker rotation without network/provider side effects",
+      "covers": "chat, model-picker, model-discovery, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.",
       "estimate": "Verify + polish"
     }
   ]
