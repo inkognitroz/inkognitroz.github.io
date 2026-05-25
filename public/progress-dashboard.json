@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T01:34:56.041Z",
+  "updated_at": "2026-05-25T01:42:03.888Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 265,
+    "total": 266,
     "done": 51,
-    "beta": 189,
+    "beta": 190,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1208,6 +1208,16 @@
       },
       {
         "phase": "Local Install / Automation",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Proof",
         "total": 1,
         "done": 0,
         "beta": 1,
@@ -9680,6 +9690,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Progress Dashboard launch evidence now includes the latest selected-model installer handoff commit, green Pages deploy and refreshed next queue.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D266",
+      "phase": "Chat UX / Proof",
+      "priority": "P0",
+      "work_package": "Browser-route proof stays green offline",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "When localhost/local node is offline, keep proof state green for ready browser-guide or supported WebGPU starter routes instead of showing a backend failure as the primary status",
+      "best_practice": "First impression should say the free chat route works now, while local-node is optional setup",
+      "done_when": "Smoke evidence proves local-node failure no longer makes browser-ready chat look broken; backend repair remains visible only as optional or error when no free route is ready",
+      "covers": "chat, proof, browser-route, activation, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "When local-node proof fails, the chat runtime now keeps ready browser-guide/WebGPU starter routes green instead of making first chat look broken.",
       "estimate": "Verify + polish"
     }
   ]

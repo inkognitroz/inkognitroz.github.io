@@ -1925,7 +1925,10 @@
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
       lastProofSignature='';
       verifiedLiveModel=null;
-      renderLiveProof('Backend proof could not start: '+friendlyError(error),'error',baseProofItems(url).concat([{label:'Backend route',state:'error',detail:'repair local node'}]),proofRepairActions('offline'));
+      const s=selectedStarterModel()||preferredStarterModel();
+      const sr=s&&(s.runtime==='browser-guide'||s.runtime==='webllm');
+      const ok=sr&&(s.runtime!=='webllm'||webGpuAvailable());
+      renderLiveProof(sr?(ok?'Free '+s.label+' ready. Local node optional.':'WebGPU unavailable; guide/install ready.'):('Backend proof could not start: '+friendlyError(error)),ok?'ready':'error',baseProofItems(url).concat([{label:'Backend route',state:sr?'idle':'error',detail:sr?'optional':'repair local node'}]),proofRepairActions(ok?'verified':'offline'));
       if(starterModels.length){
         setStatus('Free browser/installable models are ready. Local node is not running yet.','ready');
       }else{

@@ -92,6 +92,9 @@ for (const needle of [
   "transcriptEl.dataset.empty=String(!hasChat)",
   'scrollTranscriptToBottom()',
   'MMIR automatically fell back to the free browser guide',
+  'Free \'+s.label+\' ready. Local node optional.',
+  'WebGPU unavailable; guide/install ready.',
+  "detail:sr?'optional':'repair local node'",
   'function defaultFirstPrompt()',
   'Starting the safest free chat automatically',
   'No setup needed. MMIR is starting a free browser chat automatically.'
