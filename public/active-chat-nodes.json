@@ -41,6 +41,63 @@
       ]
     },
     {
+      "id": "browser-webgpu-gemma",
+      "name": "Gemma WebGPU",
+      "type": "browser",
+      "status": "available_if_supported",
+      "trust_level": "browser-local",
+      "cost": { "mode": "free", "requires_approval": false },
+      "route": { "kind": "starter", "starter_id": "webllm-gemma3-1b", "requires": ["webgpu", "secure_context"] },
+      "capabilities": ["chat.completions", "browser.llm"],
+      "models": [
+        {
+          "id": "gemma3-1b-it-q4f16_1-MLC",
+          "name": "Gemma 3 1B",
+          "status": "available_if_supported",
+          "provider": "webllm",
+          "source": "browser-webgpu"
+        }
+      ]
+    },
+    {
+      "id": "browser-webgpu-llama32",
+      "name": "Llama WebGPU",
+      "type": "browser",
+      "status": "available_if_supported",
+      "trust_level": "browser-local",
+      "cost": { "mode": "free", "requires_approval": false },
+      "route": { "kind": "starter", "starter_id": "webllm-llama32-1b", "requires": ["webgpu", "secure_context"] },
+      "capabilities": ["chat.completions", "browser.llm"],
+      "models": [
+        {
+          "id": "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+          "name": "Llama 3.2 1B",
+          "status": "available_if_supported",
+          "provider": "webllm",
+          "source": "browser-webgpu"
+        }
+      ]
+    },
+    {
+      "id": "browser-webgpu-phi35",
+      "name": "Phi WebGPU",
+      "type": "browser",
+      "status": "available_if_supported",
+      "trust_level": "browser-local",
+      "cost": { "mode": "free", "requires_approval": false },
+      "route": { "kind": "starter", "starter_id": "webllm-phi35-mini", "requires": ["webgpu", "secure_context"] },
+      "capabilities": ["chat.completions", "browser.llm"],
+      "models": [
+        {
+          "id": "Phi-3.5-mini-instruct-q4f16_1-MLC-1k",
+          "name": "Phi 3.5 Mini",
+          "status": "available_if_supported",
+          "provider": "webllm",
+          "source": "browser-webgpu"
+        }
+      ]
+    },
+    {
       "id": "local-node",
       "name": "MMIR Local Node",
       "type": "local",

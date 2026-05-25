@@ -33,7 +33,7 @@ function requireIncludes(source, needle, message) {
 
 const manifest = JSON.parse(read(files.manifest));
 const nodes = Array.isArray(manifest.nodes) ? manifest.nodes : [];
-for (const id of ['browser-guide', 'browser-webgpu-qwen', 'local-node']) {
+for (const id of ['browser-guide', 'browser-webgpu-qwen', 'browser-webgpu-gemma', 'browser-webgpu-llama32', 'browser-webgpu-phi35', 'local-node']) {
   const node = nodes.find((item) => item.id === id);
   if (!node) fail(`Active chat node manifest missing ${id}.`);
   if (node?.cost?.requires_approval !== false) fail(`Active chat node ${id} must be no-approval/free-first.`);
@@ -62,6 +62,7 @@ for (const needle of [
   'active-node-starter-rail',
   'localReady()',
   'webGpuReady()',
+  'function needsWebGpu(node)',
   'function bestNode(nodes,selected)',
   'function activateStarter(model)',
   'function writeLocalInstallResume(source)',

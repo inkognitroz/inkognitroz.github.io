@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T00:54:10.721Z",
+  "updated_at": "2026-05-25T01:02:38.258Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 260,
+    "total": 261,
     "done": 51,
-    "beta": 184,
+    "beta": 185,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1175,6 +1175,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / Free Models",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1232,13 +1242,13 @@
         "id": "active-node-chat",
         "label": "Active nodes connect to chat path",
         "status": "beta",
-        "evidence": "Browser helper, WebGPU candidate and local-node route floor are wired through smoke tests without paid/provider keys."
+        "evidence": "Browser helper, Qwen/Gemma/Llama/Phi WebGPU candidates and local-node route floor are wired through smoke tests without paid/provider keys."
       },
       {
         "id": "critical-shell-headroom",
         "label": "Chat shell performance headroom",
         "status": "beta",
-        "evidence": "Critical active-node JavaScript was reduced; quality gates report 161244 external JS bytes and 165610 total first-paint JS bytes."
+        "evidence": "Critical active-node JavaScript remains under budget after more free WebGPU routes; quality gates report 161646 external JS bytes and 166012 total first-paint JS bytes."
       },
       {
         "id": "zero-trust-public",
@@ -9529,6 +9539,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D261",
+      "phase": "Chat UX / Free Models",
+      "priority": "P0",
+      "work_package": "Multi WebGPU active route floor",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Expose multiple free browser WebGPU model routes as active/connectable nodes and route each selected starter to its exact chat path, with local installer fallback when WebGPU is unavailable",
+      "best_practice": "Free live options should feel real and useful immediately while unsupported devices get one safe next action",
+      "done_when": "Active chat manifest and smoke gate prove Qwen, Gemma, Llama and Phi browser-local routes are listed, free/no-approval and tied to the composer route floor",
+      "covers": "chat, free-models, webgpu, activation, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Active chat manifest now lists Qwen, Gemma, Llama and Phi browser WebGPU routes as free/no-approval nodes, and the active strip routes selected starters to the exact browser/local fallback path.",
       "estimate": "Verify + polish"
     }
   ]

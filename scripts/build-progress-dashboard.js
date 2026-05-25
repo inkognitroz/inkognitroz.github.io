@@ -243,7 +243,8 @@ const overrides = new Map([
   ['D257', { status: 'beta', evidence: 'Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.' }],
   ['D258', { status: 'beta', evidence: 'Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.' }],
   ['D259', { status: 'beta', evidence: 'Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.' }],
-  ['D260', { status: 'beta', evidence: 'Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.' }]
+  ['D260', { status: 'beta', evidence: 'Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.' }],
+  ['D261', { status: 'beta', evidence: 'Active chat manifest now lists Qwen, Gemma, Llama and Phi browser WebGPU routes as free/no-approval nodes, and the active strip routes selected starters to the exact browser/local fallback path.' }]
 ]);
 
 const repoMeta = [
@@ -661,13 +662,13 @@ function buildLaunchProgress() {
       id: 'active-node-chat',
       label: 'Active nodes connect to chat path',
       status: 'beta',
-      evidence: 'Browser helper, WebGPU candidate and local-node route floor are wired through smoke tests without paid/provider keys.'
+      evidence: 'Browser helper, Qwen/Gemma/Llama/Phi WebGPU candidates and local-node route floor are wired through smoke tests without paid/provider keys.'
     },
     {
       id: 'critical-shell-headroom',
       label: 'Chat shell performance headroom',
       status: 'beta',
-      evidence: 'Critical active-node JavaScript was reduced; quality gates report 161244 external JS bytes and 165610 total first-paint JS bytes.'
+      evidence: 'Critical active-node JavaScript remains under budget after more free WebGPU routes; quality gates report 161646 external JS bytes and 166012 total first-paint JS bytes.'
     },
     {
       id: 'zero-trust-public',

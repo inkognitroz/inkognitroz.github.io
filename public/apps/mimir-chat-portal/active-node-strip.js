@@ -14,18 +14,19 @@
 
   function selectedModel(){const select=q('#runtime-model'),option=select?.selectedOptions?.[0];return {value:select?.value||'',label:String(option?.textContent||select?.value||'MMIR Guide').replace(/\s+-\s+live$/i,'').trim(),runtime:option?.dataset?.runtime||''};}
   function webGpuReady(){return Boolean(w.isSecureContext&&navigator.gpu);}
+  function needsWebGpu(node){const requires=Array.isArray(node?.route?.requires)?node.route.requires:[];return node?.type==='browser'||requires.includes('webgpu')||String(node?.id||'').startsWith('browser-webgpu');}
   function costText(node){const mode=node?.cost?.mode||'free';return mode==='free-local'?'Free local':mode==='free'?'Free':String(mode);}
   function modelFromNode(node){const model=Array.isArray(node?.models)?node.models[0]:null;return model?.name||model?.id||'Auto';}
   function starterId(node){return String(node?.route?.starter_id||'');}
   function localReady(){return localState.status==='online'&&liveModels.length>0;}
   function nodeStatus(node){
     if(node.id==='local-node')return localReady()?'online':(localState.status==='offline'?'offline':'setup');
-    if(node.id==='browser-webgpu-qwen')return webGpuReady()?'online':'setup';
+    if(needsWebGpu(node))return webGpuReady()?'online':'setup';
     return 'online';
   }
   function nodeModel(node){
     if(node.id==='local-node')return liveModels[0]?.id||liveModels[0]?.name||'Install one free model';
-    if(node.id==='browser-webgpu-qwen')return webGpuReady()?modelFromNode(node):'Needs WebGPU browser';
+    if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU browser';
     return modelFromNode(node);
   }
   function nodeDetail(node){
@@ -34,7 +35,7 @@
       if(localState.status==='offline')return 'Not running. Install or start MMIR Local Node; browser chat still works.';
       return 'Checking localhost. Pairing keeps local models private.';
     }
-    if(node.id==='browser-webgpu-qwen')return webGpuReady()?'Browser-local LLM. First use may download model weights.':'Free route; auto-enables in secure WebGPU browsers.';
+    if(needsWebGpu(node))return webGpuReady()?'Browser-local LLM. First use may download model weights.':'Free route; auto-enables in secure WebGPU browsers.';
     return 'Works now in this browser. No paid route or key.';
   }
   function card(node){
@@ -116,8 +117,10 @@
   }
   function bestNode(nodes,selected){
     const label=String(selected.label||'');
+    const selectedStarter=String(selected.value||'').replace(/^starter:/,'');
+    if(selectedStarter){const byStarter=nodes.find(node=>starterId(node)===selectedStarter);if(byStarter)return byStarter;}
     if(selected.runtime==='browser-guide'||/MMIR Guide|Model Picker|Setup Coach|Security Coach|Growth Coach/i.test(label))return nodes.find(node=>node.id==='browser-guide')||nodes[0];
-    if(selected.runtime==='webllm'||/WebGPU|Qwen2.5 0.5B|Gemma 3 1B|Llama 3.2 1B|Phi 3.5/i.test(label))return nodes.find(node=>node.id==='browser-webgpu-qwen')||nodes[0];
+    if(selected.runtime==='webllm'||/WebGPU|Qwen2.5 0.5B|Gemma 3 1B|Llama 3.2 1B|Phi 3.5/i.test(label))return nodes.find(node=>needsWebGpu(node)&&nodeStatus(node)==='online')||nodes.find(needsWebGpu)||nodes[0];
     if(localReady()&&(selected.runtime==='live'||/local|ollama|live/i.test(label)))return nodes.find(node=>node.id==='local-node')||nodes[0];
     return localReady()?nodes.find(node=>node.id==='local-node'):(webGpuReady()?nodes.find(node=>node.id==='browser-webgpu-qwen'):nodes.find(node=>node.id==='browser-guide'))||nodes[0];
   }
@@ -131,7 +134,7 @@
       }else openInstaller('active-node-local-install');
       return;
     }
-    if(node.id==='browser-webgpu-qwen'&&!webGpuReady()){
+    if(needsWebGpu(node)&&!webGpuReady()){
       openInstaller('active-node-webgpu-fallback');
       return;
     }
