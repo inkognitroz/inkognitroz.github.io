@@ -776,6 +776,12 @@ function buildLaunchProgress() {
     last_green_evidence: [
       {
         repo: 'inkognitroz.github.io',
+        commit: '113808b',
+        label: 'Composer follow-up refocus after send',
+        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
         commit: 'ce6fb0a',
         label: 'Desktop composer ready-on-open',
         result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
