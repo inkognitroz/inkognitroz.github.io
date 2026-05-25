@@ -87,15 +87,15 @@ for (const evidenceId of [
 }
 
 const publicSmoke = (report.evidence || []).find((item) => item.id === 'public-smoke-suite');
-requireTrue(String(publicSmoke?.result || '').includes('87'), 'D252 public smoke evidence must include 87 workflow smoke scripts.');
+requireTrue(String(publicSmoke?.result || '').includes('97'), 'D252 public smoke evidence must include 97 workflow smoke scripts.');
 const backendTests = (report.evidence || []).find((item) => item.id === 'backend-tests');
-requireTrue(String(backendTests?.result || '').includes('188'), 'D252 backend evidence must include 188 passing tests.');
+requireTrue(String(backendTests?.result || '').includes('211'), 'D252 backend evidence must include 211 passing tests.');
 const localNodeTests = (report.evidence || []).find((item) => item.id === 'local-node-tests');
-requireTrue(String(localNodeTests?.result || '').includes('63'), 'D252 local-node evidence must include 63 passing tests.');
+requireTrue(String(localNodeTests?.result || '').includes('66'), 'D252 local-node evidence must include 66 passing tests.');
 const publicRoutes = (report.evidence || []).find((item) => item.id === 'public-route-manifest');
 requireTrue(String(publicRoutes?.result || '').includes('74'), 'D252 public route evidence must include 74 route entries.');
 const backendRoutes = (report.evidence || []).find((item) => item.id === 'backend-route-contract');
-requireTrue(String(backendRoutes?.result || '').includes('125'), 'D252 backend route evidence must include 125 route entries.');
+requireTrue(String(backendRoutes?.result || '').includes('127'), 'D252 backend route evidence must include 127 route entries.');
 
 for (const area of ['Public/private boundary', 'Zero-trust workflow gates', 'No-spend defaults', 'Route ownership', 'Browser visual QA']) {
   const item = (report.architecture_scorecard || []).find((candidate) => candidate.area === area);
@@ -109,7 +109,7 @@ for (const findingId of ['CR-001', 'CR-002', 'CR-003', 'CR-004']) {
 
 requireTrue(report.security_review?.status === 'pass', 'D252 security review must pass.');
 requireTrue(report.ux_review?.status === 'watch', 'D252 UX review must be watch, not falsely complete.');
-requireTrue(report.next?.task === 'D254', 'D252 report must hand off to D254 after the fresh D284 review refresh.');
+requireTrue(report.next?.task === 'D254', 'D252 report must hand off to D254 after the fresh D302 review refresh.');
 
 for (const needle of [
   'renderCrossRepoArchitectureSecurityReviewReport',
@@ -132,9 +132,10 @@ for (const needle of [
 
 for (const needle of [
   'MMIR Cross-Repo Review Gate D252',
-  'D284',
-  '63 tests',
-  '188 tests',
+  'D302',
+  '66 tests',
+  '211 tests',
+  '11/11 checks',
   'AWS proxy',
   'CR-003',
   'D254'

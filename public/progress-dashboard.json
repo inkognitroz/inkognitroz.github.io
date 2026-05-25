@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T19:32:31.468Z",
+  "updated_at": "2026-05-25T20:09:46.350Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -5928,14 +5928,14 @@
     "title": "Cross-Repo Architecture and Security Review Gate",
     "task": "D252",
     "status": "beta",
-    "updated_at": "2026-05-25T10:45:00.000Z",
-    "latest_refresh_task": "D284",
+    "updated_at": "2026-05-25T19:15:00.000Z",
+    "latest_refresh_task": "D302",
     "public_repo_rule": "This report contains only public-safe metadata, commit ids, test outcomes and review findings; it stores no secrets, raw prompts, raw responses, document text or provider credentials.",
     "reviewed_repos": [
       {
         "name": "inkognitroz.github.io",
         "visibility": "public",
-        "commit": "edf0b25",
+        "commit": "43140c2",
         "role": "Static MMIR.ai app shell, chat UI, progress dashboard, no-secret public evidence and GitHub Pages deployment.",
         "status": "pass"
       },
@@ -5973,7 +5973,7 @@
         "id": "public-smoke-suite",
         "repo": "inkognitroz.github.io",
         "status": "pass",
-        "result": "87 unique workflow smoke scripts passed locally.",
+        "result": "97 workflow smoke scripts passed locally.",
         "scope": "Visible controls, first-chat activation, model/no-model states, remediation timeline, public dashboard, deploy verification, mobile and model picker evidence."
       },
       {
@@ -6008,14 +6008,14 @@
         "id": "public-performance-budget",
         "repo": "inkognitroz.github.io",
         "status": "pass",
-        "result": "Performance budget passed at 166357 total first-paint JS bytes.",
+        "result": "Performance budget passed at 166688 total first-paint JS bytes.",
         "scope": "Chat-first polish remains under the measured critical-shell budget."
       },
       {
         "id": "local-node-tests",
         "repo": "mmir-local-node",
         "status": "pass",
-        "result": "63 local-node tests passed.",
+        "result": "66 local-node tests passed.",
         "scope": "Registration payloads, heartbeat/model inventory, pairing, chat contract, Ollama status/model operations, packaging and registration policy."
       },
       {
@@ -6029,21 +6029,21 @@
         "id": "local-node-conformance",
         "repo": "mmir-local-node",
         "status": "pass",
-        "result": "MMIR node conformance passed 9/9 checks.",
-        "scope": "Health, status, public-safe identity, protected model route, pairing, models, chat errors, chat completions and optional safe capabilities."
+        "result": "MMIR node conformance passed 11/11 checks, including OpenAI-compatible /v1 aliases.",
+        "scope": "Health, status, public-safe identity, protected model route, pairing, models, /v1/models, chat errors, chat completions, /v1/chat/completions and optional safe capabilities."
       },
       {
         "id": "backend-tests",
         "repo": "mimir-backend-template",
         "status": "pass",
-        "result": "188 backend tests passed.",
+        "result": "211 backend tests passed.",
         "scope": "Auth, RBAC, memory, knowledge, model registry, node registry, sharing, corrections, remediation, routing, billing gates, training plans and workflow stores."
       },
       {
         "id": "backend-route-contract",
         "repo": "mimir-backend-template",
         "status": "pass",
-        "result": "Managed API route manifest check passed for 125 backend route entries.",
+        "result": "Managed API route manifest check passed for 127 backend route entries.",
         "scope": "Protected API surface is documented and contract-checked."
       },
       {
@@ -6078,14 +6078,14 @@
         "id": "github-actions-d251",
         "repo": "inkognitroz.github.io",
         "status": "pass",
-        "result": "Static quality gates, public branding migration and GitHub Pages deploy succeeded for commit edf0b25.",
+        "result": "Static quality gates, public branding migration and GitHub Pages deploy succeeded for commit 43140c2.",
         "scope": "Remote CI agrees with local quality gates for the latest public deployment."
       },
       {
         "id": "github-actions-latest",
         "repo": "inkognitroz.github.io",
         "status": "pass",
-        "result": "Latest public repo GitHub Actions runs for commit edf0b25 completed successfully.",
+        "result": "Latest public repo GitHub Actions runs for commit 43140c2 completed successfully.",
         "scope": "Static quality gates, Pages deploy and branding migration are green on GitHub."
       }
     ],
@@ -6154,6 +6154,18 @@
       {
         "id": "CR-003",
         "severity": "P1",
+        "status": "fixed",
+        "finding": "OpenAI-compatible /v1 aliases were advertised by the public manifest but not implemented in the local node or managed backend runtime routes.",
+        "evidence": [
+          "local-node-conformance",
+          "backend-route-contract",
+          "backend-tests"
+        ],
+        "next_action": "Keep v1 alias checks in conformance and route manifests before adding more Open WebUI-compatible adapters."
+      },
+      {
+        "id": "CR-004",
+        "severity": "P1",
         "status": "watch",
         "finding": "The first-use flow is covered by many individual gates, but real browser/device QA still needs to prove it feels as smooth as ChatGPT/Open WebUI under normal user interaction.",
         "evidence": [
@@ -6164,7 +6176,7 @@
         "next_action": "Continue D254 chat polish and restore live browser QA when the in-app browser bridge is stable."
       },
       {
-        "id": "CR-004",
+        "id": "CR-005",
         "severity": "P1",
         "status": "watch",
         "finding": "Live browser screenshot QA could not be trusted in this thread because the in-app browser bridge timed out; deterministic fixture QA is green but not a full visual replacement.",
@@ -6174,7 +6186,7 @@
         "next_action": "Keep fixture QA mandatory and reintroduce live screenshot checks once the browser bridge is reliable."
       },
       {
-        "id": "CR-005",
+        "id": "CR-006",
         "severity": "P1",
         "status": "watch",
         "finding": "OCI and AWS runtime templates parse, but no cloud runtime has been provisioned or tested because no-spend mode is active.",

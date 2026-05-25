@@ -22,11 +22,13 @@ MMIR is the orchestration layer for trusted AI. The contract must support a worl
 | `GET` | `/health` | local node, managed API | Liveness and version check |
 | `GET` | `/status` | local node, managed API | Runtime/provider/control-plane status and capabilities |
 | `GET` | `/models` | local node, managed API | Normalized model inventory for the current backend or control plane |
+| `GET` | `/v1/models` | local node, managed API | OpenAI-compatible alias for model inventory |
 | `GET` | `/nodes` | managed API, later local bridge | Active node inventory visible to the user/org |
 | `POST` | `/nodes/register` | managed API | Register public-safe node metadata and endpoint reference |
 | `POST` | `/nodes/{id}/heartbeat` | managed API | Update node health, models, capacity and capabilities |
 | `POST` | `/routing/decision` | managed API | Select a route based on trust, health, cost, model and policy |
 | `POST` | `/chat/completions` | local node, managed API | Canonical single-model or routed chat route |
+| `POST` | `/v1/chat/completions` | local node, managed API | OpenAI-compatible alias for chat adapters |
 | `POST` | `/chat/compare` | managed API | Ask multiple models/nodes and return comparable answers |
 | `POST` | `/chat/discussions` | managed API | Start a structured multi-model discussion |
 | `POST` | `/scheduler/candidates` | managed API | Return eligible nodes/providers for a request |
@@ -235,6 +237,8 @@ The control plane may reject registration or heartbeat if trust, auth, cost or s
 
 Purpose: return models that the active backend can actually serve. In managed mode this may aggregate active nodes and providers, but each model must include enough source metadata for the UI to explain where it will run.
 
+`GET /v1/models` must return the same shape for OpenAI-compatible clients and Open WebUI-style adapters.
+
 Response:
 
 ```json
@@ -307,6 +311,8 @@ The route decision must fail closed for unknown-cost or missing-secret provider 
 ## POST /chat/completions
 
 Purpose: canonical chat route. Shape follows OpenAI-compatible conventions where practical. It may be used for direct single-model calls or for control-plane-routed calls when `route` is supplied.
+
+`POST /v1/chat/completions` must behave as an alias so generic OpenAI-compatible clients can connect without provider-specific frontend code.
 
 Request:
 

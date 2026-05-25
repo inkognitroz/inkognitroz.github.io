@@ -591,7 +591,7 @@ http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/models') {
+    if (req.method === 'GET' && (url.pathname === '/models' || url.pathname === '/v1/models')) {
       if (!paired(req, res, origin)) return;
       const tags = await ollama('/api/tags', { timeoutMs: 8000 });
       send(res, 200, {
@@ -691,7 +691,7 @@ http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === 'POST' && (url.pathname === '/chat/completions' || url.pathname === '/chat')) {
+    if (req.method === 'POST' && (url.pathname === '/chat/completions' || url.pathname === '/v1/chat/completions' || url.pathname === '/chat')) {
       await chat(req, res, origin);
       return;
     }

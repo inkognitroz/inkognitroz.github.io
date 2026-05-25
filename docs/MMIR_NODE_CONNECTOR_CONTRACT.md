@@ -13,7 +13,9 @@ MMIR is **the orchestration layer for trusted AI**. A node can be a Mac, PC, Ras
 | `GET` | `/node/identity` | public-safe | Public-safe node metadata. No hostnames, secrets or serials. |
 | `POST` | `/pair` | local request or one-time code | Return pairing token for protected local routes. |
 | `GET` | `/models` | paired/authenticated | Normalized live model inventory. |
+| `GET` | `/v1/models` | paired/authenticated | OpenAI-compatible alias for model inventory. |
 | `POST` | `/chat/completions` | paired/authenticated | Canonical OpenAI-compatible chat route. |
+| `POST` | `/v1/chat/completions` | paired/authenticated | OpenAI-compatible alias for generic adapters. |
 
 ## Recommended Optional Endpoints
 

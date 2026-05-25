@@ -10,6 +10,7 @@ const files = {
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   deferredCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime-deferred.css'),
   shellCss: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'),
+  connectorServer: join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'),
   mmir: join(publicDir, 'mmir.html'),
   qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml'),
   pagesWorkflow: join(root, '.github', 'workflows', 'pages.yml')
@@ -62,6 +63,7 @@ const runtime = read(files.runtime);
 const runtimeCss = read(files.runtimeCss);
 const deferredCss = read(files.deferredCss);
 const shellCss = read(files.shellCss);
+const connectorServer = read(files.connectorServer);
 const mmir = read(files.mmir);
 const workflows = `${read(files.qualityWorkflow)}\n${read(files.pagesWorkflow)}`;
 const deferredQueueMatch = mmir.match(/<script id="mimir-deferred-scripts" type="application\/json">([\s\S]*?)<\/script>/);
@@ -118,6 +120,13 @@ for (const needle of [
 
 if (activeStrip.includes('https://api.mmir.ai/nodes')) {
   fail('Active node strip must not show a managed API node as connected unless chat can actually use it.');
+}
+
+for (const needle of [
+  "url.pathname === '/v1/models'",
+  "url.pathname === '/v1/chat/completions'"
+]) {
+  requireIncludes(connectorServer, needle, `Downloadable local connector must honor advertised OpenAI-compatible aliases: ${needle}`);
 }
 
 for (const needle of [
