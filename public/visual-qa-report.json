@@ -115,6 +115,11 @@
       "id": "D297 early send replay",
       "status": "guarded",
       "evidence": "The static first-paint Send control records an immediate click and chat-runtime replays it through the automatic free route once event handlers are ready."
+    },
+    {
+      "id": "D298 startup free LLM node rail",
+      "status": "guarded",
+      "evidence": "The active-node rail now exposes every free browser/helper/WebGPU/Ollama starter from the catalog and carries selected local models into the universal installer handoff."
     }
   ],
   "known_limitations": [

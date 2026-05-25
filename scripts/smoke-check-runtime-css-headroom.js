@@ -71,7 +71,7 @@ requireIncludes(
   'chat-runtime-deferred.css?v=20260525-runtime-css-headroom-v1" media="print" onload="this.media=\'all\'" data-mimir-deferred-style',
   'MMIR page must load chat runtime helper styling as deferred CSS.'
 );
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d297-20260525-early-send-replay-v1'", 'Service worker cache must rotate for D296 runtime CSS headroom.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d298-20260525-startup-free-llm-nodes-v1'", 'Service worker cache must rotate for D296 runtime CSS headroom.');
 requireIncludes(text(files.sw), './apps/mimir-chat-portal/chat-runtime-deferred.css', 'Service worker must cache deferred runtime CSS for offline install/model helper paths.');
 
 for (const needle of [

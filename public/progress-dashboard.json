@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T18:15:35.987Z",
+  "updated_at": "2026-05-25T18:36:40.840Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 297,
+    "total": 298,
     "done": 51,
-    "beta": 221,
+    "beta": 222,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1178,9 +1178,9 @@
       },
       {
         "phase": "Chat UX / Free Models",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1495,6 +1495,12 @@
         "label": "First Send click cannot vanish",
         "status": "beta",
         "evidence": "D297 records an immediate first-paint Send click in the static shell and replays it through chat-runtime when the automatic free route is ready."
+      },
+      {
+        "id": "startup-free-llm-nodes",
+        "label": "Free LLMs are visible on startup",
+        "status": "beta",
+        "evidence": "D298 removes the starter-rail cap, shows all free browser/helper/WebGPU/Ollama choices at startup and carries selected local models into the universal installer."
       },
       {
         "id": "local-node-package",
@@ -10920,6 +10926,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The static first-paint Send control now queues an immediate click and chat-runtime replays it through the guarded free-route send path once handlers are ready.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D298",
+      "phase": "Chat UX / Free Models",
+      "priority": "P0",
+      "work_package": "Startup free LLM node rail",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Promote the full free starter catalog into the startup active-node rail, remove the hard-coded 14-item cap, and carry selected installable Ollama models directly into the universal installer",
+      "best_practice": "New users should see many free choices immediately and install/connect a chosen local model without hunting through deeper panels",
+      "done_when": "Smoke gates prove browser helpers, WebGPU models and all installable Ollama starters appear as startup choices, selected install models are preserved in installer handoff, cache rotates and no paid route starts",
+      "covers": "chat, free-models, activation, local-node, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.",
       "estimate": "Verify + polish"
     }
   ]

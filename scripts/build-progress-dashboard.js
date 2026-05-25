@@ -282,7 +282,8 @@ const overrides = new Map([
   ['D294', { status: 'beta', evidence: 'The first-paint composer now exposes a compact plus fallback and circular arrow send affordance, then hides the fallback plus when the richer Open WebUI-style dock is ready.' }],
   ['D295', { status: 'beta', evidence: 'Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.' }],
   ['D296', { status: 'beta', evidence: 'Runtime model-helper and install-status styling now loads as deferred CSS, restoring first-paint blocking CSS headroom under a tighter 67 KB guard.' }],
-  ['D297', { status: 'beta', evidence: 'The static first-paint Send control now queues an immediate click and chat-runtime replays it through the guarded free-route send path once handlers are ready.' }]
+  ['D297', { status: 'beta', evidence: 'The static first-paint Send control now queues an immediate click and chat-runtime replays it through the guarded free-route send path once handlers are ready.' }],
+  ['D298', { status: 'beta', evidence: 'The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.' }]
 ]);
 
 const repoMeta = [
@@ -813,6 +814,12 @@ function buildLaunchProgress() {
       label: 'First Send click cannot vanish',
       status: 'beta',
       evidence: 'D297 records an immediate first-paint Send click in the static shell and replays it through chat-runtime when the automatic free route is ready.'
+    },
+    {
+      id: 'startup-free-llm-nodes',
+      label: 'Free LLMs are visible on startup',
+      status: 'beta',
+      evidence: 'D298 removes the starter-rail cap, shows all free browser/helper/WebGPU/Ollama choices at startup and carries selected local models into the universal installer.'
     },
     {
       id: 'local-node-package',

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d297-20260525-early-send-replay-v1';
+const CACHE_NAME='mmir-pwa-d298-20260525-startup-free-llm-nodes-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -13,6 +13,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/chat-runtime-deferred.css',
   './apps/mimir-chat-portal/backend-profiles-critical.js',
+  './apps/mimir-chat-portal/active-node-strip.js',
   './apps/mimir-chat-portal/composer-autosize.js',
   './apps/mimir-chat-portal/composer-stop-handoff.js',
   './apps/mimir-chat-portal/transcript-scroll-guard.js',

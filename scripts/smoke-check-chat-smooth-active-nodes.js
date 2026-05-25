@@ -84,19 +84,25 @@ for (const needle of [
   "node.id==='managed-api-bootstrap'",
   'ensureManagedApiProfile',
   'function activateStarter(model)',
-  'function writeLocalInstallResume(source)',
-  'function openInstaller(source)',
+  'function writeLocalInstallResume(source,model)',
+  'function installerTarget(source,model)',
+  "params.set('starter',model.id)",
+  "params.set('model',model.model)",
+  "target:installerTarget(source,{id:starterId,model:modelId})",
+  'function openInstaller(source,model)',
   "source:'active-node-starter-rail'",
+  "openInstaller('active-node-starter-rail',model)",
   "openInstaller('active-node-local-install')",
   "openInstaller('active-node-webgpu-fallback')",
-  "w.location.href='./downloads/mmir-local-connector-install.html'",
+  'w.location.href=resume.target',
   "no_paid_routes_started:true",
   "if(action!=='install')",
   'primary-chat-link',
   'free/public-safe routes that the composer can actually use',
   'composer.parentNode.insertBefore(bar,composer.nextSibling)',
   'grid-template-columns:minmax(150px,1fr) auto',
-  'display:flex;gap:.42rem;overflow:auto'
+  'display:flex;gap:.42rem;overflow:auto',
+  'data-free-starter-count'
 ]) {
   requireIncludes(activeStrip, needle, `Active node strip must wire real chat routes: ${needle}`);
 }
@@ -145,7 +151,7 @@ for (const needle of [
   requireIncludes(runtimeCss, needle, `Runtime CSS must keep a smooth transcript surface: ${needle}`);
 }
 
-requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-critical-active-routes-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
+requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-startup-free-llm-nodes-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
 requireIncludes(mmir, 'Press send to start automatically', 'Composer placeholder must tell users they can start without setup or typing.');
 if (deferredQueue.some((item) => String(item).includes('active-node-strip.js'))) {
   fail('Active chat node strip must not wait for the deferred feature queue.');

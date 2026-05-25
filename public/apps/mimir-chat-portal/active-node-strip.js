@@ -105,16 +105,24 @@
   }
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||'personal';}
   function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
-  function writeLocalInstallResume(source){
-    const resume={source:String(source||'active-strip'),status:'pending',target:'#local-connector',starter_id:'ollama-qwen3-06b',model:'qwen3:0.6b',next_action:'installer-return-proof',at:new Date().toISOString(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored:false,raw_response_stored:false};
+  function installerTarget(source,model){
+    const params=new URLSearchParams({source:String(source||'active-strip')});
+    if(model?.id)params.set('starter',model.id);
+    if(model?.model)params.set('model',model.model);
+    return './downloads/mmir-local-connector-install.html?'+params.toString();
+  }
+  function writeLocalInstallResume(source,model){
+    const starterId=model?.id||'ollama-qwen3-06b';
+    const modelId=model?.model||'qwen3:0.6b';
+    const resume={source:String(source||'active-strip'),status:'pending',target:installerTarget(source,{id:starterId,model:modelId}),starter_id:starterId,model:modelId,next_action:'installer-download',at:new Date().toISOString(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored:false,raw_response_stored:false};
     try{localStorage.setItem(repairResumeKey(),JSON.stringify(resume));}catch(error){}
     w.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
     return resume;
   }
-  function openInstaller(source){
+  function openInstaller(source,model){
     w.MimirBackendProfiles?.ensureFreeLocalProfile?.();
-    writeLocalInstallResume(source);
-    w.location.href='./downloads/mmir-local-connector-install.html';
+    const resume=writeLocalInstallResume(source,model);
+    w.location.href=resume.target;
   }
   function bestNode(nodes,selected){
     const label=String(selected.label||'');
@@ -163,9 +171,9 @@
   }
   function starterRail(){
     if(!starterModels.length)return '';
-    const visible=starterModels.filter(model=>['browser-guide','webllm','ollama'].includes(model.runtime)).slice(0,14);
+    const visible=starterModels.filter(model=>['browser-guide','webllm','ollama'].includes(model.runtime));
     if(!visible.length)return '';
-    return '<div class="mmir-active-starter-rail" aria-label="Free model starters">'+visible.map(model=>
+    return '<div class="mmir-active-starter-rail" aria-label="Free model starters" data-free-starter-count="'+String(visible.length)+'">'+visible.map(model=>
       '<button type="button" data-active-starter-id="'+safe(model.id)+'" data-starter-runtime="'+safe(model.runtime)+'" title="'+safe(model.install_note||model.best_for||model.label)+'">'+safe(starterLabel(model))+'</button>'
     ).join('')+'</div>';
   }
@@ -174,6 +182,10 @@
     const action=starterAction(model);
     w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:model.id,action,source:'active-node-starter-rail',free:true,no_paid_routes_started:true}}));
     const promptEl=q('#mimir-prompt');
+    if(action==='install'&&!localReady()){
+      openInstaller('active-node-starter-rail',model);
+      return;
+    }
     if(action!=='install'){
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.value='Start a free chat with '+(model.label||model.id)+'. Tell me what is active.';
