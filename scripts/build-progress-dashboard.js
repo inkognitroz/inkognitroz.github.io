@@ -697,6 +697,12 @@ function buildLaunchProgress() {
       evidence: 'Critical active-node JavaScript remains under budget after more free WebGPU routes; quality gates report 161646 external JS bytes and 166012 total first-paint JS bytes.'
     },
     {
+      id: 'composer-autosize',
+      label: 'Chat composer feels smooth',
+      status: 'beta',
+      evidence: 'The main composer now auto-grows, caps long prompts cleanly and resets after send/model actions without adding critical first-paint JavaScript.'
+    },
+    {
       id: 'zero-trust-public',
       label: 'Public site stays secret-free',
       status: 'done',
@@ -726,6 +732,12 @@ function buildLaunchProgress() {
     local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
     checkpoints,
     last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: '739a663',
+        label: 'Open WebUI-style auto-growing composer',
+        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+      },
       {
         repo: 'inkognitroz.github.io',
         commit: 'fd8162b',
