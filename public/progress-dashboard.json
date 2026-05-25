@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T01:46:51.652Z",
+  "updated_at": "2026-05-25T01:53:31.150Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 267,
+    "total": 268,
     "done": 51,
-    "beta": 191,
+    "beta": 192,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1228,6 +1228,16 @@
       },
       {
         "phase": "Local Install / Cross-OS",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Chat UX / Focus",
         "total": 1,
         "done": 0,
         "beta": 1,
@@ -9730,6 +9740,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Universal installer page can now generate selected-model wrappers for Windows, Linux and Raspberry Pi, preserving MMIR_MODEL across the local-node handoff without paid services.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D268",
+      "phase": "Chat UX / Focus",
+      "priority": "P0",
+      "work_package": "Post-first-message chat focus mode",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the chat surface quieter after the first user/assistant message by hiding prompt suggestions and collapsing active-node details to a compact status strip",
+      "best_practice": "ChatGPT/Open WebUI-like flow should focus on the conversation once it starts, while still keeping route status visible",
+      "done_when": "CSS and smoke gates prove post-chat state hides secondary suggestions and active-node grids without removing first-screen activation controls",
+      "covers": "chat, open-webui-parity, usability, focus, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "After a conversation starts, chat focus mode hides quick suggestions and collapses active-node details so the transcript and composer stay primary.",
       "estimate": "Verify + polish"
     }
   ]

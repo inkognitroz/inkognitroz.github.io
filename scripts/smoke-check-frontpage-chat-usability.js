@@ -44,8 +44,8 @@ const pagesWorkflow = read(files.pagesWorkflow);
 const qualityWorkflow = read(files.qualityWorkflow);
 
 requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontpage must keep the chat-first shell class.');
-requireIncludes(html, 'mimir-chat-portal.css?v=20260525-critical-active-routes-v1', 'MMIR frontpage must ship the fresh chat order CSS cache key.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d257-20260525-launch-progress-v1'", 'Service worker cache must be bumped for the frontpage usability fix.');
+requireIncludes(html, 'mimir-chat-portal.css?v=20260525-chat-focus-v1', 'MMIR frontpage must ship the fresh chat focus CSS cache key.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d268-20260525-chat-focus-v1'", 'Service worker cache must be bumped for the chat focus fix.');
 
 for (const needle of [
   '.mimir-chat-first .mimir-greeting{order:1}',
@@ -57,6 +57,13 @@ for (const needle of [
   '.mimir-chat-first #use-case-templates,.mimir-chat-first #free-value-loops,.mimir-chat-first #first-run-onboarding,.mimir-chat-first #growth-demo{order:20}'
 ]) {
   requireIncludes(css, needle, `Frontpage chat-first CSS order missing: ${needle}`);
+}
+
+for (const needle of [
+  '.mimir-has-chat .quick-suggestions{display:none;order:4}',
+  '.mimir-has-chat #mmir-active-nodes-bar .mmir-active-starter-rail,.mimir-has-chat #mmir-active-nodes-bar .mmir-active-node-grid{display:none}'
+]) {
+  requireIncludes(css, needle, `Post-first-message focus mode missing: ${needle}`);
 }
 
 requireBefore(css, '.mimir-chat-first .mimir-composer{order:2}', '.mimir-chat-first #mmir-active-nodes-bar{order:3}', 'Composer must stay directly above active route choices.');

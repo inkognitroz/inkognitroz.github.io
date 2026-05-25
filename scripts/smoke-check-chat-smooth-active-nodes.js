@@ -110,6 +110,8 @@ for (const needle of [
   '.mimir-has-chat #mimir-chat-runtime{order:2}',
   '.mimir-has-chat .mimir-composer{order:3;position:sticky',
   '.mimir-has-chat .mimir-greeting{display:none}',
+  '.mimir-has-chat .quick-suggestions{display:none;order:4}',
+  '.mimir-has-chat #mmir-active-nodes-bar .mmir-active-starter-rail,.mimir-has-chat #mmir-active-nodes-bar .mmir-active-node-grid{display:none}',
   '.mimir-chat-first #mmir-active-nodes-bar{order:3}',
   '.mimir-chat-first #runtime-context-controls,.mimir-chat-first #mimir-chat-runtime{order:4}'
 ]) {

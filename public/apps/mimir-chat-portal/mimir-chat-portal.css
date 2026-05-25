@@ -27,5 +27,6 @@ body.mimir-public-chat::before{display:none}body.mimir-public-chat a{color:var(-
 .mimir-has-chat .mimir-greeting{display:none}
 .mimir-has-chat #mimir-chat-runtime{order:2}
 .mimir-has-chat .mimir-composer{order:3;position:sticky;bottom:calc(.85rem + env(safe-area-inset-bottom));z-index:20}
-.mimir-has-chat .quick-suggestions{order:4}
+.mimir-has-chat .quick-suggestions{display:none;order:4}
 .mimir-has-chat #mmir-active-nodes-bar{order:5}
+.mimir-has-chat #mmir-active-nodes-bar .mmir-active-starter-rail,.mimir-has-chat #mmir-active-nodes-bar .mmir-active-node-grid{display:none}
