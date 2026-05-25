@@ -6,11 +6,12 @@ const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const indexPath = join(publicDir, 'index.html');
-const externalInitialJsByteBudget = 146500;
+const externalInitialJsByteBudget = 162000;
 const inlineFirstPaintJsByteBudget = 5000;
-const totalFirstPaintJsByteBudget = 151500;
+const totalFirstPaintJsByteBudget = 167000;
 const cacheKey = '20260524-quiet-first-paint-v3';
-const runtimeCacheKey = '20260524-first-chat-p0-v1';
+const runtimeCacheKey = '20260525-critical-active-routes-v1';
+const activeRoutesCacheKey = '20260525-critical-active-routes-v1';
 const runtimeFixKey = '20260524-first-chat-p0-v1';
 
 function fail(message) {
@@ -118,6 +119,7 @@ for (const src of deferredScripts) {
 for (const required of [
   `./apps/mimir-chat-portal/api-client.js?v=${cacheKey}`,
   `./apps/mimir-chat-portal/chat-runtime.js?v=${runtimeCacheKey}`,
+  `./apps/mimir-chat-portal/active-node-strip.js?v=${activeRoutesCacheKey}`,
   `./apps/mimir-chat-portal/first-impression.js?v=${cacheKey}`,
   './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
   `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`

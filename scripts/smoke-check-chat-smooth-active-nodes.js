@@ -45,6 +45,13 @@ const runtimeCss = read(files.runtimeCss);
 const shellCss = read(files.shellCss);
 const mmir = read(files.mmir);
 const workflows = `${read(files.qualityWorkflow)}\n${read(files.pagesWorkflow)}`;
+const deferredQueueMatch = mmir.match(/<script id="mimir-deferred-scripts" type="application\/json">([\s\S]*?)<\/script>/);
+let deferredQueue = [];
+try {
+  deferredQueue = deferredQueueMatch ? JSON.parse(deferredQueueMatch[1]) : [];
+} catch (error) {
+  fail(`Deferred queue must remain valid JSON: ${error.message}`);
+}
 
 for (const needle of [
   "const MANIFEST_URL='./active-chat-nodes.json'",
@@ -60,7 +67,10 @@ for (const needle of [
   "source:'active-node-starter-rail'",
   "if(action!=='install')",
   'primary-chat-link',
-  'free/public-safe routes that the composer can actually use'
+  'free/public-safe routes that the composer can actually use',
+  'composer.parentNode.insertBefore(bar,composer.nextSibling)',
+  'grid-template-columns:minmax(150px,1fr) auto',
+  'display:flex;gap:.42rem;overflow:auto'
 ]) {
   requireIncludes(activeStrip, needle, `Active node strip must wire real chat routes: ${needle}`);
 }
@@ -82,7 +92,9 @@ for (const needle of [
 for (const needle of [
   '.mimir-has-chat #mimir-chat-runtime{order:2}',
   '.mimir-has-chat .mimir-composer{order:3;position:sticky',
-  '.mimir-has-chat .mimir-greeting{display:none}'
+  '.mimir-has-chat .mimir-greeting{display:none}',
+  '.mimir-chat-first #mmir-active-nodes-bar{order:3}',
+  '.mimir-chat-first #runtime-context-controls,.mimir-chat-first #mimir-chat-runtime{order:4}'
 ]) {
   requireIncludes(shellCss, needle, `Chat-first shell CSS must become transcript-first after first message: ${needle}`);
 }
@@ -95,7 +107,10 @@ for (const needle of [
   requireIncludes(runtimeCss, needle, `Runtime CSS must keep a smooth transcript surface: ${needle}`);
 }
 
-requireIncludes(mmir, './apps/mimir-chat-portal/active-node-strip.js?v=20260525-free-model-rail-v1', 'MMIR page must load the active chat node strip with the free-model rail cache key.');
+requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-critical-active-routes-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
+if (deferredQueue.some((item) => String(item).includes('active-node-strip.js'))) {
+  fail('Active chat node strip must not wait for the deferred feature queue.');
+}
 requireIncludes(mmir, 'if(u.origin===location.origin)return false', 'Quiet local probe guard must allow same-origin static JSON/assets on localhost dev servers.');
 requireIncludes(workflows, 'smoke-check-chat-smooth-active-nodes.js', 'GitHub workflows must run the smooth active-node chat gate.');
 

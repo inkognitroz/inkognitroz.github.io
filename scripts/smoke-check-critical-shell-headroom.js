@@ -75,14 +75,16 @@ for (const needle of [
 }
 
 for (const needle of [
-  'externalInitialJsByteBudget = 146500',
+  'externalInitialJsByteBudget = 162000',
   'inlineFirstPaintJsByteBudget = 5000',
-  'totalFirstPaintJsByteBudget = 151500',
+  'totalFirstPaintJsByteBudget = 167000',
   'inlineExecutableScripts(html)',
   'inlineFirstPaintJsBytes',
   'totalFirstPaintJsBytes',
   "const cacheKey = '20260524-quiet-first-paint-v3'",
+  "const activeRoutesCacheKey = '20260525-critical-active-routes-v1'",
   './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
+  './apps/mimir-chat-portal/active-node-strip.js?v=${activeRoutesCacheKey}',
   './apps/mimir-chat-portal/first-impression.js?v=${cacheKey}',
   'Critical first-journey script must load immediately'
 ]) {

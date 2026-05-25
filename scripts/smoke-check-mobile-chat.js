@@ -23,16 +23,17 @@ requireCss('.mimir-topbar{position:sticky', 'Mobile top navigation must stay com
 requireCss('grid-template-columns:repeat(5,minmax(0,1fr))', 'Mobile top navigation must fit core actions into one row.');
 requireCss('.mimir-topbar nav>a:nth-of-type(n+5){display:none}', 'Mobile top navigation must hide secondary links behind More.');
 requireCss('.mimir-composer{order:2', 'Mobile composer must appear before Ground Zero and secondary panels.');
-requireCss('.mimir-chat-runtime{order:3', 'Mobile live chat runtime must stay directly after the composer.');
-requireCss('.quick-suggestions{order:4', 'Mobile quick actions must stay above secondary content.');
-requireCss('.mimir-instant-start{order:5', 'Ground Zero card must not push the chat below the first mobile screen.');
+requireCss('.mimir-chat-first #mmir-active-nodes-bar{order:3}', 'Mobile active model/node choices must stay directly after the composer.');
+requireCss('.mimir-chat-first #runtime-context-controls,.mimir-chat-first #mimir-chat-runtime{order:4}', 'Mobile live chat runtime must stay directly after active route choices.');
+requireCss('.mimir-chat-first .quick-suggestions{order:5', 'Mobile quick actions must stay above secondary content.');
+requireCss('.mimir-chat-first #mimir-instant-start{order:6', 'Ground Zero card must not push the chat below the first mobile screen.');
 requireCss('env(safe-area-inset-bottom)', 'Mobile layout must respect browser/device bottom safe area.');
 
-if (!html.includes('mimir-chat-portal.css?v=20260525-front-chat-order-v1')) {
+if (!html.includes('mimir-chat-portal.css?v=20260525-critical-active-routes-v1')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d254-20260525-free-model-rail-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d255-20260525-critical-active-routes-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

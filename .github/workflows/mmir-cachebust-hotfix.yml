@@ -39,11 +39,12 @@ jobs:
             if (!html.includes(marker)) throw new Error('MMIR page missing chat script marker');
             html = html.replace(marker, `${chatFirst}\n  ${marker}`);
           }
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260525-front-chat-order-v1');
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260524-first-chat-p0-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260525-critical-active-routes-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260525-critical-active-routes-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/runtime-controls-fix\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-first-chat-p0-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g, './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3');
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/active-node-strip\.js(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/active-node-strip.js?v=20260524-active-node-api-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/active-node-strip\.js(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/active-node-strip.js?v=20260525-critical-active-routes-v1');
+          html = html.replace(/\n    \"\.\/apps\/mimir-chat-portal\/active-node-strip\.js\?v=20260525-critical-active-routes-v1\",/, '');
           html = html.replace(
             /<a id="primary-chat-link" class="btn btn-primary disabled" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Send<\/a>/,
             '<button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to the active route">Send</button>'
@@ -83,7 +84,8 @@ jobs:
 
           let performanceSmoke = fs.readFileSync(performanceSmokePath, 'utf8');
           performanceSmoke = performanceSmoke
-            .replace("const runtimeCacheKey = '20260524-mobile-sticky-v1';", "const runtimeCacheKey = '20260524-first-chat-p0-v1';")
+            .replace("const runtimeCacheKey = '20260524-mobile-sticky-v1';", "const runtimeCacheKey = '20260525-critical-active-routes-v1';")
+            .replace("const runtimeCacheKey = '20260524-first-chat-p0-v1';", "const runtimeCacheKey = '20260525-critical-active-routes-v1';")
             .replace("const runtimeFixKey = '20260524-local-probe-v5';", "const runtimeFixKey = '20260524-first-chat-p0-v1';");
           fs.writeFileSync(performanceSmokePath, performanceSmoke, 'utf8');
 
@@ -107,7 +109,7 @@ jobs:
           if (finalRuntime.includes("bubble.scrollIntoView({block:'nearest'});")) throw new Error('Bubble scrollIntoView still present');
           if (!finalRuntime.includes('transcriptEl.scrollTop=transcriptEl.scrollHeight')) throw new Error('Transcript-only scroll missing');
           if (!finalCss.includes('position:sticky') || !finalCss.includes('scroll-margin-top:96px')) throw new Error('Mobile sticky composer CSS missing');
-          if (!finalHtml.includes('mimir-chat-portal.css?v=20260525-front-chat-order-v1')) throw new Error('CSS cache bust missing');
+          if (!finalHtml.includes('mimir-chat-portal.css?v=20260525-critical-active-routes-v1')) throw new Error('CSS cache bust missing');
           if (finalHtml.includes('data-mimir-chat-first')) throw new Error('Inline chat-first scroll should stay external');
           if (!finalHtml.includes('chat-first-scroll.js?v=20260524-chat-first-scroll-v1')) throw new Error('External chat-first scroll missing');
           if (!finalRuntime.includes('let starterModels=fallbackStarterModels();')) throw new Error('Synchronous free starter route missing');
@@ -115,9 +117,10 @@ jobs:
           if (!finalRuntime.includes('const refreshedStarter=starterFromValue(model);')) throw new Error('Refreshed starter first-chat fallback missing');
           if (!finalRuntimeFix.includes("if(link.tagName==='BUTTON')")) throw new Error('Button send repair missing');
           if (!finalHtml.includes('<button id="primary-chat-link" type="submit"')) throw new Error('Primary chat control must be a real submit button');
-          if (!finalHtml.includes('chat-runtime.js?v=20260524-first-chat-p0-v1')) throw new Error('Runtime cache bust missing');
+          if (!finalHtml.includes('chat-runtime.js?v=20260525-critical-active-routes-v1')) throw new Error('Runtime cache bust missing');
           if (!finalHtml.includes('runtime-controls-fix.js?v=20260524-first-chat-p0-v1')) throw new Error('Runtime fix cache bust missing');
-          if (!finalHtml.includes('active-node-strip.js?v=20260524-active-node-api-v1')) throw new Error('Active node strip cache bust missing');
+          if (!finalHtml.includes('active-node-strip.js?v=20260525-critical-active-routes-v1')) throw new Error('Active node strip cache bust missing');
+          if (finalHtml.includes('"./apps/mimir-chat-portal/active-node-strip.js')) throw new Error('Active node strip must be critical, not deferred');
           NODE
       - name: Commit and push hotfix
         run: |

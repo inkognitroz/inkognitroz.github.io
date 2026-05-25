@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T23:46:50.984Z",
+  "updated_at": "2026-05-24T23:57:48.750Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -9261,7 +9261,7 @@
       "covers": "chat, open-webui-parity, mac, installer, activation, no-spend",
       "status": "next",
       "status_note": "Next implementation slice for Codex work.",
-      "evidence": "Chat slice now has public-safe active routes, a free model starter rail and tested WebGPU/local-node handoff. Mac installer QA now documents the app-bundle DMG contract without publishing a fake artifact. Continue deeper Open WebUI polish and real-device release QA.",
+      "evidence": "Current launch-critical slice: chat now has critical compact active route chips directly under the composer, public-safe free model starters, tested WebGPU/local-node handoff and Mac app-bundle DMG contract evidence without publishing a fake artifact. Continue real-device release QA and deeper Open WebUI polish.",
       "estimate": "2-6h"
     },
     {
