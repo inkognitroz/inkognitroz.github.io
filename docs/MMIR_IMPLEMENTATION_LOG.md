@@ -251,6 +251,7 @@ Updated: 2026-05-23
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads as critical chat UI with compact route chips directly under the composer, so free browser/WebGPU/local-node choices are visible before secondary platform sections.
 - D254 chat polish is tightened again: active routes no longer wait for the deferred feature queue, mobile/desktop order keeps composer -> active routes -> runtime proof, and the performance budget was raised narrowly for this critical model-choice code.
+- Composer model picker now puts three user-fit choices first: Chat now, Browser LLM and Install local. Full model lists remain below, and all choices preserve the no-paid-route boundary.
 - Review follow-ups `D255-D256` were added for inline critical-shell budget accounting and DOM rendering hardening across escaped dynamic UI surfaces.
 - D255 is now beta: performance and critical-shell recovery gates count inline executable first-paint JavaScript separately from external critical scripts and enforce a combined first-paint JS budget.
 - D256 is now beta: a focused DOM rendering hardening gate protects core chat, active route strip, model picker and safe sharing surfaces from raw dynamic HTML regressions, and both deploy/quality workflows run it.

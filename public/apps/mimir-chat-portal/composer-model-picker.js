@@ -66,6 +66,29 @@
     if(runtime==='ollama'||starterId(value))return {state:'install',label:'Free local install',action:'Install / prove',detail:'Installs through MMIR Local Node and Ollama.'};
     return {state:'planned',label:'Model option',action:'Use',detail:'Select without starting paid compute.'};
   }
+  function starterByRuntime(runtime){
+    return starterModels.find(model=>model.runtime===runtime)||null;
+  }
+  function firstInstallableStarter(){
+    return starterModels.find(model=>model.runtime==='ollama'&&String(model.status||'').includes('installable'))||
+      starterModels.find(model=>model.runtime==='ollama')||
+      null;
+  }
+  function recommendationCards(){
+    const guide=starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
+    const webgpu=starterByRuntime('webllm');
+    const local=firstInstallableStarter();
+    const items=[
+      guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'select',state:'ready'},
+      webgpu&&{id:'browser-llm',label:'Browser LLM',detail:'Real local browser model when WebGPU is available. First use downloads weights.',model:webgpu,action:'select',state:'ready'},
+      local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'}
+    ].filter(Boolean);
+    return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>
+      '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(starterValue(item.model))+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'">'+
+        '<strong>'+escapeHtml(item.label)+'</strong><span>'+escapeHtml(cleanTitle(item.model.label,item.model.id))+'</span><small>'+escapeHtml(item.detail)+'</small>'+
+      '</button>'
+    ).join('')+'</div>';
+  }
   function ensurePicker(){
     if(picker)return picker;
     const form=document.querySelector('.mimir-composer');
@@ -110,7 +133,7 @@
       el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose a model</strong><p>MMIR is loading free browser and local model routes. No paid route starts here.</p></div><a href="#model-library">Full library</a></div>';
       return;
     }
-    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><a href="#model-library">Full library</a></div><div class="composer-model-picker-grid">'+options.map(card).join('')+'</div>';
+    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><a href="#model-library">Full library</a></div>'+recommendationCards()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div>';
     el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>toggle(false));
     el.querySelectorAll('[data-picker-model-value]').forEach(button=>{
       button.addEventListener('click',()=>selectModel(button.getAttribute('data-picker-model-value')||'',button.getAttribute('data-picker-action')||'select'));

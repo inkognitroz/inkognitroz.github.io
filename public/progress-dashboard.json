@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-24T23:57:48.750Z",
+  "updated_at": "2026-05-25T00:12:57.623Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -8496,7 +8496,7 @@
       "covers": "chat UX, model UX, activation",
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
-      "evidence": "The chat composer now has a compact model picker from the plus/model chip, showing live, browser-helper, WebGPU and installable free local model routes with no paid-route side effects.",
+      "evidence": "The chat composer now has a compact model picker from the plus/model chip, with recommended Chat now, Browser LLM and Install local paths above live, browser-helper, WebGPU and installable free local model routes with no paid-route side effects.",
       "estimate": "Verify + polish"
     },
     {

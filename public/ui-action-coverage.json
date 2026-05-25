@@ -81,8 +81,8 @@
       "surface": "Model selector and catalog",
       "status": "live",
       "user_result": "Live backend models are preferred automatically; browser helpers, WebGPU models and installable free Ollama models remain visible with license/source guidance.",
-      "selectors": ["#runtime-model", "#runtime-model-chip", "#composer-model-picker", "[data-picker-model-value]", "#model-library-grid", "[data-recommended-starter]", "[data-starter-id]"],
-      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "MimirComposerModelPicker", "selectModel(value,action)", "composer-model-picker", "data-picker-model-value", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "no_paid_routes_started:true"]
+      "selectors": ["#runtime-model", "#runtime-model-chip", "#composer-model-picker", "[data-picker-recommend]", "[data-picker-model-value]", "#model-library-grid", "[data-recommended-starter]", "[data-starter-id]"],
+      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "MimirComposerModelPicker", "recommendationCards", "Chat now", "Browser LLM", "Install local", "selectModel(value,action)", "composer-model-picker", "data-picker-recommend", "data-picker-model-value", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "no_paid_routes_started:true"]
     },
     {
       "id": "one-click-model-install",
