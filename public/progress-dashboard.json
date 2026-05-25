@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T03:56:21.625Z",
+  "updated_at": "2026-05-25T04:25:35.296Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 272,
+    "total": 273,
     "done": 51,
-    "beta": 196,
+    "beta": 197,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1248,9 +1248,9 @@
       },
       {
         "phase": "Chat UX / Composer",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1260,7 +1260,7 @@
   },
   "launch_progress": {
     "title": "P0 launch progress",
-    "percent": 77,
+    "percent": 76,
     "state": "building",
     "summary": "The free chat and local-first activation path is moving, but it is not complete until real browser/device QA and D254 polish are green.",
     "public_url": "./mmir.html#progress-dashboard",
@@ -1343,6 +1343,12 @@
         "label": "New chat is in the composer",
         "status": "beta",
         "evidence": "The composer now has a New chat shortcut that reuses the runtime clear path, blocks while streaming and refocuses the prompt."
+      },
+      {
+        "id": "composer-keyboard-shortcuts",
+        "label": "Keyboard flow feels modern",
+        "status": "beta",
+        "evidence": "Escape stops a running answer and Ctrl/Cmd+K focuses the composer through existing controls without adding critical first-paint JavaScript."
       },
       {
         "id": "transcript-scroll-guard",
@@ -9873,6 +9879,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D273",
+      "phase": "Chat UX / Composer",
+      "priority": "P0",
+      "work_package": "Composer keyboard flow",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add deferred keyboard handling so Escape stops a running answer and Ctrl/Cmd+K focuses the prompt without adding critical first-paint JavaScript",
+      "best_practice": "Modern chat users expect the conversation to be controllable without moving through secondary controls, while MMIR must stay calm, fast and accessible",
+      "done_when": "Smoke gates prove stop/focus shortcuts call existing runtime controls, avoid paid/backend side effects and keep the service worker cache current",
+      "covers": "chat, composer, keyboard, open-webui-parity, accessibility, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.",
       "estimate": "Verify + polish"
     }
   ]

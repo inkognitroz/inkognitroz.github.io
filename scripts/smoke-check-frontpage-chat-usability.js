@@ -9,6 +9,7 @@ const files = {
   composerStop: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-stop-handoff.js'),
   transcriptScrollGuard: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'transcript-scroll-guard.js'),
   composerNewChat: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-new-chat.js'),
+  composerKeyboard: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-keyboard-shortcuts.js'),
   runtimeCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspacesCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workspaces.css'),
   sw: join(resolve(root, 'public'), 'sw.js'),
@@ -45,6 +46,7 @@ const composerAutosize = read(files.composerAutosize);
 const composerStop = read(files.composerStop);
 const transcriptScrollGuard = read(files.transcriptScrollGuard);
 const composerNewChat = read(files.composerNewChat);
+const composerKeyboard = read(files.composerKeyboard);
 const runtimeCss = read(files.runtimeCss).replace(/\s+/g, ' ');
 const workspacesCss = read(files.workspacesCss).replace(/\s+/g, ' ');
 const sw = read(files.sw);
@@ -57,8 +59,9 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-autosize.js', 'Composer
 requireIncludes(html, './apps/mimir-chat-portal/composer-stop-handoff.js', 'Composer stop handoff must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/transcript-scroll-guard.js', 'Transcript scroll guard must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-new-chat.js', 'Composer new chat shortcut must load through the deferred queue.');
+requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js', 'Composer keyboard shortcuts must load through the deferred queue.');
 requireIncludes(html, 'chat-runtime.css?v=20260525-composer-new-chat-v1', 'Chat runtime CSS must be cache-busted for composer new chat polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d272-20260525-composer-new-chat-v1'", 'Service worker cache must be bumped for the composer new chat fix.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d273-20260525-composer-keyboard-v1'", 'Service worker cache must be bumped for the composer keyboard shortcut fix.');
 
 for (const needle of [
   'resize:none',
@@ -133,6 +136,17 @@ for (const needle of [
 }
 
 requireIncludes(runtimeCss, '.composer-new-chat-button', 'Composer new chat button needs visible styling.');
+
+for (const needle of [
+  "event.key==='Escape'",
+  "q('#runtime-stop')?.click()",
+  "event.key.toLowerCase()==='k'",
+  'prompt.focus({preventScroll:true})',
+  'window.MimirAutosizeComposer?.()',
+  'event.preventDefault()'
+]) {
+  requireIncludes(composerKeyboard, needle, `Composer keyboard shortcuts must keep stop/focus behavior: ${needle}`);
+}
 
 for (const needle of [
   '.mimir-has-chat .quick-suggestions{display:none;order:4}',

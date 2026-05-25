@@ -255,7 +255,8 @@ const overrides = new Map([
   ['D269', { status: 'beta', evidence: 'The main composer now auto-grows like a modern chat surface, caps height cleanly and resets after send/model actions through CSS plus a deferred fallback script without adding critical first-paint JavaScript.' }],
   ['D270', { status: 'beta', evidence: 'The main composer action now hands off to the existing stop control while a cancellable response is running, giving the primary button an Open WebUI/ChatGPT-like stop state without adding critical first-paint JavaScript.' }],
   ['D271', { status: 'beta', evidence: 'A deferred transcript scroll guard now keeps new messages pinned to bottom by default, preserves scroll position when the user reads older context and exposes a Latest jump action without adding critical first-paint JavaScript.' }],
-  ['D272', { status: 'beta', evidence: 'A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.' }]
+  ['D272', { status: 'beta', evidence: 'A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.' }],
+  ['D273', { status: 'beta', evidence: 'A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.' }]
 ]);
 
 const repoMeta = [
@@ -704,6 +705,12 @@ function buildLaunchProgress() {
       label: 'New chat is in the composer',
       status: 'beta',
       evidence: 'The composer now has a New chat shortcut that reuses the runtime clear path, blocks while streaming and refocuses the prompt.'
+    },
+    {
+      id: 'composer-keyboard-shortcuts',
+      label: 'Keyboard flow feels modern',
+      status: 'beta',
+      evidence: 'Escape stops a running answer and Ctrl/Cmd+K focuses the composer through existing controls without adding critical first-paint JavaScript.'
     },
     {
       id: 'transcript-scroll-guard',

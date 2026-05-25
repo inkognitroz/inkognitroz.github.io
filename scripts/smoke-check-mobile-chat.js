@@ -33,7 +33,7 @@ if (!html.includes('mimir-chat-portal.css?v=20260525-composer-stop-v1')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d272-20260525-composer-new-chat-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d273-20260525-composer-keyboard-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 
