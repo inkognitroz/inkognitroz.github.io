@@ -135,6 +135,11 @@
       "id": "D301 active node style headroom split",
       "status": "guarded",
       "evidence": "The active-node rail keeps only minimal first-paint layout in JavaScript while deferred runtime CSS owns the polished badges, setup-state chips, cards and mobile adjustments."
+    },
+    {
+      "id": "D303 expanded free node and LLM catalog",
+      "status": "guarded",
+      "evidence": "The active-node rail now includes local OpenAI-compatible LM Studio, llama.cpp and vLLM adapters, plus the startup model picker has at least 28 no-spend chat starters before paid/provider routes."
     }
   ],
   "known_limitations": [

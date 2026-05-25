@@ -168,6 +168,28 @@
     writeProfiles(profiles);
     return profile;
   }
+  function upsertFreeOpenAiLocalProfile(options={}){
+    const url=cleanUrl(options.url||'http://127.0.0.1:1234');
+    const profiles=readProfiles();
+    let profile=profiles.find(p=>cleanUrl(p.url)===url&&p.provider==='openai-compatible');
+    if(!profile){
+      profile={id:uid(),createdAt:new Date().toISOString()};
+      profiles.push(profile);
+    }
+    profile.name=String(options.name||'Free local OpenAI-compatible node').slice(0,120);
+    profile.url=url;
+    profile.provider='openai-compatible';
+    profile.models=String(options.models||'auto-discovered via /v1/models').slice(0,160);
+    profile.keyRef='local/no browser secret';
+    profile.cost='free local self-hosted';
+    profile.latency='localhost';
+    profile.throughput='depends on local runtime';
+    profile.uptime='local';
+    profile.health='unknown';
+    profile.updatedAt=new Date().toISOString();
+    writeProfiles(profiles);
+    return profile;
+  }
   function createProfile(){const profile=ensureFreeLocalProfile({surface:'model-picker'});setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Pick a free route or run the installer, then Refresh models.'));render();}
   function ensureManagedApiProfile(){
     const profile=upsertManagedApiProfile();
@@ -184,6 +206,14 @@
     setStatus('Free local profile is active.');
     render();
     openBackendSettings(options.surface);
+    return profile;
+  }
+  function ensureFreeOpenAiLocalProfile(options={}){
+    const profile=upsertFreeOpenAiLocalProfile(options);
+    selectedId=profile.id;
+    writeActive(profile.id);
+    setStatus((profile.name||'Free local OpenAI-compatible node')+' is active. Refresh checks /v1/models and then chat uses /v1/chat/completions.');
+    render();
     return profile;
   }
   function ensureAutomaticDefaults(){
@@ -214,6 +244,6 @@
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
   if(refreshDashboardBtn)refreshDashboardBtn.addEventListener('click',()=>{renderDashboard();setStatus('Dashboard refreshed.');});
   window.addEventListener('mmir-backend-profiles-updated',()=>render());
-  window.MimirBackendProfiles={ensureFreeLocalProfile,ensureManagedApiProfile,ensureAutomaticDefaults};
+  window.MimirBackendProfiles={ensureFreeLocalProfile,ensureManagedApiProfile,ensureFreeOpenAiLocalProfile,ensureAutomaticDefaults};
   ensureAutomaticDefaults();render();
 })();

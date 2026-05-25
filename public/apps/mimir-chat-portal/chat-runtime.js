@@ -1610,9 +1610,12 @@
     return content;
   }
 
+  const CHAT_PATHS=['/chat/completions','/v1/chat/completions','/chat'];
+  function canonicalChatUrl(url){return joinUrl(url,'/chat/completions');}
+
   async function streamChat(url,headers,payload,signal,onText){
     let lastError=null;
-    for(const path of ['/chat/completions','/chat']){
+    for(const path of CHAT_PATHS){
       try{return await streamPath(url,path,headers,payload,signal,onText);}
       catch(error){
         lastError=error;
@@ -1623,13 +1626,17 @@
   }
 
   async function jsonChat(url,headers,payload,signal){
-    let data;
-    try{
-      data=await fetchJson(joinUrl(url,'/chat/completions'),{method:'POST',headers,body:JSON.stringify({...payload,stream:false}),timeoutMs:60000,signal});
-    }catch(error){
-      if(error.status!==404)throw error;
-      data=await fetchJson(joinUrl(url,'/chat'),{method:'POST',headers,body:JSON.stringify({...payload,stream:false}),timeoutMs:60000,signal});
+    let data=null,lastError=null;
+    for(const path of CHAT_PATHS){
+      try{
+        data=await fetchJson(joinUrl(url,path),{method:'POST',headers,body:JSON.stringify({...payload,stream:false}),timeoutMs:60000,signal});
+        break;
+      }catch(error){
+        lastError=error;
+        if(error.status!==404)throw error;
+      }
     }
+    if(!data&&lastError)throw lastError;
     return data?.choices?.[0]?.message?.content||data?.content||'';
   }
 
@@ -1809,23 +1816,22 @@
         {role:'user',content:'Reply OK.'}
       ]
     };
-    let data=null;
-    try{
-      data=await fetchJson(joinUrl(url,'/chat/completions'),{
-        method:'POST',
-        headers,
-        body:JSON.stringify(payload),
-        timeoutMs:25000
-      });
-    }catch(error){
-      if(error.status!==404)throw error;
-      data=await fetchJson(joinUrl(url,'/chat'),{
-        method:'POST',
-        headers,
-        body:JSON.stringify(payload),
-        timeoutMs:25000
-      });
+    let data=null,lastError=null;
+    for(const path of CHAT_PATHS){
+      try{
+        data=await fetchJson(joinUrl(url,path),{
+          method:'POST',
+          headers,
+          body:JSON.stringify(payload),
+          timeoutMs:25000
+        });
+        break;
+      }catch(error){
+        lastError=error;
+        if(error.status!==404)throw error;
+      }
     }
+    if(!data&&lastError)throw lastError;
     const content=String(data?.choices?.[0]?.message?.content||data?.content||'').trim();
     return content||'ok';
   }
@@ -1891,6 +1897,24 @@
     }
   }
 
+  async function optionalHealthCheck(profile,url){
+    try{return await fetchJson(joinUrl(url,'/health'),{timeoutMs:5000});}
+    catch(error){if(profile?.provider==='openai-compatible'&&error.status===404)return {status:'unknown',optional:true};throw error;}
+  }
+
+  async function fetchModelInventory(profile,url,headers){
+    const paths=['/models','/v1/models'];
+    let lastError=null;
+    for(const path of paths){
+      try{return await fetchJson(joinUrl(url,path),{headers,timeoutMs:8000});}
+      catch(error){
+        lastError=error;
+        if(error.status!==404)throw error;
+      }
+    }
+    throw lastError||new Error('No model inventory route responded.');
+  }
+
   async function refreshState(force){
     ensureSendControl();
     const profile=activeProfile();
@@ -1907,11 +1931,11 @@
     try{
       setStatus('Free browser models are ready. Checking local node in the background...','loading');
       renderLiveProof('Checking backend health and model list before tiny chat proof...','loading',baseProofItems(url));
-      await fetchJson(joinUrl(url,'/health'),{timeoutMs:5000});
+      await optionalHealthCheck(profile,url);
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
       const [models,hardware]=await Promise.all([
-        fetchJson(joinUrl(url,'/models'),{headers,timeoutMs:8000}),
+        fetchModelInventory(profile,url,headers),
         fetchJson(joinUrl(url,'/hardware'),{headers,timeoutMs:5000}).catch(()=>null)
       ]);
       const normalized=normalizeModels(models);

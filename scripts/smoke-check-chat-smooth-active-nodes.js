@@ -35,7 +35,7 @@ function requireIncludes(source, needle, message) {
 
 const manifest = JSON.parse(read(files.manifest));
 const nodes = Array.isArray(manifest.nodes) ? manifest.nodes : [];
-for (const id of ['browser-guide', 'managed-api-bootstrap', 'browser-webgpu-qwen', 'browser-webgpu-gemma', 'browser-webgpu-llama32', 'browser-webgpu-phi35', 'local-node']) {
+for (const id of ['browser-guide', 'managed-api-bootstrap', 'browser-webgpu-qwen', 'browser-webgpu-gemma', 'browser-webgpu-llama32', 'browser-webgpu-phi35', 'local-node', 'local-lm-studio', 'local-llamacpp', 'local-vllm', 'local-ollama-direct']) {
   const node = nodes.find((item) => item.id === id);
   if (!node) fail(`Active chat node manifest missing ${id}.`);
   if (node?.cost?.requires_approval !== false) fail(`Active chat node ${id} must be no-approval/free-first.`);
@@ -57,6 +57,15 @@ for (const capability of ['openai.v1.models', 'openai.v1.chat.completions', 'cha
     fail(`Active managed-api-bootstrap manifest must advertise ${capability}.`);
   }
 }
+for (const id of ['local-lm-studio', 'local-llamacpp', 'local-vllm']) {
+  const node = nodes.find((item) => item.id === id);
+  if (node?.route?.kind !== 'local-openai-compatible') fail(`Active ${id} must be a local OpenAI-compatible adapter.`);
+  for (const capability of ['openai.v1.models', 'openai.v1.chat.completions', 'local.no-key']) {
+    if (!node?.capabilities?.includes(capability)) fail(`Active ${id} must advertise ${capability}.`);
+  }
+}
+const ollamaDirect = nodes.find((item) => item.id === 'local-ollama-direct');
+if (ollamaDirect?.route?.kind !== 'ollama-direct') fail('Active local-ollama-direct must keep the native Ollama route marked separately from OpenAI-compatible adapters.');
 
 const activeStrip = read(files.activeStrip);
 const runtime = read(files.runtime);
@@ -84,8 +93,11 @@ for (const needle of [
   'localReady()',
   'webGpuReady()',
   'function needsWebGpu(node)',
+  'function isLocalAdapter(node)',
+  'function adapterUrl(node)',
   'function bestNode(nodes,selected)',
   "node.id==='managed-api-bootstrap'",
+  'ensureFreeOpenAiLocalProfile',
   'ensureManagedApiProfile',
   'function activateStarter(model)',
   'function writeLocalInstallResume(source,model)',
@@ -97,7 +109,9 @@ for (const needle of [
   "source:'active-node-starter-rail'",
   "openInstaller('active-node-starter-rail',model)",
   "openInstaller('active-node-local-install')",
+  "openInstaller('active-node-ollama-direct'",
   "openInstaller('active-node-webgpu-fallback')",
+  'mmir-free-local-adapter-selected',
   'w.location.href=resume.target',
   "no_paid_routes_started:true",
   "if(action!=='install')",
@@ -134,6 +148,10 @@ for (const needle of [
   "document.body.classList.toggle('mimir-has-chat',hasChat)",
   "transcriptEl.dataset.empty=String(!hasChat)",
   'scrollTranscriptToBottom()',
+  "['/chat/completions','/v1/chat/completions','/chat']",
+  'function optionalHealthCheck(profile,url)',
+  'function fetchModelInventory(profile,url,headers)',
+  "'/v1/models'",
   'MMIR automatically fell back to the free browser guide',
   'Free \'+s.label+\' ready. Local node optional.',
   'WebGPU unavailable; guide/install ready.',

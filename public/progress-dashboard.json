@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T20:09:46.350Z",
+  "updated_at": "2026-05-25T20:45:47.043Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 301,
+    "total": 302,
     "done": 51,
-    "beta": 225,
+    "beta": 226,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1345,6 +1345,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / Free Nodes",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1529,6 +1539,12 @@
         "label": "Active node rail keeps JS headroom",
         "status": "beta",
         "evidence": "D301 moves decorative active-node rail styling into deferred CSS, leaving only a minimal layout guard in critical JS so future chat work has room."
+      },
+      {
+        "id": "expanded-free-node-catalog",
+        "label": "More free local LLMs and nodes",
+        "status": "beta",
+        "evidence": "D303 expands startup to 28 free chat starters and adds local OpenAI-compatible adapter nodes for LM Studio, llama.cpp and vLLM without paid/provider secrets."
       },
       {
         "id": "local-node-package",
@@ -11026,6 +11042,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D303",
+      "phase": "Chat UX / Free Nodes",
+      "priority": "P0",
+      "work_package": "Expanded free node and LLM catalog",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add more no-spend local Ollama model starters plus free local OpenAI-compatible node adapters for LM Studio, llama.cpp and vLLM, with Ollama Direct routed through the safer MMIR Local Node bridge",
+      "best_practice": "Users should see many practical free routes immediately and be able to connect existing local tools without provider keys or paid compute",
+      "done_when": "Startup and active-node smoke gates prove at least 28 free chat starters, local adapter nodes, /v1 model/chat route fallback, no browser secrets and no paid routes",
+      "covers": "chat, free-models, local-adapters, openai-compatible, ollama, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.",
       "estimate": "Verify + polish"
     }
   ]

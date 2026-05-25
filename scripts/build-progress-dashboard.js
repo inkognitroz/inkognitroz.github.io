@@ -286,7 +286,8 @@ const overrides = new Map([
   ['D298', { status: 'beta', evidence: 'The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.' }],
   ['D299', { status: 'beta', evidence: 'A dependency-free startup rail click fixture now proves MMIR Guide and WebGPU starters send chat, while Ollama starters open the selected-model installer with no-spend/no-secret boundaries.' }],
   ['D300', { status: 'beta', evidence: 'Startup WebGPU choices now show setup state on unsupported browsers and fall back to a useful MMIR Guide chat that preserves the selected model context.' }],
-  ['D301', { status: 'beta', evidence: 'Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.' }]
+  ['D301', { status: 'beta', evidence: 'Active-node rail polish now lives in deferred runtime CSS, reducing critical active-node JavaScript while preserving startup model click behavior.' }],
+  ['D303', { status: 'beta', evidence: 'The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.' }]
 ]);
 
 const repoMeta = [
@@ -841,6 +842,12 @@ function buildLaunchProgress() {
       label: 'Active node rail keeps JS headroom',
       status: 'beta',
       evidence: 'D301 moves decorative active-node rail styling into deferred CSS, leaving only a minimal layout guard in critical JS so future chat work has room.'
+    },
+    {
+      id: 'expanded-free-node-catalog',
+      label: 'More free local LLMs and nodes',
+      status: 'beta',
+      evidence: 'D303 expands startup to 28 free chat starters and adds local OpenAI-compatible adapter nodes for LM Studio, llama.cpp and vLLM without paid/provider secrets.'
     },
     {
       id: 'local-node-package',

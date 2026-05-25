@@ -36,9 +36,12 @@ function requireIncludes(source, needle, message) {
 const catalog = JSON.parse(text(files.catalog));
 const models = Array.isArray(catalog.models) ? catalog.models : [];
 const freeStartupModels = models.filter((model) => ['browser-guide', 'webllm', 'ollama'].includes(model.runtime));
-if (freeStartupModels.length < 14) fail('Free startup model catalog should expose broad browser/WebGPU/Ollama choices.');
+if (freeStartupModels.length < 28) fail('Free startup model catalog should expose broad browser/WebGPU/Ollama choices.');
 for (const runtime of ['browser-guide', 'webllm', 'ollama']) {
   if (!freeStartupModels.some((model) => model.runtime === runtime)) fail(`Free startup catalog missing ${runtime} routes.`);
+}
+for (const id of ['ollama-qwen3-17b', 'ollama-qwen3-4b', 'ollama-qwen25-coder-05b', 'ollama-qwen25-coder-15b', 'ollama-qwen25-coder-3b', 'ollama-llama32-3b', 'ollama-gemma3-4b', 'ollama-mistral-7b', 'ollama-nomic-embed-text']) {
+  if (!models.some((model) => model.id === id)) fail(`Free starter catalog missing expanded no-spend model: ${id}`);
 }
 
 const activeStrip = text(files.activeStrip);

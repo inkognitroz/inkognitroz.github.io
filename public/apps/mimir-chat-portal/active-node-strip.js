@@ -15,28 +15,36 @@
   function selectedModel(){const select=q('#runtime-model'),option=select?.selectedOptions?.[0];return {value:select?.value||'',label:String(option?.textContent||select?.value||'MMIR Guide').replace(/\s+-\s+live$/i,'').trim(),runtime:option?.dataset?.runtime||''};}
   function webGpuReady(){return Boolean(w.isSecureContext&&navigator.gpu);}
   function needsWebGpu(node){const requires=Array.isArray(node?.route?.requires)?node.route.requires:[];return node?.type==='browser'||requires.includes('webgpu')||String(node?.id||'').startsWith('browser-webgpu');}
+  function isLocalAdapter(node){return node?.type==='local-adapter'||['local-openai-compatible','ollama-direct'].includes(String(node?.route?.kind||''));}
+  function adapterUrl(node){return String(node?.route?.url||'').replace(/\/$/,'');}
   function costText(node){const mode=node?.cost?.mode||'free';return mode==='free-local'?'Free local':mode==='free'?'Free':String(mode);}
   function modelFromNode(node){const model=Array.isArray(node?.models)?node.models[0]:null;return model?.name||model?.id||'Auto';}
   function starterId(node){return String(node?.route?.starter_id||'');}
   function localReady(){return localState.status==='online'&&liveModels.length>0;}
   function nodeStatus(node){
     if(node.id==='local-node')return localReady()?'online':(localState.status==='offline'?'offline':'setup');
+    if(isLocalAdapter(node))return 'setup';
     if(needsWebGpu(node))return webGpuReady()?'online':'setup';
     return 'online';
   }
   function nodeModel(node){
     if(node.id==='local-node')return liveModels[0]?.id||liveModels[0]?.name||'Install one free model';
+    if(isLocalAdapter(node))return modelFromNode(node)||'Auto-discovered when running';
     if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU browser';
     return modelFromNode(node);
   }
   function nodeDetail(node){
-    if(node?.route?.kind==='managed-api')return 'Live free api.mmir.ai route. No provider key or paid call.';
+    if(node?.route?.kind==='managed-api')return 'Free api.mmir.ai. No key.';
     if(node.id==='local-node'){
-      if(localReady())return 'Private local node is paired. Chat can use it now.';
-      if(localState.status==='offline')return 'Not running. Install or start MMIR Local Node; browser chat still works.';
-      return 'Checking localhost. Pairing keeps local models private.';
+      if(localReady())return 'Private paired node. Chat can use it now.';
+      if(localState.status==='offline')return 'Not running. Install/start Local Node; browser chat still works.';
+      return 'Checking localhost. Pairing keeps models private.';
     }
-    if(needsWebGpu(node))return webGpuReady()?'Browser-local LLM. First use may download model weights.':'Free route; auto-enables in secure WebGPU browsers.';
+    if(isLocalAdapter(node)){
+      if(node?.route?.kind==='ollama-direct')return 'Free Ollama runtime. Local Node adds pairing, /v1 aliases and policy.';
+      return 'Free local /v1 server. Connects when running and CORS allows it.';
+    }
+    if(needsWebGpu(node))return webGpuReady()?'Browser-local LLM. First use downloads weights.':'Free route for secure WebGPU browsers.';
     return 'Works now in this browser. No paid route or key.';
   }
   function card(node){
@@ -44,8 +52,7 @@
     const action=status==='online'?'Chat':(node.id==='local-node'?'Install':'Connect');
     const model=nodeModel(node);
     return '<article class="mmir-active-node-card" data-node-id="'+safe(node.id)+'" data-node-state="'+safe(status)+'">'+
-      '<div><span>'+safe(status==='online'?'Live route':'Connectable')+'</span><strong>'+safe(node.name)+'</strong><small>'+safe(nodeDetail(node))+'</small></div>'+
-      '<dl><div><dt>Model</dt><dd>'+safe(model)+'</dd></div><div><dt>Trust</dt><dd>'+safe(String(node.trust_level||'public-free').replace(/-/g,' '))+'</dd></div><div><dt>Cost</dt><dd>'+safe(costText(node))+'</dd></div></dl>'+
+      '<div><span>'+safe(status==='online'?'Live':'Connect')+'</span><strong>'+safe(node.name)+'</strong><small>'+safe(model)+' - '+safe(String(node.trust_level||'public-free').replace(/-/g,' '))+' - '+safe(nodeDetail(node))+'</small></div>'+
       '<button type="button" data-active-node-action="'+safe(node.id)+'">'+safe(action)+'</button>'+
     '</article>';
   }
@@ -58,20 +65,18 @@
       manifestNodes=Array.isArray(body.nodes)?body.nodes.filter(node=>node?.id):[];
     }catch(error){
       manifestNodes=[
-        {id:'browser-guide',name:'MMIR Guide',type:'free',status:'online',trust_level:'public-free',cost:{mode:'free'},route:{kind:'starter',starter_id:'mmir-guide'},models:[{id:'mmir-guide',name:'MMIR Guide'}]},
-        {id:'browser-webgpu-qwen',name:'Browser WebGPU',type:'browser',status:'available_if_supported',trust_level:'browser-local',cost:{mode:'free'},route:{kind:'starter',starter_id:'webllm-qwen25-05b'},models:[{id:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',name:'Qwen2.5 0.5B'}]},
-        {id:'local-node',name:'MMIR Local Node',type:'local',status:'auto_detect',trust_level:'paired-local',cost:{mode:'free-local'},route:{kind:'local-node',url:DEFAULT_LOCAL_URL},models:[]}
+        {id:'browser-guide',name:'MMIR Guide',route:{starter_id:'mmir-guide'},models:[{name:'MMIR Guide'}]},
+        {id:'local-node',name:'MMIR Local Node',route:{kind:'local-node',url:DEFAULT_LOCAL_URL},models:[]}
       ];
     }
     manifestLoaded=true;
   }
   function fallbackStarters(){
     return [
-      {id:'mmir-guide',label:'MMIR Guide',runtime:'browser-guide',status:'live-browser',model:''},
-      {id:'mmir-model-picker',label:'MMIR Model Picker',runtime:'browser-guide',status:'live-browser',model:''},
-      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B',runtime:'webllm',status:'active-browser-webgpu',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC'},
-      {id:'ollama-gemma3-270m',label:'Gemma 3 270M',runtime:'ollama',status:'installable-free',model:'gemma3:270m'},
-      {id:'ollama-qwen3-06b',label:'Qwen3 0.6B',runtime:'ollama',status:'installable-free',model:'qwen3:0.6b'}
+      {id:'mmir-guide',label:'MMIR Guide',runtime:'browser-guide',model:''},
+      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B',runtime:'webllm',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC'},
+      {id:'ollama-gemma3-270m',label:'Gemma 3 270M',runtime:'ollama',model:'gemma3:270m'},
+      {id:'ollama-qwen3-06b',label:'Qwen3 0.6B',runtime:'ollama',model:'qwen3:0.6b'}
     ];
   }
   async function loadStarterCatalog(){
@@ -89,7 +94,7 @@
   }
   function style(){
     if(q('#mmir-active-node-strip-style'))return;
-    const el=d.createElement('style');el.id='mmir-active-node-strip-style';el.textContent=`#mmir-active-nodes-bar{border:1px solid #10a37f38;background:#fff;border-radius:18px;padding:.56rem;margin:.35rem 0;display:grid;gap:.42rem}.mmir-active-node-head,.mmir-active-starter-rail,.mmir-active-node-grid{display:flex;gap:.42rem;overflow:auto}.mmir-active-node-title{display:grid}.mmir-active-node-card{min-width:min(260px,82vw);border:1px solid #94a3b838;border-radius:999px;padding:.43rem .5rem}.mmir-active-node-card dl{display:none}.mmir-active-starter-rail button,.mmir-active-node-card button{border-radius:999px}`;
+    const el=d.createElement('style');el.id='mmir-active-node-strip-style';el.textContent=`#mmir-active-nodes-bar{border:1px solid #10a37f38;border-radius:18px;padding:.56rem;margin:.35rem 0;display:grid;gap:.42rem}.mmir-active-node-head,.mmir-active-starter-rail,.mmir-active-node-grid{display:flex;gap:.42rem;overflow:auto}.mmir-active-node-card{min-width:min(260px,82vw);border:1px solid #94a3b838;border-radius:999px;padding:.43rem .5rem}.mmir-active-node-card dl{display:none}.mmir-active-starter-rail button,.mmir-active-node-card button{border-radius:999px}`;
     d.head.appendChild(el);
   }
   function handoff(detail){w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{free:true,no_paid_routes_started:true,...detail}}));}
@@ -156,6 +161,20 @@
       q('#primary-chat-link')?.click();
       return;
     }
+    if(isLocalAdapter(node)){
+      if(node?.route?.kind==='ollama-direct'){
+        openInstaller('active-node-ollama-direct',{id:'ollama-qwen3-06b',model:'qwen3:0.6b'});
+        return;
+      }
+      const profile={name:node.name,url:adapterUrl(node),models:modelFromNode(node),source:node.id};
+      const run=()=>w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile?.(profile);
+      if(!run()&&w.MimirLoadDeferred)w.MimirLoadDeferred().then(run);
+      w.dispatchEvent(new CustomEvent('mmir-free-local-adapter-selected',{detail:{node_id:node.id,url:adapterUrl(node),free:true,no_paid_routes_started:true}}));
+      const promptEl=q('#mimir-prompt');
+      if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Check this free local /v1 node and chat if a model is available.';
+      q('#primary-chat-link')?.click();
+      return;
+    }
     if(needsWebGpu(node)&&!webGpuReady()){
       openInstaller('active-node-webgpu-fallback');
       return;
@@ -169,7 +188,7 @@
   function starterState(model){return model.runtime==='webllm'&&!webGpuReady()?'setup':'ready';}
   function starterLabel(model){
     const prefix=model.runtime==='ollama'?'Install':(model.runtime==='webllm'?(webGpuReady()?'WebGPU':'Needs WebGPU'):'Now');
-    return prefix+' '+String(model.label||model.id||'model').replace(/\s+-\s+(active in browser|free browser helper|live helper|tiny free local|tiny reasoning local|small multilingual|balanced free local|local assistant|tiny local chat|reasoning local|long-context business local|compact premium-feel local|code assistant).*$/i,'');
+    return prefix+' '+String(model.label||model.id||'model').replace(/\s+-\s+.*$/,'');
   }
   function starterRail(){
     if(!starterModels.length)return '';
@@ -186,7 +205,7 @@
       handoff({starter_id:guide.id,action:'select',source:'active-node-starter-rail',fallback_for:model.id});
       const promptEl=q('#mimir-prompt');
       if(promptEl&&!String(promptEl.value||'').trim()){
-        promptEl.value=(model.label||model.id)+' needs WebGPU here. Start the free guide and show the no-cost path to run it with WebGPU or Local Node.';
+        promptEl.value=(model.label||model.id)+' needs WebGPU here. Show the free WebGPU or Local Node path.';
         promptEl.dispatchEvent(new Event('input',{bubbles:true}));
         promptEl.dispatchEvent(new Event('change',{bubbles:true}));
       }
@@ -217,10 +236,10 @@
     const selected=selectedModel();
     const best=bestNode(nodes,selected);
     bar.dataset.state=nodeStatus(best);
-    bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active chat routes</span><strong>'+safe(best.name)+' is ready for chat</strong><small>MMIR shows only free/public-safe routes that the composer can actually use. Selected now: '+safe(selected.label||'MMIR Guide')+'.</small></div><div class="mmir-active-node-pill">'+safe(nodeStatus(best)==='online'?'Ready now':'Setup ready')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';
+    bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active chat routes</span><strong>'+safe(best.name)+'</strong><small>free/public-safe routes that the composer can actually use. '+safe(selected.label||'MMIR Guide')+'</small></div><div class="mmir-active-node-pill">'+safe(nodeStatus(best)==='online'?'Ready':'Setup')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';
     q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);
     q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - chat now.');
-    q('#active-chat-description')&&(q('#active-chat-description').textContent='Chat is ready through free browser routing. Local and hosted nodes can be added.');
+    q('#active-chat-description')&&(q('#active-chat-description').textContent='Chat is ready through free browser routing. Local nodes can be added.');
     bar.querySelectorAll('[data-active-node-action]').forEach(button=>button.addEventListener('click',()=>activateNode(nodes.find(node=>node.id===button.getAttribute('data-active-node-action')))));
     bar.querySelectorAll('[data-active-starter-id]').forEach(button=>button.addEventListener('click',()=>activateStarter(starterModels.find(model=>model.id===button.getAttribute('data-active-starter-id')))));
   }
