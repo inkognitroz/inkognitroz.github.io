@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d279-20260525-picker-search-v1';
+const CACHE_NAME='mmir-pwa-d280-20260525-picker-filters-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

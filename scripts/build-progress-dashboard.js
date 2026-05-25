@@ -262,7 +262,8 @@ const overrides = new Map([
   ['D276', { status: 'beta', evidence: 'Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.' }],
   ['D277', { status: 'beta', evidence: 'The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.' }],
   ['D278', { status: 'beta', evidence: 'The composer model picker now closes through an explicit Close action, Escape or outside click, and returns focus to the prompt on chat-oriented close paths without paid/backend side effects.' }],
-  ['D279', { status: 'beta', evidence: 'The composer model picker now includes a local-only search field that filters the full route grid by model, runtime, route type and action with count/empty-state feedback.' }]
+  ['D279', { status: 'beta', evidence: 'The composer model picker now includes a local-only search field that filters the full route grid by model, runtime, route type and action with count/empty-state feedback.' }],
+  ['D280', { status: 'beta', evidence: 'The composer model picker now has local-only route filter chips for All, Ready, Browser, Local and Live paths, combined with search and mobile-safe overflow.' }]
 ]);
 
 const repoMeta = [
@@ -675,6 +676,12 @@ function buildLaunchProgress() {
       label: 'Model choices are searchable',
       status: 'beta',
       evidence: 'The composer picker can filter model routes locally by name, runtime, free/local/live path and install action without provider calls or paid routes.'
+    },
+    {
+      id: 'model-picker-route-filters',
+      label: 'Model routes can be narrowed instantly',
+      status: 'beta',
+      evidence: 'All, Ready, Browser, Local and Live chips filter the route grid locally and combine with search without starting network/provider work.'
     },
     {
       id: 'local-node-package',

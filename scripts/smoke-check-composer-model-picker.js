@@ -76,6 +76,8 @@ for (const needle of [
   'function selectedValue()',
   'function searchText(option)',
   'function applySearchFilter(el)',
+  'function routeFilterControls()',
+  'function wireFilters(el)',
   'function wireSearch(el)',
   'function recommendedWebGpuIds()',
   'function webGpuStarterModels()',
@@ -85,6 +87,7 @@ for (const needle of [
   'data-picker-search-text',
   'data-picker-search-count',
   'data-picker-search-empty',
+  'data-picker-filter',
   'data-picker-selected',
   'aria-pressed',
   'aria-current',
@@ -93,6 +96,11 @@ for (const needle of [
   'Close model picker',
   'Search model routes',
   'No matching route',
+  'Ready',
+  'Browser',
+  'Local',
+  'pickerRouteFilter',
+  "card.getAttribute('data-picker-runtime')===pickerRouteFilter",
   ".composer-model-card:not([hidden]) [data-picker-model-value]",
   "event.key!=='Escape'",
   'closePicker(true)',
@@ -121,8 +129,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260525-picker-search-v1',
-  'composer-model-picker.js?v=20260525-picker-search-v1'
+  'composer-model-picker.css?v=20260525-picker-filters-v1',
+  'composer-model-picker.js?v=20260525-picker-filters-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -135,6 +143,9 @@ for (const needle of [
   '.composer-model-picker-head-actions button',
   '.composer-model-search',
   '.composer-model-search input',
+  '.composer-model-filters',
+  '.composer-model-filters button',
+  '.composer-model-filters button[aria-pressed="true"]',
   '.composer-model-card[hidden]',
   '.composer-model-empty',
   '.composer-model-recommendations',
@@ -161,6 +172,7 @@ for (const needle of [
   '[data-picker-model-value]',
   'data-picker-search',
   'data-picker-search-text',
+  'data-picker-filter',
   'applySearchFilter',
   'data-picker-selected',
   'MimirComposerModelPicker',
@@ -177,6 +189,7 @@ for (const needle of [
   'data-picker-runtime',
   'data-picker-search',
   'data-picker-search-text',
+  'data-picker-filter',
   'applySearchFilter',
   'no_paid_routes_started:true'
 ]) {
