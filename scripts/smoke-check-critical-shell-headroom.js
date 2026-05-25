@@ -93,8 +93,8 @@ for (const needle of [
   if (!performance.includes(needle)) fail(`Performance budget guard missing evidence: ${needle}`);
 }
 
-requireAny(performance, ['externalInitialJsByteBudget = 162000', 'externalInitialJsByteBudget = 166000'], 'Performance budget guard missing external JS budget evidence.');
-requireAny(performance, ['totalFirstPaintJsByteBudget = 167000', 'totalFirstPaintJsByteBudget = 171000'], 'Performance budget guard missing total first-paint JS budget evidence.');
+requireAny(performance, ['externalInitialJsByteBudget = 162000', 'externalInitialJsByteBudget = 163000', 'externalInitialJsByteBudget = 166000'], 'Performance budget guard missing external JS budget evidence.');
+requireAny(performance, ['totalFirstPaintJsByteBudget = 167000', 'totalFirstPaintJsByteBudget = 168000', 'totalFirstPaintJsByteBudget = 171000'], 'Performance budget guard missing total first-paint JS budget evidence.');
 
 for (const needle of [
   'first-screen-activation-hydration.js',
