@@ -700,6 +700,12 @@ function buildLaunchProgress() {
       evidence: 'Critical active-node JavaScript remains under budget after more free WebGPU routes; quality gates report 161646 external JS bytes and 166012 total first-paint JS bytes.'
     },
     {
+      id: 'composer-new-chat',
+      label: 'New chat is in the composer',
+      status: 'beta',
+      evidence: 'The composer now has a New chat shortcut that reuses the runtime clear path, blocks while streaming and refocuses the prompt.'
+    },
+    {
       id: 'transcript-scroll-guard',
       label: 'Transcript respects reading position',
       status: 'beta',
@@ -747,6 +753,12 @@ function buildLaunchProgress() {
     local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
     checkpoints,
     last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: 'e58c75d',
+        label: 'Composer New chat shortcut',
+        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+      },
       {
         repo: 'inkognitroz.github.io',
         commit: '7a4e768',
