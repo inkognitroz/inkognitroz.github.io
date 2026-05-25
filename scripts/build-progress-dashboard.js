@@ -290,7 +290,8 @@ const overrides = new Map([
   ['D303', { status: 'beta', evidence: 'The free startup catalog now has 28 chat starters, plus local OpenAI-compatible LM Studio, llama.cpp and vLLM adapter nodes with /v1 model/chat fallback and no browser secrets.' }],
   ['D304', { status: 'beta', evidence: 'LM Studio, llama.cpp and vLLM clicks now hand off to chat-runtime, refresh /v1 models and send only after a live local model is selected, with a clear local-server/CORS hint otherwise.' }],
   ['D305', { status: 'beta', evidence: 'mmir-local-node commit 393ce65 makes Windows installers prefer npm.cmd, updates PowerShell docs, adds regression coverage for the npm.ps1 execution-policy trap and keeps local-node tests/conformance/security checks green.' }],
-  ['D306', { status: 'beta', evidence: 'The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.' }]
+  ['D306', { status: 'beta', evidence: 'The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.' }],
+  ['D307', { status: 'beta', evidence: 'When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.' }]
 ]);
 
 const repoMeta = [
@@ -869,6 +870,12 @@ function buildLaunchProgress() {
       label: 'Known local node appears automatically',
       status: 'beta',
       evidence: 'D306 makes the connector card probe only 127.0.0.1:3000, remember successful local-node proof without secrets and auto-refresh live local models on later visits.'
+    },
+    {
+      id: 'live-local-chat-start',
+      label: 'Live local model starts from chat',
+      status: 'beta',
+      evidence: 'D307 promotes the discovered Local Node model in the active route headline and uses the chat-runtime refresh/send bridge for the Local Node action.'
     },
     {
       id: 'local-node-package',

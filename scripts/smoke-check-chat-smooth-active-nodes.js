@@ -118,7 +118,8 @@ for (const needle of [
   "no_paid_routes_started:true",
   "if(action!=='install')",
   'primary-chat-link',
-  'free usable routes',
+  'Free routes:',
+  'Private local:',
   'composer.parentNode.insertBefore(bar,composer.nextSibling)',
   'display:flex;gap:.42rem;overflow:auto',
   'data-free-starter-count'
@@ -190,7 +191,7 @@ for (const needle of [
   requireIncludes(runtimeCss, needle, `Runtime CSS must keep a smooth transcript surface: ${needle}`);
 }
 
-requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-active-node-style-headroom-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
+requireIncludes(mmir, '<script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260526-live-local-chat-start-v1" defer></script>', 'MMIR page must load the active chat node strip as critical chat UI.');
 requireIncludes(mmir, 'Press send to start automatically', 'Composer placeholder must tell users they can start without setup or typing.');
 if (deferredQueue.some((item) => String(item).includes('active-node-strip.js'))) {
   fail('Active chat node strip must not wait for the deferred feature queue.');

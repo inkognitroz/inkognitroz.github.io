@@ -259,6 +259,7 @@ async function setupContext({ webgpu = true } = {}) {
   const location = { href: 'http://127.0.0.1:4173/mmir.html' };
   const navigator = webgpu ? { gpu: {} } : {};
   let deferredLoads = 0;
+  const listeners = {};
   const window = {
     document,
     isSecureContext: true,
@@ -295,8 +296,12 @@ async function setupContext({ webgpu = true } = {}) {
     },
     dispatchEvent(event) {
       events.push({ type: event.type, detail: event.detail || {} });
+      for (const handler of listeners[event.type] || []) handler(event);
     },
-    addEventListener() {}
+    addEventListener(type, handler) {
+      listeners[type] = listeners[type] || [];
+      listeners[type].push(handler);
+    }
   };
   const context = {
     window,
@@ -422,19 +427,37 @@ if (resume.no_paid_routes_started !== true || resume.provider_secrets_stored !==
 }
 if (local.primary.clicked) fail('Ollama startup installer path must not pretend to send chat before the local model is installed.');
 
+const liveLocal = await setupContext();
+liveLocal.window.dispatchEvent(new FakeCustomEvent('mmir-local-connector-refreshed', {
+  detail: { status: 'online', url: 'http://127.0.0.1:3000', models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
+}));
+if (!liveLocal.bar.innerHTML.includes('Private local: qwen3:0.6b')) {
+  fail('Live Local Node must be promoted in the active route headline with the discovered model.');
+}
+nodeButton(liveLocal.bar, 'local-node')?.click();
+for (let i = 0; i < 4; i += 1) await Promise.resolve();
+if (!liveLocal.prompt.value.includes('qwen3:0.6b')) fail('Live Local Node click must seed a useful private prompt with the discovered model.');
+if (liveLocal.window.bridgeRefreshes !== 1) fail('Live Local Node click must refresh through the chat-runtime bridge before sending.');
+if (!liveLocal.window.bridgeSent) fail('Live Local Node click must send through the chat-runtime bridge after the live model is known.');
+if (liveLocal.primary.clicked !== 1) fail('Live Local Node click must start exactly one chat send.');
+
 const workflows = `${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`;
 requireIncludes(text(files.backlog), '| D299 | Chat QA / Free Models | P0 | Startup free LLM click fixture |', 'Backlog must include D299 startup free LLM click fixture.');
 requireIncludes(text(files.backlog), '| D300 | Chat UX / Free Models | P0 | Startup WebGPU fallback clarity |', 'Backlog must include D300 startup WebGPU fallback clarity.');
 requireIncludes(text(files.backlog), '| D304 | Chat UX / Local Adapters | P0 | Local adapter click waits for live model inventory |', 'Backlog must include D304 local adapter live-model bridge.');
+requireIncludes(text(files.backlog), '| D307 | Chat UX / Local Node | P0 | Live local model promoted into chat start |', 'Backlog must include D307 live local chat start.');
 requireIncludes(text(files.log), 'D299 is now beta', 'Implementation log must include D299.');
 requireIncludes(text(files.log), 'D300 is now beta', 'Implementation log must include D300.');
 requireIncludes(text(files.log), 'D304 is now beta', 'Implementation log must include D304.');
+requireIncludes(text(files.log), 'D307 is now beta', 'Implementation log must include D307.');
 requireIncludes(text(files.buildDashboard), "['D299'", 'Progress dashboard build must mark D299 status.');
 requireIncludes(text(files.buildDashboard), "['D300'", 'Progress dashboard build must mark D300 status.');
 requireIncludes(text(files.buildDashboard), "['D304'", 'Progress dashboard build must mark D304 status.');
+requireIncludes(text(files.buildDashboard), "['D307'", 'Progress dashboard build must mark D307 status.');
 requireIncludes(text(files.visualQa), 'D299 startup free LLM click fixture', 'Visual QA report must mention D299.');
 requireIncludes(text(files.visualQa), 'D300 startup WebGPU fallback clarity', 'Visual QA report must mention D300.');
 requireIncludes(text(files.visualQa), 'D304 local adapter live-model bridge', 'Visual QA report must mention D304.');
+requireIncludes(text(files.visualQa), 'D307 live local model chat start', 'Visual QA report must mention D307.');
 requireIncludes(workflows, 'smoke-check-startup-free-llm-click-fixture.js', 'GitHub workflows must run D299 startup free LLM click fixture.');
 
 if (!process.exitCode) {

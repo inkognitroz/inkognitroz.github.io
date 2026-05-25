@@ -155,6 +155,11 @@
       "id": "D306 remembered local-node auto-probe",
       "status": "guarded",
       "evidence": "The local connector card now checks only the fixed localhost node path, remembers successful local proof with a time-limited secret-free marker and can auto-refresh known local models on later visits."
+    },
+    {
+      "id": "D307 live local model chat start",
+      "status": "guarded",
+      "evidence": "A connector event with a live Local Node model now promotes that model in the active chat route and routes the Local Node button through refresh/send before exactly one first chat send."
     }
   ],
   "known_limitations": [

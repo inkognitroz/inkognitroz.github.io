@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d301-20260525-active-node-style-headroom-v1';
+const CACHE_NAME='mmir-pwa-d301-20260526-live-local-chat-start-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

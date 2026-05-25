@@ -33,18 +33,18 @@
     return modelFromNode(node);
   }
   function nodeDetail(node){
-    if(node?.route?.kind==='managed-api')return 'Free api.mmir.ai; no key.';
+    if(node?.route?.kind==='managed-api')return 'Free API.';
     if(node.id==='local-node'){
-      if(localReady())return 'Private paired node ready.';
-      if(localState.status==='offline')return 'Start Local Node; browser chat still works.';
-      return 'Checking localhost; paired/private.';
+      if(localReady())return 'Private ready.';
+      if(localState.status==='offline')return 'Start Local Node.';
+      return 'Checking localhost.';
     }
     if(isLocalAdapter(node)){
-      if(node?.route?.kind==='ollama-direct')return 'Use Local Node for Ollama pairing.';
-      return 'Free local /v1 server; needs CORS.';
+      if(node?.route?.kind==='ollama-direct')return 'Use Local Node.';
+      return 'Local /v1; CORS.';
     }
-    if(needsWebGpu(node))return webGpuReady()?'Browser LLM; first use downloads.':'Needs secure WebGPU browser.';
-    return 'Works in browser. No key/spend.';
+    if(needsWebGpu(node))return webGpuReady()?'Browser LLM.':'Needs WebGPU.';
+    return 'Browser; no key.';
   }
   function card(node){
     const status=nodeStatus(node);
@@ -59,7 +59,7 @@
     if(manifestLoaded)return;
     try{
       const res=await fetch(MANIFEST_URL,{cache:'default'});
-      if(!res.ok)throw new Error('active node manifest unavailable');
+      if(!res.ok)throw new Error('manifest unavailable');
       const body=await res.json();
       manifestNodes=Array.isArray(body.nodes)?body.nodes.filter(node=>node?.id):[];
     }catch(error){
@@ -134,20 +134,23 @@
       const managed=nodes.find(node=>node.id==='managed-api-bootstrap');
       if(managed)return managed;
     }
+    if(localReady())return nodes.find(node=>node.id==='local-node')||nodes[0];
     if(selectedStarter){const byStarter=nodes.find(node=>starterId(node)===selectedStarter);if(byStarter)return byStarter;}
     if((selected.runtime==='live'||selected.value==='mmir-guide')&&/MMIR Browser Guide|mmir-guide|MMIR Guide/i.test(label))return nodes.find(node=>node.id==='managed-api-bootstrap')||nodes.find(node=>node.id==='browser-guide')||nodes[0];
     if(selected.runtime==='browser-guide'||/MMIR Guide|Model Picker|Setup Coach|Security Coach|Growth Coach/i.test(label))return nodes.find(node=>node.id==='browser-guide')||nodes[0];
     if(selected.runtime==='webllm'||/WebGPU|Qwen2.5 0.5B|Gemma 3 1B|Llama 3.2 1B|Phi 3.5/i.test(label))return nodes.find(node=>needsWebGpu(node)&&nodeStatus(node)==='online')||nodes.find(needsWebGpu)||nodes[0];
-    if(localReady()&&(selected.runtime==='live'||/local|ollama|live/i.test(label)))return nodes.find(node=>node.id==='local-node')||nodes[0];
-    return localReady()?nodes.find(node=>node.id==='local-node'):(webGpuReady()?nodes.find(node=>node.id==='browser-webgpu-qwen'):nodes.find(node=>node.id==='browser-guide'))||nodes[0];
+    return (webGpuReady()?nodes.find(node=>node.id==='browser-webgpu-qwen'):nodes.find(node=>node.id==='browser-guide'))||nodes[0];
   }
   function activateNode(node){
     if(!node)return;
     if(node.id==='local-node'){
       if(localReady()){
         const promptEl=q('#mimir-prompt');
-        if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start private local chat.';
-        q('#primary-chat-link')?.click();
+        const m=nodeModel(node);
+        if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Answer from '+m+'.';
+        const b=w.MimirChatRuntimeBridge;
+        if(b?.refresh&&b?.send){b.setStatus?.('Starting '+m+'...','loading');b.refresh().then(()=>b.send());}
+        else q('#primary-chat-link')?.click();
       }else openInstaller('active-node-local-install');
       return;
     }
@@ -251,8 +254,9 @@
     const nodes=manifestNodes.length?manifestNodes:[{id:'browser-guide',name:'MMIR Guide',trust_level:'public-free',cost:{mode:'free'},route:{starter_id:'mmir-guide'},models:[{name:'MMIR Guide'}]}];
     const selected=selectedModel();
     const best=bestNode(nodes,selected);
-    bar.dataset.state=nodeStatus(best);
-    bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active chat routes</span><strong>'+safe(best.name)+'</strong><small>free usable routes. '+safe(selected.label||'MMIR Guide')+'</small></div><div class="mmir-active-node-pill">'+safe(nodeStatus(best)==='online'?'Ready':'Setup')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';
+    const state=nodeStatus(best),line=best.id==='local-node'&&localReady()?'Private local: '+nodeModel(best):'Free routes: '+(selected.label||'MMIR Guide');
+    bar.dataset.state=state;
+    bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active chat routes</span><strong>'+safe(best.name)+'</strong><small>'+safe(line)+'</small></div><div class="mmir-active-node-pill">'+safe(state==='online'?'Ready':'Setup')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';
     q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);
     q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - chat now.');
     q('#active-chat-description')&&(q('#active-chat-description').textContent='Chat ready. Add local nodes anytime.');

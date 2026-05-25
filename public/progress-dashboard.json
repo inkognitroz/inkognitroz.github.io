@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T22:02:40.384Z",
+  "updated_at": "2026-05-25T22:34:10.925Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 305,
+    "total": 306,
     "done": 51,
-    "beta": 229,
+    "beta": 230,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1378,9 +1378,9 @@
       },
       {
         "phase": "Chat UX / Local Node",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1593,6 +1593,12 @@
         "label": "Known local node appears automatically",
         "status": "beta",
         "evidence": "D306 makes the connector card probe only 127.0.0.1:3000, remember successful local-node proof without secrets and auto-refresh live local models on later visits."
+      },
+      {
+        "id": "live-local-chat-start",
+        "label": "Live local model starts from chat",
+        "status": "beta",
+        "evidence": "D307 promotes the discovered Local Node model in the active route headline and uses the chat-runtime refresh/send bridge for the Local Node action."
       },
       {
         "id": "local-node-package",
@@ -11150,6 +11156,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D307",
+      "phase": "Chat UX / Local Node",
+      "priority": "P0",
+      "work_package": "Live local model promoted into chat start",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "When Local Node reports live models, promote the first private model in the active route headline and route the Local Node button through the chat runtime refresh/send bridge instead of a generic chat click",
+      "best_practice": "Returning users should immediately understand that a real private model is ready and pressing Local Node should start that model, not just open a status panel",
+      "done_when": "Startup click fixture proves the local connector event promotes the discovered model, seeds a private model-specific prompt, refreshes through the runtime bridge and sends exactly once without paid routes or frontend secrets",
+      "covers": "chat, local-node, activation, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.",
       "estimate": "Verify + polish"
     }
   ]
