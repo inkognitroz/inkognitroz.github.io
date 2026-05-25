@@ -804,6 +804,12 @@ function buildLaunchProgress() {
     last_green_evidence: [
       {
         repo: 'inkognitroz.github.io',
+        commit: 'ed25ecb',
+        label: 'Searchable composer model picker',
+        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
         commit: '0b2e1ac',
         label: 'Smooth model picker close flow',
         result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
