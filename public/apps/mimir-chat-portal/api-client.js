@@ -132,6 +132,7 @@
     if(!isLocal(profile))return '';
     const key=tokenKey(url);
     const existing=sessionStorage.getItem(key);
+    if(existing)return existing;
     try{
       const data=await fetchJson(joinUrl(url,'/pair'),{
         method:'POST',
@@ -160,10 +161,9 @@
           }
         }
       }
-      if(existing)return existing;
       throw error;
     }
-    return existing||'';
+    return '';
   }
 
   function authHeaders(token){
