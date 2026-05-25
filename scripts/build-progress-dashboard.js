@@ -259,7 +259,8 @@ const overrides = new Map([
   ['D273', { status: 'beta', evidence: 'A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.' }],
   ['D274', { status: 'beta', evidence: 'A deferred desktop-safe autofocus module now puts the cursor in the composer on first load when there is no deep link, while avoiding mobile keyboard popups and critical first-paint JavaScript growth.' }],
   ['D275', { status: 'beta', evidence: 'A deferred composer refocus module now returns focus to the prompt after send/submit/Enter for smooth follow-up chat, while avoiding mobile keyboard popups unless the prompt was recently active.' }],
-  ['D276', { status: 'beta', evidence: 'Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.' }]
+  ['D276', { status: 'beta', evidence: 'Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.' }],
+  ['D277', { status: 'beta', evidence: 'The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.' }]
 ]);
 
 const repoMeta = [
@@ -653,7 +654,13 @@ function buildLaunchProgress() {
       id: 'model-picker',
       label: 'Model picker has obvious choices',
       status: 'done',
-      evidence: 'Chat now, Browser LLM and Install local lead the picker before the full model catalog.'
+      evidence: 'Chat now, Browser LLM and Install local lead the picker before the full model catalog, and the selected route is visibly marked.'
+    },
+    {
+      id: 'selected-route-clarity',
+      label: 'Selected model route is obvious',
+      status: 'beta',
+      evidence: 'Composer model recommendations and route cards expose selected badges plus aria pressed/current state without starting paid routes.'
     },
     {
       id: 'local-node-package',

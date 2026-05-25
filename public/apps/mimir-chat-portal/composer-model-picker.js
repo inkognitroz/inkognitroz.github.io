@@ -10,6 +10,7 @@
   function modelSelect(){return document.getElementById('runtime-model');}
   function promptEl(){return document.getElementById('mimir-prompt');}
   function selectedLabel(){const select=modelSelect();return String(select?.selectedOptions?.[0]?.textContent||select?.value||'auto').replace(/\s+-\s+live$/i,'').trim();}
+  function selectedValue(){return String(modelSelect()?.value||'');}
   function starterId(value){return String(value||'').startsWith(STARTER_PREFIX)?String(value).slice(STARTER_PREFIX.length):'';}
   function starterValue(model){return STARTER_PREFIX+model.id;}
   function cleanTitle(text,value){return String(text||value||'Model').replace(/\s+-\s+(live|ready now.*|install to activate.*)$/i,'').trim();}
@@ -112,6 +113,7 @@
     return index===0?'Browser LLM':title.replace(/^(.+?)\s+\d.*$/,'$1 WebGPU');
   }
   function recommendationCards(){
+    const current=selectedValue();
     const guide=starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
     const webgpuModels=webGpuStarterModels();
     const local=firstInstallableStarter();
@@ -120,11 +122,13 @@
       ...webgpuModels.map((model,index)=>({id:'browser-llm-'+model.id,label:webGpuLabel(model,index),detail:'Free browser-local WebGPU route. First use downloads weights.',model,action:'chat',state:'ready'})),
       local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'}
     ].filter(Boolean);
-    return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>
-      '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(starterValue(item.model))+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'" data-picker-runtime="'+escapeHtml(item.model.runtime||'starter')+'">'+
-        '<strong>'+escapeHtml(item.label)+'</strong><span>'+escapeHtml(cleanTitle(item.model.label,item.model.id))+'</span><small>'+escapeHtml(item.detail)+'</small>'+
-      '</button>'
-    ).join('')+'</div>';
+    return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>{
+      const value=starterValue(item.model);
+      const selected=current===value;
+      return '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'" data-picker-runtime="'+escapeHtml(item.model.runtime||'starter')+'" data-picker-selected="'+String(selected)+'" aria-pressed="'+String(selected)+'">'+
+        '<strong>'+escapeHtml(item.label)+'</strong><span>'+escapeHtml(cleanTitle(item.model.label,item.model.id))+'</span>'+(selected?'<em>Selected</em>':'')+'<small>'+escapeHtml(item.detail)+'</small>'+
+      '</button>';
+    }).join('')+'</div>';
   }
   function ensurePicker(){
     if(picker)return picker;
@@ -152,9 +156,9 @@
     const title=cleanTitle(option.textContent,value);
     const cost=/live/i.test(group)?'active backend':kind.state==='install'?'free local':'free browser';
     const action=kind.state==='install'?'install':kind.state==='live'?'select-live':'select';
-    return '<article class="composer-model-card '+(selected?'is-selected':'')+'" data-picker-state="'+escapeHtml(kind.state)+'">'+
+    return '<article class="composer-model-card '+(selected?'is-selected':'')+'" data-picker-state="'+escapeHtml(kind.state)+'" data-picker-selected="'+String(selected)+'" aria-current="'+(selected?'true':'false')+'">'+
       '<div><strong>'+escapeHtml(title)+'</strong><span>'+escapeHtml(kind.label)+' - '+escapeHtml(cost)+'</span></div>'+
-      '<p>'+escapeHtml(kind.detail)+'</p>'+
+      (selected?'<em class="composer-model-selected-badge">Selected route</em>':'')+'<p>'+escapeHtml(kind.detail)+'</p>'+
       '<small>'+escapeHtml(group)+'</small>'+
       '<button type="button" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(action)+'">'+escapeHtml(kind.action)+'</button>'+
     '</article>';

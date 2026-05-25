@@ -73,10 +73,15 @@ for (const needle of [
   'starter-install-installer-opened',
   'function card(option)',
   'function recommendationCards()',
+  'function selectedValue()',
   'function recommendedWebGpuIds()',
   'function webGpuStarterModels()',
   'data-picker-recommend',
   'data-picker-runtime',
+  'data-picker-selected',
+  'aria-pressed',
+  'aria-current',
+  'Selected route',
   "action:'chat'",
   'primary-chat-link',
   'Chat now',
@@ -98,7 +103,9 @@ for (const needle of [
 
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
-  './apps/mimir-chat-portal/composer-model-picker.js'
+  './apps/mimir-chat-portal/composer-model-picker.js',
+  'composer-model-picker.css?v=20260525-selected-route-v1',
+  'composer-model-picker.js?v=20260525-selected-route-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -111,6 +118,8 @@ for (const needle of [
   'repeat(auto-fit,minmax(150px,1fr))',
   '.composer-model-recommendations button[data-picker-state="ready"]',
   '.composer-model-recommendations button[data-picker-state="install"]',
+  '.composer-model-recommendations button[data-picker-selected="true"]',
+  '.composer-model-selected-badge',
   '.composer-model-picker-grid',
   '.composer-model-card',
   '.composer-model-card.is-selected',
@@ -127,6 +136,7 @@ for (const needle of [
   '#composer-model-picker',
   '#runtime-model-chip',
   '[data-picker-model-value]',
+  'data-picker-selected',
   'MimirComposerModelPicker',
   'selectModel(value,action)',
   'openComposerModelPicker'

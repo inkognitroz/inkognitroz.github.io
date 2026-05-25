@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T06:00:12.842Z",
+  "updated_at": "2026-05-25T06:25:35.440Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 276,
+    "total": 277,
     "done": 51,
-    "beta": 200,
+    "beta": 201,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1188,9 +1188,9 @@
       },
       {
         "phase": "Chat UX / Model Picker",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1298,7 +1298,13 @@
         "id": "model-picker",
         "label": "Model picker has obvious choices",
         "status": "done",
-        "evidence": "Chat now, Browser LLM and Install local lead the picker before the full model catalog."
+        "evidence": "Chat now, Browser LLM and Install local lead the picker before the full model catalog, and the selected route is visibly marked."
+      },
+      {
+        "id": "selected-route-clarity",
+        "label": "Selected model route is obvious",
+        "status": "beta",
+        "evidence": "Composer model recommendations and route cards expose selected badges plus aria pressed/current state without starting paid routes."
       },
       {
         "id": "local-node-package",
@@ -9991,6 +9997,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Post-chat ready-state live proof now collapses to a compact status line with actions, while non-ready repair/error proof remains visible and actionable.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D277",
+      "phase": "Chat UX / Model Picker",
+      "priority": "P0",
+      "work_package": "Selected route clarity in composer picker",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Mark the currently selected free/live/installable route visibly in the composer model picker recommendations and full route grid, with accessible pressed/current state and cache-busted assets",
+      "best_practice": "Users should instantly understand which model route is active before they send, matching Open WebUI-style model awareness without exposing secrets or starting paid routes",
+      "done_when": "Composer picker smoke gates prove selected recommendations/cards expose selected badges, aria state and mobile-safe styling while keeping no-spend boundaries intact",
+      "covers": "chat, model-picker, open-webui-parity, accessibility, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The composer model picker now marks the currently selected route in recommendations and the full route grid with selected badges, pressed/current state and cache-busted assets.",
       "estimate": "Verify + polish"
     }
   ]
