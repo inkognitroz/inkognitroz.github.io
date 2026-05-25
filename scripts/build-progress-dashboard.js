@@ -280,7 +280,8 @@ const overrides = new Map([
   ['D292', { status: 'beta', evidence: 'Critical managed/free-local profile defaults now load from a small first-paint module while the heavier backend settings UI is deferred, restoring performance headroom.' }],
   ['D293', { status: 'beta', evidence: 'The progress dashboard now renders the backlog progressively with a 72-task window, Show all control and debounced filters so owner tracking cannot freeze the chat-first page.' }],
   ['D294', { status: 'beta', evidence: 'The first-paint composer now exposes a compact plus fallback and circular arrow send affordance, then hides the fallback plus when the richer Open WebUI-style dock is ready.' }],
-  ['D295', { status: 'beta', evidence: 'Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.' }]
+  ['D295', { status: 'beta', evidence: 'Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.' }],
+  ['D296', { status: 'beta', evidence: 'Runtime model-helper and install-status styling now loads as deferred CSS, restoring first-paint blocking CSS headroom under a tighter 67 KB guard.' }]
 ]);
 
 const repoMeta = [
@@ -799,6 +800,12 @@ function buildLaunchProgress() {
       label: 'Pre-chat plus cannot disappear',
       status: 'beta',
       evidence: 'D295 moves the pre-chat plus visibility rule into critical runtime CSS, so Add Model/tools remains visible before deferred quick-actions styling finishes.'
+    },
+    {
+      id: 'runtime-css-headroom',
+      label: 'First chat keeps CSS headroom',
+      status: 'beta',
+      evidence: 'D296 defers runtime model-helper and installer-status styling, rotates cache and guards blocking CSS below 67 KB so future chat polish does not slow the first screen.'
     },
     {
       id: 'local-node-package',

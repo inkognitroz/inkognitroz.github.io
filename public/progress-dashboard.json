@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T17:36:03.791Z",
+  "updated_at": "2026-05-25T18:01:21.880Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 295,
+    "total": 296,
     "done": 51,
-    "beta": 219,
+    "beta": 220,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1325,6 +1325,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Performance / First Paint",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1473,6 +1483,12 @@
         "label": "Pre-chat plus cannot disappear",
         "status": "beta",
         "evidence": "D295 moves the pre-chat plus visibility rule into critical runtime CSS, so Add Model/tools remains visible before deferred quick-actions styling finishes."
+      },
+      {
+        "id": "runtime-css-headroom",
+        "label": "First chat keeps CSS headroom",
+        "status": "beta",
+        "evidence": "D296 defers runtime model-helper and installer-status styling, rotates cache and guards blocking CSS below 67 KB so future chat polish does not slow the first screen."
       },
       {
         "id": "local-node-package",
@@ -10868,6 +10884,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D296",
+      "phase": "Performance / First Paint",
+      "priority": "P0",
+      "work_package": "Runtime CSS headroom recovery",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Move non-critical runtime model-helper and install-status styling into deferred CSS, keep only first-chat shell styling render-blocking, and prevent deferred quick-actions CSS from reintroducing the whole-dock hide race",
+      "best_practice": "The chat UI must stay fast while the platform grows; every new feature should preserve first-paint headroom instead of making the front page feel stuck",
+      "done_when": "Smoke gates prove blocking CSS stays under a tighter 67 KB guard, the helper styling is deferred/cached, the pre-chat plus remains protected and service-worker cache is rotated",
+      "covers": "performance, first-paint, open-webui-parity, responsiveness, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Runtime model-helper and install-status styling now loads as deferred CSS, restoring first-paint blocking CSS headroom under a tighter 67 KB guard.",
       "estimate": "Verify + polish"
     }
   ]

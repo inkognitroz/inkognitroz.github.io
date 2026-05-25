@@ -105,6 +105,11 @@
       "id": "D295 pre-chat plus survival",
       "status": "guarded",
       "evidence": "Critical runtime CSS now shows the composer dock with only #composer-add-model before chat, so the plus does not depend on deferred quick-actions CSS timing."
+    },
+    {
+      "id": "D296 runtime CSS headroom",
+      "status": "guarded",
+      "evidence": "Runtime model-helper and installer-status styling now loads as deferred CSS, keeping the first chat shell under the tighter blocking CSS guard while preserving plus/tools visibility."
     }
   ],
   "known_limitations": [
