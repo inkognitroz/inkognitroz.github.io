@@ -699,6 +699,12 @@ function buildLaunchProgress() {
       evidence: 'Critical active-node JavaScript remains under budget after more free WebGPU routes; quality gates report 161646 external JS bytes and 166012 total first-paint JS bytes.'
     },
     {
+      id: 'transcript-scroll-guard',
+      label: 'Transcript respects reading position',
+      status: 'beta',
+      evidence: 'The transcript stays pinned to latest by default but preserves scroll position and shows Latest when the user reads older context.'
+    },
+    {
       id: 'composer-stop-handoff',
       label: 'Primary composer button can stop',
       status: 'beta',
@@ -740,6 +746,12 @@ function buildLaunchProgress() {
     local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
     checkpoints,
     last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: '7a4e768',
+        label: 'Pinned transcript scroll guard',
+        result: '87 local smoke gates, public safety audit and GitHub Actions green'
+      },
       {
         repo: 'inkognitroz.github.io',
         commit: '51e8181',
