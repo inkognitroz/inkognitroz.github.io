@@ -2,6 +2,7 @@
   const STORAGE_KEY='mimir-chat-backend-profiles';
   const ACTIVE_KEY='mimir-chat-active-backend';
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
+  const DEFAULT_API_URL='https://api.mmir.ai';
   const listEl=document.getElementById('backend-list');
   const nameEl=document.getElementById('backend-name');
   const urlEl=document.getElementById('backend-url');
@@ -51,6 +52,7 @@
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
   function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
+  function defaultApiProfile(){return {id:'mmir-api-bootstrap',name:'MMIR Free Control Plane',url:DEFAULT_API_URL,provider:'openai-compatible',models:'mmir-guide auto-discovered',keyRef:'no browser secret',cost:'free no paid routes',latency:'edge bootstrap',throughput:'bootstrap guide route',uptime:'cloudflare worker',health:'ready',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
   function openModelLibraryFallback(){
     const drawer=document.getElementById('model-library');if(drawer){drawer.open=true;drawer.scrollIntoView({block:'start',behavior:'smooth'});}
   }
@@ -144,7 +146,37 @@
     writeProfiles(profiles);
     return profile;
   }
+  function upsertManagedApiProfile(){
+    const profiles=readProfiles();
+    let profile=profiles.find(p=>p.id==='mmir-api-bootstrap'||cleanUrl(p.url)===DEFAULT_API_URL);
+    if(!profile){
+      profile=defaultApiProfile();
+      profiles.unshift(profile);
+    }
+    profile.id='mmir-api-bootstrap';
+    profile.name='MMIR Free Control Plane';
+    profile.url=DEFAULT_API_URL;
+    profile.provider='openai-compatible';
+    profile.models='mmir-guide auto-discovered';
+    profile.keyRef='no browser secret';
+    profile.cost='free no paid routes';
+    profile.latency='edge bootstrap';
+    profile.throughput='bootstrap guide route';
+    profile.uptime='cloudflare worker';
+    profile.health='ready';
+    profile.updatedAt=new Date().toISOString();
+    writeProfiles(profiles);
+    return profile;
+  }
   function createProfile(){const profile=ensureFreeLocalProfile({surface:'model-picker'});setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Pick a free route or run the installer, then Refresh models.'));render();}
+  function ensureManagedApiProfile(){
+    const profile=upsertManagedApiProfile();
+    selectedId=profile.id;
+    writeActive(profile.id);
+    setStatus('Free MMIR API route is active.');
+    render();
+    return profile;
+  }
   function ensureFreeLocalProfile(options={}){
     const profile=upsertFreeLocalProfile();
     selectedId=profile.id;
@@ -155,15 +187,16 @@
     return profile;
   }
   function ensureAutomaticDefaults(){
-    const profile=upsertFreeLocalProfile();
+    const managed=upsertManagedApiProfile();
+    upsertFreeLocalProfile();
     const profiles=readProfiles();
     const active=profiles.find(p=>p.id===readActive());
     if(!active||!validUrl(active.url)||blockedByFreeMode(active)){
-      if(!active) localStorage.removeItem(ACTIVE_KEY);
-      selectedId=profile.id;
-      setStatus('Free local profile prepared. Activate it only when you want to connect this device.');
+      selectedId=managed.id;
+      writeActive(managed.id);
+      setStatus('Free MMIR API route is active. Local Node stays ready when you want private models.');
       render();
-      return null;
+      return managed;
     }
     selectedId=active.id;
     return active;
@@ -181,6 +214,6 @@
   newBtn.addEventListener('click',createProfile);saveBtn.addEventListener('click',saveProfile);activeBtn.addEventListener('click',setActive);deleteBtn.addEventListener('click',deleteProfile);
   if(refreshDashboardBtn)refreshDashboardBtn.addEventListener('click',()=>{renderDashboard();setStatus('Dashboard refreshed.');});
   window.addEventListener('mmir-backend-profiles-updated',()=>render());
-  window.MimirBackendProfiles={ensureFreeLocalProfile,ensureAutomaticDefaults};
+  window.MimirBackendProfiles={ensureFreeLocalProfile,ensureManagedApiProfile,ensureAutomaticDefaults};
   ensureAutomaticDefaults();render();
 })();
