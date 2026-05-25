@@ -120,7 +120,7 @@ jobs:
           if (!finalHtml.includes('chat-runtime.js?v=20260525-critical-active-routes-v1')) throw new Error('Runtime cache bust missing');
           if (!finalHtml.includes('runtime-controls-fix.js?v=20260524-first-chat-p0-v1')) throw new Error('Runtime fix cache bust missing');
           if (!finalHtml.includes('active-node-strip.js?v=20260525-critical-active-routes-v1')) throw new Error('Active node strip cache bust missing');
-          if (finalHtml.includes('"./apps/mimir-chat-portal/active-node-strip.js')) throw new Error('Active node strip must be critical, not deferred');
+          if (finalHtml.includes('\n    "./apps/mimir-chat-portal/active-node-strip.js')) throw new Error('Active node strip must be critical, not deferred');
           NODE
       - name: Commit and push hotfix
         run: |
