@@ -120,6 +120,11 @@
       "id": "D298 startup free LLM node rail",
       "status": "guarded",
       "evidence": "The active-node rail now exposes every free browser/helper/WebGPU/Ollama starter from the catalog and carries selected local models into the universal installer handoff."
+    },
+    {
+      "id": "D299 startup free LLM click fixture",
+      "status": "guarded",
+      "evidence": "A dependency-free DOM fixture clicks startup MMIR Guide, Browser WebGPU and Qwen3 Ollama starters, proving first-chat send or selected-model installer resume without paid routes, secrets or raw prompt/response storage."
     }
   ],
   "known_limitations": [

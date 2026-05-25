@@ -283,7 +283,8 @@ const overrides = new Map([
   ['D295', { status: 'beta', evidence: 'Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.' }],
   ['D296', { status: 'beta', evidence: 'Runtime model-helper and install-status styling now loads as deferred CSS, restoring first-paint blocking CSS headroom under a tighter 67 KB guard.' }],
   ['D297', { status: 'beta', evidence: 'The static first-paint Send control now queues an immediate click and chat-runtime replays it through the guarded free-route send path once handlers are ready.' }],
-  ['D298', { status: 'beta', evidence: 'The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.' }]
+  ['D298', { status: 'beta', evidence: 'The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.' }],
+  ['D299', { status: 'beta', evidence: 'A dependency-free startup rail click fixture now proves MMIR Guide and WebGPU starters send chat, while Ollama starters open the selected-model installer with no-spend/no-secret boundaries.' }]
 ]);
 
 const repoMeta = [
@@ -820,6 +821,12 @@ function buildLaunchProgress() {
       label: 'Free LLMs are visible on startup',
       status: 'beta',
       evidence: 'D298 removes the starter-rail cap, shows all free browser/helper/WebGPU/Ollama choices at startup and carries selected local models into the universal installer.'
+    },
+    {
+      id: 'startup-free-llm-click-fixture',
+      label: 'Startup free LLM buttons are clickable',
+      status: 'beta',
+      evidence: 'D299 clicks the startup Guide, WebGPU and Ollama starter buttons in CI and proves chat send, starter handoff, selected-model installer resume and no-spend boundaries.'
     },
     {
       id: 'local-node-package',

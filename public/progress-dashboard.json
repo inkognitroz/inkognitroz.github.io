@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T18:36:40.840Z",
+  "updated_at": "2026-05-25T19:12:40.704Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 298,
+    "total": 299,
     "done": 51,
-    "beta": 222,
+    "beta": 223,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1335,6 +1335,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat QA / Free Models",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1501,6 +1511,12 @@
         "label": "Free LLMs are visible on startup",
         "status": "beta",
         "evidence": "D298 removes the starter-rail cap, shows all free browser/helper/WebGPU/Ollama choices at startup and carries selected local models into the universal installer."
+      },
+      {
+        "id": "startup-free-llm-click-fixture",
+        "label": "Startup free LLM buttons are clickable",
+        "status": "beta",
+        "evidence": "D299 clicks the startup Guide, WebGPU and Ollama starter buttons in CI and proves chat send, starter handoff, selected-model installer resume and no-spend boundaries."
       },
       {
         "id": "local-node-package",
@@ -10941,6 +10957,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The startup active-node rail now exposes the full free browser/helper/WebGPU/Ollama starter catalog and preserves selected installable models through the no-spend installer handoff.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D299",
+      "phase": "Chat QA / Free Models",
+      "priority": "P0",
+      "work_package": "Startup free LLM click fixture",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Add a dependency-free DOM fixture that renders the startup active-node rail and clicks MMIR Guide, Browser WebGPU and an Ollama install starter",
+      "best_practice": "The first screen must not only list free models; every visible starter route must have a verified click path to chat or the no-spend installer",
+      "done_when": "CI proves all startup free starters render, browser helper/WebGPU choices dispatch handoff and send chat, Ollama choices preserve starter/model in the installer resume, and no secrets/raw prompts/paid routes are stored",
+      "covers": "chat, qa, free-models, activation, local-node, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A dependency-free startup rail click fixture now proves MMIR Guide and WebGPU starters send chat, while Ollama starters open the selected-model installer with no-spend/no-secret boundaries.",
       "estimate": "Verify + polish"
     }
   ]
