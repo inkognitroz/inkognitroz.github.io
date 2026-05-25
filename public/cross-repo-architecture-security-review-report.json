@@ -2,14 +2,22 @@
   "title": "Cross-Repo Architecture and Security Review Gate",
   "task": "D252",
   "status": "beta",
-  "updated_at": "2026-05-24T04:55:00.000Z",
+  "updated_at": "2026-05-25T10:45:00.000Z",
+  "latest_refresh_task": "D284",
   "public_repo_rule": "This report contains only public-safe metadata, commit ids, test outcomes and review findings; it stores no secrets, raw prompts, raw responses, document text or provider credentials.",
   "reviewed_repos": [
     {
       "name": "inkognitroz.github.io",
       "visibility": "public",
-      "commit": "96de2fb",
+      "commit": "edf0b25",
       "role": "Static MMIR.ai app shell, chat UI, progress dashboard, no-secret public evidence and GitHub Pages deployment.",
+      "status": "pass"
+    },
+    {
+      "name": "mmir-local-node",
+      "visibility": "private",
+      "commit": "54fe834",
+      "role": "Local connector for Ollama/local runtimes, pairing, package release scripts, OpenAI-compatible local chat contract and no-spend node health.",
       "status": "pass"
     },
     {
@@ -18,6 +26,20 @@
       "commit": "e648af0",
       "role": "Protected managed API template for owner-scoped data, provider routing, auth, remediation gates and audit-safe backend workflows.",
       "status": "pass"
+    },
+    {
+      "name": "iac-autoprov",
+      "visibility": "private",
+      "commit": "34c7e9c",
+      "role": "OCI runtime and infrastructure automation templates, kept no-spend until explicit cloud approval.",
+      "status": "pass"
+    },
+    {
+      "name": "iac-autoprov-aws",
+      "visibility": "private",
+      "commit": "943d199",
+      "role": "AWS runtime template experiments, kept no-spend until explicit cloud approval.",
+      "status": "pass"
     }
   ],
   "evidence": [
@@ -25,8 +47,15 @@
       "id": "public-smoke-suite",
       "repo": "inkognitroz.github.io",
       "status": "pass",
-      "result": "All smoke checks passed locally after D251.",
-      "scope": "Visible controls, first-chat activation, model/no-model states, remediation timeline, public dashboard and route evidence."
+      "result": "87 unique workflow smoke scripts passed locally.",
+      "scope": "Visible controls, first-chat activation, model/no-model states, remediation timeline, public dashboard, deploy verification, mobile and model picker evidence."
+    },
+    {
+      "id": "public-js-syntax",
+      "repo": "inkognitroz.github.io",
+      "status": "pass",
+      "result": "Public JavaScript syntax check passed.",
+      "scope": "All public JavaScript assets parse before deploy."
     },
     {
       "id": "public-safety-audit",
@@ -50,6 +79,34 @@
       "scope": "Frontend route expectations remain explicit and public-safe."
     },
     {
+      "id": "public-performance-budget",
+      "repo": "inkognitroz.github.io",
+      "status": "pass",
+      "result": "Performance budget passed at 166357 total first-paint JS bytes.",
+      "scope": "Chat-first polish remains under the measured critical-shell budget."
+    },
+    {
+      "id": "local-node-tests",
+      "repo": "mmir-local-node",
+      "status": "pass",
+      "result": "63 local-node tests passed.",
+      "scope": "Registration payloads, heartbeat/model inventory, pairing, chat contract, Ollama status/model operations, packaging and registration policy."
+    },
+    {
+      "id": "local-node-release",
+      "repo": "mmir-local-node",
+      "status": "pass",
+      "result": "Release package, Mac command, Linux shell, Windows PowerShell and macOS DMG README artifacts were generated with SHA256 checksums.",
+      "scope": "No-spend installer package contract remains reproducible without claiming paid signing/notarization."
+    },
+    {
+      "id": "local-node-conformance",
+      "repo": "mmir-local-node",
+      "status": "pass",
+      "result": "MMIR node conformance passed 9/9 checks.",
+      "scope": "Health, status, public-safe identity, protected model route, pairing, models, chat errors, chat completions and optional safe capabilities."
+    },
+    {
       "id": "backend-tests",
       "repo": "mimir-backend-template",
       "status": "pass",
@@ -64,6 +121,13 @@
       "scope": "Protected API surface is documented and contract-checked."
     },
     {
+      "id": "backend-node-fixtures",
+      "repo": "mimir-backend-template",
+      "status": "pass",
+      "result": "MMIR node contract fixture check passed.",
+      "scope": "Backend node fixture contract remains aligned with local node expectations."
+    },
+    {
       "id": "backend-secrets",
       "repo": "mimir-backend-template",
       "status": "pass",
@@ -71,43 +135,70 @@
       "scope": "Private backend template remains free of committed provider keys and tokens."
     },
     {
+      "id": "oci-proxy-check",
+      "repo": "iac-autoprov",
+      "status": "pass",
+      "result": "OCI Ollama proxy JavaScript syntax check passed.",
+      "scope": "OCI proxy template remains parseable without provisioning paid cloud resources."
+    },
+    {
+      "id": "aws-proxy-check",
+      "repo": "iac-autoprov-aws",
+      "status": "pass",
+      "result": "AWS Ollama proxy JavaScript syntax check passed.",
+      "scope": "AWS proxy template remains parseable without provisioning paid cloud resources."
+    },
+    {
       "id": "github-actions-d251",
       "repo": "inkognitroz.github.io",
       "status": "pass",
-      "result": "Static quality gates, public branding migration and GitHub Pages deploy succeeded for commit 96de2fb.",
+      "result": "Static quality gates, public branding migration and GitHub Pages deploy succeeded for commit edf0b25.",
       "scope": "Remote CI agrees with local quality gates for the latest public deployment."
+    },
+    {
+      "id": "github-actions-latest",
+      "repo": "inkognitroz.github.io",
+      "status": "pass",
+      "result": "Latest public repo GitHub Actions runs for commit edf0b25 completed successfully.",
+      "scope": "Static quality gates, Pages deploy and branding migration are green on GitHub."
     }
   ],
   "architecture_scorecard": [
     {
       "area": "Public/private boundary",
       "status": "pass",
-      "finding": "The public GitHub Pages repo acts as a non-authoritative UI and evidence surface; protected mutation, provider keys and owner-scoped storage stay behind the private backend template.",
+      "finding": "The public GitHub Pages repo acts as a non-authoritative UI and evidence surface; protected mutation, provider keys, owner-scoped storage and cloud runtime policy stay behind private repos or backend routes.",
       "next_action": "Keep public-safety audit in both deploy and quality workflows."
     },
     {
       "area": "Zero-trust workflow gates",
       "status": "pass",
-      "finding": "Correction remediation, execution, rollback and autopilot flows stop before sensitive source mutation unless an explicit protected backend route confirms the action.",
-      "next_action": "Continue adding backend-only gates before any new source mutation or paid route."
+      "finding": "Correction remediation, execution, rollback, provider routing and paid compute paths remain gated by backend policy, explicit approval or no-spend blocks.",
+      "next_action": "Continue adding backend-only gates before any new source mutation, tunnel exposure or paid route."
     },
     {
       "area": "No-spend defaults",
       "status": "pass",
-      "finding": "Current public and backend tests keep paid routes disabled unless explicitly approved; free/local/mock routes are the default path.",
+      "finding": "Current public, backend, local-node and infra-template checks keep paid routes disabled unless explicitly approved; free/local/browser/mock routes are the default path.",
       "next_action": "Make every new user journey show a free first action before paid/provider options."
     },
     {
       "area": "Route ownership",
       "status": "watch",
-      "finding": "Public and backend route manifests both pass independently, but the platform does not yet publish one merged cross-repo drift report.",
-      "next_action": "Fold route drift into the next activation canary or a dedicated route parity check."
+      "finding": "Public and backend route manifests both pass independently, and local-node conformance is green; the platform still needs one merged drift report across frontend, local node, managed API and infra templates.",
+      "next_action": "Add a dedicated route parity check after the next Open WebUI-style chat polish slice."
     },
     {
       "area": "Browser visual QA",
       "status": "watch",
       "finding": "Deterministic fixtures cover desktop/mobile selectors and no-overlap contracts, but live in-app browser automation was unstable in this thread.",
       "next_action": "Prefer fixture gates now; restore live browser screenshot checks when the browser bridge is stable."
+    },
+    {
+      "area": "Multi-agent readiness",
+      "status": "pass",
+      "finding": "Backlog IDs, progress dashboard evidence, review reports and smoke gates give future agents a stable queue and guardrails across public, backend, local node and infra repos.",
+      "next_action": "Keep each new slice tied to one backlog ID, one verification path and one public-safe status update."
     }
   ],
   "code_review_findings": [
@@ -115,9 +206,9 @@
       "id": "CR-001",
       "severity": "P0",
       "status": "pass",
-      "finding": "No high-severity secret leakage or public authority regression was found in the latest public changes.",
-      "evidence": ["public-safety-audit", "backend-secrets"],
-      "next_action": "Keep public repo public-safe; do not place backend secrets, provider keys or paid route credentials in GitHub Pages."
+      "finding": "No high-severity secret leakage or public authority regression was found in the latest public/backend/local-node review pass.",
+      "evidence": ["public-safety-audit", "backend-secrets", "local-node-tests"],
+      "next_action": "Keep public repo public-safe; do not place backend secrets, provider keys, tunnel secrets or paid route credentials in GitHub Pages."
     },
     {
       "id": "CR-002",
@@ -131,9 +222,9 @@
       "id": "CR-003",
       "severity": "P1",
       "status": "watch",
-      "finding": "Many beta UI controls now have individual smoke coverage, but the highest user-fit risk is still the end-to-end free activation path feeling fragmented across first screen, model selection, local node and chat receipt.",
-      "evidence": ["public-smoke-suite"],
-      "next_action": "D253 should add one no-spend end-to-end activation canary from first visit to first useful answer receipt."
+      "finding": "The first-use flow is covered by many individual gates, but real browser/device QA still needs to prove it feels as smooth as ChatGPT/Open WebUI under normal user interaction.",
+      "evidence": ["public-smoke-suite", "public-js-syntax", "github-actions-latest"],
+      "next_action": "Continue D254 chat polish and restore live browser QA when the in-app browser bridge is stable."
     },
     {
       "id": "CR-004",
@@ -142,21 +233,30 @@
       "finding": "Live browser screenshot QA could not be trusted in this thread because the in-app browser bridge timed out; deterministic fixture QA is green but not a full visual replacement.",
       "evidence": ["public-smoke-suite"],
       "next_action": "Keep fixture QA mandatory and reintroduce live screenshot checks once the browser bridge is reliable."
+    },
+    {
+      "id": "CR-005",
+      "severity": "P1",
+      "status": "watch",
+      "finding": "OCI and AWS runtime templates parse, but no cloud runtime has been provisioned or tested because no-spend mode is active.",
+      "evidence": ["oci-proxy-check", "aws-proxy-check"],
+      "next_action": "Keep cloud runtime work as template-only until explicit cost approval; focus on local/free activation first."
     }
   ],
   "security_review": {
     "status": "pass",
-    "zero_trust_summary": "Public UI stays non-authoritative, session/provider secrets are not stored in public localStorage, paid routes are blocked by policy unless explicitly approved and backend routes enforce owner scope.",
+    "zero_trust_summary": "Public UI stays non-authoritative, session/provider secrets are not stored in public localStorage, paid routes are blocked by policy unless explicitly approved, local node pairing protects local runtime access and backend routes enforce owner scope.",
     "must_not_do": [
       "Do not make inkognitroz.github.io private while it is the GitHub Pages source unless deployment is moved.",
       "Do not store provider API keys, cloud credentials or pairing tokens in public assets.",
-      "Do not let public JavaScript execute source mutation, rollback, paid provider or tunnel routes without protected backend confirmation."
+      "Do not let public JavaScript execute source mutation, rollback, paid provider, tunnel or cloud-provisioning routes without protected backend confirmation.",
+      "Do not provision OCI/AWS/GPU/paid model routes while no-spend mode is active."
     ]
   },
   "ux_review": {
     "status": "watch",
-    "best_current_path": "Free-first activation with MMIR Guide/browser helper fallback, guided local connector repair, model library handoff, first chat receipt and Progress Dashboard evidence.",
-    "main_gap": "The parts are present, but the user still needs one coherent canary that proves a new visitor can get a useful first answer without manual configuration or paid services."
+    "best_current_path": "Free-first activation with MMIR Guide/browser helper fallback, guided local connector repair, model picker handoff, first chat receipt and Progress Dashboard evidence.",
+    "main_gap": "The parts are present and locally verified, but real browser/device QA still needs to prove the first impression is smooth, fast and obvious for a normal visitor."
   },
   "no_spend": {
     "status": "pass",
@@ -165,8 +265,8 @@
     "requires_manual_user_work_now": false
   },
   "next": {
-    "task": "D253",
-    "label": "end-to-end free activation canary",
-    "why": "The review gate shows the next highest user-fit risk is proving the whole no-spend first-use journey as one simple, useful flow."
+    "task": "D254",
+    "label": "Open WebUI / ChatGPT smooth chat polish",
+    "why": "The review gate is green enough to continue product work; the remaining launch-critical risk is real-user smoothness of the chat-first flow."
   }
 }

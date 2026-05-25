@@ -59,19 +59,39 @@ requireTrue(report.public_repo_rule?.includes('no secrets'), 'D252 report must d
 requireTrue(report.no_spend?.paid_services_used === false, 'D252 must not use paid services.');
 requireTrue(report.no_spend?.requires_user_money === false, 'D252 must not require user money.');
 
-for (const repoName of ['inkognitroz.github.io', 'mimir-backend-template']) {
+for (const repoName of ['inkognitroz.github.io', 'mmir-local-node', 'mimir-backend-template', 'iac-autoprov', 'iac-autoprov-aws']) {
   const repo = (report.reviewed_repos || []).find((item) => item.name === repoName);
   requireTrue(repo?.status === 'pass', `D252 reviewed repo ${repoName} must pass.`);
   requireTrue(Boolean(repo?.commit), `D252 reviewed repo ${repoName} must include commit evidence.`);
 }
 
-for (const evidenceId of ['public-smoke-suite', 'public-safety-audit', 'public-route-manifest', 'backend-tests', 'backend-route-contract', 'backend-secrets', 'github-actions-d251']) {
+for (const evidenceId of [
+  'public-smoke-suite',
+  'public-js-syntax',
+  'public-safety-audit',
+  'public-route-manifest',
+  'local-node-tests',
+  'local-node-release',
+  'local-node-conformance',
+  'backend-tests',
+  'backend-route-contract',
+  'backend-node-fixtures',
+  'backend-secrets',
+  'oci-proxy-check',
+  'aws-proxy-check',
+  'github-actions-d251',
+  'github-actions-latest'
+]) {
   const evidence = (report.evidence || []).find((item) => item.id === evidenceId);
   requireTrue(evidence?.status === 'pass', `D252 evidence ${evidenceId} must pass.`);
 }
 
+const publicSmoke = (report.evidence || []).find((item) => item.id === 'public-smoke-suite');
+requireTrue(String(publicSmoke?.result || '').includes('87'), 'D252 public smoke evidence must include 87 workflow smoke scripts.');
 const backendTests = (report.evidence || []).find((item) => item.id === 'backend-tests');
 requireTrue(String(backendTests?.result || '').includes('188'), 'D252 backend evidence must include 188 passing tests.');
+const localNodeTests = (report.evidence || []).find((item) => item.id === 'local-node-tests');
+requireTrue(String(localNodeTests?.result || '').includes('63'), 'D252 local-node evidence must include 63 passing tests.');
 const publicRoutes = (report.evidence || []).find((item) => item.id === 'public-route-manifest');
 requireTrue(String(publicRoutes?.result || '').includes('74'), 'D252 public route evidence must include 74 route entries.');
 const backendRoutes = (report.evidence || []).find((item) => item.id === 'backend-route-contract');
@@ -89,7 +109,7 @@ for (const findingId of ['CR-001', 'CR-002', 'CR-003', 'CR-004']) {
 
 requireTrue(report.security_review?.status === 'pass', 'D252 security review must pass.');
 requireTrue(report.ux_review?.status === 'watch', 'D252 UX review must be watch, not falsely complete.');
-requireTrue(report.next?.task === 'D253', 'D252 report must hand off to D253.');
+requireTrue(report.next?.task === 'D254', 'D252 report must hand off to D254 after the fresh D284 review refresh.');
 
 for (const needle of [
   'renderCrossRepoArchitectureSecurityReviewReport',
@@ -104,16 +124,20 @@ for (const needle of [
   'crossRepoArchitectureSecurityReviewReportPath',
   'readCrossRepoArchitectureSecurityReviewReport',
   "['D252', { status: 'beta'",
-  "['D254', { status: 'next'"
+  "['D254', { status: 'next'",
+  "['D284', { status: 'beta'"
 ]) {
   requireIncludes(files.buildDashboard, needle, `D252 dashboard build missing ${needle}.`);
 }
 
 for (const needle of [
   'MMIR Cross-Repo Review Gate D252',
+  'D284',
+  '63 tests',
   '188 tests',
+  'AWS proxy',
   'CR-003',
-  'D253'
+  'D254'
 ]) {
   requireIncludes(files.reviewDoc, needle, `D252 review doc missing ${needle}.`);
 }
@@ -121,16 +145,20 @@ for (const needle of [
 requireIncludes(files.qualityWorkflow, 'smoke-check-cross-repo-architecture-security-review.js', 'Quality workflow must run D252 cross-repo review QA.');
 requireIncludes(files.pagesWorkflow, 'smoke-check-cross-repo-architecture-security-review.js', 'Pages workflow must run D252 cross-repo review QA.');
 requireIncludes(files.backlog, '| D253 |', 'Backlog must add D253 after D252.');
+requireIncludes(files.backlog, '| D284 |', 'Backlog must add D284 fresh full-project review snapshot.');
 requireIncludes(files.implementationLog, 'D252 is now beta', 'Implementation log must mark D252 beta.');
 requireIncludes(files.implementationLog, 'D254 is now next', 'Implementation log must mark D254 next.');
+requireIncludes(files.implementationLog, 'D284 is now beta', 'Implementation log must mark D284 beta.');
 
 const progress = json(files.progressData);
 requireTrue(progress.cross_repo_architecture_security_review_report?.title === report.title, 'Progress dashboard data must embed D252 review report.');
 const tasks = Array.isArray(progress.tasks) ? progress.tasks : [];
 const d252 = tasks.find((task) => task.seq === 'D252');
-const d253 = tasks.find((task) => task.seq === 'D254');
+const d254 = tasks.find((task) => task.seq === 'D254');
+const d284 = tasks.find((task) => task.seq === 'D284');
 requireTrue(d252?.status === 'beta', 'Progress dashboard task D252 must be beta after review gate ships.');
-requireTrue(d253?.status === 'next', 'Progress dashboard task D254 must become next after D252 ships.');
+requireTrue(d254?.status === 'next', 'Progress dashboard task D254 must become next after D252 ships.');
+requireTrue(d284?.status === 'beta', 'Progress dashboard task D284 must be beta after fresh full-project review refresh.');
 requireTrue(Array.isArray(progress.next_queue) && progress.next_queue[0] === 'D254', 'Progress dashboard next queue must prioritize D254 after D252 ships.');
 
 if (failures.length) {

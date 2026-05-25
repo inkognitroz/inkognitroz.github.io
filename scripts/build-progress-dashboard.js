@@ -266,7 +266,8 @@ const overrides = new Map([
   ['D280', { status: 'beta', evidence: 'The composer model picker now has local-only route filter chips for All, Ready, Browser, Local and Live paths, combined with search and mobile-safe overflow.' }],
   ['D281', { status: 'beta', evidence: 'The composer model picker now has a reset action that clears search, returns the route filter to All and keeps the user in the discovery flow without network/provider side effects.' }],
   ['D282', { status: 'beta', evidence: 'The composer model picker now focuses search on desktop/fine-pointer open while guarding coarse-pointer devices from surprise mobile keyboard popups.' }],
-  ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }]
+  ['D283', { status: 'beta', evidence: 'The composer model picker now includes an actionable empty-state reset button when search/filter returns no routes, so users can recover to all routes in one click.' }],
+  ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }]
 ]);
 
 const repoMeta = [
@@ -705,6 +706,12 @@ function buildLaunchProgress() {
       evidence: 'No-result states include a Show all routes action that clears search/filter locally and keeps users in model discovery.'
     },
     {
+      id: 'fresh-cross-repo-review',
+      label: 'Full-project review snapshot is current',
+      status: 'beta',
+      evidence: 'D284 records the latest public Pages CI, 87 frontend smoke gates, local-node package/conformance gates, backend route/security gates and OCI/AWS proxy syntax checks.'
+    },
+    {
       id: 'local-node-package',
       label: 'Local node package contract',
       status: 'beta',
@@ -830,6 +837,12 @@ function buildLaunchProgress() {
     local_url: 'http://localhost:4173/mmir.html#progress-dashboard',
     checkpoints,
     last_green_evidence: [
+      {
+        repo: 'inkognitroz.github.io',
+        commit: 'edf0b25',
+        label: 'Full-project review baseline',
+        result: 'GitHub Actions green; 87 local smoke gates, public safety audit, JS syntax, local-node, backend, OCI and AWS no-spend gates green'
+      },
       {
         repo: 'inkognitroz.github.io',
         commit: '3c247c1',
