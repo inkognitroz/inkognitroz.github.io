@@ -244,7 +244,8 @@ const overrides = new Map([
   ['D258', { status: 'beta', evidence: 'Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.' }],
   ['D259', { status: 'beta', evidence: 'Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.' }],
   ['D260', { status: 'beta', evidence: 'Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.' }],
-  ['D261', { status: 'beta', evidence: 'Active chat manifest now lists Qwen, Gemma, Llama and Phi browser WebGPU routes as free/no-approval nodes, and the active strip routes selected starters to the exact browser/local fallback path.' }]
+  ['D261', { status: 'beta', evidence: 'Active chat manifest now lists Qwen, Gemma, Llama and Phi browser WebGPU routes as free/no-approval nodes, and the active strip routes selected starters to the exact browser/local fallback path.' }],
+  ['D262', { status: 'beta', evidence: 'Composer model picker recommendations now expose multiple free Browser WebGPU LLM choices directly, with UI action coverage and visible-control audit proving no-spend routing.' }]
 ]);
 
 const repoMeta = [
@@ -663,6 +664,12 @@ function buildLaunchProgress() {
       label: 'Active nodes connect to chat path',
       status: 'beta',
       evidence: 'Browser helper, Qwen/Gemma/Llama/Phi WebGPU candidates and local-node route floor are wired through smoke tests without paid/provider keys.'
+    },
+    {
+      id: 'multi-webgpu-picker',
+      label: 'Multiple free browser LLMs in picker',
+      status: 'beta',
+      evidence: 'Composer model picker now recommends several WebGPU starters directly instead of hiding them behind one generic Browser LLM path.'
     },
     {
       id: 'critical-shell-headroom',

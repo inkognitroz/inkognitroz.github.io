@@ -4,7 +4,7 @@
 .composer-model-picker-head strong{color:#0f172a}.composer-model-picker-head p{margin:3px 0 0;color:#475569;font-size:.84rem;line-height:1.35}
 .composer-route-floor{display:block;margin-top:5px;color:#047857;font-size:.76rem;font-weight:750;line-height:1.3}
 .composer-model-picker-head a{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(16,163,127,.28);border-radius:999px;color:#047857!important;font-size:.8rem;font-weight:750;padding:7px 10px;text-decoration:none;white-space:nowrap}
-.composer-model-recommendations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.composer-model-recommendations{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .composer-model-recommendations button{display:grid;gap:3px;text-align:left;border:1px solid rgba(148,163,184,.24);border-radius:14px;background:#fff;color:#0f172a;cursor:pointer;min-width:0;padding:10px}
 .composer-model-recommendations button[data-picker-state="ready"]{border-color:rgba(16,163,127,.28);background:#ecfdf5}.composer-model-recommendations button[data-picker-state="install"]{border-color:rgba(217,119,6,.28);background:#fff7ed}
 .composer-model-recommendations strong,.composer-model-recommendations span,.composer-model-recommendations small{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}.composer-model-recommendations strong{font-size:.85rem}.composer-model-recommendations span{font-size:.76rem;color:#334155;white-space:nowrap}.composer-model-recommendations small{font-size:.72rem;color:#64748b;line-height:1.25}

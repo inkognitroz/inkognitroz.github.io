@@ -67,9 +67,15 @@ for (const needle of [
   'function selectModel(value,action)',
   'function card(option)',
   'function recommendationCards()',
+  'function recommendedWebGpuIds()',
+  'function webGpuStarterModels()',
   'data-picker-recommend',
+  'data-picker-runtime',
   'Chat now',
   'Browser LLM',
+  'webllm-gemma3-1b',
+  'webllm-llama32-1b',
+  'webllm-phi35-mini',
   'Install local',
   'picker.id=\'composer-model-picker\'',
   'data-picker-model-value',
@@ -94,6 +100,7 @@ for (const needle of [
   '.composer-model-picker[hidden]',
   '.composer-model-picker-head',
   '.composer-model-recommendations',
+  'repeat(auto-fit,minmax(150px,1fr))',
   '.composer-model-recommendations button[data-picker-state="ready"]',
   '.composer-model-recommendations button[data-picker-state="install"]',
   '.composer-model-picker-grid',
@@ -123,6 +130,7 @@ for (const needle of [
   '"id": "composer-model-picker"',
   'compact composer model picker',
   'data-picker-model-value',
+  'data-picker-runtime',
   'no_paid_routes_started:true'
 ]) {
   requireIncludes(visibleAudit, needle, `D203 visible-control audit must include: ${needle}`);

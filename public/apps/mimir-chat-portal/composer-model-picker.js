@@ -74,17 +74,31 @@
       starterModels.find(model=>model.runtime==='ollama')||
       null;
   }
+  function recommendedWebGpuIds(){
+    return ['webllm-qwen25-05b','webllm-gemma3-1b','webllm-llama32-1b','webllm-phi35-mini'];
+  }
+  function webGpuStarterModels(){
+    const order=recommendedWebGpuIds();
+    return starterModels
+      .filter(model=>model.runtime==='webllm')
+      .sort((a,b)=>(order.indexOf(a.id)<0?99:order.indexOf(a.id))-(order.indexOf(b.id)<0?99:order.indexOf(b.id)))
+      .slice(0,4);
+  }
+  function webGpuLabel(model,index){
+    const title=cleanTitle(model.label,model.id).replace(/\s+-\s+active in browser$/i,'');
+    return index===0?'Browser LLM':title.replace(/^(.+?)\s+\d.*$/,'$1 WebGPU');
+  }
   function recommendationCards(){
     const guide=starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
-    const webgpu=starterByRuntime('webllm');
+    const webgpuModels=webGpuStarterModels();
     const local=firstInstallableStarter();
     const items=[
       guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'select',state:'ready'},
-      webgpu&&{id:'browser-llm',label:'Browser LLM',detail:'Real local browser model when WebGPU is available. First use downloads weights.',model:webgpu,action:'select',state:'ready'},
+      ...webgpuModels.map((model,index)=>({id:'browser-llm-'+model.id,label:webGpuLabel(model,index),detail:'Free browser-local WebGPU route. First use downloads weights.',model,action:'select',state:'ready'})),
       local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'}
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>
-      '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(starterValue(item.model))+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'">'+
+      '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(starterValue(item.model))+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'" data-picker-runtime="'+escapeHtml(item.model.runtime||'starter')+'">'+
         '<strong>'+escapeHtml(item.label)+'</strong><span>'+escapeHtml(cleanTitle(item.model.label,item.model.id))+'</span><small>'+escapeHtml(item.detail)+'</small>'+
       '</button>'
     ).join('')+'</div>';
