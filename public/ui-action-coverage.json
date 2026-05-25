@@ -26,7 +26,7 @@
       "status": "live",
       "user_result": "The + Connect Model controls create or reuse the free local-node profile, make it active and open the composer model picker or model library/setup path instead of a dead configuration stop.",
       "selectors": ["#new-backend", "#composer-add-model", "#composer-model-picker", "#model-library", "#connect-options", "#backend-settings"],
-      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openComposerModelPicker", "MimirComposerModelPicker", "composer-model-picker", "document.getElementById('model-library')", "section.id='connect-options'"]
+      "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "openComposerModelPicker", "MimirComposerModelPicker", "composer-model-picker", "document.getElementById('model-library')", "section.id='connect-options'", "openStarterInstaller", "starter-install-installer-opened", "mmir-local-connector-install.html"]
     },
     {
       "id": "first-run-checklist",
@@ -82,7 +82,7 @@
       "status": "live",
       "user_result": "Live backend models are preferred automatically; browser helpers, WebGPU models and installable free Ollama models remain visible with license/source guidance.",
       "selectors": ["#runtime-model", "#runtime-model-chip", "#composer-model-picker", "[data-picker-recommend]", "[data-picker-model-value]", "#model-library-grid", "[data-recommended-starter]", "[data-starter-id]"],
-      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "MimirComposerModelPicker", "recommendationCards", "webGpuStarterModels", "autoStartComposerRecommendation", "action:'chat'", "primary-chat-link", "Chat now", "Browser LLM", "webllm-gemma3-1b", "webllm-llama32-1b", "webllm-phi35-mini", "Install local", "selectModel(value,action)", "composer-model-picker", "data-picker-recommend", "data-picker-model-value", "data-picker-runtime", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "no_paid_routes_started:true"]
+      "evidence": ["const liveValues=(models||[]).map", "preferredStarterModel", "MimirComposerModelPicker", "recommendationCards", "webGpuStarterModels", "autoStartComposerRecommendation", "action:'chat'", "primary-chat-link", "Chat now", "Browser LLM", "webllm-gemma3-1b", "webllm-llama32-1b", "webllm-phi35-mini", "Install local", "selectModel(value,action)", "composer-model-picker", "data-picker-recommend", "data-picker-model-value", "data-picker-runtime", "modelComplianceNote(model)", "Source/model card: verify before production use", "free-model-starters.json", "starterModelToCatalog", "latestRecommendedStarter", "data-recommended-starter", "recommended starter", "model-library-focus-recommended", "data-starter-action", "Install / prove in chat", "mmir-runtime-starter-handoff", "model-library-starter-handoff", "openStarterInstaller", "starter-install-installer-opened", "mmir-local-connector-install.html", "no_paid_routes_started:true"]
     },
     {
       "id": "one-click-model-install",

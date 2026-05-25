@@ -98,6 +98,13 @@
       font-size: .86rem;
       margin: 12px 0 0;
     }
+    .selected-model {
+      border: 1px solid rgba(126, 217, 87, .36);
+      border-radius: 8px;
+      color: var(--ok);
+      margin: 0 0 14px;
+      padding: 10px 12px;
+    }
     .trust-strip,
     .release-panel {
       background: var(--panel);
@@ -147,6 +154,7 @@
   <main>
     <h1>Install an MMIR node</h1>
     <p id="detected">Detecting this device...</p>
+    <p class="selected-model" id="selected-model">MMIR will choose a safe free starter model automatically.</p>
     <a class="primary" id="primary" href="./mmir-local-connector-mac.zip.html">Install Connector</a>
     <p>The connector turns Mac, Windows, Linux, Raspberry Pi, VMs and edge machines into private MMIR nodes. It runs on <code>127.0.0.1:3000</code>, connects to Ollama on the same machine, and lets mmir.ai chat with local models through the MMIR API contract. This page reads the release manifest before promoting platform artifacts, so it never links a fake DMG.</p>
 
@@ -199,6 +207,8 @@
   </main>
   <script>
     const releaseManifest = './mmir-local-connector-release.json';
+    const workspaceKey = 'mimir-active-workspace-v1';
+    const repairResumePrefix = 'mimir-repair-resume-v1:';
     const targets = {
       mac: { label: 'Install Mac Connector', href: './mmir-local-connector-mac.zip.html', download: false, text: 'Detected macOS. Use the current Mac command package until the app-bundle DMG artifact is published.' },
       windows: { label: 'Install Windows Connector', href: './mmir-local-connector-windows.cmd', download: true, text: 'Detected Windows. Use the Windows installer.' },
@@ -222,6 +232,7 @@
 
     const primary = document.getElementById('primary');
     const detected = document.getElementById('detected');
+    const selectedModelEl = document.getElementById('selected-model');
     const pickedKey = platform();
 
     function setDownload(element, enabled) {
@@ -231,6 +242,48 @@
 
     function safe(value) {
       return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function readRepairResume() {
+      try {
+        const workspace = localStorage.getItem(workspaceKey) || 'personal';
+        const resume = JSON.parse(localStorage.getItem(repairResumePrefix + workspace) || 'null');
+        return resume && typeof resume === 'object' ? resume : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function selectedInstallModel() {
+      const params = new URLSearchParams(location.search);
+      const model = params.get('model') || readRepairResume()?.model || '';
+      return String(model).trim();
+    }
+
+    function selectedStarterId() {
+      const params = new URLSearchParams(location.search);
+      const starter = params.get('starter') || readRepairResume()?.starter_id || '';
+      return String(starter).trim();
+    }
+
+    function appendModelParams(href) {
+      const model = selectedInstallModel();
+      const starter = selectedStarterId();
+      if (!model && !starter) return href;
+      const url = new URL(href, location.href);
+      if (model) url.searchParams.set('model', model);
+      if (starter) url.searchParams.set('starter', starter);
+      const sameOrigin = url.origin === location.origin;
+      if (!sameOrigin) return url.toString();
+      if (url.pathname.startsWith('/downloads/')) return './' + url.pathname.split('/').pop() + url.search + url.hash;
+      return url.pathname + url.search + url.hash;
+    }
+
+    function renderSelectedModel() {
+      const model = selectedInstallModel();
+      if (model) {
+        selectedModelEl.textContent = 'Selected free starter model: ' + model + '. The Mac command package will preserve this choice; other installers still choose a safe free model unless MMIR_MODEL is set locally.';
+      }
     }
 
     function renderReleaseSummary(data) {
@@ -248,9 +301,10 @@
     function applyPrimary(key) {
       const picked = targets[key] || targets.unknown;
       primary.textContent = picked.label;
-      primary.href = picked.href;
+      primary.href = appendModelParams(picked.href);
       setDownload(primary, picked.download);
       detected.textContent = picked.text;
+      renderSelectedModel();
     }
 
     async function hydrateReleaseManifest() {
@@ -272,13 +326,14 @@
             text: 'Detected macOS. Download the published MMIR Local Node DMG.'
           };
           badge.textContent = 'DMG live';
-          macLink.href = dmg.path;
+          macLink.href = appendModelParams(dmg.path);
           macLink.textContent = 'Download Mac DMG';
           setDownload(macLink, true);
           status.textContent = 'Mac DMG is published from the MMIR Local Node release build.';
         } else {
           badge.textContent = 'DMG prepared';
           status.textContent = dmg?.note || 'Mac app-bundle DMG release build is prepared in mmir-local-node; public download stays on the command package until the real artifact is published.';
+          macLink.href = appendModelParams('./mmir-local-connector-mac.zip.html');
           setDownload(macLink, false);
         }
       } catch (error) {
@@ -286,6 +341,7 @@
         status.textContent = 'Release manifest could not be loaded. Use the current Mac command package.';
         document.getElementById('release-summary').textContent = 'Release manifest could not be loaded. Installer links still stay local/free and avoid fake DMG claims.';
         document.getElementById('release-artifacts').innerHTML = '';
+        macLink.href = appendModelParams('./mmir-local-connector-mac.zip.html');
         setDownload(macLink, false);
       }
       applyPrimary(pickedKey);

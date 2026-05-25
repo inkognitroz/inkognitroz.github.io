@@ -127,10 +127,20 @@ for (const file of [files.mac, files.windows, files.linux]) {
   'No paid cloud, provider route or managed compute starts',
   'mmir_local_return=1',
   'renderReleaseSummary',
+  'selectedInstallModel',
+  'appendModelParams',
+  'Selected free starter model',
   'fake DMG',
   'Applications shortcut',
   'app-bundle DMG'
 ].forEach((needle) => requireIncludes(installPage, needle, `Installer page missing D205 release QA evidence: ${needle}`));
+
+[
+  'selectedInstallModel',
+  'withSelectedModel',
+  'export MMIR_MODEL=',
+  'Download started with'
+].forEach((needle) => requireIncludes(text(join(publicDir, 'downloads', 'mmir-local-connector-mac.zip.html')), needle, `Mac ZIP page missing selected model handoff evidence: ${needle}`));
 
 [
   'CONTRACT_VERSION',
@@ -162,6 +172,10 @@ if (!d205 || d205.status !== 'beta') {
 const d206 = tasks.find((task) => task.seq === 'D206');
 if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
+}
+const d264 = tasks.find((task) => task.seq === 'D264');
+if (!d264 || d264.status !== 'beta') {
+  fail('Progress dashboard task D264 must be beta after selected-model installer handoff ships.');
 }
 if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
   fail('Progress dashboard next queue must prioritize D254 after D236 ships.');

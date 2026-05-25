@@ -1,5 +1,7 @@
 (function(){
   const STARTER_PREFIX='starter:';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let picker=null;
   let starterModels=fallbackStarterModels();
   let starterCatalogLoaded=false;
@@ -69,6 +71,23 @@
     if(runtime==='webllm')return {state:'ready',label:'Browser WebGPU',action:'Use now',detail:'Runs locally in a WebGPU-capable browser.'};
     if(runtime==='ollama'||starterId(value))return {state:'install',label:'Free local install',action:'Install / prove',detail:'Installs through MMIR Local Node and Ollama.'};
     return {state:'planned',label:'Model option',action:'Use',detail:'Select without starting paid compute.'};
+  }
+  function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||'personal';}
+  function writeRepairResume(payload){
+    const resume={...payload,status:payload?.status||'pending',at:new Date().toISOString(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored:false,raw_response_stored:false};
+    try{localStorage.setItem(REPAIR_RESUME_PREFIX+activeWorkspaceId(),JSON.stringify(resume));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
+    return resume;
+  }
+  function openStarterInstaller(model,source){
+    const params=new URLSearchParams({source:source||'composer-model-picker'});
+    if(model?.id)params.set('starter',model.id);
+    if(model?.model)params.set('model',model.model);
+    const target='./downloads/mmir-local-connector-install.html?'+params;
+    const resume=writeRepairResume({action:'starter-install-repair',target,model:model?.model||'',starter_id:model?.id||'',note:'Opening no-spend local installer for '+(model?.model||model?.label||'selected starter')+'.',next_action:'installer-download'});
+    window.MimirActivationTelemetry?.record?.('starter-install-installer-opened',{status:'installer',model:model?.model||model?.id||'',route:target,free:true,note:'Composer install opened universal installer. no_paid_routes_started:true.'});
+    window.dispatchEvent(new CustomEvent('mmir-starter-install-repair-opened',{detail:resume}));
+    window.location.href=target;
   }
   function starterByRuntime(runtime){
     return starterModels.find(model=>model.runtime===runtime)||null;
@@ -189,6 +208,10 @@
     }
     window.MimirActivationTelemetry?.record?.('composer-model-picker',{status:action,model:id||value,route:'composer model picker',free:true,note:'Composer model picker selected '+(id||value)+'. no_paid_routes_started:true.'});
     if(id){
+      if(action==='install'&&starter?.runtime==='ollama'){
+        openStarterInstaller(starter,'composer-model-picker');
+        return;
+      }
       window.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:id,action:action==='install'?'install':'select',source:'composer-model-picker',route_floor:'composer-model-picker-free-route-floor',free:true,no_paid_routes_started:true}}));
     }
     toggle(false);

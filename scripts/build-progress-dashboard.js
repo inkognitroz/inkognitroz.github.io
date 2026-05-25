@@ -246,7 +246,8 @@ const overrides = new Map([
   ['D260', { status: 'beta', evidence: 'Active route strip copy and CSS were tightened so the chat-first shell now has restored first-paint JS headroom while preserving free starter, WebGPU and Local Node install handoffs.' }],
   ['D261', { status: 'beta', evidence: 'Active chat manifest now lists Qwen, Gemma, Llama and Phi browser WebGPU routes as free/no-approval nodes, and the active strip routes selected starters to the exact browser/local fallback path.' }],
   ['D262', { status: 'beta', evidence: 'Composer model picker recommendations now expose multiple free Browser WebGPU LLM choices directly, with UI action coverage and visible-control audit proving no-spend routing.' }],
-  ['D263', { status: 'beta', evidence: 'Ready-now composer recommendations now seed a useful prompt and click Send automatically, so Chat now and Browser WebGPU choices produce first value instead of stopping at selection.' }]
+  ['D263', { status: 'beta', evidence: 'Ready-now composer recommendations now seed a useful prompt and click Send automatically, so Chat now and Browser WebGPU choices produce first value instead of stopping at selection.' }],
+  ['D264', { status: 'beta', evidence: 'Installable local starter choices now open the universal no-spend installer when localhost is missing, preserve a repair resume and carry the selected Ollama model into the generated Mac command package.' }]
 ]);
 
 const repoMeta = [

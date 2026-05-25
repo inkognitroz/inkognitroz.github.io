@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T01:16:30.266Z",
+  "updated_at": "2026-05-25T01:24:34.709Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 263,
+    "total": 264,
     "done": 51,
-    "beta": 187,
+    "beta": 188,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1198,6 +1198,16 @@
       },
       {
         "phase": "Chat UX / Automation",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Local Install / Automation",
         "total": 1,
         "done": 0,
         "beta": 1,
@@ -9616,6 +9626,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Ready-now composer recommendations now seed a useful prompt and click Send automatically, so Chat now and Browser WebGPU choices produce first value instead of stopping at selection.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D264",
+      "phase": "Local Install / Automation",
+      "priority": "P0",
+      "work_package": "Selected model installer handoff",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Carry the chosen free Ollama starter from chat into the universal installer, open the installer automatically when local-node install fails or is missing, and bake the selected model into the generated Mac command package",
+      "best_practice": "The second core journey should feel one-click: choose local model, install connector, return to proof, without losing context or asking users to debug localhost first",
+      "done_when": "Chat runtime writes a repair resume, opens the no-spend installer with model/starter parameters, and the Mac ZIP generator preserves MMIR_MODEL while public checksums and no-spend gates remain green",
+      "covers": "chat, mac, local-node, installer, activation, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Installable local starter choices now open the universal no-spend installer when localhost is missing, preserve a repair resume and carry the selected Ollama model into the generated Mac command package.",
       "estimate": "Verify + polish"
     }
   ]

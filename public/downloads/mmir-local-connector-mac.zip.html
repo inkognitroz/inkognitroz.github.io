@@ -27,8 +27,38 @@
     const commandUrl = './mmir-local-connector-mac.command';
     const zipName = 'mmir-local-connector-mac.zip';
     const commandName = 'mmir-local-connector-mac.command';
+    const workspaceKey = 'mimir-active-workspace-v1';
+    const repairResumePrefix = 'mimir-repair-resume-v1:';
     const downloadButton = document.getElementById('download');
     const statusEl = document.getElementById('status');
+
+    function readRepairResume() {
+      try {
+        const workspace = localStorage.getItem(workspaceKey) || 'personal';
+        const resume = JSON.parse(localStorage.getItem(repairResumePrefix + workspace) || 'null');
+        return resume && typeof resume === 'object' ? resume : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function selectedInstallModel() {
+      const model = new URLSearchParams(location.search).get('model') || readRepairResume()?.model || '';
+      return String(model).trim();
+    }
+
+    function shellQuote(value) {
+      return "'" + String(value).replace(/'/g, "'\"'\"'") + "'";
+    }
+
+    function withSelectedModel(command) {
+      const model = selectedInstallModel();
+      if (!model) return command;
+      const exportLine = 'export MMIR_MODEL=' + shellQuote(model) + '\n';
+      return String(command).startsWith('#!')
+        ? String(command).replace('\n', '\n' + exportLine)
+        : exportLine + String(command);
+    }
 
     function makeCrcTable() {
       const table = new Uint32Array(256);
@@ -134,7 +164,7 @@
       try {
         const response = await fetch(commandUrl, { cache: 'no-store' });
         if (!response.ok) throw new Error('Could not fetch installer source');
-        const command = await response.text();
+        const command = withSelectedModel(await response.text());
         const zip = createZip(commandName, new TextEncoder().encode(command));
         const blob = new Blob([zip], { type: 'application/zip' });
         const url = URL.createObjectURL(blob);
@@ -145,7 +175,7 @@
         link.click();
         link.remove();
         window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-        statusEl.textContent = 'Download started.';
+        statusEl.textContent = selectedInstallModel() ? 'Download started with ' + selectedInstallModel() + ' preselected.' : 'Download started.';
       } catch (error) {
         statusEl.textContent = 'Download failed. Use the direct installer link below.';
         const fallback = document.createElement('a');
@@ -158,6 +188,9 @@
       }
     }
 
+    if (selectedInstallModel()) {
+      statusEl.textContent = 'Preparing Mac installer with ' + selectedInstallModel() + ' selected...';
+    }
     downloadButton.addEventListener('click', downloadZip);
     window.setTimeout(downloadZip, 250);
   </script>

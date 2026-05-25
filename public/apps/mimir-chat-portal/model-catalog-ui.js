@@ -10,6 +10,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const ACTIVATION_PREFIX='mimir-activation-events-v1:';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let catalog={models:[],capacity_profiles:[],registry_models:[]};
   let pendingRecommendedFocus=false;
 
@@ -24,6 +25,22 @@
   function isRegistryLive(model){return model.registry_source==='active-provider'||model.source==='active-provider'||String(model.access||'').includes('active backend');}
   function workspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
   function readActivationEvents(){try{const events=JSON.parse(localStorage.getItem(ACTIVATION_PREFIX+workspaceId())||'[]');return Array.isArray(events)?events:[];}catch(error){return [];}}
+  function writeRepairResume(payload){
+    const resume={...payload,status:payload?.status||'pending',at:new Date().toISOString(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored:false,raw_response_stored:false};
+    try{localStorage.setItem(REPAIR_RESUME_PREFIX+workspaceId(),JSON.stringify(resume));}catch(error){}
+    window.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
+    return resume;
+  }
+  function openStarterInstaller(model,source){
+    const params=new URLSearchParams({source:source||'model-library'});
+    if(model?.id)params.set('starter',model.id);
+    if(model?.model)params.set('model',model.model);
+    const target='./downloads/mmir-local-connector-install.html?'+params;
+    const resume=writeRepairResume({action:'starter-install-repair',target,model:model?.model||'',starter_id:model?.id||'',note:'Opening no-spend local installer for '+(model?.model||model?.label||'selected starter')+'.',next_action:'installer-download'});
+    window.MimirActivationTelemetry?.record?.('starter-install-installer-opened',{status:'installer',model:model?.model||model?.id||'',route:target,free:true,note:'Model Library install opened universal installer. no_paid_routes_started:true.'});
+    window.dispatchEvent(new CustomEvent('mmir-starter-install-repair-opened',{detail:resume}));
+    window.location.href=target;
+  }
   function latestRecommendedStarter(){return [...readActivationEvents()].reverse().find(event=>event.type==='recommended-starter')||null;}
   function isRecommendedStarter(model){
     const starter=latestRecommendedStarter();
@@ -212,6 +229,10 @@
     if(target&&'open' in target)target.open=true;
     if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
     window.MimirActivationTelemetry?.record?.('model-library-starter-handoff',{status:action||'select',model:model.model||model.id,route:'model library',free:true,note:'Model Library handed '+(model.model||model.id)+' to chat runtime. no_paid_routes_started:true.'});
+    if(action==='install'&&model.runtime==='ollama'){
+      openStarterInstaller(model,'model-library');
+      return;
+    }
     window.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{starter_id:model.id,model:model.model||'',runtime:model.runtime||'',action:action||'select',source:'model-library',free:true,no_paid_routes_started:true}}));
   }
 

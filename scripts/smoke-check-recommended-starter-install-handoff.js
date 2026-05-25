@@ -46,6 +46,10 @@ for (const needle of [
   'Install / prove in chat',
   'mmir-runtime-starter-handoff',
   'model-library-starter-handoff',
+  'function openStarterInstaller(model,source)',
+  'mmir-local-connector-install.html',
+  'next_action:\'installer-download\'',
+  'starter-install-installer-opened',
   'starter_id:model.id',
   'no_paid_routes_started:true'
 ]) {
@@ -140,6 +144,10 @@ if (!d203 || d203.status !== 'beta') {
 const d206 = tasks.find((task) => task.seq === 'D206');
 if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard must expose D206 as beta after installer-to-live-model proof ships.');
+}
+const d264 = tasks.find((task) => task.seq === 'D264');
+if (!d264 || d264.status !== 'beta') {
+  fail('Progress dashboard must expose D264 as beta after selected-model installer handoff ships.');
 }
 
 if (!process.exitCode) {
