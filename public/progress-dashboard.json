@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T04:28:05.720Z",
+  "updated_at": "2026-05-25T04:53:49.686Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 273,
+    "total": 274,
     "done": 51,
-    "beta": 197,
+    "beta": 198,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -908,9 +908,9 @@
       },
       {
         "phase": "Chat UX / First Impression",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1349,6 +1349,12 @@
         "label": "Keyboard flow feels modern",
         "status": "beta",
         "evidence": "Escape stops a running answer and Ctrl/Cmd+K focuses the composer through existing controls without adding critical first-paint JavaScript."
+      },
+      {
+        "id": "composer-ready-on-open",
+        "label": "Composer is ready on open",
+        "status": "beta",
+        "evidence": "Desktop first load focuses the prompt only when there is no deep link or user interaction, avoiding mobile keyboard popups and paid/backend side effects."
       },
       {
         "id": "transcript-scroll-guard",
@@ -9900,6 +9906,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D274",
+      "phase": "Chat UX / First Impression",
+      "priority": "P0",
+      "work_package": "Desktop prompt ready-on-open",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Focus the chat composer automatically on desktop first load when there is no deep link, while avoiding mobile keyboard popups, user-interaction theft and paid/backend side effects",
+      "best_practice": "The fastest first value is a cursor already waiting in the chat box, but a trusted UI must not fight navigation or mobile users",
+      "done_when": "Deferred autofocus proves prompt focus is desktop/hash-safe, emits public-safe telemetry and keeps critical first-paint JavaScript unchanged",
+      "covers": "chat, first-impression, composer, open-webui-parity, accessibility, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A deferred desktop-safe autofocus module now puts the cursor in the composer on first load when there is no deep link, while avoiding mobile keyboard popups and critical first-paint JavaScript growth.",
       "estimate": "Verify + polish"
     }
   ]

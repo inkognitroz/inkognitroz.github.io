@@ -256,7 +256,8 @@ const overrides = new Map([
   ['D270', { status: 'beta', evidence: 'The main composer action now hands off to the existing stop control while a cancellable response is running, giving the primary button an Open WebUI/ChatGPT-like stop state without adding critical first-paint JavaScript.' }],
   ['D271', { status: 'beta', evidence: 'A deferred transcript scroll guard now keeps new messages pinned to bottom by default, preserves scroll position when the user reads older context and exposes a Latest jump action without adding critical first-paint JavaScript.' }],
   ['D272', { status: 'beta', evidence: 'A deferred composer New chat action now reuses the existing runtime clear path, blocks while responses are running, resets/focuses the prompt and keeps free/local routes available without adding critical first-paint JavaScript.' }],
-  ['D273', { status: 'beta', evidence: 'A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.' }]
+  ['D273', { status: 'beta', evidence: 'A deferred composer keyboard module now lets Escape stop a running answer and Ctrl/Cmd+K focus the prompt through existing runtime controls without adding critical first-paint JavaScript.' }],
+  ['D274', { status: 'beta', evidence: 'A deferred desktop-safe autofocus module now puts the cursor in the composer on first load when there is no deep link, while avoiding mobile keyboard popups and critical first-paint JavaScript growth.' }]
 ]);
 
 const repoMeta = [
@@ -711,6 +712,12 @@ function buildLaunchProgress() {
       label: 'Keyboard flow feels modern',
       status: 'beta',
       evidence: 'Escape stops a running answer and Ctrl/Cmd+K focuses the composer through existing controls without adding critical first-paint JavaScript.'
+    },
+    {
+      id: 'composer-ready-on-open',
+      label: 'Composer is ready on open',
+      status: 'beta',
+      evidence: 'Desktop first load focuses the prompt only when there is no deep link or user interaction, avoiding mobile keyboard popups and paid/backend side effects.'
     },
     {
       id: 'transcript-scroll-guard',

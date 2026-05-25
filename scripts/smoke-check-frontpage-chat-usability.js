@@ -10,6 +10,7 @@ const files = {
   transcriptScrollGuard: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'transcript-scroll-guard.js'),
   composerNewChat: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-new-chat.js'),
   composerKeyboard: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-keyboard-shortcuts.js'),
+  composerAutofocus: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-autofocus.js'),
   runtimeCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspacesCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workspaces.css'),
   sw: join(resolve(root, 'public'), 'sw.js'),
@@ -47,6 +48,7 @@ const composerStop = read(files.composerStop);
 const transcriptScrollGuard = read(files.transcriptScrollGuard);
 const composerNewChat = read(files.composerNewChat);
 const composerKeyboard = read(files.composerKeyboard);
+const composerAutofocus = read(files.composerAutofocus);
 const runtimeCss = read(files.runtimeCss).replace(/\s+/g, ' ');
 const workspacesCss = read(files.workspacesCss).replace(/\s+/g, ' ');
 const sw = read(files.sw);
@@ -60,8 +62,9 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-stop-handoff.js', 'Comp
 requireIncludes(html, './apps/mimir-chat-portal/transcript-scroll-guard.js', 'Transcript scroll guard must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-new-chat.js', 'Composer new chat shortcut must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js', 'Composer keyboard shortcuts must load through the deferred queue.');
+requireIncludes(html, './apps/mimir-chat-portal/composer-autofocus.js', 'Composer autofocus must load through the deferred queue.');
 requireIncludes(html, 'chat-runtime.css?v=20260525-composer-new-chat-v1', 'Chat runtime CSS must be cache-busted for composer new chat polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d273-20260525-composer-keyboard-v1'", 'Service worker cache must be bumped for the composer keyboard shortcut fix.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d274-20260525-composer-autofocus-v1'", 'Service worker cache must be bumped for the composer autofocus fix.');
 
 for (const needle of [
   'resize:none',
@@ -146,6 +149,18 @@ for (const needle of [
   'event.preventDefault()'
 ]) {
   requireIncludes(composerKeyboard, needle, `Composer keyboard shortcuts must keep stop/focus behavior: ${needle}`);
+}
+
+for (const needle of [
+  "location.hash&&location.hash!=='#mimir-prompt'",
+  "w.matchMedia&&w.matchMedia('(pointer: coarse)').matches",
+  'prompt.focus({preventScroll:true})',
+  "prompt.dataset.autofocused='true'",
+  'window.MimirAutosizeComposer?.()',
+  'mmir-composer-autofocused',
+  'no_paid_routes_started:true'
+]) {
+  requireIncludes(composerAutofocus, needle, `Composer autofocus must be desktop-safe and public-safe: ${needle}`);
 }
 
 for (const needle of [
