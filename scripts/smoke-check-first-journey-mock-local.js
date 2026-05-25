@@ -249,6 +249,7 @@ async function run() {
     const profile = { provider: 'local-node' };
     await api.fetchJson(api.joinUrl(connector.url, '/health'), { timeoutMs: 5000 });
     const token = await api.pairIfNeeded(profile, connector.url);
+    const cachedToken = await api.pairIfNeeded(profile, connector.url);
     const headers = api.authHeaders(token);
     const models = await api.fetchJson(api.joinUrl(connector.url, '/models'), { headers, timeoutMs: 5000 });
     const liveModel = models.data?.[0]?.id;
@@ -260,10 +261,11 @@ async function run() {
     });
     const content = answer?.choices?.[0]?.message?.content || '';
     requireTrue(token === connectorState.token, 'Frontend API client must store and return the mock pairing token.');
+    requireTrue(cachedToken === token, 'Frontend API client must reuse the existing local pairing token.');
     requireTrue(liveModel === 'mock-local-llm', '/models must expose the mock live model.');
     requireTrue(content.includes('Mock local connector answer'), 'Mock chat answer must use the OpenAI-compatible response shape.');
     requireTrue(connectorState.health >= 1, 'Mock connector /health must be checked.');
-    requireTrue(connectorState.pair >= 1, 'Mock connector /pair must be called.');
+    requireTrue(connectorState.pair === 1, 'Mock connector /pair must not be called again while a token is cached.');
     requireTrue(connectorState.models >= 1, 'Mock connector /models must be called.');
     requireTrue(connectorState.chat >= 1, 'Mock connector /chat/completions must be called.');
     requireTrue(!connectorState.badAuthorizationHeader, 'Public frontend flow must not send provider Authorization headers to local connector.');
