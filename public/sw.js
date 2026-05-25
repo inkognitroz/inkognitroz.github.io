@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d283-20260525-picker-empty-reset-v1';
+const CACHE_NAME='mmir-pwa-d284-20260525-clean-shell-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

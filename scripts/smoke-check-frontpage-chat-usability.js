@@ -58,7 +58,7 @@ const pagesWorkflow = read(files.pagesWorkflow);
 const qualityWorkflow = read(files.qualityWorkflow);
 
 requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontpage must keep the chat-first shell class.');
-requireIncludes(html, 'mimir-chat-portal.css?v=20260525-composer-stop-v1', 'MMIR frontpage must ship the fresh composer stop CSS cache key.');
+requireIncludes(html, 'mimir-chat-portal.css?v=20260525-clean-shell-v1', 'MMIR frontpage must ship the fresh composer stop CSS cache key.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-autosize.js', 'Composer autosize fallback must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-stop-handoff.js', 'Composer stop handoff must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/transcript-scroll-guard.js', 'Transcript scroll guard must load through the deferred queue.');
@@ -66,10 +66,10 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-new-chat.js', 'Composer
 requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js', 'Composer keyboard shortcuts must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-autofocus.js', 'Composer autofocus must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-refocus-after-send.js', 'Composer refocus after send must load through the deferred queue.');
-requireIncludes(html, 'chat-runtime.css?v=20260525-proof-compact-v1', 'Chat runtime CSS must be cache-busted for compact proof polish.');
+requireIncludes(html, 'chat-runtime.css?v=20260525-clean-runtime-v1', 'Chat runtime CSS must be cache-busted for compact proof polish.');
 requireIncludes(html, 'composer-model-picker.css?v=20260525-picker-empty-reset-v1', 'Composer model picker CSS must be cache-busted for picker empty-reset polish.');
 requireIncludes(html, 'composer-model-picker.js?v=20260525-picker-empty-reset-v1', 'Composer model picker JS must be cache-busted for picker empty-reset polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d283-20260525-picker-empty-reset-v1'", 'Service worker cache must be bumped for the model picker empty-reset fix.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d284-20260525-clean-shell-v1'", 'Service worker cache must be bumped for the model picker empty-reset fix.');
 
 for (const needle of [
   'resize:none',

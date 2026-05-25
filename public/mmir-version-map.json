@@ -1,0 +1,80 @@
+{
+  "version": "2026-05-25-clean-shell-v1",
+  "identity": "The orchestration layer for trusted AI",
+  "current_user_journey": [
+    "open_mmir_ai",
+    "clean_chat_shell",
+    "free_browser_guide_chat",
+    "connect_local_node_when_ready",
+    "progressively_disclose_capabilities"
+  ],
+  "layers": [
+    {
+      "id": "frontend",
+      "label": "mmir.ai public frontend",
+      "state": "live",
+      "owns": [
+        "chat shell",
+        "public-safe orchestration UI",
+        "local-first onboarding"
+      ],
+      "must_not_own": [
+        "provider secrets",
+        "billing authority",
+        "raw runtime ports"
+      ]
+    },
+    {
+      "id": "api_gateway",
+      "label": "api.mmir.ai gateway",
+      "state": "planned-p0",
+      "owns": [
+        "TLS ingress",
+        "auth",
+        "policy",
+        "rate limits",
+        "routing",
+        "audit"
+      ],
+      "must_not_own": [
+        "static marketing content"
+      ]
+    },
+    {
+      "id": "local_node",
+      "label": "MMIR Local Node",
+      "state": "beta-contract",
+      "owns": [
+        "pairing",
+        "Ollama bridge",
+        "local model discovery",
+        "local chat"
+      ],
+      "must_not_own": [
+        "public raw Ollama exposure",
+        "paid provider keys"
+      ]
+    },
+    {
+      "id": "registered_nodes",
+      "label": "Registered AI nodes",
+      "state": "contract-defined",
+      "owns": [
+        "health",
+        "models",
+        "capabilities",
+        "heartbeat"
+      ],
+      "must_not_own": [
+        "unapproved spend",
+        "anonymous compute"
+      ]
+    }
+  ],
+  "next_p0": [
+    "deploy_clean_shell_and_verify_mmir_ai",
+    "implement_api_gateway_contract_skeleton",
+    "verify_local_node_installer_to_chat_loop",
+    "create_agent_ready_issues_for_frontend_backend_local_node_security_qa"
+  ]
+}

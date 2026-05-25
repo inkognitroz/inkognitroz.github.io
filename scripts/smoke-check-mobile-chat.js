@@ -29,11 +29,11 @@ requireCss('.mimir-chat-first .quick-suggestions{order:5', 'Mobile quick actions
 requireCss('.mimir-chat-first #mimir-instant-start{order:6', 'Ground Zero card must not push the chat below the first mobile screen.');
 requireCss('env(safe-area-inset-bottom)', 'Mobile layout must respect browser/device bottom safe area.');
 
-if (!html.includes('mimir-chat-portal.css?v=20260525-composer-stop-v1')) {
+if (!html.includes('mimir-chat-portal.css?v=20260525-clean-shell-v1')) {
   fail('MMIR page must cache-bust the mobile chat CSS hotfix.');
 }
 
-if (!html.includes('chat-runtime.css?v=20260525-proof-compact-v1')) {
+if (!html.includes('chat-runtime.css?v=20260525-clean-runtime-v1')) {
   fail('MMIR page must cache-bust the compact proof chat runtime CSS.');
 }
 
@@ -41,7 +41,7 @@ if (!html.includes('composer-model-picker.css?v=20260525-picker-empty-reset-v1')
   fail('MMIR page must cache-bust the model picker empty-reset CSS.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d283-20260525-picker-empty-reset-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d284-20260525-clean-shell-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

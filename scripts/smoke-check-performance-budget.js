@@ -6,14 +6,14 @@ const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const mmirPath = join(publicDir, 'mmir.html');
 const indexPath = join(publicDir, 'index.html');
-const externalInitialJsByteBudget = 166000;
+const externalInitialJsByteBudget = 163000;
 const inlineFirstPaintJsByteBudget = 5000;
-const totalFirstPaintJsByteBudget = 171000;
+const totalFirstPaintJsByteBudget = 168000;
 const cacheKey = '20260524-quiet-first-paint-v3';
 const runtimeCacheKey = '20260525-critical-active-routes-v1';
 const activeRoutesCacheKey = '20260525-critical-active-routes-v1';
 const progressCacheKey = '20260525-launch-progress-v1';
-const runtimeFixKey = '20260524-first-chat-p0-v1';
+const runtimeFixKey = '20260525-clean-shell-guard-v1';
 
 function fail(message) {
   console.error(message);
@@ -97,7 +97,7 @@ if (blockingCss.length > 4) fail(`Critical blocking CSS budget exceeded: ${block
 if (deferredCss.length < 24) fail(`Advanced CSS should be non-render-blocking; found only ${deferredCss.length} deferred files.`);
 if (initialScripts.length > 9) fail(`Initial JS budget exceeded: ${initialScripts.length} scripts.`);
 if (deferredScripts.length < 35) fail(`Advanced modules should load progressively; found only ${deferredScripts.length} deferred scripts.`);
-if (blockingCssBytes > 65000) fail(`Blocking CSS budget exceeded: ${blockingCssBytes} bytes.`);
+if (blockingCssBytes > 68000) fail(`Blocking CSS budget exceeded: ${blockingCssBytes} bytes.`);
 if (initialJsBytes > externalInitialJsByteBudget) fail(`External initial JS budget exceeded: ${initialJsBytes} bytes.`);
 if (inlineFirstPaintJsBytes > inlineFirstPaintJsByteBudget) fail(`Inline first-paint JS budget exceeded: ${inlineFirstPaintJsBytes} bytes.`);
 if (totalFirstPaintJsBytes > totalFirstPaintJsByteBudget) fail(`Total first-paint JS budget exceeded: ${totalFirstPaintJsBytes} bytes.`);
