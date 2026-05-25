@@ -1,0 +1,55 @@
+.composer-quick-actions {
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 7px 6px 9px;
+}
+
+.composer-quick-actions[hidden] {
+  display: none;
+}
+
+.composer-quick-actions button {
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 10px;
+  color: #0f172a;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  min-height: 48px;
+  padding: 8px 9px;
+  text-align: left;
+}
+
+.composer-quick-actions button:hover,
+.composer-quick-actions button:focus-visible {
+  border-color: rgba(37, 99, 235, 0.42);
+  outline: 0;
+}
+
+.composer-quick-actions span {
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.composer-quick-actions small {
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 720px) {
+  .composer-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .composer-quick-actions button {
+    min-height: 46px;
+    padding: 7px 8px;
+  }
+}

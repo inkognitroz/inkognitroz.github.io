@@ -10,6 +10,7 @@ const noModelPublicDeployVerificationPath = resolve(root, 'public', 'no-model-pu
 const firstFreeChatResponseReportPath = resolve(root, 'public', 'first-free-chat-response-report.json');
 const composerActionBarReportPath = resolve(root, 'public', 'composer-action-bar-report.json');
 const composerActionBarVisualReportPath = resolve(root, 'public', 'composer-action-bar-visual-report.json');
+const composerQuickActionsReportPath = resolve(root, 'public', 'composer-quick-actions-report.json');
 const messageActionCompletenessReportPath = resolve(root, 'public', 'message-action-completeness-report.json');
 const messageActionVisualReportPath = resolve(root, 'public', 'message-action-visual-report.json');
 const messageActionBrowserFixtureReportPath = resolve(root, 'public', 'message-action-browser-fixture-report.json');
@@ -271,7 +272,8 @@ const overrides = new Map([
   ['D284', { status: 'beta', evidence: 'Fresh full-project review snapshot now records public Pages CI, 87 frontend smoke gates, local-node release/conformance gates, backend route/security gates and OCI/AWS proxy checks in the Progress Dashboard.' }],
   ['D285', { status: 'beta', evidence: 'The legacy Connect Model action now prepares the free local profile and opens the compact composer model picker first, with a safe model-library fallback while deferred assets load.' }],
   ['D286', { status: 'beta', evidence: 'The composer now uses compact Open WebUI-style Auto review and 5.5 Extra high chips, keeps advanced modes visually quieter on the first screen and preserves no-spend mode toggles.' }],
-  ['D287', { status: 'beta', evidence: 'Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.' }]
+  ['D287', { status: 'beta', evidence: 'Domain availability watch now records the latest green Pages commit, public CNAME/DNS evidence, local 503 watch state and no-spend off-network verification steps without treating it as a chat regression.' }],
+  ['D288', { status: 'beta', evidence: 'The composer plus button now opens an Open WebUI-style quick actions drawer for models, local node install, knowledge, new chat, voice and settings with no hidden spend.' }]
 ]);
 
 const repoMeta = [
@@ -403,6 +405,11 @@ function readComposerActionBarReport() {
 function readComposerActionBarVisualReport() {
   if (!existsSync(composerActionBarVisualReportPath)) return null;
   return JSON.parse(readFileSync(composerActionBarVisualReportPath, 'utf8'));
+}
+
+function readComposerQuickActionsReport() {
+  if (!existsSync(composerQuickActionsReportPath)) return null;
+  return JSON.parse(readFileSync(composerQuickActionsReportPath, 'utf8'));
 }
 
 function readMessageActionCompletenessReport() {
@@ -737,6 +744,12 @@ function buildLaunchProgress() {
       label: 'Domain availability is separated from chat health',
       status: 'watch',
       evidence: 'D287 records f69d128 as the latest green Pages commit, Cloudflare DNS/CNAME evidence and the local 503 state as an off-network domain watch instead of a frontend/chat failure.'
+    },
+    {
+      id: 'composer-quick-actions-drawer',
+      label: 'Plus opens useful chat tools',
+      status: 'beta',
+      evidence: 'D288 turns the composer plus into a compact tools drawer for models, local install, knowledge, new chat, voice and settings, while preserving no-spend and fallback model-picker behavior.'
     },
     {
       id: 'local-node-package',
@@ -1078,6 +1091,7 @@ const data = {
   first_free_chat_response_report: readFirstFreeChatResponseReport(),
   composer_action_bar_report: readComposerActionBarReport(),
   composer_action_bar_visual_report: readComposerActionBarVisualReport(),
+  composer_quick_actions_report: readComposerQuickActionsReport(),
   message_action_completeness_report: readMessageActionCompletenessReport(),
   message_action_visual_report: readMessageActionVisualReport(),
   message_action_browser_fixture_report: readMessageActionBrowserFixtureReport(),

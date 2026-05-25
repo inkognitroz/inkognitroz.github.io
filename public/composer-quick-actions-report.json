@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "title": "Composer Quick Actions Drawer",
+  "scope": "D288 Open WebUI-style composer plus menu",
+  "status": "beta",
+  "principle": "The first chat surface keeps one calm plus button while useful model, node, knowledge, voice, settings and reset actions stay one click away.",
+  "public_repo_rule": "Public-safe UI evidence only. No prompts, responses, cookies, provider keys, pairing tokens, billing data or private node telemetry.",
+  "controls": [
+    {
+      "id": "composer-plus-tools",
+      "selector": "#composer-add-model",
+      "expected": "Opens a compact tools drawer after deferred assets load; before that it still falls back to the model picker.",
+      "evidence": ["MimirComposerQuickActions", "stopImmediatePropagation", "composer-quick-actions"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-models",
+      "selector": "[data-composer-quick-action=\"models\"]",
+      "expected": "Opens the compact model picker with free, browser, live and local routes first.",
+      "evidence": ["data-composer-quick-action=\"models\"", "w.MimirComposerModelPicker?.open", "w.MimirChatRuntimeBridge?.openModelPicker"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-install-node",
+      "selector": "[data-composer-quick-action=\"install-node\"]",
+      "expected": "Starts the no-spend local node installer handoff with a browser-local repair resume.",
+      "evidence": ["mmir-local-connector-install.html?source=composer-quick-actions", "mimir-repair-resume-v1:", "no_paid_routes_started:true"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-knowledge",
+      "selector": "[data-composer-quick-action=\"knowledge\"]",
+      "expected": "Opens the local-first Knowledge panel without sending files to a public frontend backend.",
+      "evidence": ["openDeferredPanel('#knowledge-panel')", "Knowledge opened"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-new-chat",
+      "selector": "[data-composer-quick-action=\"new-chat\"]",
+      "expected": "Starts a fresh local conversation through the existing New chat or Clear path.",
+      "evidence": ["q('#composer-new-chat')", "q('#runtime-clear')"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    },
+    {
+      "id": "composer-quick-voice-settings",
+      "selector": "[data-composer-quick-action=\"voice\"], [data-composer-quick-action=\"settings\"]",
+      "expected": "Opens browser-local voice tools or local runtime settings from the same compact drawer.",
+      "evidence": ["q('#composer-voice-input')", "openDeferredPanel('#runtime-settings-panel')"],
+      "status": "ready",
+      "no_paid_routes_started": true
+    }
+  ],
+  "mobile_contract": [
+    ".composer-quick-actions",
+    ".composer-quick-actions[hidden]",
+    ".composer-quick-actions button",
+    "@media (max-width: 720px)"
+  ],
+  "completion_rule": "The plus menu is beta-complete when source smoke gates prove every drawer action has a real no-spend handler and the first-paint performance budget stays green."
+}

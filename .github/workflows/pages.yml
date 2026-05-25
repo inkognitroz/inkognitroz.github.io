@@ -72,6 +72,8 @@ jobs:
 
       - name: Smoke check composer action bar visual
         run: node scripts/smoke-check-composer-action-bar-visual.js
+      - name: Smoke check composer quick actions
+        run: node scripts/smoke-check-composer-quick-actions.js
       - name: Smoke check message action completeness
         run: node scripts/smoke-check-message-action-completeness.js
       - name: Smoke check message action visual

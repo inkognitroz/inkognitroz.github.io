@@ -20,6 +20,8 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/composer-refocus-after-send.js',
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
+  './apps/mimir-chat-portal/composer-quick-actions.css',
+  './apps/mimir-chat-portal/composer-quick-actions.js',
   './active-chat-nodes.json',
   './free-model-starters.json',
   './apps/mimir-chat-portal/repair-resume.css',

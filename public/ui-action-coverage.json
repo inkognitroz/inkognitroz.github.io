@@ -29,6 +29,14 @@
       "evidence": ["ensureFreeLocalProfile", "newBtn.addEventListener('click',createProfile)", "surface:'model-picker'", "MimirChatRuntimeBridge?.openModelPicker", "openComposerModelPicker", "MimirComposerModelPicker", "composer-model-picker", "document.getElementById('model-library')", "section.id='connect-options'", "openStarterInstaller", "starter-install-installer-opened", "mmir-local-connector-install.html"]
     },
     {
+      "id": "composer-quick-actions",
+      "surface": "Chat composer",
+      "status": "live",
+      "user_result": "The plus button opens a compact Open WebUI-style tools drawer for models, local node install, knowledge, new chat, voice and settings, with no hidden spend or frontend secrets.",
+      "selectors": ["#composer-add-model", "#composer-quick-actions", "[data-composer-quick-action=\"models\"]", "[data-composer-quick-action=\"install-node\"]", "[data-composer-quick-action=\"knowledge\"]", "[data-composer-quick-action=\"new-chat\"]", "[data-composer-quick-action=\"voice\"]", "[data-composer-quick-action=\"settings\"]"],
+      "evidence": ["MimirComposerQuickActions", "runQuickAction", "data-composer-quick-action=\"models\"", "mmir-local-connector-install.html?source=composer-quick-actions", "openDeferredPanel('#knowledge-panel')", "q('#composer-new-chat')", "q('#composer-voice-input')", "openDeferredPanel('#runtime-settings-panel')", "no_paid_routes_started:true"]
+    },
+    {
       "id": "first-run-checklist",
       "surface": "First-run onboarding",
       "status": "live",

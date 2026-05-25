@@ -65,6 +65,11 @@
       "id": "D214 composer action bar visual QA",
       "status": "guarded",
       "evidence": "Composer action bar visual report covers desktop/mobile control wrapping, feedback readability, clickable resource chip and stable send control."
+    },
+    {
+      "id": "D288 composer quick actions drawer",
+      "status": "guarded",
+      "evidence": "Plus opens a compact Open WebUI-style tools drawer for model, node, knowledge, new chat, voice and settings actions with mobile-safe wrapping."
     }
   ],
   "known_limitations": [

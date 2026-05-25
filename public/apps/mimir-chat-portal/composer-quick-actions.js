@@ -1,0 +1,208 @@
+(function(){
+  const d=document;
+  const w=window;
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  let menu=null;
+
+  function q(selector){return d.querySelector(selector);}
+  function workspaceId(){return localStorage.getItem(WORKSPACE_KEY)||'personal';}
+  function setFeedback(message,state){
+    const feedback=q('#composer-action-feedback');
+    if(feedback){
+      feedback.dataset.state=state||'idle';
+      feedback.textContent=message;
+    }
+  }
+  function focusPrompt(clear){
+    const prompt=q('#mimir-prompt');
+    if(!prompt)return;
+    if(clear){
+      prompt.value='';
+      prompt.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+    prompt.focus({preventScroll:true});
+    w.MimirAutosizeComposer?.();
+  }
+  function openPanel(target){
+    const targetEl=q(target);
+    if(targetEl){
+      let details=targetEl;
+      while(details){
+        if('open' in details)details.open=true;
+        details=details.parentElement?.closest?.('details')||null;
+      }
+      targetEl.scrollIntoView({block:'start',behavior:'smooth'});
+    }
+  }
+  function openDeferredPanel(target){
+    if(q(target)){
+      openPanel(target);
+      return;
+    }
+    if(w.MimirLoadDeferred){
+      w.MimirLoadDeferred().then(()=>openPanel(target));
+      return;
+    }
+    openPanel(target);
+  }
+  function writeRepairResume(){
+    const target='./downloads/mmir-local-connector-install.html?source=composer-quick-actions';
+    const resume={
+      source:'composer-quick-actions',
+      action:'install-local-node',
+      status:'pending',
+      target,
+      next_action:'installer-download',
+      at:new Date().toISOString(),
+      no_paid_routes_started:true,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false
+    };
+    try{localStorage.setItem(REPAIR_RESUME_PREFIX+workspaceId(),JSON.stringify(resume));}catch(error){}
+    w.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
+    return target;
+  }
+  function ensureMenu(){
+    if(menu)return menu;
+    const form=q('.mimir-composer');
+    if(!form)return null;
+    menu=d.createElement('div');
+    menu.id='composer-quick-actions';
+    menu.className='composer-quick-actions';
+    menu.hidden=true;
+    menu.setAttribute('role','menu');
+    menu.setAttribute('aria-label','Composer quick actions');
+    menu.innerHTML=''+
+      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Free, live and local routes</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="install-node"><span>Install node</span><small>Mac, Windows, Linux or Pi</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="knowledge"><span>Knowledge</span><small>Add files or sources locally</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="new-chat"><span>New chat</span><small>Reset local conversation</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="voice"><span>Voice</span><small>Browser-local speech tools</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="settings"><span>Settings</span><small>Temperature and context</small></button>';
+    const dock=q('#composer-mode-dock');
+    if(dock&&dock.nextSibling)form.insertBefore(menu,dock.nextSibling);
+    else if(dock)form.appendChild(menu);
+    else form.insertBefore(menu,form.querySelector('.composer-bar')||null);
+    menu.addEventListener('click',(event)=>{
+      const action=event.target?.closest?.('[data-composer-quick-action]')?.getAttribute('data-composer-quick-action');
+      if(action)runQuickAction(action);
+    });
+    return menu;
+  }
+  function setExpanded(open){
+    const plus=q('#composer-add-model');
+    if(!plus)return;
+    plus.setAttribute('aria-expanded',String(open));
+    plus.setAttribute('aria-controls','composer-quick-actions composer-model-picker');
+    plus.setAttribute('aria-label','Open chat tools');
+    plus.setAttribute('title','Open chat tools');
+  }
+  function closeMenu(refocus){
+    const el=ensureMenu();
+    if(!el)return;
+    el.hidden=true;
+    setExpanded(false);
+    if(refocus)focusPrompt(false);
+  }
+  function toggleMenu(force){
+    const el=ensureMenu();
+    if(!el)return;
+    const open=typeof force==='boolean'?force:el.hidden;
+    el.hidden=!open;
+    setExpanded(open);
+    if(open){
+      w.MimirComposerModelPicker?.close?.();
+      setFeedback('Tools opened. Choose models, local node, knowledge, voice, settings or a new chat.','ready');
+      if(!(w.matchMedia&&w.matchMedia('(pointer: coarse)').matches)){
+        setTimeout(()=>el.querySelector('[data-composer-quick-action]')?.focus({preventScroll:true}),0);
+      }
+    }
+  }
+  function openModels(){
+    closeMenu(false);
+    if(w.MimirComposerModelPicker?.open){w.MimirComposerModelPicker.open();}
+    else if(w.MimirChatRuntimeBridge?.openModelPicker){w.MimirChatRuntimeBridge.openModelPicker();}
+    else openDeferredPanel('#model-library');
+    setFeedback('Model picker opened from tools. Free/browser/local routes stay first.','ready');
+  }
+  function newChat(){
+    closeMenu(false);
+    const busy=q('#runtime-stop')&&!q('#runtime-stop').disabled;
+    if(busy){
+      setFeedback('Stop the current answer before starting a new chat.','error');
+      return;
+    }
+    const composerNew=q('#composer-new-chat');
+    if(composerNew){composerNew.click();return;}
+    q('#runtime-clear')?.click();
+    focusPrompt(true);
+    setFeedback('New local chat ready. Free guide/model routes stay available.','ready');
+  }
+  function runQuickAction(action){
+    if(action==='models'){
+      openModels();
+      return;
+    }
+    if(action==='install-node'){
+      closeMenu(false);
+      const target=writeRepairResume();
+      setFeedback('Opening free local node installer. No paid route starts.','ready');
+      w.location.href=target;
+      return;
+    }
+    if(action==='knowledge'){
+      closeMenu(false);
+      openDeferredPanel('#knowledge-panel');
+      setFeedback('Knowledge opened. Files stay local unless a protected backend is selected.','ready');
+      return;
+    }
+    if(action==='new-chat'){
+      newChat();
+      return;
+    }
+    if(action==='voice'){
+      closeMenu(false);
+      const voice=q('#composer-voice-input');
+      if(voice)voice.click();else openDeferredPanel('#voice-controls');
+      return;
+    }
+    if(action==='settings'){
+      closeMenu(false);
+      openDeferredPanel('#runtime-settings-panel');
+      setFeedback('Runtime settings opened. Changes apply locally to the next message.','ready');
+    }
+  }
+  function bind(){
+    const plus=q('#composer-add-model');
+    if(!plus)return false;
+    setExpanded(false);
+    ensureMenu();
+    return true;
+  }
+
+  d.addEventListener('click',(event)=>{
+    const trigger=event.target?.closest?.('#composer-add-model');
+    if(!trigger)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    toggleMenu();
+  },true);
+  d.addEventListener('pointerdown',(event)=>{
+    if(!menu||menu.hidden)return;
+    if(menu.contains(event.target)||event.target?.closest?.('#composer-add-model'))return;
+    closeMenu(false);
+  },true);
+  d.addEventListener('keydown',(event)=>{
+    if(event.key!=='Escape'||!menu||menu.hidden)return;
+    event.preventDefault();
+    closeMenu(true);
+  },true);
+
+  if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+  let tries=0;
+  const timer=setInterval(()=>{if(bind()||++tries>24)clearInterval(timer);},250);
+  w.MimirComposerQuickActions={open:()=>toggleMenu(true),close:()=>closeMenu(false),toggle:()=>toggleMenu(),run:runQuickAction};
+})();

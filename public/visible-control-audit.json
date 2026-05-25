@@ -32,6 +32,15 @@
       "no_spend": true
     },
     {
+      "id": "composer-quick-actions",
+      "surface": "Chat composer",
+      "selector": "#composer-quick-actions",
+      "status": "wired",
+      "result": "After deferred assets load, the plus button opens a compact tools drawer for model choice, local node install, knowledge, new chat, voice and runtime settings without starting paid routes.",
+      "source_evidence": ["MimirComposerQuickActions", "runQuickAction", "data-composer-quick-action=\"models\"", "mmir-local-connector-install.html?source=composer-quick-actions", "openDeferredPanel('#knowledge-panel')", "openDeferredPanel('#runtime-settings-panel')", "no_paid_routes_started:true"],
+      "no_spend": true
+    },
+    {
       "id": "composer-model-picker",
       "surface": "Chat composer",
       "selector": "#composer-model-picker",
