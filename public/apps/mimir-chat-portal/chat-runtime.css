@@ -336,6 +336,23 @@
   padding: 10px 6px 4px;
 }
 
+.runtime-scroll-latest {
+  justify-self: center;
+  margin-top: -2px;
+  min-height: 32px;
+  border: 1px solid rgba(16, 163, 127, 0.28);
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 0 11px;
+}
+
+.runtime-scroll-latest[hidden] {
+  display: none;
+}
+
 .mimir-has-chat .runtime-live-proof {
   padding: 8px 10px;
 }

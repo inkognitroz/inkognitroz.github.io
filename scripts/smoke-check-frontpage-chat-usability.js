@@ -7,6 +7,7 @@ const files = {
   css: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'),
   composerAutosize: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-autosize.js'),
   composerStop: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-stop-handoff.js'),
+  transcriptScrollGuard: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'transcript-scroll-guard.js'),
   runtimeCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspacesCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workspaces.css'),
   sw: join(resolve(root, 'public'), 'sw.js'),
@@ -41,6 +42,7 @@ const html = read(files.html);
 const css = read(files.css).replace(/\s+/g, ' ');
 const composerAutosize = read(files.composerAutosize);
 const composerStop = read(files.composerStop);
+const transcriptScrollGuard = read(files.transcriptScrollGuard);
 const runtimeCss = read(files.runtimeCss).replace(/\s+/g, ' ');
 const workspacesCss = read(files.workspacesCss).replace(/\s+/g, ' ');
 const sw = read(files.sw);
@@ -51,7 +53,9 @@ requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontp
 requireIncludes(html, 'mimir-chat-portal.css?v=20260525-composer-stop-v1', 'MMIR frontpage must ship the fresh composer stop CSS cache key.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-autosize.js', 'Composer autosize fallback must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-stop-handoff.js', 'Composer stop handoff must load through the deferred queue.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d270-20260525-composer-stop-v1'", 'Service worker cache must be bumped for the composer stop fix.');
+requireIncludes(html, './apps/mimir-chat-portal/transcript-scroll-guard.js', 'Transcript scroll guard must load through the deferred queue.');
+requireIncludes(html, 'chat-runtime.css?v=20260525-transcript-pin-v1', 'Chat runtime CSS must be cache-busted for transcript pinning.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d271-20260525-transcript-pin-v1'", 'Service worker cache must be bumped for the transcript pinning fix.');
 
 for (const needle of [
   'resize:none',
@@ -92,6 +96,25 @@ for (const needle of [
   'background: #991b1b'
 ]) {
   requireIncludes(runtimeCss, needle, `Composer stop state needs visible styling: ${needle}`);
+}
+
+for (const needle of [
+  "const near=(el)=>el.scrollHeight-el.scrollTop-el.clientHeight<48",
+  "button.className='runtime-scroll-latest'",
+  "button.setAttribute('aria-label','Jump to latest chat message')",
+  "transcript.dataset.pinned=String(pinned)",
+  "new MutationObserver(()=>",
+  "if(pinned){toBottom();return;}",
+  "transcript.scrollTop=top"
+]) {
+  requireIncludes(transcriptScrollGuard, needle, `Transcript scroll guard must protect reader position: ${needle}`);
+}
+
+for (const needle of [
+  '.runtime-scroll-latest',
+  '.runtime-scroll-latest[hidden]'
+]) {
+  requireIncludes(runtimeCss, needle, `Transcript latest jump control needs visible styling: ${needle}`);
 }
 
 for (const needle of [

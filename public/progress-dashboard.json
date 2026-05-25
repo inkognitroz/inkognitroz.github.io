@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T02:56:42.074Z",
+  "updated_at": "2026-05-25T03:25:10.013Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 270,
+    "total": 271,
     "done": 51,
-    "beta": 194,
+    "beta": 195,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -938,9 +938,9 @@
       },
       {
         "phase": "Chat UX / Transcript",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -9819,6 +9819,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The main composer action now hands off to the existing stop control while a cancellable response is running, giving the primary button an Open WebUI/ChatGPT-like stop state without adding critical first-paint JavaScript.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D271",
+      "phase": "Chat UX / Transcript",
+      "priority": "P0",
+      "work_package": "Pinned transcript scroll guard",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Keep new messages pinned to bottom by default, but preserve the user's scroll position and show a Latest jump control when they scroll up during streaming or long chats",
+      "best_practice": "Modern chat should stay live without fighting the user when they read older context",
+      "done_when": "Deferred scroll guard and CSS prove the transcript only auto-scrolls when pinned, exposes a keyboard-accessible Latest action and adds no critical first-paint JavaScript",
+      "covers": "chat, transcript, streaming, open-webui-parity, usability, performance, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "A deferred transcript scroll guard now keeps new messages pinned to bottom by default, preserves scroll position when the user reads older context and exposes a Latest jump action without adding critical first-paint JavaScript.",
       "estimate": "Verify + polish"
     }
   ]

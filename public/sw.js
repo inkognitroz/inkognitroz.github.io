@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d270-20260525-composer-stop-v1';
+const CACHE_NAME='mmir-pwa-d271-20260525-transcript-pin-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -13,6 +13,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/composer-autosize.js',
   './apps/mimir-chat-portal/composer-stop-handoff.js',
+  './apps/mimir-chat-portal/transcript-scroll-guard.js',
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
   './active-chat-nodes.json',
