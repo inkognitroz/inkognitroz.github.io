@@ -252,7 +252,8 @@ const overrides = new Map([
   ['D266', { status: 'beta', evidence: 'When local-node proof fails, the chat runtime now keeps ready browser-guide/WebGPU starter routes green instead of making first chat look broken.' }],
   ['D267', { status: 'beta', evidence: 'Universal installer page can now generate selected-model wrappers for Windows, Linux and Raspberry Pi, preserving MMIR_MODEL across the local-node handoff without paid services.' }],
   ['D268', { status: 'beta', evidence: 'After a conversation starts, chat focus mode hides quick suggestions and collapses active-node details so the transcript and composer stay primary.' }],
-  ['D269', { status: 'beta', evidence: 'The main composer now auto-grows like a modern chat surface, caps height cleanly and resets after send/model actions through CSS plus a deferred fallback script without adding critical first-paint JavaScript.' }]
+  ['D269', { status: 'beta', evidence: 'The main composer now auto-grows like a modern chat surface, caps height cleanly and resets after send/model actions through CSS plus a deferred fallback script without adding critical first-paint JavaScript.' }],
+  ['D270', { status: 'beta', evidence: 'The main composer action now hands off to the existing stop control while a cancellable response is running, giving the primary button an Open WebUI/ChatGPT-like stop state without adding critical first-paint JavaScript.' }]
 ]);
 
 const repoMeta = [

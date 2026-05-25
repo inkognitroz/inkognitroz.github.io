@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T02:30:51.460Z",
+  "updated_at": "2026-05-25T02:53:54.381Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 269,
+    "total": 270,
     "done": 51,
-    "beta": 193,
+    "beta": 194,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1248,9 +1248,9 @@
       },
       {
         "phase": "Chat UX / Composer",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -9792,6 +9792,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The main composer now auto-grows like a modern chat surface, caps height cleanly and resets after send/model actions through CSS plus a deferred fallback script without adding critical first-paint JavaScript.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D270",
+      "phase": "Chat UX / Composer",
+      "priority": "P0",
+      "work_package": "Primary send button becomes stop while streaming",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Hand off the main composer action to the existing runtime stop control while a cancellable response is running, update labels/state and style the stop state without adding critical first-paint JavaScript",
+      "best_practice": "Users expect one obvious send/stop control like ChatGPT/Open WebUI; stopping should not require hunting in the runtime toolbar",
+      "done_when": "Deferred handoff script and CSS prove the primary button switches to stop only when runtime-stop is enabled, calls the protected stop control and returns to send afterward",
+      "covers": "chat, composer, stop, open-webui-parity, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The main composer action now hands off to the existing stop control while a cancellable response is running, giving the primary button an Open WebUI/ChatGPT-like stop state without adding critical first-paint JavaScript.",
       "estimate": "Verify + polish"
     }
   ]

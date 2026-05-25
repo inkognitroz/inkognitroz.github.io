@@ -291,6 +291,13 @@
   line-height: 1;
 }
 
+#primary-chat-link.is-stopping {
+  background: #991b1b;
+  border-color: #991b1b;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
 .composer-actions #new-backend {
   display: none;
 }

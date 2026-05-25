@@ -6,6 +6,7 @@ const files = {
   html: join(resolve(root, 'public'), 'mmir.html'),
   css: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'mimir-chat-portal.css'),
   composerAutosize: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-autosize.js'),
+  composerStop: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'composer-stop-handoff.js'),
   runtimeCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspacesCss: join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'workspaces.css'),
   sw: join(resolve(root, 'public'), 'sw.js'),
@@ -39,6 +40,7 @@ function requireBefore(source, first, second, message) {
 const html = read(files.html);
 const css = read(files.css).replace(/\s+/g, ' ');
 const composerAutosize = read(files.composerAutosize);
+const composerStop = read(files.composerStop);
 const runtimeCss = read(files.runtimeCss).replace(/\s+/g, ' ');
 const workspacesCss = read(files.workspacesCss).replace(/\s+/g, ' ');
 const sw = read(files.sw);
@@ -46,9 +48,10 @@ const pagesWorkflow = read(files.pagesWorkflow);
 const qualityWorkflow = read(files.qualityWorkflow);
 
 requireIncludes(html, 'class="mimir-public-chat mimir-chat-first"', 'MMIR frontpage must keep the chat-first shell class.');
-requireIncludes(html, 'mimir-chat-portal.css?v=20260525-composer-autosize-v1', 'MMIR frontpage must ship the fresh composer autosize CSS cache key.');
+requireIncludes(html, 'mimir-chat-portal.css?v=20260525-composer-stop-v1', 'MMIR frontpage must ship the fresh composer stop CSS cache key.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-autosize.js', 'Composer autosize fallback must load through the deferred queue.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d269-20260525-composer-autosize-v1'", 'Service worker cache must be bumped for the composer autosize fix.');
+requireIncludes(html, './apps/mimir-chat-portal/composer-stop-handoff.js', 'Composer stop handoff must load through the deferred queue.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d270-20260525-composer-stop-v1'", 'Service worker cache must be bumped for the composer stop fix.');
 
 for (const needle of [
   'resize:none',
@@ -72,6 +75,23 @@ for (const needle of [
   "event.target?.closest?.('#primary-chat-link,[data-prompt-action],.composer-model-card button,.model-card button')"
 ]) {
   requireIncludes(composerAutosize, needle, `Composer autosize fallback must reset smoothly: ${needle}`);
+}
+
+for (const needle of [
+  "q('#runtime-stop')?.click()",
+  "primary.classList.toggle('is-stopping',stopping)",
+  "primary.dataset.composerStopReady=String(stopping)",
+  "primary.setAttribute('aria-label',stopping?'Stop current response':'Send prompt to the active MMIR route')",
+  'new MutationObserver(update).observe(stop,{attributes:true,attributeFilter:[\'disabled\']})'
+]) {
+  requireIncludes(composerStop, needle, `Composer stop handoff must wire the primary action to runtime stop: ${needle}`);
+}
+
+for (const needle of [
+  '#primary-chat-link.is-stopping',
+  'background: #991b1b'
+]) {
+  requireIncludes(runtimeCss, needle, `Composer stop state needs visible styling: ${needle}`);
 }
 
 for (const needle of [
