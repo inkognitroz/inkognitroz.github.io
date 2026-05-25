@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T00:39:33.011Z",
+  "updated_at": "2026-05-25T00:43:39.471Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 258,
+    "total": 259,
     "done": 51,
-    "beta": 182,
+    "beta": 183,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1155,6 +1155,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat UX / Local Node Activation",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1201,6 +1211,12 @@
         "label": "Install return to first local answer",
         "status": "beta",
         "evidence": "Mock local-node proof covers health, models and automatic first local answer after a successful install return."
+      },
+      {
+        "id": "active-install-handoff",
+        "label": "Connect/install action carries repair resume",
+        "status": "beta",
+        "evidence": "Active route Local Node and WebGPU fallback actions open the universal installer and save a local resume for proof after return."
       },
       {
         "id": "active-node-chat",
@@ -9467,6 +9483,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D259",
+      "phase": "Chat UX / Local Node Activation",
+      "priority": "P0",
+      "work_package": "Active route install handoff",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the active Local Node/WebGPU fallback route open the universal installer directly and store a browser-local repair resume so post-install proof continues automatically",
+      "best_practice": "Connect actions should perform the next safe action, not stop at a configuration panel",
+      "done_when": "User clicks the active route Install/Connect action, lands on the right no-spend installer, returns to MMIR and the proof path resumes",
+      "covers": "chat, local-node, installer, automation, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.",
       "estimate": "Verify + polish"
     }
   ]

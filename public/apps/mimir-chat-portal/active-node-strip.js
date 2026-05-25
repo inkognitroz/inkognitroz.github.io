@@ -3,6 +3,8 @@
   const MANIFEST_URL='./active-chat-nodes.json';
   const STARTER_CATALOG='./free-model-starters.json';
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let manifestNodes=[];
   let starterModels=[];
   let liveModels=[];
@@ -37,7 +39,7 @@
   }
   function card(node){
     const status=nodeStatus(node);
-    const action=status==='online'?'Chat':'Connect';
+    const action=status==='online'?'Chat':(node.id==='local-node'?'Install':'Connect');
     const model=nodeModel(node);
     return '<article class="mmir-active-node-card" data-node-id="'+safe(node.id)+'" data-node-state="'+safe(status)+'">'+
       '<div><span>'+safe(status==='online'?'Live route':'Connectable')+'</span><strong>'+safe(node.name)+'</strong><small>'+safe(nodeDetail(node))+'</small></div>'+
@@ -99,10 +101,18 @@
     }
     q('#primary-chat-link')?.click();
   }
-  function openLocal(){
+  function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||'personal';}
+  function repairResumeKey(){return REPAIR_RESUME_PREFIX+activeWorkspaceId();}
+  function writeLocalInstallResume(source){
+    const resume={source:String(source||'active-strip'),status:'pending',target:'#local-connector',starter_id:'ollama-qwen3-06b',model:'qwen3:0.6b',next_action:'installer-return-proof',at:new Date().toISOString(),no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored:false,raw_response_stored:false};
+    try{localStorage.setItem(repairResumeKey(),JSON.stringify(resume));}catch(error){}
+    w.dispatchEvent(new CustomEvent('mmir-repair-resume-started',{detail:resume}));
+    return resume;
+  }
+  function openInstaller(source){
     w.MimirBackendProfiles?.ensureFreeLocalProfile?.();
-    const target=q('#local-connector')||q('#connect-options');
-    if(target){for(let x=target;x;x=x.parentElement?.closest?.('details'))if('open'in x)x.open=true;target.scrollIntoView({behavior:'smooth',block:'start'});}
+    writeLocalInstallResume(source);
+    w.location.href='./downloads/mmir-local-connector-install.html';
   }
   function bestNode(nodes,selected){
     const label=String(selected.label||'');
@@ -118,11 +128,11 @@
         const promptEl=q('#mimir-prompt');
         if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start a private local chat and tell me which local model is answering.';
         q('#primary-chat-link')?.click();
-      }else openLocal();
+      }else openInstaller('active-node-local-install');
       return;
     }
     if(node.id==='browser-webgpu-qwen'&&!webGpuReady()){
-      openLocal();
+      openInstaller('active-node-webgpu-fallback');
       return;
     }
     selectStarter(node,'Start free chat. Tell me which active node and model are answering, and what I can connect next.');

@@ -241,7 +241,8 @@ const overrides = new Map([
   ['D255', { status: 'beta', evidence: 'Performance gates now count inline first-paint JavaScript separately from external critical scripts, preserve chat-first scroll as a critical external asset and enforce a combined first-paint JS budget.' }],
   ['D256', { status: 'beta', evidence: 'A focused DOM rendering hardening gate now guards core chat, active route strip, model picker and safe sharing against raw dynamic HTML regressions.' }],
   ['D257', { status: 'beta', evidence: 'Progress Dashboard now starts with a P0 launch progress bar, latest green evidence, active blockers and the next no-spend work queue so the owner can track Codex delivery without reading docs.' }],
-  ['D258', { status: 'beta', evidence: 'Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.' }]
+  ['D258', { status: 'beta', evidence: 'Empty composer send now starts a useful free MMIR Guide chat automatically instead of showing a dead validation error, with public-safe smoke coverage.' }],
+  ['D259', { status: 'beta', evidence: 'Active Local Node and unsupported WebGPU route actions now go directly to the universal no-spend installer with a browser-local repair resume, so MMIR can continue proof after return.' }]
 ]);
 
 const repoMeta = [
@@ -648,6 +649,12 @@ function buildLaunchProgress() {
       label: 'Install return to first local answer',
       status: 'beta',
       evidence: 'Mock local-node proof covers health, models and automatic first local answer after a successful install return.'
+    },
+    {
+      id: 'active-install-handoff',
+      label: 'Connect/install action carries repair resume',
+      status: 'beta',
+      evidence: 'Active route Local Node and WebGPU fallback actions open the universal installer and save a local resume for proof after return.'
     },
     {
       id: 'active-node-chat',
