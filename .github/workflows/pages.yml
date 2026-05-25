@@ -78,6 +78,8 @@ jobs:
         run: node scripts/smoke-check-composer-quick-route-fixture.js
       - name: Smoke check composer fallback affordance
         run: node scripts/smoke-check-composer-fallback-affordance.js
+      - name: Smoke check pre-chat plus survives
+        run: node scripts/smoke-check-prechat-plus-survives.js
       - name: Smoke check message action completeness
         run: node scripts/smoke-check-message-action-completeness.js
       - name: Smoke check message action visual

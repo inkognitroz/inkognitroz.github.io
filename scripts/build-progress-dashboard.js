@@ -279,7 +279,8 @@ const overrides = new Map([
   ['D291', { status: 'beta', evidence: 'A dependency-free quick-route DOM fixture now clicks Guide, Browser WebGPU and Local install chips and proves prompt seeding, starter handoff, send click, installer resume and no-spend boundaries.' }],
   ['D292', { status: 'beta', evidence: 'Critical managed/free-local profile defaults now load from a small first-paint module while the heavier backend settings UI is deferred, restoring performance headroom.' }],
   ['D293', { status: 'beta', evidence: 'The progress dashboard now renders the backlog progressively with a 72-task window, Show all control and debounced filters so owner tracking cannot freeze the chat-first page.' }],
-  ['D294', { status: 'beta', evidence: 'The first-paint composer now exposes a compact plus fallback and circular arrow send affordance, then hides the fallback plus when the richer Open WebUI-style dock is ready.' }]
+  ['D294', { status: 'beta', evidence: 'The first-paint composer now exposes a compact plus fallback and circular arrow send affordance, then hides the fallback plus when the richer Open WebUI-style dock is ready.' }],
+  ['D295', { status: 'beta', evidence: 'Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.' }]
 ]);
 
 const repoMeta = [
@@ -792,6 +793,12 @@ function buildLaunchProgress() {
       label: 'Composer feels chat-ready on first paint',
       status: 'beta',
       evidence: 'D294 gives the static composer a compact plus and arrow-send fallback, then lets the richer runtime dock take over without duplicate visible controls.'
+    },
+    {
+      id: 'prechat-plus-survives',
+      label: 'Pre-chat plus cannot disappear',
+      status: 'beta',
+      evidence: 'D295 moves the pre-chat plus visibility rule into critical runtime CSS, so Add Model/tools remains visible before deferred quick-actions styling finishes.'
     },
     {
       id: 'local-node-package',

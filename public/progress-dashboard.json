@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T17:23:34.962Z",
+  "updated_at": "2026-05-25T17:36:03.791Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 294,
+    "total": 295,
     "done": 51,
-    "beta": 218,
+    "beta": 219,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1318,9 +1318,9 @@
       },
       {
         "phase": "Chat UX / First Paint",
-        "total": 1,
+        "total": 2,
         "done": 0,
-        "beta": 1,
+        "beta": 2,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1467,6 +1467,12 @@
         "label": "Composer feels chat-ready on first paint",
         "status": "beta",
         "evidence": "D294 gives the static composer a compact plus and arrow-send fallback, then lets the richer runtime dock take over without duplicate visible controls."
+      },
+      {
+        "id": "prechat-plus-survives",
+        "label": "Pre-chat plus cannot disappear",
+        "status": "beta",
+        "evidence": "D295 moves the pre-chat plus visibility rule into critical runtime CSS, so Add Model/tools remains visible before deferred quick-actions styling finishes."
       },
       {
         "id": "local-node-package",
@@ -10847,6 +10853,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The first-paint composer now exposes a compact plus fallback and circular arrow send affordance, then hides the fallback plus when the richer Open WebUI-style dock is ready.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D295",
+      "phase": "Chat UX / First Paint",
+      "priority": "P0",
+      "work_package": "Pre-chat plus survives deferred styling",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Move the pre-chat \"show only plus\" composer-dock rule into critical runtime CSS so the Add Model/Tools plus stays visible even before deferred quick-actions styling loads",
+      "best_practice": "The user must always see a working plus and send affordance; a timing race between critical and deferred CSS should never make the chat look powerless",
+      "done_when": "Smoke gates prove critical CSS keeps #composer-add-model visible before chat, hides only advanced chips, rotates cache and prevents the old whole-dock hide rule from returning",
+      "covers": "chat, first-paint, open-webui-parity, responsiveness, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Critical runtime CSS now keeps the pre-chat composer dock visible with only the plus tool exposed, preventing deferred CSS timing from hiding Add Model/tools.",
       "estimate": "Verify + polish"
     }
   ]

@@ -100,6 +100,11 @@
       "id": "D294 composer fallback affordance",
       "status": "guarded",
       "evidence": "The first-paint composer now shows a compact plus and circular arrow send affordance, with runtime CSS/JS hiding the fallback plus after the richer dock is installed."
+    },
+    {
+      "id": "D295 pre-chat plus survival",
+      "status": "guarded",
+      "evidence": "Critical runtime CSS now shows the composer dock with only #composer-add-model before chat, so the plus does not depend on deferred quick-actions CSS timing."
     }
   ],
   "known_limitations": [
