@@ -783,6 +783,12 @@ function buildLaunchProgress() {
     last_green_evidence: [
       {
         repo: 'inkognitroz.github.io',
+        commit: '4e6058b',
+        label: 'Compact ready proof after chat starts',
+        result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
+      },
+      {
+        repo: 'inkognitroz.github.io',
         commit: '113808b',
         label: 'Composer follow-up refocus after send',
         result: '87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green'
