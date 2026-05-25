@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T04:53:49.686Z",
+  "updated_at": "2026-05-25T04:56:20.400Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -1394,6 +1394,12 @@
       }
     ],
     "last_green_evidence": [
+      {
+        "repo": "inkognitroz.github.io",
+        "commit": "ce6fb0a",
+        "label": "Desktop composer ready-on-open",
+        "result": "87 local smoke gates, public safety audit, JS syntax check and GitHub Actions green"
+      },
       {
         "repo": "inkognitroz.github.io",
         "commit": "4366d4a",
