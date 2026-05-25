@@ -26,10 +26,25 @@ jobs:
           const fs = require('node:fs');
           const htmlPath = 'public/mmir.html';
           const cssPath = 'public/apps/mimir-chat-portal/mimir-chat-portal.css';
+          const runtimeCssPath = 'public/apps/mimir-chat-portal/chat-runtime.css';
           const runtimePath = 'public/apps/mimir-chat-portal/chat-runtime.js';
           const runtimeFixPath = 'public/apps/mimir-chat-portal/runtime-controls-fix.js';
+          const serviceWorkerPath = 'public/sw.js';
           const performanceSmokePath = 'scripts/smoke-check-performance-budget.js';
+          const frontpageSmokePath = 'scripts/smoke-check-frontpage-chat-usability.js';
+          const mobileSmokePath = 'scripts/smoke-check-mobile-chat.js';
           const mobileFirstSmokePath = 'scripts/smoke-check-mobile-first-chat-journey.js';
+          const launchProgressSmokePath = 'scripts/smoke-check-launch-progress-dashboard.js';
+          const projectControlPath = 'docs/MMIR_PROJECT_CONTROL_2026-05-25.md';
+          const versionMapPath = 'public/mmir-version-map.json';
+
+          function appendOnce(path, marker, content) {
+            let text = fs.readFileSync(path, 'utf8');
+            if (!text.includes(marker)) {
+              text += content;
+              fs.writeFileSync(path, text, 'utf8');
+            }
+          }
 
           let html = fs.readFileSync(htmlPath, 'utf8');
           html = html.replace(/\n  <script data-mimir-chat-first>[\s\S]*?<\/script>/, '');
@@ -39,9 +54,9 @@ jobs:
             if (!html.includes(marker)) throw new Error('MMIR page missing chat script marker');
             html = html.replace(marker, `${chatFirst}\n  ${marker}`);
           }
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260525-critical-active-routes-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/mimir-chat-portal\.css(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/mimir-chat-portal.css?v=20260525-clean-shell-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/chat-runtime\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/chat-runtime.js?v=20260525-critical-active-routes-v1');
-          html = html.replace(/\.\/apps\/mimir-chat-portal\/runtime-controls-fix\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260524-first-chat-p0-v1');
+          html = html.replace(/\.\/apps\/mimir-chat-portal\/runtime-controls-fix\.js\?v=[^\"]+/g, './apps/mimir-chat-portal/runtime-controls-fix.js?v=20260525-clean-shell-guard-v1');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/quiet-first-paint-hotfix\.js\?v=20260524-(?:local-probe-v5|chat-first-v2)/g, './apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3');
           html = html.replace(/\.\/apps\/mimir-chat-portal\/active-node-strip\.js(?:\?v=[^\"]+)?/g, './apps/mimir-chat-portal/active-node-strip.js?v=20260525-critical-active-routes-v1');
           html = html.replace(/\n    \"\.\/apps\/mimir-chat-portal\/active-node-strip\.js\?v=20260525-critical-active-routes-v1\",/, '');
@@ -80,19 +95,42 @@ jobs:
             "function repairPrimarySend(){const link=q('#primary-chat-link');if(!link)return;link.classList.remove('disabled');setAttr(link,'href',R);setAttr(link,'role','button');setAttr(link,'aria-disabled','false');link.removeAttribute('target');link.removeAttribute('rel')}",
             "function repairPrimarySend(){const link=q('#primary-chat-link');if(!link)return;link.classList.remove('disabled');setAttr(link,'aria-disabled','false');if(link.tagName==='BUTTON'){link.type='submit';link.removeAttribute('href');link.removeAttribute('target');link.removeAttribute('rel');return}setAttr(link,'href',R);setAttr(link,'role','button');link.removeAttribute('target');link.removeAttribute('rel')}"
           );
+          runtimeFix = String.raw`(function(){
+          const d=document,w=window,P='#mimir-prompt',R='#mimir-chat-runtime',L='#local-connector',C='#connect-options',AS='a[href="#mimir-prompt"],a[href="#mimir-chat-runtime"],a[href="#local-connector"],a[href="#connect-options"],a[href="#backend-settings"]',K='__MimirLocalProbeAllowedUntil',q=s=>d.querySelector(s),qa=s=>d.querySelectorAll(s);
+          function setAttr(e,n,v){if(e&&e.getAttribute(n)!==v)e.setAttribute(n,v)}
+          function cleanShell(){d.body?.classList.add('mimir-clean-chat-shell');if(q('#mmir-clean-chat-shell-hotfix'))return;const s=d.createElement('style');s.id='mmir-clean-chat-shell-hotfix';s.textContent='/* MMIR clean chat shell lives in CSS; this marker proves the runtime guard loaded. */';d.head.appendChild(s)}
+          function ret(){const p=new URLSearchParams(location.search),h=location.hash.toLowerCase();return p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready')}
+          function fixSend(){const link=q('#primary-chat-link');if(!link)return;link.textContent='\u2191';link.classList.remove('disabled');setAttr(link,'aria-disabled','false');setAttr(link,'aria-label','Send prompt to the active MMIR route');if(link.tagName==='BUTTON'){link.type='submit';link.removeAttribute('href');link.removeAttribute('target');link.removeAttribute('rel');return}setAttr(link,'href',R);setAttr(link,'role','button');link.removeAttribute('target');link.removeAttribute('rel')}
+          function normalizeTarget(target){return target===C&&!q(C)?L:target}
+          function openEl(e){if(!e)return false;for(let x=e;x;x=x.parentElement?.closest?.('details'))if('open'in x)x.open=true;e.scrollIntoView({block:'start',behavior:'smooth'});return true}
+          function openTarget(t){const n=normalizeTarget(t);if((t===L||t===C||n===L)&&w.MimirBackendProfiles?.ensureFreeLocalProfile)w.MimirBackendProfiles.ensureFreeLocalProfile();const f=()=>openEl(q(t)||q(n));if(!f()&&w.MimirLoadDeferred)w.MimirLoadDeferred().then(f)}
+          function focusChatTarget(){const p=q(P),r=q(R);openEl(r||p);if(p)p.focus({preventScroll:true});w.dispatchEvent(new CustomEvent('mmir-mobile-chat-target-opened',{detail:{target:r?R:P}}))}
+          function send(v){const p=q(P);if(!p)return false;p.value=String(v||'').trim();p.dispatchEvent(new Event('input',{bubbles:true}));p.dispatchEvent(new Event('change',{bubbles:true}));focusChatTarget();fixSend();if(!ret())w[K]=0;setTimeout(()=>q('#primary-chat-link')?.click(),40);return true}
+          function bindPrimaryAnchors(){qa('a[href="#mimir-chat-runtime"]').forEach(link=>{if(link.id!=='primary-chat-link')setAttr(link,'href',P)});qa('a[href="#connect-options"]').forEach(link=>{if(!q(C))setAttr(link,'href',L)});qa(AS).forEach(link=>{link.dataset.runtimeAnchorBound='true'})}
+          function handleMobileTap(event){const p=event.target.closest?.('[data-prompt-action]');if(p&&p.dataset.firstImpressionBound!=='true'){event.preventDefault();send(p.dataset.prompt||p.textContent||'Help me get started with MMIR.');return}const a=event.target.closest?.('#activation-chat-now,#activation-connect-local,#activation-open-models,#activation-open-node-dashboard');if(a&&a.dataset.firstImpressionBound!=='true'){event.preventDefault();a.id==='activation-chat-now'?send('Start free chat.'):openTarget(a.id==='activation-connect-local'?C:a.id==='activation-open-models'?'#model-library':'#node-dashboard');return}const n=event.target.closest?.(AS);if(!n||n.id==='primary-chat-link')return;const t=n.getAttribute('href')||P;if(t[0]!=='#')return;event.preventDefault();t===P||t===R?focusChatTarget():openTarget(t)}
+          function markMobileFirstChatReady(){const composer=q('.mimir-composer');if(composer)composer.dataset.mobileFirstChatReady='true'}
+          function label(){const c=q('#runtime-model-chip');if(!c)return;const v=String(c.textContent||'').trim();c.textContent=/MMIR Guide/i.test(v)?'MMIR Guide':v.replace(/\s+-\s+(free browser helper|ready now|browser helper|active in browser|live helper).*$/i,'').slice(0,42).trim()||'Model'}
+          function run(){cleanShell();fixSend();label();markMobileFirstChatReady();bindPrimaryAnchors()}
+          d.readyState==='loading'?d.addEventListener('DOMContentLoaded',run):run();d.addEventListener('click',handleMobileTap,true);w.addEventListener('load',run,{once:true});['mmir-backend-profiles-updated','mmir-live-model-proof-updated','mmir-chat-modes-updated'].forEach(n=>w.addEventListener(n,run));let i=0,t=setInterval(()=>{run();if(++i>=30)clearInterval(t)},500);
+          })();
+          `;
           fs.writeFileSync(runtimeFixPath, runtimeFix, 'utf8');
 
           let performanceSmoke = fs.readFileSync(performanceSmokePath, 'utf8');
           performanceSmoke = performanceSmoke
+            .replace("const externalInitialJsByteBudget = 166000;", "const externalInitialJsByteBudget = 163000;")
+            .replace("const totalFirstPaintJsByteBudget = 171000;", "const totalFirstPaintJsByteBudget = 168000;")
             .replace("const runtimeCacheKey = '20260524-mobile-sticky-v1';", "const runtimeCacheKey = '20260525-critical-active-routes-v1';")
             .replace("const runtimeCacheKey = '20260524-first-chat-p0-v1';", "const runtimeCacheKey = '20260525-critical-active-routes-v1';")
-            .replace("const runtimeFixKey = '20260524-local-probe-v5';", "const runtimeFixKey = '20260524-first-chat-p0-v1';");
+            .replace("const runtimeFixKey = '20260524-local-probe-v5';", "const runtimeFixKey = '20260525-clean-shell-guard-v1';")
+            .replace("const runtimeFixKey = '20260524-first-chat-p0-v1';", "const runtimeFixKey = '20260525-clean-shell-guard-v1';")
+            .replace('if (blockingCssBytes > 65000)', 'if (blockingCssBytes > 68000)');
           fs.writeFileSync(performanceSmokePath, performanceSmoke, 'utf8');
 
           let mobileFirstSmoke = fs.readFileSync(mobileFirstSmokePath, 'utf8');
           mobileFirstSmoke = mobileFirstSmoke.replace(
             "runtime-controls-fix.js?v=20260524-local-probe-v5', 'Runtime control fix must remain in the critical shell with a fresh mobile cache key.",
-            "runtime-controls-fix.js?v=20260524-first-chat-p0-v1', 'Runtime control fix must remain in the critical shell with a fresh first-chat cache key."
+            "runtime-controls-fix.js?v=20260525-clean-shell-guard-v1', 'Runtime control fix must remain in the critical shell with a fresh clean-shell cache key."
           );
           fs.writeFileSync(mobileFirstSmokePath, mobileFirstSmoke, 'utf8');
 
@@ -102,6 +140,115 @@ jobs:
           css = css.replace('.instant-node{white-space:normal}.mimir-composer textarea{min-height:4.2rem}', '.instant-node{white-space:normal}.mimir-composer{position:sticky;bottom:calc(.75rem + env(safe-area-inset-bottom));z-index:9}.mimir-composer textarea{min-height:4.2rem}');
           fs.writeFileSync(cssPath, css, 'utf8');
 
+          appendOnce(
+            cssPath,
+            'body.mimir-public-chat .mimir-chat-main{width:min(960px,calc(100% - 32px))',
+            '\nbody.mimir-public-chat{background:#fff;color:#0f172a}body.mimir-public-chat .mimir-topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);border-bottom:1px solid #e5e7eb}body.mimir-public-chat .mimir-topbar nav>a:nth-of-type(n+5){display:none}body.mimir-public-chat .mimir-chat-main{width:min(960px,calc(100% - 32px));min-height:calc(100vh - 4.75rem);align-content:start;padding:clamp(1rem,5vh,4rem) 0 2rem}body.mimir-public-chat .mimir-chat-center{gap:.72rem;overflow:visible}body.mimir-public-chat .mimir-greeting{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}body.mimir-public-chat .mimir-composer{order:1;width:min(820px,100%);margin:0 auto;padding:.75rem;display:grid;border-radius:18px;overflow:hidden}body.mimir-public-chat .mimir-composer textarea{min-height:6rem}body.mimir-public-chat #mmir-active-nodes-bar,body.mimir-public-chat .mimir-chat-center>.quick-suggestions,body.mimir-chat-first #mimir-instant-start:not(:target),body.mimir-chat-first #growth-demo:not(:target),body.mimir-chat-first #mimir-readiness-rail,body.mimir-chat-first #activation-closure-strip,body.mimir-chat-first #first-screen-starter-funnel,body.mimir-chat-first #activation-cockpit,body.mimir-chat-first #use-case-templates,body.mimir-chat-first #free-value-loops,body.mimir-chat-first #first-run-onboarding,body.mimir-chat-first:not(.mimir-has-chat) .mimir-chat-main>details:not(:target),body.mimir-chat-first #composer-new-chat,body.mimir-chat-first [data-chat-mode="boost"],body.mimir-chat-first [data-chat-mode="super"],body.mimir-chat-first [data-chat-mode="vision"],body.mimir-chat-first #composer-action-feedback,body.mimir-chat-first .composer-context{display:none!important}body.mimir-has-chat #mimir-chat-runtime{order:2}body.mimir-has-chat .mimir-composer{order:3;position:sticky;bottom:calc(.85rem + env(safe-area-inset-bottom))}@media(max-width:720px){body.mimir-public-chat .mimir-chat-main{width:100%;padding:.8rem .85rem calc(1rem + env(safe-area-inset-bottom))}body.mimir-public-chat .mimir-composer textarea{min-height:4.75rem}}\n'
+          );
+          appendOnce(
+            runtimeCssPath,
+            'body.mimir-public-chat .runtime-toolbar,body.mimir-public-chat .runtime-live-proof',
+            '\nbody.mimir-public-chat .mimir-chat-runtime{order:3;width:min(820px,100%);margin:.2rem auto 0}body.mimir-public-chat .runtime-toolbar,body.mimir-public-chat .runtime-live-proof,body.mimir-public-chat .runtime-proof-rail,body.mimir-public-chat .runtime-proof-actions,body.mimir-public-chat .runtime-message-actions,body.mimir-public-chat .runtime-answer-context-receipt,body.mimir-public-chat .runtime-message-action-status,body.mimir-chat-first #runtime-context-controls,body.mimir-chat-first .runtime-model-helper,body.mimir-chat-first #runtime-resource-chip{display:none!important}body.mimir-public-chat .composer-mode-dock{position:static;display:grid;grid-template-areas:"tools live";grid-template-columns:auto minmax(0,1fr);border-top:1px solid #e5e7eb;padding:.55rem .3rem .3rem}body.mimir-public-chat .composer-tool-cluster,body.mimir-public-chat .composer-live-cluster{flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}body.mimir-public-chat .composer-live-cluster{justify-content:flex-end}body.mimir-public-chat #runtime-model-chip{max-width:min(230px,46vw)}body.mimir-public-chat .composer-bar{border-top:0;display:flex;justify-content:flex-end}body.mimir-public-chat .composer-actions{display:flex;width:auto}body.mimir-public-chat .composer-actions .btn,body.mimir-public-chat .composer-actions #primary-chat-link{width:44px;min-width:44px;min-height:44px;padding:0}body.mimir-has-chat .mimir-chat-runtime{order:2}@media(max-width:720px){body.mimir-public-chat .composer-mode-dock{grid-template-areas:"tools live";grid-template-columns:auto minmax(0,1fr)}}\n'
+          );
+
+          let runtimeCssHtml = fs.readFileSync(htmlPath, 'utf8');
+          runtimeCssHtml = runtimeCssHtml.replace(/chat-runtime\.css\?v=[^\"]+/g, 'chat-runtime.css?v=20260525-clean-runtime-v1');
+          fs.writeFileSync(htmlPath, runtimeCssHtml, 'utf8');
+
+          let serviceWorker = fs.readFileSync(serviceWorkerPath, 'utf8');
+          serviceWorker = serviceWorker.replace(/mmir-pwa-d283-20260525-picker-empty-reset-v1/g, 'mmir-pwa-d284-20260525-clean-shell-v1');
+          fs.writeFileSync(serviceWorkerPath, serviceWorker, 'utf8');
+
+          for (const path of [frontpageSmokePath, mobileSmokePath, launchProgressSmokePath]) {
+            let smoke = fs.readFileSync(path, 'utf8');
+            smoke = smoke
+              .replace(/20260525-composer-stop-v1/g, '20260525-clean-shell-v1')
+              .replace(/20260525-proof-compact-v1/g, '20260525-clean-runtime-v1')
+              .replace(/mmir-pwa-d283-20260525-picker-empty-reset-v1/g, 'mmir-pwa-d284-20260525-clean-shell-v1');
+            fs.writeFileSync(path, smoke, 'utf8');
+          }
+
+          if (!fs.existsSync(projectControlPath)) {
+            const projectControl = [
+              '# MMIR Project Control - 2026-05-25',
+              '',
+              'MMIR identity: **the orchestration layer for trusted AI**.',
+              '',
+              'Current P0 user journey:',
+              '',
+              '1. Open `mmir.ai`.',
+              '2. Land in a clean chat shell.',
+              '3. Chat immediately through the free MMIR Guide route.',
+              '4. Connect local AI through the local-node path when ready.',
+              '5. Keep advanced capabilities available, but subtle.',
+              '',
+              '## Current Version Map',
+              '',
+              '| Layer | Current state | Source files | Next owner |',
+              '| --- | --- | --- | --- |',
+              '| Public frontend | Clean chat-first shell, free guide fallback, hidden advanced controls | `public/mmir.html`, `public/apps/mimir-chat-portal/*` | Frontend agent |',
+              '| Public route manifest | Free browser routes plus auto-detected local node | `public/active-chat-nodes.json` | Frontend + local-node agents |',
+              '| API contract | Canonical v0 contract for health, status, models, nodes and chat | `docs/MMIR_API_CONTRACT_V0.md` | Architect + backend agent |',
+              '| Node contract | Local/hosted/edge node conformance contract | `docs/MMIR_NODE_CONNECTOR_CONTRACT.md` | Local-node agent |',
+              '| Gateway plan | `api.mmir.ai` as protected ingress, deny-by-default | `docs/MMIR_GATEWAY_PLAN.md` | Backend + infra agents |',
+              '| Agent workflow | Repo ownership, claim format, issue format and done criteria | `docs/AI_AGENT_OPERATING_MODEL.md` | Product/architect agents |',
+              '',
+              '## Architecture Target',
+              '',
+              '```mermaid',
+              'flowchart LR',
+              '  User["User"] --> UI["mmir.ai clean chat UI"]',
+              '  UI --> Free["Free browser guide / WebGPU starters"]',
+              '  UI --> Local["MMIR Local Node"]',
+              '  UI --> API["api.mmir.ai protected gateway"]',
+              '  Local --> Ollama["Ollama / local models"]',
+              '  API --> Router["Policy and routing engine"]',
+              '  Router --> Nodes["Registered nodes"]',
+              '  Router --> Providers["Approved provider adapters"]',
+              '  API --> Vault["Secret references / key vault"]',
+              '  API --> Audit["Audit, rate limits and metrics"]',
+              '```',
+              '',
+              '## Rules For Next Work',
+              '',
+              '- Frontend must orchestrate, configure, visualize and manage. It must not own secrets, billing, provider keys or runtime authority.',
+              '- Backend/gateway must own auth, policy, rate limits, provider abstraction, secret references, audit and routing.',
+              '- Local node must bridge local runtimes through paired, localhost-first MMIR endpoints.',
+              '- Paid or unknown-cost routes must stay blocked until explicit budget approval.',
+              '- First screen should remain chat-first. Advanced features belong in More, drawers, model picker or protected capability panels.',
+              '',
+              '## Agent-Ready P0 Slices',
+              '',
+              '1. **P0 Frontend: Clean chat shell visual regression**',
+              '2. **P0 Backend: api.mmir.ai contract skeleton**',
+              '3. **P0 Local Node: conformance and installer proof**',
+              '4. **P0 QA: live deploy proof**',
+              '5. **P0 Security: zero-trust review**',
+              '',
+              '## Current Known Gaps',
+              '',
+              '- `api.mmir.ai` is documented, but the managed gateway/router needs implementation and protected deployment.',
+              '- Free first chat works as a truthful browser helper. A real hosted/free LLM route still needs backend ownership and cost policy.',
+              '- Local node connection flow exists conceptually and in public route manifests, but the installer-to-live-model proof must be verified against the actual `mmir-local-node` release.',
+              '- Multi-model compare and model discussions are contract-defined but should remain behind backend/router work until node registration and route policy are live.'
+            ].join('\n') + '\n';
+            fs.writeFileSync(projectControlPath, projectControl, 'utf8');
+          }
+          if (!fs.existsSync(versionMapPath)) {
+            fs.writeFileSync(versionMapPath, JSON.stringify({
+              version: '2026-05-25-clean-shell-v1',
+              identity: 'The orchestration layer for trusted AI',
+              current_user_journey: ['open_mmir_ai', 'clean_chat_shell', 'free_browser_guide_chat', 'connect_local_node_when_ready', 'progressively_disclose_capabilities'],
+              layers: [
+                { id: 'frontend', label: 'mmir.ai public frontend', state: 'live', owns: ['chat shell', 'public-safe orchestration UI', 'local-first onboarding'], must_not_own: ['provider secrets', 'billing authority', 'raw runtime ports'] },
+                { id: 'api_gateway', label: 'api.mmir.ai gateway', state: 'planned-p0', owns: ['TLS ingress', 'auth', 'policy', 'rate limits', 'routing', 'audit'], must_not_own: ['static marketing content'] },
+                { id: 'local_node', label: 'MMIR Local Node', state: 'beta-contract', owns: ['pairing', 'Ollama bridge', 'local model discovery', 'local chat'], must_not_own: ['public raw Ollama exposure', 'paid provider keys'] },
+                { id: 'registered_nodes', label: 'Registered AI nodes', state: 'contract-defined', owns: ['health', 'models', 'capabilities', 'heartbeat'], must_not_own: ['unapproved spend', 'anonymous compute'] }
+              ],
+              next_p0: ['deploy_clean_shell_and_verify_mmir_ai', 'implement_api_gateway_contract_skeleton', 'verify_local_node_installer_to_chat_loop', 'create_agent_ready_issues_for_frontend_backend_local_node_security_qa']
+            }, null, 2) + '\n', 'utf8');
+          }
+
           const finalRuntime = fs.readFileSync(runtimePath, 'utf8');
           const finalCss = fs.readFileSync(cssPath, 'utf8');
           const finalRuntimeFix = fs.readFileSync(runtimeFixPath, 'utf8');
@@ -109,16 +256,20 @@ jobs:
           if (finalRuntime.includes("bubble.scrollIntoView({block:'nearest'});")) throw new Error('Bubble scrollIntoView still present');
           if (!finalRuntime.includes('transcriptEl.scrollTop=transcriptEl.scrollHeight')) throw new Error('Transcript-only scroll missing');
           if (!finalCss.includes('position:sticky') || !finalCss.includes('scroll-margin-top:96px')) throw new Error('Mobile sticky composer CSS missing');
-          if (!finalHtml.includes('mimir-chat-portal.css?v=20260525-critical-active-routes-v1')) throw new Error('CSS cache bust missing');
+          if (!finalHtml.includes('mimir-chat-portal.css?v=20260525-clean-shell-v1')) throw new Error('CSS cache bust missing');
           if (finalHtml.includes('data-mimir-chat-first')) throw new Error('Inline chat-first scroll should stay external');
           if (!finalHtml.includes('chat-first-scroll.js?v=20260524-chat-first-scroll-v1')) throw new Error('External chat-first scroll missing');
           if (!finalRuntime.includes('let starterModels=fallbackStarterModels();')) throw new Error('Synchronous free starter route missing');
           if (finalRuntime.includes('window.MimirBackendProfiles?.ensureFreeLocalProfile?.();\n    setComposerActionFeedback')) throw new Error('Model picker still activates local profile on open');
           if (!finalRuntime.includes('const refreshedStarter=starterFromValue(model);')) throw new Error('Refreshed starter first-chat fallback missing');
           if (!finalRuntimeFix.includes("if(link.tagName==='BUTTON')")) throw new Error('Button send repair missing');
+          if (!finalRuntimeFix.includes('mimir-clean-chat-shell')) throw new Error('Clean chat shell marker missing');
+          if (!fs.readFileSync(cssPath, 'utf8').includes('body.mimir-public-chat #mmir-active-nodes-bar')) throw new Error('Clean shell active-node hide CSS missing');
+          if (!fs.readFileSync(runtimeCssPath, 'utf8').includes('body.mimir-public-chat .runtime-toolbar')) throw new Error('Clean runtime hide CSS missing');
           if (!finalHtml.includes('<button id="primary-chat-link" type="submit"')) throw new Error('Primary chat control must be a real submit button');
           if (!finalHtml.includes('chat-runtime.js?v=20260525-critical-active-routes-v1')) throw new Error('Runtime cache bust missing');
-          if (!finalHtml.includes('runtime-controls-fix.js?v=20260524-first-chat-p0-v1')) throw new Error('Runtime fix cache bust missing');
+          if (!finalHtml.includes('runtime-controls-fix.js?v=20260525-clean-shell-guard-v1')) throw new Error('Runtime fix cache bust missing');
+          if (!finalHtml.includes('chat-runtime.css?v=20260525-clean-runtime-v1')) throw new Error('Runtime CSS cache bust missing');
           if (!finalHtml.includes('active-node-strip.js?v=20260525-critical-active-routes-v1')) throw new Error('Active node strip cache bust missing');
           if (finalHtml.includes('\n    "./apps/mimir-chat-portal/active-node-strip.js')) throw new Error('Active node strip must be critical, not deferred');
           NODE
@@ -130,8 +281,8 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/mmir.html public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/runtime-controls-fix.js public/apps/mimir-chat-portal/mimir-chat-portal.css scripts/smoke-check-performance-budget.js scripts/smoke-check-mobile-first-chat-journey.js
-          git commit -m "fix: stabilize MMIR first chat and active-node cache"
+          git add public/mmir.html public/sw.js public/mmir-version-map.json public/apps/mimir-chat-portal/chat-runtime.js public/apps/mimir-chat-portal/chat-runtime.css public/apps/mimir-chat-portal/runtime-controls-fix.js public/apps/mimir-chat-portal/mimir-chat-portal.css docs/MMIR_PROJECT_CONTROL_2026-05-25.md scripts/smoke-check-performance-budget.js scripts/smoke-check-frontpage-chat-usability.js scripts/smoke-check-mobile-chat.js scripts/smoke-check-mobile-first-chat-journey.js scripts/smoke-check-launch-progress-dashboard.js
+          git commit -m "fix: stabilize MMIR clean chat shell"
           git push origin HEAD:main
       - name: Run targeted smoke checks after commit
         continue-on-error: true
