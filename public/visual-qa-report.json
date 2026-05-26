@@ -175,6 +175,11 @@
       "id": "D310 local node ready-status tolerance",
       "status": "guarded",
       "evidence": "A degraded Local Node event with a live model now keeps the active route strip, plus drawer and model picker on private local chat instead of sending users back to installation."
+    },
+    {
+      "id": "D311 first-screen local ready cockpit",
+      "status": "guarded",
+      "evidence": "The first-screen cockpit now treats a degraded Local Node event with visible models as ready, so the first impression agrees with the working chat route."
     }
   ],
   "known_limitations": [

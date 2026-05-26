@@ -274,6 +274,7 @@ Updated: 2026-05-23
 - D308 is now beta: the composer plus drawer now listens for live Local Node models, changes the Local chip from install to ready, and starts the private local model through chat-runtime without reopening the installer.
 - D309 is now beta: the compact composer model picker now promotes a live Local Node model as a Local ready recommendation, hides the install recommendation in that state and starts the model through chat-runtime without installer redirect.
 - D310 is now beta: active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable local chat, so warmup or optional subsystem warnings do not send users back to the installer.
+- D311 is now beta: the first-screen activation cockpit now treats a degraded Local Node event with visible models as ready, keeping first-impression status aligned with the working chat controls.
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads as critical chat UI with compact route chips directly under the composer, so free browser/WebGPU/local-node choices are visible before secondary platform sections.
 - D254 chat polish is tightened again: active routes no longer wait for the deferred feature queue, mobile/desktop order keeps composer -> active routes -> runtime proof, and the performance budget was raised narrowly for this critical model-choice code.

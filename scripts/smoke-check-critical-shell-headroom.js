@@ -85,9 +85,10 @@ for (const needle of [
   'totalFirstPaintJsBytes',
   "const cacheKey = '20260524-quiet-first-paint-v3'",
   "const activeRoutesCacheKey = '20260526-local-ready-status-v1'",
+  "const firstImpressionCacheKey = '20260526-first-impression-local-ready-v1'",
   './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
   './apps/mimir-chat-portal/active-node-strip.js?v=${activeRoutesCacheKey}',
-  './apps/mimir-chat-portal/first-impression.js?v=${cacheKey}',
+  './apps/mimir-chat-portal/first-impression.js?v=${firstImpressionCacheKey}',
   'Critical first-journey script must load immediately'
 ]) {
   if (!performance.includes(needle)) fail(`Performance budget guard missing evidence: ${needle}`);

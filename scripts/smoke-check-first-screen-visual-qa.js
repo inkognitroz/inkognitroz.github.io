@@ -77,6 +77,9 @@ if (!Array.isArray(report.viewports) || !report.viewports.some((item) => item.id
 if (!Array.isArray(report.critical_paths) || report.critical_paths.length < 5) {
   fail('D202 visual QA report must cover the critical first-screen paths.');
 }
+if (!JSON.stringify(report).includes('D311 first-screen local ready cockpit')) {
+  fail('Visual QA report must include D311 first-screen local ready cockpit evidence.');
+}
 
 for (const needle of [
   'class="mimir-chat-main"',
@@ -158,7 +161,9 @@ for (const needle of [
 for (const needle of [
   'renderActivationClosureStrip',
   'deviceStarterRecommendation',
-  'mmir-model-library-focus-recommended'
+  'mmir-model-library-focus-recommended',
+  "localStatus==='online'||localModels[0]",
+  "setCard('local','Needs model'"
 ]) {
   requireIncludes(firstImpression, needle, `D202 first impression activation closure missing: ${needle}`);
 }
@@ -225,6 +230,10 @@ if (!d203 || d203.status !== 'beta') {
 const d206 = tasks.find((task) => task.seq === 'D206');
 if (!d206 || d206.status !== 'beta') {
   fail('Progress dashboard task D206 must be beta after installer-to-live-model proof ships.');
+}
+const d311 = tasks.find((task) => task.seq === 'D311');
+if (!d311 || d311.status !== 'beta') {
+  fail('Progress dashboard task D311 must be beta after first-screen local-ready cockpit ships.');
 }
 if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
   fail('Progress dashboard next queue must prioritize D254 after D236 ships.');

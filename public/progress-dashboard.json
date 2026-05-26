@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-26T00:01:49.319Z",
+  "updated_at": "2026-05-26T00:09:19.078Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 309,
+    "total": 310,
     "done": 51,
-    "beta": 233,
+    "beta": 234,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -908,9 +908,9 @@
       },
       {
         "phase": "Chat UX / First Impression",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1617,6 +1617,12 @@
         "label": "Local node warnings still allow chat",
         "status": "beta",
         "evidence": "D310 makes degraded/ready/ok Local Node health with a live model usable across the active route strip, plus drawer and model picker."
+      },
+      {
+        "id": "first-screen-local-ready-cockpit",
+        "label": "First impression agrees local model is ready",
+        "status": "beta",
+        "evidence": "D311 makes the activation cockpit show Local Node ready when a local model is present, instead of degraded setup copy."
       },
       {
         "id": "local-node-package",
@@ -11240,6 +11246,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D311",
+      "phase": "Chat UX / First Impression",
+      "priority": "P0",
+      "work_package": "Local-ready first-screen cockpit",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the first-screen activation cockpit show Local Node as ready when any trusted local model is present, even if the health status is degraded because an optional subsystem is still warming up",
+      "best_practice": "The first impression must agree with the chat controls: users should see \"node sees model\" instead of \"install/expose a model\" once MMIR has a usable local model",
+      "done_when": "First-screen visual/source gates prove the cockpit checks model presence before degraded setup copy, cache-busts the first-impression asset and keeps the performance budget green",
+      "covers": "chat, first-impression, local-node, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.",
       "estimate": "Verify + polish"
     }
   ]

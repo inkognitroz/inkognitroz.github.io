@@ -294,7 +294,8 @@ const overrides = new Map([
   ['D307', { status: 'beta', evidence: 'When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.' }],
   ['D308', { status: 'beta', evidence: 'The composer plus drawer now listens for Local Node model events, switches the Local chip from install to ready and starts the live private model through chat-runtime without reopening the installer.' }],
   ['D309', { status: 'beta', evidence: 'The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.' }],
-  ['D310', { status: 'beta', evidence: 'Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.' }]
+  ['D310', { status: 'beta', evidence: 'Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.' }],
+  ['D311', { status: 'beta', evidence: 'The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.' }]
 ]);
 
 const repoMeta = [
@@ -897,6 +898,12 @@ function buildLaunchProgress() {
       label: 'Local node warnings still allow chat',
       status: 'beta',
       evidence: 'D310 makes degraded/ready/ok Local Node health with a live model usable across the active route strip, plus drawer and model picker.'
+    },
+    {
+      id: 'first-screen-local-ready-cockpit',
+      label: 'First impression agrees local model is ready',
+      status: 'beta',
+      evidence: 'D311 makes the activation cockpit show Local Node ready when a local model is present, instead of degraded setup copy.'
     },
     {
       id: 'local-node-package',
