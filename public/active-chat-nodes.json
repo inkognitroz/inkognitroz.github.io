@@ -47,7 +47,8 @@
       "status": "available_if_supported",
       "trust_level": "browser-local",
       "cost": { "mode": "free", "requires_approval": false },
-      "route": { "kind": "starter", "starter_id": "webllm-qwen25-05b", "requires": ["webgpu", "secure_context"] },
+      "route": { "kind": "starter", "starter_id": "webllm-qwen25-05b", "requires": ["webgpu", "wasm", "secure_context"] },
+      "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
         {
@@ -66,7 +67,8 @@
       "status": "available_if_supported",
       "trust_level": "browser-local",
       "cost": { "mode": "free", "requires_approval": false },
-      "route": { "kind": "starter", "starter_id": "webllm-gemma3-1b", "requires": ["webgpu", "secure_context"] },
+      "route": { "kind": "starter", "starter_id": "webllm-gemma3-1b", "requires": ["webgpu", "wasm", "secure_context"] },
+      "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
         {
@@ -85,7 +87,8 @@
       "status": "available_if_supported",
       "trust_level": "browser-local",
       "cost": { "mode": "free", "requires_approval": false },
-      "route": { "kind": "starter", "starter_id": "webllm-llama32-1b", "requires": ["webgpu", "secure_context"] },
+      "route": { "kind": "starter", "starter_id": "webllm-llama32-1b", "requires": ["webgpu", "wasm", "secure_context"] },
+      "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
         {
@@ -104,7 +107,8 @@
       "status": "available_if_supported",
       "trust_level": "browser-local",
       "cost": { "mode": "free", "requires_approval": false },
-      "route": { "kind": "starter", "starter_id": "webllm-phi35-mini", "requires": ["webgpu", "secure_context"] },
+      "route": { "kind": "starter", "starter_id": "webllm-phi35-mini", "requires": ["webgpu", "wasm", "secure_context"] },
+      "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
         {

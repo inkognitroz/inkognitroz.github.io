@@ -295,10 +295,64 @@
     }catch(error){}
   }
 
+  function browserNodeReceiptMetadata(extra={}){
+    return {
+      node_type:'browser',
+      trust_class:'device-local',
+      cost_class:'free-user-device',
+      quality_tier:'starter',
+      execution_boundary:'current-browser-session',
+      privacy_boundary:'current browser session',
+      prompt_left_device:false,
+      provider_key_required:false,
+      cloudflare_required:false,
+      install_required:false,
+      route_kind:'browser-node',
+      ...extra
+    };
+  }
+
+  function routeReceiptMetadata(route,details={}){
+    const routeText=String(route||details.route||'').toLowerCase();
+    if(details.node_type==='browser'||/browser-webgpu|browser-node|webllm/.test(routeText)){
+      return browserNodeReceiptMetadata(details);
+    }
+    if(/browser-helper/.test(routeText)){
+      return {
+        node_type:'browser-helper',
+        trust_class:'device-local',
+        cost_class:'free-user-device',
+        quality_tier:'starter-guide',
+        execution_boundary:'current-browser-session',
+        privacy_boundary:'current browser session',
+        prompt_left_device:false,
+        provider_key_required:false,
+        cloudflare_required:false,
+        install_required:false,
+        route_kind:'browser-helper',
+        ...details
+      };
+    }
+    return {
+      node_type:details.node_type||'backend',
+      trust_class:details.trust_class||'configured-route',
+      cost_class:details.cost_class||'free/local/default',
+      quality_tier:details.quality_tier||'route-dependent',
+      execution_boundary:details.execution_boundary||'configured-backend',
+      privacy_boundary:details.privacy_boundary||'configured route',
+      prompt_left_device:details.prompt_left_device!==undefined?Boolean(details.prompt_left_device):true,
+      provider_key_required:Boolean(details.provider_key_required),
+      cloudflare_required:Boolean(details.cloudflare_required),
+      install_required:Boolean(details.install_required),
+      route_kind:details.route_kind||route||'backend'
+    };
+  }
+
   function recordFirstChatReceipt(status,details={}){
     const existing=readFirstChatReceipt();
     const now=new Date().toISOString();
     const ok=status==='success';
+    const metadata=routeReceiptMetadata(details.route,details);
     const receipt={
       object:'mmir.first_chat_receipt',
       version:1,
@@ -306,6 +360,17 @@
       status:ok?'success':'failed',
       model:String(details.model||'').slice(0,160),
       route:String(details.route||'backend').slice(0,120),
+      node_type:String(metadata.node_type||'').slice(0,60),
+      trust_class:String(metadata.trust_class||'').slice(0,80),
+      cost_class:String(metadata.cost_class||'').slice(0,80),
+      quality_tier:String(metadata.quality_tier||'').slice(0,80),
+      execution_boundary:String(metadata.execution_boundary||'').slice(0,120),
+      privacy_boundary:String(metadata.privacy_boundary||'').slice(0,120),
+      prompt_left_device:Boolean(metadata.prompt_left_device),
+      provider_key_required:Boolean(metadata.provider_key_required),
+      cloudflare_required:Boolean(metadata.cloudflare_required),
+      install_required:Boolean(metadata.install_required),
+      route_kind:String(metadata.route_kind||'').slice(0,80),
       at:now,
       first_success_at:ok?(existing?.first_success_at||now):(existing?.first_success_at||''),
       prompt_chars:Math.max(0,Math.round(Number(details.prompt_chars)||0)),
@@ -318,8 +383,10 @@
     writeFirstChatReceipt(receipt);
     return receipt;
   }
-  function uReceipt(model,route,prompt,response){
-    recordFirstChatReceipt('success',{model,route,prompt_chars:(prompt||'').length,response_chars:(response||'').length});
+  function uReceipt(model,route,prompt,response,details={}){
+    const metadata=routeReceiptMetadata(route,details);
+    window.__MimirLastAnswerContext={...(window.__MimirLastAnswerContext||{}),...metadata};
+    recordFirstChatReceipt('success',{model,route,prompt_chars:(prompt||'').length,response_chars:(response||'').length,...metadata});
   }
 
   function contextState(local,backend,off){return off?'off':local&&backend?'local+backend':local?'local':backend?'backend':'none';}
@@ -1307,7 +1374,7 @@
 
   function starterAvailabilityLabel(model){
     if(model?.runtime==='browser-guide')return 'ready now - browser helper';
-    if(model?.runtime==='webllm')return 'ready now - browser WebGPU';
+    if(model?.runtime==='webllm')return webGpuAvailable()?'Browser Node ready - free/private/starter':'Browser Node unsupported - WebGPU/WASM needed';
     if(model?.status==='installable-free')return 'install to activate - free local';
     return String(model?.status||'free').replaceAll('-',' ');
   }
@@ -1385,8 +1452,8 @@
         '<a class="button-link" href="#backend-settings">Connect local profile</a>'+
       '</div>'+
       '<p>'+escapeHtml(model.best_for||model.install_note||'Free model option.')+'</p>'+
-      (isGuide?'<p>This helper works immediately in the browser. Choose a WebGPU or Ollama model below when you want a real local LLM.</p>':
-      isWebLlm?'<p>Real browser LLM: WebGPU, no API key or cloud cost. First use downloads weights and may take time.</p>':
+      (isGuide?'<p>This helper works immediately in the browser. Choose Browser Node/WebGPU or Ollama when you want a real local LLM.</p>':
+      isWebLlm?'<p>'+escapeHtml(browserNodeStatusCopy())+'</p><p>Route receipt shape: node_type=browser, trust_class=device-local, cost_class=free-user-device, quality_tier=starter, execution_boundary=current-browser-session, prompt_left_device=false.</p>':
         '<div class="runtime-install-grid">'+
           '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
           '<div><strong>Mac</strong><p><a href="./downloads/mmir-local-connector-mac.zip.html">Download Mac installer</a> and open it.</p></div>'+
@@ -1689,8 +1756,43 @@
     return api.friendlyError(error);
   }
 
+  function secureContextAvailable(){
+    const protocol=String(window.location?.protocol||'');
+    const host=String(window.location?.hostname||'');
+    return Boolean(window.isSecureContext||protocol==='https:'||host==='localhost'||host==='127.0.0.1'||host==='::1');
+  }
+
+  function wasmAvailable(){
+    return typeof WebAssembly==='object'&&typeof WebAssembly.instantiate==='function';
+  }
+
+  function browserNodeSupport(){
+    const secure=secureContextAvailable();
+    const wasm=wasmAvailable();
+    const webgpu=Boolean(window.navigator?.gpu);
+    const missing=[];
+    if(!secure)missing.push('secure context');
+    if(!wasm)missing.push('WASM');
+    if(!webgpu)missing.push('WebGPU');
+    return {
+      status:missing.length?'unsupported':'ready',
+      supported:missing.length===0,
+      secure,
+      wasm,
+      webgpu,
+      reason:missing.length?('Missing '+missing.join(', ')):'WebGPU and WASM available',
+      metadata:browserNodeReceiptMetadata()
+    };
+  }
+
   function webGpuAvailable(){
-    return Boolean(window.isSecureContext&&navigator.gpu);
+    return browserNodeSupport().supported;
+  }
+
+  function browserNodeStatusCopy(){
+    const support=browserNodeSupport();
+    if(support.supported)return 'Browser Node supported: free browser-local/private starter, no provider key, no Cloudflare, no install. First use downloads model weights into this browser cache.';
+    return 'Browser Node unsupported here: '+support.reason+'. Use MMIR Guide now or install Local Node/Ollama for the free private model path.';
   }
 
   async function ensureWebLlmEngine(starter,onProgress){
@@ -1752,12 +1854,28 @@
         }
       }
       updateMessage(assistant.message.id,content||'Browser model returned an empty response.',starter.label);
-      uReceipt(starter.label||starter.model||'browser WebGPU','browser-webgpu',prompt,content);
+      uReceipt(starter.label||starter.model||'browser WebGPU','browser-webgpu',prompt,content,browserNodeReceiptMetadata({model_id:String(starter?.model||''),starter_id:String(starter?.id||'')}));
       setStatus(stopRequested?'Browser generation stopped.':'Browser model response received.','ready');
     }catch(error){
-      const fallback='MMIR automatically fell back to the free browser guide.\n\n'+guideResponse(prompt,{id:'mmir-guide',label:'MMIR Guide'});
-      updateMessage(assistant.message.id,fallback,'browser model unavailable');
-      setStatus('WebGPU unavailable. MMIR Guide answered.','ready');
+      const support=browserNodeSupport();
+      const metadata=browserNodeReceiptMetadata({model_id:String(starter?.model||''),starter_id:String(starter?.id||''),runtime_status:support.status,error_status:support.supported?'runtime_failed':'unsupported'});
+      window.__MimirLastAnswerContext={...(window.__MimirLastAnswerContext||{}),...metadata};
+      recordFirstChatReceipt('failed',{
+        model:starter.label||starter.model||'browser WebGPU',
+        route:'browser-webgpu',
+        prompt_chars:prompt.length,
+        response_chars:0,
+        error_status:support.supported?'runtime_failed':'unsupported',
+        ...metadata
+      });
+      const fallback=[
+        'Browser Node could not start: '+String(error?.message||support.reason||'runtime failed')+'.',
+        'No provider key, Cloudflare setup, paid API or local install was used. The raw prompt did not leave this browser through the Browser Node route.',
+        'MMIR automatically fell back to the free browser guide.',
+        guideResponse(prompt,{id:'mmir-guide',label:'MMIR Guide'})
+      ].join('\n\n');
+      updateMessage(assistant.message.id,fallback,'browser node unavailable');
+      setStatus('Browser Node unavailable. MMIR Guide answered without a paid route.','ready');
     }finally{
       currentAbortController=null;
       setBusy(false);
