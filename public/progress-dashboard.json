@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-26T01:01:16.642Z",
+  "updated_at": "2026-05-26T01:32:17.719Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 312,
+    "total": 313,
     "done": 51,
-    "beta": 236,
+    "beta": 237,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1385,6 +1385,16 @@
         "watch": 0,
         "blocked": 0,
         "planned": 0
+      },
+      {
+        "phase": "Chat Runtime / Local Node",
+        "total": 1,
+        "done": 0,
+        "beta": 1,
+        "next": 0,
+        "watch": 0,
+        "blocked": 0,
+        "planned": 0
       }
     ]
   },
@@ -1635,6 +1645,12 @@
         "label": "Fresh local model clears stale offline",
         "status": "beta",
         "evidence": "D313 clears stale offline state when a fresh Local Node model list arrives without status, while explicit new failures stay visible."
+      },
+      {
+        "id": "local-proof-profile-handoff",
+        "label": "Local model proof activates local profile",
+        "status": "beta",
+        "evidence": "D314 makes chat-runtime switch to the free Local Node profile before local proof/send when a trusted model event arrives."
       },
       {
         "id": "local-node-package",
@@ -11303,6 +11319,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Fresh statusless Local Node model lists now clear stale offline state in active route strip, plus drawer and model picker, while explicit new offline/error/blocked events remain authoritative.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D314",
+      "phase": "Chat Runtime / Local Node",
+      "priority": "P0",
+      "work_package": "Local proof activates local profile",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "When chat-runtime receives a trusted Local Node model event, activate the free local-node backend profile before proof/refresh/send; do not activate it for explicit offline/error/blocked events",
+      "best_practice": "The visible chat controls and runtime must agree: if Local ready is shown, the next send/proof should target the local connector rather than a previously active managed or browser route",
+      "done_when": "Installer-to-live-model and runtime smoke gates prove model events activate the free local profile, explicit blocked status stays blocked, caches rotate and no provider keys or paid routes are started",
+      "covers": "chat-runtime, local-node, activation, zero-trust, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Chat-runtime now activates the free Local Node profile when a trusted model event arrives, keeping visible Local ready state aligned with proof/send routing while explicit blocked/offline states stay blocked.",
       "estimate": "Verify + polish"
     }
   ]

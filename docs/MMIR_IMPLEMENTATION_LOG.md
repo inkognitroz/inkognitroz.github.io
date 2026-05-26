@@ -277,6 +277,7 @@ Updated: 2026-05-23
 - D311 is now beta: the first-screen activation cockpit now treats a degraded Local Node event with visible models as ready, keeping first-impression status aligned with the working chat controls.
 - D312 is now beta: the plus drawer and compact model picker now treat trusted Local Node model events as chat-ready even when status is missing or still checking, while explicit offline/error/blocked states still stop local chat.
 - D313 is now beta: active route strip, plus drawer and compact model picker now clear stale offline state when a fresh statusless Local Node model list arrives, while the first-screen cockpit still honors explicit new offline/error/blocked events.
+- D314 is now beta: chat-runtime now activates the free Local Node profile when a trusted Local Node model event arrives before proof/send, while explicit offline/error/blocked events do not switch the active backend.
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads as critical chat UI with compact route chips directly under the composer, so free browser/WebGPU/local-node choices are visible before secondary platform sections.
 - D254 chat polish is tightened again: active routes no longer wait for the deferred feature queue, mobile/desktop order keeps composer -> active routes -> runtime proof, and the performance budget was raised narrowly for this critical model-choice code.

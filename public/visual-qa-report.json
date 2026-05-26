@@ -190,6 +190,11 @@
       "id": "D313 stale offline local model recovery",
       "status": "guarded",
       "evidence": "A fresh Local Node model list without status now clears stale offline state in chat controls, while explicit new offline/error states remain visible."
+    },
+    {
+      "id": "D314 local proof profile handoff",
+      "status": "guarded",
+      "evidence": "Chat runtime now activates the free Local Node profile from trusted local model proof before proof/send, keeping routing aligned with visible Local ready state."
     }
   ],
   "known_limitations": [

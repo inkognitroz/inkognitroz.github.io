@@ -18,7 +18,9 @@ const files = {
   apiClient: join(publicDir, 'apps', 'mimir-chat-portal', 'api-client.js'),
   coverage: join(publicDir, 'ui-action-coverage.json'),
   progressData: join(publicDir, 'progress-dashboard.json'),
+  visualQa: join(publicDir, 'visual-qa-report.json'),
   backlog: join(root, 'docs', 'MMIR_SEQUENTIAL_DELIVERY_BACKLOG.md'),
+  log: join(root, 'docs', 'MMIR_IMPLEMENTATION_LOG.md'),
   qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml'),
   pagesWorkflow: join(root, '.github', 'workflows', 'pages.yml')
 };
@@ -322,6 +324,8 @@ async function run() {
     'handleLocalConnectorRefreshed',
     'mmir-local-install-returned',
     'mmir-local-connector-refreshed',
+    "!/^(off|err|block)/i.test(detail.status||detail.health||'')",
+    'window.MimirBackendProfiles?.ensureFreeLocalProfile?.();',
     'tinyChatProbe',
     'mmir-install-to-first-chat-ready',
     'first_chat_ready:true',
@@ -340,6 +344,9 @@ async function run() {
   }
   requireIncludes(files.activationTelemetry, 'mmir-install-to-first-chat-ready', 'D206 activation telemetry must record install-to-first-chat readiness.');
   requireIncludes(files.coverage, 'mmir-install-to-first-chat-ready', 'D206 UI coverage must include install-to-first-chat evidence.');
+  requireIncludes(files.backlog, '| D314 | Chat Runtime / Local Node | P0 | Local proof activates local profile |', 'Backlog must include D314 local proof profile handoff.');
+  requireIncludes(files.log, 'D314 is now beta', 'Implementation log must include D314.');
+  requireIncludes(files.visualQa, 'D314 local proof profile handoff', 'Visual QA must mention D314 local proof profile handoff.');
   requireIncludes(files.qualityWorkflow, 'smoke-check-installer-to-live-model-proof.js', 'D206 quality workflow must run the installer-to-live-model proof gate.');
   requireIncludes(files.pagesWorkflow, 'smoke-check-installer-to-live-model-proof.js', 'D206 Pages workflow must run the installer-to-live-model proof gate.');
   requireIncludes(files.backlog, '| D207 |', 'Backlog must keep D207 as the next model-activation hardening item after D206.');

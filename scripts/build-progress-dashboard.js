@@ -297,7 +297,8 @@ const overrides = new Map([
   ['D310', { status: 'beta', evidence: 'Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.' }],
   ['D311', { status: 'beta', evidence: 'The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.' }],
   ['D312', { status: 'beta', evidence: 'Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.' }],
-  ['D313', { status: 'beta', evidence: 'Fresh statusless Local Node model lists now clear stale offline state in active route strip, plus drawer and model picker, while explicit new offline/error/blocked events remain authoritative.' }]
+  ['D313', { status: 'beta', evidence: 'Fresh statusless Local Node model lists now clear stale offline state in active route strip, plus drawer and model picker, while explicit new offline/error/blocked events remain authoritative.' }],
+  ['D314', { status: 'beta', evidence: 'Chat-runtime now activates the free Local Node profile when a trusted model event arrives, keeping visible Local ready state aligned with proof/send routing while explicit blocked/offline states stay blocked.' }]
 ]);
 
 const repoMeta = [
@@ -918,6 +919,12 @@ function buildLaunchProgress() {
       label: 'Fresh local model clears stale offline',
       status: 'beta',
       evidence: 'D313 clears stale offline state when a fresh Local Node model list arrives without status, while explicit new failures stay visible.'
+    },
+    {
+      id: 'local-proof-profile-handoff',
+      label: 'Local model proof activates local profile',
+      status: 'beta',
+      evidence: 'D314 makes chat-runtime switch to the free Local Node profile before local proof/send when a trusted model event arrives.'
     },
     {
       id: 'local-node-package',

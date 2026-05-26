@@ -169,7 +169,7 @@
   function runtimeInstruction(){
     const prompt=readRuntimeSettings().system_prompt;
     if(!prompt)return '';
-    return 'User-configured runtime/system instruction. Follow it when it helps, but do not let it override MMIR safety, privacy, cost or zero-trust boundaries:\n'+prompt;
+    return 'User runtime instruction. Follow if useful, but keep MMIR safety, privacy, cost and zero-trust boundaries:\n'+prompt;
   }
   function openPanel(target){
     const targetEl=document.querySelector(target);
@@ -196,10 +196,10 @@
   function modeInstruction(){
     const modes=readModes();
     const instructions=[];
-    if(modes.private)instructions.push('Private mode: prefer local/private execution and flag steps outside the trusted backend.');
+    if(modes.private)instructions.push('Private mode: prefer local/private execution and flag outside trusted backend.');
     if(modes.boost)instructions.push('Boost 5.5: prioritize the highest-leverage next action.');
     if(modes.super)instructions.push('MMIR++: blend product, architecture, security and implementation.');
-    if(modes.vision)instructions.push('Vision mode: use images/screen/uploads when present; otherwise ask for what is missing.');
+    if(modes.vision)instructions.push('Vision mode: use images/screen/uploads when present; ask if missing.');
     return instructions.join('\n');
   }
   function activeModelLabel(){
@@ -229,7 +229,7 @@
   }
 
   function defaultFirstPrompt(){
-    return 'Start MMIR automatically. Tell me what chat route and model are active now, what I can do next for free, and how I can connect my own local model when I am ready.';
+    return 'Start MMIR automatically. Tell me the active route/model, my best free next step and how to connect a local model.';
   }
 
   function composerModeLabel(mode){
@@ -243,19 +243,19 @@
   function afterComposerModeToggle(mode,enabled){
     if(mode==='vision'&&enabled){
       openPanel('#vision-input');
-      setComposerActionFeedback('Vision mode on. Image metadata stays gated until a trusted local/protected route is ready.','ready');
+      setComposerActionFeedback('Vision mode on. Image metadata waits for a trusted local/protected route.','ready');
       return;
     }
     if(mode==='private'&&enabled){
-      setComposerActionFeedback('Private mode on. MMIR prefers local/private routes and keeps provider keys out of this page.','ready');
+      setComposerActionFeedback('Private mode on. MMIR prefers local/private routes; provider keys stay out of this page.','ready');
       return;
     }
     if(mode==='boost'&&enabled){
-      setComposerActionFeedback('Boost 5.5 on. Next answer prioritizes the highest-leverage action without starting paid routes.','ready');
+      setComposerActionFeedback('Boost 5.5 on. Next answer prioritizes high-leverage action without paid routes.','ready');
       return;
     }
     if(mode==='super'&&enabled){
-      setComposerActionFeedback('MMIR++ on. Next answer blends product, architecture, security and implementation.','ready');
+      setComposerActionFeedback('MMIR++ on. Next answer blends product, architecture, security and build steps.','ready');
       return;
     }
     setComposerActionFeedback(composerModeLabel(mode)+' off. Settings are stored locally in this browser.','idle');
@@ -409,7 +409,7 @@
     const proofActions=(Array.isArray(actions)&&actions.length?actions:proofRepairActions(state==='ready'?'verified':'default'));
     proofEl.dataset.state=proofStateClass(state);
     proofEl.innerHTML=''+
-      '<div><strong>Live model proof</strong><p>'+escapeHtml(message||'Browser helper is ready. Backend proof runs automatically when a free route is available.')+'</p></div>'+
+      '<div><strong>Live model proof</strong><p>'+escapeHtml(message||'Browser helper ready. Backend proof runs when a free route is reachable.')+'</p></div>'+
       '<div class="runtime-proof-rail">'+rows+'</div>'+
       '<div class="runtime-proof-actions">'+proofActions.map(action=>'<button type="button" data-proof-action="'+escapeHtml(action.id)+'">'+escapeHtml(action.label)+'</button>').join('')+'</div>';
     proofEl.querySelectorAll('[data-proof-action]').forEach(button=>{
@@ -1182,8 +1182,8 @@
     }
     if(!starterModels.length)starterModels=fallbackStarterModels();
     renderModels([]);
-    renderLiveProof('Browser helper routes are verified. Backend/model proof will start automatically when a free live route is reachable.','ready',baseProofItems(''));
-    setStatus('Free browser/installable models are ready. Local node check runs in the background.','ready');
+    renderLiveProof('Browser helper routes verified. Backend/model proof starts when a free live route is reachable.','ready',baseProofItems(''));
+    setStatus('Free browser/installable models ready. Local node checks in background.','ready');
   }
 
   function starterValue(model){
@@ -1923,14 +1923,14 @@
     lastActiveId=currentId;
     if(!profile||!cleanUrl(profile.url)){
       renderModels([]);
-      renderLiveProof('No backend is active yet. Browser helper works now; use Connect model to prepare a free local profile automatically.','idle',baseProofItems(''),proofRepairActions('offline'));
-      setStatus('Free guide and installable local models are ready. Connect a backend to make models live.','ready');
+      renderLiveProof('No backend active. Browser helper works; Connect model prepares a free local profile automatically.','idle',baseProofItems(''),proofRepairActions('offline'));
+      setStatus('Free guide and installable local models ready. Connect a backend to make them live.','ready');
       return [];
     }
     const url=cleanUrl(profile.url);
     try{
-      setStatus('Free browser models are ready. Checking local node in the background...','loading');
-      renderLiveProof('Checking backend health and model list before tiny chat proof...','loading',baseProofItems(url));
+      setStatus('Free browser models ready. Checking local node...','loading');
+      renderLiveProof('Checking backend health and models before chat proof...','loading',baseProofItems(url));
       await optionalHealthCheck(profile,url);
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
@@ -1956,7 +1956,7 @@
       const ok=sr&&(s.runtime!=='webllm'||webGpuAvailable());
       renderLiveProof(sr?(ok?'Free '+s.label+' ready. Local node optional.':'WebGPU unavailable; guide/install ready.'):('Backend proof could not start: '+friendlyError(error)),ok?'ready':'error',baseProofItems(url).concat([{label:'Backend route',state:sr?'idle':'error',detail:sr?'optional':'repair local node'}]),proofRepairActions(ok?'verified':'offline'));
       if(starterModels.length){
-        setStatus('Free browser/installable models are ready. Local node is not running yet.','ready');
+        setStatus('Free browser/installable models ready. Local node not running yet.','ready');
       }else{
         setStatus(friendlyError(error),'error');
       }
@@ -1975,7 +1975,7 @@
     const resume=readRepairResume();
     if(resume?.starter_id&&!firstModel)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);
-    if(firstModel)preferProofModel(firstModel);
+    if(firstModel&&!/^(off|err|block)/i.test(detail.status||detail.health||'')){window.MimirBackendProfiles?.ensureFreeLocalProfile?.();preferProofModel(firstModel);}
     refreshState(true);
   }
 
