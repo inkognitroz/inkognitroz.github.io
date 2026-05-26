@@ -5,10 +5,10 @@
 
 .mimir-public-chat .composer-mode-dock{border-top:1px solid rgba(148,163,184,.14);padding-top:8px}
 .mimir-public-chat .composer-tool-cluster,.mimir-public-chat .composer-live-cluster{min-width:0}
-.mimir-public-chat .composer-live-chip,.mimir-public-chat .composer-mode-button{max-width:11rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mimir-public-chat #runtime-resource-chip[data-toolbar-role=node]{display:inline-flex!important}
-.mimir-public-chat #runtime-model-chip[data-toolbar-role=llms]{font-weight:800;color:#0f172a;border-color:rgba(15,23,42,.18);background:#fff}
-.mimir-public-chat #runtime-resource-chip[data-toolbar-role=node]{max-width:7.4rem;color:#047857;background:#ecfdf5;border-color:rgba(4,120,87,.22)}
+.mimir-public-chat .composer-live-chip,.mimir-public-chat .composer-mode-button{max-width:13.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip){display:inline-flex!important}
+.mimir-public-chat #runtime-model-chip{font-weight:800;color:#0f172a;border-color:rgba(15,23,42,.18);background:#fff}
+.mimir-public-chat #runtime-node-chip[data-state=ready],.mimir-public-chat #runtime-tunnel-chip[data-state=ready],.mimir-public-chat #runtime-resource-chip[data-state=ready],.mimir-public-chat #runtime-privacy-chip[data-state=ready]{color:#047857;background:#ecfdf5;border-color:rgba(4,120,87,.22)}
 .mimir-public-chat #composer-add-model{font-size:1.3rem}
 .mimir-public-chat .composer-action-feedback[data-state=idle],.mimir-public-chat .composer-action-feedback[data-state=ready]{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(max-width:560px){
@@ -17,8 +17,8 @@
   .mimir-public-chat .composer-live-cluster{justify-content:flex-end;overflow:hidden}
   .mimir-public-chat .composer-mode-button[data-chat-mode=super],.mimir-public-chat .composer-mode-button[data-chat-mode=vision],.mimir-public-chat .composer-mode-button[data-chat-mode=boost]{display:none}
   .mimir-public-chat .composer-mode-button[data-chat-mode=private]{max-width:5rem}
-  .mimir-public-chat .composer-live-chip{max-width:7.2rem}
-  .mimir-public-chat #runtime-resource-chip[data-toolbar-role=node]{max-width:5.9rem}
+  .mimir-public-chat .composer-live-chip{max-width:9rem}
+  .mimir-public-chat #runtime-resource-chip{max-width:7.2rem}
   .mimir-public-chat #composer-voice-input{width:40px;min-width:40px;padding:0;font-size:0;color:transparent}
   .mimir-public-chat #composer-voice-input::before{content:"Mic";font-size:.82rem;color:#0f172a}
 }

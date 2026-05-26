@@ -42,10 +42,11 @@ for (const needle of [
 }
 
 for (const needle of [
-  '.mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock{display:grid!important;grid-template-areas:"tools"!important;grid-template-columns:auto!important;justify-content:start!important}',
-  '.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster{display:flex!important;grid-area:tools!important;overflow:visible!important}',
-  '.mimir-public-chat:not(.mimir-has-chat) :is(.composer-live-cluster,[data-chat-mode],#runtime-model-chip,#runtime-resource-chip),.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model){display:none!important}',
-  '.mimir-public-chat:not(.mimir-has-chat) #composer-add-model{display:inline-flex!important}',
+  '.mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock{display:grid!important;grid-template-areas:"tools" "live" "feedback"!important;grid-template-columns:minmax(0,1fr)!important}',
+  '.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster{display:flex!important;grid-area:tools!important;overflow-x:auto!important}',
+  '.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important;grid-area:live!important;overflow-x:auto!important}',
+  '.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model):not([data-chat-mode="private"]){display:none!important}',
+  '.mimir-public-chat #runtime-model-chip',
   'body.mimir-composer-dock-ready .composer-actions #new-backend'
 ]) {
   requireIncludes(css, needle, `Critical runtime CSS must keep the pre-chat plus alive: ${needle}`);
@@ -53,6 +54,9 @@ for (const needle of [
 
 if (css.includes('.mimir-public-chat:not(.mimir-has-chat) :is(.composer-mode-dock,.composer-tool-cluster')) {
   fail('Critical runtime CSS must not hide the whole composer dock before chat.');
+}
+if (/not\(\.mimir-has-chat\).*composer-live-cluster[^{}]*display\s*:\s*none/i.test(css)) {
+  fail('Launch Slice A requires model/node/privacy/tunnel/resource chips before chat.');
 }
 
 requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d314-20260526-local-proof-profile-handoff-v1'", 'Service worker cache must rotate for the pre-chat plus fix.');
