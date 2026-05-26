@@ -152,6 +152,7 @@ for (const needle of [
 for (const needle of [
   'Composer model picker live-local fixture passed.',
   "getAttribute('data-picker-recommend') === 'live-local'",
+  "detail: { models: [{ id: 'qwen3:0.6b'",
   'bridgeRefreshes',
   'must not reopen the installer'
 ]) {
@@ -161,8 +162,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260526-local-ready-status-v1',
-  'composer-model-picker.js?v=20260526-local-ready-status-v1'
+  'composer-model-picker.css?v=20260526-local-model-presence-ready-v1',
+  'composer-model-picker.js?v=20260526-local-model-presence-ready-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }
@@ -256,8 +257,11 @@ if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
 }
 
 requireIncludes(read(files.backlog), '| D309 | Chat UX / Model Picker | P0 | Model picker recommends live local model |', 'Backlog must include D309 live local model picker recommendation.');
+requireIncludes(read(files.backlog), '| D312 | Chat UX / Local Node | P0 | Model-present local route auto-ready |', 'Backlog must include D312 model-present local route auto-ready.');
 requireIncludes(read(files.log), 'D309 is now beta', 'Implementation log must include D309.');
+requireIncludes(read(files.log), 'D312 is now beta', 'Implementation log must include D312.');
 requireIncludes(read(files.visualQa), 'D309 model picker live local recommendation', 'Visual QA must mention D309.');
+requireIncludes(read(files.visualQa), 'D312 compact controls model-present ready', 'Visual QA must mention D312.');
 requireIncludes(`${read(files.qualityWorkflow)}\n${read(files.pagesWorkflow)}`, 'smoke-check-composer-model-picker-live-local.js', 'GitHub workflows must run D309 live-local model picker fixture.');
 
 if (!process.exitCode) {

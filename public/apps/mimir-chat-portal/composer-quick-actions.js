@@ -87,10 +87,7 @@
     return webGpuReady()?'Browser LLM ready':'Browser LLM option';
   }
   function localModel(){return (localState.models||[]).map(model=>String(model?.id||model?.name||model?.model||'').trim()).find(Boolean)||'';}
-  function localUsableStatus(){
-    return ['online','degraded','ready','live','ok','healthy'].includes(String(localState.status||'').toLowerCase());
-  }
-  function localReady(){return localUsableStatus()&&Boolean(localModel());}
+  function localReady(){return Boolean(localModel())&&!/^(off|err|block)/i.test(localState.status||'');}
   function renderRouteStrip(){
     const lm=localModel();
     return '<div class="composer-quick-route-strip" aria-label="Free chat routes">'+

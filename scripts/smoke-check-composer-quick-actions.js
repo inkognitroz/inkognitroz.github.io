@@ -136,8 +136,8 @@ for (const needle of [
 }
 
 for (const needle of [
-  'composer-quick-actions.css?v=20260526-local-ready-status-v1',
-  'composer-quick-actions.js?v=20260526-local-ready-status-v1'
+  'composer-quick-actions.css?v=20260526-local-model-presence-ready-v1',
+  'composer-quick-actions.js?v=20260526-local-model-presence-ready-v1'
 ]) {
   requireIncludes(html, needle, `MMIR page must load quick-actions asset: ${needle}`);
 }
@@ -182,16 +182,19 @@ requireIncludes(text(files.visualQa), 'D289 composer quick Chat now status', 'Vi
 requireIncludes(text(files.visualQa), 'D290 composer quick free route strip', 'Visual QA report must mention D290 quick route strip.');
 requireIncludes(text(files.visualQa), 'D291 composer quick route click fixture', 'Visual QA report must mention D291 quick route fixture.');
 requireIncludes(text(files.visualQa), 'D308 quick actions live local route', 'Visual QA report must mention D308 quick actions live local route.');
+requireIncludes(text(files.visualQa), 'D312 compact controls model-present ready', 'Visual QA report must mention D312 compact controls model-present ready.');
 requireIncludes(text(files.backlog), '| D288 | Chat UX / Composer | P0 | Open WebUI-style plus quick actions drawer |', 'Backlog must include D288.');
 requireIncludes(text(files.backlog), '| D289 | Chat UX / Activation | P0 | Quick actions ready-state and Chat now |', 'Backlog must include D289.');
 requireIncludes(text(files.backlog), '| D290 | Chat UX / Model Routes | P0 | Quick actions free route strip |', 'Backlog must include D290.');
 requireIncludes(text(files.backlog), '| D291 | Chat QA / Model Routes | P0 | Quick route click fixture |', 'Backlog must include D291.');
 requireIncludes(text(files.backlog), '| D308 | Chat UX / Composer | P0 | Quick actions switch from install to live local chat |', 'Backlog must include D308.');
+requireIncludes(text(files.backlog), '| D312 | Chat UX / Local Node | P0 | Model-present local route auto-ready |', 'Backlog must include D312.');
 requireIncludes(text(files.log), 'D288 is now beta', 'Implementation log must include D288.');
 requireIncludes(text(files.log), 'D289 is now beta', 'Implementation log must include D289.');
 requireIncludes(text(files.log), 'D290 is now beta', 'Implementation log must include D290.');
 requireIncludes(text(files.log), 'D291 is now beta', 'Implementation log must include D291.');
 requireIncludes(text(files.log), 'D308 is now beta', 'Implementation log must include D308.');
+requireIncludes(text(files.log), 'D312 is now beta', 'Implementation log must include D312.');
 requireIncludes(text(files.buildDashboard), 'composerQuickActionsReportPath', 'Progress dashboard build must read D288 report.');
 requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-composer-quick-actions.js', 'GitHub workflows must run D288 quick-actions smoke gate.');
 requireIncludes(`${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`, 'smoke-check-composer-quick-route-fixture.js', 'GitHub workflows must run D291 quick-route fixture gate.');
@@ -203,6 +206,7 @@ for (const needle of [
   'mmir-runtime-starter-handoff',
   'mimir-repair-resume-v1:',
   'mmir-local-connector-refreshed',
+  "detail: { models: [{ id: 'qwen3:0.6b'",
   'bridgeRefreshes',
   'Local ready',
   'no_paid_routes_started',
@@ -227,6 +231,8 @@ const d291 = (progress.tasks || []).find((task) => task.seq === 'D291');
 if (!d291 || d291.status !== 'beta') fail('Progress dashboard task D291 must be beta.');
 const d308 = (progress.tasks || []).find((task) => task.seq === 'D308');
 if (!d308 || d308.status !== 'beta') fail('Progress dashboard task D308 must be beta.');
+const d312 = (progress.tasks || []).find((task) => task.seq === 'D312');
+if (!d312 || d312.status !== 'beta') fail('Progress dashboard task D312 must be beta.');
 if (!(progress.launch_progress?.checkpoints || []).some((item) => item.id === 'composer-quick-actions-drawer')) {
   fail('Launch progress must expose the quick actions drawer checkpoint.');
 }

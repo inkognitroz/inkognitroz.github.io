@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-26T00:09:19.078Z",
+  "updated_at": "2026-05-26T00:31:13.081Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 310,
+    "total": 311,
     "done": 51,
-    "beta": 234,
+    "beta": 235,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1378,9 +1378,9 @@
       },
       {
         "phase": "Chat UX / Local Node",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1623,6 +1623,12 @@
         "label": "First impression agrees local model is ready",
         "status": "beta",
         "evidence": "D311 makes the activation cockpit show Local Node ready when a local model is present, instead of degraded setup copy."
+      },
+      {
+        "id": "compact-controls-model-present-ready",
+        "label": "Compact controls use local model presence",
+        "status": "beta",
+        "evidence": "D312 makes plus drawer and model picker show Local ready from model presence, even before health status settles."
       },
       {
         "id": "local-node-package",
@@ -11261,6 +11267,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D312",
+      "phase": "Chat UX / Local Node",
+      "priority": "P0",
+      "work_package": "Model-present local route auto-ready",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the plus drawer and compact model picker treat any trusted Local Node model event as ready unless the status is explicitly offline, error or blocked",
+      "best_practice": "Some connector events may arrive with models before the health label settles; the user should be able to chat immediately instead of seeing install/setup because status is missing or still checking",
+      "done_when": "Quick-route and model-picker fixtures dispatch Local Node model events without status and prove both surfaces show Local ready, refresh/send through chat-runtime and avoid installer redirects or paid/provider side effects",
+      "covers": "chat, local-node, model-picker, composer, automation, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.",
       "estimate": "Verify + polish"
     }
   ]

@@ -295,7 +295,8 @@ const overrides = new Map([
   ['D308', { status: 'beta', evidence: 'The composer plus drawer now listens for Local Node model events, switches the Local chip from install to ready and starts the live private model through chat-runtime without reopening the installer.' }],
   ['D309', { status: 'beta', evidence: 'The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.' }],
   ['D310', { status: 'beta', evidence: 'Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.' }],
-  ['D311', { status: 'beta', evidence: 'The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.' }]
+  ['D311', { status: 'beta', evidence: 'The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.' }],
+  ['D312', { status: 'beta', evidence: 'Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.' }]
 ]);
 
 const repoMeta = [
@@ -904,6 +905,12 @@ function buildLaunchProgress() {
       label: 'First impression agrees local model is ready',
       status: 'beta',
       evidence: 'D311 makes the activation cockpit show Local Node ready when a local model is present, instead of degraded setup copy.'
+    },
+    {
+      id: 'compact-controls-model-present-ready',
+      label: 'Compact controls use local model presence',
+      status: 'beta',
+      evidence: 'D312 makes plus drawer and model picker show Local ready from model presence, even before health status settles.'
     },
     {
       id: 'local-node-package',

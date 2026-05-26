@@ -64,8 +64,8 @@ if (activeStrip.includes('.slice(0,14)')) {
   fail('Startup free LLM rail must not hide later free starters behind a hard-coded slice.');
 }
 
-requireIncludes(text(files.mmir), 'active-node-strip.js?v=20260526-local-ready-status-v1', 'MMIR page must cache-bust active-node strip for startup free LLM nodes.');
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d311-20260526-first-impression-local-ready-v1'", 'Service worker cache must rotate for D298 startup free LLM nodes.');
+requireIncludes(text(files.mmir), 'active-node-strip.js?v=20260526-local-model-presence-ready-v1', 'MMIR page must cache-bust active-node strip for startup free LLM nodes.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d312-20260526-local-model-presence-ready-v1'", 'Service worker cache must rotate for D298 startup free LLM nodes.');
 requireIncludes(text(files.sw), './apps/mimir-chat-portal/active-node-strip.js', 'Service worker must cache active-node strip for offline/free startup shell.');
 requireIncludes(text(files.backlog), '| D298 | Chat UX / Free Models | P0 | Startup free LLM node rail |', 'Backlog must include D298 startup free LLM node rail.');
 requireIncludes(text(files.log), 'D298 is now beta', 'Implementation log must include D298.');

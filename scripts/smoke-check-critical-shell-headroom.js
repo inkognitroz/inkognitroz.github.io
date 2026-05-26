@@ -84,7 +84,7 @@ for (const needle of [
   'inlineFirstPaintJsBytes',
   'totalFirstPaintJsBytes',
   "const cacheKey = '20260524-quiet-first-paint-v3'",
-  "const activeRoutesCacheKey = '20260526-local-ready-status-v1'",
+  "const activeRoutesCacheKey = '20260526-local-model-presence-ready-v1'",
   "const firstImpressionCacheKey = '20260526-first-impression-local-ready-v1'",
   './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
   './apps/mimir-chat-portal/active-node-strip.js?v=${activeRoutesCacheKey}',

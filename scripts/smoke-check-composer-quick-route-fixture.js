@@ -279,7 +279,7 @@ if (resume.no_paid_routes_started !== true || resume.provider_secrets_stored !==
 
 const liveLocal = setupContext();
 liveLocal.window.dispatchEvent(new FakeCustomEvent('mmir-local-connector-refreshed', {
-  detail: { status: 'degraded', models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
+  detail: { models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
 }));
 const liveLocalMenu = menuFrom(liveLocal.document, liveLocal.window);
 if (!String(liveLocalMenu.innerHTML || '').includes('Local ready') || !String(liveLocalMenu.innerHTML || '').includes('qwen3:0.6b')) {
