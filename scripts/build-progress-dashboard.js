@@ -296,7 +296,8 @@ const overrides = new Map([
   ['D309', { status: 'beta', evidence: 'The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.' }],
   ['D310', { status: 'beta', evidence: 'Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.' }],
   ['D311', { status: 'beta', evidence: 'The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.' }],
-  ['D312', { status: 'beta', evidence: 'Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.' }]
+  ['D312', { status: 'beta', evidence: 'Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.' }],
+  ['D313', { status: 'beta', evidence: 'Fresh statusless Local Node model lists now clear stale offline state in active route strip, plus drawer and model picker, while explicit new offline/error/blocked events remain authoritative.' }]
 ]);
 
 const repoMeta = [
@@ -911,6 +912,12 @@ function buildLaunchProgress() {
       label: 'Compact controls use local model presence',
       status: 'beta',
       evidence: 'D312 makes plus drawer and model picker show Local ready from model presence, even before health status settles.'
+    },
+    {
+      id: 'fresh-local-model-clears-stale-offline',
+      label: 'Fresh local model clears stale offline',
+      status: 'beta',
+      evidence: 'D313 clears stale offline state when a fresh Local Node model list arrives without status, while explicit new failures stay visible.'
     },
     {
       id: 'local-node-package',

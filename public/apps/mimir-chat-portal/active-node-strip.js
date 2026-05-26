@@ -267,7 +267,7 @@
     const detail=event?.detail||{};
     const models=Array.isArray(detail.models)?detail.models:[];
     liveModels=models.map(model=>({id:model.id||model.name||model.model||'',name:model.name||model.label||model.id||model.model||''})).filter(model=>model.id||model.name);
-    localState={...localState,status:detail.status||detail.health||localState.status||'checking',url:detail.url||localState.url};
+    localState={...localState,status:detail.status||detail.health||(liveModels[0]?'ready':localState.status||'checking'),url:detail.url||localState.url};
     render();
   }
   function init(){

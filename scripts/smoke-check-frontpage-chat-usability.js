@@ -67,9 +67,9 @@ requireIncludes(html, './apps/mimir-chat-portal/composer-keyboard-shortcuts.js',
 requireIncludes(html, './apps/mimir-chat-portal/composer-autofocus.js', 'Composer autofocus must load through the deferred queue.');
 requireIncludes(html, './apps/mimir-chat-portal/composer-refocus-after-send.js', 'Composer refocus after send must load through the deferred queue.');
 requireIncludes(html, 'chat-runtime.css?v=20260525-prechat-plus-v1', 'Chat runtime CSS must be cache-busted for compact proof and composer affordance polish.');
-requireIncludes(html, 'composer-model-picker.css?v=20260526-local-model-presence-ready-v1', 'Composer model picker CSS must be cache-busted for picker empty-reset polish.');
-requireIncludes(html, 'composer-model-picker.js?v=20260526-local-model-presence-ready-v1', 'Composer model picker JS must be cache-busted for picker empty-reset polish.');
-requireIncludes(sw, "CACHE_NAME='mmir-pwa-d312-20260526-local-model-presence-ready-v1'", 'Service worker cache must be bumped for the latest chat shell and composer affordance fixes.');
+requireIncludes(html, 'composer-model-picker.css?v=20260526-stale-offline-model-proof-v1', 'Composer model picker CSS must be cache-busted for picker empty-reset polish.');
+requireIncludes(html, 'composer-model-picker.js?v=20260526-stale-offline-model-proof-v1', 'Composer model picker JS must be cache-busted for picker empty-reset polish.');
+requireIncludes(sw, "CACHE_NAME='mmir-pwa-d313-20260526-stale-offline-model-proof-v1'", 'Service worker cache must be bumped for the latest chat shell and composer affordance fixes.');
 
 for (const needle of [
   'resize:none',

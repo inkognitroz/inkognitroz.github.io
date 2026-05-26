@@ -316,7 +316,8 @@
   const timer=setInterval(()=>{if(bind()||++tries>24)clearInterval(timer);},250);
   w.addEventListener('mmir-local-connector-refreshed',(event)=>{
     const detail=event?.detail||{};
-    localState={status:detail.status||detail.health||localState.status,models:Array.isArray(detail.models)?detail.models:[]};
+    const models=Array.isArray(detail.models)?detail.models:[];
+    localState={status:detail.status||detail.health||(models.length?'ready':localState.status),models};
     if(menu&&!menu.hidden)menu.innerHTML=renderMenuContent();
   });
   w.MimirComposerQuickActions={open:()=>toggleMenu(true),close:()=>closeMenu(false),toggle:()=>toggleMenu(),run:runQuickAction};

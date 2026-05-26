@@ -68,10 +68,10 @@ if (blockingCssBytes > 67000) {
 
 requireIncludes(
   html,
-  'chat-runtime-deferred.css?v=20260526-local-model-presence-ready-v1" media="print" onload="this.media=\'all\'" data-mimir-deferred-style',
+  'chat-runtime-deferred.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media=\'all\'" data-mimir-deferred-style',
   'MMIR page must load chat runtime helper styling as deferred CSS.'
 );
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d312-20260526-local-model-presence-ready-v1'", 'Service worker cache must rotate for D296 runtime CSS headroom.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d313-20260526-stale-offline-model-proof-v1'", 'Service worker cache must rotate for D296 runtime CSS headroom.');
 requireIncludes(text(files.sw), './apps/mimir-chat-portal/chat-runtime-deferred.css', 'Service worker must cache deferred runtime CSS for offline install/model helper paths.');
 
 for (const needle of [

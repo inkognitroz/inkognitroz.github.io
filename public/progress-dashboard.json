@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-26T00:31:13.081Z",
+  "updated_at": "2026-05-26T01:01:16.642Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 311,
+    "total": 312,
     "done": 51,
-    "beta": 235,
+    "beta": 236,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1378,9 +1378,9 @@
       },
       {
         "phase": "Chat UX / Local Node",
-        "total": 4,
+        "total": 5,
         "done": 0,
-        "beta": 4,
+        "beta": 5,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1629,6 +1629,12 @@
         "label": "Compact controls use local model presence",
         "status": "beta",
         "evidence": "D312 makes plus drawer and model picker show Local ready from model presence, even before health status settles."
+      },
+      {
+        "id": "fresh-local-model-clears-stale-offline",
+        "label": "Fresh local model clears stale offline",
+        "status": "beta",
+        "evidence": "D313 clears stale offline state when a fresh Local Node model list arrives without status, while explicit new failures stay visible."
       },
       {
         "id": "local-node-package",
@@ -11282,6 +11288,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D313",
+      "phase": "Chat UX / Local Node",
+      "priority": "P0",
+      "work_package": "Fresh local model clears stale offline status",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "When a new Local Node model list arrives without a status field after an earlier offline/error state, promote the local route to ready in active route strip, plus drawer and model picker; keep explicit new offline/error/blocked states authoritative",
+      "best_practice": "Browser event order should not strand a working local model behind stale offline copy, but a fresh explicit failure must still be shown truthfully",
+      "done_when": "Startup, quick-route, model-picker and first-screen source gates prove stale offline is cleared by fresh model proof, explicit blocked/offline status remains blocked and no installer/paid/provider path starts",
+      "covers": "chat, local-node, event-order, usability, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Fresh statusless Local Node model lists now clear stale offline state in active route strip, plus drawer and model picker, while explicit new offline/error/blocked events remain authoritative.",
       "estimate": "Verify + polish"
     }
   ]

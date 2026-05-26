@@ -360,7 +360,8 @@
   window.addEventListener('mmir-live-model-proof-updated',render);
   window.addEventListener('mmir-local-connector-refreshed',(event)=>{
     const detail=event?.detail||{};
-    localState={status:detail.status||detail.health||localState.status,models:Array.isArray(detail.models)?detail.models:[]};
+    const models=Array.isArray(detail.models)?detail.models:[];
+    localState={status:detail.status||detail.health||(models.length?'ready':localState.status),models};
     render();
   });
   loadStarterModels();

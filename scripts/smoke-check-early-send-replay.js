@@ -38,7 +38,7 @@ const workflows = `${text(files.qualityWorkflow)}\n${text(files.pagesWorkflow)}`
 
 requireIncludes(html, 'onclick="window.__MimirEarlySend=1"', 'Primary send must record early clicks before chat runtime binds.');
 requireIncludes(html, 'chat-runtime.js?v=20260525-early-send-replay-v1', 'Chat runtime JS must be cache-busted for early send replay.');
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d312-20260526-local-model-presence-ready-v1'", 'Service worker cache must rotate for D297 early send replay.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d313-20260526-stale-offline-model-proof-v1'", 'Service worker cache must rotate for D297 early send replay.');
 
 for (const needle of [
   'window.__MimirEarlySend=false;sendMessage()',

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d312-20260526-local-model-presence-ready-v1';
+const CACHE_NAME='mmir-pwa-d313-20260526-stale-offline-model-proof-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

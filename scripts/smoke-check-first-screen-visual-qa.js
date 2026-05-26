@@ -80,6 +80,9 @@ if (!Array.isArray(report.critical_paths) || report.critical_paths.length < 5) {
 if (!JSON.stringify(report).includes('D311 first-screen local ready cockpit')) {
   fail('Visual QA report must include D311 first-screen local ready cockpit evidence.');
 }
+if (!JSON.stringify(report).includes('D313 stale offline local model recovery')) {
+  fail('Visual QA report must include D313 stale offline local model recovery evidence.');
+}
 
 for (const needle of [
   'class="mimir-chat-main"',
@@ -162,6 +165,7 @@ for (const needle of [
   'renderActivationClosureStrip',
   'deviceStarterRecommendation',
   'mmir-model-library-focus-recommended',
+  "/^(off|err|block)/.test(localStatus)",
   "localStatus==='online'||localModels[0]",
   "setCard('local','Needs model'"
 ]) {
@@ -234,6 +238,10 @@ if (!d206 || d206.status !== 'beta') {
 const d311 = tasks.find((task) => task.seq === 'D311');
 if (!d311 || d311.status !== 'beta') {
   fail('Progress dashboard task D311 must be beta after first-screen local-ready cockpit ships.');
+}
+const d313 = tasks.find((task) => task.seq === 'D313');
+if (!d313 || d313.status !== 'beta') {
+  fail('Progress dashboard task D313 must be beta after stale offline local model recovery ships.');
 }
 if (!Array.isArray(progress.next_queue) || progress.next_queue[0] !== 'D254') {
   fail('Progress dashboard next queue must prioritize D254 after D236 ships.');

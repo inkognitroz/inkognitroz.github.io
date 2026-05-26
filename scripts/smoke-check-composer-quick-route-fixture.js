@@ -279,6 +279,9 @@ if (resume.no_paid_routes_started !== true || resume.provider_secrets_stored !==
 
 const liveLocal = setupContext();
 liveLocal.window.dispatchEvent(new FakeCustomEvent('mmir-local-connector-refreshed', {
+  detail: { status: 'offline', models: [] }
+}));
+liveLocal.window.dispatchEvent(new FakeCustomEvent('mmir-local-connector-refreshed', {
   detail: { models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
 }));
 const liveLocalMenu = menuFrom(liveLocal.document, liveLocal.window);
