@@ -15,7 +15,9 @@
   let catalogLoaded=false;
 
   function selectedModel(){const select=q('#runtime-model'),option=select?.selectedOptions?.[0];return {value:select?.value||'',label:String(option?.textContent||select?.value||'MMIR Guide').replace(/\s+-\s+live$/i,'').trim(),runtime:option?.dataset?.runtime||''};}
-  function webGpuReady(){return Boolean(w.isSecureContext&&navigator.gpu);}
+  function secure(){const h=String(location.hostname||'');return Boolean(w.isSecureContext||location.protocol==='https:'||h==='localhost'||h==='127.0.0.1'||h==='::1');}
+  function wasm(){return typeof WebAssembly==='object'&&typeof WebAssembly.instantiate==='function';}
+  function webGpuReady(){return Boolean(secure()&&wasm()&&navigator.gpu);}
   function needsWebGpu(node){const requires=Array.isArray(node?.route?.requires)?node.route.requires:[];return node?.type==='browser'||requires.includes('webgpu')||String(node?.id||'').startsWith('browser-webgpu');}
   function isLocalAdapter(node){return node?.type==='local-adapter'||['local-openai-compatible','ollama-direct'].includes(String(node?.route?.kind||''));}
   function adapterUrl(node){return String(node?.route?.url||'').replace(/\/$/,'');}
@@ -35,7 +37,7 @@
     if(node.id==='local-node')return liveModels[0]?.id||liveModels[0]?.name||'Install model';
     if(node?.route?.kind==='managed-api')return managedReady()?modelFromNode(node):'Verify route first';
     if(isLocalAdapter(node))return modelFromNode(node)||'Auto when running';
-    if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU';
+    if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU/WASM';
     return modelFromNode(node);
   }
   function nodeDetail(node){
@@ -49,7 +51,7 @@
       if(node?.route?.kind==='ollama-direct')return 'Use Local Node.';
       return 'Local /v1; CORS.';
     }
-    if(needsWebGpu(node))return webGpuReady()?'Browser LLM.':'Needs WebGPU.';
+    if(needsWebGpu(node))return webGpuReady()?'Browser Node: free, browser-local/private, starter quality, no provider key, no Cloudflare, no install.':'Browser Node unsupported here: needs WebGPU/WASM in a secure browser.';
     return 'Browser; no key.';
   }
   function card(node){
@@ -212,7 +214,7 @@
   }
   function starterState(model){return model.runtime==='webllm'&&!webGpuReady()?'setup':'ready';}
   function starterLabel(model){
-    const prefix=model.runtime==='ollama'?'Install':(model.runtime==='webllm'?(webGpuReady()?'WebGPU':'Needs WebGPU'):'Now');
+    const prefix=model.runtime==='ollama'?'Install':(model.runtime==='webllm'?(webGpuReady()?'Browser Node':'Needs WebGPU/WASM'):'Now');
     return prefix+' '+String(model.label||model.id||'model').replace(/\s+-\s+.*$/,'');
   }
   function starterRail(){
@@ -230,7 +232,7 @@
       handoff({starter_id:guide.id,action:'select',source:'active-node-starter-rail',fallback_for:model.id});
       const promptEl=q('#mimir-prompt');
       if(promptEl&&!String(promptEl.value||'').trim()){
-        promptEl.value=(model.label||model.id)+' needs WebGPU. Show free local path.';
+        promptEl.value=(model.label||model.id)+' needs WebGPU/WASM. Show free local path.';
         promptEl.dispatchEvent(new Event('input',{bubbles:true}));
         promptEl.dispatchEvent(new Event('change',{bubbles:true}));
       }

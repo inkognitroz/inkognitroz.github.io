@@ -8,6 +8,7 @@
   let pickerSearchQuery='';
   let pickerRouteFilter='all';
   let localState={status:'checking',models:[]};
+  let browserNodeSupport={status:'checking',supported:false,secure:false,wasm:false,webgpu:false,reason:'Checking Browser Node support...',detail:'Checking WebGPU/WASM before marking Browser Node ready.'};
 
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function modelSelect(){return document.getElementById('runtime-model');}
@@ -44,6 +45,64 @@
     const id=starterId(value);
     return id?starterModels.find(model=>model.id===id)||null:null;
   }
+  function secureContextAvailable(){
+    const protocol=String(window.location?.protocol||'');
+    const host=String(window.location?.hostname||'');
+    return Boolean(window.isSecureContext||protocol==='https:'||host==='localhost'||host==='127.0.0.1'||host==='::1');
+  }
+  function wasmAvailable(){
+    return typeof WebAssembly==='object'&&typeof WebAssembly.instantiate==='function';
+  }
+  function baseBrowserNodeSupport(){
+    const secure=secureContextAvailable();
+    const wasm=wasmAvailable();
+    const webgpu=Boolean(window.navigator?.gpu);
+    const missing=[];
+    if(!secure)missing.push('secure context');
+    if(!wasm)missing.push('WASM');
+    if(!webgpu)missing.push('WebGPU');
+    return {secure,wasm,webgpu,missing};
+  }
+  function browserNodeDetail(){
+    const s=browserNodeSupport;
+    const caveats='Free, browser-local/private, starter quality, no provider key, no Cloudflare, no install. First use downloads model weights into the browser cache.';
+    if(s.status==='ready')return 'Browser Node ready here. '+caveats;
+    if(s.status==='checking')return 'Checking Browser Node support. '+caveats;
+    if(s.status==='failed')return 'Browser Node runtime check failed: '+(s.reason||'runtime failed')+'. '+caveats;
+    return 'Browser Node unsupported here: '+(s.reason||'WebGPU/WASM unavailable')+'. '+caveats;
+  }
+  function browserNodeKind(){
+    const ready=browserNodeSupport.status==='ready';
+    const checking=browserNodeSupport.status==='checking';
+    const failed=browserNodeSupport.status==='failed';
+    return {
+      state:ready?'ready':(checking?'loading':(failed?'failed':'blocked')),
+      label:ready?'Browser Node':(checking?'Browser Node checking':(failed?'Browser Node failed':'Browser Node unsupported')),
+      action:ready?'Use Browser Node':(checking?'Checking support':'Unsupported here'),
+      detail:browserNodeDetail(),
+      disabled:!ready,
+      meta:['free','browser-local/private','starter quality','no provider key','no Cloudflare','no install']
+    };
+  }
+  function emitBrowserNodeSupport(){
+    window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail:{...browserNodeSupport,node_type:'browser',trust_class:'device-local',cost_class:'free-user-device',quality_tier:'starter',execution_boundary:'current-browser-session'}}));
+  }
+  async function detectBrowserNodeSupport(){
+    const base=baseBrowserNodeSupport();
+    browserNodeSupport={status:base.missing.length?'unsupported':'checking',supported:false,...base,reason:base.missing.length?('Missing '+base.missing.join(', ')):'Checking WebGPU adapter...',detail:''};
+    emitBrowserNodeSupport();
+    render();
+    if(base.missing.length)return browserNodeSupport;
+    try{
+      const adapter=typeof window.navigator?.gpu?.requestAdapter==='function'?await window.navigator.gpu.requestAdapter():true;
+      browserNodeSupport={...browserNodeSupport,status:adapter?'ready':'unsupported',supported:Boolean(adapter),reason:adapter?'WebGPU and WASM available':'No WebGPU adapter returned',detail:adapter?'Browser Node can load an approved WebGPU model after user selection.':'Browser exposed WebGPU but no adapter was available.'};
+    }catch(error){
+      browserNodeSupport={...browserNodeSupport,status:'failed',supported:false,reason:String(error?.message||error||'WebGPU adapter check failed'),detail:'Browser Node failed closed before loading any model.'};
+    }
+    emitBrowserNodeSupport();
+    render();
+    return browserNodeSupport;
+  }
   function freeRouteFloor(options){
     const existing=new Set((options||[]).map(option=>String(option.value||'')));
     const floor=[];
@@ -72,7 +131,7 @@
     const runtime=String(option?.dataset?.runtime||'');
     if(runtime==='live')return {state:'live',label:'Live',action:'Use live',detail:'Active backend route. Proof stays cost-guarded.'};
     if(runtime==='browser-guide')return {state:'ready',label:'Browser helper',action:'Use now',detail:'Works immediately with no backend or API key.'};
-    if(runtime==='webllm')return {state:'ready',label:'Browser WebGPU',action:'Use now',detail:'Runs locally in a WebGPU-capable browser.'};
+    if(runtime==='webllm')return browserNodeKind();
     if(runtime==='ollama'||starterId(value))return {state:'install',label:'Free local install',action:'Install / prove',detail:'Installs through MMIR Local Node and Ollama.'};
     return {state:'planned',label:'Model option',action:'Use',detail:'Select without starting paid compute.'};
   }
@@ -131,13 +190,16 @@
     const liveLocal=localReady()&&{id:'live-local',label:'Local ready',detail:'Private Local Node model. No installer needed.',model:{id:'live-local',label:localModel(),runtime:'live-local'},value:liveLocalValue(),action:'chat-local',state:'live'};
     const items=[
       guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'chat',state:'ready'},
-      ...webgpuModels.map((model,index)=>({id:'browser-llm-'+model.id,label:webGpuLabel(model,index),detail:'Free browser-local WebGPU route. First use downloads weights.',model,action:'chat',state:'ready'})),
+      ...webgpuModels.map((model,index)=>{
+        const kind=browserNodeKind();
+        return {id:'browser-llm-'+model.id,label:index===0?'Browser Node':webGpuLabel(model,index),detail:kind.detail,model,action:kind.disabled?'blocked-browser':'chat',state:kind.state,disabled:kind.disabled};
+      }),
       liveLocal||(local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'})
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>{
       const value=item.value||starterValue(item.model);
       const selected=current===value;
-      return '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'" data-picker-runtime="'+escapeHtml(item.model.runtime||'starter')+'" data-picker-selected="'+String(selected)+'" aria-pressed="'+String(selected)+'">'+
+      return '<button type="button" data-picker-recommend="'+escapeHtml(item.id)+'" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(item.action)+'" data-picker-state="'+escapeHtml(item.state)+'" data-picker-runtime="'+escapeHtml(item.model.runtime||'starter')+'" data-picker-selected="'+String(selected)+'" aria-pressed="'+String(selected)+'" '+(item.disabled?'disabled aria-disabled="true"':'')+'>'+
         '<strong>'+escapeHtml(item.label)+'</strong><span>'+escapeHtml(cleanTitle(item.model.label,item.model.id))+'</span>'+(selected?'<em>Selected</em>':'')+'<small>'+escapeHtml(item.detail)+'</small>'+
       '</button>';
     }).join('')+'</div>';
@@ -206,6 +268,7 @@
     const filters=[
       {id:'all',label:'All'},
       {id:'ready',label:'Ready'},
+      {id:'blocked',label:'Unsupported'},
       {id:'webllm',label:'Browser'},
       {id:'ollama',label:'Local'},
       {id:'live',label:'Live'}
@@ -252,13 +315,15 @@
     const selected=select?.value===value;
     const group=String(option.parentElement?.label||'Model route');
     const title=cleanTitle(option.textContent,value);
-    const cost=/live/i.test(group)?'active backend':kind.state==='install'?'free local':'free browser';
+    const cost=/live/i.test(group)?'active backend':kind.state==='install'?'free local':(option?.dataset?.runtime==='webllm'?'free browser-local':'free browser');
     const action=kind.state==='install'?'install':kind.state==='live'?'select-live':'select';
+    const meta=Array.isArray(kind.meta)&&kind.meta.length?'<div class="composer-model-badges">'+kind.meta.map(item=>'<span>'+escapeHtml(item)+'</span>').join('')+'</div>':'';
     return '<article class="composer-model-card '+(selected?'is-selected':'')+'" data-picker-state="'+escapeHtml(kind.state)+'" data-picker-runtime="'+escapeHtml(option?.dataset?.runtime||'')+'" data-picker-search-text="'+escapeHtml(searchText(option))+'" data-picker-selected="'+String(selected)+'" aria-current="'+(selected?'true':'false')+'">'+
       '<div><strong>'+escapeHtml(title)+'</strong><span>'+escapeHtml(kind.label)+' - '+escapeHtml(cost)+'</span></div>'+
       (selected?'<em class="composer-model-selected-badge">Selected route</em>':'')+'<p>'+escapeHtml(kind.detail)+'</p>'+
+      meta+
       '<small>'+escapeHtml(group)+'</small>'+
-      '<button type="button" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(action)+'">'+escapeHtml(kind.action)+'</button>'+
+      '<button type="button" data-picker-model-value="'+escapeHtml(value)+'" data-picker-action="'+escapeHtml(action)+'" '+(kind.disabled?'disabled aria-disabled="true"':'')+'>'+escapeHtml(kind.action)+'</button>'+
     '</article>';
   }
   function render(){
@@ -365,5 +430,6 @@
     render();
   });
   loadStarterModels();
+  detectBrowserNodeSupport();
   render();
 })();

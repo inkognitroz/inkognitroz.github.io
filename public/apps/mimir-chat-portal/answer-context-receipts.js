@@ -39,6 +39,16 @@
       runtime_settings_used:Boolean(raw?.runtime_settings_used||raw?.runtime),
       mode_summary:String(raw?.mode_summary||raw?.modes||'').slice(0,120),
       cost_guard:String(raw?.cost_guard||raw?.cost||'free/local/default').slice(0,80),
+      node_type:String(raw?.node_type||'').slice(0,60),
+      trust_class:String(raw?.trust_class||'').slice(0,80),
+      cost_class:String(raw?.cost_class||'').slice(0,80),
+      quality_tier:String(raw?.quality_tier||'').slice(0,80),
+      execution_boundary:String(raw?.execution_boundary||'').slice(0,120),
+      privacy_boundary:String(raw?.privacy_boundary||'').slice(0,120),
+      prompt_left_device:Boolean(raw?.prompt_left_device),
+      provider_key_required:Boolean(raw?.provider_key_required),
+      cloudflare_required:Boolean(raw?.cloudflare_required),
+      install_required:Boolean(raw?.install_required),
       memory_use_ids:memoryIds,
       memory_use_count:Math.max(memoryIds.length,Math.round(Number(raw?.memory_use_count)||0)),
       memory_sources:memorySources,
@@ -140,6 +150,9 @@
       '<dl>'+
       row('Model',receipt.model)+
       row('Route',receipt.route)+
+      row('Node type',receipt.node_type||'route-dependent')+
+      row('Boundary',receipt.execution_boundary||receipt.privacy_boundary||'configured route')+
+      row('Prompt left device',receipt.prompt_left_device?'yes':'no')+
       row('Role',receipt.role_preset||'none')+
       row('History',String(receipt.history_messages||0)+' messages')+
       row('Knowledge sources',receipt.knowledge_use_count?String(receipt.knowledge_use_count)+' metadata match(es)':'none')+
@@ -177,6 +190,16 @@
         runtime_settings_used:Boolean(ctx.runtime_settings_used),
         mode_summary:ctx.mode_summary||'',
         cost_guard:'free/local/default',
+        node_type:ctx.node_type||'',
+        trust_class:ctx.trust_class||'',
+        cost_class:ctx.cost_class||'',
+        quality_tier:ctx.quality_tier||'',
+        execution_boundary:ctx.execution_boundary||'',
+        privacy_boundary:ctx.privacy_boundary||'',
+        prompt_left_device:ctx.prompt_left_device,
+        provider_key_required:ctx.provider_key_required,
+        cloudflare_required:ctx.cloudflare_required,
+        install_required:ctx.install_required,
         ...memoryUseSummary(),
         knowledge_use_ids:ctx.knowledge_use_ids||[],
         knowledge_use_count:ctx.knowledge_use_count||0,
