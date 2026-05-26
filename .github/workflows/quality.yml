@@ -301,6 +301,9 @@ jobs:
       - name: Smoke-check local connector auto-probe
         run: node scripts/smoke-check-local-connector-auto-probe.js
 
+      - name: Smoke-check local chat send probe allowance
+        run: node scripts/smoke-check-local-chat-send-probe.js
+
       - name: Smoke-check active node style headroom
         run: node scripts/smoke-check-active-node-style-headroom.js
 
