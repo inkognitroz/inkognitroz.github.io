@@ -40,7 +40,7 @@ for (const needle of [
   'id="new-backend" type="button" class="btn btn-secondary" aria-label="Add or connect model" title="Add model">+</button>',
   'id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to the active route" title="Send" onclick="window.__MimirEarlySend=1">&#8593;</button>',
   'chat-runtime.css?v=20260525-prechat-plus-v1',
-  'chat-runtime.js?v=20260526-local-proof-profile-handoff-v1'
+  'chat-runtime.js?v=20260526-local-proof-auto-first-answer-v1'
 ]) {
   requireIncludes(html, needle, `First-paint composer affordance missing: ${needle}`);
 }
@@ -63,7 +63,7 @@ for (const needle of [
   requireIncludes(runtimeJs, needle, `Runtime composer affordance handoff missing: ${needle}`);
 }
 
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d314-20260526-local-proof-profile-handoff-v1'", 'Service worker cache must rotate for the composer affordance fix.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d315-20260526-local-proof-auto-first-answer-v1'", 'Service worker cache must rotate for the composer affordance fix.');
 requireIncludes(text(files.backlog), '| D294 | Chat UX / First Paint | P0 | Composer fallback affordance |', 'Backlog must include D294 composer fallback affordance.');
 requireIncludes(text(files.buildDashboard), "['D294'", 'Progress dashboard build must mark D294 status.');
 requireIncludes(workflows, 'smoke-check-composer-fallback-affordance.js', 'GitHub workflows must run the composer affordance smoke gate.');

@@ -41,7 +41,7 @@ if (!html.includes('composer-model-picker.css?v=20260526-stale-offline-model-pro
   fail('MMIR page must cache-bust the model picker empty-reset CSS.');
 }
 
-if (!sw.includes("CACHE_NAME='mmir-pwa-d314-20260526-local-proof-profile-handoff-v1'")) {
+if (!sw.includes("CACHE_NAME='mmir-pwa-d315-20260526-local-proof-auto-first-answer-v1'")) {
   fail('Service worker cache must be bumped when the mobile chat shell changes.');
 }
 

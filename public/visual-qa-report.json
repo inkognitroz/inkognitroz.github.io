@@ -195,6 +195,16 @@
       "id": "D314 local proof profile handoff",
       "status": "guarded",
       "evidence": "Chat runtime now activates the free Local Node profile from trusted local model proof before proof/send, keeping routing aligned with visible Local ready state."
+    },
+    {
+      "id": "D315 local proof auto first answer",
+      "status": "guarded",
+      "evidence": "Trusted Local Node model proof now arms first-answer autopilot when the chat is empty, so return users can reach a private local answer automatically."
+    },
+    {
+      "id": "D316 deferred route chip polish",
+      "status": "guarded",
+      "evidence": "Route-chip truth stays available through deferred polish while critical first-paint JavaScript stays below budget."
     }
   ],
   "known_limitations": [

@@ -10,7 +10,7 @@ const externalInitialJsByteBudget = 163000;
 const inlineFirstPaintJsByteBudget = 5000;
 const totalFirstPaintJsByteBudget = 168000;
 const cacheKey = '20260524-quiet-first-paint-v3';
-const runtimeCacheKey = '20260526-local-proof-profile-handoff-v1';
+const runtimeCacheKey = '20260526-local-proof-auto-first-answer-v1';
 const activeRoutesCacheKey = '20260526-stale-offline-model-proof-v1';
 const firstImpressionCacheKey = '20260526-stale-offline-model-proof-v1';
 const progressCacheKey = '20260525-progress-window-v1';
@@ -125,14 +125,15 @@ for (const required of [
   `./apps/mimir-chat-portal/chat-runtime.js?v=${runtimeCacheKey}`,
   `./apps/mimir-chat-portal/active-node-strip.js?v=${activeRoutesCacheKey}`,
   `./apps/mimir-chat-portal/first-impression.js?v=${firstImpressionCacheKey}`,
-  './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1',
-  `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`
+  './apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1'
 ]) {
   if (!initialScripts.includes(required)) fail(`Critical first-journey script must load immediately: ${required}`);
 }
 
 for (const required of [
   './apps/mimir-chat-portal/workspaces.js',
+  `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`,
+  './apps/mimir-chat-portal/route-chips.js?v=20260526-route-chips-deferred-v1',
   './apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-chat-first-v1',
   './apps/mimir-chat-portal/memory.js',
   './apps/mimir-chat-portal/knowledge.js',

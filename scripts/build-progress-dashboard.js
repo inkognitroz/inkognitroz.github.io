@@ -298,7 +298,9 @@ const overrides = new Map([
   ['D311', { status: 'beta', evidence: 'The first-screen activation cockpit now treats Local Node as ready when any local model is visible, even if health is degraded by optional warmup/subsystem checks.' }],
   ['D312', { status: 'beta', evidence: 'Plus drawer and compact model picker now switch to Local ready from a trusted Local Node model event even when status is missing or still checking, while explicit offline/error/blocked states remain blocked.' }],
   ['D313', { status: 'beta', evidence: 'Fresh statusless Local Node model lists now clear stale offline state in active route strip, plus drawer and model picker, while explicit new offline/error/blocked events remain authoritative.' }],
-  ['D314', { status: 'beta', evidence: 'Chat-runtime now activates the free Local Node profile when a trusted model event arrives, keeping visible Local ready state aligned with proof/send routing while explicit blocked/offline states stay blocked.' }]
+  ['D314', { status: 'beta', evidence: 'Chat-runtime now activates the free Local Node profile when a trusted model event arrives, keeping visible Local ready state aligned with proof/send routing while explicit blocked/offline states stay blocked.' }],
+  ['D315', { status: 'beta', evidence: 'Trusted Local Node model events now arm first-answer autopilot when chat is empty, so return users can flow from local proof to first private answer without another click.' }],
+  ['D316', { status: 'beta', evidence: 'Route-chip status polish and runtime-control guard work now load progressively, while chat-workspace CSS is page-linked and first-paint JS is back under budget.' }]
 ]);
 
 const repoMeta = [
@@ -925,6 +927,18 @@ function buildLaunchProgress() {
       label: 'Local model proof activates local profile',
       status: 'beta',
       evidence: 'D314 makes chat-runtime switch to the free Local Node profile before local proof/send when a trusted model event arrives.'
+    },
+    {
+      id: 'local-proof-auto-first-answer',
+      label: 'Local proof can start first answer',
+      status: 'beta',
+      evidence: 'D315 arms first-answer autopilot from trusted Local Node model events when the chat is empty.'
+    },
+    {
+      id: 'route-chip-critical-headroom',
+      label: 'Route chip polish is progressive',
+      status: 'beta',
+      evidence: 'D316 keeps route-chip truth and runtime-control polish out of critical JS while preserving first-chat controls.'
     },
     {
       id: 'local-node-package',

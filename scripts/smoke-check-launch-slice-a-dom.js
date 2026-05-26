@@ -8,6 +8,7 @@ const files = {
   publicIndex: join(publicDir, 'index.html'),
   mmir: join(publicDir, 'mmir.html'),
   runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
+  routeChips: join(publicDir, 'apps', 'mimir-chat-portal', 'route-chips.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
@@ -79,14 +80,26 @@ for (const text of [
   'Resources: ',
   '/models',
   '/hardware',
-  '/tunnels/status',
-  'No browser provider secrets',
-  'MMIR Guide is a browser helper, not a live LLM'
+  '/tunnels/status'
 ]) {
   requireIncludes(files.runtime, text, `Launch Slice A truthful state contract missing: ${text}`);
 }
 
-requireIncludes(files.runtime, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
+for (const text of [
+  'Model: ',
+  'Node: ',
+  'Privacy: ',
+  'Tunnel: ',
+  'Resources: ',
+  'No browser provider secrets',
+  'MMIR Guide is a browser helper, not a live LLM'
+]) {
+  requireIncludes(files.routeChips, text, `Launch Slice A deferred route-chip contract missing: ${text}`);
+}
+
+requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
+requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
+requireIncludes(files.mmir, 'route-chips.js?v=20260526-route-chips-deferred-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.runtime, "health:error?.status===401?'testing':'offline'", 'Unavailable backend/node checks must write offline/testing health, not ready.');
 requireIncludes(files.portal, "health:'unknown'", 'Default managed API profile must begin unknown until runtime proof updates it.');
 requireIncludes(files.criticalProfiles, "health:existing?.health==='ready'?'ready':'unknown'", 'Critical profile bootstrap must preserve ready only after prior runtime proof.');

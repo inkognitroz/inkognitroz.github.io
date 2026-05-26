@@ -93,6 +93,7 @@
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function scrollTranscriptToBottom(){if(transcriptEl)requestAnimationFrame(()=>transcriptEl.scrollTop=transcriptEl.scrollHeight);}
   function updateChatSurfaceState(){const hasChat=messages.some(m=>m.content&&(m.role==='user'||m.role==='assistant'));document.body.classList.toggle('mimir-has-chat',hasChat);if(transcriptEl)transcriptEl.dataset.empty=String(!hasChat);}
+  function chatEmpty(){return !messages.some(m=>m.role==='user'||m.role==='assistant');}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function readActivationReplay(){
     try{
@@ -209,83 +210,17 @@
     const option=modelSelect?.selectedOptions?.[0];
     return String(option?.textContent||modelSelect?.value||'No model').replace(/\s+-\s+live$/i,'').trim();
   }
-  function cleanChipLabel(value,max=34){
-    const label=String(value||'').replace(/\s+/g,' ').trim();
-    if(label.length<=max)return label;
-    return label.slice(0,max-3).trim()+'...';
-  }
-  function selectedRuntime(){
-    return modelSelect?.selectedOptions?.[0]?.dataset?.runtime||'';
-  }
-  function selectedModelIsReal(){
-    const runtime=selectedRuntime();
-    return runtime==='live'||runtime==='webllm'||runtime==='ollama';
-  }
-  function profileRouteLabel(profile=activeProfile()){
-    if(!profile)return 'Browser route';
-    if(profile.provider==='local-node')return profile.name||'MMIR Local Node';
-    if(profile.provider==='ollama-direct')return profile.name||'Ollama local';
-    if(profile.id==='mmir-api-bootstrap')return 'api.mmir.ai free route';
-    return profile.name||profile.provider||'Configured route';
-  }
-  function activeTrustLabel(profile=activeProfile()){
-    const text=[profile?.provider,profile?.cost,profile?.url,profile?.name].join(' ').toLowerCase();
-    if(api.isLocal(profile)||/127\.0\.0\.1|localhost|local|ollama/.test(text))return 'local/private';
-    if(/free|no paid|self-hosted|self hosted/.test(text))return 'free/protected';
-    if(profile)return 'policy required';
-    return 'browser/no secret';
-  }
-  function tunnelLabel(tunnel,profile=activeProfile(),error=null){
-    if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready',title:'Secure tunnel is active: '+tunnel.public_url};
-    if(tunnel?.status)return {text:'Tunnel: '+String(tunnel.status).replace(/[-_]/g,' '),state:'idle',title:'Tunnel reported by node, but no public secure URL is active.'};
-    if(api.isLocal(profile))return {text:error?'Tunnel: unavailable':'Tunnel: off',state:error?'offline':'idle',title:error?'Local node tunnel state is unavailable.':'Local tunnel is not active.'};
-    return {text:'Tunnel: n/a',state:'idle',title:'Secure tunnel appears only when a paired local/on-prem node exposes it.'};
-  }
-  function hardwareLabel(hardware,error=null){
-    const summary=hardwareSummary(hardware);
-    if(summary)return {text:'Resources: '+summary,state:'ready',title:'Resource telemetry from the active node.'};
-    return {text:error?'Resources: unavailable':'Resources: not exposed',state:error?'offline':'idle',title:'CPU/RAM/GPU telemetry appears only when the active node exposes it.'};
-  }
-  function chipStateForModel(){
-    const runtime=selectedRuntime();
-    if(runtime==='live')return 'ready';
-    if(runtime==='webllm')return webGpuAvailable()?'setup':'offline';
-    if(runtime==='ollama')return 'setup';
-    if(runtime==='browser-guide')return 'degraded';
-    return 'idle';
-  }
-  function setChip(el,text,state,title){
-    if(!el)return;
-    const value=String(text||'').trim();
-    el.textContent=value;
-    el.dataset.state=state||'idle';
-    if(title||value)el.title=title||value;
-  }
   function updateRuntimeChips(){
-    const modelLabel=activeModelLabel()||'No model selected';
-    const modelTitle=selectedRuntime()==='browser-guide'
-      ? 'MMIR Guide is a browser helper, not a live LLM. Choose WebGPU or Local Node for a real model.'
-      : modelLabel;
-    setChip(modelChipEl,'Model: '+cleanChipLabel(modelLabel,38),chipStateForModel(),modelTitle);
-    if(nodeChipEl&&!nodeChipEl.textContent)setChip(nodeChipEl,'Node: '+cleanChipLabel(profileRouteLabel(),32),activeProfile()?.health==='offline'?'offline':'idle','Selected node or route. Proof updates this state when backend checks finish.');
-    const trust=activeTrustLabel();
-    setChip(privacyChipEl,trust==='policy required'?'Privacy: policy required':'Privacy: '+trust,trust==='policy required'?'degraded':'ready','Security/privacy state for the selected route. No provider keys are stored in this public page.');
-    if(tunnelChipEl&&!tunnelChipEl.textContent)setChip(tunnelChipEl,'Tunnel: checking','idle','Secure tunnel state has not been checked yet.');
-    if(resourceChipEl&&!resourceChipEl.textContent)setChip(resourceChipEl,'Resources: checking','idle','Node telemetry has not been checked yet.');
+    if(window.MimirRouteChips?.updateRuntime){window.MimirRouteChips.updateRuntime({modelSelect,profile:activeProfile(),webGpu:webGpuAvailable()});return;}
+    if(modelChipEl)modelChipEl.textContent='Model: '+(activeModelLabel()||'No model selected');
+    if(nodeChipEl&&!nodeChipEl.textContent)nodeChipEl.textContent='Node: Browser route';
+    if(privacyChipEl&&!privacyChipEl.textContent)privacyChipEl.textContent='Privacy: browser/no secret';
+    if(tunnelChipEl&&!tunnelChipEl.textContent)tunnelChipEl.textContent='Tunnel: checking';
+    if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='Resources: checking';
   }
-  function updateRouteChips({profile=activeProfile(),models=[],hardware=null,tunnel=null,error=null,proof='idle'}={}){
-    const liveCount=Array.isArray(models)?models.length:0;
-    const routeState=error?'offline':(liveCount||proof==='ready'?'ready':(profile?'degraded':'idle'));
-    const routeDetail=error?friendlyError(error):(liveCount?String(liveCount)+' live model'+(liveCount===1?'':'s'):'no live backend model proven');
-    setChip(nodeChipEl,'Node: '+cleanChipLabel(profileRouteLabel(profile),32),routeState,profileRouteLabel(profile)+' - '+routeDetail);
-    const trust=activeTrustLabel(profile);
-    const privacyState=trust==='policy required'?'degraded':(error&&api.isLocal(profile)?'degraded':'ready');
-    setChip(privacyChipEl,trust==='policy required'?'Privacy: policy required':'Privacy: '+trust,privacyState,'Route trust: '+trust+'. No browser provider secrets; prompts are not stored in the public repo.');
-    const tunnelState=tunnelLabel(tunnel,profile,error);
-    setChip(tunnelChipEl,tunnelState.text,tunnelState.state,tunnelState.title);
-    const resourceState=hardwareLabel(hardware,error);
-    setChip(resourceChipEl,resourceState.text,resourceState.state,resourceState.title);
-    updateRuntimeChips();
+  function updateRouteChips(state={}){
+    window.__MimirRouteChipState=state;
+    if(window.MimirRouteChips?.updateRoute)window.MimirRouteChips.updateRoute(state);else updateRuntimeChips();
   }
 
   function openComposerModelPicker(){
@@ -1956,7 +1891,7 @@
         updateRuntimeChips();
         updateRuntimeModelActions();
       }
-      const shouldAutoFirstAnswer=pendingAutoFirstAnswer&&bridgeModel&&promptEl&&!String(promptEl.value||'').trim()&&!messages.some(message=>message.role==='user'||message.role==='assistant');
+      const shouldAutoFirstAnswer=pendingAutoFirstAnswer&&bridgeModel&&promptEl&&!String(promptEl.value||'').trim()&&chatEmpty();
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.placeholder='Ask '+firstModel.id+' anything. This verified free route is selected.';
         if(bridgeModel)promptEl.value='Give first answer from '+firstModel.id+'.';
@@ -2062,7 +1997,7 @@
     const resume=readRepairResume();
     if(resume?.starter_id&&!firstModel)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);
-    if(firstModel&&!/^(off|err|block)/i.test(detail.status||detail.health||'')){window.MimirBackendProfiles?.ensureFreeLocalProfile?.();preferProofModel(firstModel);}
+    if(firstModel&&!/^(off|err|block)/i.test(detail.status||detail.health||'')){window.MimirBackendProfiles?.ensureFreeLocalProfile?.();preferProofModel(firstModel);if(promptEl&&!String(promptEl.value||'').trim()&&chatEmpty())pendingAutoFirstAnswer=true;}
     refreshState(true);
   }
 
@@ -2071,7 +2006,7 @@
     const resume=readRepairResume();
     if(resume?.starter_id)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);
-    if(!messages.some(message=>message.role==='user'||message.role==='assistant'))pendingAutoFirstAnswer=true;
+    if(chatEmpty())pendingAutoFirstAnswer=true;
     lastProofSignature='';
     refreshState(true);
   }
@@ -2193,6 +2128,7 @@
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
     window.addEventListener('mmir-repair-resume-checked',handleRepairResumeChecked);
+    window.addEventListener('mimir-route-chips-ready',()=>updateRouteChips(window.__MimirRouteChipState||{}));
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
     window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));
     window.addEventListener('storage',()=>{renderActivationReplayGate();refreshState(true);});

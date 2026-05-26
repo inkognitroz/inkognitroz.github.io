@@ -59,7 +59,7 @@ if (/not\(\.mimir-has-chat\).*composer-live-cluster[^{}]*display\s*:\s*none/i.te
   fail('Launch Slice A requires model/node/privacy/tunnel/resource chips before chat.');
 }
 
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d314-20260526-local-proof-profile-handoff-v1'", 'Service worker cache must rotate for the pre-chat plus fix.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d315-20260526-local-proof-auto-first-answer-v1'", 'Service worker cache must rotate for the pre-chat plus fix.');
 requireIncludes(text(files.backlog), '| D295 | Chat UX / First Paint | P0 | Pre-chat plus survives deferred styling |', 'Backlog must include D295 pre-chat plus survival.');
 requireIncludes(text(files.buildDashboard), "['D295'", 'Progress dashboard build must mark D295 status.');
 requireIncludes(workflows, 'smoke-check-prechat-plus-survives.js', 'GitHub workflows must run the pre-chat plus smoke gate.');
