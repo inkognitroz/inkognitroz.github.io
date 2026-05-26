@@ -65,7 +65,7 @@ if (activeStrip.includes('.slice(0,14)')) {
 }
 
 requireIncludes(text(files.mmir), 'active-node-strip.js?v=20260526-stale-offline-model-proof-v1', 'MMIR page must cache-bust active-node strip for startup free LLM nodes.');
-requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d315-20260526-local-proof-auto-first-answer-v1'", 'Service worker cache must rotate for D298 startup free LLM nodes.');
+requireIncludes(text(files.sw), "CACHE_NAME='mmir-pwa-d318-20260526-instant-guide-default-v1'", 'Service worker cache must rotate for D298 startup free LLM nodes.');
 requireIncludes(text(files.sw), './apps/mimir-chat-portal/active-node-strip.js', 'Service worker must cache active-node strip for offline/free startup shell.');
 requireIncludes(text(files.backlog), '| D298 | Chat UX / Free Models | P0 | Startup free LLM node rail |', 'Backlog must include D298 startup free LLM node rail.');
 requireIncludes(text(files.log), 'D298 is now beta', 'Implementation log must include D298.');

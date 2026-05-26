@@ -301,7 +301,8 @@ const overrides = new Map([
   ['D314', { status: 'beta', evidence: 'Chat-runtime now activates the free Local Node profile when a trusted model event arrives, keeping visible Local ready state aligned with proof/send routing while explicit blocked/offline states stay blocked.' }],
   ['D315', { status: 'beta', evidence: 'Trusted Local Node model events now arm first-answer autopilot when chat is empty, so return users can flow from local proof to first private answer without another click.' }],
   ['D316', { status: 'beta', evidence: 'Route-chip status polish and runtime-control guard work now load progressively, while chat-workspace CSS is page-linked and first-paint JS is back under budget.' }],
-  ['D317', { status: 'beta', evidence: 'MMIR Guide now presents as a ready free browser-helper route in compact model chips and WebGPU fallback, while full LLM chat still points users to WebGPU or Local Node.' }]
+  ['D317', { status: 'beta', evidence: 'MMIR Guide now presents as a ready free browser-helper route in compact model chips and WebGPU fallback, while full LLM chat still points users to WebGPU or Local Node.' }],
+  ['D318', { status: 'beta', evidence: 'Automatic first chat now prefers instant MMIR Guide before WebGPU so first value is immediate, while explicit WebGPU LLM routes remain visible and one-click.' }]
 ]);
 
 const repoMeta = [

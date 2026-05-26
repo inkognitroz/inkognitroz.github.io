@@ -77,6 +77,9 @@ for (const needle of [
   'Ready now: free browser WebGPU LLMs',
   'Install to activate: free local Ollama models',
   'preferredStarterModel',
+  "const guide=starterModels.find(model=>model.id==='mmir-guide')",
+  'if(guide)return guide',
+  "const webGpu=starterModels.find(model=>model.runtime==='webllm')",
   "modelSelect.value=starterValue(preferred)"
 ]) {
   requireIncludes(files.chatRuntime, needle, `D207 chat runtime must keep free model classes selectable: ${needle}`);

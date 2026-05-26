@@ -281,6 +281,7 @@ Updated: 2026-05-23
 - D315 is now beta: trusted Local Node model events now arm the first-answer autopilot when chat is empty, so a returning local-node user can go from live model proof to first private answer without another manual click.
 - D316 is now beta: route-chip polish and runtime-control guard now load progressively, while chat-workspace CSS is linked directly and the critical first-paint JS budget is back under guard after the launch control slice.
 - D317 is now beta: the default MMIR Guide route now shows as ready in compact model chips and WebGPU fallback, while copy stays honest that it is a free browser helper and full LLM chat requires WebGPU or Local Node.
+- D318 is now beta: automatic first chat now prefers the instant MMIR Guide route even on WebGPU-capable browsers, while explicit WebGPU LLM choices remain available one click away.
 - Critical chat-first copy now defaults to immediate MMIR Guide value instead of asking the user to configure a backend first, and the affected frontend shell asset has a fresh cache key.
 - Active route/node strip now loads as critical chat UI with compact route chips directly under the composer, so free browser/WebGPU/local-node choices are visible before secondary platform sections.
 - D254 chat polish is tightened again: active routes no longer wait for the deferred feature queue, mobile/desktop order keeps composer -> active routes -> runtime proof, and the performance budget was raised narrowly for this critical model-choice code.

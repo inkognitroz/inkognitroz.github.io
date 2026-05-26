@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d315-20260526-local-proof-auto-first-answer-v1';
+const CACHE_NAME='mmir-pwa-d318-20260526-instant-guide-default-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

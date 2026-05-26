@@ -1307,12 +1307,12 @@
   }
 
   function preferredStarterModel(){
+    const guide=starterModels.find(model=>model.id==='mmir-guide')||
+      starterModels.find(model=>model.runtime==='browser-guide');
+    if(guide)return guide;
     const webGpu=starterModels.find(model=>model.runtime==='webllm');
     if(webGpu&&webGpuAvailable())return webGpu;
-    return starterModels.find(model=>model.id==='mmir-guide')||
-      starterModels.find(model=>model.runtime==='browser-guide')||
-      starterModels[0]||
-      null;
+    return starterModels[0]||null;
   }
   function noModelFallbackStarter(){
     const fallback=preferredStarterModel();

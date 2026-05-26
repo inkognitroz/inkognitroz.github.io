@@ -210,6 +210,11 @@
       "id": "D317 ready browser guide chip",
       "status": "guarded",
       "evidence": "The default MMIR Guide route now uses a ready chip state for immediate free browser help while copy still directs users to WebGPU or Local Node for a full LLM."
+    },
+    {
+      "id": "D318 instant first chat default",
+      "status": "guarded",
+      "evidence": "Automatic no-model/empty-send first chat now selects MMIR Guide before WebGPU, so users get immediate value while explicit browser LLM choices remain visible."
     }
   ],
   "known_limitations": [
