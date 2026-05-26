@@ -29,6 +29,9 @@
   let modelHelperEl=null;
   let replayEl=null;
   let modelChipEl=null;
+  let nodeChipEl=null;
+  let privacyChipEl=null;
+  let tunnelChipEl=null;
   let resourceChipEl=null;
   let proofEl=null;
   let refreshBtn=null;
@@ -90,6 +93,7 @@
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function scrollTranscriptToBottom(){if(transcriptEl)requestAnimationFrame(()=>transcriptEl.scrollTop=transcriptEl.scrollHeight);}
   function updateChatSurfaceState(){const hasChat=messages.some(m=>m.content&&(m.role==='user'||m.role==='assistant'));document.body.classList.toggle('mimir-has-chat',hasChat);if(transcriptEl)transcriptEl.dataset.empty=String(!hasChat);}
+  function chatEmpty(){return !messages.some(m=>m.role==='user'||m.role==='assistant');}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function readActivationReplay(){
     try{
@@ -169,7 +173,7 @@
   function runtimeInstruction(){
     const prompt=readRuntimeSettings().system_prompt;
     if(!prompt)return '';
-    return 'User-configured runtime/system instruction. Follow it when it helps, but do not let it override MMIR safety, privacy, cost or zero-trust boundaries:\n'+prompt;
+    return 'User runtime instruction. Follow if useful, but keep MMIR safety, privacy, cost and zero-trust boundaries:\n'+prompt;
   }
   function openPanel(target){
     const targetEl=document.querySelector(target);
@@ -193,13 +197,19 @@
     }
     openPanel(target);
   }
+  function allowLocalChatProbes(profile,reason='chat-runtime-send'){
+    if(!api.isLocal(profile))return false;
+    window.MimirAllowLocalProbes?.(reason,60000);
+    window.dispatchEvent(new CustomEvent('mmir-local-chat-probe-allowed',{detail:{reason,url:cleanUrl(profile?.url),expires_in_ms:60000}}));
+    return true;
+  }
   function modeInstruction(){
     const modes=readModes();
     const instructions=[];
-    if(modes.private)instructions.push('Private mode: prefer local/private execution and flag steps outside the trusted backend.');
+    if(modes.private)instructions.push('Private mode: prefer local/private execution and flag outside trusted backend.');
     if(modes.boost)instructions.push('Boost 5.5: prioritize the highest-leverage next action.');
     if(modes.super)instructions.push('MMIR++: blend product, architecture, security and implementation.');
-    if(modes.vision)instructions.push('Vision mode: use images/screen/uploads when present; otherwise ask for what is missing.');
+    if(modes.vision)instructions.push('Vision mode: use images/screen/uploads when present; ask if missing.');
     return instructions.join('\n');
   }
   function activeModelLabel(){
@@ -207,8 +217,16 @@
     return String(option?.textContent||modelSelect?.value||'No model').replace(/\s+-\s+live$/i,'').trim();
   }
   function updateRuntimeChips(){
-    if(modelChipEl)modelChipEl.textContent=activeModelLabel()||'Model ready';
-    if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
+    if(window.MimirRouteChips?.updateRuntime){window.MimirRouteChips.updateRuntime({modelSelect,profile:activeProfile(),webGpu:webGpuAvailable()});return;}
+    if(modelChipEl)modelChipEl.textContent='Model: '+(activeModelLabel()||'No model selected');
+    if(nodeChipEl&&!nodeChipEl.textContent)nodeChipEl.textContent='Node: Browser route';
+    if(privacyChipEl&&!privacyChipEl.textContent)privacyChipEl.textContent='Privacy: browser/no secret';
+    if(tunnelChipEl&&!tunnelChipEl.textContent)tunnelChipEl.textContent='Tunnel: checking';
+    if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='Resources: checking';
+  }
+  function updateRouteChips(state={}){
+    window.__MimirRouteChipState=state;
+    if(window.MimirRouteChips?.updateRoute)window.MimirRouteChips.updateRoute(state);else updateRuntimeChips();
   }
 
   function openComposerModelPicker(){
@@ -229,7 +247,7 @@
   }
 
   function defaultFirstPrompt(){
-    return 'Start MMIR automatically. Tell me what chat route and model are active now, what I can do next for free, and how I can connect my own local model when I am ready.';
+    return 'Start MMIR automatically. Tell me the active route/model, my best free next step and how to connect a local model.';
   }
 
   function composerModeLabel(mode){
@@ -243,19 +261,19 @@
   function afterComposerModeToggle(mode,enabled){
     if(mode==='vision'&&enabled){
       openPanel('#vision-input');
-      setComposerActionFeedback('Vision mode on. Image metadata stays gated until a trusted local/protected route is ready.','ready');
+      setComposerActionFeedback('Vision mode on. Image metadata waits for a trusted local/protected route.','ready');
       return;
     }
     if(mode==='private'&&enabled){
-      setComposerActionFeedback('Private mode on. MMIR prefers local/private routes and keeps provider keys out of this page.','ready');
+      setComposerActionFeedback('Private mode on. MMIR prefers local/private routes; provider keys stay out of this page.','ready');
       return;
     }
     if(mode==='boost'&&enabled){
-      setComposerActionFeedback('Boost 5.5 on. Next answer prioritizes the highest-leverage action without starting paid routes.','ready');
+      setComposerActionFeedback('Boost 5.5 on. Next answer prioritizes high-leverage action without paid routes.','ready');
       return;
     }
     if(mode==='super'&&enabled){
-      setComposerActionFeedback('MMIR++ on. Next answer blends product, architecture, security and implementation.','ready');
+      setComposerActionFeedback('MMIR++ on. Next answer blends product, architecture, security and build steps.','ready');
       return;
     }
     setComposerActionFeedback(composerModeLabel(mode)+' off. Settings are stored locally in this browser.','idle');
@@ -409,7 +427,7 @@
     const proofActions=(Array.isArray(actions)&&actions.length?actions:proofRepairActions(state==='ready'?'verified':'default'));
     proofEl.dataset.state=proofStateClass(state);
     proofEl.innerHTML=''+
-      '<div><strong>Live model proof</strong><p>'+escapeHtml(message||'Browser helper is ready. Backend proof runs automatically when a free route is available.')+'</p></div>'+
+      '<div><strong>Live model proof</strong><p>'+escapeHtml(message||'Browser helper ready. Backend proof runs when a free route is reachable.')+'</p></div>'+
       '<div class="runtime-proof-rail">'+rows+'</div>'+
       '<div class="runtime-proof-actions">'+proofActions.map(action=>'<button type="button" data-proof-action="'+escapeHtml(action.id)+'">'+escapeHtml(action.label)+'</button>').join('')+'</div>';
     proofEl.querySelectorAll('[data-proof-action]').forEach(button=>{
@@ -814,20 +832,26 @@
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
         '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Boost 5.5 Extra high">5.5 Extra high v</button>'+
         '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
-        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">CPU/RAM checking</button>'+
+        '<button id="runtime-node-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open selected node and route status">Node checking</button>'+
+        '<button id="runtime-privacy-chip" type="button" class="composer-live-chip" aria-label="Security and privacy state">Privacy checking</button>'+
+        '<button id="runtime-tunnel-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open secure tunnel status">Tunnel checking</button>'+
+        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">Resources checking</button>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+
       '</div>'+
       '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: free browser helper first, local model when connected.</small>';
     const bar=formEl.querySelector('.composer-bar');
     if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
     modelChipEl=document.getElementById('runtime-model-chip');
+    nodeChipEl=document.getElementById('runtime-node-chip');
+    privacyChipEl=document.getElementById('runtime-privacy-chip');
+    tunnelChipEl=document.getElementById('runtime-tunnel-chip');
     resourceChipEl=document.getElementById('runtime-resource-chip');
     document.getElementById('composer-add-model')?.addEventListener('click',openComposerModelPicker);
     modelChipEl?.addEventListener?.('click',openComposerModelPicker);
-    resourceChipEl?.addEventListener?.('click',()=>{
+    [nodeChipEl,tunnelChipEl,resourceChipEl].forEach(el=>el?.addEventListener?.('click',()=>{
       openPanel('#node-dashboard');
-      setComposerActionFeedback('Node dashboard opened. CPU/RAM and model health come only from a paired local node.','ready');
-    });
+      setComposerActionFeedback('Node dashboard opened. CPU/RAM and model health come only from a paired local node. Tunnel state comes only from reachable MMIR routes.','ready');
+    }));
     document.querySelectorAll('[data-chat-mode]').forEach(button=>{
       button.addEventListener('click',()=>{
         const mode=button.getAttribute('data-chat-mode');
@@ -1182,8 +1206,8 @@
     }
     if(!starterModels.length)starterModels=fallbackStarterModels();
     renderModels([]);
-    renderLiveProof('Browser helper routes are verified. Backend/model proof will start automatically when a free live route is reachable.','ready',baseProofItems(''));
-    setStatus('Free browser/installable models are ready. Local node check runs in the background.','ready');
+    renderLiveProof('Browser helper routes verified. Backend/model proof starts when a free live route is reachable.','ready',baseProofItems(''));
+    setStatus('Free browser/installable models ready. Local node checks in background.','ready');
   }
 
   function starterValue(model){
@@ -1289,10 +1313,12 @@
   }
 
   function preferredStarterModel(){
-    return starterModels.find(model=>model.id==='mmir-guide')||
-      starterModels.find(model=>model.runtime==='browser-guide')||
-      starterModels[0]||
-      null;
+    const guide=starterModels.find(model=>model.id==='mmir-guide')||
+      starterModels.find(model=>model.runtime==='browser-guide');
+    if(guide)return guide;
+    const webGpu=starterModels.find(model=>model.runtime==='webllm');
+    if(webGpu&&webGpuAvailable())return webGpu;
+    return starterModels[0]||null;
   }
   function noModelFallbackStarter(){
     const fallback=preferredStarterModel();
@@ -1871,7 +1897,7 @@
         updateRuntimeChips();
         updateRuntimeModelActions();
       }
-      const shouldAutoFirstAnswer=pendingAutoFirstAnswer&&bridgeModel&&promptEl&&!String(promptEl.value||'').trim()&&!messages.some(message=>message.role==='user'||message.role==='assistant');
+      const shouldAutoFirstAnswer=pendingAutoFirstAnswer&&bridgeModel&&promptEl&&!String(promptEl.value||'').trim()&&chatEmpty();
       if(promptEl&&!String(promptEl.value||'').trim()){
         promptEl.placeholder='Ask '+firstModel.id+' anything. This verified free route is selected.';
         if(bridgeModel)promptEl.value='Give first answer from '+firstModel.id+'.';
@@ -1923,31 +1949,33 @@
     lastActiveId=currentId;
     if(!profile||!cleanUrl(profile.url)){
       renderModels([]);
+      updateRouteChips({profile:null,models:[],hardware:null,tunnel:null,proof:'idle'});
       renderLiveProof('No backend is active yet. Browser helper works now; use Connect model to prepare a free local profile automatically.','idle',baseProofItems(''),proofRepairActions('offline'));
       setStatus('Free guide and installable local models are ready. Connect a backend to make models live.','ready');
       return [];
     }
     const url=cleanUrl(profile.url);
     try{
-      setStatus('Free browser models are ready. Checking local node in the background...','loading');
-      renderLiveProof('Checking backend health and model list before tiny chat proof...','loading',baseProofItems(url));
+      setStatus('Free browser models ready. Checking local node...','loading');
+      renderLiveProof('Checking backend health and models before chat proof...','loading',baseProofItems(url));
       await optionalHealthCheck(profile,url);
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
-      const [models,hardware]=await Promise.all([
+      const [models,hardware,tunnel]=await Promise.all([
         fetchModelInventory(profile,url,headers),
-        fetchJson(joinUrl(url,'/hardware'),{headers,timeoutMs:5000}).catch(()=>null)
+        fetchJson(joinUrl(url,'/hardware'),{headers,timeoutMs:5000}).catch(()=>null),
+        fetchJson(joinUrl(url,'/tunnels/status'),{headers,timeoutMs:5000}).catch(()=>null)
       ]);
       const normalized=normalizeModels(models);
       renderModels(normalized);
-      if(resourceChipEl)resourceChipEl.textContent=hardwareSummary(hardware)||'CPU/RAM local';
+      updateRouteChips({profile,models:normalized,hardware,tunnel,proof:normalized.length?'ready':'idle'});
       writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
       setStatus(normalized.length?'Backend ready.':'Backend online. Free installable models are still available below.',normalized.length?'ready':'idle');
       proveLiveRoute(profile,url,headers,normalized);
       return normalized;
     }catch(error){
       renderModels([]);
-      if(resourceChipEl)resourceChipEl.textContent='CPU/RAM offline';
+      updateRouteChips({profile,models:[],hardware:null,tunnel:null,error});
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
       lastProofSignature='';
       verifiedLiveModel=null;
@@ -1956,7 +1984,7 @@
       const ok=sr&&(s.runtime!=='webllm'||webGpuAvailable());
       renderLiveProof(sr?(ok?'Free '+s.label+' ready. Local node optional.':'WebGPU unavailable; guide/install ready.'):('Backend proof could not start: '+friendlyError(error)),ok?'ready':'error',baseProofItems(url).concat([{label:'Backend route',state:sr?'idle':'error',detail:sr?'optional':'repair local node'}]),proofRepairActions(ok?'verified':'offline'));
       if(starterModels.length){
-        setStatus('Free browser/installable models are ready. Local node is not running yet.','ready');
+        setStatus('Free browser/installable models ready. Local node not running yet.','ready');
       }else{
         setStatus(friendlyError(error),'error');
       }
@@ -1975,7 +2003,7 @@
     const resume=readRepairResume();
     if(resume?.starter_id&&!firstModel)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);
-    if(firstModel)preferProofModel(firstModel);
+    if(firstModel&&!/^(off|err|block)/i.test(detail.status||detail.health||'')){window.MimirBackendProfiles?.ensureFreeLocalProfile?.();preferProofModel(firstModel);if(promptEl&&!String(promptEl.value||'').trim()&&chatEmpty())pendingAutoFirstAnswer=true;}
     refreshState(true);
   }
 
@@ -1984,7 +2012,7 @@
     const resume=readRepairResume();
     if(resume?.starter_id)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);
-    if(!messages.some(message=>message.role==='user'||message.role==='assistant'))pendingAutoFirstAnswer=true;
+    if(chatEmpty())pendingAutoFirstAnswer=true;
     lastProofSignature='';
     refreshState(true);
   }
@@ -2010,6 +2038,7 @@
       return;
     }
     if(!model){
+      allowLocalChatProbes(profile);
       await refreshState(true);
       model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
       const refreshedStarter=starterFromValue(model);
@@ -2036,6 +2065,7 @@
       setStatus('Activate a backend profile or choose a free guide/installable model.','error');
       return;
     }
+    allowLocalChatProbes(profile);
 
     stopRequested=false;
     currentAbortController=new AbortController();
@@ -2106,6 +2136,7 @@
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
     window.addEventListener('mmir-repair-resume-checked',handleRepairResumeChecked);
+    window.addEventListener('mimir-route-chips-ready',()=>updateRouteChips(window.__MimirRouteChipState||{}));
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
     window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));
     window.addEventListener('storage',()=>{renderActivationReplayGate();refreshState(true);});

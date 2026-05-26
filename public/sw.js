@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d301-20260525-active-node-style-headroom-v1';
+const CACHE_NAME='mmir-pwa-d318-20260526-instant-guide-default-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -12,6 +12,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/mimir-chat-portal.css',
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/chat-runtime-deferred.css',
+  './apps/mimir-chat-portal/route-chips.js',
   './apps/mimir-chat-portal/backend-profiles-critical.js',
   './apps/mimir-chat-portal/active-node-strip.js',
   './apps/mimir-chat-portal/composer-autosize.js',

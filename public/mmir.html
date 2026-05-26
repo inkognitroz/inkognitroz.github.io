@@ -40,9 +40,10 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/use-case-templates.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/free-value-loops.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css?v=20260525-prechat-plus-v1" />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime-deferred.css?v=20260525-active-node-style-headroom-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-model-picker.css?v=20260525-picker-empty-reset-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-quick-actions.css?v=20260525-quick-actions-v3" media="print" onload="this.media='all'" data-mimir-deferred-style />
+  <link id="mmir-chat-workspace-css" rel="stylesheet" href="./apps/mimir-chat-portal/chat-workspace.css?v=20260525-toolbar-v2" media="print" onload="this.media='all'" data-mimir-deferred-style />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime-deferred.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-model-picker.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-quick-actions.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/user-journeys.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/node-dashboard.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
@@ -365,11 +366,11 @@
   <script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>
   <script src="./apps/mimir-chat-portal/backend-profiles-critical.js?v=20260525-free-api-default-v1" defer></script>
   <script src="./apps/mimir-chat-portal/api-client.js?v=20260524-quiet-first-paint-v3" defer></script>
-  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260525-early-send-replay-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260525-active-node-style-headroom-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260524-quiet-first-paint-v3" defer></script>
-  <script src="./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260525-clean-shell-guard-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260526-instant-guide-default-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260526-stale-offline-model-proof-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260526-stale-offline-model-proof-v1" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[
+    "./apps/mimir-chat-portal/runtime-controls-webgpu-truth.js?v=20260526-guide-ready-chip-v1",
     "./apps/mimir-chat-portal/demo-growth.js",
     "./apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260524-chat-first-v3",
     "./apps/mimir-chat-portal/runtime-legacy-installer-guard.js",
@@ -381,8 +382,10 @@
     "./apps/mimir-chat-portal/composer-keyboard-shortcuts.js",
     "./apps/mimir-chat-portal/composer-autofocus.js",
     "./apps/mimir-chat-portal/composer-refocus-after-send.js",
-    "./apps/mimir-chat-portal/composer-model-picker.js?v=20260525-picker-empty-reset-v1",
-    "./apps/mimir-chat-portal/composer-quick-actions.js?v=20260525-quick-actions-v3",
+    "./apps/mimir-chat-portal/composer-model-picker.js?v=20260526-stale-offline-model-proof-v1",
+    "./apps/mimir-chat-portal/composer-quick-actions.js?v=20260526-stale-offline-model-proof-v1",
+    "./apps/mimir-chat-portal/route-chips.js?v=20260526-guide-ready-chip-v1",
+    "./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260525-clean-shell-guard-v1",
     "./apps/mimir-chat-portal/local-connector.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/beta-signup.js",
     "./apps/mimir-chat-portal/workspaces.js",

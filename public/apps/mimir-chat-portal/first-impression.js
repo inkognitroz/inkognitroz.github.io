@@ -328,16 +328,16 @@ setCard('answer','Ready','Safest route is available.','is-ready');
 setCard('model','Selecting','Checking free routes.','is-checking');
 }
 
-if(localStatus==='online'){
-setCard('local','Online',localModels.length?'Node sees '+String(localModels.length)+' model'+(localModels.length===1?'':'s')+'.':'Local node is online.','is-ready');
+if(/^(off|err|block)/.test(localStatus)){
+setCard('local','Offline',String(localConnectorState?.message||'Open Connect.'),'is-offline');
+}else if(localStatus==='online'||localModels[0]){
+setCard('local','Online',localModels.length?'Node sees '+String(localModels.length)+' model'+(localModels.length===1?'':'s')+'.':'Local node online.','is-ready');
 }else if(localStatus==='degraded'){
-setCard('local','Needs model','Install or expose a local model.','is-warning');
+setCard('local','Needs model','Add a local model.','is-warning');
 }else if(localStatus==='checking'){
 setCard('local','Checking','Local discovery is running.','is-checking');
-}else if(localStatus==='error'){
-setCard('local','Offline',String(localConnectorState?.message||'Open Connect to install the local node.'),'is-offline');
 }else{
-setCard('local','Local-first','Connect one node for private models.','is-checking');
+setCard('local','Local-first','Connect a local node.','is-checking');
 }
 
 if(modes.private){

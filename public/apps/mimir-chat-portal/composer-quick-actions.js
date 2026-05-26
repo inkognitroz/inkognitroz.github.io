@@ -4,6 +4,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let menu=null;
+  let localState={status:'checking',models:[]};
 
   function q(selector){return d.querySelector(selector);}
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
@@ -85,11 +86,14 @@
   function webGpuLabel(){
     return webGpuReady()?'Browser LLM ready':'Browser LLM option';
   }
+  function localModel(){return (localState.models||[]).map(model=>String(model?.id||model?.name||model?.model||'').trim()).find(Boolean)||'';}
+  function localReady(){return Boolean(localModel())&&!/^(off|err|block)/i.test(localState.status||'');}
   function renderRouteStrip(){
+    const lm=localModel();
     return '<div class="composer-quick-route-strip" aria-label="Free chat routes">'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>MMIR Guide</span><small>Free now</small></button>'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="webgpu" data-route-state="'+(webGpuReady()?'ready':'setup')+'"><span>'+webGpuLabel()+'</span><small>Qwen WebGPU</small></button>'+
-      '<button type="button" class="composer-quick-route" data-composer-quick-route="local" data-route-state="install"><span>Install local</span><small>Qwen3 0.6B</small></button>'+
+      '<button type="button" class="composer-quick-route" data-composer-quick-route="local" data-route-state="'+(localReady()?'ready':'install')+'"><span>'+(localReady()?'Local ready':'Install local')+'</span><small>'+escapeHtml(lm||'Qwen3 0.6B')+'</small></button>'+
     '</div>';
   }
   function renderMenuContent(){
@@ -205,6 +209,21 @@
     setTimeout(()=>q('#primary-chat-link')?.click(),140);
   }
   function startLocalRoute(){
+    if(localReady()){
+      closeMenu(false);
+      const model=localModel();
+      const prompt=q('#mimir-prompt');
+      if(prompt&&!String(prompt.value||'').trim()){
+        prompt.value='Answer from '+model+'.';
+        prompt.dispatchEvent(new Event('input',{bubbles:true}));
+        prompt.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      const bridge=w.MimirChatRuntimeBridge;
+      setFeedback('Starting private local chat with '+model+'.','ready');
+      if(bridge?.refresh&&bridge?.send){bridge.setStatus?.('Starting '+model+'...','loading');bridge.refresh().then(()=>bridge.send());}
+      else setTimeout(()=>q('#primary-chat-link')?.click(),80);
+      return;
+    }
     closeMenu(false);
     const target=writeRepairResume({
       source:'composer-quick-route-strip',
@@ -295,5 +314,11 @@
   if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
   let tries=0;
   const timer=setInterval(()=>{if(bind()||++tries>24)clearInterval(timer);},250);
+  w.addEventListener('mmir-local-connector-refreshed',(event)=>{
+    const detail=event?.detail||{};
+    const models=Array.isArray(detail.models)?detail.models:[];
+    localState={status:detail.status||detail.health||(models.length?'ready':localState.status),models};
+    if(menu&&!menu.hidden)menu.innerHTML=renderMenuContent();
+  });
   w.MimirComposerQuickActions={open:()=>toggleMenu(true),close:()=>closeMenu(false),toggle:()=>toggleMenu(),run:runQuickAction};
 })();
