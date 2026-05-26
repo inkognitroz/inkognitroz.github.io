@@ -102,7 +102,10 @@
       null;
   }
   function localModel(){return (localState.models||[]).map(model=>String(model?.id||model?.name||model?.model||'').trim()).find(Boolean)||'';}
-  function localReady(){return localState.status==='online'&&Boolean(localModel());}
+  function localUsableStatus(){
+    return ['online','degraded','ready','live','ok','healthy'].includes(String(localState.status||'').toLowerCase());
+  }
+  function localReady(){return localUsableStatus()&&Boolean(localModel());}
   function liveLocalValue(){
     const model=localModel();
     if(!model)return '';

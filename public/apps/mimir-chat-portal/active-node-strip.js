@@ -19,7 +19,7 @@
   function adapterUrl(node){return String(node?.route?.url||'').replace(/\/$/,'');}
   function modelFromNode(node){const model=Array.isArray(node?.models)?node.models[0]:null;return model?.name||model?.id||'Auto';}
   function starterId(node){return String(node?.route?.starter_id||'');}
-  function localReady(){return localState.status==='online'&&liveModels.length>0;}
+  function localReady(){return liveModels[0]&&!/^(off|err|block)/i.test(localState.status||'');}
   function nodeStatus(node){
     if(node.id==='local-node')return localReady()?'online':(localState.status==='offline'?'offline':'setup');
     if(isLocalAdapter(node))return 'setup';

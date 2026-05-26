@@ -66,7 +66,7 @@ for (const needle of [
   requireIncludes(deferredCss, needle, `Deferred runtime CSS must own active-node polish: ${needle}`);
 }
 
-requireIncludes(text(files.mmir), 'chat-runtime-deferred.css?v=20260526-live-local-chat-start-v1', 'MMIR page must cache-bust deferred runtime CSS for active-node style split.');
+requireIncludes(text(files.mmir), 'chat-runtime-deferred.css?v=20260526-local-ready-status-v1', 'MMIR page must cache-bust deferred runtime CSS for active-node style split.');
 requireIncludes(text(files.backlog), '| D301 | Performance / Chat UX | P0 | Active node style headroom split |', 'Backlog must include D301 active node style headroom split.');
 requireIncludes(text(files.log), 'D301 is now beta', 'Implementation log must include D301.');
 requireIncludes(text(files.buildDashboard), "['D301'", 'Progress dashboard build must mark D301 status.');

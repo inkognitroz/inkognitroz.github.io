@@ -170,6 +170,11 @@
       "id": "D309 model picker live local recommendation",
       "status": "guarded",
       "evidence": "The compact model picker now recommends Local ready when Local Node reports a model and the DOM fixture proves it starts chat without reinstall redirect."
+    },
+    {
+      "id": "D310 local node ready-status tolerance",
+      "status": "guarded",
+      "evidence": "A degraded Local Node event with a live model now keeps the active route strip, plus drawer and model picker on private local chat instead of sending users back to installation."
     }
   ],
   "known_limitations": [

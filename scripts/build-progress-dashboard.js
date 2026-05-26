@@ -293,7 +293,8 @@ const overrides = new Map([
   ['D306', { status: 'beta', evidence: 'The local connector now checks 127.0.0.1:3000 directly, remembers successful local-node proof with a time-limited no-secret marker and auto-allows the next localhost model refresh only for that trusted local-node path.' }],
   ['D307', { status: 'beta', evidence: 'When Local Node reports a live model, the active chat route now names that private model and the Local Node action refreshes through chat-runtime before sending exactly one model-specific first prompt.' }],
   ['D308', { status: 'beta', evidence: 'The composer plus drawer now listens for Local Node model events, switches the Local chip from install to ready and starts the live private model through chat-runtime without reopening the installer.' }],
-  ['D309', { status: 'beta', evidence: 'The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.' }]
+  ['D309', { status: 'beta', evidence: 'The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.' }],
+  ['D310', { status: 'beta', evidence: 'Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.' }]
 ]);
 
 const repoMeta = [
@@ -890,6 +891,12 @@ function buildLaunchProgress() {
       label: 'Model picker recommends live local model',
       status: 'beta',
       evidence: 'D309 makes the compact model picker recommend Local ready instead of Install local when Local Node reports a live private model.'
+    },
+    {
+      id: 'local-node-ready-status-tolerance',
+      label: 'Local node warnings still allow chat',
+      status: 'beta',
+      evidence: 'D310 makes degraded/ready/ok Local Node health with a live model usable across the active route strip, plus drawer and model picker.'
     },
     {
       id: 'local-node-package',

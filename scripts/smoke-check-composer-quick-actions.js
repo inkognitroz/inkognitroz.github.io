@@ -136,8 +136,8 @@ for (const needle of [
 }
 
 for (const needle of [
-  'composer-quick-actions.css?v=20260526-quick-actions-live-local-v1',
-  'composer-quick-actions.js?v=20260526-quick-actions-live-local-v1'
+  'composer-quick-actions.css?v=20260526-local-ready-status-v1',
+  'composer-quick-actions.js?v=20260526-local-ready-status-v1'
 ]) {
   requireIncludes(html, needle, `MMIR page must load quick-actions asset: ${needle}`);
 }

@@ -161,8 +161,8 @@ for (const needle of [
 for (const needle of [
   './apps/mimir-chat-portal/composer-model-picker.css',
   './apps/mimir-chat-portal/composer-model-picker.js',
-  'composer-model-picker.css?v=20260526-picker-live-local-v1',
-  'composer-model-picker.js?v=20260526-picker-live-local-v1'
+  'composer-model-picker.css?v=20260526-local-ready-status-v1',
+  'composer-model-picker.js?v=20260526-local-ready-status-v1'
 ]) {
   requireIncludes(mmir, needle, `D203 product page must load composer model picker asset: ${needle}`);
 }

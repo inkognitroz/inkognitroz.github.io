@@ -251,7 +251,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(readFileSync(pickerPath, 'utf8'), context, { filename: pickerPath });
 window.dispatchEvent(new FakeCustomEvent('mmir-local-connector-refreshed', {
-  detail: { status: 'online', models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
+  detail: { status: 'degraded', models: [{ id: 'qwen3:0.6b', name: 'Qwen3 0.6B' }] }
 }));
 window.MimirComposerModelPicker.open();
 

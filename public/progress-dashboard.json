@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-25T23:33:28.707Z",
+  "updated_at": "2026-05-26T00:01:49.319Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 308,
+    "total": 309,
     "done": 51,
-    "beta": 232,
+    "beta": 233,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -1378,9 +1378,9 @@
       },
       {
         "phase": "Chat UX / Local Node",
-        "total": 2,
+        "total": 3,
         "done": 0,
-        "beta": 2,
+        "beta": 3,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -1611,6 +1611,12 @@
         "label": "Model picker recommends live local model",
         "status": "beta",
         "evidence": "D309 makes the compact model picker recommend Local ready instead of Install local when Local Node reports a live private model."
+      },
+      {
+        "id": "local-node-ready-status-tolerance",
+        "label": "Local node warnings still allow chat",
+        "status": "beta",
+        "evidence": "D310 makes degraded/ready/ok Local Node health with a live model usable across the active route strip, plus drawer and model picker."
       },
       {
         "id": "local-node-package",
@@ -11219,6 +11225,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "The compact composer model picker now promotes live Local Node models as Local ready recommendations, hides reinstall guidance in that state and starts chat through the guarded runtime bridge.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D310",
+      "phase": "Chat UX / Local Node",
+      "priority": "P0",
+      "work_package": "Local node ready-status tolerance",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Treat Local Node as chat-ready whenever the trusted localhost connector reports a usable status and at least one model, including degraded/ready/ok states, across the active route strip, plus drawer and model picker",
+      "best_practice": "A user with a reachable local node and a model should not be pushed back into setup because one health field says degraded during warmup, tunnel issues or optional subsystem checks",
+      "done_when": "Startup, quick-route and model-picker fixtures dispatch a degraded Local Node event with a live model and prove all three surfaces start private local chat through the runtime bridge without installer redirect or paid/provider side effects",
+      "covers": "chat, local-node, usability, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "Active route strip, plus drawer and compact model picker now treat degraded/ready/ok Local Node health with at least one model as usable private chat instead of reinstall setup.",
       "estimate": "Verify + polish"
     }
   ]
