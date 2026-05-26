@@ -197,6 +197,12 @@
     }
     openPanel(target);
   }
+  function allowLocalChatProbes(profile,reason='chat-runtime-send'){
+    if(!api.isLocal(profile))return false;
+    window.MimirAllowLocalProbes?.(reason,60000);
+    window.dispatchEvent(new CustomEvent('mmir-local-chat-probe-allowed',{detail:{reason,url:cleanUrl(profile?.url),expires_in_ms:60000}}));
+    return true;
+  }
   function modeInstruction(){
     const modes=readModes();
     const instructions=[];
@@ -2032,6 +2038,7 @@
       return;
     }
     if(!model){
+      allowLocalChatProbes(profile);
       await refreshState(true);
       model=modelSelect&&!modelSelect.disabled?modelSelect.value:'';
       const refreshedStarter=starterFromValue(model);
@@ -2058,6 +2065,7 @@
       setStatus('Activate a backend profile or choose a free guide/installable model.','error');
       return;
     }
+    allowLocalChatProbes(profile);
 
     stopRequested=false;
     currentAbortController=new AbortController();
