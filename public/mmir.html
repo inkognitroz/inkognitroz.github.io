@@ -45,9 +45,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-model-picker.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-quick-actions.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/platform-status.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/progress-dashboard.css?v=20260525-progress-window-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/user-journeys.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/gui-parity-matrix.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/node-dashboard.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/conversation-manager.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
@@ -67,7 +65,6 @@
       <a href="#node-dashboard">Nodes</a>
       <a href="#model-library">Models</a>
       <a href="#workflow-builder">Workflows</a>
-      <a href="#progress-dashboard">Progress</a>
       <a href="#platform-status">Status</a>
       <details class="mimir-nav-more">
         <summary>More</summary>
@@ -96,7 +93,7 @@
           <a href="#scheduled-tasks">Tasks</a>
           <a href="#training-automation">Automation</a>
           <a href="#user-journeys">Journeys</a>
-          <a href="#gui-parity">Parity</a>
+          <a href="#user-journeys">Journeys</a>
         </div>
       </details>
     </nav>
@@ -140,7 +137,7 @@
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="first-workflow" data-prompt="Create my first useful MMIR workflow. Keep it automated, free-first, private by default and useful in under five minutes.">Create workflow</button>
         <a href="#local-connector">Install node</a>
         <a href="#model-library">Browse models</a>
-        <a href="#progress-dashboard">Track progress</a>
+        <a href="#platform-status">Check status</a>
       </div>
 
       <section id="growth-demo" class="mimir-growth-panel" aria-label="Demo and beta access">
@@ -254,30 +251,6 @@
         </div>
         <p id="platform-status-summary" class="dashboard-note" data-state="idle" aria-live="polite">Status checks run locally in this browser.</p>
         <div id="platform-status-grid" class="platform-status-grid" aria-live="polite"></div>
-      </section>
-    </details>
-
-    <details id="progress-dashboard" class="mimir-provider-drawer">
-      <summary>+ Progress Dashboard</summary>
-      <section class="mimir-dashboard" aria-labelledby="progress-dashboard-title">
-        <div class="dashboard-heading">
-          <div><p class="eyebrow">Build progress and Codex queue</p><h2 id="progress-dashboard-title">MMIR delivery dashboard</h2></div>
-          <button id="refresh-progress-dashboard" type="button" class="btn btn-secondary">Refresh progress</button>
-        </div>
-        <p id="progress-dashboard-summary" class="dashboard-note" data-state="idle" aria-live="polite">Progress is loaded from the generated public-safe dashboard manifest.</p>
-        <div id="progress-dashboard-root" class="progress-dashboard-root" aria-live="polite"></div>
-      </section>
-    </details>
-
-    <details id="gui-parity" class="mimir-provider-drawer">
-      <summary>+ ChatGPT / Open WebUI Parity</summary>
-      <section class="mimir-dashboard" aria-labelledby="gui-parity-title">
-        <div class="dashboard-heading">
-          <div><p class="eyebrow">Truthful benchmark</p><h2 id="gui-parity-title">GUI parity matrix</h2></div>
-          <button id="refresh-gui-parity" type="button" class="btn btn-secondary">Refresh matrix</button>
-        </div>
-        <p id="gui-parity-summary" class="dashboard-note" data-state="idle" aria-live="polite">Parity is loaded from a public-safe feature matrix.</p>
-        <div id="gui-parity-root" class="gui-parity-root" aria-live="polite"></div>
       </section>
     </details>
 
@@ -457,9 +430,7 @@
     "./apps/mimir-chat-portal/activation-telemetry.js",
     "./apps/mimir-chat-portal/activation-autopilot.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/first-screen-activation-hydration.js",
-    "./apps/mimir-chat-portal/progress-dashboard.js?v=20260525-progress-window-v1",
     "./apps/mimir-chat-portal/user-journeys.js",
-    "./apps/mimir-chat-portal/gui-parity-matrix.js",
     "./apps/mimir-chat-portal/node-dashboard.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/role-presets.js",
     "./apps/mimir-chat-portal/conversation-manager.js",

@@ -104,9 +104,9 @@
     }
   }
   function openPolicies(){
-    const target=document.getElementById('privacy-controls-panel')||document.getElementById('progress-dashboard');
+    const target=document.getElementById('privacy-controls-panel')||document.getElementById('platform-status');
     if(target)target.open=true;
-    location.hash=target?.id||'progress-dashboard';
+    location.hash=target?.id||'platform-status';
     setStatus('Opened public policy/progress panel.','ready');
   }
   function install(){

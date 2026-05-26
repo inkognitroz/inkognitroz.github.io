@@ -4,7 +4,7 @@
 
   const path = window.location.pathname;
   const isAdmin = document.body.dataset.page === "admin";
-  const isFootball = path.includes("/apps/football-evolution-matrix/");
+  const isFootball = false;
 
   const copy = isFootball ? {
     title: "Football Evolution Matrix",

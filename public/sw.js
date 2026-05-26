@@ -37,12 +37,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/sharing-center.js',
   './apps/mimir-chat-portal/identity-org.css',
   './apps/mimir-chat-portal/identity-org.js',
-  './progress-dashboard.json',
-  './visual-qa-report.json',
-  './activation-simulator-fixtures.json',
-  './user-journeys.json',
-  './gui-parity-matrix.json',
-  './mmir-api-routes.json'
+  './user-journeys.json'
 ];
 
 function shouldUseNetworkFirst(request,url){

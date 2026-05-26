@@ -113,10 +113,10 @@
     }
     replayEl.hidden=false;
     replayEl.dataset.state=String(replay.state||'demo');
-    replayEl.innerHTML='<div><strong>Demo replay: '+escapeHtml(replay.label||'Activation replay')+'</strong><p>'+escapeHtml(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / no_paid_routes_started:true / real live proof unchanged</small></div><a href="#progress-dashboard" data-runtime-replay-open>Simulator</a>';
+    replayEl.innerHTML='<div><strong>Demo replay: '+escapeHtml(replay.label||'Activation replay')+'</strong><p>'+escapeHtml(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / no_paid_routes_started:true / real live proof unchanged</small></div><a href="#platform-status" data-runtime-replay-open>Simulator</a>';
     replayEl.querySelector('[data-runtime-replay-open]')?.addEventListener('click',(event)=>{
       event.preventDefault();
-      openPanel('#progress-dashboard');
+      openPanel('#platform-status');
     });
   }
   function readModes(){

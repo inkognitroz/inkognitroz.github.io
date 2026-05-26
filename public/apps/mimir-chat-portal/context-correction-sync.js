@@ -1542,8 +1542,8 @@
     target?.scrollIntoView({behavior:'smooth',block:'start'});
   }
   function openReviewTarget(target){
-    const selector=target==='knowledge'?'knowledge-panel':(target==='memory'?'memory-panel':'progress-dashboard');
-    const element=document.getElementById(selector)||document.getElementById('progress-dashboard');
+    const selector=target==='knowledge'?'knowledge-panel':(target==='memory'?'memory-panel':'platform-status');
+    const element=document.getElementById(selector)||document.getElementById('platform-status');
     if(element&&'open' in element)element.open=true;
     element?.scrollIntoView({behavior:'smooth',block:'start'});
   }
