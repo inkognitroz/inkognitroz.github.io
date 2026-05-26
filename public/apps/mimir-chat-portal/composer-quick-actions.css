@@ -133,18 +133,23 @@
 
 body.mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock {
   display: grid !important;
-  grid-template-areas: "tools" !important;
-  grid-template-columns: auto !important;
-  justify-content: start !important;
+  grid-template-areas: "tools" "live" "feedback" !important;
+  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 body.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster {
   display: flex !important;
   grid-area: tools !important;
-  overflow: visible !important;
+  overflow-x: auto !important;
 }
 
-body.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model) {
+body.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster {
+  display: flex !important;
+  grid-area: live !important;
+  overflow-x: auto !important;
+}
+
+body.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model):not([data-chat-mode="private"]) {
   display: none !important;
 }
 

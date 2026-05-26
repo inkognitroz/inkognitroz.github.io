@@ -29,6 +29,9 @@
   let modelHelperEl=null;
   let replayEl=null;
   let modelChipEl=null;
+  let nodeChipEl=null;
+  let privacyChipEl=null;
+  let tunnelChipEl=null;
   let resourceChipEl=null;
   let proofEl=null;
   let refreshBtn=null;
@@ -206,9 +209,83 @@
     const option=modelSelect?.selectedOptions?.[0];
     return String(option?.textContent||modelSelect?.value||'No model').replace(/\s+-\s+live$/i,'').trim();
   }
+  function cleanChipLabel(value,max=34){
+    const label=String(value||'').replace(/\s+/g,' ').trim();
+    if(label.length<=max)return label;
+    return label.slice(0,max-3).trim()+'...';
+  }
+  function selectedRuntime(){
+    return modelSelect?.selectedOptions?.[0]?.dataset?.runtime||'';
+  }
+  function selectedModelIsReal(){
+    const runtime=selectedRuntime();
+    return runtime==='live'||runtime==='webllm'||runtime==='ollama';
+  }
+  function profileRouteLabel(profile=activeProfile()){
+    if(!profile)return 'Browser route';
+    if(profile.provider==='local-node')return profile.name||'MMIR Local Node';
+    if(profile.provider==='ollama-direct')return profile.name||'Ollama local';
+    if(profile.id==='mmir-api-bootstrap')return 'api.mmir.ai free route';
+    return profile.name||profile.provider||'Configured route';
+  }
+  function activeTrustLabel(profile=activeProfile()){
+    const text=[profile?.provider,profile?.cost,profile?.url,profile?.name].join(' ').toLowerCase();
+    if(api.isLocal(profile)||/127\.0\.0\.1|localhost|local|ollama/.test(text))return 'local/private';
+    if(/free|no paid|self-hosted|self hosted/.test(text))return 'free/protected';
+    if(profile)return 'policy required';
+    return 'browser/no secret';
+  }
+  function tunnelLabel(tunnel,profile=activeProfile(),error=null){
+    if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready',title:'Secure tunnel is active: '+tunnel.public_url};
+    if(tunnel?.status)return {text:'Tunnel: '+String(tunnel.status).replace(/[-_]/g,' '),state:'idle',title:'Tunnel reported by node, but no public secure URL is active.'};
+    if(api.isLocal(profile))return {text:error?'Tunnel: unavailable':'Tunnel: off',state:error?'offline':'idle',title:error?'Local node tunnel state is unavailable.':'Local tunnel is not active.'};
+    return {text:'Tunnel: n/a',state:'idle',title:'Secure tunnel appears only when a paired local/on-prem node exposes it.'};
+  }
+  function hardwareLabel(hardware,error=null){
+    const summary=hardwareSummary(hardware);
+    if(summary)return {text:'Resources: '+summary,state:'ready',title:'Resource telemetry from the active node.'};
+    return {text:error?'Resources: unavailable':'Resources: not exposed',state:error?'offline':'idle',title:'CPU/RAM/GPU telemetry appears only when the active node exposes it.'};
+  }
+  function chipStateForModel(){
+    const runtime=selectedRuntime();
+    if(runtime==='live')return 'ready';
+    if(runtime==='webllm')return webGpuAvailable()?'setup':'offline';
+    if(runtime==='ollama')return 'setup';
+    if(runtime==='browser-guide')return 'degraded';
+    return 'idle';
+  }
+  function setChip(el,text,state,title){
+    if(!el)return;
+    const value=String(text||'').trim();
+    el.textContent=value;
+    el.dataset.state=state||'idle';
+    if(title||value)el.title=title||value;
+  }
   function updateRuntimeChips(){
-    if(modelChipEl)modelChipEl.textContent=activeModelLabel()||'Model ready';
-    if(resourceChipEl&&!resourceChipEl.textContent)resourceChipEl.textContent='CPU/RAM checking';
+    const modelLabel=activeModelLabel()||'No model selected';
+    const modelTitle=selectedRuntime()==='browser-guide'
+      ? 'MMIR Guide is a browser helper, not a live LLM. Choose WebGPU or Local Node for a real model.'
+      : modelLabel;
+    setChip(modelChipEl,'Model: '+cleanChipLabel(modelLabel,38),chipStateForModel(),modelTitle);
+    if(nodeChipEl&&!nodeChipEl.textContent)setChip(nodeChipEl,'Node: '+cleanChipLabel(profileRouteLabel(),32),activeProfile()?.health==='offline'?'offline':'idle','Selected node or route. Proof updates this state when backend checks finish.');
+    const trust=activeTrustLabel();
+    setChip(privacyChipEl,trust==='policy required'?'Privacy: policy required':'Privacy: '+trust,trust==='policy required'?'degraded':'ready','Security/privacy state for the selected route. No provider keys are stored in this public page.');
+    if(tunnelChipEl&&!tunnelChipEl.textContent)setChip(tunnelChipEl,'Tunnel: checking','idle','Secure tunnel state has not been checked yet.');
+    if(resourceChipEl&&!resourceChipEl.textContent)setChip(resourceChipEl,'Resources: checking','idle','Node telemetry has not been checked yet.');
+  }
+  function updateRouteChips({profile=activeProfile(),models=[],hardware=null,tunnel=null,error=null,proof='idle'}={}){
+    const liveCount=Array.isArray(models)?models.length:0;
+    const routeState=error?'offline':(liveCount||proof==='ready'?'ready':(profile?'degraded':'idle'));
+    const routeDetail=error?friendlyError(error):(liveCount?String(liveCount)+' live model'+(liveCount===1?'':'s'):'no live backend model proven');
+    setChip(nodeChipEl,'Node: '+cleanChipLabel(profileRouteLabel(profile),32),routeState,profileRouteLabel(profile)+' - '+routeDetail);
+    const trust=activeTrustLabel(profile);
+    const privacyState=trust==='policy required'?'degraded':(error&&api.isLocal(profile)?'degraded':'ready');
+    setChip(privacyChipEl,trust==='policy required'?'Privacy: policy required':'Privacy: '+trust,privacyState,'Route trust: '+trust+'. No browser provider secrets; prompts are not stored in the public repo.');
+    const tunnelState=tunnelLabel(tunnel,profile,error);
+    setChip(tunnelChipEl,tunnelState.text,tunnelState.state,tunnelState.title);
+    const resourceState=hardwareLabel(hardware,error);
+    setChip(resourceChipEl,resourceState.text,resourceState.state,resourceState.title);
+    updateRuntimeChips();
   }
 
   function openComposerModelPicker(){
@@ -814,20 +891,26 @@
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
         '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Boost 5.5 Extra high">5.5 Extra high v</button>'+
         '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
-        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">CPU/RAM checking</button>'+
+        '<button id="runtime-node-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open selected node and route status">Node checking</button>'+
+        '<button id="runtime-privacy-chip" type="button" class="composer-live-chip" aria-label="Security and privacy state">Privacy checking</button>'+
+        '<button id="runtime-tunnel-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open secure tunnel status">Tunnel checking</button>'+
+        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">Resources checking</button>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+
       '</div>'+
       '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: free browser helper first, local model when connected.</small>';
     const bar=formEl.querySelector('.composer-bar');
     if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
     modelChipEl=document.getElementById('runtime-model-chip');
+    nodeChipEl=document.getElementById('runtime-node-chip');
+    privacyChipEl=document.getElementById('runtime-privacy-chip');
+    tunnelChipEl=document.getElementById('runtime-tunnel-chip');
     resourceChipEl=document.getElementById('runtime-resource-chip');
     document.getElementById('composer-add-model')?.addEventListener('click',openComposerModelPicker);
     modelChipEl?.addEventListener?.('click',openComposerModelPicker);
-    resourceChipEl?.addEventListener?.('click',()=>{
+    [nodeChipEl,tunnelChipEl,resourceChipEl].forEach(el=>el?.addEventListener?.('click',()=>{
       openPanel('#node-dashboard');
-      setComposerActionFeedback('Node dashboard opened. CPU/RAM and model health come only from a paired local node.','ready');
-    });
+      setComposerActionFeedback('Node dashboard opened. CPU/RAM and model health come only from a paired local node. Tunnel state comes only from reachable MMIR routes.','ready');
+    }));
     document.querySelectorAll('[data-chat-mode]').forEach(button=>{
       button.addEventListener('click',()=>{
         const mode=button.getAttribute('data-chat-mode');
@@ -1289,6 +1372,8 @@
   }
 
   function preferredStarterModel(){
+    const webGpu=starterModels.find(model=>model.runtime==='webllm');
+    if(webGpu&&webGpuAvailable())return webGpu;
     return starterModels.find(model=>model.id==='mmir-guide')||
       starterModels.find(model=>model.runtime==='browser-guide')||
       starterModels[0]||
@@ -1923,8 +2008,9 @@
     lastActiveId=currentId;
     if(!profile||!cleanUrl(profile.url)){
       renderModels([]);
-      renderLiveProof('No backend active. Browser helper works; Connect model prepares a free local profile automatically.','idle',baseProofItems(''),proofRepairActions('offline'));
-      setStatus('Free guide and installable local models ready. Connect a backend to make them live.','ready');
+      updateRouteChips({profile:null,models:[],hardware:null,tunnel:null,proof:'idle'});
+      renderLiveProof('No backend is active yet. Browser helper works now; use Connect model to prepare a free local profile automatically.','idle',baseProofItems(''),proofRepairActions('offline'));
+      setStatus('Free guide and installable local models are ready. Connect a backend to make models live.','ready');
       return [];
     }
     const url=cleanUrl(profile.url);
@@ -1934,20 +2020,21 @@
       await optionalHealthCheck(profile,url);
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
-      const [models,hardware]=await Promise.all([
+      const [models,hardware,tunnel]=await Promise.all([
         fetchModelInventory(profile,url,headers),
-        fetchJson(joinUrl(url,'/hardware'),{headers,timeoutMs:5000}).catch(()=>null)
+        fetchJson(joinUrl(url,'/hardware'),{headers,timeoutMs:5000}).catch(()=>null),
+        fetchJson(joinUrl(url,'/tunnels/status'),{headers,timeoutMs:5000}).catch(()=>null)
       ]);
       const normalized=normalizeModels(models);
       renderModels(normalized);
-      if(resourceChipEl)resourceChipEl.textContent=hardwareSummary(hardware)||'CPU/RAM local';
+      updateRouteChips({profile,models:normalized,hardware,tunnel,proof:normalized.length?'ready':'idle'});
       writeActiveProfilePatch({health:normalized.length?'ready':'degraded',models:summarizeModels(normalized)});
       setStatus(normalized.length?'Backend ready.':'Backend online. Free installable models are still available below.',normalized.length?'ready':'idle');
       proveLiveRoute(profile,url,headers,normalized);
       return normalized;
     }catch(error){
       renderModels([]);
-      if(resourceChipEl)resourceChipEl.textContent='CPU/RAM offline';
+      updateRouteChips({profile,models:[],hardware:null,tunnel:null,error});
       writeActiveProfilePatch({health:error?.status===401?'testing':'offline'});
       lastProofSignature='';
       verifiedLiveModel=null;

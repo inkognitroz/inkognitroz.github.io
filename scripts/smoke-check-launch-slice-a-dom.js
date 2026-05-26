@@ -1,0 +1,110 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
+
+const root = process.cwd();
+const publicDir = resolve(root, 'public');
+const files = {
+  rootIndex: join(root, 'index.html'),
+  publicIndex: join(publicDir, 'index.html'),
+  mmir: join(publicDir, 'mmir.html'),
+  runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
+  runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
+  workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
+  portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
+  criticalProfiles: join(publicDir, 'apps', 'mimir-chat-portal', 'backend-profiles-critical.js')
+};
+
+function fail(message) {
+  console.error(message);
+  process.exitCode = 1;
+}
+
+function read(file) {
+  if (!existsSync(file)) {
+    fail(`Missing Launch Slice A file: ${relative(root, file)}`);
+    return '';
+  }
+  return readFileSync(file, 'utf8');
+}
+
+function normalized(file) {
+  return read(file).replace(/\s+/g, ' ');
+}
+
+function requireIncludes(file, needle, message) {
+  if (!read(file).includes(needle)) fail(message);
+}
+
+function requireNormalized(file, needle, message) {
+  if (!normalized(file).includes(String(needle).replace(/\s+/g, ' '))) fail(message);
+}
+
+function forbid(file, pattern, message) {
+  if (pattern.test(read(file))) fail(message);
+}
+
+for (const file of Object.values(files)) read(file);
+
+requireIncludes(files.rootIndex, '<title>MMIR.ai</title>', 'Repository root title must match the public MMIR.ai title.');
+requireIncludes(files.publicIndex, '<title>MMIR.ai</title>', 'Published root redirect title must match MMIR.ai.');
+requireIncludes(files.mmir, '<title>MMIR.ai</title>', 'Main MMIR page title must be MMIR.ai.');
+forbid(files.publicIndex, /MMIR by Inkognitroz/i, 'Published root title must not drift back to MMIR by Inkognitroz.');
+
+for (const selector of [
+  'id="mimir-prompt"',
+  'id="new-backend"',
+  'id="primary-chat-link"',
+  'class="mimir-composer"'
+]) {
+  requireIncludes(files.mmir, selector, `First screen composer DOM is missing ${selector}.`);
+}
+
+for (const selector of [
+  'runtime-model-chip',
+  'runtime-node-chip',
+  'runtime-privacy-chip',
+  'runtime-tunnel-chip',
+  'runtime-resource-chip',
+  'composer-add-model',
+  'composer-voice-input'
+]) {
+  requireIncludes(files.runtime, selector, `Launch Slice A runtime control is missing: ${selector}.`);
+}
+
+for (const text of [
+  'Model: ',
+  'Node: ',
+  'Privacy: ',
+  'Tunnel: ',
+  'Resources: ',
+  '/models',
+  '/hardware',
+  '/tunnels/status',
+  'No browser provider secrets',
+  'MMIR Guide is a browser helper, not a live LLM'
+]) {
+  requireIncludes(files.runtime, text, `Launch Slice A truthful state contract missing: ${text}`);
+}
+
+requireIncludes(files.runtime, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
+requireIncludes(files.runtime, "health:error?.status===401?'testing':'offline'", 'Unavailable backend/node checks must write offline/testing health, not ready.');
+requireIncludes(files.portal, "health:'unknown'", 'Default managed API profile must begin unknown until runtime proof updates it.');
+requireIncludes(files.criticalProfiles, "health:existing?.health==='ready'?'ready':'unknown'", 'Critical profile bootstrap must preserve ready only after prior runtime proof.');
+forbid(files.portal, /defaultApiProfile\(\).*health:'ready'/s, 'Default API profile must not fake ready health.');
+
+for (const selector of [
+  '.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important',
+  '.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip){display:inline-flex!important',
+  '.composer-live-chip[data-state="offline"]'
+]) {
+  const target = selector.includes(':is(#runtime-node-chip') ? files.workspaceCss : files.runtimeCss;
+  requireNormalized(target, selector, `First screen chip visibility/style missing: ${selector}`);
+}
+
+forbid(files.runtimeCss, /not\(\.mimir-has-chat\).*composer-live-cluster[^{}]*display\s*:\s*none/i, 'Pre-chat composer live cluster must stay visible.');
+forbid(files.runtimeCss, /not\(\.mimir-has-chat\).*#runtime-model-chip[^{}]*display\s*:\s*none/i, 'Pre-chat selected model chip must stay visible.');
+forbid(files.runtimeCss, /not\(\.mimir-has-chat\).*#runtime-resource-chip[^{}]*display\s*:\s*none/i, 'Pre-chat resource/telemetry chip must stay visible as unavailable or real telemetry.');
+
+if (!process.exitCode) {
+  console.log('Launch Slice A DOM smoke check passed.');
+}

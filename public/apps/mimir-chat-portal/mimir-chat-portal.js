@@ -52,7 +52,7 @@
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
   function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
-  function defaultApiProfile(){return {id:'mmir-api-bootstrap',name:'MMIR Free Control Plane',url:DEFAULT_API_URL,provider:'openai-compatible',models:'mmir-guide auto-discovered',keyRef:'no browser secret',cost:'free no paid routes',latency:'edge bootstrap',throughput:'bootstrap guide route',uptime:'cloudflare worker',health:'ready',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
+  function defaultApiProfile(){return {id:'mmir-api-bootstrap',name:'MMIR Free Control Plane',url:DEFAULT_API_URL,provider:'openai-compatible',models:'checked at runtime',keyRef:'no browser secret',cost:'free no paid routes',latency:'edge bootstrap',throughput:'bootstrap guide route',uptime:'cloudflare worker',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
   function openModelLibraryFallback(){
     const drawer=document.getElementById('model-library');if(drawer){drawer.open=true;drawer.scrollIntoView({block:'start',behavior:'smooth'});}
   }
@@ -157,13 +157,13 @@
     profile.name='MMIR Free Control Plane';
     profile.url=DEFAULT_API_URL;
     profile.provider='openai-compatible';
-    profile.models='mmir-guide auto-discovered';
+    profile.models=profile.health==='ready'?'mmir-guide auto-discovered':'checked at runtime';
     profile.keyRef='no browser secret';
     profile.cost='free no paid routes';
     profile.latency='edge bootstrap';
     profile.throughput='bootstrap guide route';
     profile.uptime='cloudflare worker';
-    profile.health='ready';
+    if(profile.health!=='ready')profile.health='unknown';
     profile.updatedAt=new Date().toISOString();
     writeProfiles(profiles);
     return profile;
