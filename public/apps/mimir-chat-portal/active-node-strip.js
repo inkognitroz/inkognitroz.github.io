@@ -3,6 +3,8 @@
   const MANIFEST_URL='./active-chat-nodes.json';
   const STARTER_CATALOG='./free-model-starters.json';
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
+  const PROFILE_KEY='mimir-chat-backend-profiles';
+  const ACTIVE_KEY='mimir-chat-active-backend';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   let manifestNodes=[];
@@ -20,20 +22,24 @@
   function modelFromNode(node){const model=Array.isArray(node?.models)?node.models[0]:null;return model?.name||model?.id||'Auto';}
   function starterId(node){return String(node?.route?.starter_id||'');}
   function localReady(){return liveModels[0]&&!/^(off|err|block)/i.test(localState.status||'');}
+  function activeProfile(){try{const profiles=JSON.parse(localStorage.getItem(PROFILE_KEY)||'[]');const active=localStorage.getItem(ACTIVE_KEY)||'';return Array.isArray(profiles)?profiles.find(profile=>profile?.id===active)||null:null;}catch(error){return null;}}
+  function managedReady(){const profile=activeProfile();if(!profile)return false;const url=String(profile.url||''),health=String(profile.health||''),liveness=String(profile.liveness||'');return (profile.id==='mmir-api-bootstrap'||/api\.mmir\.ai/i.test(url))&&health==='ready'&&(!liveness||liveness==='chat-probed');}
   function nodeStatus(node){
     if(node.id==='local-node')return localReady()?'online':(localState.status==='offline'?'offline':'setup');
+    if(node?.route?.kind==='managed-api')return managedReady()?'online':'setup';
     if(isLocalAdapter(node))return 'setup';
     if(needsWebGpu(node))return webGpuReady()?'online':'setup';
     return 'online';
   }
   function nodeModel(node){
     if(node.id==='local-node')return liveModels[0]?.id||liveModels[0]?.name||'Install model';
+    if(node?.route?.kind==='managed-api')return managedReady()?modelFromNode(node):'Verify route first';
     if(isLocalAdapter(node))return modelFromNode(node)||'Auto when running';
     if(needsWebGpu(node))return webGpuReady()?modelFromNode(node):'Needs WebGPU';
     return modelFromNode(node);
   }
   function nodeDetail(node){
-    if(node?.route?.kind==='managed-api')return 'Free API.';
+    if(node?.route?.kind==='managed-api')return managedReady()?'Free API proven.':'Free API; verify first.';
     if(node.id==='local-node'){
       if(localReady())return 'Private ready.';
       if(localState.status==='offline')return 'Start Local Node.';

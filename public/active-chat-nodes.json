@@ -25,7 +25,7 @@
       "id": "managed-api-bootstrap",
       "name": "MMIR Free Control Plane",
       "type": "managed-api",
-      "status": "online",
+      "status": "verify_before_chat",
       "trust_level": "public-free",
       "cost": { "mode": "free", "requires_approval": false },
       "route": { "kind": "managed-api", "url": "https://api.mmir.ai", "chat_path": "/chat/completions", "openai_chat_path": "/v1/chat/completions" },

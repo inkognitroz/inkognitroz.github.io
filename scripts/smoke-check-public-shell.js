@@ -9,6 +9,8 @@ const mmirPath = join(publicDir, 'mmir.html');
 const contentPath = join(publicDir, 'content.json');
 const manifestPath = join(publicDir, 'manifest.webmanifest');
 const serviceWorkerPath = join(publicDir, 'sw.js');
+const activeNodesPath = join(publicDir, 'active-chat-nodes.json');
+const activeNodeStripPath = join(publicDir, 'apps', 'mimir-chat-portal', 'active-node-strip.js');
 
 const failures = [];
 
@@ -85,6 +87,12 @@ for (const file of walk(publicDir)) {
 
 const content = JSON.parse(read(contentPath) || '{}');
 if (content?.site?.title !== 'MMIR') fail('content.json must define MMIR as the public product title.');
+const activeNodes = JSON.parse(read(activeNodesPath) || '{}');
+const managedNode = Array.isArray(activeNodes.nodes)
+  ? activeNodes.nodes.find((node) => node?.id === 'managed-api-bootstrap')
+  : null;
+if (!managedNode) fail('active-chat-nodes.json must keep the managed API route visible for setup.');
+if (managedNode?.status === 'online') fail('Managed api.mmir.ai must not claim live status from static manifest data.');
 
 requireText(indexPath, 'Trusted AI Control Plane', 'Homepage must state the MMIR control-plane category.');
 requireText(indexPath, './mmir.html#mimir-instant-start', 'Homepage must point to the MMIR first journey.');
@@ -92,8 +100,14 @@ requireText(mmirPath, 'id="mimir-prompt"', 'MMIR product page must expose the ch
 requireText(mmirPath, 'id="local-connector"', 'MMIR product page must expose local connector setup.');
 requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose public-safe node status.');
 requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR product page must load the chat portal script.');
+requireText(mmirPath, 'active-node-strip.js?v=20260526-managed-api-verify-v1', 'MMIR product page must load the managed API proof-gated active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
+requireText(serviceWorkerPath, 'mmir-pwa-d319-20260526-managed-api-verify-v1', 'Service worker cache must bust for the managed API proof gate.');
+requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip must read the selected backend profile before claiming managed API liveness.');
+requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
+requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
+requireText(activeNodeStripPath, "managedReady()?modelFromNode(node):'Verify route first'", 'Managed API card must avoid showing a live model before route verification.');
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');

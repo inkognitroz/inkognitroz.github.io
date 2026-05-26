@@ -2,9 +2,10 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const root = process.cwd();
-const chatRuntime = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'utf8');
-const quietGuard = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'quiet-first-paint-hotfix.js'), 'utf8');
-const html = readFileSync(join(resolve(root, 'public'), 'mmir.html'), 'utf8');
+const normalize = (source) => source.replace(/\r\n/g, '\n');
+const chatRuntime = normalize(readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'chat-runtime.js'), 'utf8'));
+const quietGuard = normalize(readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'quiet-first-paint-hotfix.js'), 'utf8'));
+const html = normalize(readFileSync(join(resolve(root, 'public'), 'mmir.html'), 'utf8'));
 
 function fail(message) {
   console.error(message);
