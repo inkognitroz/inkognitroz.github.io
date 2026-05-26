@@ -92,14 +92,15 @@ for (const text of [
   'Tunnel: ',
   'Resources: ',
   'No browser provider secrets',
-  'MMIR Guide is a browser helper, not a live LLM'
+  "if(r==='live'||r==='browser-guide')return 'ready'",
+  'MMIR Guide works now as a free browser helper'
 ]) {
   requireIncludes(files.routeChips, text, `Launch Slice A deferred route-chip contract missing: ${text}`);
 }
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
-requireIncludes(files.mmir, 'route-chips.js?v=20260526-route-chips-deferred-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
+requireIncludes(files.mmir, 'route-chips.js?v=20260526-guide-ready-chip-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.runtime, "health:error?.status===401?'testing':'offline'", 'Unavailable backend/node checks must write offline/testing health, not ready.');
 requireIncludes(files.portal, "health:'unknown'", 'Default managed API profile must begin unknown until runtime proof updates it.');
 requireIncludes(files.criticalProfiles, "health:existing?.health==='ready'?'ready':'unknown'", 'Critical profile bootstrap must preserve ready only after prior runtime proof.');

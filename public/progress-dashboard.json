@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-26T02:13:04.887Z",
+  "updated_at": "2026-05-26T02:35:12.999Z",
   "title": "MMIR Progress Dashboard",
   "principle": "Free-first, local-first, zero-trust: ship useful defaults before paid or complex infrastructure.",
   "current_focus": [
@@ -18,9 +18,9 @@
     "planned": "Planned after higher-priority activation, security and architecture work."
   },
   "summary": {
-    "total": 315,
+    "total": 316,
     "done": 51,
-    "beta": 239,
+    "beta": 240,
     "next": 1,
     "watch": 1,
     "blocked": 1,
@@ -908,9 +908,9 @@
       },
       {
         "phase": "Chat UX / First Impression",
-        "total": 3,
+        "total": 4,
         "done": 0,
-        "beta": 3,
+        "beta": 4,
         "next": 0,
         "watch": 0,
         "blocked": 0,
@@ -11376,6 +11376,21 @@
       "status": "beta",
       "status_note": "Usable foundation exists; keep improving before calling it complete.",
       "evidence": "Route-chip status polish and runtime-control guard work now load progressively, while chat-workspace CSS is page-linked and first-paint JS is back under budget.",
+      "estimate": "Verify + polish"
+    },
+    {
+      "seq": "D317",
+      "phase": "Chat UX / First Impression",
+      "priority": "P0",
+      "work_package": "Free guide route shows ready without pretending to be a full LLM",
+      "repos": "inkognitroz.github.io",
+      "concrete_work": "Make the default MMIR Guide route show as ready in the compact model chip and WebGPU fallback path, while keeping copy explicit that it is a free browser helper and that full LLM chat comes from WebGPU or Local Node",
+      "best_practice": "A first-time user should see that chat works immediately, not a warning-colored route, but MMIR must never misrepresent helper guidance as a proven model answer",
+      "done_when": "Launch Slice A and performance gates prove route-chip polish stays deferred, MMIR Guide is marked ready, WebGPU fallback switches to ready guide copy and no paid/provider route or secret is started",
+      "covers": "chat, first-impression, route-chips, open-webui-parity, no-spend",
+      "status": "beta",
+      "status_note": "Usable foundation exists; keep improving before calling it complete.",
+      "evidence": "MMIR Guide now presents as a ready free browser-helper route in compact model chips and WebGPU fallback, while full LLM chat still points users to WebGPU or Local Node.",
       "estimate": "Verify + polish"
     }
   ]

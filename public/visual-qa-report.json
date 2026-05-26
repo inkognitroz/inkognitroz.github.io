@@ -205,6 +205,11 @@
       "id": "D316 deferred route chip polish",
       "status": "guarded",
       "evidence": "Route-chip truth stays available through deferred polish while critical first-paint JavaScript stays below budget."
+    },
+    {
+      "id": "D317 ready browser guide chip",
+      "status": "guarded",
+      "evidence": "The default MMIR Guide route now uses a ready chip state for immediate free browser help while copy still directs users to WebGPU or Local Node for a full LLM."
     }
   ],
   "known_limitations": [

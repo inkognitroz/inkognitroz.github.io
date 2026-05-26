@@ -133,7 +133,7 @@ for (const required of [
 for (const required of [
   './apps/mimir-chat-portal/workspaces.js',
   `./apps/mimir-chat-portal/runtime-controls-fix.js?v=${runtimeFixKey}`,
-  './apps/mimir-chat-portal/route-chips.js?v=20260526-route-chips-deferred-v1',
+  './apps/mimir-chat-portal/route-chips.js?v=20260526-guide-ready-chip-v1',
   './apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-chat-first-v1',
   './apps/mimir-chat-portal/memory.js',
   './apps/mimir-chat-portal/knowledge.js',
