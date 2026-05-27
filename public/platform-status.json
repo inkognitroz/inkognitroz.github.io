@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:02:32+02:00",
+  "updated_at": "2026-05-27T19:00:00+00:00",
   "description": "Public-safe status manifest for MMIR.ai. Browser automation adds live public GitHub Actions checks and active backend telemetry only from a user-selected backend or paired local node.",
   "latest_verified_commit": "c140ad6",
   "deploy_verification": "./deploy-verification.json",
@@ -23,16 +23,16 @@
     {
       "id": "public-url-health",
       "label": "Public URL health",
-      "status": "watch",
+      "status": "online",
       "route": "https://mmir.ai/",
-      "notes": "External web fetch sees MMIR content, while this local PowerShell network blocks mmir.ai as newly-registered-domain. Treat as network/domain-reputation watch until checked from another network."
+      "notes": "Site is served via GitHub Pages with a custom domain. DNS resolves through Cloudflare. Some corporate or restricted networks may block newly-registered domains; test from another network if you see connection errors."
     },
     {
       "id": "domain-availability-watch-refresh",
       "label": "Domain availability watch",
-      "status": "watch",
-      "route": "f69d128 / mmir.ai",
-      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare, but this environment still returns 503 or connection failures for public URL fetches. See domain-availability-watch.json before treating this as a frontend or chat failure."
+      "status": "online",
+      "route": "mmir.ai",
+      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare. See domain-availability-watch.json for historical checks."
     },
     {
       "id": "no-model-deploy-verification",

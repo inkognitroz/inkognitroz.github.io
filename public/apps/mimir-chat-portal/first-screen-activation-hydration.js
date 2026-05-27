@@ -198,7 +198,7 @@
     lastStarterFunnelSignature=signature;
     banner.hidden=false;
     banner.dataset.state=state.state;
-    banner.innerHTML='<div><span>Starter progress</span><strong>'+safe(state.model)+'</strong><p>'+safe(state.done)+'/4 complete - next: '+safe(state.next)+'</p><small>local_only:true / no_paid_routes_started:true / raw_prompt_stored:false / secrets_stored:false</small></div><button type="button" data-first-screen-starter-funnel="'+safe(state.action.kind)+'" data-target="'+safe(state.action.target)+'">'+safe(state.action.label)+'</button>';
+    banner.innerHTML='<div><span>Starter progress</span><strong>'+safe(state.model)+'</strong><p>'+safe(state.done)+'/4 complete - next: '+safe(state.next)+'</p></div><button type="button" data-first-screen-starter-funnel="'+safe(state.action.kind)+'" data-target="'+safe(state.action.target)+'">'+safe(state.action.label)+'</button>';
     banner.querySelector('[data-first-screen-starter-funnel]')?.addEventListener('click',()=>runFirstScreenStarterFunnelAction(state.action));
   }
 
@@ -238,7 +238,7 @@
     banner.hidden=false;
     banner.dataset.state=String(replay.state||'demo');
     const target=String(replay.next_target||'#platform-status');
-    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review simulated activation.')+'</p><small>demo_only:true / mutated_real_connector:false / no_paid_routes_started:true</small></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#platform-status" data-activation-replay-open>Open replay</a></div>';
+    banner.innerHTML='<div><span>Demo replay active</span><strong>'+safe(replay.label||'Activation replay')+'</strong><p>'+safe(replay.expected_next_action||'Review simulated activation.')+'</p></div><div class="activation-replay-actions"><a href="'+safe(target)+'" data-activation-replay-jump>Go to next step</a><button type="button" data-activation-replay-reset>Reset replay</button><a href="#platform-status" data-activation-replay-open>Open replay</a></div>';
     banner.querySelector('[data-activation-replay-jump]')?.addEventListener('click',(event)=>{
       if(target.startsWith('#')){
         event.preventDefault();
