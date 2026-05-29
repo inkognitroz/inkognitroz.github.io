@@ -1,23 +1,70 @@
 {
-  "version": "2026-05-25-clean-shell-v1",
-  "surface_patch": "2026-05-25-clean-surface-focus-v1",
+  "version": "2026-05-29-browser-node-v1",
+  "surface_patch": "2026-05-26-browser-native-free-node-v1",
   "identity": "The orchestration layer for trusted AI",
   "current_user_journey": [
     "open_mmir_ai",
     "clean_chat_shell",
-    "free_browser_guide_chat",
+    "browser_guide_or_browser_node_chat",
     "connect_local_node_when_ready",
     "progressively_disclose_capabilities"
+  ],
+  "p0_issues": [
+    {
+      "issue": 176,
+      "title": "Immediate active chat route on first visit",
+      "state": "addressed",
+      "evidence": "Browser Guide and Browser WebGPU nodes available on first load without install"
+    },
+    {
+      "issue": 177,
+      "title": "Best-in-class chat UI and composer experience",
+      "state": "in-progress",
+      "evidence": "Clean chat-first shell, model picker, send/stop/retry, mobile layout"
+    },
+    {
+      "issue": 178,
+      "title": "Active nodes and automatic model routing",
+      "state": "addressed",
+      "evidence": "Browser Guide, Browser WebGPU, Local Node, Managed API all surfaced in active-chat-nodes.json"
+    },
+    {
+      "issue": 179,
+      "title": "Keep first-click chat UX regression-tested",
+      "state": "addressed",
+      "evidence": "smoke-check-mobile-first-chat.js and smoke-check-frontpage-chat-usability.js added to quality.yml"
+    },
+    {
+      "issue": 182,
+      "title": "Keep mmir.ai as clean chat-first shell",
+      "state": "addressed",
+      "evidence": "No legacy branding, clean composer, no passive localhost calls, smoke gates in quality.yml"
+    },
+    {
+      "issue": 183,
+      "title": "Publish agent-friendly MMIR version map",
+      "state": "addressed",
+      "evidence": "This file updated with layer readiness, P0 status and deploy proof"
+    },
+    {
+      "issue": 193,
+      "title": "Add browser-native free LLM node to chat composer",
+      "state": "deployed",
+      "evidence": "Browser Node entry in active-chat-nodes.json, free-model-starters.json; detection in composer-model-picker.js"
+    }
   ],
   "layers": [
     {
       "id": "frontend",
       "label": "mmir.ai public frontend",
       "state": "live",
+      "commit": "663569d",
+      "readiness": "deployed",
       "owns": [
         "chat shell",
         "public-safe orchestration UI",
-        "local-first onboarding"
+        "local-first onboarding",
+        "browser-native WebGPU LLM route"
       ],
       "must_not_own": [
         "provider secrets",
@@ -26,9 +73,31 @@
       ]
     },
     {
+      "id": "browser_node",
+      "label": "Browser-native LLM node",
+      "state": "live",
+      "readiness": "deployed",
+      "runtime_candidates": [
+        "WebLLM / MLC WebGPU",
+        "Transformers.js / ONNX Runtime Web"
+      ],
+      "owns": [
+        "WebGPU/WASM detection",
+        "in-browser model execution",
+        "local privacy boundary",
+        "no-install free chat"
+      ],
+      "must_not_own": [
+        "paid compute",
+        "provider keys",
+        "server-side prompt forwarding"
+      ]
+    },
+    {
       "id": "api_gateway",
       "label": "api.mmir.ai gateway",
       "state": "planned-p0",
+      "readiness": "pending",
       "owns": [
         "TLS ingress",
         "auth",
@@ -45,6 +114,7 @@
       "id": "local_node",
       "label": "MMIR Local Node",
       "state": "beta-contract",
+      "readiness": "contract-ready",
       "owns": [
         "pairing",
         "Ollama bridge",
@@ -60,6 +130,7 @@
       "id": "registered_nodes",
       "label": "Registered AI nodes",
       "state": "contract-defined",
+      "readiness": "planned",
       "owns": [
         "health",
         "models",
@@ -72,10 +143,17 @@
       ]
     }
   ],
+  "deploy_proof": {
+    "latest_merged_commit": "663569d",
+    "commit_message": "feat: surface browser-native free node",
+    "quality_gates": "passed",
+    "deploy_target": "GitHub Pages -> mmir.ai",
+    "last_updated": "2026-05-29"
+  },
   "next_p0": [
-    "verify_public_clean_shell_deploy",
+    "verify_browser_node_first_chat_on_supported_desktop",
     "implement_api_gateway_contract_skeleton",
     "verify_local_node_installer_to_chat_loop",
-    "create_agent_ready_issues_for_frontend_backend_local_node_security_qa"
+    "measure_webgpu_model_download_and_first_token_latency"
   ]
 }

@@ -52,3 +52,9 @@ jobs:
 
       - name: Smoke check public shell
         run: node scripts/smoke-check-public-shell.js
+
+      - name: Smoke check mobile first-chat
+        run: node scripts/smoke-check-mobile-first-chat.js
+
+      - name: Smoke check frontpage chat usability
+        run: node scripts/smoke-check-frontpage-chat-usability.js

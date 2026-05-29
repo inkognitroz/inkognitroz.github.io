@@ -1,73 +1,80 @@
 {
-  "version": 1,
-  "updated_at": "2026-05-23T20:02:32+02:00",
-  "description": "Public-safe status manifest for MMIR.ai. Browser automation adds live public GitHub Actions checks and active backend telemetry only from a user-selected backend or paired local node.",
-  "latest_verified_commit": "c140ad6",
-  "deploy_verification": "./deploy-verification.json",
-  "domain_availability_watch": "./domain-availability-watch.json",
-  "components": [
-    {
-      "id": "site-shell",
-      "label": "MMIR public site",
-      "status": "online",
-      "route": "mmir.ai / GitHub Pages",
-      "notes": "The static app shell is served from the public Pages artifact."
-    },
-    {
-      "id": "latest-deploy-verification",
-      "label": "Latest deploy verification",
-      "status": "online",
-      "route": "c140ad6 / GitHub Actions",
-      "notes": "Static quality, branding migration and Deploy GitHub Pages completed successfully for commit c140ad6 on 2026-05-23."
-    },
-    {
-      "id": "public-url-health",
-      "label": "Public URL health",
-      "status": "watch",
-      "route": "https://mmir.ai/",
-      "notes": "External web fetch sees MMIR content, while this local PowerShell network blocks mmir.ai as newly-registered-domain. Treat as network/domain-reputation watch until checked from another network."
-    },
-    {
-      "id": "domain-availability-watch-refresh",
-      "label": "Domain availability watch",
-      "status": "watch",
-      "route": "f69d128 / mmir.ai",
-      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare, but this environment still returns 503 or connection failures for public URL fetches. See domain-availability-watch.json before treating this as a frontend or chat failure."
-    },
-    {
-      "id": "no-model-deploy-verification",
-      "label": "No-model deploy proof",
-      "status": "online",
-      "route": "c140ad6 / GitHub Pages artifact",
-      "notes": "The deployed Pages artifact includes the no-model fixture report, visual pass, free route floor and no-model chat fallback. See no-model-public-deploy-verification.json."
-    },
-    {
-      "id": "github-pages",
-      "label": "GitHub Pages origin",
-      "status": "online",
-      "route": "inkognitroz.github.io -> mmir.ai",
-      "notes": "The default GitHub Pages URL redirects to the custom domain while public/CNAME is present. The status panel also checks the latest public Pages deploy run."
-    },
-    {
-      "id": "domain-reputation",
-      "label": "Domain reputation",
-      "status": "watch",
-      "route": "mmir.ai",
-      "notes": "Some corporate networks may temporarily block newly registered domains. Test from mobile data or ask for allowlisting if this happens."
-    },
-    {
-      "id": "managed-api",
-      "label": "Managed API",
-      "status": "planned",
-      "route": "api.mmir.ai",
-      "notes": "Managed provider routing requires auth, rate limits, audit logging and server-side provider secrets before public launch."
-    },
-    {
-      "id": "local-node",
-      "label": "Local node",
-      "status": "user-controlled",
-      "route": "http://127.0.0.1:3000",
-      "notes": "Local health is checked only when the user activates a local backend profile in this browser."
-    }
-  ]
+    "version": 1,
+    "updated_at": "2026-05-29T19:00:00+00:00",
+    "description": "Public-safe status manifest for MMIR.ai. Browser automation adds live public GitHub Actions checks and active backend telemetry only from a user-selected backend or paired local node.",
+    "latest_verified_commit": "663569d",
+    "deploy_verification": "./deploy-verification.json",
+    "domain_availability_watch": "./domain-availability-watch.json",
+    "components": [
+        {
+            "id": "site-shell",
+            "label": "MMIR public site",
+            "status": "online",
+            "route": "mmir.ai / GitHub Pages",
+            "notes": "The static app shell is served from the public Pages artifact."
+        },
+        {
+            "id": "latest-deploy-verification",
+            "label": "Latest deploy verification",
+            "status": "online",
+            "route": "663569d / GitHub Actions",
+            "notes": "Static quality, browser-native free node and Deploy GitHub Pages completed successfully for commit 663569d on 2026-05-26."
+        },
+        {
+            "id": "public-url-health",
+            "label": "Public URL health",
+            "status": "watch",
+            "route": "https://mmir.ai/",
+            "notes": "External web fetch sees MMIR content, while this local PowerShell network blocks mmir.ai as newly-registered-domain. Treat as network/domain-reputation watch until checked from another network."
+        },
+        {
+            "id": "domain-availability-watch-refresh",
+            "label": "Domain availability watch",
+            "status": "watch",
+            "route": "f69d128 / mmir.ai",
+            "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare, but this environment still returns 503 or connection failures for public URL fetches. See domain-availability-watch.json before treating this as a frontend or chat failure."
+        },
+        {
+            "id": "no-model-deploy-verification",
+            "label": "No-model deploy proof",
+            "status": "online",
+            "route": "663569d / GitHub Pages artifact",
+            "notes": "The deployed Pages artifact includes browser-native free node, no-model fixture report, visual pass, free route floor and no-model chat fallback."
+        },
+        {
+            "id": "github-pages",
+            "label": "GitHub Pages origin",
+            "status": "online",
+            "route": "inkognitroz.github.io -> mmir.ai",
+            "notes": "The default GitHub Pages URL redirects to the custom domain while public/CNAME is present. The status panel also checks the latest public Pages deploy run."
+        },
+        {
+            "id": "domain-reputation",
+            "label": "Domain reputation",
+            "status": "watch",
+            "route": "mmir.ai",
+            "notes": "Some corporate networks may temporarily block newly registered domains. Test from mobile data or ask for allowlisting if this happens."
+        },
+        {
+            "id": "browser-node",
+            "label": "Browser-native LLM node",
+            "status": "available-if-supported",
+            "route": "WebGPU / WASM in-browser",
+            "notes": "Browser Node requires WebGPU and a compatible browser. Detected at runtime; falls back to Browser Guide when unavailable. No install, provider key or paid route required."
+        },
+        {
+            "id": "managed-api",
+            "label": "Managed API",
+            "status": "planned",
+            "route": "api.mmir.ai",
+            "notes": "Managed provider routing requires auth, rate limits, audit logging and server-side provider secrets before public launch."
+        },
+        {
+            "id": "local-node",
+            "label": "Local node",
+            "status": "user-controlled",
+            "route": "http://127.0.0.1:3000",
+            "notes": "Local health is checked only when the user activates a local backend profile in this browser."
+        }
+    ]
 }
