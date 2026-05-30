@@ -14,8 +14,10 @@
 /* Model chooser: shows the active model and opens the picker. */
 .mimir-public-chat #runtime-model-chip{font-weight:650;color:#0f172a;border-color:rgba(15,23,42,.2);background:#fff}
 .mimir-public-chat #runtime-model-chip::after{content:"";flex:0 0 auto;margin-left:7px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;opacity:.5}
-/* Privacy sign: discrete pill. */
-.mimir-public-chat .composer-mode-button[data-chat-mode="private"]{border-color:rgba(37,99,235,.32);color:#1d4ed8;background:#eff6ff;font-weight:650}
+/* Icon-only controls (no text) like Claude / ChatGPT. */
+.mimir-public-chat #composer-add-model{width:38px;min-width:38px;height:38px;padding:0;font-size:1.4rem;line-height:1}
+/* Privacy sign: shield icon, no text. */
+.mimir-public-chat .composer-mode-button[data-chat-mode="private"]{width:38px;min-width:38px;height:38px;padding:0;font-size:0;color:transparent;border-color:rgba(37,99,235,.32);background-color:#eff6ff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='19' height='19' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:19px 19px}
 .mimir-public-chat #runtime-node-chip[data-state=ready],.mimir-public-chat #runtime-tunnel-chip[data-state=ready],.mimir-public-chat #runtime-resource-chip[data-state=ready],.mimir-public-chat #runtime-privacy-chip[data-state=ready]{color:#047857;background:#ecfdf5;border-color:rgba(4,120,87,.22)}
 .mimir-public-chat #composer-add-model{font-size:1.3rem}
 .mimir-public-chat .composer-action-feedback[data-state=idle],.mimir-public-chat .composer-action-feedback[data-state=ready]{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
