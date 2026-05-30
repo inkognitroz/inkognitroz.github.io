@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/use-case-templates.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/free-value-loops.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css?v=20260530-composer-openwebui-v2" />
-  <link id="mmir-chat-workspace-css" rel="stylesheet" href="./apps/mimir-chat-portal/chat-workspace.css?v=20260530-composer-openwebui-v2" media="print" onload="this.media='all'" data-mimir-deferred-style />
+  <link id="mmir-chat-workspace-css" rel="stylesheet" href="./apps/mimir-chat-portal/chat-workspace.css?v=20260530-welcome-centered-v4" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime-deferred.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-model-picker.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-quick-actions.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
@@ -130,7 +130,7 @@
         </div>
       </form>
 
-      <div class="quick-suggestions" aria-label="Quick actions">
+      <div id="mmir-quick-suggestions" class="quick-suggestions" aria-label="Quick actions">
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="free-chat" data-prompt="Start with the safest free MMIR chat route. Explain what is active now, what is local, and what I can do next without paying or configuring anything first.">Start free chat</button>
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="best-model" data-prompt="Choose the best free model route for me right now. Consider browser WebGPU, Ollama, local hardware, privacy, speed and install effort.">Pick my best model</button>
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Connect my first local model with the easiest free path. Give exact next actions for Windows, Mac, Linux and Raspberry Pi when relevant.">Connect my models</button>
