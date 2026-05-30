@@ -214,7 +214,7 @@
   }
   function activeModelLabel(){
     const option=modelSelect?.selectedOptions?.[0];
-    return String(option?.textContent||modelSelect?.value||'No model').replace(/\s+-\s+live$/i,'').trim();
+    return String(option?.textContent||modelSelect?.value||'No model').split(/\s+[-–]\s+/)[0].trim()||'No model';
   }
   function updateRuntimeChips(){
     if(window.MimirRouteChips?.updateRuntime){window.MimirRouteChips.updateRuntime({modelSelect,profile:activeProfile(),webGpu:webGpuAvailable()});return;}

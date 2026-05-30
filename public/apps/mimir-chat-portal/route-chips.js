@@ -3,7 +3,7 @@
   function clip(v,m=34){const s=String(v||'').replace(/\s+/g,' ').trim();return s.length<=m?s:s.slice(0,m-3).trim()+'...';}
   function chip(id,text,state,title){const e=typeof id==='string'?q(id):id;if(!e)return;const v=String(text||'').trim();e.textContent=v;e.dataset.state=state||'idle';if(title||v)e.title=title||v;}
   function selectedRuntime(sel=q('runtime-model')){return sel?.selectedOptions?.[0]?.dataset?.runtime||'';}
-  function modelLabel(sel=q('runtime-model')){return String(sel?.selectedOptions?.[0]?.textContent||sel?.value||'No model').replace(/\s+-\s+live$/i,'').trim();}
+  function modelLabel(sel=q('runtime-model')){return String(sel?.selectedOptions?.[0]?.textContent||sel?.value||'No model').split(/\s+[-–]\s+/)[0].trim()||'No model';}
   function local(profile){const text=[profile?.provider,profile?.cost,profile?.url,profile?.name].join(' ').toLowerCase();return Boolean(api.isLocal?.(profile)||/127\.0\.0\.1|localhost|local|ollama/.test(text));}
   function route(profile){if(!profile)return 'Browser route';if(profile.provider==='local-node')return profile.name||'MMIR Local Node';if(profile.provider==='ollama-direct')return profile.name||'Ollama local';if(profile.id==='mmir-api-bootstrap')return 'api.mmir.ai free route';return profile.name||profile.provider||'Configured route';}
   function trust(profile){const text=[profile?.provider,profile?.cost,profile?.url,profile?.name].join(' ').toLowerCase();if(local(profile))return 'local/private';if(/free|no paid|self-hosted|self hosted/.test(text))return 'free/protected';return profile?'policy required':'browser/no secret';}
