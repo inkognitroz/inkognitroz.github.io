@@ -163,7 +163,7 @@
 .composer-tool-cluster,.composer-live-cluster{align-items:center;display:flex;flex-wrap:wrap;gap:6px;min-width:0}
 .composer-tool-cluster{grid-area:tools;justify-content:flex-start}
 .composer-live-cluster{grid-area:live;justify-content:flex-end}
-.composer-icon-button,.composer-mode-button,.composer-live-chip{background:rgba(255,255,255,.82);border:1px solid rgba(100,116,139,.24);border-radius:999px;color:#475569;font-size:.82rem;font-weight:650;line-height:1;min-height:32px;transition:border-color 120ms ease,background 120ms ease,color 120ms ease;white-space:nowrap}
+.composer-icon-button,.composer-mode-button,.composer-live-chip{background:rgba(255,255,255,.82);border:1px solid rgba(100,116,139,.24);border-radius:999px;color:#475569;flex:0 0 auto;font-size:.82rem;font-weight:650;line-height:1;min-height:32px;transition:border-color 120ms ease,background 120ms ease,color 120ms ease;white-space:nowrap}
 
 .composer-icon-button,
 .composer-mode-button {
@@ -197,12 +197,12 @@
   color: #334155;
 }
 
-.composer-live-chip{align-items:center;background:rgba(248,250,252,.86);display:inline-flex;justify-content:flex-start;max-width:min(280px,44vw);min-width:0;overflow:hidden;padding:0 10px;text-align:left;text-overflow:ellipsis}
+.composer-live-chip{align-items:center;background:rgba(248,250,252,.86);display:inline-flex;justify-content:flex-start;max-width:min(360px,90vw);min-width:0;overflow:hidden;padding:0 11px;text-align:left;text-overflow:ellipsis}
 
 .composer-chip-button{cursor:pointer}
 
-#runtime-model-chip{color:#0f172a;max-width:min(310px,42vw)}
-#runtime-resource-chip{justify-content:center;max-width:190px}
+#runtime-model-chip{color:#0f172a;max-width:min(360px,90vw)}
+#runtime-resource-chip{justify-content:flex-start;max-width:240px}
 
 #primary-chat-link.btn-primary,
 .composer-actions #new-backend {
@@ -481,16 +481,22 @@ body.mimir-composer-dock-ready .composer-actions #new-backend {
 .mimir-public-chat :is(.runtime-toolbar,.runtime-live-proof,.runtime-proof-rail,.runtime-proof-actions,.runtime-message-actions,.runtime-answer-context-receipt,.runtime-message-action-status),.mimir-chat-first :is(#runtime-context-controls,.runtime-model-helper){display:none!important}
 .mimir-public-chat .composer-mode-dock{position:static;display:grid;grid-template-areas:"tools" "live" "feedback";grid-template-columns:minmax(0,1fr);border-top:1px solid #e5e7eb;padding:.55rem .3rem .3rem}
 .mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock{display:grid!important;grid-template-areas:"tools" "live" "feedback"!important;grid-template-columns:minmax(0,1fr)!important}
-.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster{display:flex!important;grid-area:tools!important;overflow-x:auto!important}
-.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important;grid-area:live!important;overflow-x:auto!important}
+.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster{display:flex!important;grid-area:tools!important;flex-wrap:wrap!important}
+.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important;grid-area:live!important;flex-wrap:wrap!important}
 .mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model):not([data-chat-mode="private"]){display:none!important}
-.mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}
+.mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){flex-wrap:wrap;min-width:0;row-gap:6px}
 .mimir-public-chat .composer-live-cluster{justify-content:flex-start}
-.mimir-public-chat #runtime-model-chip{max-width:min(280px,62vw)}
-.mimir-public-chat .composer-live-chip[data-state="ready"]{border-color:rgba(4,120,87,.28);background:#ecfdf5;color:#047857}
-.mimir-public-chat .composer-live-chip[data-state="setup"],.mimir-public-chat .composer-live-chip[data-state="degraded"]{border-color:rgba(217,119,6,.28);background:#fffbeb;color:#92400e}
-.mimir-public-chat .composer-live-chip[data-state="offline"]{border-color:rgba(185,28,28,.24);background:#fff1f2;color:#991b1b}
+.mimir-public-chat #runtime-model-chip{max-width:min(360px,90vw)}
+/* Open WebUI-style quiet metadata: status chips are compact, low-contrast secondary info, not equal-weight buttons. */
+.mimir-public-chat .composer-live-chip{min-height:28px;padding:0 9px;font-size:.76rem;font-weight:600;background:#f8fafc;border-color:rgba(148,163,184,.22);color:#64748b}
+/* The model chip is the one actionable control, so it keeps more presence. */
+.mimir-public-chat #runtime-model-chip{font-size:.8rem;font-weight:650;color:#0f172a;background:#fff;border-color:rgba(100,116,139,.3)}
+.mimir-public-chat .composer-live-chip[data-state="ready"]{border-color:rgba(4,120,87,.22);background:#f0fdf4;color:#15803d}
+.mimir-public-chat .composer-live-chip[data-state="setup"],.mimir-public-chat .composer-live-chip[data-state="degraded"]{border-color:rgba(217,119,6,.24);background:#fffbeb;color:#b45309}
+.mimir-public-chat .composer-live-chip[data-state="offline"]{border-color:rgba(185,28,28,.22);background:#fff1f2;color:#b91c1c}
+/* Don't show empty telemetry: tunnel/resource chips appear only when a paired node exposes real state. */
+.mimir-public-chat #runtime-tunnel-chip[data-state="idle"],.mimir-public-chat #runtime-resource-chip[data-state="idle"]{display:none}
 .mimir-public-chat .composer-bar{border-top:0;display:flex;justify-content:flex-end}
 .mimir-public-chat .composer-actions{display:flex;width:auto}
 .mimir-public-chat .composer-actions :is(.btn,#primary-chat-link){width:44px;min-width:44px;min-height:44px;padding:0}
-@media(max-width:720px){.mimir-public-chat .composer-mode-dock{grid-template-areas:"tools" "live" "feedback";grid-template-columns:1fr}.mimir-public-chat .composer-live-cluster{display:flex;overflow-x:auto}.mimir-public-chat #runtime-model-chip{max-width:min(280px,78vw)}}
+@media(max-width:720px){.mimir-public-chat .composer-mode-dock{grid-template-areas:"tools" "live" "feedback";grid-template-columns:1fr}.mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){display:flex;flex-wrap:wrap;row-gap:6px}.mimir-public-chat #runtime-model-chip{max-width:min(280px,78vw)}}
