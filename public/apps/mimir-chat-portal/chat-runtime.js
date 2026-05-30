@@ -218,7 +218,7 @@
   }
   function updateRuntimeChips(){
     if(window.MimirRouteChips?.updateRuntime){window.MimirRouteChips.updateRuntime({modelSelect,profile:activeProfile(),webGpu:webGpuAvailable()});return;}
-    if(modelChipEl)modelChipEl.textContent='Model: '+(activeModelLabel()||'No model selected');
+    if(modelChipEl)modelChipEl.textContent=(activeModelLabel()||'No model selected');
     if(nodeChipEl&&!nodeChipEl.textContent)nodeChipEl.textContent='Node: Browser route';
     if(privacyChipEl&&!privacyChipEl.textContent)privacyChipEl.textContent='Privacy: browser/no secret';
     if(tunnelChipEl&&!tunnelChipEl.textContent)tunnelChipEl.textContent='Tunnel: checking';

@@ -13,7 +13,7 @@
   function modelState(sel,webGpu){const r=selectedRuntime(sel);if(r==='live'||r==='browser-guide')return 'ready';if(r==='webllm')return webGpu?'setup':'offline';if(r==='ollama')return 'setup';return 'idle';}
   function updateRuntime({modelSelect=q('runtime-model'),profile=null,webGpu=Boolean(navigator.gpu)}={}){
     const m=modelLabel(modelSelect),r=selectedRuntime(modelSelect);
-    chip('runtime-model-chip','Model: '+clip(m,38),modelState(modelSelect,webGpu),r==='browser-guide'?'MMIR Guide works now as a free browser helper. Choose WebGPU or Local Node for a full local LLM.':m);
+    chip('runtime-model-chip',clip(m,38),modelState(modelSelect,webGpu),r==='browser-guide'?'MMIR Guide works now as a free browser helper. Choose WebGPU or Local Node for a full local LLM.':m);
     const t=trust(profile);
     if(q('runtime-node-chip')&&!q('runtime-node-chip').textContent)chip('runtime-node-chip','Node: '+clip(route(profile),32),profile?.health==='offline'?'offline':'idle','Selected node or route. Proof updates this state when backend checks finish.');
     chip('runtime-privacy-chip',t==='policy required'?'Privacy: policy required':'Privacy: '+t,t==='policy required'?'degraded':'ready','Security/privacy state. No browser provider secrets; prompts are not stored in the public repo.');
