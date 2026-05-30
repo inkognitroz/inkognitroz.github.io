@@ -3,6 +3,20 @@
   "description": "Free-first starter choices for the chat model selector. Live backend models are discovered separately from the active backend; these entries are either immediately available browser guidance, browser WebGPU models or installable local Ollama models.",
   "models": [
     {
+      "id": "mmir-supergenius",
+      "label": "MMIR Supergenius - instant hosted chat",
+      "runtime": "auto",
+      "status": "hosted-free",
+      "cost": "free hosted",
+      "model": "mmir-supergenius",
+      "size": "hosted route",
+      "context": "MMIR routed chat",
+      "best_for": "Immediate useful answers for first-time visitors without installing a node or relying on browser WebGPU.",
+      "install_note": "No setup required. Local/private nodes can take over after they are connected and verified live.",
+      "commercial_use": "MMIR hosted free route; verify production terms before resale",
+      "source_url": ""
+    },
+    {
       "id": "mmir-guide",
       "label": "MMIR Guide - free browser helper",
       "runtime": "browser-guide",

@@ -73,7 +73,7 @@ for (const selector of [
 }
 
 for (const text of [
-  'Model: ',
+  'MMIR Supergenius',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
@@ -86,13 +86,13 @@ for (const text of [
 }
 
 for (const text of [
-  'Model: ',
+  'MMIR Supergenius is ready now on the hosted free route.',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
   'Resources: ',
   'No browser provider secrets',
-  "if(r==='live'||r==='browser-guide')return 'ready'",
+  "if(r==='live'||r==='browser-guide'||r==='auto')return 'ready'",
   'MMIR Guide works now as a free browser helper'
 ]) {
   requireIncludes(files.routeChips, text, `Launch Slice A deferred route-chip contract missing: ${text}`);
@@ -100,7 +100,7 @@ for (const text of [
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
-requireIncludes(files.mmir, 'route-chips.js?v=20260526-guide-ready-chip-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
+requireIncludes(files.mmir, 'route-chips.js?v=20260530-supergenius-live-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.runtime, "health:error?.status===401?'testing':'offline'", 'Unavailable backend/node checks must write offline/testing health, not ready.');
 requireIncludes(files.portal, "health:'unknown'", 'Default managed API profile must begin unknown until runtime proof updates it.');
 requireIncludes(files.criticalProfiles, "health:existing?.health==='ready'?'ready':'unknown'", 'Critical profile bootstrap must preserve ready only after prior runtime proof.');
@@ -108,7 +108,7 @@ forbid(files.portal, /defaultApiProfile\(\).*health:'ready'/s, 'Default API prof
 
 for (const selector of [
   '.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important',
-  '.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip){display:inline-flex!important',
+  '.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip,#composer-voice-input){display:none!important',
   '.composer-live-chip[data-state="offline"]'
 ]) {
   const target = selector.includes(':is(#runtime-node-chip') ? files.workspaceCss : files.runtimeCss;

@@ -103,7 +103,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR pro
 requireText(mmirPath, 'active-node-strip.js?v=20260526-managed-api-verify-v1', 'MMIR product page must load the managed API proof-gated active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d319-20260526-managed-api-verify-v1', 'Service worker cache must bust for the managed API proof gate.');
+requireText(serviceWorkerPath, 'mmir-pwa-d322-20260530-supergenius-live-v1', 'Service worker cache must bust for the Supergenius live default gate.');
 requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip must read the selected backend profile before claiming managed API liveness.');
 requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
 requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
