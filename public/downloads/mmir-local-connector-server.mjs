@@ -67,10 +67,10 @@ function errorCode(status) {
   return 'runtime_unavailable';
 }
 
-function fail(res, code, message, origin) {
+function fail(res, code, message, origin, specificCode = errorCode(code)) {
   send(res, code, {
     error: {
-      code: errorCode(code),
+      code: specificCode,
       message,
     },
   }, origin);
@@ -241,8 +241,31 @@ function isLoopbackAddress(address) {
   return value === '::1' || value === 'localhost' || value === '127.0.0.1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(value);
 }
 
+function isLocalHost(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return false;
+  if (raw.startsWith('[::1]')) return true;
+  const host = raw.split(':')[0];
+  return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+}
+
+function hasForwardedRemoteHeaders(req) {
+  return Boolean(
+    req.headers['x-forwarded-for'] ||
+    req.headers['cf-connecting-ip'] ||
+    req.headers['x-real-ip'] ||
+    req.headers.forwarded
+  );
+}
+
 function isLocalPairingRequest(req) {
-  return isLoopbackAddress(req.socket?.remoteAddress || req.connection?.remoteAddress || '');
+  const forwardedHost = req.headers['x-forwarded-host'] || '';
+  return (
+    isLoopbackAddress(req.socket?.remoteAddress || req.connection?.remoteAddress || '') &&
+    isLocalHost(req.headers.host) &&
+    (!forwardedHost || isLocalHost(forwardedHost)) &&
+    !hasForwardedRemoteHeaders(req)
+  );
 }
 
 function activeRemotePairingSession() {
@@ -258,6 +281,27 @@ function timingSafeTextEqual(left, right) {
   const a = Buffer.from(String(left || ''));
   const b = Buffer.from(String(right || ''));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function normalizePairingCode(value) {
+  return String(value || '').replace(/\s+/g, '').trim().toUpperCase();
+}
+
+function hashPairingCode(code) {
+  return crypto.createHash('sha256').update(normalizePairingCode(code)).digest('base64url');
+}
+
+function verifyPairingCodeSession(session, code) {
+  if (!session || session.used || !session.code_hash) {
+    return { ok: false, code: 'pairing_code_missing' };
+  }
+  if (Date.now() > Number(session.expires_at_ms || 0)) {
+    return { ok: false, code: 'pairing_code_expired' };
+  }
+  if (!timingSafeTextEqual(hashPairingCode(code), session.code_hash)) {
+    return { ok: false, code: 'pairing_code_invalid' };
+  }
+  return { ok: true };
 }
 
 function paired(req, res, origin) {
@@ -379,11 +423,12 @@ async function runModelPull(state) {
 }
 
 function createPairingCodeSession() {
-  const code = String(crypto.randomInt(100000, 999999));
+  const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
   const now = Date.now();
   const ttlMs = 10 * 60 * 1000;
   return {
     code,
+    code_hash: hashPairingCode(code),
     created_at: new Date(now).toISOString(),
     expires_at: new Date(now + ttlMs).toISOString(),
     expires_at_ms: now + ttlMs,
@@ -409,12 +454,15 @@ async function pair(req, res, origin) {
 
   const session = activeRemotePairingSession();
   const code = String(payload?.code || '').trim();
-  if (!session) {
-    fail(res, 403, 'Create a pairing session on the device running MMIR Local Connector before remote pairing.', origin);
-    return;
-  }
-  if (!code || !timingSafeTextEqual(code, session.code)) {
-    fail(res, 401, 'Pairing code is invalid or expired.', origin);
+  const verification = verifyPairingCodeSession(session, code);
+  if (!verification.ok) {
+    fail(
+      res,
+      403,
+      'Remote pairing requires a fresh one-time code created on the local connector device.',
+      origin,
+      'remote_pairing_code_required'
+    );
     return;
   }
 
@@ -626,11 +674,24 @@ http.createServer(async (req, res) => {
 
     if (req.method === 'POST' && url.pathname === '/pairing/sessions') {
       if (!isLocalPairingRequest(req)) {
-        fail(res, 403, 'Pairing sessions can only be created from the device running MMIR Local Connector.', origin);
+        fail(
+          res,
+          403,
+          'Pairing sessions can only be created from the device running MMIR Local Connector.',
+          origin,
+          'local_pairing_session_required'
+        );
         return;
       }
       const session = createPairingCodeSession();
-      remotePairingSession = session;
+      remotePairingSession = {
+        code_hash: session.code_hash,
+        created_at: session.created_at,
+        expires_at: session.expires_at,
+        expires_at_ms: session.expires_at_ms,
+        ttl_seconds: session.ttl_seconds,
+        used: false,
+      };
       send(res, 200, {
         created: true,
         code: session.code,

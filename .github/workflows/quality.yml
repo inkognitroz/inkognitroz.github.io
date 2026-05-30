@@ -52,3 +52,6 @@ jobs:
 
       - name: Smoke check public shell
         run: node scripts/smoke-check-public-shell.js
+
+      - name: Smoke check connector pairing
+        run: node scripts/smoke-check-connector-pairing.js
