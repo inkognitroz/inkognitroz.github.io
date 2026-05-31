@@ -79,12 +79,10 @@
     return label.replace(/\s+-\s+(live|ready now|browser helper|active in browser|hosted free model).*$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious').slice(0,52)||'Supergenious';
   }
   function resourceSummary(){
-    const value=String(q('#runtime-resource-chip')?.textContent||'Free browser route').trim();
-    return value.replace(/\s+/g,' ').slice(0,48)||'Free browser route';
-  }
-  function webGpuReady(){const s=w.__MimirBrowserNodeSupport;if(s&&typeof s==='object')return s.status==='ready'&&s.supported===true;return false;}
-  function webGpuLabel(){
-    return webGpuReady()?'Browser LLM ready':'Browser LLM option';
+    const value=String(q('#runtime-resource-chip')?.textContent||'Free route').trim();
+    const clean=value.replace(/\s+/g,' ');
+    if(/unavailable|checking|idle|unknown/i.test(clean))return 'no paid route';
+    return clean.slice(0,48)||'no paid route';
   }
   function localModel(){return (localState.models||[]).map(model=>String(model?.id||model?.name||model?.model||'').trim()).find(Boolean)||'';}
   function localReady(){return Boolean(localModel())&&!/^(off|err|block)/i.test(localState.status||'');}
@@ -92,25 +90,22 @@
     const lm=localModel();
     return '<div class="composer-quick-route-strip" aria-label="Free chat routes">'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>Supergenious</span><small>Free now</small></button>'+
-      '<button type="button" class="composer-quick-route" data-composer-quick-route="webgpu" data-route-state="'+(webGpuReady()?'ready':'setup')+'"><span>'+webGpuLabel()+'</span><small>Qwen WebGPU</small></button>'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="local" data-route-state="'+(localReady()?'ready':'install')+'"><span>'+(localReady()?'Local ready':'Install local')+'</span><small>'+escapeHtml(lm||'Qwen3 0.6B')+'</small></button>'+
     '</div>';
   }
   function renderMenuContent(){
     const model=selectedModelLabel();
     const resource=resourceSummary();
+    const statusParts=[model,resource,'no paid route'].filter((item,index,self)=>item&&self.indexOf(item)===index);
     return ''+
       '<div class="composer-quick-status" role="status" aria-live="polite">'+
-        '<strong>Ready now</strong><span>'+escapeHtml(model)+' / '+escapeHtml(resource)+' / no paid route</span>'+
+        '<strong>Ready now</strong><span>'+escapeHtml(statusParts.join(' / '))+'</span>'+
       '</div>'+
       renderRouteStrip()+
       '<button type="button" role="menuitem" class="composer-quick-primary" data-composer-quick-action="chat-now"><span>Chat now</span><small>Start with the safest free route</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Free, live and local routes</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Supergenious, live local and advanced routes</small></button>'+
       '<button type="button" role="menuitem" data-composer-quick-action="install-node"><span>Install node</span><small>Mac, Windows, Linux or Pi</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="knowledge"><span>Knowledge</span><small>Add files or sources locally</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="new-chat"><span>New chat</span><small>Reset local conversation</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="voice"><span>Voice</span><small>Browser-local speech tools</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="settings"><span>Settings</span><small>Temperature and context</small></button>';
+      '<button type="button" role="menuitem" data-composer-quick-action="new-chat"><span>New chat</span><small>Reset local conversation</small></button>';
   }
   function ensureMenu(){
     if(menu)return menu;
@@ -240,10 +235,6 @@
       startStarterRoute('mmir-supergenius','Start free chat with Supergenious. Tell me what is active and one useful next action.','Starting Supergenious chat.');
       return;
     }
-    if(route==='webgpu'){
-      startStarterRoute('webllm-qwen25-05b','Start a free browser WebGPU chat with Qwen2.5 0.5B. If WebGPU is unavailable, explain the safest fallback.','Starting free Browser LLM route.');
-      return;
-    }
     if(route==='local')startLocalRoute();
   }
   function runQuickAction(action){
@@ -262,26 +253,9 @@
       w.location.href=target;
       return;
     }
-    if(action==='knowledge'){
-      closeMenu(false);
-      openDeferredPanel('#knowledge-panel');
-      setFeedback('Knowledge opened. Files stay local unless a protected backend is selected.','ready');
-      return;
-    }
     if(action==='new-chat'){
       newChat();
       return;
-    }
-    if(action==='voice'){
-      closeMenu(false);
-      const voice=q('#composer-voice-input');
-      if(voice)voice.click();else openDeferredPanel('#voice-controls');
-      return;
-    }
-    if(action==='settings'){
-      closeMenu(false);
-      openDeferredPanel('#runtime-settings-panel');
-      setFeedback('Runtime settings opened. Changes apply locally to the next message.','ready');
     }
   }
   function bind(){

@@ -895,11 +895,8 @@
       '<div class="composer-tool-cluster" aria-label="Chat tools">'+
         '<button id="composer-add-model" type="button" class="composer-icon-button composer-core-control composer-core-control--menu" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+
         '<button type="button" class="composer-mode-button composer-core-control composer-core-control--privacy" data-chat-mode="private" aria-pressed="true" aria-label="Toggle private route review mode" title="Security and privacy mode">Privacy</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false" title="Combine product, architecture, security and implementation">MMIR++</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false" title="Open image/screenshot boundary controls">Vision</button>'+
       '</div>'+
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Boost 5.5 Extra high">5.5 Extra high v</button>'+
         '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--model" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
         '<button id="runtime-node-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--node" aria-label="Open selected node and route status">Node checking</button>'+
         '<button id="runtime-privacy-chip" type="button" class="composer-live-chip composer-core-control composer-core-control--privacy-readout" aria-label="Security and privacy state">Privacy checking</button>'+
@@ -1107,7 +1104,7 @@
   function cleanMessageMeta(value){
     const raw=String(value||'').trim();
     if(!raw)return '';
-    if(/MMIR Free Control Plane|MMIR Browser Guide|MMIR Guide|mmir[-_\s]+supergeni(?:us|ous)|supergeni(?:us|ous)/i.test(raw)){
+    if(/MMIR Free Control Plane|MMIR Browser Guide|MMIR Guide|mmir[-_\s]+guide|mmir[-_\s]+supergeni(?:us|ous)|supergeni(?:us|ous)/i.test(raw)){
       return SUPERGENIUS_LABEL;
     }
     return raw;

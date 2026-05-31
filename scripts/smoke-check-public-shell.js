@@ -11,6 +11,8 @@ const manifestPath = join(publicDir, 'manifest.webmanifest');
 const serviceWorkerPath = join(publicDir, 'sw.js');
 const activeNodesPath = join(publicDir, 'active-chat-nodes.json');
 const activeNodeStripPath = join(publicDir, 'apps', 'mimir-chat-portal', 'active-node-strip.js');
+const composerQuickActionsPath = join(publicDir, 'apps', 'mimir-chat-portal', 'composer-quick-actions.js');
+const composerModelPickerPath = join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.js');
 const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
 const macDmgPath = join(publicDir, 'downloads', 'mmir-local-node-0.1.0-mac.dmg');
 const connectorReleasePath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
@@ -127,6 +129,14 @@ requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip 
 requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
 requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
 requireText(activeNodeStripPath, "managedReady()?modelFromNode(node):'Verify route first'", 'Managed API card must avoid showing a live model before route verification.');
+requireText(activeNodeStripPath, 'function publicFirstNodes(nodes)', 'Active-node strip must keep the first-screen route list limited to proven public routes.');
+forbidText(activeNodeStripPath, "['auto','webllm','ollama']", 'Active-node starter rail must not surface Browser WebGPU as a first-screen route.');
+forbidText(composerQuickActionsPath, 'data-composer-quick-route="webgpu"', 'Composer quick actions must not show Browser WebGPU before it is production-ready.');
+forbidText(composerQuickActionsPath, 'data-composer-quick-action="knowledge"', 'Composer quick actions must not show Knowledge until it is part of the first-screen product.');
+forbidText(composerQuickActionsPath, 'data-composer-quick-action="voice"', 'Composer quick actions must not show Voice until it is part of the first-screen product.');
+forbidText(composerQuickActionsPath, 'data-composer-quick-action="settings"', 'Composer quick actions must not expose internal settings on the first-screen product.');
+forbidText(composerModelPickerPath, "id:'browser-model'", 'Composer model recommendations must not promote Browser Model until runtime proof is reliable.');
+forbidText(composerModelPickerPath, "id:'compare-models'", 'Composer model recommendations must not promote Compare Models before two live routes exist.');
 requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
 forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
 if (!existsSync(macDmgPath)) fail('Published Mac DMG must exist when release manifest advertises it.');
@@ -135,6 +145,14 @@ requireText(connectorReleasePath, '"status": "published"', 'Release manifest mus
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');
+forbidText(mmirPath, 'href="#workflow-builder"', 'First-screen nav must not link to Workflow Builder until the workflow user journey is production-ready.');
+forbidText(mmirPath, '<summary>More</summary>', 'First-screen nav must not expose a More menu full of unfinished capabilities.');
+forbidText(mmirPath, './apps/mimir-chat-portal/workflow-builder.js', 'Public first-screen must not load Workflow Builder until it is production-ready.');
+forbidText(mmirPath, './apps/mimir-chat-portal/dataset-manager.js', 'Public first-screen must not load Dataset Manager until it is production-ready.');
+forbidText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'Public first-screen must not load Voice controls until voice is a supported user journey.');
+forbidText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'Public first-screen must not load Vision controls until vision is a supported user journey.');
+forbidText(mmirPath, './apps/mimir-chat-portal/admin-governance.js', 'Public first-screen must not load Admin governance.');
+requireText(mmirPath, 'id="workflow-builder" class="mimir-provider-drawer" hidden data-mimir-capability-state="planned"', 'Planned workflow UI must be hidden instead of visible on the first screen.');
 forbidText(mmirPath, './apps/mimir-chat-portal/progress-dashboard.js', 'Public page must not load the private progress dashboard.');
 forbidText(mmirPath, './apps/mimir-chat-portal/gui-parity-matrix.js', 'Public page must not load the private GUI parity matrix.');
 forbidText(indexPath, '#progress-dashboard', 'Public root must not route to private progress dashboard.');

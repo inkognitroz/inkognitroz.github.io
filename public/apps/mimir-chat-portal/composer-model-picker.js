@@ -219,14 +219,11 @@
   function recommendationCards(){
     const current=selectedValue();
     const supergenius=starterModels.find(model=>model.id==='mmir-supergenius')||starterModels.find(model=>model.runtime==='auto')||starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
-    const webgpuModels=webGpuStarterModels();
     const local=firstInstallableStarter();
     const liveLocal=localReady()&&{id:'live-local',label:'Local ready',detail:'Private Local Node model. No installer needed.',model:{id:'live-local',label:localModel(),runtime:'live-local'},value:liveLocalValue(),action:'chat-local',state:'live'};
     const items=[
       supergenius&&{id:'supergenius-free',label:SUPERGENIUS_LABEL,detail:'Ask immediately. No setup, no key, no paid route.',model:supergenius,action:'chat',state:'ready'},
-      webgpuModels[0]&&{id:'browser-model',label:'Browser Model',detail:browserNodeKind().disabled?'Experimental. Unavailable in this browser until WebGPU/WASM is supported.':'Experimental browser-local model. First use downloads weights.',model:webgpuModels[0],action:browserNodeKind().disabled?'blocked-browser':'chat',state:browserNodeKind().state,disabled:browserNodeKind().disabled},
-      liveLocal||(local&&{id:'local-model',label:'Local Model',detail:localReady()?'Private Local Node model ready.':'Install a small local model when you want private/on-device chat.',model:local,action:'install',state:'install'}),
-      supergenius&&{id:'compare-models',label:'Compare Models',detail:'Open side-by-side comparison when two live routes are connected.',model:supergenius,value:'compare-models',action:'compare',state:'planned'}
+      liveLocal||(local&&{id:'local-model',label:'Local Model',detail:localReady()?'Private Local Node model ready.':'Install a small local model when you want private/on-device chat.',model:local,action:'install',state:'install'})
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>{
       const value=item.value||starterValue(item.model);

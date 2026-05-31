@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "description": "Free-first starter choices for the chat model selector. First-time users see instant chat, one browser-model experiment, local model setup and comparison. Internal helpers and broad model catalogs stay advanced.",
+  "description": "Free-first starter choices for the chat model selector. First-time users see instant Supergenious chat and local model setup. Browser-model experiments, internal helpers and broad model catalogs stay advanced.",
   "models": [
     {
       "id": "mmir-supergenius",

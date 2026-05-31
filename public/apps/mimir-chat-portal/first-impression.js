@@ -44,6 +44,7 @@ let lastRailSignature='';
 let lastActivationClosureSignature='';
 
 function ensureActivationCockpitShell(){
+return;
 if(!document.querySelector('link[href*="activation-cockpit.css"]')){
 const link=document.createElement('link');
 link.rel='stylesheet';
@@ -193,6 +194,7 @@ return {state:'ready',title:'First answer worked',detail:'Save the chat, then ad
 }
 
 function ensureActivationClosureStrip(){
+return null;
 let strip=document.getElementById('activation-closure-strip');
 if(strip||!instantStart)return strip;
 ensureRepairResumeStyles();
@@ -375,10 +377,10 @@ return;
 }
 
 if(kind.browser||kind.webgpu){
-setText(statusEl,kind.webgpu?'Free browser model is ready.':'Ask now. MMIR will pick the safest route.');
-setText(detailEl,kind.webgpu?'Runs in this browser with WebGPU. No paid account.':'Free browser help is ready. Connect local AI for private models.');
-setNode(backendNode,'Browser',true);
-setNode(modelNode,model.text||'MMIR guide',true);
+setText(statusEl,kind.webgpu?'Browser model can be tried here.':'Ask now. Supergenious is ready.');
+setText(detailEl,kind.webgpu?'Runs only after WebGPU loads the model and answers. Supergenious remains the safe default.':'Supergenious answers immediately. Connect local AI when you want private models.');
+setNode(backendNode,kind.webgpu?'Browser':'Supergenious',true);
+setNode(modelNode,kind.webgpu?(model.text||'Browser model'):'Ready',true);
 setBodyState('mimir-first-guide','mimir-first-ready','mimir-first-install');
 syncActivationCockpit(model,kind);
 return;
@@ -395,14 +397,15 @@ return;
 }
 
 const loadingDefault=state==='Select a backend to start.'||state==='Loading free model routes...';
-setText(statusEl,state&&!loadingDefault?state:'Open. Connect local AI. Ready.');
-setText(detailEl,'Local node, browser help and free model routes are checked automatically.');
-setNode(backendNode,'Checking',false);
-setNode(modelNode,'Model',false);
+setText(statusEl,state&&!loadingDefault?state:'Chat first. Connect more later.');
+setText(detailEl,'Supergenious is the safe default. Local models appear after a real node connects.');
+setNode(backendNode,'Supergenious',true);
+setNode(modelNode,'Ready',true);
 syncActivationCockpit(model,kind);
 }
 
 function ensureReadinessRail(){
+return null;
 let rail=document.getElementById('mimir-readiness-rail');
 if(rail||!instantStart)return rail;
 rail=document.createElement('nav');
