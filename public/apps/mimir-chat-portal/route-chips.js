@@ -4,15 +4,24 @@
   function clip(v,m=34){const s=String(v||'').replace(/\s+/g,' ').trim();return s.length<=m?s:s.slice(0,m-3).trim()+'...';}
   function display(v){return String(v||'').replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,FALLBACK_LABEL).replace(/MMIR Browser Guide|MMIR Guide/gi,FALLBACK_LABEL).replace(/supergenious(?:\s+free)?/gi,FALLBACK_LABEL).replace(/(^|[^A-Za-z])supergenius(?:\s+free)?/gi,(match,prefix)=>prefix+FALLBACK_LABEL).replace(/(?:MMIR\s+){2,}Supergenius/gi,FALLBACK_LABEL);}
   function chip(id,text,state,title){const e=typeof id==='string'?q(id):id;if(!e)return;const v=display(String(text||'').trim());e.textContent=v;e.dataset.state=state||'idle';if(title||v)e.title=display(title||v);}
-  function selectedRuntime(sel=q('runtime-model')){return sel?.selectedOptions?.[0]?.dataset?.runtime||'';}
-  function modelLabel(sel=q('runtime-model')){return display(String(sel?.selectedOptions?.[0]?.textContent||sel?.value||'No model').split(/\s+[-–]\s+/)[0].trim()||'No model');}
+  function selectedRuntime(sel=q('runtime-model')){
+    const selected=sel?.selectedOptions?.[0];
+    if(!selected)return 'auto';
+    return selected.dataset?.runtime||'auto';
+  }
+  function modelLabel(sel=q('runtime-model')){
+    const selected=sel?.selectedOptions?.[0];
+    const raw=String(selected?.textContent||sel?.value||'').split(/\s+[-–]\s+/)[0].trim();
+    if(!raw||/^(no model|loading|model checking)$/i.test(raw))return FALLBACK_LABEL;
+    return display(raw);
+  }
   function local(profile){const text=[profile?.provider,profile?.cost,profile?.url,profile?.name].join(' ').toLowerCase();return Boolean(api.isLocal?.(profile)||/127\.0\.0\.1|localhost|local|ollama/.test(text));}
   function route(profile){if(!profile)return FALLBACK_LABEL;if(profile.provider==='local-node')return profile.name||'MMIR Local Node';if(profile.provider==='ollama-direct')return profile.name||'Ollama local';if(profile.id==='mmir-api-bootstrap')return 'api.mmir.ai free route';return profile.name||profile.provider||'Configured route';}
   function trust(profile){const text=[profile?.provider,profile?.cost,profile?.url,profile?.name].join(' ').toLowerCase();if(local(profile))return 'local/private';if(/free|no paid|self-hosted|self hosted/.test(text))return 'free/protected';return profile?'policy required':'browser/no secret';}
   function tunnelLabel(tunnel,profile,error){if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready',title:'Secure tunnel is active: '+tunnel.public_url};if(tunnel?.status)return {text:'Tunnel: '+String(tunnel.status).replace(/[-_]/g,' '),state:'idle',title:'Tunnel reported by node, but no public secure URL is active.'};if(local(profile))return {text:error?'Tunnel: unavailable':'Tunnel: off',state:error?'offline':'idle',title:error?'Local node tunnel state is unavailable.':'Local tunnel is not active.'};return {text:'Tunnel: n/a',state:'idle',title:'Secure tunnel appears only when a paired local/on-prem node exposes it.'};}
   function hardwareSummary(h){if(!h)return '';const cpu=h.cpu?.model||h.cpu_model||h.cpu||'',ram=h.ram_gb||h.memory_gb||h.ram?.gb||'',gpu=h.gpu?.name||h.gpu_name||h.gpu||'';return [cpu&&String(cpu).split(/\s+/).slice(0,3).join(' '),ram&&(ram+'GB RAM'),gpu&&String(gpu).split(/\s+/).slice(0,3).join(' ')].filter(Boolean).join(' / ');}
   function hardwareLabel(h,error){const s=hardwareSummary(h);return s?{text:'Resources: '+s,state:'ready',title:'Resource telemetry from the active node.'}:{text:error?'Resources: unavailable':'Resources: not exposed',state:error?'offline':'idle',title:'CPU/RAM/GPU telemetry appears only when the active node exposes it.'};}
-  function modelState(sel,webGpu){const r=selectedRuntime(sel);if(r==='live'||r==='browser-guide'||r==='auto')return 'ready';if(r==='webllm')return webGpu?'setup':'offline';if(r==='ollama')return 'setup';return 'idle';}
+  function modelState(sel,webGpu){const r=selectedRuntime(sel);if(!sel||r==='live'||r==='browser-guide'||r==='auto')return 'ready';if(r==='webllm')return webGpu?'setup':'offline';if(r==='ollama')return 'setup';return 'idle';}
   function updateRuntime({modelSelect=q('runtime-model'),profile=null,webGpu=Boolean(navigator.gpu)}={}){
     const m=modelLabel(modelSelect),r=selectedRuntime(modelSelect);
     chip('runtime-model-chip',clip(m,38),modelState(modelSelect,webGpu),r==='auto'||r==='browser-guide'?'Supergenious answers immediately. MMIR upgrades automatically to verified browser, API or Local Node routes when available.':m);

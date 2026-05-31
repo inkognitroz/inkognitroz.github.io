@@ -146,7 +146,7 @@ requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model li
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
 requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, 'runtime-controls-fix.js?v=20260531-public-first-chat-v1', 'Runtime controls hotfix must be cache-busted for public first-chat recovery.');
+requireText(mmirPath, 'runtime-controls-fix.js?v=20260531-model-chip-v2', 'Runtime controls hotfix must be cache-busted for public first-chat recovery.');
 requireText(mmirPath, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS must be cache-busted for public first-chat recovery.');
 requireText(mmirPath, 'chat-workspace.css?v=20260531-public-first-chat-v1', 'Chat workspace CSS must be cache-busted for public first-chat recovery.');
 requireText(mmirPath, 'model-catalog-ui.js?v=20260531-no-rag-v1', 'Model catalog UI must be cache-busted after hiding unready public routes.');

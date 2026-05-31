@@ -93,7 +93,8 @@ for (const text of [
   'Tunnel: ',
   'Resources: ',
   'No browser provider secrets',
-  "if(r==='live'||r==='browser-guide'||r==='auto')return 'ready'"
+  "if(!sel||r==='live'||r==='browser-guide'||r==='auto')return 'ready'",
+  "if(!raw||/^(no model|loading|model checking)$/i.test(raw))return FALLBACK_LABEL"
 ]) {
   requireIncludes(files.routeChips, text, `Launch Slice A deferred route-chip contract missing: ${text}`);
 }
@@ -102,7 +103,7 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
-requireIncludes(files.mmir, 'route-chips.js?v=20260531-supergenious-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
+requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API client cache must bust for Local Network Access loopback support.');
 requireIncludes(files.mmir, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
 requireIncludes(files.mmir, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS cache must bust for public first-chat recovery.');
