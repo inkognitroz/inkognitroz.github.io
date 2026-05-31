@@ -127,7 +127,8 @@ requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR pro
 requireText(mmirPath, 'active-node-strip.js?v=20260531-capability-cleanup-v1', 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d329-20260531-no-rag-v1', 'Service worker cache must bust for public model-library capability cleanup.');
+requireText(serviceWorkerPath, 'mmir-pwa-d330-20260531-public-first-chat-v1', 'Service worker cache must bust for public first-chat recovery.');
+requireText(serviceWorkerPath, './apps/mimir-chat-portal/public-launch-guard.js', 'Service worker shell must include the public launch guard.');
 requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip must read the selected backend profile before claiming managed API liveness.');
 requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
 requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
@@ -143,6 +144,10 @@ forbidText(composerModelPickerPath, "id:'compare-models'", 'Composer model recom
 requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model library must hide capability-specific routes that are not production-ready.');
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
+requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
+requireText(mmirPath, 'runtime-controls-fix.js?v=20260531-public-first-chat-v1', 'Runtime controls hotfix must be cache-busted for public first-chat recovery.');
+requireText(mmirPath, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS must be cache-busted for public first-chat recovery.');
+requireText(mmirPath, 'chat-workspace.css?v=20260531-public-first-chat-v1', 'Chat workspace CSS must be cache-busted for public first-chat recovery.');
 requireText(mmirPath, 'model-catalog-ui.js?v=20260531-no-rag-v1', 'Model catalog UI must be cache-busted after hiding unready public routes.');
 forbidText(modelCatalogPath, 'RAG', 'Public model catalog must not expose RAG wording before that user journey is production-ready.');
 forbidText(freeModelStartersPath, 'RAG', 'Free starter model catalog must not expose RAG wording before that user journey is production-ready.');
@@ -154,6 +159,9 @@ requireText(connectorReleasePath, '"status": "published"', 'Release manifest mus
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');
+forbidText(mmirPath, '<a href="#local-connector">Connect</a>', 'First-screen nav must not expose Connect before local-node onboarding is proven smooth.');
+forbidText(mmirPath, '<a href="#pwa-install">Install</a>', 'First-screen nav must not expose Install before installer UX is proven smooth.');
+forbidText(mmirPath, '<a href="#platform-status">Status</a>', 'First-screen nav must not expose diagnostics to first-time chat users.');
 forbidText(mmirPath, 'href="#workflow-builder"', 'First-screen nav must not link to Workflow Builder until the workflow user journey is production-ready.');
 forbidText(mmirPath, '<summary>More</summary>', 'First-screen nav must not expose a More menu full of unfinished capabilities.');
 forbidText(mmirPath, './apps/mimir-chat-portal/workflow-builder.js', 'Public first-screen must not load Workflow Builder until it is production-ready.');

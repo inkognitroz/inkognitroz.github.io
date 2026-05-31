@@ -365,12 +365,21 @@ function syncReadyState(){
 const model=selectedModel();
 const state=runtimeState();
 const kind=modelKind(model);
+const profile=activeProfile();
+const managedRoute=profile?.id==='mmir-api-bootstrap'||/api\.mmir\.ai/i.test(String(profile?.url||''));
 
 if(kind.live){
+if(managedRoute){
+setText(statusEl,'Ask anything.');
+setText(detailEl,'Supergenious is ready now. More models appear after they are connected and verified.');
+setNode(backendNode,'Supergenious',true);
+setNode(modelNode,'Ready',true);
+}else{
 setText(statusEl,'Your local AI is ready in MMIR.');
-setText(detailEl,model.text.replace(/\s+-\s+live$/i,'')+' is connected through MMIR. Type anything or use a smart start.');
+setText(detailEl,'A verified local model is connected through MMIR. Type anything or use a smart start.');
 setNode(backendNode,'Local node',true);
-setNode(modelNode,model.text.replace(/\s+-\s+live$/i,''),true);
+setNode(modelNode,cleanModelLabel(model),true);
+}
 setBodyState('mimir-first-ready','mimir-first-guide','mimir-first-install');
 syncActivationCockpit(model,kind);
 return;
@@ -436,7 +445,6 @@ function renderReadinessRail(){
 const rail=ensureReadinessRail();
 if(!rail)return;
 const model=selectedModel();
-const profile=activeProfile();
 const modes=readModes();
 const live=Boolean(model.value&&!model.value.startsWith('starter:')&&/live/i.test(model.text));
 const browser=Boolean(model.value.startsWith('starter:')&&model.runtime==='browser-guide');

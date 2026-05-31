@@ -15,8 +15,8 @@
   <link rel="stylesheet" href="./assets/styles.css" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css?v=20260531-capability-cleanup-v1" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/pwa.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css?v=20260531-clean-composer-v1" />
-  <link id="mmir-chat-workspace-css" rel="stylesheet" href="./apps/mimir-chat-portal/chat-workspace.css?v=20260530-icon-composer-v2" media="print" onload="this.media='all'" data-mimir-deferred-style />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css?v=20260531-public-first-chat-v1" />
+  <link id="mmir-chat-workspace-css" rel="stylesheet" href="./apps/mimir-chat-portal/chat-workspace.css?v=20260531-public-first-chat-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime-deferred.css?v=20260526-stale-offline-model-proof-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-model-picker.css?v=20260531-supergenious-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/composer-quick-actions.css?v=20260531-clean-composer-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
@@ -31,10 +31,6 @@
     </a>
     <nav aria-label="Primary navigation">
       <a href="#mimir-prompt">Chat</a>
-      <a href="#local-connector">Connect</a>
-      <a href="#model-library">Models</a>
-      <a href="#pwa-install">Install</a>
-      <a href="#platform-status">Status</a>
     </nav>
   </header>
 
@@ -43,10 +39,10 @@
       <div class="mimir-greeting">
         <p class="eyebrow">One chat. Every AI model you trust.</p>
         <h1 id="mimir-title">Ask anything.</h1>
-        <p id="active-chat-description">Supergenious answers now. Add a local model when you want private on-device chat.</p>
+        <p id="active-chat-description">Supergenious answers now. More models appear after they are connected and verified.</p>
       </div>
 
-      <section id="mimir-instant-start" class="mimir-instant-start" aria-label="MMIR ready state">
+      <section id="mimir-instant-start" class="mimir-instant-start" aria-label="MMIR ready state" hidden data-mimir-capability-state="advanced">
         <div class="instant-copy">
           <p class="eyebrow">Ready now</p>
           <h2 id="first-impression-status">Chat first. Connect more later.</h2>
@@ -69,7 +65,7 @@
         </div>
       </form>
 
-      <div id="mmir-quick-suggestions" class="quick-suggestions" aria-label="Quick actions">
+      <div id="mmir-quick-suggestions" class="quick-suggestions" aria-label="Quick actions" hidden data-mimir-capability-state="advanced">
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="free-chat" data-prompt="Start with Supergenious. Tell me what model is active and one useful thing I can connect next.">Start free chat</button>
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Show the easiest way to connect a private local model to MMIR on this device.">Connect local model</button>
         <a href="#model-library">Models</a>
@@ -300,11 +296,12 @@
   </main>
   <script data-mimir-quiet-first-paint>!function(){const w=window,d=document,k='__MimirLocalProbeAllowedUntil',ri=()=>{const p=new URLSearchParams(location.search),h=String(location.hash).toLowerCase();return p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready')},lb=i=>{try{const u=new URL(String(typeof i==='string'?i:i&&i.url||''),location.href);if(u.origin===location.origin)return false;const h=u.hostname;return h==='127.0.0.1'||h==='localhost'||h==='::1'}catch(e){return false}},li=(i,n)=>{if(!lb(i))return n;const x={...(n||{})};x.targetAddressSpace||(x.targetAddressSpace='loopback');return x},allow=(r='manual',m=3e4)=>{w[k]=Math.max(+w[k]||0,Date.now()+m);w.dispatchEvent(new CustomEvent('mmir-local-probe-allowed',{detail:{reason:r,expires_at:new Date(w[k]).toISOString()}}))};w.MimirAllowLocalProbes||(w.MimirAllowLocalProbes=allow);ri()||(w[k]=0);try{if(!ri()){const ak='mimir-chat-active-backend',id=localStorage.getItem(ak)||'',ps=JSON.parse(localStorage.getItem('mimir-chat-backend-profiles')||'[]'),p=Array.isArray(ps)&&ps.find(x=>x&&x.id===id),h=String(p&&p.health||'unknown').toLowerCase();p&&p.provider==='local-node'&&['unknown','offline','checking',''].includes(h)&&(localStorage.removeItem(ak),w.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated',{detail:{passive_local_deactivated:true}})))}}catch(e){}const f=w.fetch;if(f&&!w.__MimirQuietFirstPaintFetchGuard){w.__MimirQuietFirstPaintFetchGuard=1;w.fetch=function(i,n){if(lb(i)&&Date.now()>+w[k]&&!ri()){const e=new Error('local_probe_deferred');e.code='local_probe_deferred';return Promise.reject(e)}return f.call(this,i,li(i,n))}}d.addEventListener('click',e=>{e.target?.closest?.('#runtime-refresh,#refresh-node-dashboard,#refresh-platform-status,#progress-activation-autopilot,[data-local-action="refresh"],[data-local-action="tunnel"],[data-local-action="stop-tunnel"],[data-proof-action="retry"]')&&allow('user-click')},!0);try{const x='mimir-activation-events-v1:'+(localStorage.getItem('mimir-active-workspace-v1')||'personal'),a=JSON.parse(localStorage.getItem(x)||'[]');Array.isArray(a)&&!a.some(e=>e&&e.type==='recommended-starter')&&(a.push({type:'recommended-starter',status:'idle',model:'Supergenious',route:'api.mmir.ai/free',at:new Date().toISOString(),note:'no_paid_routes_started:true'}),localStorage.setItem(x,JSON.stringify(a.slice(-80))))}catch(e){}let n=0,t=setInterval(()=>{const c=w.MimirBackendClient,a=c&&c.allowLocalProbes;if(c&&!c.__runtimeNoSendProbePatch&&typeof a==='function'){c.allowLocalProbes=function(r='manual',m=3e4){if(r==='chat-runtime-send'&&!ri())return;return a.call(this,r,m)};c.__runtimeNoSendProbePatch=1;clearInterval(t)}else if(++n>30)clearInterval(t)},500);ri()&&allow('installer-return',6e4)}()</script>
   <script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/public-launch-guard.js?v=20260531-public-first-chat-v1" defer></script>
   <script src="./apps/mimir-chat-portal/backend-profiles-critical.js?v=20260531-supergenious-v1" defer></script>
   <script src="./apps/mimir-chat-portal/api-client.js?v=20260531-local-loopback-v1" defer></script>
   <script src="./apps/mimir-chat-portal/chat-runtime.js?v=20260531-capability-cleanup-v1" defer></script>
   <script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260531-capability-cleanup-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260531-capability-cleanup-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/first-impression.js?v=20260531-public-first-chat-v1" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[
     "./apps/mimir-chat-portal/runtime-controls-webgpu-truth.js?v=20260531-webgpu-truth-v2",
     "./apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1",
@@ -320,7 +317,7 @@
     "./apps/mimir-chat-portal/composer-model-picker.js?v=20260531-capability-cleanup-v1",
     "./apps/mimir-chat-portal/composer-quick-actions.js?v=20260531-capability-cleanup-v1",
     "./apps/mimir-chat-portal/route-chips.js?v=20260531-supergenious-v1",
-    "./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260531-send-align-v1",
+    "./apps/mimir-chat-portal/runtime-controls-fix.js?v=20260531-public-first-chat-v1",
     "./apps/mimir-chat-portal/local-connector.js?v=20260524-quiet-first-paint-v3",
     "./apps/mimir-chat-portal/context-controls.js",
     "./apps/mimir-chat-portal/answer-context-receipts.js",
