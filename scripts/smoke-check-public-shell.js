@@ -109,10 +109,10 @@ requireText(mmirPath, 'id="mimir-prompt"', 'MMIR product page must expose the ch
 requireText(mmirPath, 'id="local-connector"', 'MMIR product page must expose local connector setup.');
 requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose public-safe node status.');
 requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR product page must load the chat portal script.');
-requireText(mmirPath, 'active-node-strip.js?v=20260531-launch-label-boundary-v2', 'MMIR product page must load the cache-busted active-node strip.');
+requireText(mmirPath, 'active-node-strip.js?v=20260531-launch-label-boundary-v3', 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d325-20260531-launch-label-boundary-v2', 'Service worker cache must bust for the launch label boundary.');
+requireText(serviceWorkerPath, 'mmir-pwa-d325-20260531-launch-label-boundary-v3', 'Service worker cache must bust for the launch label boundary.');
 requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip must read the selected backend profile before claiming managed API liveness.');
 requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
 requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
