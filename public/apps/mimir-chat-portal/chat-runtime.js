@@ -2215,7 +2215,8 @@
   function handleLocalConnectorRefreshed(event){
     const detail=event?.detail||{};
     const models=Array.isArray(detail.models)?detail.models:[];
-    const firstModel=modelIdFromConnector(models[0]);
+    const rankedModels=normalizeModels({data:models});
+    const firstModel=rankedModels[0]?.id||modelIdFromConnector(models[0]);
     const resume=readRepairResume();
     if(resume?.starter_id&&!firstModel)pendingStarterHandoff={starter_id:resume.starter_id,action:'install',model:resume.model||''};
     if(resume?.model)preferProofModel(resume.model);

@@ -104,7 +104,7 @@ requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: s
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-launch-label-boundary-v3', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API client cache must bust for Local Network Access loopback support.');
-requireIncludes(files.mmir, 'chat-runtime.js?v=20260531-local-loopback-v2', 'Chat runtime cache must bust for Local Network Access loopback support.');
+requireIncludes(files.mmir, 'chat-runtime.js?v=20260531-local-loopback-v3', 'Chat runtime cache must bust for Local Network Access loopback support.');
 requireIncludes(files.mmir, 'quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1', 'Quiet-first-paint guard must load Local Network Access loopback support.');
 requireIncludes(files.apiClient, "targetAddressSpace='loopback'", 'Local fetches must request loopback address-space permission for modern Chromium.');
 requireIncludes(files.runtime, "?'loopback':undefined", 'Streaming local chat must request loopback address-space permission for modern Chromium.');

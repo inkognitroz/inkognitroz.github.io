@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d325-20260531-local-loopback-v2';
+const CACHE_NAME='mmir-pwa-d325-20260531-local-loopback-v3';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
