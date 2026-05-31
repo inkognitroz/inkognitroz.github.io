@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d328-20260531-webgpu-truth-v2';
+const CACHE_NAME='mmir-pwa-d328-20260531-capability-cleanup-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -31,12 +31,6 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/repair-resume.css',
   './apps/mimir-chat-portal/pwa.css',
   './apps/mimir-chat-portal/pwa.js',
-  './apps/mimir-chat-portal/migration-portability.css',
-  './apps/mimir-chat-portal/migration-portability.js',
-  './apps/mimir-chat-portal/sharing-center.css',
-  './apps/mimir-chat-portal/sharing-center.js',
-  './apps/mimir-chat-portal/identity-org.css',
-  './apps/mimir-chat-portal/identity-org.js',
   './user-journeys.json'
 ];
 
