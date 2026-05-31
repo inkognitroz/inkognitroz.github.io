@@ -82,8 +82,9 @@ ensure_model(){
 
 write_server(){
   if [ ! -s "$TOKEN_FILE" ]; then "$NODE_BIN" -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url")+"\n")' > "$TOKEN_FILE"; chmod 600 "$TOKEN_FILE"; fi
-  local temp actual_sha
-  temp="$(mktemp)"
+  local temp actual_sha temp_dir
+  temp_dir="${TMPDIR:-/tmp}"
+  temp="$(mktemp "${temp_dir%/}/mmir-local-connector-server.XXXXXX.mjs")"
   log "Downloading MMIR connector server"
   curl -fsSL "$SERVER_SOURCE" -o "$temp"
   actual_sha="$(shasum -a 256 "$temp" | awk '{print $1}')"

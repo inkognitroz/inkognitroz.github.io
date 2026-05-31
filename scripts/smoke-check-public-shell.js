@@ -11,6 +11,7 @@ const manifestPath = join(publicDir, 'manifest.webmanifest');
 const serviceWorkerPath = join(publicDir, 'sw.js');
 const activeNodesPath = join(publicDir, 'active-chat-nodes.json');
 const activeNodeStripPath = join(publicDir, 'apps', 'mimir-chat-portal', 'active-node-strip.js');
+const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
 
 const failures = [];
 
@@ -77,7 +78,7 @@ for (const file of walk(publicDir)) {
       fail(`Invalid JSON: ${rel}`);
     }
   }
-  if (ext === '.js') {
+  if (ext === '.js' || ext === '.mjs') {
     const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
     if (result.status !== 0) {
       fail(`Invalid JavaScript syntax: ${rel}\n${result.stderr || result.stdout}`);
@@ -121,6 +122,8 @@ requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip 
 requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
 requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
 requireText(activeNodeStripPath, "managedReady()?modelFromNode(node):'Verify route first'", 'Managed API card must avoid showing a live model before route verification.');
+requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
+forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');
