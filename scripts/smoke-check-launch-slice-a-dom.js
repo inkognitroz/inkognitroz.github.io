@@ -86,17 +86,18 @@ for (const text of [
 }
 
 for (const text of [
-  'MMIR Supergenius is ready now on the hosted free route.',
+  'MMIR Supergenius is the instant free fallback',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
   'Resources: ',
   'No browser provider secrets',
-  "if(r==='live'||r==='browser-guide'||r==='auto')return 'ready'",
-  'MMIR Guide works now as a free browser helper'
+  "if(r==='live'||r==='browser-guide'||r==='auto')return 'ready'"
 ]) {
   requireIncludes(files.routeChips, text, `Launch Slice A deferred route-chip contract missing: ${text}`);
 }
+
+forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Route chips must not expose the old MMIR Guide fallback copy.');
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
