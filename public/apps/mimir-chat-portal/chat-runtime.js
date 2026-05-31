@@ -1702,11 +1702,13 @@
   }
 
   async function streamPath(url,path,headers,payload,signal,onText){
+    const targetAddressSpace=api.loopbackUrl?.(url)?'loopback':undefined;
     const response=await fetch(joinUrl(url,path),{
       method:'POST',
       headers:{...headers,Accept:'text/event-stream'},
       body:JSON.stringify({...payload,stream:true}),
-      signal
+      signal,
+      ...(targetAddressSpace?{targetAddressSpace}:null)
     });
 
     if(!response.ok){

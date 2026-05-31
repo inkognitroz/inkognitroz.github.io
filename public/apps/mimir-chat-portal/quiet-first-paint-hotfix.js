@@ -8,6 +8,12 @@
       return false;
     }
   }
+  function localNetworkInit(input,init){
+    if(!loopback(input))return init;
+    const next={...(init||{})};
+    if(!next.targetAddressSpace)next.targetAddressSpace='loopback';
+    return next;
+  }
   function returnIntent(){
     const params=new URLSearchParams(w.location.search||'');
     const hash=String(w.location.hash||'').toLowerCase();
@@ -49,7 +55,7 @@
         error.code='local_probe_deferred';
         return Promise.reject(error);
       }
-      return originalFetch.apply(this,arguments);
+      return originalFetch.call(this,input,localNetworkInit(input,init));
     };
   }
   d.addEventListener('click',event=>{

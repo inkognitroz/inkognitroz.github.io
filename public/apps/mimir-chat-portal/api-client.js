@@ -27,6 +27,21 @@
     return String(value||'').trim().replace(/\/$/,'');
   }
 
+  function loopbackUrl(value){
+    try{
+      const url=new URL(String(value||''),window.location.href);
+      return ['127.0.0.1','localhost','::1'].includes(url.hostname);
+    }catch(error){
+      return false;
+    }
+  }
+
+  function fetchInitFor(url,options){
+    const init={...options};
+    if(loopbackUrl(url)&&!init.targetAddressSpace)init.targetAddressSpace='loopback';
+    return init;
+  }
+
   function joinUrl(base,path){
     return cleanUrl(base)+path;
   }
@@ -111,7 +126,7 @@
     }
     const {timeoutMs:ignoredTimeout,signal:ignoredSignal,...fetchOptions}=options;
     try{
-      const response=await fetch(url,{...fetchOptions,signal:controller.signal});
+      const response=await fetch(url,fetchInitFor(url,{...fetchOptions,signal:controller.signal}));
       let data=null;
       try{data=await response.json();}catch(error){data=null;}
       if(!response.ok){
@@ -183,7 +198,7 @@
     if(error?.status===413)return 'Prompt or document is too large for this backend.';
     if(error?.status===429)return 'Backend rate limit reached. Try again shortly.';
     if(error?.status===503)return 'Runtime is unavailable. Check Ollama, the selected provider or backend auth configuration.';
-    if(String(error?.message||'').includes('Failed to fetch'))return 'Backend is unreachable or blocked by CORS. Check the URL and local node.';
+    if(String(error?.message||'').includes('Failed to fetch'))return 'Backend is unreachable or blocked by CORS/local-network permission. Allow Local Network Access for mmir.ai, then refresh the local node.';
     return error?.message||'Request failed.';
   }
 
@@ -192,6 +207,7 @@
     activeId,
     activeProfile,
     cleanUrl,
+    loopbackUrl,
     joinUrl,
     isLocal,
     tokenKey,
