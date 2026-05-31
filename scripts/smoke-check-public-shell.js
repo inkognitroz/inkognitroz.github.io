@@ -83,6 +83,9 @@ for (const file of walk(publicDir)) {
       fail(`Invalid JavaScript syntax: ${rel}\n${result.stderr || result.stdout}`);
     }
   }
+  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && read(file).includes('Supergenious')) {
+    fail(`Use canonical product label "MMIR Supergenius" instead of "Supergenious": ${rel}`);
+  }
 }
 
 const content = JSON.parse(read(contentPath) || '{}');

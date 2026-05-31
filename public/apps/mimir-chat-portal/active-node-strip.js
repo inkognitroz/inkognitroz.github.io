@@ -14,12 +14,12 @@
   let manifestLoaded=false;
   let catalogLoaded=false;
 
-  function fallbackLabel(value){return String(value||'').replace(/MMIR Browser Guide|MMIR Guide|Supergenious|Supergenius/g,'MMIR Supergenius');}
+  function fallbackLabel(value){return String(value||'').replace(/MMIR Browser Guide|MMIR Guide|supergeni(?:us|ous)/gi,'MMIR Supergenius');}
   function normalizeModel(model){if(!model||typeof model!=='object')return model;return {...model,name:fallbackLabel(model.name),label:fallbackLabel(model.label)};}
   function normalizeNode(node){if(!node||typeof node!=='object')return node;return {...node,name:fallbackLabel(node.name),models:Array.isArray(node.models)?node.models.map(normalizeModel):node.models};}
   function normalizeStarter(model){
     if(!model||typeof model!=='object')return model;
-    const isGuide=model.id==='mmir-guide'||model.runtime==='browser-guide'||/MMIR Browser Guide|MMIR Guide|Supergenious|Supergenius/i.test(String(model.label||''));
+    const isGuide=model.id==='mmir-guide'||model.runtime==='browser-guide'||/MMIR Browser Guide|MMIR Guide|supergeni(?:us|ous)/i.test(String(model.label||''));
     if(!isGuide)return normalizeModel(model);
     return {...model,label:'MMIR Supergenius - instant free fallback',best_for:'Instant first answer while MMIR upgrades to a browser, API or local model route.',install_note:'No install required. MMIR Supergenius is the instant free fallback. MMIR automatically upgrades to WebGPU, api.mmir.ai or Local Node when available.'};
   }
