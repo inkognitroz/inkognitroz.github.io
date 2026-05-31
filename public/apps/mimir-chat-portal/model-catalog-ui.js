@@ -22,6 +22,12 @@
   function modelLicense(model){return model.license_name||model.license||'check required';}
   function commercialUse(model){return model.commercial_use||'check-required';}
   function isUnavailable(model){return ['planned','future','disabled','deprecated','requires-backend-router','requires-paid-provider','requires-paid-capacity'].includes(String(model.status||''));}
+  function isHiddenPublicModel(model){
+    const visibility=String(model?.visibility||'').toLowerCase();
+    const runtime=String(model?.runtime||'').toLowerCase();
+    const status=String(model?.status||'').toLowerCase();
+    return visibility==='internal'||runtime.includes('rag')||status.includes('rag')||status==='requires-rag-pipeline';
+  }
   function isRegistryLive(model){return model.registry_source==='active-provider'||model.source==='active-provider'||String(model.access||'').includes('active backend');}
   function workspaceId(){try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}catch(error){return DEFAULT_WORKSPACE_ID;}}
   function readActivationEvents(){try{const events=JSON.parse(localStorage.getItem(ACTIVATION_PREFIX+workspaceId())||'[]');return Array.isArray(events)?events:[];}catch(error){return [];}}
@@ -134,6 +140,7 @@
     const seen=new Set((baseModels||[]).map(model=>model.id));
     const mapped=(starterModels||[]).map(starterModelToCatalog).filter(model=>{
       if(!model.id||seen.has(model.id))return false;
+      if(isHiddenPublicModel(model))return false;
       seen.add(model.id);
       return true;
     });
@@ -258,7 +265,7 @@
 
   function renderLibrary(){
     if(!libraryGrid)return;
-    const models=(catalog.models||[]).filter(item=>item.id!=='custom');
+    const models=(catalog.models||[]).filter(item=>item.id!=='custom'&&!isHiddenPublicModel(item));
     if(!models.length){libraryGrid.innerHTML='<p class="empty-backends">Model catalog is not available yet.</p>';return;}
     libraryGrid.innerHTML=modelLibraryGroups(models).map(group=>{
       return '<section class="model-library-section" data-model-section="'+safe(group.id)+'">'+
@@ -291,7 +298,7 @@
       if(!response.ok)throw new Error('catalog unavailable');
       const data=await response.json();
       const [registryModels,starterModels]=await Promise.all([fetchRegistryModels(),fetchStarterModels()]);
-      const staticModels=Array.isArray(data.models)?data.models:[];
+      const staticModels=Array.isArray(data.models)?data.models.filter(model=>!isHiddenPublicModel(model)):[];
       catalog={
         models:mergeRegistryModels(mergeStarterModels(staticModels,starterModels),registryModels),
         capacity_profiles:Array.isArray(data.capacity_profiles)?data.capacity_profiles:[],

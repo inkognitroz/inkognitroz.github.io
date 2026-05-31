@@ -296,7 +296,7 @@
       "model": "granite3.3:2b",
       "size": "1.5 GB",
       "context": "128K",
-      "best_for": "Business-style assistants, RAG, long-context summaries and function/tool experiments.",
+      "best_for": "Business-style assistants, long-context summaries and function/tool experiments.",
       "install_note": "Good free candidate for product/business users who need long context on capable machines.",
       "commercial_use": "Apache 2.0 / verify model card",
       "source_url": "https://ollama.com/library/granite3.3"
@@ -422,7 +422,7 @@
       "model": "gemma3:4b",
       "size": "about 3.3 GB",
       "context": "128K",
-      "best_for": "Higher-quality local assistant, multimodal-ready roadmap, RAG summaries and product support.",
+      "best_for": "Higher-quality local assistant, multimodal-ready roadmap, summaries and product support.",
       "install_note": "Recommended when the user wants stronger answers and has enough RAM/storage.",
       "commercial_use": "check Gemma terms",
       "source_url": "https://ollama.com/library/gemma3"
@@ -443,15 +443,15 @@
     },
     {
       "id": "ollama-nomic-embed-text",
-      "label": "Nomic Embed Text - free local RAG index",
+      "label": "Nomic Embed Text - local embedding index",
       "runtime": "ollama-rag",
       "status": "installable-free-rag",
       "cost": "free local",
       "model": "nomic-embed-text",
       "size": "about 274 MB",
       "context": "embedding model",
-      "best_for": "Free local embeddings for knowledge upload, document search and RAG retrieval.",
-      "install_note": "Not a chat model. Install when knowledge upload/RAG indexing is enabled.",
+      "best_for": "Free local embeddings for future knowledge upload and document search.",
+      "install_note": "Not a chat model. Install only after knowledge indexing is enabled.",
       "commercial_use": "check Nomic model terms",
       "source_url": "https://ollama.com/library/nomic-embed-text"
     }
