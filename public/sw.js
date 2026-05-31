@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d330-20260531-public-first-chat-v1';
+const CACHE_NAME='mmir-pwa-d331-20260531-p0-simple-chat-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -12,6 +12,8 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/mimir-chat-portal.css',
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/chat-runtime-deferred.css',
+  './apps/mimir-chat-portal/p0-chat-shell.css',
+  './apps/mimir-chat-portal/p0-chat-shell.js',
   './apps/mimir-chat-portal/route-chips.js',
   './apps/mimir-chat-portal/backend-profiles-critical.js',
   './apps/mimir-chat-portal/public-launch-guard.js',

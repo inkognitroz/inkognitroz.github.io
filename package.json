@@ -1,0 +1,11 @@
+{
+  "name": "mmir-public-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public MMIR.ai chat shell, local connector onboarding and static launch surface.",
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check-public-boundary.js && node scripts/public-safety-audit.js && node scripts/ensure-mmir-public-branding.js --check && node scripts/smoke-check-public-shell.js && node scripts/smoke-check-launch-slice-a-dom.js && node scripts/smoke-check-browser-node-ui.js && node scripts/smoke-check-local-chat-send-probe.js",
+    "serve": "node scripts/serve-public.mjs 4173"
+  }
+}
