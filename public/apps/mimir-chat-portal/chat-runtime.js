@@ -1251,8 +1251,21 @@
     return models.map(model=>({
       id:String(model.id||model.name||model.model||'').trim(),
       label:polishedModelLabel(model),
-      status:String(model.status||'available')
-    })).filter(model=>model.id&&model.status!=='planned'&&model.status!=='premium_planned');
+      status:String(model.status||'available'),
+      recommended:Boolean(model.recommended),
+      resources:model.resources||{}
+    })).filter(model=>model.id&&model.status!=='planned'&&model.status!=='premium_planned')
+      .sort((a,b)=>launchModelRank(a)-launchModelRank(b)||a.id.localeCompare(b.id));
+  }
+
+  function launchModelRank(model){
+    const id=String(model?.id||'').toLowerCase();
+    if(id==='mmir-supergenius'||id==='mmir-guide')return 0;
+    if(/qwen2\.5:0\.5b|qwen3:0\.6b|gemma3:270m|smollm2:135m/.test(id))return 10;
+    if(/llama3\.2:1b|qwen2\.5:1\.5b/.test(id))return 20;
+    const ram=Number(model?.resources?.estimated_ram_gb||0);
+    if(ram>0)return 30+ram;
+    return model?.recommended?80:90;
   }
 
   function polishedModelLabel(model){
