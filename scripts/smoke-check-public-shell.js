@@ -97,6 +97,9 @@ for (const file of walk(publicDir)) {
   if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /mmir-MMIR Supergeni(?:us|ous)/i.test(publicText)) {
     fail(`Do not leak internal mmir-supergenius ids into visible labels: ${rel}`);
   }
+  if (['.html', '.js', '.css'].includes(ext) && /Ask\s+mmir-supergenius\b/i.test(publicText)) {
+    fail(`Do not leak internal mmir-supergenius ids into the chat placeholder: ${rel}`);
+  }
 }
 
 const content = JSON.parse(read(contentPath) || '{}');

@@ -1104,6 +1104,15 @@
     appendTextBlock(target,value.slice(lastIndex));
   }
 
+  function cleanMessageMeta(value){
+    const raw=String(value||'').trim();
+    if(!raw)return '';
+    if(/MMIR Free Control Plane|MMIR Browser Guide|MMIR Guide|mmir[-_\s]+supergeni(?:us|ous)|supergeni(?:us|ous)/i.test(raw)){
+      return SUPERGENIUS_LABEL;
+    }
+    return raw;
+  }
+
   function renderMessage(message){
     if(!transcriptEl)return null;
     const bubble=document.createElement('article');
@@ -1112,12 +1121,12 @@
     bubble.setAttribute('aria-label',(message.role==='user'?'User':'Assistant')+' message');
     const label=document.createElement('span');
     label.className='runtime-message-label';
-    label.textContent=message.role==='user'?'You':'MMIR';
+    const cleanMeta=cleanMessageMeta(message.meta);
+    label.textContent=message.role==='user'?'You':(cleanMeta||SUPERGENIUS_LABEL);
     const body=document.createElement('div');
     body.className='runtime-message-body';
     renderMessageContent(body,message.content,message.role);
     bubble.append(label,body);
-    if(message.meta){const small=document.createElement('small');small.textContent=message.meta;bubble.appendChild(small);}
     renderMessageActions(bubble,message);
     transcriptEl.appendChild(bubble);
     scrollTranscriptToBottom();
@@ -2127,7 +2136,7 @@
       }
       const shouldAutoFirstAnswer=pendingAutoFirstAnswer&&bridgeModel&&promptEl&&!String(promptEl.value||'').trim()&&chatEmpty();
       if(promptEl&&!String(promptEl.value||'').trim()){
-        promptEl.placeholder='Ask '+firstModel.id+' anything. This verified free route is selected.';
+        promptEl.placeholder='Ask '+(firstModel.label||polishedModelLabel(firstModel)||SUPERGENIUS_LABEL)+' anything. This verified free route is selected.';
         if(bridgeModel)promptEl.value='Give first answer from '+firstModel.id+'.';
       }
       writeActiveProfilePatch({health:'ready',liveness:'chat-probed',lastProofAt:new Date().toISOString(),lastProofModel:firstModel.id});
