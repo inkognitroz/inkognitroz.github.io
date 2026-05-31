@@ -107,7 +107,7 @@ requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API c
 requireIncludes(files.mmir, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
 requireIncludes(files.mmir, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS cache must bust for public first-chat recovery.');
 requireIncludes(files.mmir, 'chat-workspace.css?v=20260531-public-first-chat-v1', 'Chat workspace CSS cache must bust for public first-chat recovery.');
-requireIncludes(files.mmir, 'chat-runtime.js?v=20260531-capability-cleanup-v1', 'Chat runtime cache must bust for public UI capability cleanup, Browser WebGPU truth and Local Network Access loopback support.');
+requireIncludes(files.mmir, 'chat-runtime.js?v=20260531-mac-installer-v1', 'Chat runtime cache must bust for public UI capability cleanup, Browser WebGPU truth, Local Network Access loopback support and Mac installer link repair.');
 requireIncludes(files.mmir, 'quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1', 'Quiet-first-paint guard must load Local Network Access loopback support.');
 requireIncludes(files.apiClient, "targetAddressSpace='loopback'", 'Local fetches must request loopback address-space permission for modern Chromium.');
 requireIncludes(files.runtime, "?'loopback':undefined", 'Streaming local chat must request loopback address-space permission for modern Chromium.');

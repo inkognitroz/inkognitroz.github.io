@@ -17,6 +17,7 @@ const modelCatalogUiPath = join(publicDir, 'apps', 'mimir-chat-portal', 'model-c
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const freeModelStartersPath = join(publicDir, 'free-model-starters.json');
 const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
+const macConnectorZipPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.zip');
 const macDmgPath = join(publicDir, 'downloads', 'mmir-local-node-0.1.0-mac.dmg');
 const connectorReleasePath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
 
@@ -153,9 +154,12 @@ forbidText(modelCatalogPath, 'RAG', 'Public model catalog must not expose RAG wo
 forbidText(freeModelStartersPath, 'RAG', 'Free starter model catalog must not expose RAG wording before that user journey is production-ready.');
 requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
 forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
-if (!existsSync(macDmgPath)) fail('Published Mac DMG must exist when release manifest advertises it.');
-requireText(connectorReleasePath, '"path": "/downloads/mmir-local-node-0.1.0-mac.dmg"', 'Release manifest must publish the real Mac DMG path.');
-requireText(connectorReleasePath, '"status": "published"', 'Release manifest must mark the Mac DMG as published.');
+if (!existsSync(macConnectorZipPath)) fail('Published Mac Connector ZIP must exist for reliable browser download.');
+if (!existsSync(macDmgPath)) fail('Mac DMG artifact may exist as advanced packaging evidence, but must not be the primary public installer.');
+requireText(connectorReleasePath, '"id": "mac-zip"', 'Release manifest must publish the reliable Mac ZIP first-install artifact.');
+requireText(connectorReleasePath, '"path": "/downloads/mmir-local-connector-mac.zip"', 'Release manifest must point Mac users to the real ZIP artifact, not the browser-generated ZIP page.');
+requireText(connectorReleasePath, '"kind": "zip-command-installer"', 'Mac ZIP must be labeled as the reliable command-installer package.');
+requireText(connectorReleasePath, '"recommended": false', 'Mac DMG must not be the recommended public install path until signing/notarization is production-ready.');
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');

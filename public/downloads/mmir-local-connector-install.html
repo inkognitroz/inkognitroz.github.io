@@ -8,22 +8,22 @@
   <link rel="icon" href="../assets/mmir-icon.svg" type="image/svg+xml" />
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #0d1114;
-      --panel: #161b1f;
-      --line: #2c363d;
-      --text: #f7fafc;
-      --muted: #b8c2cc;
-      --accent: #7ed957;
-      --accent-text: #101510;
-      --warn: #ffcf5a;
-      --ok: #8ff0c6;
+      color-scheme: light;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --line: #dbe7ef;
+      --text: #111827;
+      --muted: #64748b;
+      --accent: #0f9f75;
+      --accent-text: #ffffff;
+      --warn: #b7791f;
+      --ok: #047857;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--bg);
+      background: radial-gradient(circle at 50% 0%, #f0fdfa 0%, #ffffff 34%, #ffffff 100%);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
@@ -67,7 +67,7 @@
       margin-top: 18px;
     }
     .card {
-      background: var(--panel);
+      background: rgba(248, 250, 252, .92);
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 18px;
@@ -107,7 +107,7 @@
     }
     .trust-strip,
     .release-panel {
-      background: var(--panel);
+      background: rgba(248, 250, 252, .92);
       border: 1px solid var(--line);
       border-radius: 8px;
       margin: 18px 0;
@@ -147,7 +147,7 @@
       color: var(--ok);
       word-break: break-all;
     }
-    code { color: #e9f0f5; }
+    code { color: var(--text); }
   </style>
 </head>
 <body>
@@ -155,7 +155,7 @@
     <h1>Install an MMIR node</h1>
     <p id="detected">Detecting this device...</p>
     <p class="selected-model" id="selected-model">MMIR will choose a safe free starter model automatically.</p>
-    <a class="primary" id="primary" href="./mmir-local-connector-mac.zip.html">Install Connector</a>
+    <a class="primary" id="primary" href="./mmir-local-connector-mac.zip" download>Download Mac Connector</a>
     <p>The connector turns Mac, Windows, Linux, Raspberry Pi, VMs and edge machines into private MMIR nodes. It runs on <code>127.0.0.1:3000</code>, connects to Ollama on the same machine, and lets mmir.ai chat with local models through the MMIR API contract. This page reads the release manifest before promoting platform artifacts, so it never links a fake DMG.</p>
 
     <section class="trust-strip" aria-label="Installer trust boundaries">
@@ -173,11 +173,11 @@
 
     <section class="grid" aria-label="Installer choices">
       <article class="card" data-platform="mac">
-        <div class="status" id="mac-dmg-badge">DMG app prepared</div>
+        <div class="status" id="mac-dmg-badge">Mac ZIP live</div>
         <h2>Mac</h2>
-        <p>Mac <code>.dmg</code> packaging is prepared in MMIR Local Node with an app bundle, Applications shortcut and command fallback. Until a public DMG artifact is published, use the current command package for Mac hardware and macOS VMs.</p>
-        <a id="mac-install-link" href="./mmir-local-connector-mac.zip.html">Open Mac command package</a>
-        <p class="manifest-note" id="mac-dmg-status">Checking release manifest for a public Mac DMG...</p>
+        <p>Download one ZIP, open it, then open <strong>mmir-local-connector-mac.command</strong>. This avoids the fragile browser-generated ZIP flow and keeps the connector local on <code>127.0.0.1:3000</code>.</p>
+        <a id="mac-install-link" href="./mmir-local-connector-mac.zip" download>Download Mac Connector ZIP</a>
+        <p class="manifest-note" id="mac-dmg-status">If macOS blocks the unsigned command, right-click it and choose Open.</p>
       </article>
       <article class="card" data-platform="windows">
         <div class="status">Live beta</div>
@@ -210,7 +210,7 @@
     const workspaceKey = 'mimir-active-workspace-v1';
     const repairResumePrefix = 'mimir-repair-resume-v1:';
     const targets = {
-      mac: { label: 'Install Mac Connector', href: './mmir-local-connector-mac.zip.html', download: false, text: 'Detected macOS. Use the current Mac command package until the app-bundle DMG artifact is published.' },
+      mac: { label: 'Download Mac Connector', href: './mmir-local-connector-mac.zip', download: true, text: 'Detected macOS. Download the Mac Connector ZIP, open it, then open the command installer.' },
       windows: { label: 'Install Windows Connector', href: './mmir-local-connector-windows.cmd', download: true, text: 'Detected Windows. Use the Windows installer.' },
       linux: { label: 'Install Linux Connector', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux. Use the Linux installer.' },
       raspberry: { label: 'Install Raspberry Pi Node', href: './mmir-local-connector-linux.sh', download: true, text: 'Detected Linux ARM. Use the Raspberry Pi / Linux ARM node installer.' },
@@ -354,32 +354,35 @@
         const data = await response.json();
         renderReleaseSummary(data);
         const artifacts = Array.isArray(data.artifacts) ? data.artifacts : [];
+        const macZip = artifacts.find((artifact) => artifact && artifact.id === 'mac-zip');
         const dmg = artifacts.find((artifact) => artifact && artifact.id === 'mac-dmg-release-build');
-        if (dmg && dmg.path) {
+        if (macZip && macZip.path) {
           targets.mac = {
-            label: 'Download Mac DMG',
-            href: dmg.path,
+            label: 'Download Mac Connector',
+            href: macZip.path,
             download: true,
-            text: 'Detected macOS. Download the published MMIR Local Node DMG.'
+            text: 'Detected macOS. Download the Mac Connector ZIP, open it, then open the command installer.'
           };
-          badge.textContent = 'DMG live';
-          macLink.href = appendModelParams(dmg.path);
-          macLink.textContent = 'Download Mac DMG';
+          badge.textContent = 'Mac ZIP live';
+          macLink.href = appendModelParams(macZip.path);
+          macLink.textContent = 'Download Mac Connector ZIP';
           setDownload(macLink, true);
-          status.textContent = 'Mac DMG is published from the MMIR Local Node release build.';
+          status.textContent = dmg?.path ? 'DMG exists as an advanced artifact, but the reliable first install path is the Mac Connector ZIP.' : 'Mac Connector ZIP is the supported first install path.';
         } else {
-          badge.textContent = 'DMG prepared';
-          status.textContent = dmg?.note || 'Mac app-bundle DMG release build is prepared in mmir-local-node; public download stays on the command package until the real artifact is published.';
-          macLink.href = appendModelParams('./mmir-local-connector-mac.zip.html');
-          setDownload(macLink, false);
+          badge.textContent = 'Direct command';
+          status.textContent = 'Mac ZIP artifact was not listed. Falling back to the direct command installer.';
+          macLink.href = appendModelParams('./mmir-local-connector-mac.command');
+          macLink.textContent = 'Download direct .command installer';
+          setDownload(macLink, true);
         }
       } catch (error) {
         badge.textContent = 'Manifest offline';
-        status.textContent = 'Release manifest could not be loaded. Use the current Mac command package.';
+        status.textContent = 'Release manifest could not be loaded. Use the Mac Connector ZIP.';
         document.getElementById('release-summary').textContent = 'Release manifest could not be loaded. Installer links still stay local/free and avoid fake DMG claims.';
         document.getElementById('release-artifacts').innerHTML = '';
-        macLink.href = appendModelParams('./mmir-local-connector-mac.zip.html');
-        setDownload(macLink, false);
+        macLink.href = appendModelParams('./mmir-local-connector-mac.zip');
+        macLink.textContent = 'Download Mac Connector ZIP';
+        setDownload(macLink, true);
       }
       applyPrimary(pickedKey);
     }

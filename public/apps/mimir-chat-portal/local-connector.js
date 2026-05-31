@@ -328,7 +328,7 @@
       renderConnectOptions(data.options||[]);
     }catch(error){
       renderConnectOptions([
-        {id:'mac-local-connector-download',title:'Install Mac Connector',status:'beta',description:'Download the MMIR Local Connector for Mac and start the private local AI path.',target:'./downloads/mmir-local-connector-mac.zip.html',action:'Download'},
+        {id:'mac-local-connector-download',title:'Install Mac Connector',status:'beta',description:'Download the MMIR Local Connector for Mac and start the private local AI path.',target:'./downloads/mmir-local-connector-mac.zip',action:'Download'},
         {id:'local-connector',title:'Connect local LLM',status:'beta',description:'Connect a local PC or VM through the MMIR local connector.',target:'#local-connector'},
         {id:'bring-backend',title:'Add compatible backend',status:'beta',description:'Add a trusted backend URL when the connector API is ready.',target:'#backend-settings'},
         {id:'provider-api',title:'Use SaaS model/API',status:'premium-planned',description:'Provider keys must stay behind a protected backend.',target:'#provider-status'}

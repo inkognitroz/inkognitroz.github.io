@@ -1504,7 +1504,7 @@
       isWebLlm?'<p>'+escapeHtml(browserNodeStatusCopy())+'</p><p>Route receipt shape: node_type=browser, trust_class=device-local, cost_class=free-user-device, quality_tier=starter, execution_boundary=current-browser-session, prompt_left_device=false.</p>':
         '<div class="runtime-install-grid">'+
           '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
-          '<div><strong>Mac</strong><p><a href="./downloads/mmir-local-connector-mac.zip.html">Download Mac installer</a> and open it.</p></div>'+
+          '<div><strong>Mac</strong><p><a href="./downloads/mmir-local-connector-mac.zip" download>Download Mac installer</a>, open the ZIP, then open the command.</p></div>'+
           '<div><strong>Linux / Raspberry Pi</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
         '</div>'+
         '<div class="runtime-helper-actions">'+
