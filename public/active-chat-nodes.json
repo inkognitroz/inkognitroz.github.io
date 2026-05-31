@@ -4,7 +4,7 @@
   "nodes": [
     {
       "id": "browser-guide",
-      "name": "Supergenious",
+      "name": "Supergenious Free",
       "type": "free",
       "status": "online",
       "trust_level": "public-free",
@@ -14,7 +14,7 @@
       "models": [
         {
           "id": "mmir-supergenius",
-          "name": "Supergenious",
+          "name": "Supergenious Free",
           "status": "available",
           "provider": "mmir",
           "source": "browser-helper"
@@ -23,7 +23,7 @@
     },
     {
       "id": "managed-api-bootstrap",
-      "name": "Supergenious",
+      "name": "Supergenious Free",
       "type": "managed-api",
       "status": "verify_before_chat",
       "trust_level": "public-free",
@@ -33,7 +33,7 @@
       "models": [
         {
           "id": "mmir-supergenius",
-          "name": "Supergenious",
+          "name": "Supergenious Free",
           "status": "available",
           "provider": "mmir",
           "source": "api.mmir.ai"
@@ -51,13 +51,7 @@
       "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
-        {
-          "id": "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-          "name": "Qwen2.5 0.5B",
-          "status": "available_if_supported",
-          "provider": "webllm",
-          "source": "browser-webgpu"
-        }
+        { "id": "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", "name": "Qwen2.5 0.5B", "status": "available_if_supported", "provider": "webllm", "source": "browser-webgpu" }
       ]
     },
     {
@@ -71,13 +65,7 @@
       "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
-        {
-          "id": "gemma3-1b-it-q4f16_1-MLC",
-          "name": "Gemma 3 1B",
-          "status": "available_if_supported",
-          "provider": "webllm",
-          "source": "browser-webgpu"
-        }
+        { "id": "gemma3-1b-it-q4f16_1-MLC", "name": "Gemma 3 1B", "status": "available_if_supported", "provider": "webllm", "source": "browser-webgpu" }
       ]
     },
     {
@@ -91,13 +79,7 @@
       "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
-        {
-          "id": "Llama-3.2-1B-Instruct-q4f16_1-MLC",
-          "name": "Llama 3.2 1B",
-          "status": "available_if_supported",
-          "provider": "webllm",
-          "source": "browser-webgpu"
-        }
+        { "id": "Llama-3.2-1B-Instruct-q4f16_1-MLC", "name": "Llama 3.2 1B", "status": "available_if_supported", "provider": "webllm", "source": "browser-webgpu" }
       ]
     },
     {
@@ -111,13 +93,7 @@
       "receipt_metadata": { "node_type": "browser", "trust_class": "device-local", "cost_class": "free-user-device", "quality_tier": "starter", "execution_boundary": "current-browser-session", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": false },
       "capabilities": ["chat.completions", "browser.llm"],
       "models": [
-        {
-          "id": "Phi-3.5-mini-instruct-q4f16_1-MLC-1k",
-          "name": "Phi 3.5 Mini",
-          "status": "available_if_supported",
-          "provider": "webllm",
-          "source": "browser-webgpu"
-        }
+        { "id": "Phi-3.5-mini-instruct-q4f16_1-MLC-1k", "name": "Phi 3.5 Mini", "status": "available_if_supported", "provider": "webllm", "source": "browser-webgpu" }
       ]
     },
     {
@@ -141,13 +117,7 @@
       "route": { "kind": "local-openai-compatible", "url": "http://127.0.0.1:1234", "models_path": "/v1/models", "chat_path": "/v1/chat/completions" },
       "capabilities": ["openai.v1.models", "openai.v1.chat.completions", "local.no-key"],
       "models": [
-        {
-          "id": "auto-discovered",
-          "name": "LM Studio loaded model",
-          "status": "available_when_server_running",
-          "provider": "lm-studio",
-          "source": "localhost"
-        }
+        { "id": "auto-discovered", "name": "LM Studio loaded model", "status": "available_when_server_running", "provider": "lm-studio", "source": "localhost" }
       ]
     },
     {
@@ -160,13 +130,7 @@
       "route": { "kind": "local-openai-compatible", "url": "http://127.0.0.1:8080", "models_path": "/v1/models", "chat_path": "/v1/chat/completions" },
       "capabilities": ["openai.v1.models", "openai.v1.chat.completions", "local.no-key"],
       "models": [
-        {
-          "id": "auto-discovered",
-          "name": "llama.cpp loaded GGUF",
-          "status": "available_when_server_running",
-          "provider": "llama.cpp",
-          "source": "localhost"
-        }
+        { "id": "auto-discovered", "name": "llama.cpp loaded GGUF", "status": "available_when_server_running", "provider": "llama.cpp", "source": "localhost" }
       ]
     },
     {
@@ -179,13 +143,7 @@
       "route": { "kind": "local-openai-compatible", "url": "http://127.0.0.1:8000", "models_path": "/v1/models", "chat_path": "/v1/chat/completions" },
       "capabilities": ["openai.v1.models", "openai.v1.chat.completions", "local.no-key"],
       "models": [
-        {
-          "id": "auto-discovered",
-          "name": "vLLM served model",
-          "status": "available_when_server_running",
-          "provider": "vllm",
-          "source": "localhost"
-        }
+        { "id": "auto-discovered", "name": "vLLM served model", "status": "available_when_server_running", "provider": "vllm", "source": "localhost" }
       ]
     },
     {
@@ -198,13 +156,7 @@
       "route": { "kind": "ollama-direct", "url": "http://127.0.0.1:11434", "models_path": "/api/tags", "chat_path": "/api/chat" },
       "capabilities": ["ollama.tags", "ollama.chat", "local.no-key"],
       "models": [
-        {
-          "id": "auto-discovered",
-          "name": "Ollama local model",
-          "status": "available_when_server_running",
-          "provider": "ollama",
-          "source": "localhost"
-        }
+        { "id": "auto-discovered", "name": "Ollama local model", "status": "available_when_server_running", "provider": "ollama", "source": "localhost" }
       ]
     }
   ]
