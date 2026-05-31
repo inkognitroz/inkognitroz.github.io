@@ -540,7 +540,7 @@
     const shouldCheck=params.get('mmir_local_return')==='1'||params.get('local_node_ready')==='1'||hash.includes('local');
     if(!shouldCheck)return;
     window.MimirAllowLocalProbes?.('p0-local-return',60000);
-    checkLocalModels({quiet:true}).catch(()=>{});
+    checkLocalModels({quiet:false}).catch(()=>{});
   }
 
   function boot(){

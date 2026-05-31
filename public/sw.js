@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d331-20260531-p0-simple-chat-v1';
+const CACHE_NAME='mmir-pwa-d332-20260531-p0-simple-chat-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
