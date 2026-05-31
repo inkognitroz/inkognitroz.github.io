@@ -85,8 +85,8 @@ for (const file of walk(publicDir)) {
     }
   }
   const publicText = read(file);
-  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /Supergenius\s+Free/i.test(publicText)) {
-    fail(`Use owner-approved visible label "Supergenious" instead of "Supergenius Free": ${rel}`);
+  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /Supergeni(?:us|ous)\s+Free/i.test(publicText)) {
+    fail(`Use owner-approved visible label "Supergenious" without a Free suffix: ${rel}`);
   }
   if (['.html', '.json', '.css', '.webmanifest'].includes(ext) && /MMIR\s+Supergeni(?:us|ous)/i.test(publicText)) {
     fail(`Visible fallback label must be "Supergenious" without an MMIR prefix: ${rel}`);
