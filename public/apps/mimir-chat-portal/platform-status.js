@@ -73,32 +73,26 @@
   }
 
   async function publicDeployComponents(platformManifest){
-    try{
-      const deploy=await fetchStatusJson('./deploy-verification.json',5000);
-      const runs=Array.isArray(deploy?.ci)?deploy.ci:[];
-      const deployRun=runs.find(run=>run.name==='Deploy GitHub Pages');
-      const qualityRun=runs.find(run=>run.name==='Static quality gates');
-      const commit=deploy?.commit_short||platformManifest?.latest_verified_commit||'unknown';
-      return [
-        componentFromRun('static-quality-gates','Static quality gates',qualityRun),
-        componentFromRun('pages-deploy-run','Pages deploy run',deployRun),
-        {
-          id:'public-deploy-verification',
-          label:'Public deploy verification',
-          status:deploy?.result==='green_with_network_watch'||deploy?.public_repo_rule?'online':'watch',
-          route:'./deploy-verification.json',
-          notes:'Public-safe manifest loaded for commit '+commit+'. Browser does not call GitHub APIs or require a token.'
-        }
-      ];
-    }catch(error){
-      return [{
-        id:'public-deploy-verification',
-        label:'Public deploy verification',
+    const components=Array.isArray(platformManifest?.components)?platformManifest.components:[];
+    const commit=platformManifest?.latest_verified_commit||'current public artifact';
+    const latest=components.find(component=>component?.id==='latest-deploy-verification');
+    const pages=components.find(component=>component?.id==='github-pages');
+    return [
+      latest||{
+        id:'latest-public-artifact',
+        label:'Latest public artifact',
         status:'watch',
-        route:'./deploy-verification.json',
-        notes:'Static deploy verification could not be loaded from this browser. No external GitHub API request was made.'
-      }];
-    }
+        route:String(commit),
+        notes:'Public-safe manifest loaded. CI details stay in GitHub/control repos, not in this public browser payload.'
+      },
+      pages||{
+        id:'github-pages',
+        label:'GitHub Pages origin',
+        status:'online',
+        route:'inkognitroz.github.io -> mmir.ai',
+        notes:'The static Pages artifact is public; internal QA reports stay out of the public repo.'
+      }
+    ];
   }
 
   function activeBackendComponent(profile,status,notes){

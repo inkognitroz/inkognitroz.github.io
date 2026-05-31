@@ -1,9 +1,8 @@
 {
   "version": 1,
   "updated_at": "2026-05-23T20:02:32+02:00",
-  "description": "Public-safe status manifest for MMIR.ai. Browser automation adds live public GitHub Actions checks and active backend telemetry only from a user-selected backend or paired local node.",
-  "latest_verified_commit": "c140ad6",
-  "deploy_verification": "./deploy-verification.json",
+  "description": "Public-safe status manifest for MMIR.ai. Internal QA, agent instructions and deploy reports stay in the private control repo; this browser payload contains only product-safe status copy.",
+  "latest_verified_commit": "public-pages-artifact",
   "domain_availability_watch": "./domain-availability-watch.json",
   "components": [
     {
@@ -18,7 +17,7 @@
       "label": "Latest deploy verification",
       "status": "online",
       "route": "c140ad6 / GitHub Actions",
-      "notes": "Static quality, branding migration and Deploy GitHub Pages completed successfully for commit c140ad6 on 2026-05-23."
+      "notes": "The public artifact is checked by GitHub Actions before deploy. Detailed QA evidence stays in the private control repo."
     },
     {
       "id": "public-url-health",
@@ -39,7 +38,7 @@
       "label": "No-model deploy proof",
       "status": "online",
       "route": "c140ad6 / GitHub Pages artifact",
-      "notes": "The deployed Pages artifact includes the no-model fixture report, visual pass, free route floor and no-model chat fallback. See no-model-public-deploy-verification.json."
+      "notes": "The public chat shell includes a no-model fallback path and free route floor without exposing internal QA reports."
     },
     {
       "id": "github-pages",
