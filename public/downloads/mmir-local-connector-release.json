@@ -34,7 +34,7 @@
       "platform": "shared",
       "kind": "node-server",
       "path": "/downloads/mmir-local-connector-server.mjs",
-      "sha256": "affb688132f43160ef02ed2ea7b758481b06d6bfdc28eb9c6498b4f7e1535597",
+      "sha256": "1c3537c0b094d5d4f750261f448bdac5c0becda041ce9bb282e122fe6b59b9dc",
       "contract_version": "0.1",
       "required": true
     },
@@ -43,7 +43,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "93aa6dc593fc2fd8bad63c797ea25bd523584e68cfd38ee5de616baa4c376d21",
+      "sha256": "39d19704e005b15d1a6ac88f0e3af392591b5d9a854200203caab5ccaad454cd",
       "recommended": true
     },
     {
@@ -51,7 +51,7 @@
       "platform": "macos",
       "kind": "zip-command-installer",
       "path": "/downloads/mmir-local-connector-mac.zip",
-      "sha256": "75d31afa2b47de76d093e7fa50cf4e2b5ec1dad4bf38a42af68faa0175160661",
+      "sha256": "c455071a3be3c26d7964f427c5b1190ba7d67eaf489e786392b8bca1b0a3d669",
       "recommended": true,
       "note": "Reliable Mac first-install artifact. Contains executable mmir-local-connector-mac.command."
     },
@@ -134,7 +134,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-05-31T18:48:37.526Z",
+    "verified_at": "2026-05-31T18:56:24.741Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",

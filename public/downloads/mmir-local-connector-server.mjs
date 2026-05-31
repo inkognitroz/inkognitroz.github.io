@@ -46,6 +46,7 @@ function cors(origin) {
     'access-control-allow-methods': 'GET,POST,OPTIONS',
     'access-control-allow-headers': 'content-type,authorization,x-mmir-local-token',
     'access-control-allow-origin': okOrigin(origin) ? (origin || 'https://mmir.ai') : 'null',
+    'access-control-allow-private-network': 'true',
   };
 }
 
