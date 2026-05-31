@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d324-20260531-supergenius-brand-guard-v1';
+const CACHE_NAME='mmir-pwa-d325-20260531-launch-label-boundary-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
