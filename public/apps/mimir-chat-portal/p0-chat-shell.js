@@ -7,6 +7,7 @@
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const MAC_INSTALL_URL='./downloads/mmir-local-connector-mac.zip';
+  const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
   const MAX_HISTORY=40;
 
   const state={
@@ -193,7 +194,7 @@
           '<span class="p0-mark" aria-hidden="true">MM</span>'+
           '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>One chat. Every AI model you trust.</span></span>'+
         '</a>'+
-        '<div id="p0-status" class="p0-status" data-state="ready">Supergenious ready</div>'+
+        '<div id="p0-status" class="p0-status" data-state="ready">Ready</div>'+
       '</header>'+
       '<main class="p0-chat">'+
         '<div id="p0-transcript" class="p0-transcript" aria-live="polite" aria-relevant="additions text"></div>'+
@@ -208,7 +209,7 @@
             '</div>'+
             '<div class="p0-right">'+
               '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergenious</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
-              '<button id="p0-mic" class="p0-btn p0-btn-icon" type="button" aria-label="Voice input" title="Voice input">Mic</button>'+
+              '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input"></button>'+
               '<button id="p0-send" class="p0-btn p0-btn-icon p0-send" type="submit" aria-label="Send message">↑</button>'+
             '</div>'+
           '</div>'+
@@ -339,9 +340,10 @@
   function renderAddMenu(){
     const menu=menuEl('add');
     menu.innerHTML=''+
-      '<div class="p0-menu-title">Connect</div>'+
-      '<a href="'+MAC_INSTALL_URL+'" download><strong>Install Mac local node</strong><small>Downloads the verified connector ZIP. Run the command file to start local Ollama models.</small></a>'+
-      '<button type="button" data-p0-action="check-local"><strong>Check local node</strong><small>Find models running on this Mac after install.</small></button>'+
+      '<div class="p0-menu-title">Tools</div>'+
+      '<a href="'+MAC_INSTALL_URL+'" download><strong>Connect local model</strong><small>Download the Mac connector. Open it once to make local Ollama models available here.</small></a>'+
+      '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>Use after the connector is running on this Mac.</small></button>'+
+      '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
     menu.querySelector('[data-p0-action="check-local"]').addEventListener('click',()=>{closeMenus();checkLocalModels();});
@@ -356,7 +358,7 @@
       return '<button type="button" data-model-id="'+safeText(model.id)+'"><strong>'+safeText(model.label)+'</strong><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
     }).join('');
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>Connects only to 127.0.0.1 after user action.</small></button>';
+      '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>Checks this Mac only after you ask.</small></button>';
     menu.innerHTML='<div class="p0-menu-title">Models</div>'+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
@@ -372,8 +374,8 @@
   function renderPrivacyMenu(){
     const model=activeModel();
     const menu=menuEl('privacy');
-    const route=model.route==='local'?'Local node on this device':'Hosted free route on api.mmir.ai';
-    const secret=model.route==='local'?'Pairing token stays in browser session storage.':'No provider key is stored in the browser.';
+    const route=model.route==='local'?'Private local model':'Supergenious hosted route';
+    const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Privacy</div>'+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
@@ -392,7 +394,7 @@
     const root=document.getElementById('p0-transcript');
     if(!root)return;
     if(!state.messages.length){
-      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergenious is ready now. Connect local models from + when you want private on-device chat.</p></div>';
+      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergenious answers now. Use + later when you want private local models.</p></div>';
       return;
     }
     root.innerHTML=state.messages.map(message=>(
@@ -546,7 +548,7 @@
   function boot(){
     installShell();
     enforceShellStyles();
-    status('Supergenious ready','ready');
+    status('Ready','ready');
     document.getElementById('p0-input')?.focus();
     let passes=0;
     const timer=setInterval(()=>{

@@ -106,11 +106,14 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260531-p0-simple-chat-v2', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260531-p0-simple-chat-v2', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260531-p0-simple-chat-v3', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260531-p0-simple-chat-v3', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
+requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
 requireIncludes(files.p0Runtime, "const API_URL='https://api.mmir.ai'", 'P0 shell must use api.mmir.ai as the immediate chat route.');
 requireIncludes(files.p0Runtime, "const MAC_INSTALL_URL='./downloads/mmir-local-connector-mac.zip'", 'P0 shell must expose the reliable Mac connector ZIP.');
+requireIncludes(files.p0Runtime, 'Connect local model', 'P0 add menu must present local setup as a user task, not internal installer plumbing.');
+requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, "targetAddressSpace='loopback'", 'P0 local connector checks must request loopback address-space permission.');
 requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API client cache must bust for Local Network Access loopback support.');
 requireIncludes(files.mmir, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
