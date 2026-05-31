@@ -177,7 +177,7 @@
 
   async function fetchStarterModels(){
     try{
-      const response=await fetch('./free-model-starters.json',{cache:'default'});
+      const response=await fetch('./free-model-starters.json',{cache:'no-cache'});
       if(!response.ok)throw new Error('starter catalog unavailable');
       const data=await response.json();
       return Array.isArray(data.models)?data.models:[];
@@ -294,7 +294,7 @@
 
   async function init(){
     try{
-      const response=await fetch('./ai-model-catalog.json',{cache:'default'});
+      const response=await fetch('./ai-model-catalog.json',{cache:'no-cache'});
       if(!response.ok)throw new Error('catalog unavailable');
       const data=await response.json();
       const [registryModels,starterModels]=await Promise.all([fetchRegistryModels(),fetchStarterModels()]);
