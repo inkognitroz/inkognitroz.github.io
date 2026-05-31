@@ -108,7 +108,7 @@ forbid(files.portal, /defaultApiProfile\(\).*health:'ready'/s, 'Default API prof
 
 for (const selector of [
   '.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important',
-  '.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip,#composer-voice-input){display:none!important',
+  '.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip){display:none!important',
   '.composer-live-chip[data-state="offline"]'
 ]) {
   const target = selector.includes(':is(#runtime-node-chip') ? files.workspaceCss : files.runtimeCss;

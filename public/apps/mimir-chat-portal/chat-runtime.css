@@ -484,6 +484,8 @@ body.mimir-composer-dock-ready .composer-actions #new-backend {
 .mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster{display:flex!important;grid-area:tools!important;flex-wrap:wrap!important}
 .mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important;grid-area:live!important;flex-wrap:wrap!important}
 .mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model):not([data-chat-mode="private"]){display:none!important}
+.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster > :not(#runtime-model-chip):not(#composer-voice-input){display:none!important}
+.mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions{display:none!important}
 .mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){flex-wrap:wrap;min-width:0;row-gap:6px}
 .mimir-public-chat .composer-live-cluster{justify-content:flex-start}
 .mimir-public-chat #runtime-model-chip{max-width:min(360px,90vw)}

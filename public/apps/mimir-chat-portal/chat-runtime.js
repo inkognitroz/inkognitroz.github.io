@@ -38,6 +38,7 @@
   let stopBtn=null;
   let clearBtn=null;
   let deleteModelBtn=null;
+  const speechApiSupported=()=>Boolean(window.SpeechRecognition||window.webkitSpeechRecognition);
   let currentModelInstall=null;
   let modelInstallPollTimer=null;
   let currentAbortController=null;
@@ -891,19 +892,19 @@
     document.body.classList.add('mimir-composer-dock-ready');
     dock.innerHTML=''+
       '<div class="composer-tool-cluster" aria-label="Chat tools">'+
-        '<button id="composer-add-model" type="button" class="composer-icon-button" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+
-        '<button type="button" class="composer-mode-button" data-chat-mode="private" aria-pressed="true" title="Private auto review">Auto review v</button>'+
+        '<button id="composer-add-model" type="button" class="composer-icon-button composer-core-control composer-core-control--menu" aria-label="Add or connect model" aria-controls="composer-model-picker" aria-expanded="false" title="Add model">+</button>'+
+        '<button type="button" class="composer-mode-button composer-core-control composer-core-control--privacy" data-chat-mode="private" aria-pressed="true" aria-label="Toggle private route review mode" title="Security and privacy mode">Privacy</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="super" aria-pressed="false" title="Combine product, architecture, security and implementation">MMIR++</button>'+
         '<button type="button" class="composer-mode-button" data-chat-mode="vision" aria-pressed="false" title="Open image/screenshot boundary controls">Vision</button>'+
       '</div>'+
       '<div class="composer-live-cluster" aria-label="Live model and machine status">'+
         '<button type="button" class="composer-mode-button" data-chat-mode="boost" aria-pressed="false" title="Boost 5.5 Extra high">5.5 Extra high v</button>'+
-        '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
-        '<button id="runtime-node-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open selected node and route status">Node checking</button>'+
-        '<button id="runtime-privacy-chip" type="button" class="composer-live-chip" aria-label="Security and privacy state">Privacy checking</button>'+
-        '<button id="runtime-tunnel-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open secure tunnel status">Tunnel checking</button>'+
-        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button" aria-label="Open node resource status">Resources checking</button>'+
-        '<button id="composer-voice-input" type="button" class="composer-icon-button" aria-label="Voice input" title="Voice input">Mic</button>'+
+        '<button id="runtime-model-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--model" aria-label="Open model picker" aria-controls="composer-model-picker" aria-expanded="false">Model checking</button>'+
+        '<button id="runtime-node-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--node" aria-label="Open selected node and route status">Node checking</button>'+
+        '<button id="runtime-privacy-chip" type="button" class="composer-live-chip composer-core-control composer-core-control--privacy-readout" aria-label="Security and privacy state">Privacy checking</button>'+
+        '<button id="runtime-tunnel-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--tunnel" aria-label="Open secure tunnel status">Tunnel checking</button>'+
+        '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--resources" aria-label="Open node resource status">Resources checking</button>'+
+        '<button id="composer-voice-input" type="button" class="composer-icon-button composer-core-control composer-core-control--voice" aria-label="Voice input" title="Voice input">Mic</button>'+
       '</div>'+
       '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: free browser helper first, local model when connected.</small>';
     const bar=formEl.querySelector('.composer-bar');
@@ -929,7 +930,12 @@
         afterComposerModeToggle(mode,modes[mode]);
       });
     });
-    document.getElementById('composer-voice-input')?.addEventListener('click',startVoiceInput);
+    const voiceButton=document.getElementById('composer-voice-input');
+    if(speechApiSupported())voiceButton?.addEventListener('click',startVoiceInput);
+    else if(voiceButton){
+      voiceButton.hidden=true;
+      voiceButton.setAttribute('aria-hidden','true');
+    }
     updateModeButtons();
     updateRuntimeChips();
   }
@@ -1868,7 +1874,7 @@
       },currentAbortController.signal);
       updateMessage(assistant.message.id,content||'MMIR Supergenius returned an empty response.',meta);
       writeActiveProfilePatch({health:'ready',liveness:'chat-probed',lastProofAt:new Date().toISOString(),lastProofModel:'mmir-supergenius'});
-      uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{route_class:'free',cost_class:'free',provider_called:true});
+      uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{route_class:'free',cost_class:'free',provider_called:false,no_paid_routes_started:true});
       renderLiveProof('MMIR Supergenius answered on the hosted free route. Local/private nodes can still take over after proof.', 'ready', baseProofItems('https://api.mmir.ai').concat([{label:'Chat response',state:'ready',detail:'MMIR Supergenius'}]), proofRepairActions('answered'));
       setStatus('MMIR Supergenius answered.','ready');
     }catch(error){
@@ -1937,7 +1943,7 @@
           updateMessage(assistant.message.id,partial||'Thinking...', 'MMIR Supergenius');
         },currentAbortController.signal);
         updateMessage(assistant.message.id,content||'MMIR Supergenius returned an empty response.','MMIR Supergenius');
-        uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{fallback_from:'browser-webgpu',route_class:'free',cost_class:'free',provider_called:true});
+        uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{fallback_from:'browser-webgpu',route_class:'free',cost_class:'free',provider_called:false,no_paid_routes_started:true});
         setStatus('Browser Node was unavailable. MMIR Supergenius answered on the hosted free route.','ready');
       }catch(fallbackError){
         const fallback=[

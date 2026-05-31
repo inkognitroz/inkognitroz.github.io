@@ -7,9 +7,9 @@
 .mimir-public-chat .composer-tool-cluster,.mimir-public-chat .composer-live-cluster{min-width:0}
 .mimir-public-chat .composer-live-chip,.mimir-public-chat .composer-mode-button{max-width:24rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Minimal composer (Claude / ChatGPT / Open WebUI style): show only +, a privacy
-   sign, the model chooser and send. Hide status chips, mic and extra modes —
-   capabilities live behind the + and the model chooser. */
-.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip,#composer-voice-input){display:none!important}
+   sign, the model chooser, mic when supported and send. Hide status chips and
+   extra modes; capabilities live behind the + and the model chooser. */
+.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip){display:none!important}
 .mimir-public-chat .composer-mode-button:not([data-chat-mode="private"]){display:none!important}
 /* Model chooser: shows the active model and opens the picker. */
 .mimir-public-chat #runtime-model-chip{font-weight:650;color:#0f172a;border-color:rgba(15,23,42,.2);background:#fff}
@@ -42,6 +42,6 @@
 .mimir-public-chat:not(.mimir-has-chat) .mimir-greeting h1{font-size:clamp(1.7rem,3.2vw,2.4rem);line-height:1.18;color:#0f172a;font-weight:760;margin:0;letter-spacing:-.01em}
 .mimir-public-chat:not(.mimir-has-chat) .mimir-greeting #active-chat-description{color:#64748b;font-size:1.02rem;line-height:1.5;margin:0}
 .mimir-public-chat:not(.mimir-has-chat) .mimir-composer{position:static;width:min(720px,100%);margin:0}
-.mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions{display:flex!important;flex-wrap:wrap;justify-content:center;gap:8px;max-width:720px;margin:0}
+.mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions{display:none!important}
 .mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions button,.mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions a{border:1px solid rgba(100,116,139,.22)!important;background:#fff!important;color:#334155!important;border-radius:999px;padding:9px 15px;font-size:.86rem;font-weight:600;line-height:1;cursor:pointer;text-decoration:none;min-height:38px;display:inline-flex;align-items:center;box-shadow:none!important;transition:border-color 120ms ease,background 120ms ease}
 .mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions button:hover,.mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions a:hover{border-color:rgba(15,23,42,.3)!important;background:#f8fafc!important}
