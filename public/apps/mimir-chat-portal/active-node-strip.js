@@ -7,7 +7,7 @@
   const ACTIVE_KEY='mimir-chat-active-backend';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
-  const FALLBACK_LABEL='MMIR Supergenius';
+  const FALLBACK_LABEL='Supergenious Free';
   let manifestNodes=[];
   let starterModels=[];
   let liveModels=[];
@@ -17,19 +17,19 @@
 
   function fallbackLabel(value){
     return String(value||'')
-      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,FALLBACK_LABEL)
-      .replace(/MMIR Browser Guide|MMIR Guide/gi,FALLBACK_LABEL)
-      .replace(/(^|[^A-Za-z])supergeni(?:us|ous)(?:\s+free)?/gi,(match,prefix)=>prefix+FALLBACK_LABEL)
-      .replace(/(?:MMIR\s+){2,}Supergenius/gi,FALLBACK_LABEL)
+      .replace(/(?:\bMMIR\b\s*){2,}(?:Supergeni(?:us|ous))?/gi,FALLBACK_LABEL)
+      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b|MMIR Browser Guide|MMIR Guide|MMIR Supergenius|Supergenius/gi,FALLBACK_LABEL)
+      .replace(/Supergenious(?!\s+Free)/gi,FALLBACK_LABEL)
+      .replace(/Supergenious Free(?:\s+Free)+/gi,FALLBACK_LABEL)
       .trim();
   }
   function normalizeModel(model){if(!model||typeof model!=='object')return model;return {...model,name:fallbackLabel(model.name),label:fallbackLabel(model.label)};}
   function normalizeNode(node){if(!node||typeof node!=='object')return node;return {...node,name:fallbackLabel(node.name),models:Array.isArray(node.models)?node.models.map(normalizeModel):node.models};}
   function normalizeStarter(model){
     if(!model||typeof model!=='object')return model;
-    const isFallback=model.id==='mmir-guide'||model.id==='mmir-supergenius'||/MMIR Browser Guide|MMIR Guide|supergeni(?:us|ous)/i.test(String(model.label||''));
+    const isFallback=model.id==='mmir-guide'||model.id==='mmir-supergenius'||/MMIR Browser Guide|MMIR Guide|MMIR Supergenius|Supergenius|Supergenious/i.test(String(model.label||''));
     if(!isFallback)return normalizeModel(model);
-    return {...model,label:FALLBACK_LABEL,best_for:'Instant first answer while MMIR upgrades to a browser, API or local model route.',install_note:'No install required. MMIR Supergenius is the instant free fallback. MMIR automatically upgrades to WebGPU, api.mmir.ai or Local Node when available.'};
+    return {...model,label:FALLBACK_LABEL,best_for:'Instant first answer while MMIR upgrades to a browser, API or local model route.',install_note:'No install required. Supergenious Free is the instant free fallback. MMIR automatically upgrades to WebGPU, api.mmir.ai or Local Node when available.'};
   }
 
   function selectedModel(){const select=q('#runtime-model'),option=select?.selectedOptions?.[0];return {value:select?.value||'',label:fallbackLabel(String(option?.textContent||select?.value||FALLBACK_LABEL).replace(/\s+-\s+live$/i,'').trim()),runtime:option?.dataset?.runtime||''};}
@@ -70,8 +70,8 @@
     if(localReady())return nodes.find(node=>node.id==='local-node')||nodes[0];
     if(localStorage.getItem('mimir-chat-active-backend')==='mmir-api-bootstrap'){const managed=nodes.find(node=>node.id==='managed-api-bootstrap');if(managed)return managed;}
     if(selectedStarter){const byStarter=nodes.find(node=>starterId(node)===selectedStarter);if(byStarter)return byStarter;}
-    if((selected.runtime==='live'||selected.value==='mmir-guide')&&/supergeni(?:us|ous)|MMIR Browser Guide|mmir-guide|MMIR Guide/i.test(label))return nodes.find(node=>node.id==='managed-api-bootstrap')||nodes.find(node=>node.id==='browser-guide')||nodes[0];
-    if(selected.runtime==='browser-guide'||/supergeni(?:us|ous)|MMIR Guide|Model Picker|Setup Coach|Security Coach|Growth Coach/i.test(label))return nodes.find(node=>node.id==='browser-guide')||nodes[0];
+    if((selected.runtime==='live'||selected.value==='mmir-guide')&&/Supergenious Free|MMIR Browser Guide|mmir-guide|MMIR Guide/i.test(label))return nodes.find(node=>node.id==='managed-api-bootstrap')||nodes.find(node=>node.id==='browser-guide')||nodes[0];
+    if(selected.runtime==='browser-guide'||/Supergenious Free|MMIR Guide|Model Picker|Setup Coach|Security Coach|Growth Coach/i.test(label))return nodes.find(node=>node.id==='browser-guide')||nodes[0];
     if(selected.runtime==='webllm'||/WebGPU|Qwen2.5 0.5B|Gemma 3 1B|Llama 3.2 1B|Phi 3.5/i.test(label))return nodes.find(node=>needsWebGpu(node)&&nodeStatus(node)==='online')||nodes.find(needsWebGpu)||nodes[0];
     return nodes.find(node=>node.id==='managed-api-bootstrap')||(webGpuReady()?nodes.find(node=>node.id==='browser-webgpu-qwen'):null)||nodes.find(node=>node.id==='browser-guide')||nodes[0];
   }
@@ -83,7 +83,7 @@
     if(node?.route?.kind==='managed-api'){w.MimirBackendProfiles?.ensureManagedApiProfile?.();const promptEl=q('#mimir-prompt');if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Start free api.mmir.ai chat.';q('#primary-chat-link')?.click();return;}
     if(isLocalAdapter(node)){if(node?.route?.kind==='ollama-direct'){openInstaller('active-node-ollama-direct',{id:'ollama-qwen3-06b',model:'qwen3:0.6b'});return;}const u=adapterUrl(node);w.dispatchEvent(new CustomEvent('mmir-free-local-adapter-selected',{detail:{node_id:node.id,url:u,free:true,no_paid_routes_started:true}}));const promptEl=q('#mimir-prompt');const profile={name:node.name,url:u,models:modelFromNode(node),source:node.id};const go=()=>{w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile?.(profile);const b=w.MimirChatRuntimeBridge;if(b?.refresh&&b?.send){b.setStatus?.('Checking '+node.name+'...','loading');b.refresh().then(models=>{const live=Array.isArray(models)&&models.find(model=>model?.id);if(live){if(promptEl&&!String(promptEl.value||'').trim()){promptEl.value='Give me a short response from '+live.id+' through '+node.name+'.';promptEl.dispatchEvent(new Event('input',{bubbles:true}));}b.setStatus?.('Starting '+live.id+'...','loading');b.send();}else b.setStatus?.('Start '+node.name+' at '+u+' and allow CORS, then retry.','error');});return;}if(promptEl&&!String(promptEl.value||'').trim())promptEl.value='Check local /v1.';q('#primary-chat-link')?.click();};if(w.MimirBackendProfiles?.ensureFreeOpenAiLocalProfile)go();else if(w.MimirLoadDeferred)w.MimirLoadDeferred().then(go);return;}
     if(needsWebGpu(node)&&!webGpuReady()){openInstaller('active-node-webgpu-fallback');return;}
-    selectStarter(node,'Start MMIR Supergenius instant chat.');
+    selectStarter(node,'Start Supergenious Free instant chat.');
   }
   function starterAction(model){return model.runtime==='ollama'?'install':'select';}
   function starterState(model){return model.runtime==='webllm'&&!webGpuReady()?'setup':'ready';}
