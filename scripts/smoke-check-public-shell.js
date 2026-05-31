@@ -12,6 +12,8 @@ const serviceWorkerPath = join(publicDir, 'sw.js');
 const activeNodesPath = join(publicDir, 'active-chat-nodes.json');
 const activeNodeStripPath = join(publicDir, 'apps', 'mimir-chat-portal', 'active-node-strip.js');
 const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
+const macDmgPath = join(publicDir, 'downloads', 'mmir-local-node-0.1.0-mac.dmg');
+const connectorReleasePath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
 
 const failures = [];
 
@@ -117,16 +119,19 @@ requireText(mmirPath, 'id="mimir-prompt"', 'MMIR product page must expose the ch
 requireText(mmirPath, 'id="local-connector"', 'MMIR product page must expose local connector setup.');
 requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose public-safe node status.');
 requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR product page must load the chat portal script.');
-requireText(mmirPath, 'active-node-strip.js?v=20260531-supergenious-v1', 'MMIR product page must load the cache-busted active-node strip.');
+requireText(mmirPath, 'active-node-strip.js?v=20260531-webgpu-truth-v2', 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d327-20260531-supergenious-v1', 'Service worker cache must bust for Atlas UX changes.');
+requireText(serviceWorkerPath, 'mmir-pwa-d328-20260531-webgpu-truth-v2', 'Service worker cache must bust for Browser WebGPU truth changes.');
 requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip must read the selected backend profile before claiming managed API liveness.');
 requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
 requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
 requireText(activeNodeStripPath, "managedReady()?modelFromNode(node):'Verify route first'", 'Managed API card must avoid showing a live model before route verification.');
 requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
 forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
+if (!existsSync(macDmgPath)) fail('Published Mac DMG must exist when release manifest advertises it.');
+requireText(connectorReleasePath, '"path": "/downloads/mmir-local-node-0.1.0-mac.dmg"', 'Release manifest must publish the real Mac DMG path.');
+requireText(connectorReleasePath, '"status": "published"', 'Release manifest must mark the Mac DMG as published.');
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');

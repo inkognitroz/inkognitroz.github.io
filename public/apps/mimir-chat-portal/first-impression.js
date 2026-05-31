@@ -441,8 +441,10 @@ const webgpu=Boolean(model.runtime==='webllm');
 const health=String(profile?.health||'unknown').toLowerCase();
 const nodeReady=['ready','degraded','testing'].includes(health);
 const modelLabel=(model.text||'Supergenious').replace(/\s+-\s+live$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious');
+const browserSupport=window.__MimirBrowserNodeSupport;
+const webGpuReady=Boolean(browserSupport&&browserSupport.status==='ready'&&browserSupport.supported===true);
 const pills=[
-{label:'Free start',value:browser?'Guide ready':webgpu?'Browser model':'Guide available',state:'ready',target:'#mimir-prompt'},
+{label:'Free start',value:browser?'Guide ready':webgpu?(webGpuReady?'Browser model':'Supergenious ready'):'Guide available',state:webgpu&&!webGpuReady?'watch':'ready',target:'#mimir-prompt'},
 {label:'Privacy',value:modes.private?'Private on':'Turn on',state:'ready',target:'#composer-mode-dock'},
 {label:'Node',value:nodeReady?(profile.name||'Local node'):'Auto-checking',state:nodeReady?'ready':'watch',target:'#node-dashboard'},
 {label:'Model',value:live?modelLabel:modelLabel||'Installable free',state:live?'ready':'watch',target:'#model-library'}
@@ -520,6 +522,7 @@ run();
 });
 window.addEventListener('mmir-chat-modes-updated',run);
 window.addEventListener('mmir-live-model-proof-updated',run);
+window.addEventListener('mmir-browser-node-support-updated',run);
 window.addEventListener('mmir-first-chat-receipt-updated',run);
 window.addEventListener('storage',run);
 window.addEventListener('focus',run);

@@ -1825,6 +1825,10 @@
   }
 
   function browserNodeSupport(){
+    const shared=window.__MimirBrowserNodeSupport;
+    if(shared&&typeof shared==='object'){
+      return {...shared,metadata:browserNodeReceiptMetadata()};
+    }
     const secure=secureContextAvailable();
     const wasm=wasmAvailable();
     const webgpu=Boolean(window.navigator?.gpu);
@@ -1833,18 +1837,19 @@
     if(!wasm)missing.push('WASM');
     if(!webgpu)missing.push('WebGPU');
     return {
-      status:missing.length?'unsupported':'ready',
-      supported:missing.length===0,
+      status:missing.length?'unsupported':'checking',
+      supported:false,
       secure,
       wasm,
       webgpu,
-      reason:missing.length?('Missing '+missing.join(', ')):'WebGPU and WASM available',
+      reason:missing.length?('Missing '+missing.join(', ')):'Checking WebGPU adapter...',
       metadata:browserNodeReceiptMetadata()
     };
   }
 
   function webGpuAvailable(){
-    return browserNodeSupport().supported;
+    const support=browserNodeSupport();
+    return support.status==='ready'&&support.supported===true;
   }
 
   function browserNodeStatusCopy(){
@@ -1860,7 +1865,46 @@
   async function ensureWebLlmEngine(starter,onProgress){
     const modelId=String(starter?.model||'').trim();
     if(!modelId)throw new Error('Browser model id is missing.');
-    if(!webGpuAvailable())throw new Error('WebGPU is unavailable. Use Chromium/WebGPU or install the Ollama local-node path.');
+    const support=browserNodeSupport();
+    if(!support.secure||!support.wasm||!support.webgpu)throw new Error('WebGPU is unavailable. Use Supergenious now or install the Ollama local-node path.');
+    if(!webGpuAvailable()){
+      onProgress('Checking browser WebGPU adapter...');
+      let adapter=null;
+      try{
+        adapter=typeof window.navigator?.gpu?.requestAdapter==='function'?await window.navigator.gpu.requestAdapter():null;
+      }catch(error){
+        const detail={
+          ...support,
+          status:'failed',
+          supported:false,
+          reason:String(error?.message||error||'WebGPU adapter check failed'),
+          detail:'Browser Node failed closed before loading any model.',
+          node_type:'browser',
+          trust_class:'device-local',
+          cost_class:'free-user-device',
+          quality_tier:'starter',
+          execution_boundary:'current-browser-session'
+        };
+        window.__MimirBrowserNodeSupport=detail;
+        window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
+        throw new Error('WebGPU adapter check failed. Use Supergenious now or install the Ollama local-node path.');
+      }
+      const detail={
+        ...support,
+        status:adapter?'ready':'unsupported',
+        supported:Boolean(adapter),
+        reason:adapter?'WebGPU and WASM available':'No WebGPU adapter returned',
+        detail:adapter?'Browser Node can load an approved WebGPU model after user selection.':'Browser exposed WebGPU but no adapter was available.',
+        node_type:'browser',
+        trust_class:'device-local',
+        cost_class:'free-user-device',
+        quality_tier:'starter',
+        execution_boundary:'current-browser-session'
+      };
+      window.__MimirBrowserNodeSupport=detail;
+      window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
+      if(!adapter)throw new Error('No WebGPU adapter returned. Use Supergenious now or install the Ollama local-node path.');
+    }
     if(!webllmModule){
       onProgress('Loading browser model runtime...');
       webllmModule=await import('https://esm.run/@mlc-ai/web-llm');
@@ -2374,6 +2418,7 @@
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
     window.addEventListener('mmir-repair-resume-checked',handleRepairResumeChecked);
+    window.addEventListener('mmir-browser-node-support-updated',()=>{updateRuntimeChips();renderModelHelper();updateRuntimeModelActions();});
     window.addEventListener('mimir-route-chips-ready',()=>updateRouteChips(window.__MimirRouteChipState||{}));
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
     window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));

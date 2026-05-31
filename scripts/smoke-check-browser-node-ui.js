@@ -36,9 +36,26 @@ for (const text of [
   'no Cloudflare',
   'no install',
   'mmir-browser-node-support-updated',
-  'requestAdapter'
+  'requestAdapter',
+  '__MimirBrowserNodeSupport'
 ]) {
   requireIncludes(files.picker, text, `Composer picker must expose Browser Node UI/support copy: ${text}`);
+}
+
+for (const [fixture, file] of Object.entries({
+  runtime: files.runtime,
+  picker: files.picker,
+  nodes: join(root, 'public', 'apps', 'mimir-chat-portal', 'active-node-strip.js')
+})) {
+  requireIncludes(file, '__MimirBrowserNodeSupport', `Browser Node readiness must use shared adapter-proven support state: ${fixture}`);
+}
+
+if (read(join(root, 'public', 'apps', 'mimir-chat-portal', 'active-node-strip.js')).includes('Boolean(secure()&&wasm()&&navigator.gpu)')) {
+  fail('Active node strip must not mark Browser Node ready from navigator.gpu alone.');
+}
+
+if (read(join(root, 'public', 'apps', 'mimir-chat-portal', 'runtime-controls-webgpu-truth.js')).includes('Boolean(secure()&&wasm()&&navigator.gpu)')) {
+  fail('Runtime WebGPU truth layer must not mark Browser Model ready from navigator.gpu alone.');
 }
 
 for (const text of [

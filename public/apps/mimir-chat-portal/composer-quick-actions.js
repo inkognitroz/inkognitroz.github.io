@@ -82,7 +82,7 @@
     const value=String(q('#runtime-resource-chip')?.textContent||'Free browser route').trim();
     return value.replace(/\s+/g,' ').slice(0,48)||'Free browser route';
   }
-  function webGpuReady(){return Boolean(w.isSecureContext&&w.navigator?.gpu);}
+  function webGpuReady(){const s=w.__MimirBrowserNodeSupport;if(s&&typeof s==='object')return s.status==='ready'&&s.supported===true;return false;}
   function webGpuLabel(){
     return webGpuReady()?'Browser LLM ready':'Browser LLM option';
   }
@@ -318,6 +318,9 @@
     const detail=event?.detail||{};
     const models=Array.isArray(detail.models)?detail.models:[];
     localState={status:detail.status||detail.health||(models.length?'ready':localState.status),models};
+    if(menu&&!menu.hidden)menu.innerHTML=renderMenuContent();
+  });
+  w.addEventListener('mmir-browser-node-support-updated',()=>{
     if(menu&&!menu.hidden)menu.innerHTML=renderMenuContent();
   });
   w.MimirComposerQuickActions={open:()=>toggleMenu(true),close:()=>closeMenu(false),toggle:()=>toggleMenu(),run:runQuickAction};

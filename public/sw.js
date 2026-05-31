@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d327-20260531-supergenious-v1';
+const CACHE_NAME='mmir-pwa-d328-20260531-webgpu-truth-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

@@ -35,7 +35,7 @@
   function selectedModel(){const select=q('#runtime-model'),option=select?.selectedOptions?.[0];return {value:select?.value||'',label:fallbackLabel(String(option?.textContent||select?.value||FALLBACK_LABEL).replace(/\s+-\s+live$/i,'').trim()),runtime:option?.dataset?.runtime||''};}
   function secure(){const h=String(location.hostname||'');return Boolean(w.isSecureContext||location.protocol==='https:'||h==='localhost'||h==='127.0.0.1'||h==='::1');}
   function wasm(){return typeof WebAssembly==='object'&&typeof WebAssembly.instantiate==='function';}
-  function webGpuReady(){return Boolean(secure()&&wasm()&&navigator.gpu);}
+  function webGpuReady(){const s=w.__MimirBrowserNodeSupport;if(s&&typeof s==='object')return s.status==='ready'&&s.supported===true;return false;}
   function needsWebGpu(node){const requires=Array.isArray(node?.route?.requires)?node.route.requires:[];return node?.type==='browser'||requires.includes('webgpu')||String(node?.id||'').startsWith('browser-webgpu');}
   function isLocalAdapter(node){return node?.type==='local-adapter'||['local-openai-compatible','ollama-direct'].includes(String(node?.route?.kind||''));}
   function adapterUrl(node){return String(node?.route?.url||'').replace(/\/$/,'');}
@@ -98,7 +98,7 @@
   function updateFromConnector(event){const detail=event?.detail||{};const models=Array.isArray(detail.models)?detail.models:[];liveModels=models.map(model=>({id:model.id||model.name||model.model||'',name:model.name||model.label||model.id||model.model||''})).filter(model=>model.id||model.name);localState={...localState,status:detail.status||detail.health||(liveModels[0]?'ready':localState.status||'checking'),url:detail.url||localState.url};render();}
   function init(){Promise.all([loadManifest(),loadStarterCatalog()]).then(render);render();}
   d.readyState==='loading'?d.addEventListener('DOMContentLoaded',init):init();
-  ['load','mmir-backend-profiles-updated','mmir-chat-history-updated','mmir-live-model-proof-updated'].forEach(name=>w.addEventListener(name,render));
+  ['load','mmir-backend-profiles-updated','mmir-chat-history-updated','mmir-live-model-proof-updated','mmir-browser-node-support-updated'].forEach(name=>w.addEventListener(name,render));
   w.addEventListener('mmir-local-connector-refreshed',updateFromConnector);
   let n=0,t=setInterval(()=>{render();if(++n>10)clearInterval(t)},750);
 })();

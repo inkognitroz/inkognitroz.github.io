@@ -94,7 +94,9 @@
     };
   }
   function emitBrowserNodeSupport(){
-    window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail:{...browserNodeSupport,node_type:'browser',trust_class:'device-local',cost_class:'free-user-device',quality_tier:'starter',execution_boundary:'current-browser-session'}}));
+    const detail={...browserNodeSupport,node_type:'browser',trust_class:'device-local',cost_class:'free-user-device',quality_tier:'starter',execution_boundary:'current-browser-session'};
+    window.__MimirBrowserNodeSupport=detail;
+    window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
   }
   async function detectBrowserNodeSupport(){
     const base=baseBrowserNodeSupport();
