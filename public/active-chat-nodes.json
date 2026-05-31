@@ -4,17 +4,17 @@
   "nodes": [
     {
       "id": "browser-guide",
-      "name": "MMIR Supergenius",
+      "name": "Supergenius Free",
       "type": "free",
       "status": "online",
       "trust_level": "public-free",
       "cost": { "mode": "free", "requires_approval": false },
-      "route": { "kind": "starter", "starter_id": "mmir-guide" },
+      "route": { "kind": "starter", "starter_id": "mmir-supergenius" },
       "capabilities": ["chat.completions", "onboarding", "routing.free"],
       "models": [
         {
-          "id": "mmir-guide",
-          "name": "MMIR Supergenius",
+          "id": "mmir-supergenius",
+          "name": "Supergenius Free",
           "status": "available",
           "provider": "mmir",
           "source": "browser-helper"
@@ -23,7 +23,7 @@
     },
     {
       "id": "managed-api-bootstrap",
-      "name": "MMIR Free Control Plane",
+      "name": "Supergenius Free",
       "type": "managed-api",
       "status": "verify_before_chat",
       "trust_level": "public-free",
@@ -32,8 +32,8 @@
       "capabilities": ["health", "status", "models", "openai.v1.models", "chat.completions", "openai.v1.chat.completions", "chat.compare", "chat.discussions", "routing.free"],
       "models": [
         {
-          "id": "mmir-guide",
-          "name": "MMIR Supergenius",
+          "id": "mmir-supergenius",
+          "name": "Supergenius Free",
           "status": "available",
           "provider": "mmir",
           "source": "api.mmir.ai"

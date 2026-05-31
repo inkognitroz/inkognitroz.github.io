@@ -15,8 +15,9 @@
   const FIRST_CHAT_RECEIPT_PREFIX='mimir-first-chat-receipt-v1:';
   const ACTIVATION_REPLAY_PREFIX='mimir-activation-replay-v1:';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
-  const STARTER_MODEL_CATALOG='./free-model-starters.json?v=20260530-supergenius-live-v1';
+  const STARTER_MODEL_CATALOG='./free-model-starters.json?v=20260531-atlas-ux-v1';
   const STARTER_PREFIX='starter:';
+  const SUPERGENIUS_LABEL='Supergenius Free';
   const MAX_STORED_MESSAGES=80;
   const MAX_CONTEXT_MESSAGES=24;
   const promptEl=document.getElementById('mimir-prompt');
@@ -906,7 +907,7 @@
         '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--resources" aria-label="Open node resource status">Resources checking</button>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button composer-core-control composer-core-control--voice" aria-label="Voice input" title="Voice input">Mic</button>'+
       '</div>'+
-      '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: free browser helper first, local model when connected.</small>';
+      '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: Supergenius Free first, local model when connected.</small>';
     const bar=formEl.querySelector('.composer-bar');
     if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
     modelChipEl=document.getElementById('runtime-model-chip');
@@ -1199,7 +1200,7 @@
 
   function defaultMmirInstruction(){
     return [
-      'You are MMIR Supergenius, the default assistant on MMIR.ai.',
+      'You are Supergenius Free, the default assistant on MMIR.ai.',
       'Answer the user question first with useful, direct substance.',
       'Do not turn ordinary chats into setup/support flows.',
       'MMIR is the orchestration layer for trusted AI; explain that only when relevant.',
@@ -1245,6 +1246,12 @@
     if(backendKnowledge)system.push({role:'system',content:backendKnowledge});
     return system.concat(next);
   }
+  function webLlmContextMessages(prompt){
+    const raw=contextMessages(prompt).filter(message=>message&&message.content&&(message.role==='system'||message.role==='user'||message.role==='assistant'));
+    const systemContent=raw.filter(message=>message.role==='system').map(message=>message.content).join('\n\n').trim();
+    const rest=raw.filter(message=>message.role!=='system');
+    return systemContent?[{role:'system',content:systemContent}].concat(rest):rest;
+  }
 
   function normalizeModels(payload){
     const models=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
@@ -1272,20 +1279,20 @@
     const id=String(model?.id||model?.model||'').trim();
     const raw=String(model?.display_name||model?.name||model?.label||model?.id||model?.model||'').trim();
     if(id==='mmir-guide'||id==='mmir-supergenius'||/supergenious|supergenius/i.test(raw)){
-      return 'MMIR Supergenius';
+      return SUPERGENIUS_LABEL;
     }
     return raw;
   }
 
   function fallbackStarterModels(){
     return [
-      {id:'mmir-supergenius',label:'MMIR Supergenius',runtime:'auto',status:'hosted-free',cost:'free hosted',model:'mmir-supergenius',best_for:'Immediate hosted chat. No setup, no local model and no paid route required.'},
-      {id:'mmir-guide',label:'MMIR Guide',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Setup help.'},
-      {id:'mmir-model-picker',label:'MMIR Model Picker',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Choose model.'},
-      {id:'mmir-setup-coach',label:'MMIR Setup Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Local setup.'},
-      {id:'mmir-security-coach',label:'MMIR Security Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Security.'},
-      {id:'mmir-growth-coach',label:'MMIR Growth Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Growth.'},
-      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B',runtime:'webllm',status:'active-browser-webgpu',cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Browser LLM.'},
+      {id:'mmir-supergenius',label:SUPERGENIUS_LABEL,runtime:'auto',status:'hosted-free',cost:'free hosted',model:'mmir-supergenius',best_for:'Immediate hosted chat. No setup, no local model and no paid route required.'},
+      {id:'mmir-guide',label:'MMIR Guide',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Setup help.',visibility:'internal'},
+      {id:'mmir-model-picker',label:'MMIR Model Picker',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Choose model.',visibility:'internal'},
+      {id:'mmir-setup-coach',label:'MMIR Setup Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Local setup.',visibility:'internal'},
+      {id:'mmir-security-coach',label:'MMIR Security Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Security.',visibility:'internal'},
+      {id:'mmir-growth-coach',label:'MMIR Growth Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Growth.',visibility:'internal'},
+      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'experimental-browser-webgpu',cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Browser LLM.'},
       {id:'ollama-gemma3-270m',label:'Gemma 3 270M',runtime:'ollama',status:'installable-free',cost:'free local',model:'gemma3:270m',size:'292 MB',best_for:'Tiny local.'},
       {id:'ollama-llama32-1b',label:'Llama 3.2 1B',runtime:'ollama',status:'installable-free',cost:'free local',model:'llama3.2:1b',size:'1.3 GB',best_for:'Laptop local.'}
     ];
@@ -1402,8 +1409,8 @@
   }
 
   function starterAvailabilityLabel(model){
-    if(model?.runtime==='auto')return 'ready now - hosted free model';
-    if(model?.runtime==='browser-guide')return 'ready now - browser helper';
+    if(model?.runtime==='auto')return 'ready now - instant free chat';
+    if(model?.runtime==='browser-guide')return 'advanced helper';
     if(model?.runtime==='webllm')return webGpuAvailable()?'Browser Node ready - free/private/starter':'Browser Node unsupported - WebGPU/WASM needed';
     if(model?.status==='installable-free')return 'install to activate - free local';
     return String(model?.status||'free').replaceAll('-',' ');
@@ -1626,14 +1633,15 @@
 
     if(starterModels.length){
       const autoGroup=document.createElement('optgroup');
-      autoGroup.label='Ready now: hosted free chat';
+      autoGroup.label='Ready now: instant free chat';
       const browserGroup=document.createElement('optgroup');
-      browserGroup.label='Ready now: free browser helpers';
+      browserGroup.label='Advanced helpers';
       const webGpuGroup=document.createElement('optgroup');
-      webGpuGroup.label='Ready now: free browser WebGPU LLMs';
+      webGpuGroup.label='Advanced: browser model experiments';
       const installGroup=document.createElement('optgroup');
-      installGroup.label='Install to activate: free local Ollama models';
+      installGroup.label='Install to activate: local models';
       for(const model of starterModels){
+        if(internalStarter(model))continue;
         const option=document.createElement('option');
         option.value=starterValue(model);
         option.textContent=model.label+' - '+starterAvailabilityLabel(model);
@@ -1833,7 +1841,11 @@
   function browserNodeStatusCopy(){
     const support=browserNodeSupport();
     if(support.supported)return 'Browser Node supported: free browser-local/private starter, no provider key, no Cloudflare, no install. First use downloads model weights into this browser cache.';
-    return 'Browser Node unsupported here: '+support.reason+'. Use MMIR Guide now or install Local Node/Ollama for the free private model path.';
+    return 'Browser Model is unavailable here: '+support.reason+'. Use '+SUPERGENIUS_LABEL+' now or install Local Node/Ollama for a private model path.';
+  }
+
+  function internalStarter(model){
+    return model?.visibility==='internal'||['mmir-guide','mmir-model-picker','mmir-setup-coach','mmir-security-coach','mmir-growth-coach'].includes(String(model?.id||''));
   }
 
   async function ensureWebLlmEngine(starter,onProgress){
@@ -1877,21 +1889,21 @@
     stopRequested=false;
     currentAbortController=new AbortController();
     setBusy(true);
-    appendMessage('user',prompt,'MMIR Supergenius');
+    appendMessage('user',prompt,SUPERGENIUS_LABEL);
     promptEl.value='';
-    const meta=starter?.label||'MMIR Supergenius';
-    const assistant=appendMessage('assistant','Thinking...',meta,{retryPrompt:prompt,model:'MMIR Supergenius'});
-    setStatus('MMIR Supergenius is answering on the hosted free route...','loading');
+    const meta=starter?.label||SUPERGENIUS_LABEL;
+    const assistant=appendMessage('assistant','Thinking...',meta,{retryPrompt:prompt,model:SUPERGENIUS_LABEL});
+    setStatus(SUPERGENIUS_LABEL+' is answering...','loading');
     try{
       const content=await managedSupergeniusContent(prompt,(partial)=>{
         updateMessage(assistant.message.id,partial||'Thinking...',meta);
-        setStatus('Streaming from MMIR Supergenius...','loading');
+        setStatus('Streaming from '+SUPERGENIUS_LABEL+'...','loading');
       },currentAbortController.signal);
-      updateMessage(assistant.message.id,content||'MMIR Supergenius returned an empty response.',meta);
+      updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',meta);
       writeActiveProfilePatch({health:'ready',liveness:'chat-probed',lastProofAt:new Date().toISOString(),lastProofModel:'mmir-supergenius'});
       uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{route_class:'free',cost_class:'free',provider_called:false,no_paid_routes_started:true});
-      renderLiveProof('MMIR Supergenius answered on the hosted free route. Local/private nodes can still take over after proof.', 'ready', baseProofItems('https://api.mmir.ai').concat([{label:'Chat response',state:'ready',detail:'MMIR Supergenius'}]), proofRepairActions('answered'));
-      setStatus('MMIR Supergenius answered.','ready');
+      renderLiveProof(SUPERGENIUS_LABEL+' answered on the hosted free route. Local/private nodes can still take over after proof.', 'ready', baseProofItems('https://api.mmir.ai').concat([{label:'Chat response',state:'ready',detail:SUPERGENIUS_LABEL}]), proofRepairActions('answered'));
+      setStatus(SUPERGENIUS_LABEL+' answered.','ready');
     }catch(error){
       const message=stopRequested?'Response stopped.':friendlyError(error);
       updateMessage(assistant.message.id,message,stopRequested?'stopped':'error');
@@ -1915,7 +1927,7 @@
         updateMessage(assistant.message.id,message,starter.label);
         setStatus(message,'loading');
       });
-      const payloadMessages=contextMessages(prompt);
+      const payloadMessages=webLlmContextMessages(prompt);
       const settings=readRuntimeSettings();
       const chunks=await engine.chat.completions.create({
         messages:payloadMessages,
@@ -1953,22 +1965,22 @@
         ...metadata
       });
       try{
-        setStatus('Browser Node unavailable. Switching to MMIR Supergenius...','loading');
+        setStatus('Browser Model unavailable. Switching to '+SUPERGENIUS_LABEL+'...','loading');
         const content=await managedSupergeniusContent(prompt,(partial)=>{
-          updateMessage(assistant.message.id,partial||'Thinking...', 'MMIR Supergenius');
+          updateMessage(assistant.message.id,partial||'Thinking...', SUPERGENIUS_LABEL);
         },currentAbortController.signal);
-        updateMessage(assistant.message.id,content||'MMIR Supergenius returned an empty response.','MMIR Supergenius');
+        updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',SUPERGENIUS_LABEL);
         uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{fallback_from:'browser-webgpu',route_class:'free',cost_class:'free',provider_called:false,no_paid_routes_started:true});
-        setStatus('Browser Node was unavailable. MMIR Supergenius answered on the hosted free route.','ready');
+        setStatus('Browser Model was unavailable. '+SUPERGENIUS_LABEL+' answered instead.','ready');
       }catch(fallbackError){
         const fallback=[
           'Browser Node could not start: '+String(error?.message||support.reason||'runtime failed')+'.',
-          'MMIR Supergenius fallback also failed: '+friendlyError(fallbackError)+'.',
+          SUPERGENIUS_LABEL+' fallback also failed: '+friendlyError(fallbackError)+'.',
           'No provider key, Cloudflare setup, paid API or local install was used by the browser route.',
-          guideResponse(prompt,{id:'mmir-guide',label:'MMIR Guide'})
+          guideResponse(prompt,{id:'mmir-guide',label:'Setup helper'})
         ].join('\n\n');
         updateMessage(assistant.message.id,fallback,'browser node unavailable');
-        setStatus('Browser Node unavailable. MMIR Guide answered without a paid route.','ready');
+        setStatus('Browser Model unavailable. Setup helper answered without a paid route.','ready');
       }
     }finally{
       currentAbortController=null;
@@ -1977,7 +1989,7 @@
   }
 
   function guideResponseText(starter,helperId,wantsModel,wantsConnect,wantsBusiness,emptyPrompt){
-    const guideName=starter.label||'MMIR Guide';
+    const guideName=starter.label||'Setup helper';
     const parts=[
       guideName+' is active: free browser guidance, not a remote LLM. No provider keys or billing data enter MMIR cloud.',
       'Useful now: chat, pick a free route, install local AI and prove a live model.'

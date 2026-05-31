@@ -2,6 +2,7 @@
   const STARTER_PREFIX='starter:';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const SUPERGENIUS_LABEL='Supergenius Free';
   let picker=null;
   let starterModels=fallbackStarterModels();
   let starterCatalogLoaded=false;
@@ -13,29 +14,37 @@
   function escapeHtml(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function modelSelect(){return document.getElementById('runtime-model');}
   function promptEl(){return document.getElementById('mimir-prompt');}
-  function selectedLabel(){const select=modelSelect();return String(select?.selectedOptions?.[0]?.textContent||select?.value||'auto').replace(/\s+-\s+live$/i,'').trim();}
+  function displayLabel(value){
+    return String(value||'')
+      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,SUPERGENIUS_LABEL)
+      .replace(/MMIR Browser Guide|MMIR Guide|free browser guide/gi,SUPERGENIUS_LABEL)
+      .replace(/(^|[^A-Za-z])supergeni(?:us|ous)(?:\s+free)?/gi,(match,prefix)=>prefix+SUPERGENIUS_LABEL)
+      .replace(/(?:MMIR\s+){2,}Supergenius/gi,SUPERGENIUS_LABEL)
+      .trim();
+  }
+  function selectedLabel(){const select=modelSelect();return displayLabel(String(select?.selectedOptions?.[0]?.textContent||select?.value||'auto').replace(/\s+-\s+live$/i,'').trim());}
   function selectedValue(){return String(modelSelect()?.value||'');}
   function starterId(value){return String(value||'').startsWith(STARTER_PREFIX)?String(value).slice(STARTER_PREFIX.length):'';}
   function starterValue(model){return STARTER_PREFIX+model.id;}
-  function cleanTitle(text,value){return String(text||value||'Model').replace(/\s+-\s+(live|ready now.*|install to activate.*)$/i,'').trim();}
+  function cleanTitle(text,value){return displayLabel(String(text||value||'Model').replace(/\s+-\s+(live|ready now.*|hosted free model|install to activate.*)$/i,'').trim());}
   function fallbackStarterModels(){
     return [
-      {id:'mmir-guide',label:'MMIR Guide - free browser helper',runtime:'browser-guide',status:'live-browser',model:'',install_note:'Works immediately with no backend or API key.'},
-      {id:'mmir-model-picker',label:'MMIR Model Picker - live helper',runtime:'browser-guide',status:'live-browser',model:'',install_note:'Helps choose the right free model and route.'},
-      {id:'webllm-qwen25-05b',label:'Qwen2.5 0.5B - active in browser',runtime:'webllm',status:'active-browser-webgpu',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Runs locally in a WebGPU-capable browser.'},
+      {id:'mmir-supergenius',label:SUPERGENIUS_LABEL,runtime:'auto',status:'hosted-free',model:'mmir-supergenius',install_note:'Works immediately with no install, key or paid route.'},
+      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'experimental-browser-webgpu',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Runs locally only when this browser supports WebGPU/WASM.'},
       {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',model:'gemma3:270m',install_note:'Fastest useful local starter through MMIR Local Node.'},
       {id:'ollama-qwen3-06b',label:'Qwen3 0.6B - tiny reasoning local',runtime:'ollama',status:'installable-free',model:'qwen3:0.6b',install_note:'Small reasoning-capable local starter.'}
     ];
   }
   function starterGroupLabel(model){
-    if(model.runtime==='browser-guide')return 'Ready now: free browser helpers';
-    if(model.runtime==='webllm')return 'Ready now: free browser WebGPU LLMs';
-    return 'Install to activate: free local Ollama models';
+    if(model.runtime==='auto')return 'Ready now: instant free chat';
+    if(model.runtime==='browser-guide')return 'Advanced: internal helpers';
+    if(model.runtime==='webllm')return 'Advanced: browser model experiments';
+    return 'Install to activate: local models';
   }
   function starterToOption(model){
     return {
       value:starterValue(model),
-      textContent:(model.label||model.id)+' - '+(model.runtime==='ollama'?'install to activate - free local':(model.runtime==='webllm'?'ready now - browser WebGPU':'ready now - browser helper')),
+      textContent:displayLabel(model.label||model.id)+' - '+(model.runtime==='auto'?'ready now - hosted free model':(model.runtime==='ollama'?'install to activate - local':(model.runtime==='webllm'?'experimental - browser model':'advanced helper'))),
       dataset:{runtime:model.runtime||'starter'},
       parentElement:{label:starterGroupLabel(model)},
       __starterFloor:true
@@ -77,8 +86,8 @@
     const failed=browserNodeSupport.status==='failed';
     return {
       state:ready?'ready':(checking?'loading':(failed?'failed':'blocked')),
-      label:ready?'Browser Node':(checking?'Browser Node checking':(failed?'Browser Node failed':'Browser Node unsupported')),
-      action:ready?'Use Browser Node':(checking?'Checking support':'Unsupported here'),
+      label:ready?'Browser Model':(checking?'Browser Model checking':(failed?'Browser Model failed':'Browser Model unavailable')),
+      action:ready?'Try browser model':(checking?'Checking support':'Unavailable here'),
       detail:browserNodeDetail(),
       disabled:!ready,
       meta:['free','browser-local/private','starter quality','no provider key','no Cloudflare','no install']
@@ -107,6 +116,7 @@
     const existing=new Set((options||[]).map(option=>String(option.value||'')));
     const floor=[];
     for(const model of starterModels){
+      if(model.visibility==='internal')continue;
       const value=starterValue(model);
       if(!model?.id||existing.has(value))continue;
       floor.push(starterToOption(model));
@@ -130,7 +140,8 @@
     const value=String(option?.value||'');
     const runtime=String(option?.dataset?.runtime||'');
     if(runtime==='live')return {state:'live',label:'Live',action:'Use live',detail:'Active backend route. Proof stays cost-guarded.'};
-    if(runtime==='browser-guide')return {state:'ready',label:'Browser helper',action:'Use now',detail:'Works immediately with no backend or API key.'};
+    if(runtime==='auto')return {state:'ready',label:'Instant chat',action:'Use now',detail:'Works immediately with no install, key or paid route.'};
+    if(runtime==='browser-guide')return {state:'ready',label:'Internal helper',action:'Use advanced',detail:'Internal guidance route; hidden from first-time model choice.'};
     if(runtime==='webllm')return browserNodeKind();
     if(runtime==='ollama'||starterId(value))return {state:'install',label:'Free local install',action:'Install / prove',detail:'Installs through MMIR Local Node and Ollama.'};
     return {state:'planned',label:'Model option',action:'Use',detail:'Select without starting paid compute.'};
@@ -162,6 +173,15 @@
   }
   function localModel(){return (localState.models||[]).map(model=>String(model?.id||model?.name||model?.model||'').trim()).find(Boolean)||'';}
   function localReady(){return Boolean(localModel())&&!/^(off|err|block)/i.test(localState.status||'');}
+  function isInternalStarter(model){return model?.visibility==='internal'||['mmir-guide','mmir-model-picker','mmir-setup-coach','mmir-security-coach','mmir-growth-coach'].includes(String(model?.id||''));}
+  function pickerOptionVisible(option){
+    const value=String(option?.value||'');
+    const id=starterId(value);
+    const starter=id?starterModels.find(model=>model.id===id):null;
+    if(starter&&isInternalStarter(starter))return false;
+    const title=String(option?.textContent||'');
+    return !/MMIR Guide|Model Picker|Setup Coach|Security Coach|Growth Coach/i.test(title);
+  }
   function liveLocalValue(){
     const model=localModel();
     if(!model)return '';
@@ -180,21 +200,31 @@
   }
   function webGpuLabel(model,index){
     const title=cleanTitle(model.label,model.id).replace(/\s+-\s+active in browser$/i,'');
-    return index===0?'Browser LLM':title.replace(/^(.+?)\s+\d.*$/,'$1 WebGPU');
+    return index===0?'Browser Model':title.replace(/^(.+?)\s+\d.*$/,'$1 Browser');
+  }
+  function compareModelsAction(){
+    const prompt=promptEl();
+    if(prompt&&!String(prompt.value||'').trim()){
+      prompt.value='Compare the best available MMIR model routes for this question.';
+      prompt.dispatchEvent(new Event('input',{bubbles:true}));
+      prompt.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    closePicker(false);
+    const openComparison=()=>{const panel=document.getElementById('model-comparison-panel');if(panel&&'open' in panel)panel.open=true;(document.getElementById('multi-model-workspace')||panel||prompt)?.scrollIntoView?.({block:'start',behavior:'smooth'});};
+    if(window.MimirLoadDeferred)window.MimirLoadDeferred().then(openComparison);else openComparison();
+    window.setTimeout(()=>document.getElementById('compare-models')?.focus({preventScroll:true}),160);
   }
   function recommendationCards(){
     const current=selectedValue();
-    const guide=starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
+    const supergenius=starterModels.find(model=>model.id==='mmir-supergenius')||starterModels.find(model=>model.runtime==='auto')||starterModels.find(model=>model.id==='mmir-guide')||starterByRuntime('browser-guide');
     const webgpuModels=webGpuStarterModels();
     const local=firstInstallableStarter();
     const liveLocal=localReady()&&{id:'live-local',label:'Local ready',detail:'Private Local Node model. No installer needed.',model:{id:'live-local',label:localModel(),runtime:'live-local'},value:liveLocalValue(),action:'chat-local',state:'live'};
     const items=[
-      guide&&{id:'chat-now',label:'Chat now',detail:'Immediate free browser helper. No setup, no key, no paid route.',model:guide,action:'chat',state:'ready'},
-      ...webgpuModels.map((model,index)=>{
-        const kind=browserNodeKind();
-        return {id:'browser-llm-'+model.id,label:index===0?'Browser Node':webGpuLabel(model,index),detail:kind.detail,model,action:kind.disabled?'blocked-browser':'chat',state:kind.state,disabled:kind.disabled};
-      }),
-      liveLocal||(local&&{id:'local-install',label:'Install local',detail:'One free Ollama starter through MMIR Local Node for Mac, Windows, Linux or Pi.',model:local,action:'install',state:'install'})
+      supergenius&&{id:'supergenius-free',label:SUPERGENIUS_LABEL,detail:'Ask immediately. No setup, no key, no paid route.',model:supergenius,action:'chat',state:'ready'},
+      webgpuModels[0]&&{id:'browser-model',label:'Browser Model',detail:browserNodeKind().disabled?'Experimental. Unavailable in this browser until WebGPU/WASM is supported.':'Experimental browser-local model. First use downloads weights.',model:webgpuModels[0],action:browserNodeKind().disabled?'blocked-browser':'chat',state:browserNodeKind().state,disabled:browserNodeKind().disabled},
+      liveLocal||(local&&{id:'local-model',label:'Local Model',detail:localReady()?'Private Local Node model ready.':'Install a small local model when you want private/on-device chat.',model:local,action:'install',state:'install'}),
+      supergenius&&{id:'compare-models',label:'Compare Models',detail:'Open side-by-side comparison when two live routes are connected.',model:supergenius,value:'compare-models',action:'compare',state:'planned'}
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>{
       const value=item.value||starterValue(item.model);
@@ -331,7 +361,7 @@
     if(!el)return;
     const select=modelSelect();
     const rawOptions=Array.from(select?.options||[]).filter(option=>String(option.value||'').trim());
-    const options=freeRouteFloor(rawOptions);
+    const options=freeRouteFloor(rawOptions).filter(pickerOptionVisible);
     const floorActive=options.length>rawOptions.length;
     if(!options.length){
       el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose a model</strong><p>MMIR is loading free browser and local model routes. No paid route starts here.</p></div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>';
@@ -339,7 +369,7 @@
       el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
       return;
     }
-    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Free/browser/local paths first; provider keys stay outside this public page.</p>'+(floorActive?'<small class="composer-route-floor">Free route floor active: ready-now and installable choices stay visible while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, WebGPU or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label>'+routeFilterControls()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><div class="composer-model-empty" data-picker-search-empty hidden><span>No matching route. Try all routes, qwen, gemma, browser, local or live.</span><button type="button" data-picker-empty-reset>Show all routes</button></div>';
+    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Start simple; advanced routes stay folded until you need them.</p>'+(floorActive?'<small class="composer-route-floor">Free starter choices stay available while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<details class="composer-model-advanced"><summary>Advanced routes</summary><label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, browser or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label>'+routeFilterControls()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><div class="composer-model-empty" data-picker-search-empty hidden><span>No matching route. Try all routes, qwen, gemma, browser, local or live.</span><button type="button" data-picker-empty-reset>Show all routes</button></div></details>';
     el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
     el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
     wireFilters(el);
@@ -372,6 +402,10 @@
     window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),120);
   }
   function selectModel(value,action){
+    if(action==='compare'){
+      compareModelsAction();
+      return;
+    }
     const select=modelSelect();
     if(!select||!value)return;
     const id=starterId(value);

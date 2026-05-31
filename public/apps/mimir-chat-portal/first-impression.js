@@ -440,7 +440,7 @@ const browser=Boolean(model.value.startsWith('starter:')&&model.runtime==='brows
 const webgpu=Boolean(model.runtime==='webllm');
 const health=String(profile?.health||'unknown').toLowerCase();
 const nodeReady=['ready','degraded','testing'].includes(health);
-const modelLabel=(model.text||'MMIR Guide').replace(/\s+-\s+live$/i,'');
+const modelLabel=(model.text||'Supergenius Free').replace(/\s+-\s+live$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenius Free');
 const pills=[
 {label:'Free start',value:browser?'Guide ready':webgpu?'Browser model':'Guide available',state:'ready',target:'#mimir-prompt'},
 {label:'Privacy',value:modes.private?'Private on':'Turn on',state:'ready',target:'#composer-mode-dock'},

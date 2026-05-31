@@ -74,7 +74,7 @@ for (const selector of [
 }
 
 for (const text of [
-  'MMIR Supergenius',
+  'Supergenius Free',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
@@ -87,7 +87,7 @@ for (const text of [
 }
 
 for (const text of [
-  'MMIR Supergenius is the instant free fallback',
+  'Supergenius Free answers immediately',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
@@ -102,9 +102,9 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
-requireIncludes(files.mmir, 'route-chips.js?v=20260531-launch-label-boundary-v3', 'Route-chip polish must load progressively after first-paint chat runtime.');
+requireIncludes(files.mmir, 'route-chips.js?v=20260531-atlas-ux-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API client cache must bust for Local Network Access loopback support.');
-requireIncludes(files.mmir, 'chat-runtime.js?v=20260531-local-loopback-v3', 'Chat runtime cache must bust for Local Network Access loopback support.');
+requireIncludes(files.mmir, 'chat-runtime.js?v=20260531-atlas-ux-v1', 'Chat runtime cache must bust for Local Network Access loopback support.');
 requireIncludes(files.mmir, 'quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1', 'Quiet-first-paint guard must load Local Network Access loopback support.');
 requireIncludes(files.apiClient, "targetAddressSpace='loopback'", 'Local fetches must request loopback address-space permission for modern Chromium.');
 requireIncludes(files.runtime, "?'loopback':undefined", 'Streaming local chat must request loopback address-space permission for modern Chromium.');
