@@ -22,10 +22,10 @@
       "user_goal": "Ask MMIR something immediately and get a helpful answer before setup.",
       "trust_boundary": "Public browser only. No backend, no account, no provider key.",
       "free_first": "Free browser guide route. No paid service.",
-      "entry_points": ["First screen composer", "Supergenius Free model"],
+      "entry_points": ["First screen composer", "Supergenious model"],
       "steps": [
         "Page loads and prepares safe defaults automatically",
-        "Supergenius Free is selected when no live model is available",
+        "Supergenious is selected when no live model is available",
         "User types a prompt",
         "Browser guide answers truthfully and explains next setup steps"
       ],

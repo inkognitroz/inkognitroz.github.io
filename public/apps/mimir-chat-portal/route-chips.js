@@ -1,6 +1,6 @@
 (function(){
   const w=window,d=document,api=w.MimirApiClient||{},q=id=>d.getElementById(id);
-  const FALLBACK_LABEL='Supergenius Free';
+  const FALLBACK_LABEL='Supergenious';
   function clip(v,m=34){const s=String(v||'').replace(/\s+/g,' ').trim();return s.length<=m?s:s.slice(0,m-3).trim()+'...';}
   function display(v){return String(v||'').replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,FALLBACK_LABEL).replace(/MMIR Browser Guide|MMIR Guide/gi,FALLBACK_LABEL).replace(/supergenious(?:\s+free)?/gi,FALLBACK_LABEL).replace(/(^|[^A-Za-z])supergenius(?:\s+free)?/gi,(match,prefix)=>prefix+FALLBACK_LABEL).replace(/(?:MMIR\s+){2,}Supergenius/gi,FALLBACK_LABEL);}
   function chip(id,text,state,title){const e=typeof id==='string'?q(id):id;if(!e)return;const v=display(String(text||'').trim());e.textContent=v;e.dataset.state=state||'idle';if(title||v)e.title=display(title||v);}
@@ -15,7 +15,7 @@
   function modelState(sel,webGpu){const r=selectedRuntime(sel);if(r==='live'||r==='browser-guide'||r==='auto')return 'ready';if(r==='webllm')return webGpu?'setup':'offline';if(r==='ollama')return 'setup';return 'idle';}
   function updateRuntime({modelSelect=q('runtime-model'),profile=null,webGpu=Boolean(navigator.gpu)}={}){
     const m=modelLabel(modelSelect),r=selectedRuntime(modelSelect);
-    chip('runtime-model-chip',clip(m,38),modelState(modelSelect,webGpu),r==='auto'||r==='browser-guide'?'Supergenius Free answers immediately. MMIR upgrades automatically to verified browser, API or Local Node routes when available.':m);
+    chip('runtime-model-chip',clip(m,38),modelState(modelSelect,webGpu),r==='auto'||r==='browser-guide'?'Supergenious answers immediately. MMIR upgrades automatically to verified browser, API or Local Node routes when available.':m);
     const t=trust(profile);
     if(q('runtime-node-chip')&&!q('runtime-node-chip').textContent)chip('runtime-node-chip','Node: '+clip(route(profile),32),profile?.health==='offline'?'offline':'idle','Selected node or route. Proof updates this state when backend checks finish.');
     chip('runtime-privacy-chip',t==='policy required'?'Privacy: policy required':'Privacy: '+t,t==='policy required'?'degraded':'ready','Security/privacy state. No browser provider secrets; prompts are not stored in the public repo.');

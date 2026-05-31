@@ -75,8 +75,8 @@
   }
   function selectedModelLabel(){
     const select=q('#runtime-model');
-    const label=String(select?.selectedOptions?.[0]?.textContent||q('#runtime-model-chip')?.textContent||'Supergenius Free').trim();
-    return label.replace(/\s+-\s+(live|ready now|browser helper|active in browser|hosted free model).*$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenius Free').slice(0,52)||'Supergenius Free';
+    const label=String(select?.selectedOptions?.[0]?.textContent||q('#runtime-model-chip')?.textContent||'Supergenious').trim();
+    return label.replace(/\s+-\s+(live|ready now|browser helper|active in browser|hosted free model).*$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious').slice(0,52)||'Supergenious';
   }
   function resourceSummary(){
     const value=String(q('#runtime-resource-chip')?.textContent||'Free browser route').trim();
@@ -91,7 +91,7 @@
   function renderRouteStrip(){
     const lm=localModel();
     return '<div class="composer-quick-route-strip" aria-label="Free chat routes">'+
-      '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>Supergenius Free</span><small>Free now</small></button>'+
+      '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>Supergenious</span><small>Free now</small></button>'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="webgpu" data-route-state="'+(webGpuReady()?'ready':'setup')+'"><span>'+webGpuLabel()+'</span><small>Qwen WebGPU</small></button>'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="local" data-route-state="'+(localReady()?'ready':'install')+'"><span>'+(localReady()?'Local ready':'Install local')+'</span><small>'+escapeHtml(lm||'Qwen3 0.6B')+'</small></button>'+
     '</div>';
@@ -237,7 +237,7 @@
   }
   function runQuickRoute(route){
     if(route==='guide'){
-      startStarterRoute('mmir-supergenius','Start free chat with Supergenius Free. Tell me what is active and one useful next action.','Starting Supergenius Free chat.');
+      startStarterRoute('mmir-supergenius','Start free chat with Supergenious. Tell me what is active and one useful next action.','Starting Supergenious chat.');
       return;
     }
     if(route==='webgpu'){

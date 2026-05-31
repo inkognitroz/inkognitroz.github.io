@@ -102,7 +102,7 @@
       activeDesc.textContent=(active.provider||'local-node')+' \u00b7 '+(active.models||'models selected in backend')+' \u00b7 '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
-      activeBadge.textContent='Free chat ready';activeTitle.textContent='Ask MMIR now. Add your own model when ready.';activeDesc.textContent='Supergenius Free answers immediately; Connect Model stays optional for private local models and trusted backends.';primaryLink.href='#mimir-chat-runtime';primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
+      activeBadge.textContent='Free chat ready';activeTitle.textContent='Ask MMIR now. Add your own model when ready.';activeDesc.textContent='Supergenious answers immediately; Connect Model stays optional for private local models and trusted backends.';primaryLink.href='#mimir-chat-runtime';primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }
   }
 

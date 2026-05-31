@@ -4,7 +4,7 @@
   "models": [
     {
       "id": "mmir-supergenius",
-      "label": "Supergenius Free",
+      "label": "Supergenious",
       "runtime": "auto",
       "status": "hosted-free",
       "cost": "free hosted",
