@@ -86,6 +86,12 @@ for (const file of walk(publicDir)) {
   if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && read(file).includes('Supergenious')) {
     fail(`Use canonical product label "MMIR Supergenius" instead of "Supergenious": ${rel}`);
   }
+  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /(?:MMIR\s+){2,}Supergenius/i.test(read(file))) {
+    fail(`Do not duplicate the MMIR Supergenius brand prefix: ${rel}`);
+  }
+  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /mmir-MMIR Supergenius/i.test(read(file))) {
+    fail(`Do not leak internal mmir-supergenius ids into visible labels: ${rel}`);
+  }
 }
 
 const content = JSON.parse(read(contentPath) || '{}');

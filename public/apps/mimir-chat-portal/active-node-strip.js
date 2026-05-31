@@ -14,7 +14,14 @@
   let manifestLoaded=false;
   let catalogLoaded=false;
 
-  function fallbackLabel(value){return String(value||'').replace(/MMIR Browser Guide|MMIR Guide|supergeni(?:us|ous)/gi,'MMIR Supergenius');}
+  function fallbackLabel(value){
+    return String(value||'')
+      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,'MMIR Supergenius')
+      .replace(/MMIR Browser Guide|MMIR Guide/gi,'MMIR Supergenius')
+      .replace(/supergenious/gi,'MMIR Supergenius')
+      .replace(/(^|[^A-Za-z])supergenius/gi,(match,prefix)=>prefix+'MMIR Supergenius')
+      .replace(/(?:MMIR\s+){2,}Supergenius/gi,'MMIR Supergenius');
+  }
   function normalizeModel(model){if(!model||typeof model!=='object')return model;return {...model,name:fallbackLabel(model.name),label:fallbackLabel(model.label)};}
   function normalizeNode(node){if(!node||typeof node!=='object')return node;return {...node,name:fallbackLabel(node.name),models:Array.isArray(node.models)?node.models.map(normalizeModel):node.models};}
   function normalizeStarter(model){
