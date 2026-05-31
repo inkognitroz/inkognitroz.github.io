@@ -4,7 +4,7 @@
   "nodes": [
     {
       "id": "browser-guide",
-      "name": "MMIR Guide",
+      "name": "MMIR Supergenius",
       "type": "free",
       "status": "online",
       "trust_level": "public-free",
@@ -14,7 +14,7 @@
       "models": [
         {
           "id": "mmir-guide",
-          "name": "MMIR Guide",
+          "name": "MMIR Supergenius",
           "status": "available",
           "provider": "mmir",
           "source": "browser-helper"
@@ -33,7 +33,7 @@
       "models": [
         {
           "id": "mmir-guide",
-          "name": "MMIR Browser Guide",
+          "name": "MMIR Supergenius",
           "status": "available",
           "provider": "mmir",
           "source": "api.mmir.ai"
