@@ -100,7 +100,7 @@ for (const text of [
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
-requireIncludes(files.mmir, 'route-chips.js?v=20260530-supergenius-live-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
+requireIncludes(files.mmir, 'route-chips.js?v=20260531-clean-composer-v1', 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.runtime, "health:error?.status===401?'testing':'offline'", 'Unavailable backend/node checks must write offline/testing health, not ready.');
 requireIncludes(files.portal, "health:'unknown'", 'Default managed API profile must begin unknown until runtime proof updates it.');
 requireIncludes(files.criticalProfiles, "health:existing?.health==='ready'?'ready':'unknown'", 'Critical profile bootstrap must preserve ready only after prior runtime proof.');
