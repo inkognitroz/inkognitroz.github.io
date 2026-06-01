@@ -5,14 +5,28 @@
   const CHAT_PATH='/v1/chat/completions';
   const TOKEN_KEY='mmir-p0-local-token';
   const HISTORY_KEY='mmir-p0-chat-history-v1';
+  const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
+  const HISTORY_SCHEMA='20260601-clean-first-chat-v1';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const MAC_INSTALL_URL='./downloads/mmir-local-connector-mac.zip';
   const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
   const MAX_HISTORY=40;
+  const STALE_FAILURE_PATTERNS=[
+    /Selected browser LLM is not loaded/i,
+    /System prompt should always be the first message/i,
+    /This browser\/device does not expose WebGPU/i,
+    /Browser Model is unavailable/i,
+    /WebGPU unavailable/i,
+    /local_probe_deferred/i,
+    /Activate a backend profile/i,
+    /No model route is visible yet/i,
+    /Backend is unreachable/i,
+    /Runtime is unavailable/i
+  ];
 
   const state={
     busy:false,
-    messages:readJson(HISTORY_KEY,[]).filter(validMessage).slice(-MAX_HISTORY),
+    messages:initialMessages(),
     models:[
       {
         id:'mmir-supergenius',
@@ -26,6 +40,21 @@
     localChecked:false,
     localError:''
   };
+
+  function initialMessages(){
+    const schema=localStorage.getItem(HISTORY_SCHEMA_KEY);
+    if(schema!==HISTORY_SCHEMA){
+      try{
+        localStorage.removeItem(HISTORY_KEY);
+        localStorage.setItem(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);
+      }catch(error){}
+      return [];
+    }
+    const raw=readJson(HISTORY_KEY,[]);
+    const clean=raw.filter(validMessage).filter(message=>!staleFailureMessage(message)).slice(-MAX_HISTORY);
+    if(clean.length!==raw.length)writeJson(HISTORY_KEY,clean);
+    return clean;
+  }
 
   function readJson(key,fallback){
     try{
@@ -45,6 +74,11 @@
       (message.role==='user'||message.role==='assistant')&&
       typeof message.content==='string'&&
       message.content.trim();
+  }
+
+  function staleFailureMessage(message){
+    const content=String(message?.content||'');
+    return STALE_FAILURE_PATTERNS.some(pattern=>pattern.test(content));
   }
 
   function safeText(value){
@@ -104,11 +138,18 @@
 
   function localNetworkHint(error){
     const message=String(error?.message||error||'');
+    if(/local_probe_deferred/i.test(message)){
+      return 'Local connector check was deferred. Press Find local models again to allow this browser to check this Mac.';
+    }
     if(error?.name==='AbortError')return 'Local connector timed out. Check that MMIR Local Connector and Ollama are running.';
     if(/Failed to fetch|NetworkError|Load failed|blocked|CORS/i.test(message)){
       return 'Browser blocked local connector access. Allow Local Network Access for mmir.ai, then press Check local node again.';
     }
     return message||'Local connector is not reachable yet.';
+  }
+
+  function allowLocalProbes(reason='p0-local-action',durationMs=60000){
+    try{window.MimirAllowLocalProbes?.(reason,durationMs);}catch(error){}
   }
 
   async function pairLocal(){
@@ -154,6 +195,7 @@
 
   async function checkLocalModels({quiet=false}={}){
     try{
+      allowLocalProbes('p0-find-local-models',60000);
       status('Checking local node...','loading');
       const token=await pairLocal();
       const health=await fetchJson(LOCAL_URL+'/health',{headers:localHeaders(token),timeoutMs:7000});
@@ -420,6 +462,7 @@
   }
 
   function saveHistory(){
+    try{localStorage.setItem(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);}catch(error){}
     writeJson(HISTORY_KEY,state.messages.slice(-MAX_HISTORY));
   }
 
@@ -488,6 +531,7 @@
   }
 
   async function chatLocal(prompt,model){
+    allowLocalProbes('p0-local-chat',120000);
     const token=await pairLocal();
     const data=await fetchJson(LOCAL_URL+CHAT_PATH,{
       method:'POST',
