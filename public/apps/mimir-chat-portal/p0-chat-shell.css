@@ -160,6 +160,13 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   line-height: 1.2;
 }
 
+.p0-message-receipt {
+  color: #6b7280;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  margin-top: -2px;
+}
+
 .p0-message-user .p0-message-label {
   display: none;
 }
@@ -222,6 +229,29 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-input::placeholder {
   color: #9ca3af;
+}
+
+.p0-route {
+  color: #6b7280;
+  font-size: 0.76rem;
+  line-height: 1.25;
+  overflow: hidden;
+  padding: 0 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p0-route[data-state="hosted"] {
+  color: #047857;
+}
+
+.p0-route[data-state="local"] {
+  color: #1d4ed8;
+}
+
+.p0-route[data-state="error"] {
+  color: #b91c1c;
+  white-space: normal;
 }
 
 .p0-toolbar {

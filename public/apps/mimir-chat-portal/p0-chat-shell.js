@@ -104,6 +104,21 @@
     return state.models.find(model=>model.id===state.activeModelId)||state.models[0];
   }
 
+  function routeReceipt(model=activeModel()){
+    if(model.route==='local'){
+      return {
+        text:model.label+' · Private · This Mac',
+        detail:'Local connector on 127.0.0.1. Pairing token stays in this browser session.',
+        state:'local'
+      };
+    }
+    return {
+      text:'Supergenious · Free · api.mmir.ai',
+      detail:'Hosted MMIR free route. No provider key is stored in the browser. No paid route started.',
+      state:'hosted'
+    };
+  }
+
   function fetchOptions(url,options){
     const init={...options};
     try{
@@ -143,7 +158,7 @@
     }
     if(error?.name==='AbortError')return 'Local connector timed out. Check that MMIR Local Connector and Ollama are running.';
     if(/Failed to fetch|NetworkError|Load failed|blocked|CORS/i.test(message)){
-      return 'Browser blocked local connector access. Allow Local Network Access for mmir.ai, then press Check local node again.';
+      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Find local models again. The connector stays on 127.0.0.1.';
     }
     return message||'Local connector is not reachable yet.';
   }
@@ -220,7 +235,10 @@
       if(activeModel()?.route==='local')state.activeModelId='mmir-supergenius';
       renderModelMenu();
       renderToolbar();
-      if(!quiet)status(state.localError,'error');
+      if(!quiet){
+        status(state.localError,'error');
+        routeStatus('Local access blocked · Allow Local Network Access, then Find local models','error');
+      }
       throw error;
     }
   }
@@ -244,6 +262,7 @@
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergenious..." autocomplete="off" spellcheck="true"></textarea>'+
+          '<div id="p0-route" class="p0-route" data-state="hosted">Supergenious · Free · api.mmir.ai</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Add or connect model" aria-expanded="false">+</button>'+
@@ -418,9 +437,11 @@
     const menu=menuEl('privacy');
     const route=model.route==='local'?'Private local model':'Supergenious hosted route';
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
+    const receipt=routeReceipt(model);
     menu.innerHTML=''+
       '<div class="p0-menu-title">Privacy</div>'+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
+      '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';
   }
 
@@ -430,6 +451,7 @@
     const input=document.getElementById('p0-input');
     if(label)label.textContent=model.label;
     if(input)input.placeholder='Message '+model.label+'...';
+    routeStatus(routeReceipt(model).text,routeReceipt(model).state);
   }
 
   function renderTranscript(){
@@ -442,6 +464,7 @@
     root.innerHTML=state.messages.map(message=>(
       '<article class="p0-message p0-message-'+safeText(message.role)+'">'+
         '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
+        (message.receipt?'<div class="p0-message-receipt">'+safeText(message.receipt)+'</div>':'')+
         '<div class="p0-message-body">'+paragraphs(message.content)+'</div>'+
       '</article>'
     )).join('');
@@ -461,13 +484,20 @@
     el.dataset.state=stateValue;
   }
 
+  function routeStatus(message,stateValue='hosted'){
+    const el=document.getElementById('p0-route');
+    if(!el)return;
+    el.textContent=message||routeReceipt().text;
+    el.dataset.state=stateValue;
+  }
+
   function saveHistory(){
     try{localStorage.setItem(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);}catch(error){}
     writeJson(HISTORY_KEY,state.messages.slice(-MAX_HISTORY));
   }
 
-  function append(role,content,label){
-    const message={role,content:String(content||''),label:label||role,createdAt:new Date().toISOString()};
+  function append(role,content,label,receipt){
+    const message={role,content:String(content||''),label:label||role,receipt:receipt||'',createdAt:new Date().toISOString()};
     state.messages.push(message);
     state.messages=state.messages.slice(-MAX_HISTORY);
     saveHistory();
@@ -558,8 +588,10 @@
     input.value='';
     autosizeInput();
     const model=activeModel();
-    const assistant=append('assistant','Thinking...',model.label);
+    const receipt=routeReceipt(model);
+    const assistant=append('assistant','Thinking...',model.label,receipt.text);
     status(model.label+' is answering...','ready');
+    routeStatus(receipt.text,receipt.state);
     try{
       const answer=model.route==='local'?await chatLocal(prompt,model):await chatHosted(prompt);
       updateMessage(assistant,answer);
