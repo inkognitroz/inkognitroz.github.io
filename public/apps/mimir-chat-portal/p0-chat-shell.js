@@ -441,6 +441,13 @@
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
     document.getElementById('p0-mic').addEventListener('click',startVoice);
     document.addEventListener('click',(event)=>{
+      const actionButton=event.target.closest('[data-p0-action]');
+      if(actionButton&&actionButton.closest('.p0-menu')){
+        event.preventDefault();
+        event.stopPropagation();
+        handleMenuAction(actionButton.getAttribute('data-p0-action'));
+        return;
+      }
       if(event.target.closest('#p0-add,#p0-model,#p0-privacy,.p0-menu'))return;
       closeMenus();
     });
@@ -560,9 +567,6 @@
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
-    menu.querySelector('[data-p0-action="check-local"]').addEventListener('click',()=>{closeMenus();checkLocalModels().catch(()=>{});});
-    menu.querySelector('[data-p0-action="compare-live"]')?.addEventListener('click',()=>{closeMenus();compareLiveRoutes();});
-    menu.querySelector('[data-p0-action="new-chat"]').addEventListener('click',()=>{closeMenus();clearChat();});
   }
 
   function renderModelMenu(){
@@ -593,7 +597,6 @@
         status(activeModel().label+' selected.','ready');
       });
     });
-    menu.querySelector('[data-p0-action="check-local"]')?.addEventListener('click',()=>{closeMenus();checkLocalModels().catch(()=>{});});
   }
 
   function renderPrivacyMenu(){
@@ -616,6 +619,27 @@
     if(label)label.textContent=model.label;
     if(input)input.placeholder='Message '+model.label+'...';
     routeStatus(routeReceipt(model).text,routeReceipt(model).state);
+  }
+
+  function handleMenuAction(action){
+    if(action==='check-local'){
+      status('Checking local node...','loading');
+      routeStatus('Checking this Mac for local models...','hosted');
+      closeMenus();
+      checkLocalModels().catch(()=>{});
+      return true;
+    }
+    if(action==='compare-live'){
+      closeMenus();
+      compareLiveRoutes();
+      return true;
+    }
+    if(action==='new-chat'){
+      closeMenus();
+      clearChat();
+      return true;
+    }
+    return false;
   }
 
   function renderTranscript(){

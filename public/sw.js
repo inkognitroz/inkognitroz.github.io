@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d342-20260602-voice-route-feedback-v24';
+const CACHE_NAME='mmir-pwa-d342-20260602-robust-local-discovery-v25';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
