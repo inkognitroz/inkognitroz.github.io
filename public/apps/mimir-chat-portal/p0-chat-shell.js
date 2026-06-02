@@ -33,6 +33,8 @@
         label:'Supergenious',
         route:'hosted',
         detail:'Ready now',
+        tags:['Fast','Free','Best default'],
+        score:100,
         model:'mmir-supergenius'
       }
     ],
@@ -199,21 +201,51 @@
       .map(item=>String(item.id||item.name||item.model||'').trim())
       .filter(Boolean)
       .slice(0,12)
-      .map(id=>({
-        id:'local:'+id,
-        label:id,
-        route:'local',
-        detail:localModelDetail(id),
-        model:id
-      }));
+      .map(id=>{
+        const profile=localModelProfile(id);
+        return {
+          id:'local:'+id,
+          label:id,
+          route:'local',
+          detail:profile.detail,
+          tags:profile.tags,
+          score:profile.score,
+          model:id
+        };
+      })
+      .sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
   }
 
   function localModelDetail(id){
+    return localModelProfile(id).detail;
+  }
+
+  function localModelProfile(id){
     const value=String(id||'').toLowerCase();
-    if(/gemma3:270m/.test(value))return 'Tiny private model · fast demo · weak factual recall';
-    if(/0\.5b|0\.6b|1b/.test(value))return 'Small private model · good for quick local tests';
-    if(/3b|4b/.test(value))return 'Private local model · slower but stronger';
-    return 'Private local model';
+    if(/gemma3:270m/.test(value)){
+      return {detail:'Fast private demo · weak factual recall',tags:['Fast','Private','Local','Demo'],score:82};
+    }
+    if(/llama3\.2:3b|qwen2\.5:3b|3b|4b/.test(value)){
+      return {detail:'Private local model · stronger but slower',tags:['Private','Local','Stronger','Slow'],score:72};
+    }
+    if(/llama3\.2:1b|1b/.test(value)){
+      return {detail:'Small private model · quick local tests',tags:['Private','Local','Small'],score:64};
+    }
+    if(/qwen2\.5:0\.5b|0\.5b|0\.6b/.test(value)){
+      return {detail:'Tiny private model · slower/weak fallback',tags:['Private','Local','Weak'],score:45};
+    }
+    return {detail:'Private local model',tags:['Private','Local'],score:60};
+  }
+
+  function modelBadges(model){
+    const tags=Array.isArray(model?.tags)?model.tags:[];
+    return tags.slice(0,4).map(tag=>'<span class="p0-badge">'+safeText(tag)+'</span>').join('');
+  }
+
+  function bestLocalModel(){
+    return state.models
+      .filter(model=>model.route==='local')
+      .sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label))[0]||null;
   }
 
   async function checkLocalModels({quiet=false}={}){
@@ -419,7 +451,7 @@
 
   function renderAddMenu(){
     const menu=menuEl('add');
-    const compareModel=state.models.find(model=>model.route==='local');
+    const compareModel=bestLocalModel();
     const compareAction=compareModel?(
       '<button type="button" data-p0-action="compare-live"><strong>Compare routes</strong><small>Ask Supergenious and '+safeText(compareModel.label)+' on the same prompt.</small></button>'
     ):'';
@@ -439,9 +471,10 @@
   function renderModelMenu(){
     const menu=menuEl('model');
     if(!menu)return;
-    const buttons=state.models.map(model=>{
+    const models=state.models.slice().sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
+    const buttons=models.map(model=>{
       const selected=model.id===state.activeModelId?'Selected':'';
-      return '<button type="button" data-model-id="'+safeText(model.id)+'"><strong>'+safeText(model.label)+'</strong><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
+      return '<button type="button" data-model-id="'+safeText(model.id)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+modelBadges(model)+'</span><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
     }).join('');
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
@@ -684,7 +717,7 @@
 
   async function compareLiveRoutes(comparePrompt='',preferredLocalModel=null){
     if(state.busy)return;
-    const localModel=preferredLocalModel||(activeModel().route==='local'?activeModel():state.models.find(model=>model.route==='local'));
+    const localModel=preferredLocalModel||(activeModel().route==='local'?activeModel():bestLocalModel());
     const input=document.getElementById('p0-input');
     const send=document.getElementById('p0-send');
     const prompt=String(comparePrompt||input?.value||'').trim();

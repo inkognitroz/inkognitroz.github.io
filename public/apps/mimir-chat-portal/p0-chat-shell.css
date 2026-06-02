@@ -408,6 +408,26 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   font-size: 0.9rem;
 }
 
+.p0-menu-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.p0-badge {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  color: #374151;
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-weight: 720;
+  line-height: 1;
+  padding: 4px 7px;
+}
+
 .p0-menu small {
   color: #6b7280;
   font-size: 0.76rem;

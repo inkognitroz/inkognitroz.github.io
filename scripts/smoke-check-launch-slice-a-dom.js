@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-p0-mention-compare-v12', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-p0-mention-compare-v12', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-model-quality-v13', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-model-quality-v13', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -120,9 +120,9 @@ requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state mus
 requireIncludes(files.p0Runtime, 'Supergenious · Free · api.mmir.ai', 'P0 hosted route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'data-p0-action="compare-live"', 'P0 compare must be implemented as a gated toolbar action.');
-requireIncludes(files.p0Runtime, "state.models.find(model=>model.route==='local')", 'P0 compare must stay gated behind real local model discovery.');
+requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
 requireIncludes(files.p0Runtime, 'hostedMentioned(prompt)&&mentionedLocal', 'P0 chat must support explicit @supergenius + local-model compare intent.');
-requireIncludes(files.p0Runtime, 'Tiny private model · fast demo · weak factual recall', 'Tiny local models must be labeled as weak factual recall.');
+requireIncludes(files.p0Runtime, 'Tiny private model · slower/weak fallback', 'Tiny local models must be labeled as weak fallback routes.');
 requireIncludes(files.p0Runtime, 'Allow Local Network Access for mmir.ai', 'P0 local permission failure must be actionable.');
 requireIncludes(files.p0Runtime, 'Local fallback', 'P0 local chat failures must keep answering through the hosted route.');
 requireIncludes(files.p0Runtime, 'Supergenious answered while local access waits for permission', 'P0 local chat failures must explain that hosted fallback answered.');
