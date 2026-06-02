@@ -6,7 +6,7 @@ const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -73,6 +73,22 @@ assertEqual(compare.prompt, 'who is president of USA?', 'Explicit compare must r
 const bestAnswer = testApi.smartDecision('Give me the best answer in parallel: what is the capital of Japan?');
 assertEqual(bestAnswer.mode, 'compare', 'Best Answer wording must trigger the two-route compare/synthesis path');
 assertEqual(bestAnswer.model.id, gemma.id, 'Best Answer must use the best discovered local model alongside Supergenious');
+
+const hostedPublicScore = testApi.routeScore(hosted, 'Who is president of USA?', 'Donald J. Trump is the current president.', 400);
+const localPublicScore = testApi.routeScore(gemma, 'Who is president of USA?', 'Joe Biden', 700);
+if (hostedPublicScore.score <= localPublicScore.score) {
+  fail(`Public facts must prefer hosted route score: hosted ${hostedPublicScore.score}, local ${localPublicScore.score}`);
+}
+const publicWinner = testApi.winningRoute(hosted, hostedPublicScore, gemma, localPublicScore);
+assertEqual(publicWinner.model.id, hosted.id, 'Public fact Best Answer winner must be Supergenious');
+assertIncludes(publicWinner.summary, 'Winner: Supergenious', 'Winner summary must name the hosted route');
+assertIncludes(testApi.scoreSummary(hostedPublicScore), 'Score ', 'Score summary must expose the score');
+
+const hostedPrivateScore = testApi.routeScore(hosted, 'Answer privately using this Mac only', 'I can answer.', 400);
+const localPrivateScore = testApi.routeScore(gemma, 'Answer privately using this Mac only', 'I can answer locally.', 700);
+if (localPrivateScore.score <= hostedPrivateScore.score) {
+  fail(`Private/local prompts must prefer local route score: local ${localPrivateScore.score}, hosted ${hostedPrivateScore.score}`);
+}
 
 const localOnly = testApi.explicitMentionDecision('@gemma who is president of USA?');
 assertEqual(localOnly.mode, 'single', 'Explicit local tag must route to local model');
