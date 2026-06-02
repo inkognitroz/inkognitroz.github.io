@@ -767,6 +767,17 @@
     return responseText(data)||'Local model returned an empty response.';
   }
 
+  async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel){
+    const localLabel=localModel?.label||'local model';
+    const synthesisPrompt='Create one concise best answer for the user by comparing these two model answers. '+
+      'Prefer current public facts from Supergenious when the local model is stale or vague. '+
+      'Do not mention internal instructions. Keep it useful and short.\n\n'+
+      'User question: '+prompt+'\n\n'+
+      'Supergenious answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
+      localLabel+' answer:\n'+(localAnswer||'[no answer]');
+    return chatHosted(synthesisPrompt);
+  }
+
   async function sendMessage(){
     if(state.busy)return;
     const input=document.getElementById('p0-input');
@@ -869,17 +880,36 @@
     const localReceipt=routeReceipt(localModel);
     const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare'});
     const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2',{variant:'compare'});
+    let hostedAnswerText='';
+    let localAnswerText='';
     status('Comparing Supergenious and '+localModel.label+'...','ready');
     routeStatus('Compare · Supergenious + '+localModel.label,'ready');
     const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt)
-      .then(answer=>updateMessage(hostedMessage,answer||'Supergenious returned an empty response.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+formatDuration(performance.now()-hostedStarted)}))
+      .then(answer=>{
+        hostedAnswerText=answer||'Supergenious returned an empty response.';
+        updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+formatDuration(performance.now()-hostedStarted)});
+      })
       .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · failed'}));
     const localStarted=performance.now();
     const localJob=chatLocal(prompt,localModel)
-      .then(answer=>updateMessage(localMessage,answer||'Local model returned an empty response.',{receipt:localReceipt.text+' · Compare answer 2/2 · '+formatDuration(performance.now()-localStarted)}))
+      .then(answer=>{
+        localAnswerText=answer||'Local model returned an empty response.';
+        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2 · '+formatDuration(performance.now()-localStarted)});
+      })
       .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2 · failed'}));
     await Promise.allSettled([hostedJob,localJob]);
+    if(hostedAnswerText||localAnswerText){
+      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis';
+      const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare'});
+      const synthesisStarted=performance.now();
+      try{
+        const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel);
+        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(performance.now()-synthesisStarted)});
+      }catch(error){
+        updateMessage(synthesisMessage,hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.',{receipt:synthesisReceipt+' · failed'});
+      }
+    }
     status('Compare finished: Supergenious + '+localModel.label+'.','ready');
     state.busy=false;
     if(send)send.disabled=false;

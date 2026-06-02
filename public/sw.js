@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d338-20260602-compare-receipts-v20';
+const CACHE_NAME='mmir-pwa-d339-20260602-compare-synthesis-v21';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
