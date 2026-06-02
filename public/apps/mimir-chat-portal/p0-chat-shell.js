@@ -411,14 +411,20 @@
 
   function renderAddMenu(){
     const menu=menuEl('add');
+    const compareModel=state.models.find(model=>model.route==='local');
+    const compareAction=compareModel?(
+      '<button type="button" data-p0-action="compare-live"><strong>Compare routes</strong><small>Ask Supergenious and '+safeText(compareModel.label)+' on the same prompt.</small></button>'
+    ):'';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
       '<a href="'+MAC_INSTALL_URL+'" download><strong>Connect local model</strong><small>Download and open the Mac connector once. MMIR returns here and finds models automatically.</small></a>'+
       '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
+      compareAction+
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
     menu.querySelector('[data-p0-action="check-local"]').addEventListener('click',()=>{closeMenus();checkLocalModels().catch(()=>{});});
+    menu.querySelector('[data-p0-action="compare-live"]')?.addEventListener('click',()=>{closeMenus();compareLiveRoutes();});
     menu.querySelector('[data-p0-action="new-chat"]').addEventListener('click',()=>{closeMenus();clearChat();});
   }
 
@@ -636,6 +642,47 @@
       if(send)send.disabled=false;
       input?.focus();
     }
+  }
+
+  async function compareLiveRoutes(){
+    if(state.busy)return;
+    const localModel=activeModel().route==='local'?activeModel():state.models.find(model=>model.route==='local');
+    const input=document.getElementById('p0-input');
+    const send=document.getElementById('p0-send');
+    const prompt=String(input?.value||'').trim();
+    if(!localModel){
+      status('Find local models first, then Compare routes.','error');
+      input?.focus();
+      return;
+    }
+    if(!prompt){
+      status('Write a prompt first, then Compare routes.','error');
+      input?.focus();
+      return;
+    }
+    state.busy=true;
+    if(send)send.disabled=true;
+    append('user',prompt,'You');
+    input.value='';
+    autosizeInput();
+    const hostedModel=state.models.find(model=>model.route==='hosted')||state.models[0];
+    const hostedReceipt=routeReceipt(hostedModel);
+    const localReceipt=routeReceipt(localModel);
+    const hostedMessage=append('assistant','Thinking...',hostedModel.label,hostedReceipt.text);
+    const localMessage=append('assistant','Thinking...',localModel.label,localReceipt.text);
+    status('Comparing Supergenious and '+localModel.label+'...','ready');
+    routeStatus('Compare · Supergenious + '+localModel.label,'ready');
+    const hostedJob=chatHosted(prompt)
+      .then(answer=>updateMessage(hostedMessage,answer||'Supergenious returned an empty response.'))
+      .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.'));
+    const localJob=chatLocal(prompt,localModel)
+      .then(answer=>updateMessage(localMessage,answer||'Local model returned an empty response.'))
+      .catch(error=>updateMessage(localMessage,localNetworkHint(error)));
+    await Promise.allSettled([hostedJob,localJob]);
+    status('Compare finished.','ready');
+    state.busy=false;
+    if(send)send.disabled=false;
+    input?.focus();
   }
 
   function maybeAutoCheckLocal(){
