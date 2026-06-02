@@ -8,7 +8,7 @@
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SCHEMA='20260602-explicit-route-tags-v17';
   const MODELS_KEY='mmir-p0-active-models-v1';
-  const MAC_INSTALL_URL='./downloads/mmir-local-connector-mac.zip';
+  const MAC_INSTALL_URL='./downloads/mmir-local-connector-install.html#terminal-install';
   const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
   const MAX_HISTORY=40;
   const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
@@ -564,7 +564,7 @@
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
       compareAction+
-      '<a href="'+MAC_INSTALL_URL+'" download><strong>Connect local model</strong><small>Download and open the Mac connector once. MMIR returns here and finds models automatically.</small></a>'+
+      '<a href="'+MAC_INSTALL_URL+'"><strong>Connect local model</strong><small>Open the Mac install command that avoids the blocked .command warning. MMIR returns here and finds models automatically.</small></a>'+
       '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+

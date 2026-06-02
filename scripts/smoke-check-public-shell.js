@@ -128,7 +128,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR pro
 requireText(mmirPath, 'active-node-strip.js?v=20260531-capability-cleanup-v1', 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d342-20260602-monochrome-toolbar-icons-v26', 'Service worker cache must bust for P0 simple chat recovery.');
+requireText(serviceWorkerPath, 'mmir-pwa-d342-20260602-mac-terminal-install-v27', 'Service worker cache must bust for P0 simple chat recovery.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.css', 'Service worker shell must include the P0 simple chat CSS.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.js', 'Service worker shell must include the P0 simple chat runtime.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/public-launch-guard.js', 'Service worker shell must include the public launch guard.');
@@ -148,8 +148,8 @@ requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model li
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
 requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, 'p0-chat-shell.css?v=20260602-monochrome-toolbar-icons-v26', 'Public page must load the P0 simple chat shell CSS.');
-requireText(mmirPath, 'p0-chat-shell.js?v=20260602-monochrome-toolbar-icons-v26', 'Public page must load the P0 simple chat shell runtime.');
+requireText(mmirPath, 'p0-chat-shell.css?v=20260602-mac-terminal-install-v27', 'Public page must load the P0 simple chat shell CSS.');
+requireText(mmirPath, 'p0-chat-shell.js?v=20260602-mac-terminal-install-v27', 'Public page must load the P0 simple chat shell runtime.');
 requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260602-explicit-route-tags-v17'", 'P0 shell must invalidate stale browser-error chat history.');
@@ -185,6 +185,8 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "r
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'MMIR returns here and finds models automatically', 'P0 local install copy must describe automatic return flow.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'checkLocalModels().catch(()=>{})', 'P0 local model checks must catch browser-blocked probes in the UI handler.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const MAC_INSTALL_URL='./downloads/mmir-local-connector-install.html#terminal-install'", 'P0 Connect local model must open the Terminal bootstrap install page.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'blocked .command warning', 'P0 local setup copy must explain the macOS Gatekeeper-safe install path.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "status('Listening...','ready')", 'P0 mic button must give immediate feedback.');
@@ -202,10 +204,15 @@ requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs',
 forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
 if (!existsSync(macConnectorZipPath)) fail('Published Mac Connector ZIP must exist for reliable browser download.');
 if (!existsSync(macDmgPath)) fail('Mac DMG artifact may exist as advanced packaging evidence, but must not be the primary public installer.');
-requireText(connectorReleasePath, '"id": "mac-zip"', 'Release manifest must publish the reliable Mac ZIP first-install artifact.');
-requireText(connectorReleasePath, '"path": "/downloads/mmir-local-connector-mac.zip"', 'Release manifest must point Mac users to the real ZIP artifact, not the browser-generated ZIP page.');
-requireText(connectorReleasePath, '"kind": "zip-command-installer"', 'Mac ZIP must be labeled as the reliable command-installer package.');
-requireText(connectorReleasePath, '"recommended": false', 'Mac DMG must not be the recommended public install path until signing/notarization is production-ready.');
+requireText(connectorReleasePath, '"id": "legacy-macos-linux-local-node"', 'Release manifest must publish the Terminal bootstrap artifact for Mac/Linux.');
+requireText(connectorReleasePath, '"path": "/downloads/mmir-local-node-macos-linux.sh"', 'Release manifest must point Mac/Linux users to the Terminal bootstrap artifact.');
+requireText(connectorReleasePath, '"Recommended Mac/Linux bootstrap', 'Release manifest must explain Terminal bootstrap as the recommended Mac path.');
+requireText(connectorReleasePath, '"id": "mac-zip"', 'Release manifest must still publish the Mac ZIP as fallback evidence.');
+requireText(connectorReleasePath, '"Advanced fallback. Contains executable mmir-local-connector-mac.command', 'Mac ZIP must be labeled as an advanced fallback because Gatekeeper can block it.');
+requireText(connectorReleasePath, '"recommended": false', 'Unsigned Mac command/ZIP and DMG must not be the recommended public install path until signing/notarization is production-ready.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'Mac install page must show the working Terminal bootstrap command.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Copy Mac install command', 'Mac install page primary action must copy the Terminal install command.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Apple could not verify', 'Mac install page must explain the Gatekeeper warning path.');
 
 forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
 forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');

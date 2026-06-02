@@ -44,7 +44,8 @@
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
       "sha256": "39d19704e005b15d1a6ac88f0e3af392591b5d9a854200203caab5ccaad454cd",
-      "recommended": true
+      "recommended": false,
+      "note": "Advanced fallback. Unsigned downloaded .command files can trigger macOS Gatekeeper. Recommended Mac install path is the Terminal curl bootstrap."
     },
     {
       "id": "mac-zip",
@@ -52,8 +53,8 @@
       "kind": "zip-command-installer",
       "path": "/downloads/mmir-local-connector-mac.zip",
       "sha256": "c455071a3be3c26d7964f427c5b1190ba7d67eaf489e786392b8bca1b0a3d669",
-      "recommended": true,
-      "note": "Reliable Mac first-install artifact. Contains executable mmir-local-connector-mac.command."
+      "recommended": false,
+      "note": "Advanced fallback. Contains executable mmir-local-connector-mac.command, which macOS Gatekeeper may block when opened from Finder."
     },
     {
       "id": "mac-dmg-release-build",
@@ -83,7 +84,8 @@
       "kind": "powershell-installer",
       "path": "/downloads/mmir-local-connector-windows.ps1",
       "sha256": "c1a28e9beeb9b862f139a3773b12d220959fe92b9025e3f9826d4991ad10a63c",
-      "recommended": false
+      "recommended": true,
+      "note": "Recommended Mac/Linux bootstrap. Run from Terminal to avoid macOS Gatekeeper blocking an unsigned downloaded .command file."
     },
     {
       "id": "linux-shell",
@@ -130,7 +132,8 @@
       "kind": "compatibility-shim",
       "path": "/downloads/mmir-local-node-macos-linux.sh",
       "sha256": "cd47c770c7916cef7bae9bd56e8a089e772eacf65b4c9691bb544eff48320267",
-      "recommended": false
+      "recommended": true,
+      "note": "Recommended Mac/Linux bootstrap. Run from Terminal to avoid macOS Gatekeeper blocking an unsigned downloaded .command file."
     }
   ],
   "installer_qa": {
