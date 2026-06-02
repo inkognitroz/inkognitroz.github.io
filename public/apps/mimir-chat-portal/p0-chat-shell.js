@@ -232,7 +232,7 @@
       state.localChecked=true;
       state.localError=localNetworkHint(error);
       state.models=state.models.filter(model=>model.route!=='local');
-      if(activeModel()?.route==='local')state.activeModelId='mmir-supergenius';
+      if(!state.models.some(model=>model.id===state.activeModelId))state.activeModelId='mmir-supergenius';
       renderModelMenu();
       renderToolbar();
       if(!quiet){
@@ -280,7 +280,8 @@
       '<div id="p0-model-menu" class="p0-menu" hidden></div>'+
       '<div id="p0-privacy-menu" class="p0-menu" hidden></div>';
     document.body.appendChild(app);
-    document.body.classList.add('mimir-p0-ready');
+    document.body.classList.remove('mimir-p0-ready');
+    document.body.classList.add('mmir-p0-ready');
     enforceShellStyles();
     bindShell();
     renderAll();
@@ -402,8 +403,8 @@
     const menu=menuEl('add');
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
-      '<a href="'+MAC_INSTALL_URL+'" download><strong>Connect local model</strong><small>Download the Mac connector. Open it once to make local Ollama models available here.</small></a>'+
-      '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>Use after the connector is running on this Mac.</small></button>'+
+      '<a href="'+MAC_INSTALL_URL+'" download><strong>Connect local model</strong><small>Download and open the Mac connector once. MMIR returns here and finds models automatically.</small></a>'+
+      '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
@@ -419,7 +420,7 @@
       return '<button type="button" data-model-id="'+safeText(model.id)+'"><strong>'+safeText(model.label)+'</strong><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
     }).join('');
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>Checks this Mac only after you ask.</small></button>';
+      '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
     menu.innerHTML='<div class="p0-menu-title">Models</div>'+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
@@ -505,8 +506,9 @@
     return message;
   }
 
-  function updateMessage(message,content){
+  function updateMessage(message,content,updates={}){
     message.content=String(content||'');
+    Object.assign(message,updates);
     saveHistory();
     renderTranscript();
   }
@@ -598,13 +600,27 @@
       status(model.label+' answered.','ready');
     }catch(error){
       if(model.route==='local'){
-        updateMessage(assistant,localNetworkHint(error)+'\n\nSupergenious is still available from the model picker.');
+        const hint=localNetworkHint(error);
         state.activeModelId='mmir-supergenius';
         renderToolbar();
+        try{
+          const fallbackReceipt=routeReceipt(activeModel());
+          const fallbackAnswer=await chatHosted(prompt);
+          updateMessage(
+            assistant,
+            fallbackAnswer+'\n\nLocal model note: '+hint,
+            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback'}
+          );
+          status('Supergenious answered while local access waits for permission.','ready');
+          routeStatus(fallbackReceipt.text,fallbackReceipt.state);
+        }catch(fallbackError){
+          updateMessage(assistant,hint+'\n\nSupergenious is still available from the model picker.');
+          status('Chat failed: local node blocked/unavailable','error');
+        }
       }else{
         updateMessage(assistant,'I could not reach api.mmir.ai from this browser right now. Please refresh and try again.');
+        status('Chat failed: api.mmir.ai unreachable','error');
       }
-      status('Chat failed: '+(model.route==='local'?'local node blocked/unavailable':'api.mmir.ai unreachable'), 'error');
     }finally{
       state.busy=false;
       if(send)send.disabled=false;
