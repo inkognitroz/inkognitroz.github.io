@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-compare-quality-guard-v29', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-compare-quality-guard-v29', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-best-answer-v30', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-best-answer-v30', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -125,6 +125,8 @@ requireIncludes(files.p0Runtime, 'Supergenious · Free · api.mmir.ai', 'P0 host
 requireIncludes(files.p0Runtime, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'data-p0-action="compare-live"', 'P0 compare must be implemented as a gated toolbar action.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
+requireIncludes(files.p0Runtime, 'data-p0-action="best-answer-live"', 'P0 Best Answer must be implemented as a gated toolbar action after real local discovery.');
+requireIncludes(files.p0Runtime, 'Best Answer', 'P0 Best Answer must be user-facing as the simple parallel-model action.');
 requireIncludes(files.p0Runtime, 'Compare answers', 'P0 compare must be user-facing as an answer comparison, not internal routing jargon.');
 requireIncludes(files.p0Runtime, 'formatDuration(performance.now()-hostedStarted)', 'P0 compare must show route response timing.');
 requireIncludes(files.p0Css, '.p0-featured-action', 'P0 compare action must be visually discoverable without exposing unfinished capabilities.');

@@ -302,7 +302,7 @@
   }
 
   function wantsCompareRoute(prompt){
-    return /@compare|\b(compare|compare answers|side by side|both models|two models|sammenlign|begge modeller)\b/i.test(String(prompt||''));
+    return /@compare|\b(compare|compare answers|best answer|best of|parallel|side by side|both models|two models|multi[- ]?model|sammenlign|beste svar|begge modeller)\b/i.test(String(prompt||''));
   }
 
   function wantsPrivateRoute(prompt){
@@ -581,7 +581,8 @@
     const menu=menuEl('add');
     const compareModel=bestLocalModel();
     const compareAction=compareModel?(
-      '<button class="p0-featured-action" type="button" data-p0-action="compare-live"><span class="p0-menu-row"><strong>Compare answers</strong><span class="p0-badge">2 routes</span><span class="p0-badge">Side by side</span></span><small>Supergenious + '+safeText(compareModel.label)+' on the same prompt.</small></button><div class="p0-menu-separator"></div>'
+      '<button class="p0-featured-action" type="button" data-p0-action="best-answer-live"><span class="p0-menu-row"><strong>Best Answer</strong><span class="p0-badge">2 routes</span><span class="p0-badge">Synthesis</span></span><small>Supergenious + '+safeText(compareModel.label)+' answer in parallel, then MMIR gives one best answer.</small></button>'+
+      '<button type="button" data-p0-action="compare-live"><span class="p0-menu-row"><strong>Compare answers</strong><span class="p0-badge">Side by side</span></span><small>See both route answers before the synthesis.</small></button><div class="p0-menu-separator"></div>'
     ):'';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
@@ -659,7 +660,12 @@
     }
     if(action==='compare-live'){
       closeMenus();
-      compareLiveRoutes();
+      compareLiveRoutes('',null,{mode:'compare'});
+      return true;
+    }
+    if(action==='best-answer-live'){
+      closeMenus();
+      compareLiveRoutes('',null,{mode:'best-answer'});
       return true;
     }
     if(action==='new-chat'){
@@ -862,7 +868,7 @@
     }
     const explicit=explicitMentionDecision(prompt);
     if(explicit?.mode==='compare'){
-      compareLiveRoutes(explicit.prompt,explicit.model);
+      compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
       return;
     }
     if(explicit?.mode==='missing-local'){
@@ -873,7 +879,7 @@
     }
     const smart=explicit||smartDecision(prompt);
     if(smart.mode==='compare'){
-      compareLiveRoutes(smart.prompt,smart.model);
+      compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
       return;
     }
     closeMenus();
@@ -927,19 +933,21 @@
     }
   }
 
-  async function compareLiveRoutes(comparePrompt='',preferredLocalModel=null){
+  async function compareLiveRoutes(comparePrompt='',preferredLocalModel=null,options={}){
     if(state.busy)return;
+    const mode=options.mode==='best-answer'?'best-answer':'compare';
+    const title=mode==='best-answer'?'Best Answer':'Compare';
     const localModel=compareLocalModel(preferredLocalModel);
     const input=document.getElementById('p0-input');
     const send=document.getElementById('p0-send');
     const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
-      status('Find local models first, then Compare routes.','error');
+      status('Find local models first, then '+title+' can use two routes.','error');
       input?.focus();
       return;
     }
     if(!prompt){
-      status('Write a prompt first, then Compare routes.','error');
+      status('Write a prompt first, then '+title+' can run.','error');
       input?.focus();
       return;
     }
@@ -956,8 +964,8 @@
     const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare'});
     let hostedAnswerText='';
     let localAnswerText='';
-    status('Comparing Supergenious and '+localModel.label+'...','ready');
-    routeStatus('Compare · Supergenious + '+localModel.label,'ready');
+    status(title+' is asking Supergenious and '+localModel.label+' in parallel...','ready');
+    routeStatus(title+' · Supergenious + '+localModel.label,'ready');
     const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt)
       .then(answer=>{
@@ -984,7 +992,7 @@
         updateMessage(synthesisMessage,hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.',{receipt:synthesisReceipt+' · failed'});
       }
     }
-    status('Compare finished: Supergenious + '+localModel.label+'.','ready');
+    status(title+' finished: Supergenious + '+localModel.label+'.','ready');
     state.busy=false;
     if(send)send.disabled=false;
     input?.focus();
