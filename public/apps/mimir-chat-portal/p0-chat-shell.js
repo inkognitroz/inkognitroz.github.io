@@ -354,19 +354,29 @@
     recognition.lang=document.documentElement.lang||navigator.language||'en-US';
     recognition.interimResults=false;
     recognition.maxAlternatives=1;
+    let heardVoice=false;
+    status('Listening...','ready');
     recognition.onstart=()=>status('Listening...','ready');
     recognition.onerror=()=>status('Voice input failed or was cancelled.','error');
+    recognition.onend=()=>{
+      if(!heardVoice)status('Voice input stopped.','idle');
+    };
     recognition.onresult=(event)=>{
       const text=String(event.results?.[0]?.[0]?.transcript||'').trim();
       const input=document.getElementById('p0-input');
       if(text&&input){
+        heardVoice=true;
         input.value=(input.value?input.value+' ':'')+text;
         autosizeInput();
         input.focus();
         status('Voice text added.','ready');
       }
     };
-    recognition.start();
+    try{
+      recognition.start();
+    }catch(error){
+      status('Voice input failed or was cancelled.','error');
+    }
   }
 
   function menuEl(name){
