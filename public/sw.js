@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d334-20260602-smart-routing-v15';
+const CACHE_NAME='mmir-pwa-d334-20260602-quality-guard-v16';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

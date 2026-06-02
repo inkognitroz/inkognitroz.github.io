@@ -209,6 +209,7 @@
           route:'local',
           detail:profile.detail,
           tags:profile.tags,
+          quality:profile.quality,
           score:profile.score,
           model:id
         };
@@ -223,18 +224,18 @@
   function localModelProfile(id){
     const value=String(id||'').toLowerCase();
     if(/gemma3:270m/.test(value)){
-      return {detail:'Fast private demo · weak factual recall',tags:['Fast','Private','Local','Demo'],score:82};
+      return {detail:'Fast private demo · weak factual recall',tags:['Fast','Private','Local','Demo'],quality:'weak-facts',score:82};
     }
     if(/llama3\.2:3b|qwen2\.5:3b|3b|4b/.test(value)){
-      return {detail:'Private local model · stronger but slower',tags:['Private','Local','Stronger','Slow'],score:72};
+      return {detail:'Private local model · stronger but slower',tags:['Private','Local','Stronger','Slow'],quality:'local-general',score:72};
     }
     if(/llama3\.2:1b|1b/.test(value)){
-      return {detail:'Small private model · quick local tests',tags:['Private','Local','Small'],score:64};
+      return {detail:'Small private model · quick local tests',tags:['Private','Local','Small'],quality:'small',score:64};
     }
     if(/qwen2\.5:0\.5b|0\.5b|0\.6b/.test(value)){
-      return {detail:'Tiny private model · slower/weak fallback',tags:['Private','Local','Weak'],score:45};
+      return {detail:'Tiny private model · slower/weak fallback',tags:['Private','Local','Weak'],quality:'weak-facts',score:45};
     }
-    return {detail:'Private local model',tags:['Private','Local'],score:60};
+    return {detail:'Private local model',tags:['Private','Local'],quality:'local-general',score:60};
   }
 
   function modelBadges(model){
@@ -266,6 +267,10 @@
     return /\b(private|privacy|local|locally|offline|this mac|my mac|no cloud|privat|lokal|lokalt|denne macen|uten sky)\b/i.test(String(prompt||''));
   }
 
+  function wantsPublicFactRoute(prompt){
+    return /\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister)\b/i.test(String(prompt||''));
+  }
+
   function cleanSmartPrompt(prompt){
     return String(prompt||'')
       .replace(/@compare/gi,'')
@@ -278,6 +283,9 @@
     const active=activeModel();
     if(local&&wantsCompareRoute(prompt)){
       return {mode:'compare',model:local,prompt:cleanSmartPrompt(prompt)||prompt};
+    }
+    if(active.route==='local'&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
+      return {mode:'single',model:defaultHostedModel(),reason:'Quality guard: public facts'};
     }
     if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
       return {mode:'single',model:local,reason:'Smart route: private local'};
@@ -510,7 +518,7 @@
     if(!menu)return;
     const local=bestLocalModel();
     const smartHint=local?(
-      '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Auto</span></span><small>Private/local prompts use '+safeText(local.label)+'. Compare prompts use two routes.</small></div>'
+      '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Auto</span></span><small>Public facts use Supergenious. Private/local prompts use '+safeText(local.label)+'. Compare prompts use two routes.</small></div>'
     ):(
       '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Ready</span></span><small>Supergenious is the default. Connect local models to add private routing.</small></div>'
     );
