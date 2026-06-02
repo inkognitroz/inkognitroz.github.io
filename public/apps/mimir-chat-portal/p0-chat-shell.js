@@ -408,7 +408,7 @@
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
-    menu.querySelector('[data-p0-action="check-local"]').addEventListener('click',()=>{closeMenus();checkLocalModels();});
+    menu.querySelector('[data-p0-action="check-local"]').addEventListener('click',()=>{closeMenus();checkLocalModels().catch(()=>{});});
     menu.querySelector('[data-p0-action="new-chat"]').addEventListener('click',()=>{closeMenus();clearChat();});
   }
 
@@ -430,7 +430,7 @@
         status(activeModel().label+' selected.','ready');
       });
     });
-    menu.querySelector('[data-p0-action="check-local"]')?.addEventListener('click',()=>{closeMenus();checkLocalModels();});
+    menu.querySelector('[data-p0-action="check-local"]')?.addEventListener('click',()=>{closeMenus();checkLocalModels().catch(()=>{});});
   }
 
   function renderPrivacyMenu(){
