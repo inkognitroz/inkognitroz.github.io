@@ -203,9 +203,17 @@
         id:'local:'+id,
         label:id,
         route:'local',
-        detail:'Local model',
+        detail:localModelDetail(id),
         model:id
       }));
+  }
+
+  function localModelDetail(id){
+    const value=String(id||'').toLowerCase();
+    if(/gemma3:270m/.test(value))return 'Tiny private model · fast demo · weak factual recall';
+    if(/0\.5b|0\.6b|1b/.test(value))return 'Small private model · good for quick local tests';
+    if(/3b|4b/.test(value))return 'Private local model · slower but stronger';
+    return 'Private local model';
   }
 
   async function checkLocalModels({quiet=false}={}){
@@ -567,6 +575,31 @@
     };
   }
 
+  function localMentionModel(prompt){
+    const text=String(prompt||'').toLowerCase();
+    const localModels=state.models.filter(model=>model.route==='local');
+    if(!localModels.length)return null;
+    const wantsGemma=/@gemma|@gemma3/i.test(text);
+    const wantsQwen=/@qwen/i.test(text);
+    const wantsLlama=/@llama/i.test(text);
+    if(wantsGemma)return localModels.find(model=>/gemma/i.test(model.model))||localModels[0];
+    if(wantsQwen)return localModels.find(model=>/qwen/i.test(model.model))||localModels[0];
+    if(wantsLlama)return localModels.find(model=>/llama/i.test(model.model))||localModels[0];
+    if(/@local|@private/i.test(text))return activeModel().route==='local'?activeModel():localModels[0];
+    return null;
+  }
+
+  function hostedMentioned(prompt){
+    return /@supergeni(?:us|ous)|@super|@hosted/i.test(String(prompt||''));
+  }
+
+  function cleanComparePrompt(prompt){
+    return String(prompt||'')
+      .replace(/@supergeni(?:us|ous)|@super|@hosted|@gemma3?|@qwen|@llama|@local|@private/gi,'')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
   async function chatHosted(prompt){
     const payload=hostedPayload(prompt);
     const data=await fetchJson(API_URL+CHAT_PATH,{
@@ -597,6 +630,11 @@
     const prompt=String(input?.value||'').trim();
     if(!prompt){
       input?.focus();
+      return;
+    }
+    const mentionedLocal=localMentionModel(prompt);
+    if(hostedMentioned(prompt)&&mentionedLocal){
+      compareLiveRoutes(cleanComparePrompt(prompt)||prompt,mentionedLocal);
       return;
     }
     closeMenus();
@@ -644,12 +682,12 @@
     }
   }
 
-  async function compareLiveRoutes(){
+  async function compareLiveRoutes(comparePrompt='',preferredLocalModel=null){
     if(state.busy)return;
-    const localModel=activeModel().route==='local'?activeModel():state.models.find(model=>model.route==='local');
+    const localModel=preferredLocalModel||(activeModel().route==='local'?activeModel():state.models.find(model=>model.route==='local'));
     const input=document.getElementById('p0-input');
     const send=document.getElementById('p0-send');
-    const prompt=String(input?.value||'').trim();
+    const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
       status('Find local models first, then Compare routes.','error');
       input?.focus();
