@@ -754,10 +754,12 @@
   }
 
   function localPayload(prompt,model){
+    const factGuard=wantsPublicFactRoute(prompt)?
+      ' Current or public factual questions may be stale in local models; say that you may be outdated instead of guessing if you are not certain.':'';
     return {
       model:model.model,
       messages:[
-        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly and concisely.'},
+        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly and concisely.'+factGuard},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -949,8 +951,9 @@
     const hostedModel=defaultHostedModel();
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
+    const localQualityNote=wantsPublicFactRoute(prompt)?' · Local facts may be stale':'';
     const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare'});
-    const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2',{variant:'compare'});
+    const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare'});
     let hostedAnswerText='';
     let localAnswerText='';
     status('Comparing Supergenious and '+localModel.label+'...','ready');
@@ -966,9 +969,9 @@
     const localJob=chatLocal(prompt,localModel)
       .then(answer=>{
         localAnswerText=answer||'Local model returned an empty response.';
-        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2 · '+formatDuration(performance.now()-localStarted)});
+        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+formatDuration(performance.now()-localStarted)});
       })
-      .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2 · failed'}));
+      .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · failed'}));
     await Promise.allSettled([hostedJob,localJob]);
     if(hostedAnswerText||localAnswerText){
       const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route';

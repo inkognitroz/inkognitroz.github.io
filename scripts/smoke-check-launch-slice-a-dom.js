@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-model-picker-polish-v28', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-model-picker-polish-v28', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-compare-quality-guard-v29', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-compare-quality-guard-v29', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -140,6 +140,8 @@ requireIncludes(files.p0Runtime, 'Public facts use Supergenious', 'P0 model pick
 requireIncludes(files.p0Runtime, 'function explicitMentionDecision(prompt)', 'P0 chat must treat explicit @model tags as route commands.');
 requireIncludes(files.p0Runtime, "return {mode:'compare',model:localModel,prompt:cleaned}", 'P0 chat must support explicit @supergenius + local-model compare intent.');
 requireIncludes(files.p0Runtime, 'Local-only: public facts may be outdated', 'P0 chat must warn when explicit local-only routing is used for public facts.');
+requireIncludes(files.p0Runtime, 'Local facts may be stale', 'P0 compare must warn when a local model is included in public/current factual compare.');
+requireIncludes(files.p0Runtime, 'say that you may be outdated instead of guessing', 'P0 local system prompt must discourage stale local factual guesses.');
 requireIncludes(files.p0Runtime, 'function normalizeLocalHardware(payload)', 'P0 model picker must normalize local node CPU/RAM capacity.');
 requireIncludes(files.p0Runtime, 'Local capacity', 'P0 model picker must show proven local capacity only after local discovery.');
 requireIncludes(files.p0Css, '@media (max-width: 380px)', 'P0 toolbar must have a narrow mobile hardening rule.');
