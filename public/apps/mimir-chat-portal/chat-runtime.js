@@ -58,6 +58,7 @@
   let lastKnowledgeUses=[];
   let lastProofSignature='';
   let verifiedLiveModel=null;
+  let lastRenderedModels=[];
   let preferredProofModel='';
   let pendingStarterHandoff=null;
   let pendingAutoFirstAnswer=false;
@@ -1417,7 +1418,12 @@
   function starterAvailabilityLabel(model){
     if(model?.runtime==='auto')return 'ready now - instant free chat';
     if(model?.runtime==='browser-guide')return 'advanced helper';
-    if(model?.runtime==='webllm')return webGpuAvailable()?'Browser Node ready - free/private/starter':'Browser Node unsupported - WebGPU/WASM needed';
+    if(model?.runtime==='webllm'){
+      const support=browserNodeSupport();
+      if(webGpuAvailable())return 'Browser Node ready - free/private/starter';
+      if(support.webgpu&&support.requires_shader_f16&&support.shader_f16===false)return 'Browser Node unsupported - shader-f16 needed';
+      return 'Browser Node unsupported - WebGPU/WASM needed';
+    }
     if(model?.status==='installable-free')return 'install to activate - free local';
     return String(model?.status||'free').replaceAll('-',' ');
   }
@@ -1622,6 +1628,7 @@
 
   function renderModels(models){
     if(!modelSelect)return;
+    lastRenderedModels=Array.isArray(models)?models.slice():[];
     const previous=modelSelect.value;
     modelSelect.innerHTML='';
     if(models.length){
@@ -1855,6 +1862,10 @@
     return 'Browser Model is unavailable here: '+support.reason+'. Use '+SUPERGENIUS_LABEL+' now or install Local Node/Ollama for a private model path.';
   }
 
+  function modelNeedsShaderF16(modelId){
+    return /f16/i.test(String(modelId||''));
+  }
+
   function internalStarter(model){
     return model?.visibility==='internal'||['mmir-guide','mmir-model-picker','mmir-setup-coach','mmir-security-coach','mmir-growth-coach'].includes(String(model?.id||''));
   }
@@ -1864,6 +1875,7 @@
     if(!modelId)throw new Error('Browser model id is missing.');
     const support=browserNodeSupport();
     if(!support.secure||!support.wasm||!support.webgpu)throw new Error('WebGPU is unavailable. Use Supergenious now or install the Ollama local-node path.');
+    if(webGpuAvailable()&&modelNeedsShaderF16(modelId)&&support.shader_f16===false)throw new Error('WebGPU adapter missing shader-f16 for this browser model. Use Supergenious now or install the Ollama local-node path.');
     if(!webGpuAvailable()){
       onProgress('Checking browser WebGPU adapter...');
       let adapter=null;
@@ -1886,12 +1898,17 @@
         window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
         throw new Error('WebGPU adapter check failed. Use Supergenious now or install the Ollama local-node path.');
       }
+      const shaderF16=Boolean(adapter?.features?.has?.('shader-f16'));
+      const shaderBlocked=Boolean(adapter)&&modelNeedsShaderF16(modelId)&&!shaderF16;
+      const supported=Boolean(adapter)&&!shaderBlocked;
       const detail={
         ...support,
-        status:adapter?'ready':'unsupported',
-        supported:Boolean(adapter),
-        reason:adapter?'WebGPU and WASM available':'No WebGPU adapter returned',
-        detail:adapter?'Browser Node can load an approved WebGPU model after user selection.':'Browser exposed WebGPU but no adapter was available.',
+        status:supported?'ready':'unsupported',
+        supported,
+        shader_f16:shaderF16,
+        requires_shader_f16:modelNeedsShaderF16(modelId),
+        reason:!adapter?'No WebGPU adapter returned':(shaderBlocked?'WebGPU adapter missing shader-f16 for this browser model':'WebGPU, WASM and shader-f16 requirements available'),
+        detail:supported?'Browser Node can load an approved WebGPU model after user selection.':(!adapter?'Browser exposed WebGPU but no adapter was available.':'This browser model build needs shader-f16; MMIR keeps Browser Model disabled instead of failing after download.'),
         node_type:'browser',
         trust_class:'device-local',
         cost_class:'free-user-device',
@@ -1900,7 +1917,7 @@
       };
       window.__MimirBrowserNodeSupport=detail;
       window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
-      if(!adapter)throw new Error('No WebGPU adapter returned. Use Supergenious now or install the Ollama local-node path.');
+      if(!supported)throw new Error(detail.reason+'. Use Supergenious now or install the Ollama local-node path.');
     }
     if(!webllmModule){
       onProgress('Loading browser model runtime...');
@@ -2415,7 +2432,7 @@
     window.addEventListener('mmir-local-connector-refreshed',handleLocalConnectorRefreshed);
     window.addEventListener('mmir-local-install-returned',handleLocalInstallReturned);
     window.addEventListener('mmir-repair-resume-checked',handleRepairResumeChecked);
-    window.addEventListener('mmir-browser-node-support-updated',()=>{updateRuntimeChips();renderModelHelper();updateRuntimeModelActions();});
+    window.addEventListener('mmir-browser-node-support-updated',()=>{renderModels(lastRenderedModels);updateRuntimeChips();renderModelHelper();updateRuntimeModelActions();});
     window.addEventListener('mimir-route-chips-ready',()=>updateRouteChips(window.__MimirRouteChipState||{}));
     window.addEventListener('mmir-activation-replay-updated',renderActivationReplayGate);
     window.addEventListener('mmir-runtime-starter-handoff',(event)=>runStarterHandoff(event.detail||{}));

@@ -8,7 +8,8 @@ const files = {
   runtime: join(root, 'public', 'apps', 'mimir-chat-portal', 'chat-runtime.js'),
   receipts: join(root, 'public', 'apps', 'mimir-chat-portal', 'answer-context-receipts.js'),
   starters: join(root, 'public', 'free-model-starters.json'),
-  nodes: join(root, 'public', 'active-chat-nodes.json')
+  nodes: join(root, 'public', 'active-chat-nodes.json'),
+  activeStrip: join(root, 'public', 'apps', 'mimir-chat-portal', 'active-node-strip.js')
 };
 
 function fail(message) {
@@ -37,20 +38,38 @@ for (const text of [
   'no install',
   'mmir-browser-node-support-updated',
   'requestAdapter',
+  'shader-f16',
+  'requires_shader_f16',
   '__MimirBrowserNodeSupport'
 ]) {
   requireIncludes(files.picker, text, `Composer picker must expose Browser Node UI/support copy: ${text}`);
 }
 
+for (const text of [
+  'modelNeedsShaderF16',
+  'WebGPU adapter missing shader-f16 for this browser model',
+  'Browser Node unsupported - shader-f16 needed'
+]) {
+  requireIncludes(files.runtime, text, `Runtime must fail closed before downloading f16 Browser Models without shader-f16: ${text}`);
+}
+
+for (const text of [
+  'webGpuMissingLabel',
+  'Needs shader-f16',
+  'missing shader-f16'
+]) {
+  requireIncludes(files.activeStrip, text, `Active node strip must show precise shader-f16 Browser Model blocker: ${text}`);
+}
+
 for (const [fixture, file] of Object.entries({
   runtime: files.runtime,
   picker: files.picker,
-  nodes: join(root, 'public', 'apps', 'mimir-chat-portal', 'active-node-strip.js')
+  nodes: files.activeStrip
 })) {
   requireIncludes(file, '__MimirBrowserNodeSupport', `Browser Node readiness must use shared adapter-proven support state: ${fixture}`);
 }
 
-if (read(join(root, 'public', 'apps', 'mimir-chat-portal', 'active-node-strip.js')).includes('Boolean(secure()&&wasm()&&navigator.gpu)')) {
+if (read(files.activeStrip).includes('Boolean(secure()&&wasm()&&navigator.gpu)')) {
   fail('Active node strip must not mark Browser Node ready from navigator.gpu alone.');
 }
 

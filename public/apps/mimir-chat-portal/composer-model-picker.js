@@ -72,6 +72,9 @@
     if(!webgpu)missing.push('WebGPU');
     return {secure,wasm,webgpu,missing};
   }
+  function webLlmModelsNeedShaderF16(){
+    return starterModels.some(model=>model?.runtime==='webllm'&&/f16/i.test(String(model.model||'')));
+  }
   function browserNodeDetail(){
     const s=browserNodeSupport;
     const caveats='Free, browser-local/private, starter quality, no provider key, no Cloudflare, no install. First use downloads model weights into the browser cache.';
@@ -106,7 +109,12 @@
     if(base.missing.length)return browserNodeSupport;
     try{
       const adapter=typeof window.navigator?.gpu?.requestAdapter==='function'?await window.navigator.gpu.requestAdapter():true;
-      browserNodeSupport={...browserNodeSupport,status:adapter?'ready':'unsupported',supported:Boolean(adapter),reason:adapter?'WebGPU and WASM available':'No WebGPU adapter returned',detail:adapter?'Browser Node can load an approved WebGPU model after user selection.':'Browser exposed WebGPU but no adapter was available.'};
+      const shaderF16=Boolean(adapter?.features?.has?.('shader-f16'));
+      const needsShaderF16=webLlmModelsNeedShaderF16();
+      const supported=Boolean(adapter)&&(!needsShaderF16||shaderF16);
+      const reason=!adapter?'No WebGPU adapter returned':(!supported?'WebGPU adapter missing shader-f16 for the current browser model':'WebGPU, WASM and shader-f16 requirements available');
+      const detail=supported?'Browser Node can load an approved WebGPU model after user selection.':(!adapter?'Browser exposed WebGPU but no adapter was available.':'The current browser model build needs shader-f16; MMIR keeps Browser Model disabled instead of failing after download.');
+      browserNodeSupport={...browserNodeSupport,status:supported?'ready':'unsupported',supported,shader_f16:shaderF16,requires_shader_f16:needsShaderF16,reason,detail};
     }catch(error){
       browserNodeSupport={...browserNodeSupport,status:'failed',supported:false,reason:String(error?.message||error||'WebGPU adapter check failed'),detail:'Browser Node failed closed before loading any model.'};
     }

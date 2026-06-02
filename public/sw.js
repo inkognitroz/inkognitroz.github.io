@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d344-20260602-compare-quality-guard-v29';
+const CACHE_NAME='mmir-pwa-d345-20260602-webgpu-shader-f16-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
