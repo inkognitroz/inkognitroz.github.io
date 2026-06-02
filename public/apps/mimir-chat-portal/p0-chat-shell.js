@@ -6,7 +6,7 @@
   const TOKEN_KEY='mmir-p0-local-token';
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
-  const HISTORY_SCHEMA='20260601-clean-first-chat-v1';
+  const HISTORY_SCHEMA='20260602-explicit-route-tags-v17';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const MAC_INSTALL_URL='./downloads/mmir-local-connector-mac.zip';
   const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
@@ -278,6 +278,13 @@
       .trim();
   }
 
+  function routeReason(reason,prompt,model){
+    if(model?.route==='local'&&wantsPublicFactRoute(prompt)){
+      return 'Local-only: public facts may be outdated';
+    }
+    return reason||'';
+  }
+
   function smartDecision(prompt){
     const local=bestLocalModel();
     const active=activeModel();
@@ -288,9 +295,9 @@
       return {mode:'single',model:defaultHostedModel(),reason:'Quality guard: public facts'};
     }
     if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
-      return {mode:'single',model:local,reason:'Smart route: private local'};
+      return {mode:'single',model:local,reason:routeReason('Smart route: private local',prompt,local),prompt:cleanSmartPrompt(prompt)||prompt};
     }
-    return {mode:'single',model:active,reason:''};
+    return {mode:'single',model:active,reason:routeReason('',prompt,active),prompt};
   }
 
   async function checkLocalModels({quiet=false}={}){
@@ -673,8 +680,32 @@
     return null;
   }
 
+  function localModelMentioned(prompt){
+    return /@gemma3?|@qwen|@llama|@local|@private/i.test(String(prompt||''));
+  }
+
   function hostedMentioned(prompt){
-    return /@supergeni(?:us|ous)|@super|@hosted/i.test(String(prompt||''));
+    return /@supergeni(?:us|ous)|@super|@hosted|@mmir/i.test(String(prompt||''));
+  }
+
+  function explicitMentionDecision(prompt){
+    const localRequested=localModelMentioned(prompt);
+    const localModel=localMentionModel(prompt);
+    const hostedRequested=hostedMentioned(prompt);
+    const cleaned=cleanComparePrompt(prompt)||prompt;
+    if(hostedRequested&&localModel){
+      return {mode:'compare',model:localModel,prompt:cleaned};
+    }
+    if(hostedRequested&&localRequested&&!localModel){
+      return {mode:'missing-local',prompt:cleaned};
+    }
+    if(localModel){
+      return {mode:'single',model:localModel,reason:routeReason('Mention: '+localModel.label,prompt,localModel),prompt:cleaned};
+    }
+    if(hostedRequested){
+      return {mode:'single',model:defaultHostedModel(),reason:'Mention: Supergenious',prompt:cleaned};
+    }
+    return null;
   }
 
   function cleanComparePrompt(prompt){
@@ -716,12 +747,18 @@
       input?.focus();
       return;
     }
-    const mentionedLocal=localMentionModel(prompt);
-    if(hostedMentioned(prompt)&&mentionedLocal){
-      compareLiveRoutes(cleanComparePrompt(prompt)||prompt,mentionedLocal);
+    const explicit=explicitMentionDecision(prompt);
+    if(explicit?.mode==='compare'){
+      compareLiveRoutes(explicit.prompt,explicit.model);
       return;
     }
-    const smart=smartDecision(prompt);
+    if(explicit?.mode==='missing-local'){
+      status('Find local models first, then use @supergenius @gemma for compare.','error');
+      routeStatus('Local model not connected yet','error');
+      input?.focus();
+      return;
+    }
+    const smart=explicit||smartDecision(prompt);
     if(smart.mode==='compare'){
       compareLiveRoutes(smart.prompt,smart.model);
       return;
@@ -733,6 +770,7 @@
     input.value='';
     autosizeInput();
     const model=smart.model;
+    const routePrompt=smart.prompt||prompt;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text);
     const routePrefix=smart.reason?smart.reason+' · ':'';
@@ -740,7 +778,7 @@
     routeStatus(routePrefix+receipt.text,receipt.state);
     try{
       const started=performance.now();
-      const answer=model.route==='local'?await chatLocal(prompt,model):await chatHosted(prompt);
+      const answer=model.route==='local'?await chatLocal(routePrompt,model):await chatHosted(routePrompt);
       const elapsed=formatDuration(performance.now()-started);
       updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed});
       status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
@@ -752,7 +790,7 @@
         try{
           const fallbackReceipt=routeReceipt(activeModel());
           const fallbackStarted=performance.now();
-          const fallbackAnswer=await chatHosted(prompt);
+          const fallbackAnswer=await chatHosted(routePrompt);
           const fallbackElapsed=formatDuration(performance.now()-fallbackStarted);
           updateMessage(
             assistant,
