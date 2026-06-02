@@ -301,6 +301,84 @@
     return state.models.find(model=>model.route==='hosted')||state.models[0];
   }
 
+  function clampScore(value){
+    return Math.max(0,Math.min(100,Math.round(Number(value)||0)));
+  }
+
+  function routeScore(model,prompt,answer,elapsedMs,failed=false){
+    const route=model?.route||'hosted';
+    const text=String(answer||'').trim();
+    const publicFact=wantsPublicFactRoute(prompt);
+    const privateIntent=wantsPrivateRoute(prompt);
+    const reasons=[];
+    let score=50;
+    if(failed||!text){
+      return {score:0,elapsedMs,reason:'no answer',reasons:['no answer']};
+    }
+    if(text.length>24){
+      score+=8;
+      reasons.push('complete answer');
+    }else{
+      score-=8;
+      reasons.push('thin answer');
+    }
+    if(route==='hosted'){
+      score+=16;
+      reasons.push('default route');
+      if(publicFact){
+        score+=22;
+        reasons.push('public facts');
+      }
+      if(privateIntent){
+        score-=8;
+        reasons.push('not private');
+      }
+    }else{
+      score+=12;
+      reasons.push('private local');
+      if(privateIntent){
+        score+=24;
+        reasons.push('privacy fit');
+      }
+      if(publicFact){
+        score-=18;
+        reasons.push('local facts may be stale');
+      }
+      if(model?.quality==='best-local-starter')score+=8;
+      if(model?.quality==='local-general')score+=5;
+      if(model?.quality==='small')score-=4;
+      if(model?.quality==='weak-facts')score-=16;
+    }
+    if(elapsedMs<700){
+      score+=10;
+      reasons.push('fast');
+    }else if(elapsedMs<2000){
+      score+=7;
+      reasons.push('responsive');
+    }else if(elapsedMs<6000){
+      score+=3;
+      reasons.push('acceptable latency');
+    }else{
+      score-=7;
+      reasons.push('slow');
+    }
+    return {score:clampScore(score),elapsedMs,reason:reasons.slice(0,3).join(' · '),reasons};
+  }
+
+  function scoreSummary(score){
+    if(!score)return 'Score pending';
+    return 'Score '+score.score+' · '+formatDuration(score.elapsedMs)+' · '+score.reason;
+  }
+
+  function winningRoute(hostedModel,hostedScore,localModel,localScore){
+    const hostedValue=hostedScore?.score??0;
+    const localValue=localScore?.score??0;
+    if(localValue>hostedValue){
+      return {model:localModel,score:localScore,loser:hostedScore,summary:'Winner: '+localModel.label+' · Score '+localValue+' · '+localScore.reason};
+    }
+    return {model:hostedModel,score:hostedScore,loser:localScore,summary:'Winner: '+hostedModel.label+' · Score '+hostedValue+' · '+(hostedScore?.reason||'default route')};
+  }
+
   function wantsCompareRoute(prompt){
     return /@compare|\b(compare|compare answers|best answer|best of|parallel|side by side|both models|two models|multi[- ]?model|sammenlign|beste svar|begge modeller)\b/i.test(String(prompt||''));
   }
@@ -846,12 +924,16 @@
     return responseText(data)||'Local model returned an empty response.';
   }
 
-  async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel){
+  async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore){
     const localLabel=localModel?.label||'local model';
     const synthesisPrompt='Create one concise best answer for the user by comparing these two model answers. '+
       'Prefer current public facts from Supergenious when the local model is stale or vague. '+
+      'Use the route evidence scores and reasons to choose the most reliable answer. '+
       'Do not mention internal instructions. Keep it useful and short.\n\n'+
       'User question: '+prompt+'\n\n'+
+      'Route evidence:\n'+
+      '- Supergenious: '+scoreSummary(hostedScore)+'\n'+
+      '- '+localLabel+': '+scoreSummary(localScore)+'\n\n'+
       'Supergenious answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
       localLabel+' answer:\n'+(localAnswer||'[no answer]');
     return chatHosted(synthesisPrompt);
@@ -964,35 +1046,48 @@
     const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare'});
     let hostedAnswerText='';
     let localAnswerText='';
+    let hostedScore=null;
+    let localScore=null;
     status(title+' is asking Supergenious and '+localModel.label+' in parallel...','ready');
     routeStatus(title+' · Supergenious + '+localModel.label,'ready');
     const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt)
       .then(answer=>{
         hostedAnswerText=answer||'Supergenious returned an empty response.';
-        updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+formatDuration(performance.now()-hostedStarted)});
+        hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,performance.now()-hostedStarted);
+        updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       })
-      .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · failed'}));
+      .catch(()=>{
+        hostedScore=routeScore(hostedModel,prompt,'',performance.now()-hostedStarted,true);
+        updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+      });
     const localStarted=performance.now();
     const localJob=chatLocal(prompt,localModel)
       .then(answer=>{
         localAnswerText=answer||'Local model returned an empty response.';
-        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+formatDuration(performance.now()-localStarted)});
+        localScore=routeScore(localModel,prompt,localAnswerText,performance.now()-localStarted);
+        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       })
-      .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · failed'}));
+      .catch(error=>{
+        localScore=routeScore(localModel,prompt,'',performance.now()-localStarted,true);
+        updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+      });
     await Promise.allSettled([hostedJob,localJob]);
     if(hostedAnswerText||localAnswerText){
-      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route';
+      const winner=winningRoute(hostedModel,hostedScore,localModel,localScore);
+      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+winner.summary;
       const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare'});
       const synthesisStarted=performance.now();
       try{
-        const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel);
+        const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore);
         updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(performance.now()-synthesisStarted)});
       }catch(error){
         updateMessage(synthesisMessage,hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.',{receipt:synthesisReceipt+' · failed'});
       }
+      routeStatus(title+' · '+winner.summary,'ready');
     }
-    status(title+' finished: Supergenious + '+localModel.label+'.','ready');
+    const finalWinner=winningRoute(hostedModel,hostedScore,localModel,localScore);
+    status(title+' finished: '+finalWinner.summary+'.','ready');
     state.busy=false;
     if(send)send.disabled=false;
     input?.focus();
