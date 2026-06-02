@@ -442,7 +442,7 @@
           macLink.href = appendModelParams(macZip.path);
           macLink.textContent = 'Advanced: download ZIP fallback';
           setDownload(macLink, true);
-          status.textContent = dmg?.path ? 'DMG/ZIP artifacts exist as advanced fallbacks. Recommended Mac path is the Terminal command above.' : 'ZIP exists as an advanced fallback. Recommended Mac path is the Terminal command above.';
+          status.textContent = dmg?.path ? 'DMG/ZIP artifacts exist as advanced fallbacks. If macOS shows "Apple could not verify", use the Terminal command above.' : 'ZIP exists as an advanced fallback. If macOS shows "Apple could not verify", use the Terminal command above.';
         } else {
           badge.textContent = 'Terminal install';
           status.textContent = 'Mac ZIP artifact was not listed. Use the Terminal command above.';
