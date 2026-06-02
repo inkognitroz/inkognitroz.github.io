@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d340-20260602-synthesis-trust-v22';
+const CACHE_NAME='mmir-pwa-d341-20260602-visible-mic-v23';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

@@ -474,10 +474,17 @@
     recognition.maxAlternatives=1;
     let heardVoice=false;
     status('Listening...','ready');
+    routeStatus('Listening...','hosted');
     recognition.onstart=()=>status('Listening...','ready');
-    recognition.onerror=()=>status('Voice input failed or was cancelled.','error');
+    recognition.onerror=()=>{
+      status('Voice input failed or was cancelled.','error');
+      routeStatus('Voice input failed or was cancelled.','error');
+    };
     recognition.onend=()=>{
-      if(!heardVoice)status('Voice input stopped.','idle');
+      if(!heardVoice){
+        status('Voice input stopped.','idle');
+        renderToolbar();
+      }
     };
     recognition.onresult=(event)=>{
       const text=String(event.results?.[0]?.[0]?.transcript||'').trim();
@@ -488,12 +495,14 @@
         autosizeInput();
         input.focus();
         status('Voice text added.','ready');
+        renderToolbar();
       }
     };
     try{
       recognition.start();
     }catch(error){
       status('Voice input failed or was cancelled.','error');
+      routeStatus('Voice input failed or was cancelled.','error');
     }
   }
 
