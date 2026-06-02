@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d334-20260602-model-quality-v13';
+const CACHE_NAME='mmir-pwa-d334-20260602-compare-timing-v14';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

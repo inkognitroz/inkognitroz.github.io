@@ -248,6 +248,12 @@
       .sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label))[0]||null;
   }
 
+  function formatDuration(ms){
+    const value=Math.max(0,Number(ms)||0);
+    if(value<1000)return Math.round(value)+'ms';
+    return (value/1000).toFixed(value<10000?1:0)+'s';
+  }
+
   async function checkLocalModels({quiet=false}={}){
     try{
       allowLocalProbes('p0-find-local-models',60000);
@@ -453,13 +459,13 @@
     const menu=menuEl('add');
     const compareModel=bestLocalModel();
     const compareAction=compareModel?(
-      '<button type="button" data-p0-action="compare-live"><strong>Compare routes</strong><small>Ask Supergenious and '+safeText(compareModel.label)+' on the same prompt.</small></button>'
+      '<button class="p0-featured-action" type="button" data-p0-action="compare-live"><span class="p0-menu-row"><strong>Compare answers</strong><span class="p0-badge">2 routes</span><span class="p0-badge">Side by side</span></span><small>Supergenious + '+safeText(compareModel.label)+' on the same prompt.</small></button><div class="p0-menu-separator"></div>'
     ):'';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
+      compareAction+
       '<a href="'+MAC_INSTALL_URL+'" download><strong>Connect local model</strong><small>Download and open the Mac connector once. MMIR returns here and finds models automatically.</small></a>'+
       '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
-      compareAction+
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
@@ -682,9 +688,11 @@
     status(model.label+' is answering...','ready');
     routeStatus(receipt.text,receipt.state);
     try{
+      const started=performance.now();
       const answer=model.route==='local'?await chatLocal(prompt,model):await chatHosted(prompt);
-      updateMessage(assistant,answer);
-      status(model.label+' answered.','ready');
+      const elapsed=formatDuration(performance.now()-started);
+      updateMessage(assistant,answer,{receipt:receipt.text+' · '+elapsed});
+      status(model.label+' answered in '+elapsed+'.','ready');
     }catch(error){
       if(model.route==='local'){
         const hint=localNetworkHint(error);
@@ -692,13 +700,15 @@
         renderToolbar();
         try{
           const fallbackReceipt=routeReceipt(activeModel());
+          const fallbackStarted=performance.now();
           const fallbackAnswer=await chatHosted(prompt);
+          const fallbackElapsed=formatDuration(performance.now()-fallbackStarted);
           updateMessage(
             assistant,
             fallbackAnswer+'\n\nLocal model note: '+hint,
-            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback'}
+            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed}
           );
-          status('Supergenious answered while local access waits for permission.','ready');
+          status('Supergenious answered in '+fallbackElapsed+' while local access waits for permission.','ready');
           routeStatus(fallbackReceipt.text,fallbackReceipt.state);
         }catch(fallbackError){
           updateMessage(assistant,hint+'\n\nSupergenious is still available from the model picker.');
@@ -743,14 +753,16 @@
     const localMessage=append('assistant','Thinking...',localModel.label,localReceipt.text);
     status('Comparing Supergenious and '+localModel.label+'...','ready');
     routeStatus('Compare · Supergenious + '+localModel.label,'ready');
+    const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt)
-      .then(answer=>updateMessage(hostedMessage,answer||'Supergenious returned an empty response.'))
-      .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.'));
+      .then(answer=>updateMessage(hostedMessage,answer||'Supergenious returned an empty response.',{receipt:hostedReceipt.text+' · '+formatDuration(performance.now()-hostedStarted)}))
+      .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · failed'}));
+    const localStarted=performance.now();
     const localJob=chatLocal(prompt,localModel)
-      .then(answer=>updateMessage(localMessage,answer||'Local model returned an empty response.'))
-      .catch(error=>updateMessage(localMessage,localNetworkHint(error)));
+      .then(answer=>updateMessage(localMessage,answer||'Local model returned an empty response.',{receipt:localReceipt.text+' · '+formatDuration(performance.now()-localStarted)}))
+      .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · failed'}));
     await Promise.allSettled([hostedJob,localJob]);
-    status('Compare finished.','ready');
+    status('Compare finished: Supergenious + '+localModel.label+'.','ready');
     state.busy=false;
     if(send)send.disabled=false;
     input?.focus();

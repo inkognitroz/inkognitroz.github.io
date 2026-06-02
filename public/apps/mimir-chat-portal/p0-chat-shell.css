@@ -404,6 +404,15 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   background: #f7f7f8;
 }
 
+.p0-menu .p0-featured-action {
+  background: #f8fafc;
+  border: 1px solid #d9dbe3;
+}
+
+.p0-menu .p0-featured-action:hover {
+  background: #eef6f3;
+}
+
 .p0-menu strong {
   font-size: 0.9rem;
 }
