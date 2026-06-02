@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d335-20260602-explicit-route-tags-v17';
+const CACHE_NAME='mmir-pwa-d336-20260602-local-capacity-v18';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

@@ -40,7 +40,8 @@
     ],
     activeModelId:'mmir-supergenius',
     localChecked:false,
-    localError:''
+    localError:'',
+    localHardware:null
   };
 
   function initialMessages(){
@@ -217,6 +218,23 @@
       .sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
   }
 
+  function normalizeLocalHardware(payload){
+    if(!payload||typeof payload!=='object')return null;
+    const cpu=Number(payload.cpu_count||0);
+    const memory=Number(payload.memory_gb||0);
+    const tier=String(payload.memory_tier||'').trim();
+    const recommended=String(payload.recommended_model||'').trim();
+    const parts=[];
+    if(cpu)parts.push(cpu+' CPU');
+    if(memory)parts.push(memory+' GB RAM');
+    if(tier)parts.push(tier+' fit');
+    if(recommended)parts.push('best local: '+recommended);
+    return parts.length?{
+      summary:'This Mac · '+parts.join(' · '),
+      recommended
+    }:null;
+  }
+
   function localModelDetail(id){
     return localModelProfile(id).detail;
   }
@@ -308,8 +326,15 @@
       const health=await fetchJson(LOCAL_URL+'/health',{headers:localHeaders(token),timeoutMs:7000});
       if(!health||health.status==='offline')throw new Error('Local connector reports offline.');
       const models=normalizeLocalModels(await fetchJson(LOCAL_URL+'/v1/models',{headers:localHeaders(token),timeoutMs:10000}));
+      let hardware=null;
+      try{
+        hardware=normalizeLocalHardware(await fetchJson(LOCAL_URL+'/hardware',{headers:localHeaders(token),timeoutMs:7000}));
+      }catch(error){
+        hardware=null;
+      }
       const hosted=state.models.filter(model=>model.route==='hosted');
       state.models=hosted.concat(models);
+      state.localHardware=hardware;
       state.localChecked=true;
       state.localError='';
       writeJson(MODELS_KEY,state.models);
@@ -318,11 +343,12 @@
       }
       renderModelMenu();
       renderToolbar();
-      status(models.length?'Local node connected: '+models.length+' model'+(models.length===1?'':'s')+'.':'Local node connected, but no local models were reported.',models.length?'ready':'idle');
+      status(models.length?'Local node connected: '+models.length+' model'+(models.length===1?'':'s')+(hardware?' · '+hardware.summary:'')+'.':'Local node connected, but no local models were reported.',models.length?'ready':'idle');
       return models;
     }catch(error){
       state.localChecked=true;
       state.localError=localNetworkHint(error);
+      state.localHardware=null;
       state.models=state.models.filter(model=>model.route!=='local');
       if(!state.models.some(model=>model.id===state.activeModelId))state.activeModelId='mmir-supergenius';
       renderModelMenu();
@@ -529,6 +555,9 @@
     ):(
       '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Ready</span></span><small>Supergenious is the default. Connect local models to add private routing.</small></div>'
     );
+    const capacityHint=local&&state.localHardware?(
+      '<div class="p0-routing-hint p0-capacity-hint"><span class="p0-menu-row"><strong>Local capacity</strong><span class="p0-badge">Live</span></span><small>'+safeText(state.localHardware.summary)+'</small></div>'
+    ):'';
     const models=state.models.slice().sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
     const buttons=models.map(model=>{
       const selected=model.id===state.activeModelId?'Selected':'';
@@ -536,7 +565,7 @@
     }).join('');
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+smartHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+smartHint+capacityHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
