@@ -254,6 +254,37 @@
     return (value/1000).toFixed(value<10000?1:0)+'s';
   }
 
+  function defaultHostedModel(){
+    return state.models.find(model=>model.route==='hosted')||state.models[0];
+  }
+
+  function wantsCompareRoute(prompt){
+    return /@compare|\b(compare|compare answers|side by side|both models|two models|sammenlign|begge modeller)\b/i.test(String(prompt||''));
+  }
+
+  function wantsPrivateRoute(prompt){
+    return /\b(private|privacy|local|locally|offline|this mac|my mac|no cloud|privat|lokal|lokalt|denne macen|uten sky)\b/i.test(String(prompt||''));
+  }
+
+  function cleanSmartPrompt(prompt){
+    return String(prompt||'')
+      .replace(/@compare/gi,'')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function smartDecision(prompt){
+    const local=bestLocalModel();
+    const active=activeModel();
+    if(local&&wantsCompareRoute(prompt)){
+      return {mode:'compare',model:local,prompt:cleanSmartPrompt(prompt)||prompt};
+    }
+    if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
+      return {mode:'single',model:local,reason:'Smart route: private local'};
+    }
+    return {mode:'single',model:active,reason:''};
+  }
+
   async function checkLocalModels({quiet=false}={}){
     try{
       allowLocalProbes('p0-find-local-models',60000);
@@ -477,6 +508,12 @@
   function renderModelMenu(){
     const menu=menuEl('model');
     if(!menu)return;
+    const local=bestLocalModel();
+    const smartHint=local?(
+      '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Auto</span></span><small>Private/local prompts use '+safeText(local.label)+'. Compare prompts use two routes.</small></div>'
+    ):(
+      '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Ready</span></span><small>Supergenious is the default. Connect local models to add private routing.</small></div>'
+    );
     const models=state.models.slice().sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
     const buttons=models.map(model=>{
       const selected=model.id===state.activeModelId?'Selected':'';
@@ -484,7 +521,7 @@
     }).join('');
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+buttons+localHint;
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+smartHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
@@ -676,23 +713,29 @@
       compareLiveRoutes(cleanComparePrompt(prompt)||prompt,mentionedLocal);
       return;
     }
+    const smart=smartDecision(prompt);
+    if(smart.mode==='compare'){
+      compareLiveRoutes(smart.prompt,smart.model);
+      return;
+    }
     closeMenus();
     state.busy=true;
     if(send)send.disabled=true;
     append('user',prompt,'You');
     input.value='';
     autosizeInput();
-    const model=activeModel();
+    const model=smart.model;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text);
-    status(model.label+' is answering...','ready');
-    routeStatus(receipt.text,receipt.state);
+    const routePrefix=smart.reason?smart.reason+' · ':'';
+    status(routePrefix+model.label+' is answering...','ready');
+    routeStatus(routePrefix+receipt.text,receipt.state);
     try{
       const started=performance.now();
       const answer=model.route==='local'?await chatLocal(prompt,model):await chatHosted(prompt);
       const elapsed=formatDuration(performance.now()-started);
-      updateMessage(assistant,answer,{receipt:receipt.text+' · '+elapsed});
-      status(model.label+' answered in '+elapsed+'.','ready');
+      updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed});
+      status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
     }catch(error){
       if(model.route==='local'){
         const hint=localNetworkHint(error);
@@ -746,7 +789,7 @@
     append('user',prompt,'You');
     input.value='';
     autosizeInput();
-    const hostedModel=state.models.find(model=>model.route==='hosted')||state.models[0];
+    const hostedModel=defaultHostedModel();
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
     const hostedMessage=append('assistant','Thinking...',hostedModel.label,hostedReceipt.text);

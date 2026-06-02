@@ -413,6 +413,17 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   background: #eef6f3;
 }
 
+.p0-routing-hint {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  width: 100%;
+}
+
 .p0-menu strong {
   font-size: 0.9rem;
 }
