@@ -270,7 +270,12 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   min-width: 0;
 }
 
+.p0-left {
+  flex: 0 0 auto;
+}
+
 .p0-right {
+  flex: 1 1 auto;
   justify-content: flex-end;
 }
 
@@ -329,6 +334,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-model-button {
+  flex: 0 1 auto;
   max-width: min(230px, 46vw);
   min-width: 0;
 }
@@ -522,5 +528,26 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
     left: 10px !important;
     right: 10px;
     width: auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .p0-btn,
+  .p0-model-button {
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .p0-btn-icon {
+    width: 36px;
+  }
+
+  .p0-model-button {
+    max-width: 34vw;
+    padding: 0 10px;
+  }
+
+  .p0-chevron {
+    margin-left: 6px;
   }
 }
