@@ -11,6 +11,8 @@
   const MAC_INSTALL_URL='./downloads/mmir-local-connector-mac.zip';
   const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
   const MAX_HISTORY=40;
+  const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
+  const ICON_MIC='<svg class="p0-icon p0-icon-mic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>';
   const STALE_FAILURE_PATTERNS=[
     /Selected browser LLM is not loaded/i,
     /System prompt should always be the first message/i,
@@ -384,11 +386,11 @@
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Add or connect model" aria-expanded="false">+</button>'+
-              '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status" title="Security and privacy">⌾</button>'+
+              '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status" title="Security and privacy">'+ICON_SHIELD+'</button>'+
             '</div>'+
             '<div class="p0-right">'+
               '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergenious</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
-              '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input"></button>'+
+              '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input">'+ICON_MIC+'</button>'+
               '<button id="p0-send" class="p0-btn p0-btn-icon p0-send" type="submit" aria-label="Send message">↑</button>'+
             '</div>'+
           '</div>'+

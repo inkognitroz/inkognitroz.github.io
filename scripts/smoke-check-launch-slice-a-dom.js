@@ -106,11 +106,14 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-robust-local-discovery-v25', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-robust-local-discovery-v25', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-monochrome-toolbar-icons-v26', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-monochrome-toolbar-icons-v26', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
+requireIncludes(files.p0Runtime, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
+requireIncludes(files.p0Runtime, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
+requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
 requireIncludes(files.p0Css, '.p0-message-receipt', 'P0 assistant answers must include a visible route receipt.');
 requireIncludes(files.p0Runtime, "const API_URL='https://api.mmir.ai'", 'P0 shell must use api.mmir.ai as the immediate chat route.');
