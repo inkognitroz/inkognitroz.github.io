@@ -244,7 +244,7 @@
   function localModelProfile(id){
     const value=String(id||'').toLowerCase();
     if(/gemma3:270m/.test(value)){
-      return {detail:'Fast private demo · weak factual recall',tags:['Fast','Private','Local','Demo'],quality:'weak-facts',score:82};
+      return {detail:'Fast private demo · best local starter · weak factual recall',tags:['Fast','Private','Local'],quality:'best-local-starter',score:82};
     }
     if(/llama3\.2:3b|qwen2\.5:3b|3b|4b/.test(value)){
       return {detail:'Private local model · stronger but slower',tags:['Private','Local','Stronger','Slow'],quality:'local-general',score:72};
@@ -263,10 +263,32 @@
     return tags.slice(0,4).map(tag=>'<span class="p0-badge">'+safeText(tag)+'</span>').join('');
   }
 
+  function modelChoiceBadges(model,bestLocal){
+    const tags=[];
+    if(model?.route==='hosted')tags.push('Best default');
+    if(bestLocal&&model?.id===bestLocal.id)tags.push('Best local');
+    if(model?.quality==='weak-facts')tags.push('Weak facts');
+    if(model?.quality==='best-local-starter')tags.push('Starter');
+    return tags
+      .concat(Array.isArray(model?.tags)?model.tags:[])
+      .filter((tag,index,list)=>tag&&list.indexOf(tag)===index)
+      .slice(0,5)
+      .map(tag=>'<span class="p0-badge">'+safeText(tag)+'</span>')
+      .join('');
+  }
+
   function bestLocalModel(){
     return state.models
       .filter(model=>model.route==='local')
       .sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label))[0]||null;
+  }
+
+  function compareLocalModel(preferredLocalModel=null){
+    if(preferredLocalModel)return preferredLocalModel;
+    const best=bestLocalModel();
+    if(best)return best;
+    const active=activeModel();
+    return active.route==='local'?active:null;
   }
 
   function formatDuration(ms){
@@ -583,11 +605,15 @@
     const capacityHint=local&&state.localHardware?(
       '<div class="p0-routing-hint p0-capacity-hint"><span class="p0-menu-row"><strong>Local capacity</strong><span class="p0-badge">Live</span></span><small>'+safeText(state.localHardware.summary)+'</small></div>'
     ):'';
-    const models=state.models.slice().sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
-    const buttons=models.map(model=>{
+    const hostedModels=state.models.filter(model=>model.route==='hosted').sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
+    const localModels=state.models.filter(model=>model.route==='local').sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
+    const renderButtons=(models)=>models.map(model=>{
       const selected=model.id===state.activeModelId?'Selected':'';
-      return '<button type="button" data-model-id="'+safeText(model.id)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+modelBadges(model)+'</span><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
+      return '<button type="button" data-model-id="'+safeText(model.id)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+modelChoiceBadges(model,local)+'</span><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
     }).join('');
+    const buttons=''+
+      '<div class="p0-menu-section">Recommended</div>'+renderButtons(hostedModels)+
+      (localModels.length?'<div class="p0-menu-section">Private local models</div>'+renderButtons(localModels):'');
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
     menu.innerHTML='<div class="p0-menu-title">Models</div>'+smartHint+capacityHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
@@ -901,7 +927,7 @@
 
   async function compareLiveRoutes(comparePrompt='',preferredLocalModel=null){
     if(state.busy)return;
-    const localModel=preferredLocalModel||(activeModel().route==='local'?activeModel():bestLocalModel());
+    const localModel=compareLocalModel(preferredLocalModel);
     const input=document.getElementById('p0-input');
     const send=document.getElementById('p0-send');
     const prompt=String(comparePrompt||input?.value||'').trim();

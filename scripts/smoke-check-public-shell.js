@@ -128,7 +128,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR pro
 requireText(mmirPath, 'active-node-strip.js?v=20260531-capability-cleanup-v1', 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d342-20260602-mac-terminal-install-v27', 'Service worker cache must bust for P0 simple chat recovery.');
+requireText(serviceWorkerPath, 'mmir-pwa-d343-20260602-model-picker-polish-v28', 'Service worker cache must bust for P0 simple chat recovery.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.css', 'Service worker shell must include the P0 simple chat CSS.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.js', 'Service worker shell must include the P0 simple chat runtime.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/public-launch-guard.js', 'Service worker shell must include the public launch guard.');
@@ -148,8 +148,8 @@ requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model li
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
 requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, 'p0-chat-shell.css?v=20260602-mac-terminal-install-v27', 'Public page must load the P0 simple chat shell CSS.');
-requireText(mmirPath, 'p0-chat-shell.js?v=20260602-mac-terminal-install-v27', 'Public page must load the P0 simple chat shell runtime.');
+requireText(mmirPath, 'p0-chat-shell.css?v=20260602-model-picker-polish-v28', 'Public page must load the P0 simple chat shell CSS.');
+requireText(mmirPath, 'p0-chat-shell.js?v=20260602-model-picker-polish-v28', 'Public page must load the P0 simple chat shell runtime.');
 requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260602-explicit-route-tags-v17'", 'P0 shell must invalidate stale browser-error chat history.');
@@ -157,8 +157,12 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'S
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Private · This Mac', 'P0 shell must show local route receipts.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local fallback', 'P0 shell must keep answering through hosted fallback if local access fails.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best default', 'P0 model picker must label the safe default route.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best local', 'P0 model picker must identify the best local starter after discovery.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Private local models', 'P0 model picker must separate local models from the hosted default.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function compareLocalModel(preferredLocalModel=null)', 'P0 compare must choose the best local model unless the user explicitly mentions another model.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'slower/weak fallback', 'P0 model picker must demote weak tiny local models.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-badge', 'P0 model picker must render model quality badges.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-menu-section', 'P0 model picker must visually group recommended and private local models.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Compare answers', 'P0 + menu must expose compare in user language after local discovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'formatDuration', 'P0 answers must expose route timing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-featured-action', 'P0 compare action must be visually discoverable when live.');

@@ -480,6 +480,13 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   text-transform: uppercase;
 }
 
+.p0-menu-section {
+  color: #6b7280;
+  font-size: 0.68rem;
+  font-weight: 720;
+  padding: 6px 10px 0;
+}
+
 .p0-menu-separator {
   background: #ececf1;
   height: 1px;

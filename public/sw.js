@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d342-20260602-mac-terminal-install-v27';
+const CACHE_NAME='mmir-pwa-d343-20260602-model-picker-polish-v28';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
