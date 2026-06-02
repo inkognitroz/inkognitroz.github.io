@@ -900,7 +900,7 @@
       .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2 · failed'}));
     await Promise.allSettled([hostedJob,localJob]);
     if(hostedAnswerText||localAnswerText){
-      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis';
+      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route';
       const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare'});
       const synthesisStarted=performance.now();
       try{
