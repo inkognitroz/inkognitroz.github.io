@@ -153,6 +153,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   justify-self: start;
 }
 
+.p0-message-compare {
+  border-left: 2px solid #d1fae5;
+  padding-left: 10px;
+}
+
 .p0-message-label {
   color: #6b7280;
   font-size: 0.72rem;
@@ -165,6 +170,10 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   font-size: 0.72rem;
   line-height: 1.25;
   margin-top: -2px;
+}
+
+.p0-message-compare .p0-message-receipt {
+  color: #047857;
 }
 
 .p0-message-user .p0-message-label {

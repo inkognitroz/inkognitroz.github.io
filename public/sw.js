@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d337-20260602-mobile-toolbar-v19';
+const CACHE_NAME='mmir-pwa-d338-20260602-compare-receipts-v20';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

@@ -607,7 +607,7 @@
       return;
     }
     root.innerHTML=state.messages.map(message=>(
-      '<article class="p0-message p0-message-'+safeText(message.role)+'">'+
+      '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'">'+
         '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
         (message.receipt?'<div class="p0-message-receipt">'+safeText(message.receipt)+'</div>':'')+
         '<div class="p0-message-body">'+paragraphs(message.content)+'</div>'+
@@ -641,8 +641,8 @@
     writeJson(HISTORY_KEY,state.messages.slice(-MAX_HISTORY));
   }
 
-  function append(role,content,label,receipt){
-    const message={role,content:String(content||''),label:label||role,receipt:receipt||'',createdAt:new Date().toISOString()};
+  function append(role,content,label,receipt,meta={}){
+    const message={role,content:String(content||''),label:label||role,receipt:receipt||'',variant:meta.variant||'',createdAt:new Date().toISOString()};
     state.messages.push(message);
     state.messages=state.messages.slice(-MAX_HISTORY);
     saveHistory();
@@ -867,18 +867,18 @@
     const hostedModel=defaultHostedModel();
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
-    const hostedMessage=append('assistant','Thinking...',hostedModel.label,hostedReceipt.text);
-    const localMessage=append('assistant','Thinking...',localModel.label,localReceipt.text);
+    const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare'});
+    const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2',{variant:'compare'});
     status('Comparing Supergenious and '+localModel.label+'...','ready');
     routeStatus('Compare · Supergenious + '+localModel.label,'ready');
     const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt)
-      .then(answer=>updateMessage(hostedMessage,answer||'Supergenious returned an empty response.',{receipt:hostedReceipt.text+' · '+formatDuration(performance.now()-hostedStarted)}))
-      .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · failed'}));
+      .then(answer=>updateMessage(hostedMessage,answer||'Supergenious returned an empty response.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+formatDuration(performance.now()-hostedStarted)}))
+      .catch(()=>updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · failed'}));
     const localStarted=performance.now();
     const localJob=chatLocal(prompt,localModel)
-      .then(answer=>updateMessage(localMessage,answer||'Local model returned an empty response.',{receipt:localReceipt.text+' · '+formatDuration(performance.now()-localStarted)}))
-      .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · failed'}));
+      .then(answer=>updateMessage(localMessage,answer||'Local model returned an empty response.',{receipt:localReceipt.text+' · Compare answer 2/2 · '+formatDuration(performance.now()-localStarted)}))
+      .catch(error=>updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2 · failed'}));
     await Promise.allSettled([hostedJob,localJob]);
     status('Compare finished: Supergenious + '+localModel.label+'.','ready');
     state.busy=false;
