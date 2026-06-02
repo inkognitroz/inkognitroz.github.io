@@ -70,6 +70,10 @@ assertEqual(compare.mode, 'compare', 'Explicit hosted + local tags must compare 
 assertEqual(compare.model.id, gemma.id, 'Explicit compare must preserve requested local model');
 assertEqual(compare.prompt, 'who is president of USA?', 'Explicit compare must remove route tags from model prompt');
 
+const bestAnswer = testApi.smartDecision('Give me the best answer in parallel: what is the capital of Japan?');
+assertEqual(bestAnswer.mode, 'compare', 'Best Answer wording must trigger the two-route compare/synthesis path');
+assertEqual(bestAnswer.model.id, gemma.id, 'Best Answer must use the best discovered local model alongside Supergenious');
+
 const localOnly = testApi.explicitMentionDecision('@gemma who is president of USA?');
 assertEqual(localOnly.mode, 'single', 'Explicit local tag must route to local model');
 assertEqual(localOnly.model.id, gemma.id, 'Explicit local tag must preserve requested local model');
