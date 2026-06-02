@@ -463,8 +463,11 @@
   }
 
   function startVoice(){
+    const restoreRouteLater=(delay=1800)=>setTimeout(()=>renderToolbar(),delay);
     if(!speechSupported()){
       status('Voice input is not available in this browser.','error');
+      routeStatus('Voice input is not available in this browser.','error');
+      restoreRouteLater(2200);
       return;
     }
     const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -475,15 +478,20 @@
     let heardVoice=false;
     status('Listening...','ready');
     routeStatus('Listening...','hosted');
-    recognition.onstart=()=>status('Listening...','ready');
+    recognition.onstart=()=>{
+      status('Listening...','ready');
+      routeStatus('Listening...','hosted');
+    };
     recognition.onerror=()=>{
       status('Voice input failed or was cancelled.','error');
       routeStatus('Voice input failed or was cancelled.','error');
+      restoreRouteLater(2200);
     };
     recognition.onend=()=>{
       if(!heardVoice){
         status('Voice input stopped.','idle');
-        renderToolbar();
+        routeStatus('Voice input stopped.','hosted');
+        restoreRouteLater();
       }
     };
     recognition.onresult=(event)=>{
@@ -495,7 +503,8 @@
         autosizeInput();
         input.focus();
         status('Voice text added.','ready');
-        renderToolbar();
+        routeStatus('Voice text added.','hosted');
+        restoreRouteLater();
       }
     };
     try{
@@ -503,6 +512,7 @@
     }catch(error){
       status('Voice input failed or was cancelled.','error');
       routeStatus('Voice input failed or was cancelled.','error');
+      restoreRouteLater(2200);
     }
   }
 

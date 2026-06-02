@@ -128,7 +128,7 @@ requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR pro
 requireText(mmirPath, 'active-node-strip.js?v=20260531-capability-cleanup-v1', 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d341-20260602-visible-mic-v23', 'Service worker cache must bust for P0 simple chat recovery.');
+requireText(serviceWorkerPath, 'mmir-pwa-d342-20260602-voice-route-feedback-v24', 'Service worker cache must bust for P0 simple chat recovery.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.css', 'Service worker shell must include the P0 simple chat CSS.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.js', 'Service worker shell must include the P0 simple chat runtime.');
 requireText(serviceWorkerPath, './apps/mimir-chat-portal/public-launch-guard.js', 'Service worker shell must include the public launch guard.');
@@ -148,8 +148,8 @@ requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model li
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
 requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, 'p0-chat-shell.css?v=20260602-visible-mic-v23', 'Public page must load the P0 simple chat shell CSS.');
-requireText(mmirPath, 'p0-chat-shell.js?v=20260602-visible-mic-v23', 'Public page must load the P0 simple chat shell runtime.');
+requireText(mmirPath, 'p0-chat-shell.css?v=20260602-voice-route-feedback-v24', 'Public page must load the P0 simple chat shell CSS.');
+requireText(mmirPath, 'p0-chat-shell.js?v=20260602-voice-route-feedback-v24', 'Public page must load the P0 simple chat shell runtime.');
 requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260602-explicit-route-tags-v17'", 'P0 shell must invalidate stale browser-error chat history.');
@@ -182,6 +182,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'f
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'MMIR returns here and finds models automatically', 'P0 local install copy must describe automatic return flow.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'checkLocalModels().catch(()=>{})', 'P0 local model checks must catch browser-blocked probes in the UI handler.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "status('Listening...','ready')", 'P0 mic button must give immediate feedback.');
