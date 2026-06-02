@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d332-20260601-p0-auto-fallback-v7';
+const CACHE_NAME='mmir-pwa-d332-20260601-p0-no-flash-v8';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
