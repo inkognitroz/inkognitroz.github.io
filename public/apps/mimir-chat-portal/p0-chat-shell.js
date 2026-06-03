@@ -7,7 +7,7 @@
   const TOKEN_KEY='mmir-p0-local-token';
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
-  const HISTORY_SCHEMA='20260602-explicit-route-tags-v17';
+  const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
   const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
@@ -57,7 +57,11 @@
       return [];
     }
     const raw=readJson(HISTORY_KEY,[]);
-    const clean=raw.filter(validMessage).filter(message=>!staleFailureMessage(message)).slice(-MAX_HISTORY);
+    const clean=raw
+      .filter(validMessage)
+      .filter(message=>!staleFailureMessage(message))
+      .filter(message=>!transientInstallMessage(message))
+      .slice(-MAX_HISTORY);
     if(clean.length!==raw.length)writeJson(HISTORY_KEY,clean);
     return clean;
   }
@@ -85,6 +89,10 @@
   function staleFailureMessage(message){
     const content=String(message?.content||'');
     return STALE_FAILURE_PATTERNS.some(pattern=>pattern.test(content));
+  }
+
+  function transientInstallMessage(message){
+    return Boolean(message?.command||message?.showOsChoices||message?.variant==='install');
   }
 
   function safeText(value){
