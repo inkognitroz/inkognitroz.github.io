@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-compact-receipt-v39', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-compact-receipt-v39', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-clean-first-chat-v40', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-clean-first-chat-v40', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -189,7 +189,8 @@ requireIncludes(files.p0Runtime, 'checkLocalModels().catch(()=>{})', 'P0 local m
 requireIncludes(files.p0Runtime, "status('Listening...','ready')", 'P0 mic button must give immediate feedback when voice input is requested.');
 requireIncludes(files.p0Runtime, "document.body.classList.add('mmir-p0-ready')", 'P0 runtime must set the same ready class that the P0 CSS uses to hide legacy UI.');
 forbid(files.p0Runtime, /classList\.add\('mimir-p0-ready'\)/, 'P0 runtime must not use the misspelled ready class.');
-requireIncludes(files.p0Runtime, "const HISTORY_SCHEMA='20260602-explicit-route-tags-v17'", 'P0 shell must invalidate stale browser-error chat history.');
+requireIncludes(files.p0Runtime, "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');
+requireIncludes(files.p0Runtime, 'function transientInstallMessage(message)', 'P0 shell must keep local install instructions chat-native but transient, not first-screen history.');
 requireIncludes(files.p0Runtime, 'Selected browser LLM is not loaded', 'P0 stale-state guard must explicitly purge the known Browser LLM failure copy.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-find-local-models'", 'P0 Find local models must explicitly allow user-requested local probes.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-local-chat'", 'P0 local chat must explicitly allow user-requested local connector calls.');
