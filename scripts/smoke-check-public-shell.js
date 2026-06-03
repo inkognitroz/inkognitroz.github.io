@@ -217,6 +217,11 @@ forbidText(modelCatalogPath, 'RAG', 'Public model catalog must not expose RAG wo
 forbidText(freeModelStartersPath, 'RAG', 'Free starter model catalog must not expose RAG wording before that user journey is production-ready.');
 requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
 forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'models_available: readiness.models_available', 'Standalone connector status must expose UI-ready model availability.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'model_count: readiness.model_count', 'Standalone connector status must expose model count.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'chat_ready: readiness.chat_ready', 'Standalone connector status must expose actual paired chat readiness.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'runtime_chat_ready', 'Standalone connector status must distinguish runtime capacity from paired chat readiness.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), "visibility: paired ? 'paired' : 'public-safe'", 'Standalone connector status must keep installed model names paired-only.');
 if (!existsSync(macConnectorZipPath)) fail('Published Mac Connector ZIP must exist for reliable browser download.');
 if (!existsSync(macDmgPath)) fail('Mac DMG artifact may exist as advanced packaging evidence, but must not be the primary public installer.');
 requireText(connectorReleasePath, '"id": "legacy-macos-linux-local-node"', 'Release manifest must publish the Terminal bootstrap artifact for Mac/Linux.');

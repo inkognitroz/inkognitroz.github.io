@@ -248,6 +248,12 @@ function paired(req, res, origin) {
   return valid;
 }
 
+function isPairedRequest(req) {
+  const supplied = requestToken(req);
+  if (!supplied || supplied.length !== TOKEN.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(TOKEN));
+}
+
 function body(req) {
   return new Promise((resolve, reject) => {
     let raw = '';
@@ -290,6 +296,60 @@ async function ollama(path, options = {}) {
   });
   if (!response.ok) throw new Error(`Ollama returned ${response.status}`);
   return response.json();
+}
+
+function normalizeModel(model) {
+  const id = String(model?.name || model?.model || '').trim();
+  if (!id) return null;
+  return {
+    id,
+    name: id,
+    provider: 'ollama',
+    status: 'available',
+    source: 'local',
+    capabilities: ['chat'],
+  };
+}
+
+function normalizeModels(models) {
+  return Array.isArray(models) ? models.map(normalizeModel).filter(Boolean) : [];
+}
+
+function publicRoutes() {
+  return [
+    '/health',
+    '/status',
+    '/node/identity',
+    '/pair',
+    '/pairing/sessions',
+    '/hardware',
+    '/models',
+    '/v1/models',
+    '/chat',
+    '/chat/completions',
+    '/v1/chat/completions',
+    '/doctor',
+    '/tunnels/status',
+  ];
+}
+
+function statusModelSummary({ runtime, models, paired }) {
+  const data = normalizeModels(models);
+  const recommended = data.find(model => model.id === MODEL) || data[0] || null;
+  const runtimeOnline = runtime?.status === 'online';
+
+  return {
+    available: runtimeOnline && data.length > 0,
+    source: 'ollama',
+    count: runtimeOnline ? data.length : 0,
+    data: paired ? data : [],
+    recommended_model: paired && recommended ? recommended.id : null,
+    error: runtimeOnline ? null : 'runtime_offline',
+    visibility: paired ? 'paired' : 'public-safe',
+    detail: paired
+      ? 'Paired status includes installed local model metadata.'
+      : 'Pair with this local connector before reading installed model names.',
+  };
 }
 
 function modelJobId(model) {
@@ -441,11 +501,33 @@ http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && url.pathname === '/status') {
       let runtime;
+      let models = [];
       try {
         runtime = { provider: 'ollama', status: 'online', ...(await ollama('/api/version', { timeoutMs: 2500 })) };
       } catch {
         runtime = { provider: 'ollama', status: 'offline', reason: 'unreachable' };
       }
+      if (runtime.status === 'online') {
+        try {
+          const tags = await ollama('/api/tags', { timeoutMs: 3500 });
+          models = Array.isArray(tags.models) ? tags.models : [];
+        } catch {
+          models = [];
+        }
+      }
+      const requestPaired = isPairedRequest(req);
+      const modelSummary = statusModelSummary({ runtime, models, paired: requestPaired });
+      const readiness = {
+        node_online: true,
+        ollama_online: runtime.status === 'online',
+        paired_required: true,
+        paired: requestPaired,
+        models_available: modelSummary.available,
+        model_count: modelSummary.count,
+        runtime_chat_ready: runtime.status === 'online' && modelSummary.available,
+        chat_ready: runtime.status === 'online' && modelSummary.available && requestPaired,
+        model_metadata_visible: requestPaired,
+      };
       send(res, 200, {
         status: runtime.status === 'online' ? 'online' : 'degraded',
         service: 'mmir-local-node',
@@ -453,8 +535,16 @@ http.createServer(async (req, res) => {
         provider: 'local-node',
         contract_version: CONTRACT_VERSION,
         runtime,
+        ollama_online: readiness.ollama_online,
+        models_available: readiness.models_available,
+        model_count: readiness.model_count,
+        chat_ready: readiness.chat_ready,
+        model_metadata_visible: readiness.model_metadata_visible,
         pairing: { required: true, configured: true },
         node: nodeIdentity(),
+        routes: publicRoutes(),
+        models: modelSummary.data,
+        model_summary: modelSummary,
         tunnel: {
           provider: tunnelState.provider,
           status: tunnelState.status,
@@ -468,13 +558,7 @@ http.createServer(async (req, res) => {
           streaming: false,
           model_pull_idle_timeout_ms: 15 * 60 * 1000,
         },
-        readiness: {
-          node_online: true,
-          ollama_online: runtime.status === 'online',
-          paired_required: true,
-          models_available: modelPulls.size > 0 || runtime.status === 'online',
-          chat_ready: runtime.status === 'online',
-        },
+        readiness,
       }, origin);
       return;
     }
@@ -600,14 +684,7 @@ http.createServer(async (req, res) => {
         provider: 'local-node',
         source: 'ollama',
         hardware: hardware(),
-        data: (tags.models || []).map(model => ({
-          id: model.name || model.model,
-          name: model.name || model.model,
-          provider: 'ollama',
-          status: 'available',
-          source: 'local',
-          capabilities: ['chat'],
-        })),
+        data: normalizeModels(tags.models || []),
       }, origin);
       return;
     }
