@@ -6,7 +6,7 @@ const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -83,6 +83,23 @@ const publicWinner = testApi.winningRoute(hosted, hostedPublicScore, gemma, loca
 assertEqual(publicWinner.model.id, hosted.id, 'Public fact Best Answer winner must be Supergenious');
 assertIncludes(publicWinner.summary, 'Winner: Supergenious', 'Winner summary must name the hosted route');
 assertIncludes(testApi.scoreSummary(hostedPublicScore), 'Score ', 'Score summary must expose the score');
+
+const apiScoring = {
+  scores: [
+    { node_id: 'browser-guide', model_id: 'mmir-supergenius', score: 100, latency_ms: 300, reasons: ['complete answer', 'public fact fit'] },
+    { route_class: 'local', model_id: 'gemma3:270m', score: 77, latency_ms: 1200, reasons: ['complete answer', 'small local model may be stale'] }
+  ],
+  winner: { route_class: 'free', node_id: 'browser-guide', model_id: 'mmir-supergenius', score: 100, reason: 'Best fit: complete answer' }
+};
+const apiHostedScore = testApi.apiScoreForModel(apiScoring, hosted, hostedPublicScore);
+const apiLocalScore = testApi.apiScoreForModel(apiScoring, gemma, localPublicScore);
+const apiPublicWinner = testApi.apiWinner(apiScoring, hosted, apiHostedScore, gemma, apiLocalScore);
+assertIncludes(testApi.scoreSummary(apiHostedScore), 'API score ', 'API scoring summary must be visible when server scoring is available');
+assertIncludes(apiPublicWinner.summary, 'API score 100', 'API winner summary must use server-side route scoring');
+
+const hostedCandidate = testApi.routeScoreCandidate(hosted, 'The capital of Japan is Tokyo.', 300, false);
+assertEqual(hostedCandidate.route_id, 'browser-guide/free', 'Hosted scoring candidate must use the API route id');
+assertEqual(hostedCandidate.provider, 'mmir', 'Hosted scoring candidate must not use browser/provider secrets');
 
 const hostedPrivateScore = testApi.routeScore(hosted, 'Answer privately using this Mac only', 'I can answer.', 400);
 const localPrivateScore = testApi.routeScore(gemma, 'Answer privately using this Mac only', 'I can answer locally.', 700);

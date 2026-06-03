@@ -3,6 +3,7 @@
   const API_URL='https://api.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
   const CHAT_PATH='/v1/chat/completions';
+  const ROUTE_SCORE_PATH='/routing/score';
   const TOKEN_KEY='mmir-p0-local-token';
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
@@ -367,7 +368,8 @@
 
   function scoreSummary(score){
     if(!score)return 'Score pending';
-    return 'Score '+score.score+' · '+formatDuration(score.elapsedMs)+' · '+score.reason;
+    const prefix=score.source==='api'?'API score ':'Score ';
+    return prefix+score.score+' · '+formatDuration(score.elapsedMs)+' · '+score.reason;
   }
 
   function winningRoute(hostedModel,hostedScore,localModel,localScore){
@@ -377,6 +379,80 @@
       return {model:localModel,score:localScore,loser:hostedScore,summary:'Winner: '+localModel.label+' · Score '+localValue+' · '+localScore.reason};
     }
     return {model:hostedModel,score:hostedScore,loser:localScore,summary:'Winner: '+hostedModel.label+' · Score '+hostedValue+' · '+(hostedScore?.reason||'default route')};
+  }
+
+  function routeScoreCandidate(model,answer,elapsedMs,failed=false){
+    const isLocal=model?.route==='local';
+    return {
+      id:isLocal?'local/'+(model.model||model.id):'browser-guide/free',
+      route_id:isLocal?'local/'+(model.model||model.id):'browser-guide/free',
+      route_class:isLocal?'local':'free',
+      cost_class:isLocal?'free-local':'free',
+      node_id:isLocal?'local-node':'browser-guide',
+      node_display_name:isLocal?'This Mac':'Supergenious',
+      model_id:isLocal?(model.model||model.id):'mmir-supergenius',
+      model_display_name:model?.label||model?.model||'Supergenious',
+      trust_level:isLocal?'operator-local':'public-free',
+      provider:isLocal?'local-ollama':'mmir',
+      quality:model?.quality||'',
+      answer:String(answer||'').slice(0,8000),
+      latency_ms:Math.max(0,Math.round(Number(elapsedMs)||0)),
+      failed:Boolean(failed)
+    };
+  }
+
+  function apiScoreForModel(scoring,model,fallback){
+    const isLocal=model?.route==='local';
+    const modelId=isLocal?(model.model||model.id):'mmir-supergenius';
+    const found=(Array.isArray(scoring?.scores)?scoring.scores:[]).find(score=>
+      String(score?.model_id||'')===String(modelId) ||
+      (isLocal&&String(score?.route_class||'')==='local') ||
+      (!isLocal&&String(score?.node_id||'')==='browser-guide')
+    );
+    if(!found)return fallback;
+    const reasons=Array.isArray(found.reasons)?found.reasons:[];
+    return {
+      score:clampScore(found.score),
+      elapsedMs:Number(found.latency_ms)||fallback?.elapsedMs||0,
+      reason:reasons.slice(0,3).join(' · ')||found.summary||fallback?.reason||'api route policy',
+      reasons,
+      source:'api'
+    };
+  }
+
+  function apiWinner(scoring,hostedModel,hostedScore,localModel,localScore){
+    const winner=scoring?.winner;
+    if(!winner)return winningRoute(hostedModel,hostedScore,localModel,localScore);
+    const localId=String(localModel?.model||localModel?.id||'');
+    const winnerModelId=String(winner.model_id||'');
+    const isLocal=winner.route_class==='local'||winnerModelId===localId;
+    const model=isLocal?localModel:hostedModel;
+    const score=isLocal?localScore:hostedScore;
+    const loser=isLocal?hostedScore:localScore;
+    return {
+      model,
+      score,
+      loser,
+      summary:'Winner: '+model.label+' · API score '+(score?.score??winner.score??0)+' · '+(score?.reason||winner.reason||'api route policy')
+    };
+  }
+
+  async function scoreRoutesWithApi(prompt,hostedModel,hostedAnswer,hostedElapsed,hostedFailed,localModel,localAnswer,localElapsed,localFailed){
+    const payload={
+      prompt,
+      routes:[
+        routeScoreCandidate(hostedModel,hostedAnswer,hostedElapsed,hostedFailed),
+        routeScoreCandidate(localModel,localAnswer,localElapsed,localFailed)
+      ]
+    };
+    const data=await fetchJson(API_URL+ROUTE_SCORE_PATH,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      timeoutMs:9000
+    });
+    if(data?.object!=='routing.score'||!Array.isArray(data.scores)||!data.winner)throw new Error('Route scoring unavailable');
+    return data;
   }
 
   function wantsCompareRoute(prompt){
@@ -1048,34 +1124,57 @@
     let localAnswerText='';
     let hostedScore=null;
     let localScore=null;
+    let hostedElapsedMs=0;
+    let localElapsedMs=0;
+    let hostedFailed=false;
+    let localFailed=false;
     status(title+' is asking Supergenious and '+localModel.label+' in parallel...','ready');
     routeStatus(title+' · Supergenious + '+localModel.label,'ready');
     const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt)
       .then(answer=>{
         hostedAnswerText=answer||'Supergenious returned an empty response.';
-        hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,performance.now()-hostedStarted);
+        hostedElapsedMs=performance.now()-hostedStarted;
+        hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs);
         updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       })
       .catch(()=>{
-        hostedScore=routeScore(hostedModel,prompt,'',performance.now()-hostedStarted,true);
+        hostedFailed=true;
+        hostedElapsedMs=performance.now()-hostedStarted;
+        hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true);
         updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       });
     const localStarted=performance.now();
     const localJob=chatLocal(prompt,localModel)
       .then(answer=>{
         localAnswerText=answer||'Local model returned an empty response.';
-        localScore=routeScore(localModel,prompt,localAnswerText,performance.now()-localStarted);
+        localElapsedMs=performance.now()-localStarted;
+        localScore=routeScore(localModel,prompt,localAnswerText,localElapsedMs);
         updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       })
       .catch(error=>{
-        localScore=routeScore(localModel,prompt,'',performance.now()-localStarted,true);
+        localFailed=true;
+        localElapsedMs=performance.now()-localStarted;
+        localScore=routeScore(localModel,prompt,'',localElapsedMs,true);
         updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       });
     await Promise.allSettled([hostedJob,localJob]);
+    let finalWinner=null;
+    let scoringSource='local fallback score';
+    try{
+      const scoring=await scoreRoutesWithApi(prompt,hostedModel,hostedAnswerText,hostedElapsedMs,hostedFailed,localModel,localAnswerText,localElapsedMs,localFailed);
+      hostedScore=apiScoreForModel(scoring,hostedModel,hostedScore);
+      localScore=apiScoreForModel(scoring,localModel,localScore);
+      finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
+      scoringSource='api.mmir.ai/routing/score';
+      updateMessage(hostedMessage,hostedAnswerText||'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+      updateMessage(localMessage,localAnswerText||localNetworkHint('Local model did not answer.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+    }catch(error){
+      finalWinner=winningRoute(hostedModel,hostedScore,localModel,localScore);
+    }
     if(hostedAnswerText||localAnswerText){
-      const winner=winningRoute(hostedModel,hostedScore,localModel,localScore);
-      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+winner.summary;
+      const winner=finalWinner||winningRoute(hostedModel,hostedScore,localModel,localScore);
+      const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+scoringSource+' · '+winner.summary;
       const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare'});
       const synthesisStarted=performance.now();
       try{
@@ -1086,7 +1185,6 @@
       }
       routeStatus(title+' · '+winner.summary,'ready');
     }
-    const finalWinner=winningRoute(hostedModel,hostedScore,localModel,localScore);
     status(title+' finished: '+finalWinner.summary+'.','ready');
     state.busy=false;
     if(send)send.disabled=false;
