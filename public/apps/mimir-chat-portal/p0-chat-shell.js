@@ -130,15 +130,15 @@
 
   function localInstallIntro(os){
     if(os==='mac'){
-      return 'I detected macOS. Copy this command into Terminal on the Mac that will host your local model. It installs MMIR Local Connector, downloads a small starter model when needed, and keeps the node on 127.0.0.1.';
+      return 'I detected macOS. Do you have a Mac computer? Copy and paste this in Terminal to connect a local node. It installs MMIR Local Connector, downloads a small starter model when needed, and keeps the node on 127.0.0.1.';
     }
     if(os==='linux'){
-      return 'I detected Linux. Run this command in the terminal on the machine that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
+      return 'I detected Linux. Copy and paste this in the terminal on the computer that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
     }
     if(os==='windows'){
-      return 'I detected Windows. Run this command in PowerShell on the PC that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
+      return 'I detected Windows. Copy and paste this in PowerShell on the PC that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
     }
-    return 'Which machine will host your local model? Choose the operating system and I will give you the exact command here in chat.';
+    return 'Which computer will host your local model? Choose Mac, Windows or Linux, and I will give you the exact command here in chat.';
   }
 
   function startLocalInstallAssistant(forcedOs=''){

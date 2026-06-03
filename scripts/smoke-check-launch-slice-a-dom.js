@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-local-install-chat-v35', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-local-install-chat-v35', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-local-install-chat-v36', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-local-install-chat-v36', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -119,6 +119,7 @@ requireIncludes(files.p0Css, '.p0-message-receipt', 'P0 assistant answers must i
 requireIncludes(files.p0Runtime, "const API_URL='https://api.mmir.ai'", 'P0 shell must use api.mmir.ai as the immediate chat route.');
 requireIncludes(files.p0Runtime, "data-p0-action=\"connect-local\"", 'P0 shell must start local setup through the chat-guided installer flow.');
 requireIncludes(files.p0Runtime, 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.');
+requireIncludes(files.p0Runtime, 'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.', 'P0 local setup must use simple chat-first Mac copy.');
 requireIncludes(files.p0Runtime, 'data-p0-os-command="windows"', 'P0 local setup must ask for OS when browser detection is uncertain.');
 requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setup must gracefully handle browsers that block clipboard writes.');
 requireIncludes(files.p0Runtime, 'Connect local model', 'P0 add menu must present local setup as a user task, not internal installer plumbing.');
