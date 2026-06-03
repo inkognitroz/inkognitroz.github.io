@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-local-install-chat-v37', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-local-install-chat-v37', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-scroll-short-v38', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-scroll-short-v38', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -115,6 +115,8 @@ requireIncludes(files.p0Runtime, 'p0-icon-shield', 'P0 privacy button must rende
 requireIncludes(files.p0Runtime, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
 requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
+requireIncludes(files.p0Css, 'overscroll-behavior: contain', 'P0 transcript must be an independently scrollable answer pane.');
+requireIncludes(files.p0Css, '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
 requireIncludes(files.p0Css, '.p0-message-receipt', 'P0 assistant answers must include a visible route receipt.');
 requireIncludes(files.p0Runtime, "const API_URL='https://api.mmir.ai'", 'P0 shell must use api.mmir.ai as the immediate chat route.');
 requireIncludes(files.p0Runtime, "data-p0-action=\"connect-local\"", 'P0 shell must start local setup through the chat-guided installer flow.');
@@ -127,6 +129,7 @@ requireIncludes(files.p0Runtime, 'Connect local model', 'P0 add menu must presen
 requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, 'Supergenious · Free · api.mmir.ai', 'P0 hosted route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
+requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
 requireIncludes(files.p0Runtime, 'data-p0-action="compare-live"', 'P0 compare must be implemented as a gated toolbar action.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
 requireIncludes(files.p0Runtime, 'data-p0-action="best-answer-live"', 'P0 Best Answer must be implemented as a gated toolbar action after real local discovery.');

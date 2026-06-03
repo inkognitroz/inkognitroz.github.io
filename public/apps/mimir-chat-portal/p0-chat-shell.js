@@ -1072,7 +1072,7 @@
     return {
       model:'mmir-supergenius',
       messages:[
-        {role:'system',content:'You are Supergenious, the default assistant on MMIR.ai. Answer directly and usefully. Do not turn ordinary chats into setup support unless asked.'},
+        {role:'system',content:'You are Supergenious, the default assistant on MMIR.ai. Answer directly and usefully. Keep answers short by default; expand only when the user asks. Do not turn ordinary chats into setup support unless asked.'},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -1087,7 +1087,7 @@
     return {
       model:model.model,
       messages:[
-        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly and concisely.'+factGuard},
+        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly and concisely. Keep answers short by default; expand only when the user asks.'+factGuard},
         {role:'user',content:prompt}
       ],
       stream:false,
