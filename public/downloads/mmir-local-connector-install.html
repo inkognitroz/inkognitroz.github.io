@@ -222,6 +222,7 @@
       color: var(--muted);
       margin-top: 10px;
     }
+    details.advanced-platforms:not([open]) > p,
     details.advanced-platforms:not([open]) .release-panel,
     details.advanced-platforms:not([open]) .grid {
       display: none;
@@ -234,7 +235,7 @@
     <p id="detected">Detecting this device...</p>
     <p class="selected-model" id="selected-model">MMIR will choose a safe free starter model automatically.</p>
     <a class="primary" id="primary" href="#terminal-install">Copy Mac install command</a>
-    <p>The connector turns this machine into a private MMIR node. Normal users should use the single recommended action below. Other platforms and API-style node setup are advanced paths.</p>
+    <p>The connector turns this machine into a private MMIR node. Use the single recommended Mac command below. MMIR will detect the node automatically.</p>
 
     <section class="terminal-panel" id="terminal-install" aria-label="Mac Terminal install">
       <h2>Recommended Mac install</h2>
