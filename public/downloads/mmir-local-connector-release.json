@@ -34,7 +34,7 @@
       "platform": "shared",
       "kind": "node-server",
       "path": "/downloads/mmir-local-connector-server.mjs",
-      "sha256": "1c3537c0b094d5d4f750261f448bdac5c0becda041ce9bb282e122fe6b59b9dc",
+      "sha256": "1fca82c96fdbff3511da3cb71662a2fc8611aae011b20439215660c58813f351",
       "contract_version": "0.1",
       "required": true
     },
@@ -43,7 +43,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "39d19704e005b15d1a6ac88f0e3af392591b5d9a854200203caab5ccaad454cd",
+      "sha256": "a7c8d8b9a4dc83a9f00358d5301928fdf42e000f22bd94d9a095c77021ba2d07",
       "recommended": false,
       "note": "Advanced fallback. Unsigned downloaded .command files can trigger macOS Gatekeeper. Recommended Mac install path is the Terminal curl bootstrap."
     },
@@ -106,7 +106,7 @@
       "platform": "browser",
       "kind": "installer-selector",
       "path": "/downloads/mmir-local-connector-install.html",
-      "sha256": "ab87293c75493faf7050eb0e2fb86be2e8a0e4a30ad50bb971364c48ea6184d1",
+      "sha256": "7ab43cf009c82cdb4b8aa7036becdc60b2fbc17af0e5d2ec53bb6401ab42b327",
       "recommended": true
     },
     {
@@ -137,7 +137,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-05-31T18:56:24.741Z",
+    "verified_at": "2026-06-03T12:47:45.106Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",
