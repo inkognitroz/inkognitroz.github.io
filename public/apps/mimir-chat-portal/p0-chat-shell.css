@@ -158,6 +158,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   padding-left: 10px;
 }
 
+.p0-message-install {
+  border-left: 2px solid #e5e7eb;
+  padding-left: 10px;
+}
+
 .p0-message-label {
   color: #6b7280;
   font-size: 0.72rem;
@@ -193,6 +198,64 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-message-body p:last-child {
   margin-bottom: 0;
+}
+
+.p0-command-card {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  max-width: 100%;
+  padding: 12px;
+}
+
+.p0-command-card code {
+  color: #111827;
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.p0-command-actions,
+.p0-os-choice-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.p0-command-actions button,
+.p0-command-actions a,
+.p0-os-choice-row button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d9dbe3;
+  border-radius: 999px;
+  color: #111827;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  min-height: 34px;
+  padding: 0 12px;
+  text-decoration: none;
+}
+
+.p0-command-actions button:hover,
+.p0-command-actions a:hover,
+.p0-os-choice-row button:hover {
+  background: #f4f4f5;
+}
+
+.p0-os-choice-row {
+  margin-top: 12px;
 }
 
 .p0-message-user .p0-message-body {

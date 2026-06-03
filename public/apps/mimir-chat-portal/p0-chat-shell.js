@@ -9,8 +9,9 @@
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SCHEMA='20260602-explicit-route-tags-v17';
   const MODELS_KEY='mmir-p0-active-models-v1';
-  const MAC_INSTALL_URL='./downloads/mmir-local-connector-install.html#terminal-install';
   const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
+  const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
+  const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
   const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
   const ICON_MIC='<svg class="p0-icon p0-icon-mic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>';
@@ -97,6 +98,10 @@
     }[char]));
   }
 
+  function safeAttr(value){
+    return safeText(value);
+  }
+
   function paragraphs(text){
     return String(text||'')
       .split(/\n{2,}/)
@@ -104,6 +109,124 @@
       .filter(Boolean)
       .map(part=>'<p>'+safeText(part)+'</p>')
       .join('')||'<p></p>';
+  }
+
+  function detectInstallOs(){
+    const platform=String(navigator.userAgentData?.platform||navigator.platform||'').toLowerCase();
+    const agent=String(navigator.userAgent||'').toLowerCase();
+    const probe=platform+' '+agent;
+    if(/iphone|ipad|android|mobile/.test(probe))return 'mobile';
+    if(/mac|darwin/.test(probe))return 'mac';
+    if(/win/.test(probe))return 'windows';
+    if(/linux|x11|ubuntu|debian|raspbian|arm/.test(probe))return 'linux';
+    return 'unknown';
+  }
+
+  function localInstallCommand(os){
+    if(os==='windows')return WINDOWS_INSTALL_COMMAND;
+    if(os==='mac'||os==='linux')return MAC_LINUX_INSTALL_COMMAND;
+    return '';
+  }
+
+  function localInstallIntro(os){
+    if(os==='mac'){
+      return 'I detected macOS. Copy this command into Terminal on the Mac that will host your local model. It installs MMIR Local Connector, downloads a small starter model when needed, and keeps the node on 127.0.0.1.';
+    }
+    if(os==='linux'){
+      return 'I detected Linux. Run this command in the terminal on the machine that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
+    }
+    if(os==='windows'){
+      return 'I detected Windows. Run this command in PowerShell on the PC that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
+    }
+    return 'Which machine will host your local model? Choose the operating system and I will give you the exact command here in chat.';
+  }
+
+  function startLocalInstallAssistant(forcedOs=''){
+    closeMenus();
+    const detected=forcedOs||detectInstallOs();
+    const os=['mac','windows','linux'].includes(detected)?detected:'unknown';
+    const command=localInstallCommand(os);
+    if(command){
+      append(
+        'assistant',
+        localInstallIntro(os)+'\n\nAfter it says "MMIR Local Connector is ready", return here and press + -> Find local models. If the browser asks, allow Local Network Access for mmir.ai.',
+        'Supergenious',
+        'Local connector setup · no paid route',
+        {
+          variant:'install',
+          command,
+          commandLabel:'Copy command',
+          installOs:os,
+          guideUrl:INSTALL_HELP_URL
+        }
+      );
+      status('Local connector command ready.','ready');
+      routeStatus('Copy install command · local setup','hosted');
+      return;
+    }
+    append(
+      'assistant',
+      localInstallIntro(detected),
+      'Supergenious',
+      'Local connector setup · no paid route',
+      {
+        variant:'install',
+        showOsChoices:true,
+        guideUrl:INSTALL_HELP_URL
+      }
+    );
+    status('Choose host OS for local model.','ready');
+    routeStatus('Local connector setup · choose OS','hosted');
+  }
+
+  function selectCommandText(trigger){
+    const code=trigger?.closest?.('.p0-command-card')?.querySelector?.('code');
+    if(!code)return false;
+    const selection=window.getSelection();
+    const range=document.createRange();
+    range.selectNodeContents(code);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return true;
+  }
+
+  async function copyCommand(command,trigger=null){
+    if(!command){
+      status('No command found to copy.','error');
+      return;
+    }
+    try{
+      await navigator.clipboard.writeText(command);
+      status('Command copied. Paste it into Terminal or PowerShell.','ready');
+    }catch(error){
+      const textarea=document.createElement('textarea');
+      textarea.value=command;
+      textarea.setAttribute('readonly','');
+      textarea.style.position='fixed';
+      textarea.style.left='-9999px';
+      textarea.style.top='0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try{
+        const copied=document.execCommand('copy');
+        if(copied){
+          status('Command copied. Paste it into Terminal or PowerShell.','ready');
+        }else if(selectCommandText(trigger)){
+          status('Command selected. Press Cmd+C, then paste it into Terminal or PowerShell.','ready');
+        }else{
+          status('Copy failed. Select the command manually.','error');
+        }
+      }catch(fallbackError){
+        if(selectCommandText(trigger)){
+          status('Command selected. Press Cmd+C, then paste it into Terminal or PowerShell.','ready');
+        }else{
+          status('Copy failed. Select the command manually.','error');
+        }
+      }finally{
+        textarea.remove();
+      }
+    }
   }
 
   function activeModel(){
@@ -619,6 +742,20 @@
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
     document.getElementById('p0-mic').addEventListener('click',startVoice);
     document.addEventListener('click',(event)=>{
+      const copyButton=event.target.closest('[data-p0-copy-command]');
+      if(copyButton){
+        event.preventDefault();
+        event.stopPropagation();
+        copyCommand(copyButton.getAttribute('data-p0-copy-command')||'',copyButton);
+        return;
+      }
+      const osButton=event.target.closest('[data-p0-os-command]');
+      if(osButton){
+        event.preventDefault();
+        event.stopPropagation();
+        startLocalInstallAssistant(osButton.getAttribute('data-p0-os-command')||'');
+        return;
+      }
       const actionButton=event.target.closest('[data-p0-action]');
       if(actionButton&&actionButton.closest('.p0-menu')){
         event.preventDefault();
@@ -741,7 +878,7 @@
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
       compareAction+
-      '<a href="'+MAC_INSTALL_URL+'"><strong>Connect local model</strong><small>Open the Mac install command that avoids the blocked .command warning. MMIR returns here and finds models automatically.</small></a>'+
+      '<button type="button" data-p0-action="connect-local"><strong>Connect local model</strong><small>Supergenious detects your OS or asks, then gives the right install command in chat.</small></button>'+
       '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
       '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
@@ -805,6 +942,10 @@
   }
 
   function handleMenuAction(action){
+    if(action==='connect-local'){
+      startLocalInstallAssistant();
+      return true;
+    }
     if(action==='check-local'){
       status('Checking local node...','loading');
       routeStatus('Checking this Mac for local models...','hosted');
@@ -830,6 +971,27 @@
     return false;
   }
 
+  function renderMessageTools(message){
+    let html='';
+    if(message.command){
+      html+='<div class="p0-command-card" data-install-os="'+safeAttr(message.installOs||'')+'">'+
+        '<code>'+safeText(message.command)+'</code>'+
+        '<div class="p0-command-actions">'+
+          '<button type="button" data-p0-copy-command="'+safeAttr(message.command)+'">'+safeText(message.commandLabel||'Copy command')+'</button>'+
+          '<a href="'+safeAttr(message.guideUrl||INSTALL_HELP_URL)+'">Install guide</a>'+
+        '</div>'+
+      '</div>';
+    }
+    if(message.showOsChoices){
+      html+='<div class="p0-os-choice-row" aria-label="Choose node host operating system">'+
+        '<button type="button" data-p0-os-command="mac">Mac</button>'+
+        '<button type="button" data-p0-os-command="windows">Windows</button>'+
+        '<button type="button" data-p0-os-command="linux">Linux / Pi</button>'+
+      '</div>';
+    }
+    return html;
+  }
+
   function renderTranscript(){
     const root=document.getElementById('p0-transcript');
     if(!root)return;
@@ -841,7 +1003,7 @@
       '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'">'+
         '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
         (message.receipt?'<div class="p0-message-receipt">'+safeText(message.receipt)+'</div>':'')+
-        '<div class="p0-message-body">'+paragraphs(message.content)+'</div>'+
+        '<div class="p0-message-body">'+paragraphs(message.content)+renderMessageTools(message)+'</div>'+
       '</article>'
     )).join('');
     requestAnimationFrame(()=>{root.scrollTop=root.scrollHeight;});
@@ -873,7 +1035,19 @@
   }
 
   function append(role,content,label,receipt,meta={}){
-    const message={role,content:String(content||''),label:label||role,receipt:receipt||'',variant:meta.variant||'',createdAt:new Date().toISOString()};
+    const message={
+      role,
+      content:String(content||''),
+      label:label||role,
+      receipt:receipt||'',
+      variant:meta.variant||'',
+      command:meta.command||'',
+      commandLabel:meta.commandLabel||'',
+      installOs:meta.installOs||'',
+      showOsChoices:Boolean(meta.showOsChoices),
+      guideUrl:meta.guideUrl||'',
+      createdAt:new Date().toISOString()
+    };
     state.messages.push(message);
     state.messages=state.messages.slice(-MAX_HISTORY);
     saveHistory();
