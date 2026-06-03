@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d346-20260603-clean-first-chat-v40';
+const CACHE_NAME='mmir-pwa-d346-20260603-scroll-pane-v41';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
