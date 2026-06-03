@@ -106,8 +106,8 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
 requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260602-best-answer-smart-v31', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260602-best-answer-smart-v31', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260603-api-route-score-v32', 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260603-api-route-score-v32', 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -130,6 +130,10 @@ requireIncludes(files.p0Runtime, 'Best Answer', 'P0 Best Answer must be user-fac
 requireIncludes(files.p0Runtime, 'Compare answers', 'P0 compare must be user-facing as an answer comparison, not internal routing jargon.');
 requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must show route score and response timing.');
 requireIncludes(files.p0Runtime, 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
+requireIncludes(files.p0Runtime, "const ROUTE_SCORE_PATH='/routing/score'", 'P0 Best Answer must know the API scoring route.');
+requireIncludes(files.p0Runtime, 'function scoreRoutesWithApi(prompt,hostedModel,hostedAnswer,hostedElapsed,hostedFailed,localModel,localAnswer,localElapsed,localFailed)', 'P0 Best Answer must call api.mmir.ai route scoring before selecting the winner.');
+requireIncludes(files.p0Runtime, 'api.mmir.ai/routing/score', 'P0 Best Answer synthesis receipt must identify the API scoring source.');
+requireIncludes(files.p0Runtime, 'API score ', 'P0 Best Answer receipts must show API scoring when the API scorer is available.');
 requireIncludes(files.p0Runtime, 'function winningRoute(hostedModel,hostedScore,localModel,localScore)', 'P0 Best Answer must choose and explain a winner.');
 requireIncludes(files.p0Runtime, 'Winner:', 'P0 Best Answer receipts must show the winning route.');
 requireIncludes(files.p0Runtime, 'Score ', 'P0 Best Answer receipts must show route scores.');
