@@ -190,6 +190,23 @@
       text-decoration: none;
     }
     code { color: var(--text); }
+    details.advanced-fallback {
+      border-top: 1px solid #e5e7eb;
+      margin-top: 14px;
+      padding-top: 12px;
+    }
+    details.advanced-fallback summary {
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    details.advanced-fallback a {
+      margin-top: 12px;
+    }
+    details.advanced-fallback:not([open]) p,
+    details.advanced-fallback:not([open]) a {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -225,8 +242,12 @@
       <article class="card" data-platform="mac">
         <div class="status" id="mac-dmg-badge">Terminal install</div>
         <h2>Mac</h2>
-        <p>Use the Terminal command above for the smooth path. The ZIP is kept as an advanced fallback until the Mac app is signed and notarized.</p>
-        <a id="mac-install-link" href="./mmir-local-connector-mac.zip" download>Advanced: download ZIP fallback</a>
+        <p>Use the Terminal command above for the smooth path. Avoid ZIP and unsigned <code>.command</code> downloads unless you are debugging an installer issue.</p>
+        <details class="advanced-fallback">
+          <summary>Advanced fallback only</summary>
+          <p class="manifest-note">Use this only if the Terminal command cannot run. macOS may block unsigned downloaded command files.</p>
+          <a id="mac-install-link" href="./mmir-local-connector-mac.zip" download>Download ZIP fallback</a>
+        </details>
         <p class="manifest-note" id="mac-dmg-status">If macOS shows "Apple could not verify", press Done and use the Terminal command instead.</p>
       </article>
       <article class="card" data-platform="windows">
@@ -440,9 +461,9 @@
           };
           badge.textContent = 'Terminal install';
           macLink.href = appendModelParams(macZip.path);
-          macLink.textContent = 'Advanced: download ZIP fallback';
+          macLink.textContent = 'Download ZIP fallback';
           setDownload(macLink, true);
-          status.textContent = dmg?.path ? 'DMG/ZIP artifacts exist as advanced fallbacks. If macOS shows "Apple could not verify", use the Terminal command above.' : 'ZIP exists as an advanced fallback. If macOS shows "Apple could not verify", use the Terminal command above.';
+          status.textContent = dmg?.path ? 'Advanced fallback exists, but the Terminal command is the recommended Mac path.' : 'ZIP exists as an advanced fallback only. Use the Terminal command above.';
         } else {
           badge.textContent = 'Terminal install';
           status.textContent = 'Mac ZIP artifact was not listed. Use the Terminal command above.';
