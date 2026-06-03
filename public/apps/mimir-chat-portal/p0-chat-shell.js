@@ -492,6 +492,37 @@
     return prefix+score.score+' · '+formatDuration(score.elapsedMs)+' · '+score.reason;
   }
 
+  function compactReceipt(receipt){
+    const full=String(receipt||'').trim();
+    const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
+    if(parts.length<=4)return full;
+    const winner=parts.find(part=>/^Winner:/i.test(part));
+    const score=parts.find(part=>/^(API score|Score)\s+\d+/i.test(part));
+    const timing=[...parts].reverse().find(part=>/^\d+(?:\.\d+)?(?:ms|s)$/i.test(part));
+    const noPaid=parts.find(part=>/No paid route/i.test(part));
+    const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
+    if(parts.some(part=>/Best answer synthesis/i.test(part))){
+      return ['Best answer',winner,score,timing,noPaid].filter(Boolean).join(' · ');
+    }
+    if(compare){
+      return [compare.replace('Compare answer','Compare'),score,timing,parts[0]].filter(Boolean).join(' · ');
+    }
+    return [parts.slice(0,3).join(' · '),score,timing].filter(Boolean).join(' · ');
+  }
+
+  function renderReceipt(receipt){
+    const full=String(receipt||'').trim();
+    if(!full)return '';
+    const compact=compactReceipt(full);
+    if(compact===full){
+      return '<div class="p0-message-receipt">'+safeText(full)+'</div>';
+    }
+    return '<details class="p0-message-receipt" title="'+safeAttr(full)+'">'+
+      '<summary>'+safeText(compact)+'</summary>'+
+      '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
+    '</details>';
+  }
+
   function winningRoute(hostedModel,hostedScore,localModel,localScore){
     const hostedValue=hostedScore?.score??0;
     const localValue=localScore?.score??0;
@@ -997,7 +1028,7 @@
     root.innerHTML=state.messages.map(message=>(
       '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'">'+
         '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
-        (message.receipt?'<div class="p0-message-receipt">'+safeText(message.receipt)+'</div>':'')+
+        renderReceipt(message.receipt)+
         '<div class="p0-message-body">'+paragraphs(message.content)+renderMessageTools(message)+'</div>'+
       '</article>'
     )).join('');

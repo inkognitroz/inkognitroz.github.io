@@ -148,8 +148,8 @@ requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model li
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
 requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, 'p0-chat-shell.css?v=20260603-scroll-short-v38', 'Public page must load the P0 simple chat shell CSS.');
-requireText(mmirPath, 'p0-chat-shell.js?v=20260603-scroll-short-v38', 'Public page must load the P0 simple chat shell runtime.');
+requireText(mmirPath, 'p0-chat-shell.css?v=20260603-compact-receipt-v39', 'Public page must load the P0 simple chat shell CSS.');
+requireText(mmirPath, 'p0-chat-shell.js?v=20260603-compact-receipt-v39', 'Public page must load the P0 simple chat shell runtime.');
 requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260602-explicit-route-tags-v17'", 'P0 shell must invalidate stale browser-error chat history.');
@@ -194,6 +194,8 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore)', 'P0 compare must synthesize a best answer from real model outputs and route evidence.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function compactReceipt(receipt)', 'P0 route receipts must be compact by default.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function renderReceipt(receipt)', 'P0 route receipts must keep full audit details available on click.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'After it says "MMIR Local Connector is ready", return here and press + -> Find local models.', 'P0 local install copy must describe automatic return flow.');
@@ -212,6 +214,7 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "d
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-mic', 'P0 toolbar must keep voice as a subtle icon control.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-route', 'P0 composer must expose a subtle route receipt.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-receipt-full', 'P0 compact receipts must expose full audit details when expanded.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'overscroll-behavior: contain', 'P0 transcript must be an independently scrollable answer pane.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
 requireText(mmirPath, 'runtime-controls-fix.js?v=20260531-model-chip-v2', 'Runtime controls hotfix must be cache-busted for public first-chat recovery.');
