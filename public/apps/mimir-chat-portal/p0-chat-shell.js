@@ -9,7 +9,6 @@
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SCHEMA='20260602-explicit-route-tags-v17';
   const MODELS_KEY='mmir-p0-active-models-v1';
-  const INSTALL_HELP_URL='./downloads/mmir-local-connector-install.html';
   const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
   const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
@@ -156,8 +155,7 @@
           variant:'install',
           command,
           commandLabel:'Copy command',
-          installOs:os,
-          guideUrl:INSTALL_HELP_URL
+          installOs:os
         }
       );
       status('Local connector command ready.','ready');
@@ -171,8 +169,7 @@
       'Local connector setup · no paid route',
       {
         variant:'install',
-        showOsChoices:true,
-        guideUrl:INSTALL_HELP_URL
+        showOsChoices:true
       }
     );
     status('Choose host OS for local model.','ready');
@@ -880,7 +877,6 @@
       compareAction+
       '<button type="button" data-p0-action="connect-local"><strong>Connect local model</strong><small>Supergenious detects your OS or asks, then gives the right install command in chat.</small></button>'+
       '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
-      '<a href="'+INSTALL_HELP_URL+'"><strong>Install help</strong><small>Open the guided installer page if the download is blocked.</small></a>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
   }
@@ -978,7 +974,6 @@
         '<code>'+safeText(message.command)+'</code>'+
         '<div class="p0-command-actions">'+
           '<button type="button" data-p0-copy-command="'+safeAttr(message.command)+'">'+safeText(message.commandLabel||'Copy command')+'</button>'+
-          '<a href="'+safeAttr(message.guideUrl||INSTALL_HELP_URL)+'">Install guide</a>'+
         '</div>'+
       '</div>';
     }
@@ -1045,7 +1040,6 @@
       commandLabel:meta.commandLabel||'',
       installOs:meta.installOs||'',
       showOsChoices:Boolean(meta.showOsChoices),
-      guideUrl:meta.guideUrl||'',
       createdAt:new Date().toISOString()
     };
     state.messages.push(message);
