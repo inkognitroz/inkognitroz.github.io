@@ -95,8 +95,13 @@
       "id": "webllm-qwen25-05b",
       "label": "Qwen Browser - experimental",
       "runtime": "webllm",
-      "status": "experimental-browser-webgpu",
+      "status": "lab_proof_required",
       "visibility": "advanced",
+      "public_headline": false,
+      "promotion_gate": {
+        "state": "supported_browser_live_answer_required",
+        "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
+      },
       "cost": "free browser",
       "node_type": "browser",
       "trust_class": "device-local",
@@ -116,8 +121,13 @@
       "id": "webllm-gemma3-1b",
       "label": "Gemma Browser - experimental",
       "runtime": "webllm",
-      "status": "experimental-browser-webgpu",
+      "status": "lab_proof_required",
       "visibility": "advanced",
+      "public_headline": false,
+      "promotion_gate": {
+        "state": "supported_browser_live_answer_required",
+        "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
+      },
       "cost": "free browser",
       "node_type": "browser",
       "trust_class": "device-local",
@@ -137,8 +147,13 @@
       "id": "webllm-llama32-1b",
       "label": "Llama Browser - experimental",
       "runtime": "webllm",
-      "status": "experimental-browser-webgpu",
+      "status": "lab_proof_required",
       "visibility": "advanced",
+      "public_headline": false,
+      "promotion_gate": {
+        "state": "supported_browser_live_answer_required",
+        "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
+      },
       "cost": "free browser",
       "node_type": "browser",
       "trust_class": "device-local",
@@ -158,8 +173,13 @@
       "id": "webllm-phi35-mini",
       "label": "Phi Browser - experimental",
       "runtime": "webllm",
-      "status": "experimental-browser-webgpu",
+      "status": "lab_proof_required",
       "visibility": "advanced",
+      "public_headline": false,
+      "promotion_gate": {
+        "state": "supported_browser_live_answer_required",
+        "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
+      },
       "cost": "free browser",
       "node_type": "browser",
       "trust_class": "device-local",

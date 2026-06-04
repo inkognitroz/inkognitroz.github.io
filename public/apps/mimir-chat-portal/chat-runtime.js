@@ -1299,7 +1299,7 @@
       {id:'mmir-setup-coach',label:'MMIR Setup Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Local setup.',visibility:'internal'},
       {id:'mmir-security-coach',label:'MMIR Security Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Security.',visibility:'internal'},
       {id:'mmir-growth-coach',label:'MMIR Growth Coach',runtime:'browser-guide',status:'live-browser',cost:'free',best_for:'Growth.',visibility:'internal'},
-      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'experimental-browser-webgpu',cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Browser LLM.'},
+      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'lab_proof_required',visibility:'advanced',public_headline:false,cost:'free browser',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',best_for:'Browser LLM candidate. Hidden/advanced until supported-browser proof is green.'},
       {id:'ollama-gemma3-270m',label:'Gemma 3 270M',runtime:'ollama',status:'installable-free',cost:'free local',model:'gemma3:270m',size:'292 MB',best_for:'Tiny local.'},
       {id:'ollama-llama32-1b',label:'Llama 3.2 1B',runtime:'ollama',status:'installable-free',cost:'free local',model:'llama3.2:1b',size:'1.3 GB',best_for:'Laptop local.'}
     ];
