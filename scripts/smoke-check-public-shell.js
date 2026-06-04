@@ -198,6 +198,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'd
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best Answer', 'P0 + menu must expose the simple parallel-model synthesis action.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'formatDuration', 'P0 answers must expose route timing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function scoreClassSummary(score)', 'P0 Best Answer receipts must surface route answer/latency classes.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'answer_class:found.answer_class', 'P0 Best Answer must preserve API answer class metadata.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'latency_class:found.latency_class', 'P0 Best Answer must preserve API latency class metadata.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function winningRoute(hostedModel,hostedScore,localModel,localScore)', 'P0 Best Answer must choose and explain a winner.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Winner:', 'P0 Best Answer receipts must show the winning route.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Score ', 'P0 Best Answer receipts must show route scores.');
