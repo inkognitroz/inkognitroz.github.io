@@ -51,7 +51,15 @@
     if(needsWebGpu(node))return webGpuReady()?'Browser Node: free, browser-local/private, starter quality, no provider key, no Cloudflare, no install.':webGpuMissingDetail();
     return 'Instant fallback; no key.';
   }
-  function card(node){const status=nodeStatus(node),action=status==='online'?'Chat':(node.id==='local-node'?'Install':'Connect'),model=nodeModel(node);return '<article class="mmir-active-node-card" data-node-id="'+safe(node.id)+'" data-node-state="'+safe(status)+'"><div><span>'+safe(status==='online'?'Live':'Connect')+'</span><strong>'+safe(node.name)+'</strong><small>'+safe(model)+' - '+safe(String(node.trust_level||'public-free').replace(/-/g,' '))+' - '+safe(nodeDetail(node))+'</small></div><button type="button" data-active-node-action="'+safe(node.id)+'">'+safe(action)+'</button></article>';}
+  function trustTag(node){
+    const trust=String(node?.trust_level||'public-free').toLowerCase();
+    const promotion=String(node?.promotion_state||'').toLowerCase();
+    const visibility=String(node?.visibility||node?.public_surface||'').toLowerCase();
+    if(promotion==='active-untrusted-free')return 'advanced untrusted free';
+    if(trust==='unverified'||promotion==='hidden_candidate'||visibility.includes('advanced'))return 'advanced untrusted candidate';
+    return trust.replace(/-/g,' ');
+  }
+  function card(node){const status=nodeStatus(node),action=status==='online'?'Chat':(node.id==='local-node'?'Install':'Connect'),model=nodeModel(node);return '<article class="mmir-active-node-card" data-node-id="'+safe(node.id)+'" data-node-state="'+safe(status)+'"><div><span>'+safe(status==='online'?'Live':'Connect')+'</span><strong>'+safe(node.name)+'</strong><small>'+safe(model)+' - '+safe(trustTag(node))+' - '+safe(nodeDetail(node))+'</small></div><button type="button" data-active-node-action="'+safe(node.id)+'">'+safe(action)+'</button></article>';}
   async function loadManifest(){if(manifestLoaded)return;try{const res=await fetch(MANIFEST_URL,{cache:'default'});if(!res.ok)throw new Error('manifest unavailable');const body=await res.json();manifestNodes=Array.isArray(body.nodes)?body.nodes.filter(node=>node?.id).map(normalizeNode):[];}catch(error){manifestNodes=[{id:'managed-api-bootstrap',name:FALLBACK_LABEL,route:{kind:'managed-api',starter_id:'mmir-supergenius',url:'https://api.mmir.ai'},models:[{name:FALLBACK_LABEL}]},{id:'local-node',name:'MMIR Local Node',route:{kind:'local-node',url:DEFAULT_LOCAL_URL},models:[]}];}manifestLoaded=true;}
   function fallbackStarters(){return [{id:'mmir-supergenius',label:FALLBACK_LABEL,runtime:'auto',model:'mmir-supergenius'},{id:'ollama-qwen3-06b',label:'Qwen3 0.6B',runtime:'ollama',model:'qwen3:0.6b'}];}
   async function loadStarterCatalog(){if(catalogLoaded)return;try{const res=await fetch(STARTER_CATALOG,{cache:'default'});if(!res.ok)throw new Error('starter catalog unavailable');const body=await res.json();starterModels=Array.isArray(body.models)?body.models.filter(model=>model?.id&&model?.label).map(normalizeStarter):[];}catch(error){starterModels=fallbackStarters();}if(!starterModels.length)starterModels=fallbackStarters();catalogLoaded=true;}

@@ -119,8 +119,8 @@
       "model": "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       "size": "browser download",
       "context": "browser WebGPU",
-      "best_for": "Fastest real browser LLM test without backend or API key on supported devices.",
-      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; first message downloads model weights and may take time.",
+      "best_for": "Advanced browser LLM candidate kept out of default route strips until proof lands.",
+      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; this is an untrusted advanced route and does not imply protected/public default behavior.",
       "commercial_use": "check Qwen terms",
       "source_url": "https://webllm.mlc.ai/docs/user/basic_usage.html"
     },
@@ -152,8 +152,8 @@
       "model": "gemma3-1b-it-q4f16_1-MLC",
       "size": "browser download",
       "context": "browser WebGPU",
-      "best_for": "Useful small browser assistant when WebGPU is available.",
-      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; first message downloads model weights and may take time.",
+      "best_for": "Advanced browser LLM candidate kept out of default route strips until proof lands.",
+      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; this is an untrusted advanced route and does not imply protected/public default behavior.",
       "commercial_use": "check Gemma terms",
       "source_url": "https://webllm.mlc.ai/docs/user/basic_usage.html"
     },
@@ -185,8 +185,8 @@
       "model": "Llama-3.2-1B-Instruct-q4f16_1-MLC",
       "size": "browser download",
       "context": "browser WebGPU",
-      "best_for": "Personal assistant-style browser chat without backend setup.",
-      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; first message downloads model weights and may take time.",
+      "best_for": "Advanced browser LLM candidate kept out of default route strips until proof lands.",
+      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; this is an untrusted advanced route and does not imply protected/public default behavior.",
       "commercial_use": "check Llama license",
       "source_url": "https://webllm.mlc.ai/docs/user/basic_usage.html"
     },
@@ -218,8 +218,8 @@
       "model": "Phi-3.5-mini-instruct-q4f16_1-MLC-1k",
       "size": "browser download",
       "context": "browser WebGPU",
-      "best_for": "Compact reasoning/chat in browser on capable machines.",
-      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; this is heavier than the 0.5B/1B starters.",
+      "best_for": "Advanced browser LLM candidate kept out of default route strips until proof lands.",
+      "install_note": "Experimental. Runs locally only when this browser supports WebGPU/WASM; this is heavier than the 0.5B/1B starters and remains an untrusted advanced candidate until proven.",
       "commercial_use": "check Microsoft model terms",
       "source_url": "https://webllm.mlc.ai/docs/user/basic_usage.html"
     },
