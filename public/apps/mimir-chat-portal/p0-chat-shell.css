@@ -555,6 +555,28 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   padding: 4px 7px;
 }
 
+.p0-badge-strong {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+.p0-badge-slow {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.p0-badge-demoted {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.p0-menu button[data-route-rank-state="demoted"] {
+  opacity: 0.82;
+}
+
 .p0-menu small {
   color: #6b7280;
   font-size: 0.76rem;

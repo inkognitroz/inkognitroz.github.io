@@ -6,7 +6,7 @@ const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankMap,bestLocalModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -61,8 +61,18 @@ const gemma = {
   score: 90,
   model: 'gemma3:270m'
 };
+const qwenTiny = {
+  id: 'local-qwen2-05b',
+  label: 'qwen2.5:0.5b',
+  route: 'local',
+  detail: 'Tiny private model',
+  tags: ['Private', 'Local', 'Weak'],
+  quality: 'weak-facts',
+  score: 45,
+  model: 'qwen2.5:0.5b'
+};
 
-testApi.state.models = [hosted, gemma];
+testApi.state.models = [hosted, gemma, qwenTiny];
 testApi.state.activeModelId = hosted.id;
 
 const compare = testApi.explicitMentionDecision('@supergenius @gemma who is president of USA?');
@@ -100,6 +110,18 @@ assertIncludes(apiPublicWinner.summary, 'API score 100', 'API winner summary mus
 const hostedCandidate = testApi.routeScoreCandidate(hosted, 'The capital of Japan is Tokyo.', 300, false);
 assertEqual(hostedCandidate.route_id, 'browser-guide/free', 'Hosted scoring candidate must use the API route id');
 assertEqual(hostedCandidate.provider, 'mmir', 'Hosted scoring candidate must not use browser/provider secrets');
+
+testApi.recordRouteBenchmark(gemma, { score: 82, elapsedMs: 650, answer_class: 'complete', latency_class: 'fast' });
+testApi.recordRouteBenchmark(qwenTiny, { score: 34, elapsedMs: 3600, answer_class: 'thin', latency_class: 'acceptable' });
+const rankMap = testApi.routeRankMap(testApi.state.models);
+if (rankMap[gemma.id] >= rankMap[qwenTiny.id]) {
+  fail(`Route benchmark ranking must demote weak/slow local routes: gemma rank ${rankMap[gemma.id]}, qwen rank ${rankMap[qwenTiny.id]}`);
+}
+assertEqual(testApi.bestLocalModel().id, gemma.id, 'Best local model must use benchmark-adjusted route ranking');
+assertIncludes(testApi.routeBenchmarkSummary(gemma), 'avg 650ms', 'Route benchmark summary must expose measured latency');
+if (testApi.effectiveModelScore(qwenTiny) >= testApi.effectiveModelScore(gemma)) {
+  fail('Effective route score must keep slow/weak local model below stronger measured local model');
+}
 
 const hostedPrivateScore = testApi.routeScore(hosted, 'Answer privately using this Mac only', 'I can answer.', 400);
 const localPrivateScore = testApi.routeScore(gemma, 'Answer privately using this Mac only', 'I can answer locally.', 700);
