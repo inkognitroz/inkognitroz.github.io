@@ -1,5 +1,5 @@
 (function(){
-  const d=document,w=window,q=s=>d.querySelector(s),safe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const d=document,w=window,displayApi=w.MimirRouteDisplay||{},q=s=>d.querySelector(s),safe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const MANIFEST_URL='./active-chat-nodes.json';
   const STARTER_CATALOG='./free-model-starters.json';
   const DEFAULT_LOCAL_URL='http://127.0.0.1:3000';
@@ -7,7 +7,7 @@
   const ACTIVE_KEY='mimir-chat-active-backend';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
-  const FALLBACK_LABEL='Supergenious';
+  const FALLBACK_LABEL=displayApi.DEFAULT_LABEL||'Supergenious';
   let manifestNodes=[];
   let starterModels=[];
   let liveModels=[];
@@ -16,6 +16,7 @@
   let catalogLoaded=false;
 
   function fallbackLabel(value){
+    if(displayApi.displayLabel)return displayApi.displayLabel(value,FALLBACK_LABEL);
     return String(value||'')
       .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,FALLBACK_LABEL)
       .replace(/MMIR Browser Guide|MMIR Guide/gi,FALLBACK_LABEL)
