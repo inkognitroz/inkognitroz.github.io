@@ -12,6 +12,7 @@
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
   const MODELS_KEY='mmir-p0-active-models-v1';
+  const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
   const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
   const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
@@ -72,7 +73,8 @@
     activeModelId:'mmir-supergenius',
     localChecked:false,
     localError:'',
-    localHardware:null
+    localHardware:null,
+    routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
   };
 
   function initialMessages(){
@@ -105,6 +107,93 @@
 
   function writeJson(key,value){
     try{localStorage.setItem(key,JSON.stringify(value));}catch(error){}
+  }
+
+  function routeKey(model){
+    if(!model)return 'hosted:mmir-supergenius';
+    return (model.route==='local'?'local:':'hosted:')+String(model.model||model.id||model.label||'auto').toLowerCase();
+  }
+
+  function routeBenchmark(model){
+    const stats=state.routeBenchmarks?.[routeKey(model)];
+    return stats&&typeof stats==='object'?stats:null;
+  }
+
+  function writeRouteBenchmarks(){
+    writeJson(ROUTE_BENCHMARK_KEY,state.routeBenchmarks||{});
+  }
+
+  function recordRouteBenchmark(model,score){
+    if(!model||!score)return;
+    const key=routeKey(model);
+    const previous=routeBenchmark(model)||{samples:0,avgScore:Number(model.score)||50,avgLatencyMs:0,failures:0,lastSeenAt:''};
+    const samples=Math.min(20,Number(previous.samples||0)+1);
+    const priorWeight=Math.max(0,samples-1);
+    const measuredScore=clampScore(score.score);
+    const measuredLatency=Math.max(0,Number(score.elapsedMs||score.latency_ms)||0);
+    const failed=score.answer_class==='failed'||score.failed||measuredScore<=0;
+    const avgScore=Math.round(((Number(previous.avgScore)||Number(model.score)||50)*priorWeight+measuredScore)/samples);
+    const avgLatencyMs=Math.round(((Number(previous.avgLatencyMs)||measuredLatency)*priorWeight+measuredLatency)/samples);
+    state.routeBenchmarks={...(state.routeBenchmarks||{}),[key]:{
+      samples,
+      avgScore,
+      avgLatencyMs,
+      failures:(Number(previous.failures)||0)+(failed?1:0),
+      lastScore:measuredScore,
+      lastLatencyMs:Math.round(measuredLatency),
+      lastClass:score.latency_class||latencyClass(measuredLatency),
+      lastSeenAt:new Date().toISOString()
+    }};
+    writeRouteBenchmarks();
+  }
+
+  function effectiveModelScore(model){
+    const base=Number(model?.score)||50;
+    const stats=routeBenchmark(model);
+    if(!stats||!stats.samples)return clampScore(base);
+    const avgScore=Number(stats.avgScore)||base;
+    const avgLatency=Number(stats.avgLatencyMs)||0;
+    const failures=Number(stats.failures)||0;
+    let score=(base*0.45)+(avgScore*0.55);
+    if(avgLatency>6000)score-=16;
+    else if(avgLatency>3000)score-=10;
+    else if(avgLatency>1800)score-=5;
+    else if(avgLatency&&avgLatency<900)score+=4;
+    if(failures)score-=Math.min(18,failures*6);
+    return clampScore(score);
+  }
+
+  function rankedModels(models){
+    return (models||[])
+      .slice()
+      .sort((a,b)=>effectiveModelScore(b)-effectiveModelScore(a)||String(a.label||a.id).localeCompare(String(b.label||b.id)));
+  }
+
+  function routeRankMap(models=state.models){
+    const map={};
+    rankedModels(models).forEach((model,index)=>{map[model.id]=index+1;});
+    return map;
+  }
+
+  function routeBenchmarkSummary(model){
+    const stats=routeBenchmark(model);
+    if(!stats||!stats.samples)return '';
+    const parts=[
+      'Score '+effectiveModelScore(model),
+      stats.avgLatencyMs?('avg '+formatDuration(stats.avgLatencyMs)):'',
+      stats.samples+' sample'+(stats.samples===1?'':'s')
+    ].filter(Boolean);
+    if(stats.failures)parts.push(stats.failures+' failure'+(stats.failures===1?'':'s'));
+    return parts.join(' · ');
+  }
+
+  function routeRankState(model){
+    const stats=routeBenchmark(model);
+    const score=effectiveModelScore(model);
+    if((stats?.failures||0)>0||score<55)return 'demoted';
+    if((stats?.avgLatencyMs||0)>3000)return 'slow';
+    if(score>=82)return 'strong';
+    return 'measured';
   }
 
   function validMessage(message){
@@ -515,9 +604,7 @@
   }
 
   function bestLocalModel(){
-    return state.models
-      .filter(model=>model.route==='local')
-      .sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label))[0]||null;
+    return rankedModels(state.models.filter(model=>model.route==='local'))[0]||null;
   }
 
   function compareLocalModel(preferredLocalModel=null){
@@ -631,6 +718,23 @@
     if(!score)return 'Score pending';
     const prefix=score.source==='api'?'API score ':'Score ';
     return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),score.reason].filter(Boolean).join(' · ');
+  }
+
+  function modelRankBadges(model,bestLocal,rank){
+    const badges=[];
+    if(rank)badges.push('Rank #'+rank);
+    badges.push('Score '+effectiveModelScore(model));
+    if(model?.route==='hosted')badges.push('Best default');
+    if(bestLocal&&model?.id===bestLocal.id)badges.push('Best local');
+    const stateLabel=routeRankState(model);
+    if(stateLabel==='demoted')badges.push('Demoted');
+    else if(stateLabel==='slow')badges.push('Slow');
+    else if(stateLabel==='strong')badges.push('Strong');
+    return badges
+      .filter((tag,index,list)=>tag&&list.indexOf(tag)===index)
+      .slice(0,5)
+      .map(tag=>'<span class="p0-badge p0-badge-'+safeAttr(String(tag).toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'">'+safeText(tag)+'</span>')
+      .join('');
   }
 
   function compactReceipt(receipt){
@@ -1070,11 +1174,13 @@
     const capacityHint=local&&state.localHardware?(
       '<div class="p0-routing-hint p0-capacity-hint"><span class="p0-menu-row"><strong>Local capacity</strong><span class="p0-badge">Live</span></span><small>'+safeText(state.localHardware.summary)+'</small></div>'
     ):'';
-    const hostedModels=state.models.filter(model=>model.route==='hosted').sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
-    const localModels=state.models.filter(model=>model.route==='local').sort((a,b)=>(b.score||0)-(a.score||0)||a.label.localeCompare(b.label));
+    const rankMap=routeRankMap();
+    const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'));
+    const localModels=rankedModels(state.models.filter(model=>model.route==='local'));
     const renderButtons=(models)=>models.map(model=>{
       const selected=model.id===state.activeModelId?'Selected':'';
-      return '<button type="button" data-model-id="'+safeText(model.id)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+modelChoiceBadges(model,local)+'</span><small>'+safeText([selected,model.detail].filter(Boolean).join(' · '))+'</small></button>';
+      const benchmark=routeBenchmarkSummary(model);
+      return '<button type="button" data-model-id="'+safeText(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+modelRankBadges(model,local,rankMap[model.id])+modelChoiceBadges(model,local)+'</span><small>'+safeText([selected,model.detail,benchmark].filter(Boolean).join(' · '))+'</small></button>';
     }).join('');
     const buttons=''+
       '<div class="p0-menu-section">Recommended</div>'+renderButtons(hostedModels)+
@@ -1414,11 +1520,16 @@
     try{
       const started=performance.now();
       const answer=model.route==='local'?await chatLocal(routePrompt,model):await chatHosted(routePrompt);
-      const elapsed=formatDuration(performance.now()-started);
-      updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed});
+      const elapsedMs=performance.now()-started;
+      const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
+      recordRouteBenchmark(model,measuredScore);
+      const elapsed=formatDuration(elapsedMs);
+      updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed+' · Score '+effectiveModelScore(model)});
+      renderModelMenu();
       status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
     }catch(error){
       if(model.route==='local'){
+        recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         const hint=localNetworkHint(error);
         if(!hostedFallbackAllowedForLocalFailure(prompt,routePrompt)){
           updateMessage(
@@ -1436,7 +1547,9 @@
           const fallbackReceipt=routeReceipt(activeModel());
           const fallbackStarted=performance.now();
           const fallbackAnswer=await chatHosted(routePrompt);
-          const fallbackElapsed=formatDuration(performance.now()-fallbackStarted);
+          const fallbackElapsedMs=performance.now()-fallbackStarted;
+          recordRouteBenchmark(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs));
+          const fallbackElapsed=formatDuration(fallbackElapsedMs);
           updateMessage(
             assistant,
             fallbackAnswer+'\n\nLocal model note: '+hint,
@@ -1449,6 +1562,7 @@
           status('Chat failed: local node blocked/unavailable','error');
         }
       }else{
+        recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Please refresh and try again.');
         status('Chat failed: '+API_LABEL+' unreachable','error');
       }
@@ -1533,11 +1647,15 @@
       const scoring=await scoreRoutesWithApi(prompt,hostedModel,hostedAnswerText,hostedElapsedMs,hostedFailed,localModel,localAnswerText,localElapsedMs,localFailed);
       hostedScore=apiScoreForModel(scoring,hostedModel,hostedScore);
       localScore=apiScoreForModel(scoring,localModel,localScore);
+      recordRouteBenchmark(hostedModel,hostedScore);
+      recordRouteBenchmark(localModel,localScore);
       finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
       scoringSource=API_LABEL+'/routing/score';
       updateMessage(hostedMessage,hostedAnswerText||'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       updateMessage(localMessage,localAnswerText||localNetworkHint('Local model did not answer.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
     }catch(error){
+      recordRouteBenchmark(hostedModel,hostedScore);
+      recordRouteBenchmark(localModel,localScore);
       finalWinner=winningRoute(hostedModel,hostedScore,localModel,localScore);
     }
     if(hostedAnswerText||localAnswerText){

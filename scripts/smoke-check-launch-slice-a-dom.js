@@ -204,6 +204,13 @@ requireIncludes(files.p0Runtime, 'function handleMenuAction(action)', 'P0 menu a
 requireIncludes(files.p0Runtime, 'Checking this Mac for local models...', 'P0 local discovery must show immediate route feedback.');
 requireIncludes(files.p0Runtime, 'Tiny private model · slower/weak fallback', 'Tiny local models must be labeled as weak fallback routes.');
 requireIncludes(files.p0Runtime, 'Best local', 'P0 model picker must identify the best local starter after discovery.');
+requireIncludes(files.p0Runtime, "const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1'", 'P0 shell must persist route benchmark evidence for ranking.');
+requireIncludes(files.p0Runtime, 'function recordRouteBenchmark(model,score)', 'P0 shell must record route benchmark score/latency data.');
+requireIncludes(files.p0Runtime, 'function effectiveModelScore(model)', 'P0 shell must demote weak/slow routes from benchmark data.');
+requireIncludes(files.p0Runtime, 'function routeRankMap(models=state.models)', 'P0 model picker must expose benchmark-adjusted route rank.');
+requireIncludes(files.p0Runtime, 'Rank #', 'P0 model picker must visibly rank measured routes.');
+requireIncludes(files.p0Runtime, 'Demoted', 'P0 model picker must visibly demote weak or failed routes.');
+requireIncludes(files.p0Css, '.p0-badge-demoted', 'P0 route demotion badge must be styled discreetly.');
 requireIncludes(files.p0Runtime, 'Private local models', 'P0 model picker must separate local models from the hosted default.');
 requireIncludes(files.p0Runtime, 'Private local ready:', 'P0 local discovery must clearly show paired private readiness after models are visible.');
 requireIncludes(files.p0Runtime, 'mmir-local-private-readiness-updated', 'P0 local discovery must emit explicit paired/private readiness evidence.');
