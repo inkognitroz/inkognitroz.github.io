@@ -22,6 +22,7 @@ const freeModelStartersPath = join(publicDir, 'free-model-starters.json');
 const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
 const macConnectorZipPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.zip');
 const macDmgPath = join(publicDir, 'downloads', 'mmir-local-node-0.1.0-mac.dmg');
+const macLinuxBootstrapPath = join(publicDir, 'downloads', 'mmir-local-node-macos-linux.sh');
 const connectorReleasePath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
 const assetVersionManifestPath = join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json');
 
@@ -270,6 +271,11 @@ if (!existsSync(macDmgPath)) fail('Mac DMG artifact may exist as advanced packag
 requireText(connectorReleasePath, '"id": "legacy-macos-linux-local-node"', 'Release manifest must publish the Terminal bootstrap artifact for Mac/Linux.');
 requireText(connectorReleasePath, '"path": "/downloads/mmir-local-node-macos-linux.sh"', 'Release manifest must point Mac/Linux users to the Terminal bootstrap artifact.');
 requireText(connectorReleasePath, '"Recommended Mac/Linux bootstrap', 'Release manifest must explain Terminal bootstrap as the recommended Mac path.');
+requireText(macLinuxBootstrapPath, 'MMIR_LOCAL_CONNECTOR_RELEASE_MANIFEST', 'Terminal bootstrap must fetch the release manifest before delegating to downloaded installers.');
+requireText(macLinuxBootstrapPath, 'download_verified "mac-command"', 'Terminal bootstrap must verify the Mac command checksum before execution.');
+requireText(macLinuxBootstrapPath, 'download_verified "linux-shell"', 'Terminal bootstrap must verify the Linux installer checksum before execution.');
+requireText(macLinuxBootstrapPath, 'checksum mismatch', 'Terminal bootstrap must fail closed when a downloaded installer checksum mismatches.');
+requireText(macLinuxBootstrapPath, 'Dry run complete: verified Mac connector installer checksum. No installer was executed.', 'Terminal bootstrap dry-run must not point users at a temporary installer path.');
 requireText(connectorReleasePath, '"id": "mac-zip"', 'Release manifest must still publish the Mac ZIP as fallback evidence.');
 requireText(connectorReleasePath, '"Advanced fallback. Contains executable mmir-local-connector-mac.command', 'Mac ZIP must be labeled as an advanced fallback because Gatekeeper can block it.');
 requireText(connectorReleasePath, '"recommended": false', 'Unsigned Mac command/ZIP and DMG must not be the recommended public install path until signing/notarization is production-ready.');
