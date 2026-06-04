@@ -32,7 +32,7 @@
   function fallbackStarterModels(){
     return [
       {id:'mmir-supergenius',label:SUPERGENIUS_LABEL,runtime:'auto',status:'hosted-free',model:'mmir-supergenius',install_note:'Works immediately with no install, key or paid route.'},
-      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'lab_proof_required',visibility:'advanced',public_headline:false,model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Runs locally only when this browser supports WebGPU/WASM and after supported-browser proof is green.'},
+      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'lab_proof_required',visibility:'advanced',public_headline:false,promotion_allowed:false,proof_status:'pending_supported_browser_live_answer',license_review_status:'pending',integrity_review_status:'pending',fallback_status:'fallback_to_supergenious_until_model_answers',runtime_package:'@mlc-ai/web-llm',public_surface:'advanced_only_until_proven',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Runs locally only when this browser supports WebGPU/WASM and after supported-browser proof is green.'},
       {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',model:'gemma3:270m',install_note:'Fastest useful local starter through MMIR Local Node.'},
       {id:'ollama-qwen3-06b',label:'Qwen3 0.6B - tiny reasoning local',runtime:'ollama',status:'installable-free',model:'qwen3:0.6b',install_note:'Small reasoning-capable local starter.'}
     ];

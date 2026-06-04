@@ -98,6 +98,13 @@
       "status": "lab_proof_required",
       "visibility": "advanced",
       "public_headline": false,
+      "promotion_allowed": false,
+      "proof_status": "pending_supported_browser_live_answer",
+      "license_review_status": "pending",
+      "integrity_review_status": "pending",
+      "fallback_status": "fallback_to_supergenious_until_model_answers",
+      "runtime_package": "@mlc-ai/web-llm",
+      "public_surface": "advanced_only_until_proven",
       "promotion_gate": {
         "state": "supported_browser_live_answer_required",
         "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
@@ -124,6 +131,13 @@
       "status": "lab_proof_required",
       "visibility": "advanced",
       "public_headline": false,
+      "promotion_allowed": false,
+      "proof_status": "pending_supported_browser_live_answer",
+      "license_review_status": "pending",
+      "integrity_review_status": "pending",
+      "fallback_status": "fallback_to_supergenious_until_model_answers",
+      "runtime_package": "@mlc-ai/web-llm",
+      "public_surface": "advanced_only_until_proven",
       "promotion_gate": {
         "state": "supported_browser_live_answer_required",
         "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
@@ -150,6 +164,13 @@
       "status": "lab_proof_required",
       "visibility": "advanced",
       "public_headline": false,
+      "promotion_allowed": false,
+      "proof_status": "pending_supported_browser_live_answer",
+      "license_review_status": "pending",
+      "integrity_review_status": "pending",
+      "fallback_status": "fallback_to_supergenious_until_model_answers",
+      "runtime_package": "@mlc-ai/web-llm",
+      "public_surface": "advanced_only_until_proven",
       "promotion_gate": {
         "state": "supported_browser_live_answer_required",
         "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
@@ -176,6 +197,13 @@
       "status": "lab_proof_required",
       "visibility": "advanced",
       "public_headline": false,
+      "promotion_allowed": false,
+      "proof_status": "pending_supported_browser_live_answer",
+      "license_review_status": "pending",
+      "integrity_review_status": "pending",
+      "fallback_status": "fallback_to_supergenious_until_model_answers",
+      "runtime_package": "@mlc-ai/web-llm",
+      "public_surface": "advanced_only_until_proven",
       "promotion_gate": {
         "state": "supported_browser_live_answer_required",
         "required_evidence": ["supported_browser", "model_load", "non_empty_answer", "latency_ms", "license_review", "integrity_review", "clean_fallback"]
