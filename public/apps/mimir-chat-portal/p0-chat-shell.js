@@ -61,7 +61,12 @@
         detail:'Ready now',
         tags:['Fast','Free','Best default'],
         score:100,
-        model:'mmir-supergenius'
+        model:'mmir-supergenius',
+        executable:true,
+        routeState:'managed_provider_available',
+        routeType:'managed_provider',
+        availability:'available',
+        costState:'free'
       }
     ],
     activeModelId:'mmir-supergenius',
@@ -276,6 +281,43 @@
     };
   }
 
+  function routeDisplayName(model){
+    return String(model?.display_name||model?.name||model?.label||model?.id||'Supergenious').trim();
+  }
+
+  function executableHostedModel(model){
+    const routeState=String(model?.route_state||'managed_provider_available');
+    const availability=String(model?.availability||model?.status||'available').toLowerCase();
+    const blockedStates=['cost_denied','route_not_executable','provider_disabled_missing_key','node_stale'];
+    if(model?.executable===false)return false;
+    if(blockedStates.includes(routeState))return false;
+    if(['blocked','disabled','offline','unavailable'].includes(availability))return false;
+    return true;
+  }
+
+  function normalizeHostedModels(payload){
+    const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+    return raw
+      .filter(executableHostedModel)
+      .filter(model=>String(model?.id||model?.model||'').trim())
+      .slice(0,4)
+      .map((model,index)=>({
+        id:String(model.id||model.model).trim(),
+        label:routeDisplayName(model),
+        route:'hosted',
+        detail:model.availability==='available'?'Ready now':(model.route_state||'Ready'),
+        tags:index===0?['Fast','Free','Best default']:['Free','Hosted'],
+        score:model.recommended?100:(90-index),
+        model:String(model.id||model.model).trim(),
+        executable:model.executable!==false,
+        routeState:model.route_state||'managed_provider_available',
+        routeType:model.route_type||'managed_provider',
+        availability:model.availability||'available',
+        costState:model.cost_state||model.cost_class||'free',
+        nextAction:model.next_action||null
+      }));
+  }
+
   function fetchOptions(url,options){
     const init={...options};
     try{
@@ -305,6 +347,21 @@
       return data;
     }finally{
       clearTimeout(timeout);
+    }
+  }
+
+  async function refreshHostedModels(){
+    try{
+      const models=normalizeHostedModels(await fetchJson(API_URL+'/v1/models',{timeoutMs:9000}));
+      if(!models.length)return;
+      const activeLocal=state.models.find(model=>model.id===state.activeModelId&&model.route==='local');
+      state.models=models.concat(state.models.filter(model=>model.route==='local'));
+      if(!activeLocal&&!state.models.some(model=>model.id===state.activeModelId))state.activeModelId=models[0].id;
+      writeJson(MODELS_KEY,state.models);
+      renderToolbar();
+      window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'ready',models}}));
+    }catch(error){
+      window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'deferred',models:[]}}));
     }
   }
 
@@ -1468,6 +1525,7 @@
     installShell();
     enforceShellStyles();
     status('Ready','ready');
+    refreshHostedModels().catch(()=>{});
     document.getElementById('p0-input')?.focus();
     let passes=0;
     const timer=setInterval(()=>{
