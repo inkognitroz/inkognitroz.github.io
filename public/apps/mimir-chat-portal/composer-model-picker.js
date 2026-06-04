@@ -15,6 +15,8 @@
   function modelSelect(){return document.getElementById('runtime-model');}
   function promptEl(){return document.getElementById('mimir-prompt');}
   function displayLabel(value){
+    const shared=window.MimirRouteDisplay;
+    if(shared?.displayLabel)return shared.displayLabel(value,SUPERGENIUS_LABEL);
     return String(value||'')
       .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,SUPERGENIUS_LABEL)
       .replace(/MMIR Browser Guide|MMIR Guide|free browser guide/gi,SUPERGENIUS_LABEL)

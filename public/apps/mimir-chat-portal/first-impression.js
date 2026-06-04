@@ -451,7 +451,8 @@ const browser=Boolean(model.value.startsWith('starter:')&&model.runtime==='brows
 const webgpu=Boolean(model.runtime==='webllm');
 const health=String(profile?.health||'unknown').toLowerCase();
 const nodeReady=['ready','degraded','testing'].includes(health);
-const modelLabel=(model.text||'Supergenious').replace(/\s+-\s+live$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious');
+const modelRaw=(model.text||'Supergenious').replace(/\s+-\s+live$/i,'');
+const modelLabel=window.MimirRouteDisplay?.displayLabel?window.MimirRouteDisplay.displayLabel(modelRaw,'Supergenious'):modelRaw.replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious');
 const browserSupport=window.__MimirBrowserNodeSupport;
 const webGpuReady=Boolean(browserSupport&&browserSupport.status==='ready'&&browserSupport.supported===true);
 const pills=[
