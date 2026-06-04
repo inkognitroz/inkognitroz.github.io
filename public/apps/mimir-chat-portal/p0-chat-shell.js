@@ -607,6 +607,40 @@
     return rankedModels(state.models.filter(model=>model.route==='local'))[0]||null;
   }
 
+  function intelligencePoolSummary(){
+    const hosted=state.models.filter(model=>model.route==='hosted'&&model.availability!=='blocked');
+    const local=state.models.filter(model=>model.route==='local');
+    const bestLocal=bestLocalModel();
+    const liveRoutes=hosted.length+local.length;
+    const compareReady=Boolean(bestLocal);
+    const localHardware=state.localHardware?.summary||'';
+    const details=compareReady
+      ? 'Best Answer can ask Supergenious and '+bestLocal.label+' in parallel, then synthesize one answer.'
+      : 'Supergenious is ready now. Connect a local model to unlock private routing and parallel Best Answer.';
+    return {
+      liveRoutes,
+      hostedRoutes:hosted.length,
+      localRoutes:local.length,
+      compareReady,
+      bestLocalLabel:bestLocal?.label||'',
+      localHardware,
+      details
+    };
+  }
+
+  function renderIntelligencePoolHint(){
+    const pool=intelligencePoolSummary();
+    const badges=[
+      pool.liveRoutes+' live route'+(pool.liveRoutes===1?'':'s'),
+      pool.compareReady?'Best Answer ready':'Single route now',
+      pool.localRoutes?pool.localRoutes+' local':'local optional'
+    ];
+    return '<div class="p0-routing-hint p0-intelligence-pool" aria-label="Intelligence pool status">'+
+      '<span class="p0-menu-row"><strong>Intelligence pool</strong>'+badges.map(badge=>'<span class="p0-badge">'+safeText(badge)+'</span>').join('')+'</span>'+
+      '<small>'+safeText(pool.details+(pool.localHardware?' '+pool.localHardware:''))+'</small>'+
+    '</div>';
+  }
+
   function compareLocalModel(preferredLocalModel=null){
     if(preferredLocalModel)return preferredLocalModel;
     const best=bestLocalModel();
@@ -1155,6 +1189,7 @@
     ):'';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
+      renderIntelligencePoolHint()+
       compareAction+
       '<button type="button" data-p0-action="connect-local"><strong>Connect local model</strong><small>Supergenious detects your OS or asks, then gives the right install command in chat.</small></button>'+
       '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
@@ -1187,7 +1222,7 @@
       (localModels.length?'<div class="p0-menu-section">Private local models</div>'+renderButtons(localModels):'');
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+smartHint+capacityHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+renderIntelligencePoolHint()+smartHint+capacityHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');

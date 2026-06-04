@@ -6,7 +6,7 @@ const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankMap,bestLocalModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankMap,bestLocalModel,intelligencePoolSummary,renderIntelligencePoolHint};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -74,6 +74,17 @@ const qwenTiny = {
 
 testApi.state.models = [hosted, gemma, qwenTiny];
 testApi.state.activeModelId = hosted.id;
+
+const pool = testApi.intelligencePoolSummary();
+assertEqual(pool.liveRoutes, 3, 'Intelligence pool must count hosted plus discovered local routes');
+assertEqual(pool.localRoutes, 2, 'Intelligence pool must count local routes separately');
+assertEqual(pool.compareReady, true, 'Intelligence pool must mark Best Answer ready after local discovery');
+const poolHint = testApi.renderIntelligencePoolHint();
+assertIncludes(poolHint, 'Intelligence pool', 'Model and tool menus must show intelligence pool status');
+assertIncludes(poolHint, 'Best Answer ready', 'Intelligence pool must expose parallel answer readiness');
+if (/earn|credit|payout|money/i.test(poolHint)) {
+  fail('Public intelligence pool hint must not expose unproven marketplace or earning claims');
+}
 
 const compare = testApi.explicitMentionDecision('@supergenius @gemma who is president of USA?');
 assertEqual(compare.mode, 'compare', 'Explicit hosted + local tags must compare routes');
@@ -147,6 +158,10 @@ assertEqual(guarded.model.id, hosted.id, 'Public fact guard must route local-sel
 assertIncludes(guarded.reason, 'Quality guard: public facts', 'Public fact guard must label the hosted route');
 
 testApi.state.models = [hosted];
+const singleRoutePool = testApi.intelligencePoolSummary();
+assertEqual(singleRoutePool.liveRoutes, 1, 'Hosted-only intelligence pool must stay single-route');
+assertEqual(singleRoutePool.compareReady, false, 'Hosted-only intelligence pool must not claim parallel readiness');
+assertIncludes(testApi.renderIntelligencePoolHint(), 'Single route now', 'Hosted-only hint must be honest before local discovery');
 const missingLocal = testApi.explicitMentionDecision('@supergenius @gemma compare this');
 assertEqual(missingLocal.mode, 'missing-local', 'Explicit compare must fail clearly before local model discovery');
 
