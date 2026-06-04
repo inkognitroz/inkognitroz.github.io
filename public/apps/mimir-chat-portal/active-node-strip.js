@@ -17,12 +17,7 @@
 
   function fallbackLabel(value){
     if(displayApi.displayLabel)return displayApi.displayLabel(value,FALLBACK_LABEL);
-    return String(value||'')
-      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,FALLBACK_LABEL)
-      .replace(/MMIR Browser Guide|MMIR Guide/gi,FALLBACK_LABEL)
-      .replace(/(^|[^A-Za-z])supergeni(?:us|ous)(?:\s+free)?/gi,(match,prefix)=>prefix+FALLBACK_LABEL)
-      .replace(/(?:MMIR\s+){2,}Supergenius/gi,FALLBACK_LABEL)
-      .trim();
+    return String(value||'').replace(/\s+/g,' ').trim()||FALLBACK_LABEL;
   }
   function normalizeModel(model){if(!model||typeof model!=='object')return model;return {...model,name:fallbackLabel(model.name),label:fallbackLabel(model.label)};}
   function normalizeNode(node){if(!node||typeof node!=='object')return node;return {...node,name:fallbackLabel(node.name),models:Array.isArray(node.models)?node.models.map(normalizeModel):node.models};}
