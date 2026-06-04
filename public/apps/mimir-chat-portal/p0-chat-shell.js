@@ -542,6 +542,20 @@
     return Math.max(0,Math.min(100,Math.round(Number(value)||0)));
   }
 
+  function answerClass(answer,failed=false){
+    const text=String(answer||'').trim();
+    if(failed||!text)return 'failed';
+    return text.length>24?'complete':'thin';
+  }
+
+  function latencyClass(elapsedMs){
+    const value=Number(elapsedMs)||0;
+    if(value<700)return 'fast';
+    if(value<2000)return 'responsive';
+    if(value<6000)return 'acceptable';
+    return 'slow';
+  }
+
   function routeScore(model,prompt,answer,elapsedMs,failed=false){
     const route=model?.route||'hosted';
     const text=String(answer||'').trim();
@@ -550,7 +564,7 @@
     const reasons=[];
     let score=50;
     if(failed||!text){
-      return {score:0,elapsedMs,reason:'no answer',reasons:['no answer']};
+      return {score:0,elapsedMs,answer_class:'failed',latency_class:latencyClass(elapsedMs),reason:'no answer',reasons:['no answer']};
     }
     if(text.length>24){
       score+=8;
@@ -599,13 +613,24 @@
       score-=7;
       reasons.push('slow');
     }
-    return {score:clampScore(score),elapsedMs,reason:reasons.slice(0,3).join(' · '),reasons};
+    return {score:clampScore(score),elapsedMs,answer_class:answerClass(text),latency_class:latencyClass(elapsedMs),reason:reasons.slice(0,3).join(' · '),reasons};
+  }
+
+  function scoreClassSummary(score){
+    if(!score)return '';
+    const reason=String(score.reason||'').toLowerCase();
+    const parts=[];
+    const answer=String(score.answer_class||'').replace(/_/g,' ').trim();
+    const latency=String(score.latency_class||'').replace(/_/g,' ').trim();
+    if(answer&&answer!=='unknown'&&!reason.includes(answer.toLowerCase()))parts.push(answer==='complete'?'complete answer':answer);
+    if(latency&&latency!=='unknown'&&!reason.includes(latency.toLowerCase()))parts.push(latency);
+    return parts.join(' · ');
   }
 
   function scoreSummary(score){
     if(!score)return 'Score pending';
     const prefix=score.source==='api'?'API score ':'Score ';
-    return prefix+score.score+' · '+formatDuration(score.elapsedMs)+' · '+score.reason;
+    return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),score.reason].filter(Boolean).join(' · ');
   }
 
   function compactReceipt(receipt){
@@ -664,6 +689,8 @@
       quality:model?.quality||'',
       answer:String(answer||'').slice(0,8000),
       latency_ms:Math.max(0,Math.round(Number(elapsedMs)||0)),
+      latency_class:latencyClass(elapsedMs),
+      answer_class:answerClass(answer,failed),
       failed:Boolean(failed)
     };
   }
@@ -681,6 +708,8 @@
     return {
       score:clampScore(found.score),
       elapsedMs:Number(found.latency_ms)||fallback?.elapsedMs||0,
+      answer_class:found.answer_class||fallback?.answer_class||'unknown',
+      latency_class:found.latency_class||fallback?.latency_class||'unknown',
       reason:reasons.slice(0,3).join(' · ')||found.summary||fallback?.reason||'api route policy',
       reasons,
       source:'api'

@@ -160,6 +160,9 @@ requireIncludes(files.p0Runtime, 'data-p0-action="best-answer-live"', 'P0 Best A
 requireIncludes(files.p0Runtime, 'Best Answer', 'P0 Best Answer must be user-facing as the simple parallel-model action.');
 requireIncludes(files.p0Runtime, 'Compare answers', 'P0 compare must be user-facing as an answer comparison, not internal routing jargon.');
 requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must show route score and response timing.');
+requireIncludes(files.p0Runtime, 'function scoreClassSummary(score)', 'P0 compare must show route answer/latency classes.');
+requireIncludes(files.p0Runtime, 'answer_class:found.answer_class', 'P0 compare must preserve API answer class metadata.');
+requireIncludes(files.p0Runtime, 'latency_class:found.latency_class', 'P0 compare must preserve API latency class metadata.');
 requireIncludes(files.p0Runtime, 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
 requireIncludes(files.p0Runtime, "const ROUTE_SCORE_PATH='/routing/score'", 'P0 Best Answer must know the API scoring route.');
 requireIncludes(files.p0Runtime, 'function scoreRoutesWithApi(prompt,hostedModel,hostedAnswer,hostedElapsed,hostedFailed,localModel,localAnswer,localElapsed,localFailed)', 'P0 Best Answer must call api.mmir.ai route scoring before selecting the winner.');
