@@ -172,7 +172,10 @@ requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-r
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function transientInstallMessage(message)', 'P0 shell must keep local install instructions chat-native but transient, not first-screen history.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Supergenious · Free · api.mmir.ai', 'P0 shell must show hosted route receipts.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function hostedRouteLabel()', 'P0 shell must generate hosted route receipts from the active API host.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "'Supergenious · Free · '+API_LABEL", 'P0 shell must show hosted route receipts.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must define the staging API route.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must switch staging.mmir.ai to api-staging.mmir.ai without arbitrary API overrides.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Private · This Mac', 'P0 shell must show local route receipts.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local fallback', 'P0 shell must keep answering through hosted fallback if local access fails.');

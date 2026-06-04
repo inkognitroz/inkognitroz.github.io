@@ -136,7 +136,9 @@ requireIncludes(files.p0Css, 'display: block;', 'P0 transcript must use block la
 requireIncludes(files.p0Css, '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
 requireIncludes(files.p0Css, '.p0-message-receipt', 'P0 assistant answers must include a visible route receipt.');
 requireIncludes(files.p0Css, '.p0-receipt-full', 'P0 compact receipts must expose full audit details when expanded.');
-requireIncludes(files.p0Runtime, "const API_URL='https://api.mmir.ai'", 'P0 shell must use api.mmir.ai as the immediate chat route.');
+requireIncludes(files.p0Runtime, "const PROD_API_URL='https://api.mmir.ai'", 'P0 shell must keep api.mmir.ai as the production chat route.');
+requireIncludes(files.p0Runtime, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must know the staging API route.');
+requireIncludes(files.p0Runtime, "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must route staging.mmir.ai to api-staging.mmir.ai without arbitrary browser overrides.');
 requireIncludes(files.p0Runtime, "data-p0-action=\"connect-local\"", 'P0 shell must start local setup through the chat-guided installer flow.');
 requireIncludes(files.p0Runtime, 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.');
 requireIncludes(files.p0Runtime, 'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.', 'P0 local setup must use simple chat-first Mac copy.');
@@ -145,7 +147,8 @@ requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setu
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
 requireIncludes(files.p0Runtime, 'Connect local model', 'P0 add menu must present local setup as a user task, not internal installer plumbing.');
 requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state must make the immediate chat path clear.');
-requireIncludes(files.p0Runtime, 'Supergenious · Free · api.mmir.ai', 'P0 hosted route receipt must be visible to users.');
+requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
+requireIncludes(files.p0Runtime, "'Supergenious · Free · '+API_LABEL", 'P0 hosted route receipt must stay visible to users.');
 requireIncludes(files.p0Runtime, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
 requireIncludes(files.p0Runtime, 'data-p0-action="compare-live"', 'P0 compare must be implemented as a gated toolbar action.');
@@ -157,7 +160,7 @@ requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must s
 requireIncludes(files.p0Runtime, 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
 requireIncludes(files.p0Runtime, "const ROUTE_SCORE_PATH='/routing/score'", 'P0 Best Answer must know the API scoring route.');
 requireIncludes(files.p0Runtime, 'function scoreRoutesWithApi(prompt,hostedModel,hostedAnswer,hostedElapsed,hostedFailed,localModel,localAnswer,localElapsed,localFailed)', 'P0 Best Answer must call api.mmir.ai route scoring before selecting the winner.');
-requireIncludes(files.p0Runtime, 'api.mmir.ai/routing/score', 'P0 Best Answer synthesis receipt must identify the API scoring source.');
+requireIncludes(files.p0Runtime, "API_LABEL+'/routing/score'", 'P0 Best Answer synthesis receipt must identify the active API scoring source.');
 requireIncludes(files.p0Runtime, 'API score ', 'P0 Best Answer receipts must show API scoring when the API scorer is available.');
 requireIncludes(files.p0Runtime, 'function winningRoute(hostedModel,hostedScore,localModel,localScore)', 'P0 Best Answer must choose and explain a winner.');
 requireIncludes(files.p0Runtime, 'Winner:', 'P0 Best Answer receipts must show the winning route.');
