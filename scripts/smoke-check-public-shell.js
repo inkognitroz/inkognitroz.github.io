@@ -223,7 +223,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'display: block;', 'P0 transcript must use block layout so long chats produce real scroll height.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
-requireText(mmirPath, 'runtime-controls-fix.js?v=20260531-model-chip-v2', 'Runtime controls hotfix must be cache-busted for public first-chat recovery.');
+requireText(mmirPath, 'runtime-controls-fix.js?v=20260604-p0-css-guard-v1', 'Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), 'function p0ReadyShell()', 'Runtime controls hotfix must detect the protected P0 shell.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}", 'Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.');
 requireText(mmirPath, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS must be cache-busted for public first-chat recovery.');
 requireText(mmirPath, 'chat-workspace.css?v=20260531-public-first-chat-v1', 'Chat workspace CSS must be cache-busted for public first-chat recovery.');
 requireText(mmirPath, 'model-catalog-ui.js?v=20260531-no-rag-v1', 'Model catalog UI must be cache-busted after hiding unready public routes.');
