@@ -90,6 +90,7 @@
       const state=String(node.getAttribute('data-mimir-capability-state')||'').toLowerCase();
       if(!/^(planned|parked|advanced|lab)$/.test(state))return;
       node.hidden=true;
+      node.inert=true;
       node.setAttribute('aria-hidden','true');
       node.dataset.mimirHiddenByGuard='true';
     });
