@@ -2,7 +2,7 @@
   const w=window,d=document,api=w.MimirApiClient||{},displayApi=w.MimirRouteDisplay||{},q=id=>d.getElementById(id);
   const FALLBACK_LABEL=displayApi.DEFAULT_LABEL||'Supergenious';
   function clip(v,m=34){return displayApi.clip?displayApi.clip(v,m):(()=>{const s=String(v||'').replace(/\s+/g,' ').trim();return s.length<=m?s:s.slice(0,m-3).trim()+'...';})();}
-  function display(v){return displayApi.displayLabel?displayApi.displayLabel(v,FALLBACK_LABEL):String(v||'').replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,FALLBACK_LABEL).replace(/MMIR Browser Guide|MMIR Guide/gi,FALLBACK_LABEL).replace(/supergenious(?:\s+free)?/gi,FALLBACK_LABEL).replace(/(^|[^A-Za-z])supergenius(?:\s+free)?/gi,(match,prefix)=>prefix+FALLBACK_LABEL).replace(/(?:MMIR\s+){2,}Supergenius/gi,FALLBACK_LABEL);}
+  function display(v){return displayApi.displayLabel?displayApi.displayLabel(v,FALLBACK_LABEL):(String(v||'').replace(/\s+/g,' ').trim()||FALLBACK_LABEL);}
   function chip(id,text,state,title){const e=typeof id==='string'?q(id):id;if(!e)return;const v=display(String(text||'').trim());e.textContent=v;e.dataset.state=state||'idle';if(title||v)e.title=display(title||v);}
   function selectedRuntime(sel=q('runtime-model')){
     const selected=sel?.selectedOptions?.[0];

@@ -17,12 +17,7 @@
   function displayLabel(value){
     const shared=window.MimirRouteDisplay;
     if(shared?.displayLabel)return shared.displayLabel(value,SUPERGENIUS_LABEL);
-    return String(value||'')
-      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,SUPERGENIUS_LABEL)
-      .replace(/MMIR Browser Guide|MMIR Guide|free browser guide/gi,SUPERGENIUS_LABEL)
-      .replace(/(^|[^A-Za-z])supergeni(?:us|ous)(?:\s+free)?/gi,(match,prefix)=>prefix+SUPERGENIUS_LABEL)
-      .replace(/(?:MMIR\s+){2,}Supergenius/gi,SUPERGENIUS_LABEL)
-      .trim();
+    return String(value||'').replace(/\s+/g,' ').trim()||SUPERGENIUS_LABEL;
   }
   function selectedLabel(){const select=modelSelect();return displayLabel(String(select?.selectedOptions?.[0]?.textContent||select?.value||'auto').replace(/\s+-\s+live$/i,'').trim());}
   function selectedValue(){return String(modelSelect()?.value||'');}
