@@ -1,6 +1,9 @@
 (function(){
   window.__MimirP0SimpleChat=true;
-  const API_URL='https://api.mmir.ai';
+  const PROD_API_URL='https://api.mmir.ai';
+  const STAGING_API_URL='https://api-staging.mmir.ai';
+  const API_URL=apiUrlForCurrentHost();
+  const API_LABEL=apiHostLabel(API_URL);
   const LOCAL_URL='http://127.0.0.1:3000';
   const CHAT_PATH='/v1/chat/completions';
   const ROUTE_SCORE_PATH='/routing/score';
@@ -26,6 +29,26 @@
     /Backend is unreachable/i,
     /Runtime is unavailable/i
   ];
+
+  function apiUrlForCurrentHost(){
+    try{
+      return String(location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL;
+    }catch(error){
+      return PROD_API_URL;
+    }
+  }
+
+  function apiHostLabel(url){
+    try{
+      return new URL(url).host;
+    }catch(error){
+      return 'api.mmir.ai';
+    }
+  }
+
+  function hostedRouteLabel(){
+    return 'Supergenious · Free · '+API_LABEL;
+  }
 
   const state={
     busy:false,
@@ -247,7 +270,7 @@
       };
     }
     return {
-      text:'Supergenious · Free · api.mmir.ai',
+      text:hostedRouteLabel(),
       detail:'Hosted MMIR free route. No provider key is stored in the browser. No paid route started.',
       state:'hosted'
     };
@@ -746,7 +769,7 @@
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergenious..." autocomplete="off" spellcheck="true"></textarea>'+
-          '<div id="p0-route" class="p0-route" data-state="hosted">Supergenious · Free · api.mmir.ai</div>'+
+          '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Add or connect model" aria-expanded="false">+</button>'+
@@ -1322,8 +1345,8 @@
           status('Chat failed: local node blocked/unavailable','error');
         }
       }else{
-        updateMessage(assistant,'I could not reach api.mmir.ai from this browser right now. Please refresh and try again.');
-        status('Chat failed: api.mmir.ai unreachable','error');
+        updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Please refresh and try again.');
+        status('Chat failed: '+API_LABEL+' unreachable','error');
       }
     }finally{
       state.busy=false;
@@ -1407,7 +1430,7 @@
       hostedScore=apiScoreForModel(scoring,hostedModel,hostedScore);
       localScore=apiScoreForModel(scoring,localModel,localScore);
       finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
-      scoringSource='api.mmir.ai/routing/score';
+      scoringSource=API_LABEL+'/routing/score';
       updateMessage(hostedMessage,hostedAnswerText||'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       updateMessage(localMessage,localAnswerText||localNetworkHint('Local model did not answer.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
     }catch(error){
