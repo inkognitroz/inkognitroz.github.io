@@ -27,7 +27,7 @@
   function fallbackStarterModels(){
     return [
       {id:'mmir-supergenius',label:SUPERGENIUS_LABEL,runtime:'auto',status:'hosted-free',model:'mmir-supergenius',install_note:'Works immediately with no install, key or paid route.'},
-      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'lab_proof_required',visibility:'advanced',public_headline:false,promotion_allowed:false,proof_status:'pending_supported_browser_live_answer',license_review_status:'pending',integrity_review_status:'pending',fallback_status:'fallback_to_supergenious_until_model_answers',runtime_package:'@mlc-ai/web-llm',public_surface:'advanced_only_until_proven',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Runs locally only when this browser supports WebGPU/WASM and after supported-browser proof is green.'},
+      {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'lab_proof_required',trust_level:'unverified',promotion_state:'hidden_candidate',visibility:'advanced',public_headline:false,promotion_allowed:false,proof_status:'pending_supported_browser_live_answer',license_review_status:'pending',integrity_review_status:'pending',fallback_status:'fallback_to_supergenious_until_model_answers',runtime_package:'@mlc-ai/web-llm',public_surface:'advanced_only_until_proven',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Experimental. Runs locally only when this browser supports WebGPU/WASM and remains an untrusted advanced candidate until live-browser proof and policy review pass.'},
       {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',model:'gemma3:270m',install_note:'Fastest useful local starter through MMIR Local Node.'},
       {id:'ollama-qwen3-06b',label:'Qwen3 0.6B - tiny reasoning local',runtime:'ollama',status:'installable-free',model:'qwen3:0.6b',install_note:'Small reasoning-capable local starter.'}
     ];
@@ -35,13 +35,13 @@
   function starterGroupLabel(model){
     if(model.runtime==='auto')return 'Ready now: instant free chat';
     if(model.runtime==='browser-guide')return 'Advanced: internal helpers';
-    if(model.runtime==='webllm')return 'Advanced: browser model experiments';
+    if(model.runtime==='webllm')return 'Advanced: browser model experiments (untrusted candidate)';
     return 'Install to activate: local models';
   }
   function starterToOption(model){
     return {
       value:starterValue(model),
-      textContent:displayLabel(model.label||model.id)+' - '+(model.runtime==='auto'?'ready now - hosted free model':(model.runtime==='ollama'?'install to activate - local':(model.runtime==='webllm'?'experimental - browser model':'advanced helper'))),
+      textContent:displayLabel(model.label||model.id)+' - '+(model.runtime==='auto'?'ready now - hosted free model':(model.runtime==='ollama'?'install to activate - local':(model.runtime==='webllm'?'experimental browser model - untrusted candidate':'advanced helper'))),
       dataset:{runtime:model.runtime||'starter'},
       parentElement:{label:starterGroupLabel(model)},
       __starterFloor:true

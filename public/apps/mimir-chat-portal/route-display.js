@@ -44,6 +44,10 @@
   }
 
   function trustLabel(profile){
+    const explicitTrust=String(profile?.trust_level||'').toLowerCase();
+    const promotion=String(profile?.promotion_state||'').toLowerCase();
+    const visibility=String(profile?.visibility||profile?.public_surface||'').toLowerCase();
+    if(/active-untrusted-free|untrusted|unverified/.test(explicitTrust)||promotion==='hidden_candidate'||visibility.includes('advanced'))return 'untrusted candidate';
     const summary=[profile?.provider,profile?.cost,profile?.url,profile?.name,profile?.id].join(' ').toLowerCase();
     if(isLocalProfile(profile))return 'local/private';
     if(/free|no paid|self-hosted|self hosted/.test(summary))return 'free/protected';
