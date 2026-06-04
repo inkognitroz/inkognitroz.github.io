@@ -85,6 +85,16 @@
     });
   }
 
+  function hideUnprovenCapabilities(){
+    document.querySelectorAll('[data-mimir-capability-state]').forEach((node)=>{
+      const state=String(node.getAttribute('data-mimir-capability-state')||'').toLowerCase();
+      if(!/^(planned|parked|advanced|lab)$/.test(state))return;
+      node.hidden=true;
+      node.setAttribute('aria-hidden','true');
+      node.dataset.mimirHiddenByGuard='true';
+    });
+  }
+
   function keepManagedOnSend(event){
     if(event?.target?.closest?.('#primary-chat-link,.mimir-composer,[data-prompt-action]')){
       forceManagedRoute('send');
@@ -95,6 +105,7 @@
     document.body?.classList.toggle('mimir-local-return',returnIntent());
     document.body?.classList.toggle('mimir-public-launch-stable',!returnIntent());
     forceManagedRoute('load');
+    hideUnprovenCapabilities();
     sanitizeBrokenChatHistory();
     document.addEventListener('submit',()=>forceManagedRoute('submit'),true);
     document.addEventListener('click',keepManagedOnSend,true);
@@ -103,7 +114,7 @@
     },true);
   }
 
-  window.MimirPublicLaunchGuard={forceManagedRoute,sanitizeBrokenChatHistory,returnIntent};
+  window.MimirPublicLaunchGuard={forceManagedRoute,sanitizeBrokenChatHistory,hideUnprovenCapabilities,returnIntent};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
 })();
