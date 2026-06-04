@@ -15,7 +15,8 @@ const files = {
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
-  criticalProfiles: join(publicDir, 'apps', 'mimir-chat-portal', 'backend-profiles-critical.js')
+  criticalProfiles: join(publicDir, 'apps', 'mimir-chat-portal', 'backend-profiles-critical.js'),
+  assetVersions: join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json')
 };
 
 function fail(message) {
@@ -45,6 +46,20 @@ function requireNormalized(file, needle, message) {
 
 function forbid(file, pattern, message) {
   if (pattern.test(read(file))) fail(message);
+}
+
+let assetVersions;
+function assetRef(assetName) {
+  if (!assetVersions) {
+    const manifest = JSON.parse(read(files.assetVersions) || '{}');
+    assetVersions = manifest.assets || {};
+  }
+  const version = assetVersions[assetName];
+  if (!version) {
+    fail(`Missing asset version manifest entry: ${assetName}`);
+    return `${assetName}?v=missing`;
+  }
+  return `${assetName}?v=${version}`;
 }
 
 for (const file of Object.values(files)) read(file);
@@ -105,9 +120,9 @@ forbid(files.routeChips, /MMIR Guide works now as a free browser helper/i, 'Rout
 
 requireIncludes(files.routeChips, "if(tunnel?.public_url)return {text:'Tunnel: secure',state:'ready'", 'Secure tunnel chip may only turn ready when a tunnel public URL is actually present.');
 requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh route chips once the deferred route-chip module is ready.');
-requireIncludes(files.mmir, 'route-chips.js?v=20260531-model-chip-v2', 'Route-chip polish must load progressively after first-paint chat runtime.');
-requireIncludes(files.mmir, 'p0-chat-shell.css?v=20260604-local-private-ready-v42', 'P0 simple chat shell CSS must load on the public page.');
-requireIncludes(files.mmir, 'p0-chat-shell.js?v=20260604-local-private-ready-v42', 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, assetRef('route-chips.js'), 'Route-chip polish must load progressively after first-paint chat runtime.');
+requireIncludes(files.mmir, assetRef('p0-chat-shell.css'), 'P0 simple chat shell CSS must load on the public page.');
+requireIncludes(files.mmir, assetRef('p0-chat-shell.js'), 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -199,13 +214,13 @@ requireIncludes(files.p0Runtime, 'Selected browser LLM is not loaded', 'P0 stale
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-find-local-models'", 'P0 Find local models must explicitly allow user-requested local probes.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-local-chat'", 'P0 local chat must explicitly allow user-requested local connector calls.');
 requireIncludes(files.p0Runtime, "targetAddressSpace='loopback'", 'P0 local connector checks must request loopback address-space permission.');
-requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API client cache must bust for Local Network Access loopback support.');
-requireIncludes(files.mmir, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
-requireIncludes(files.mmir, 'chat-runtime.css?v=20260604-composer-css-owner-v1', 'Chat runtime CSS cache must bust for composer CSS ownership cleanup.');
-requireIncludes(files.mmir, 'chat-workspace.css?v=20260604-composer-css-owner-v1', 'Chat workspace CSS cache must bust for composer CSS ownership cleanup.');
-requireIncludes(files.mmir, 'chat-runtime.js?v=20260602-webgpu-shader-f16-v1', 'Chat runtime cache must bust for public UI capability cleanup, Browser WebGPU truth, Local Network Access loopback support and Mac installer link repair.');
-requireIncludes(files.mmir, 'active-node-strip.js?v=20260602-webgpu-shader-f16-v1', 'Active node strip cache must bust for Browser WebGPU shader-f16 labels.');
-requireIncludes(files.mmir, 'quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1', 'Quiet-first-paint guard must load Local Network Access loopback support.');
+requireIncludes(files.mmir, assetRef('api-client.js'), 'API client cache must bust for Local Network Access loopback support.');
+requireIncludes(files.mmir, assetRef('public-launch-guard.js'), 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
+requireIncludes(files.mmir, assetRef('chat-runtime.css'), 'Chat runtime CSS cache must bust for composer CSS ownership cleanup.');
+requireIncludes(files.mmir, assetRef('chat-workspace.css'), 'Chat workspace CSS cache must bust for composer CSS ownership cleanup.');
+requireIncludes(files.mmir, assetRef('chat-runtime.js'), 'Chat runtime cache must bust for public UI capability cleanup, Browser WebGPU truth, Local Network Access loopback support and Mac installer link repair.');
+requireIncludes(files.mmir, assetRef('active-node-strip.js'), 'Active node strip cache must bust for Browser WebGPU shader-f16 labels.');
+requireIncludes(files.mmir, assetRef('quiet-first-paint-hotfix.js'), 'Quiet-first-paint guard must load Local Network Access loopback support.');
 requireIncludes(files.apiClient, "targetAddressSpace='loopback'", 'Local fetches must request loopback address-space permission for modern Chromium.');
 requireIncludes(files.runtime, "?'loopback':undefined", 'Streaming local chat must request loopback address-space permission for modern Chromium.');
 requireIncludes(files.runtime, "health:error?.status===401?'testing':'offline'", 'Unavailable backend/node checks must write offline/testing health, not ready.');

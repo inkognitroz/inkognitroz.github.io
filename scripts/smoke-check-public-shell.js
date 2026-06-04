@@ -20,6 +20,7 @@ const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-conne
 const macConnectorZipPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.zip');
 const macDmgPath = join(publicDir, 'downloads', 'mmir-local-node-0.1.0-mac.dmg');
 const connectorReleasePath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
+const assetVersionManifestPath = join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json');
 
 const failures = [];
 
@@ -49,6 +50,20 @@ function requireText(file, needle, message) {
 
 function forbidText(file, needle, message) {
   if (read(file).includes(needle)) fail(message);
+}
+
+let assetVersions;
+function assetRef(assetName) {
+  if (!assetVersions) {
+    const manifest = JSON.parse(read(assetVersionManifestPath) || '{}');
+    assetVersions = manifest.assets || {};
+  }
+  const version = assetVersions[assetName];
+  if (!version) {
+    fail(`Missing asset version manifest entry: ${assetName}`);
+    return `${assetName}?v=missing`;
+  }
+  return `${assetName}?v=${version}`;
 }
 
 function localAssetPath(fromFile, asset) {
@@ -125,7 +140,7 @@ requireText(mmirPath, 'id="mimir-prompt"', 'MMIR product page must expose the ch
 requireText(mmirPath, 'id="local-connector"', 'MMIR product page must expose local connector setup.');
 requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose public-safe node status.');
 requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR product page must load the chat portal script.');
-requireText(mmirPath, 'active-node-strip.js?v=20260602-webgpu-shader-f16-v1', 'MMIR product page must load the cache-busted active-node strip.');
+requireText(mmirPath, assetRef('active-node-strip.js'), 'MMIR product page must load the cache-busted active-node strip.');
 requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
 requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
 requireText(serviceWorkerPath, 'mmir-pwa-d347-20260604-local-private-ready-v42', 'Service worker cache must bust for local private-readiness clarity.');
@@ -147,9 +162,9 @@ forbidText(composerModelPickerPath, "id:'compare-models'", 'Composer model recom
 requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model library must hide capability-specific routes that are not production-ready.');
 requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
 requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
-requireText(mmirPath, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, 'p0-chat-shell.css?v=20260604-local-private-ready-v42', 'Public page must load the P0 simple chat shell CSS.');
-requireText(mmirPath, 'p0-chat-shell.js?v=20260604-local-private-ready-v42', 'Public page must load the P0 simple chat shell runtime.');
+requireText(mmirPath, assetRef('public-launch-guard.js'), 'Public page must load the first-chat recovery guard before chat runtime.');
+requireText(mmirPath, assetRef('p0-chat-shell.css'), 'Public page must load the P0 simple chat shell CSS.');
+requireText(mmirPath, assetRef('p0-chat-shell.js'), 'Public page must load the P0 simple chat shell runtime.');
 requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');
@@ -223,15 +238,15 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'display: block;', 'P0 transcript must use block layout so long chats produce real scroll height.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
-requireText(mmirPath, 'runtime-controls-fix.js?v=20260604-p0-css-guard-v1', 'Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.');
+requireText(mmirPath, assetRef('runtime-controls-fix.js'), 'Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), 'function p0ReadyShell()', 'Runtime controls hotfix must detect the protected P0 shell.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}", 'Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.');
-requireText(mmirPath, 'chat-runtime.css?v=20260604-composer-css-owner-v1', 'Chat runtime CSS must be cache-busted for composer CSS ownership cleanup.');
-requireText(mmirPath, 'chat-workspace.css?v=20260604-composer-css-owner-v1', 'Chat workspace CSS must be cache-busted for composer CSS ownership cleanup.');
-requireText(mmirPath, 'model-catalog-ui.js?v=20260531-no-rag-v1', 'Model catalog UI must be cache-busted after hiding unready public routes.');
-requireText(mmirPath, 'chat-runtime.js?v=20260602-webgpu-shader-f16-v1', 'Chat runtime must be cache-busted after Browser WebGPU shader-f16 gating.');
-requireText(mmirPath, 'composer-model-picker.js?v=20260602-webgpu-shader-f16-v1', 'Composer model picker must be cache-busted after Browser WebGPU shader-f16 gating.');
-requireText(mmirPath, 'active-node-strip.js?v=20260602-webgpu-shader-f16-v1', 'Active node strip must be cache-busted after Browser WebGPU shader-f16 gating.');
+requireText(mmirPath, assetRef('chat-runtime.css'), 'Chat runtime CSS must be cache-busted for composer CSS ownership cleanup.');
+requireText(mmirPath, assetRef('chat-workspace.css'), 'Chat workspace CSS must be cache-busted for composer CSS ownership cleanup.');
+requireText(mmirPath, assetRef('model-catalog-ui.js'), 'Model catalog UI must be cache-busted after hiding unready public routes.');
+requireText(mmirPath, assetRef('chat-runtime.js'), 'Chat runtime must be cache-busted after Browser WebGPU shader-f16 gating.');
+requireText(mmirPath, assetRef('composer-model-picker.js'), 'Composer model picker must be cache-busted after Browser WebGPU shader-f16 gating.');
+requireText(mmirPath, assetRef('active-node-strip.js'), 'Active node strip must be cache-busted after Browser WebGPU shader-f16 gating.');
 forbidText(modelCatalogPath, 'RAG', 'Public model catalog must not expose RAG wording before that user journey is production-ready.');
 forbidText(freeModelStartersPath, 'RAG', 'Free starter model catalog must not expose RAG wording before that user journey is production-ready.');
 requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
