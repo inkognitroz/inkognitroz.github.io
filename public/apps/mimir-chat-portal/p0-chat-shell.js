@@ -1267,6 +1267,14 @@
     return /@gemma3?|@qwen|@llama|@local|@private/i.test(String(prompt||''));
   }
 
+  function hostedFallbackAllowedForLocalFailure(originalPrompt,routePrompt){
+    return !(
+      wantsPrivateRoute(originalPrompt)||
+      wantsPrivateRoute(routePrompt)||
+      localModelMentioned(originalPrompt)
+    );
+  }
+
   function hostedMentioned(prompt){
     return /@supergeni(?:us|ous)|@super|@hosted|@mmir/i.test(String(prompt||''));
   }
@@ -1383,6 +1391,16 @@
     }catch(error){
       if(model.route==='local'){
         const hint=localNetworkHint(error);
+        if(!hostedFallbackAllowedForLocalFailure(prompt,routePrompt)){
+          updateMessage(
+            assistant,
+            hint+'\n\nPrivacy guard: I did not send this local/private prompt to hosted Supergenious. Fix local access or choose Supergenious explicitly if you want a hosted answer.',
+            {receipt:receipt.text+' · Local privacy fail-closed'}
+          );
+          status('Local route unavailable. Private prompt was not sent to hosted route.','error');
+          routeStatus('Local privacy guard · hosted fallback blocked','error');
+          return;
+        }
         state.activeModelId='mmir-supergenius';
         renderToolbar();
         try{
