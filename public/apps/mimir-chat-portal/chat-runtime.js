@@ -1461,9 +1461,7 @@
         '.\\mmir-local-connector-windows.ps1'
       ],
       unix:[
-        'curl -fsSL https://mmir.ai/downloads/mmir-local-connector-linux.sh -o mmir-local-connector-linux.sh',
-        'chmod +x mmir-local-connector-linux.sh',
-        'MMIR_MODEL='+envValue+' ./mmir-local-connector-linux.sh'
+        'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | MMIR_MODEL='+envValue+' bash'
       ],
     };
   }
@@ -1510,11 +1508,11 @@
       isWebLlm?'<p>'+escapeHtml(browserNodeStatusCopy())+'</p><p>Route receipt shape: node_type=browser, trust_class=device-local, cost_class=free-user-device, quality_tier=starter, execution_boundary=current-browser-session, prompt_left_device=false.</p>':
         '<div class="runtime-install-grid">'+
           '<div><strong>Windows</strong><pre><code>'+escapeHtml(commands.windows.join('\n'))+'</code></pre></div>'+
-          '<div><strong>Mac</strong><p><a href="./downloads/mmir-local-connector-mac.zip" download>Download Mac installer</a>, open the ZIP, then open the command.</p></div>'+
+          '<div><strong>Mac</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre><p>Recommended Mac path: paste this in Terminal. ZIP, .command and DMG remain advanced fallbacks.</p></div>'+
           '<div><strong>Linux / Raspberry Pi</strong><pre><code>'+escapeHtml(commands.unix.join('\n'))+'</code></pre></div>'+
         '</div>'+
         '<div class="runtime-helper-actions">'+
-          '<a class="button-link" href="./downloads/mmir-local-connector-install.html">Choose installer</a>'+
+          '<a class="button-link" href="./downloads/mmir-local-connector-install.html#terminal-install">Mac Terminal command</a>'+
           '<a class="button-link" href="./downloads/mmir-local-connector-windows.cmd" download>Download Windows installer</a>'+
           '<a class="button-link" href="./downloads/mmir-local-connector-linux.sh" download>Download Linux installer</a>'+
           '<button id="install-selected-model" type="button">Install in Local Node</button>'+
