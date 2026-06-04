@@ -208,6 +208,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function wantsPublicFactRoute(prompt)', 'P0 quality guard must detect public/current factual prompts.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Quality guard: public facts', 'P0 quality guard must label hosted fallback for public facts from local routes.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Public facts use Supergenious', 'P0 model picker must explain public fact routing.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function refreshHostedModels()', 'P0 shell must refresh hosted model truth from the live gateway.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function executableHostedModel(model)', 'P0 shell must filter non-executable hosted models before showing them.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "route_state||'managed_provider_available'", 'P0 shell must consume route-aware model metadata from api.mmir.ai.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function explicitMentionDecision(prompt)', 'P0 shell must route explicit @model tags intentionally.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Find local models first, then use @supergenius @gemma for compare.', 'P0 shell must fail clearly when a local route tag is used before local discovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local-only: public facts may be outdated', 'P0 shell must warn when local-only routes answer public facts.');
