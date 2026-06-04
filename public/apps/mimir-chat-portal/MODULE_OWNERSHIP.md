@@ -32,7 +32,7 @@ These files own the first public chat experience and need the highest caution:
 | Composer behavior | `composer-autofocus.js`, `composer-autosize.js`, `composer-keyboard-shortcuts.js`, `composer-refocus-after-send.js`, `composer-stop-handoff.js`, `composer-new-chat.js` | Keep input simple and responsive. |
 | Plus/actions | `composer-quick-actions.js`, `composer-quick-actions.css` | Only show actions with working proof or clearly gated chat-native guidance. |
 | Model picker | `composer-model-picker.js`, `composer-model-picker.css`, `model-selection.js`, `model-catalog-ui.js` | Show proven routes first; do not present planned/offline routes as active. |
-| Privacy/control | `privacy-controls.js`, `privacy-controls.css`, `active-node-strip.js`, `route-chips.js` | Keep route, privacy, cost and node truth consistent. |
+| Privacy/control | `privacy-controls.js`, `privacy-controls.css`, `route-display.js`, `active-node-strip.js`, `route-chips.js` | Keep route, privacy, cost and node truth consistent. |
 | Voice | `voice-controls.js`, `voice-controls.css` | Mic must respond truthfully; no silent dead control. |
 
 ## Receipts, Routing And Compare
@@ -40,7 +40,7 @@ These files own the first public chat experience and need the highest caution:
 | Area | Files | Rule |
 | --- | --- | --- |
 | API client | `api-client.js` | No provider secrets. Keep public API calls safe and bounded. |
-| Route receipts | `answer-context-receipts.js`, `route-chips.js`, `active-node-strip.js` | Next cleanup target: centralize display labels and receipt naming. |
+| Route receipts | `answer-context-receipts.js`, `route-display.js`, `route-chips.js`, `active-node-strip.js` | Shared display labels live in `route-display.js`; receipt naming still needs one cautious follow-up. |
 | Compare / Best Answer | `model-comparison.js`, `model-comparison.css` | Only compare proven live routes. Label weak/stale local outputs clearly. |
 | Runtime truth | `runtime-controls-webgpu-truth.js`, `runtime-controls-fix.js`, `runtime-legacy-installer-guard.js` | Fail closed; never mark Browser Model active before it answers. |
 
@@ -69,7 +69,7 @@ These modules must stay hidden, advanced or secondary unless the linked user sto
 ## Cleanup Sequence
 
 1. Preserve current P0 shell as regression baseline.
-2. Centralize route/model display labels.
+2. Centralize route/model display labels in `route-display.js`.
 3. Consolidate composer/chip CSS ownership.
 4. Replace manual cache-busting with a central asset version source.
 5. Move advanced modules behind clear lazy/advanced boundaries.
