@@ -768,7 +768,7 @@
       '</main>'+
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergenious..." autocomplete="off" spellcheck="true"></textarea>'+
+          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergenious..." aria-label="Message Supergenious" autocomplete="off" spellcheck="true"></textarea>'+
           '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+

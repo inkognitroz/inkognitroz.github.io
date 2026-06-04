@@ -128,6 +128,9 @@ requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shel
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
 requireIncludes(files.p0Runtime, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
 requireIncludes(files.p0Runtime, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
+requireIncludes(files.p0Runtime, 'id="p0-input"', 'P0 shell must expose #p0-input as the canonical visible first-chat input.');
+requireIncludes(files.p0Runtime, 'aria-label="Message Supergenious"', 'P0 canonical input must have an accessible label for browser/UI automation.');
+requireIncludes(files.p0Runtime, 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
 requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
 requireIncludes(files.p0Css, 'overscroll-behavior: contain', 'P0 transcript must be an independently scrollable answer pane.');
