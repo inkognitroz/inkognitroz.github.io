@@ -131,13 +131,13 @@
       "platform": "macos-linux",
       "kind": "compatibility-shim",
       "path": "/downloads/mmir-local-node-macos-linux.sh",
-      "sha256": "cd47c770c7916cef7bae9bd56e8a089e772eacf65b4c9691bb544eff48320267",
+      "sha256": "1156699cb4a18012f045ae8ee5d28cf40cd20eaa4383a047334a03ecea877b0d",
       "recommended": true,
       "note": "Recommended Mac/Linux bootstrap. Run from Terminal to avoid macOS Gatekeeper blocking an unsigned downloaded .command file."
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-06-03T12:47:45.106Z",
+    "verified_at": "2026-06-04T11:49:43.782Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",
