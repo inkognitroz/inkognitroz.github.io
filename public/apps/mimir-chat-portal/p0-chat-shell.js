@@ -370,6 +370,34 @@
     return localModelProfile(id).detail;
   }
 
+  function localReadinessSummary(models,hardware){
+    const count=Array.isArray(models)?models.length:0;
+    if(!count)return 'Local node connected, but no local models were reported.';
+    return 'Private local ready: '+count+' model'+(count===1?'':'s')+(hardware?' · '+hardware.summary:'')+'.';
+  }
+
+  function emitLocalReadiness(models,hardware){
+    const count=Array.isArray(models)?models.length:0;
+    const detail={
+      status:count?'ready':'online',
+      health:count?'ready':'online',
+      url:LOCAL_URL,
+      models:(models||[]).map(model=>({id:model.model||model.label||model.id,name:model.label||model.model||model.id})),
+      hardware_summary:hardware?.summary||'',
+      readiness:{
+        paired:true,
+        models_available:count>0,
+        model_count:count,
+        runtime_chat_ready:count>0,
+        chat_ready:count>0,
+        model_metadata_visible:true
+      },
+      no_paid_routes_started:true
+    };
+    window.dispatchEvent(new CustomEvent('mmir-local-private-readiness-updated',{detail}));
+    window.dispatchEvent(new CustomEvent('mmir-local-connector-refreshed',{detail}));
+  }
+
   function localModelProfile(id){
     const value=String(id||'').toLowerCase();
     if(/gemma3:270m/.test(value)){
@@ -675,12 +703,13 @@
       state.localChecked=true;
       state.localError='';
       writeJson(MODELS_KEY,state.models);
+      emitLocalReadiness(models,hardware);
       if(models.length&&!state.models.some(model=>model.id===state.activeModelId)){
         state.activeModelId=models[0].id;
       }
       renderModelMenu();
       renderToolbar();
-      status(models.length?'Local node connected: '+models.length+' model'+(models.length===1?'':'s')+(hardware?' · '+hardware.summary:'')+'.':'Local node connected, but no local models were reported.',models.length?'ready':'idle');
+      status(localReadinessSummary(models,hardware),models.length?'ready':'idle');
       return models;
     }catch(error){
       state.localChecked=true;
@@ -960,9 +989,14 @@
     const route=model.route==='local'?'Private local model':'Supergenious hosted route';
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     const receipt=routeReceipt(model);
+    const localCount=state.models.filter(item=>item.route==='local').length;
+    const localReady=localCount?
+      '<button type="button"><strong>Private local ready</strong><small>'+safeText(localCount+' model'+(localCount===1?'':'s')+' available on this Mac. Select one from Models or use Best Answer.')+'</small></button>':
+      '<button type="button"><strong>Private local optional</strong><small>Use + -> Connect local model when you want private models on this Mac.</small></button>';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Privacy</div>'+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
+      localReady+
       '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';
   }
