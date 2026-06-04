@@ -5,6 +5,13 @@ import vm from 'node:vm';
 
 const root = process.cwd();
 const source = readFileSync(join(root, 'public', 'apps', 'mimir-chat-portal', 'route-display.js'), 'utf8');
+const routeDisplayConsumers = [
+  'active-node-strip.js',
+  'route-chips.js',
+  'composer-model-picker.js',
+  'composer-quick-actions.js',
+  'first-impression.js'
+];
 
 class CustomEvent {
   constructor(type, init = {}) {
@@ -42,5 +49,10 @@ assert.equal(helper.routeName({ provider: 'local-node', name: 'MMIR Local Node' 
 assert.equal(helper.trustLabel({ provider: 'local-node', url: 'http://127.0.0.1:3000' }), 'local/private', 'local node trust must stay private');
 assert.equal(helper.trustLabel({ provider: 'mmir', cost: 'free' }), 'free/protected', 'free hosted route trust must stay protected');
 assert.equal(windowTarget.lastEvent?.type, 'mimir-route-display-ready', 'helper must emit readiness evidence');
+
+for (const file of routeDisplayConsumers) {
+  const consumerSource = readFileSync(join(root, 'public', 'apps', 'mimir-chat-portal', file), 'utf8');
+  assert.match(consumerSource, /MimirRouteDisplay/, `${file} must use the shared route display helper`);
+}
 
 console.log('route display helper smoke: ok');

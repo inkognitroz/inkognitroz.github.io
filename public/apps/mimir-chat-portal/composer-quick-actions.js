@@ -76,7 +76,10 @@
   function selectedModelLabel(){
     const select=q('#runtime-model');
     const label=String(select?.selectedOptions?.[0]?.textContent||q('#runtime-model-chip')?.textContent||'Supergenious').trim();
-    return label.replace(/\s+-\s+(live|ready now|browser helper|active in browser|hosted free model).*$/i,'').replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious').slice(0,52)||'Supergenious';
+    const cleaned=label.replace(/\s+-\s+(live|ready now|browser helper|active in browser|hosted free model).*$/i,'');
+    const shared=window.MimirRouteDisplay;
+    const display=shared?.displayLabel?shared.displayLabel(cleaned,'Supergenious'):cleaned.replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious');
+    return display.slice(0,52)||'Supergenious';
   }
   function resourceSummary(){
     const value=String(q('#runtime-resource-chip')?.textContent||'Free route').trim();
