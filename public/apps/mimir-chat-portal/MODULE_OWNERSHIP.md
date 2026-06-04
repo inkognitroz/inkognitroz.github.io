@@ -32,6 +32,7 @@ These files own the first public chat experience and need the highest caution:
 | Composer behavior | `composer-autofocus.js`, `composer-autosize.js`, `composer-keyboard-shortcuts.js`, `composer-refocus-after-send.js`, `composer-stop-handoff.js`, `composer-new-chat.js` | Keep input simple and responsive. |
 | Plus/actions | `composer-quick-actions.js`, `composer-quick-actions.css` | Only show actions with working proof or clearly gated chat-native guidance. |
 | Public composer CSS | `chat-workspace.css` | Owns `.mimir-public-chat` composer/chip overrides. `chat-runtime.css` owns only base unscoped runtime/composer primitives. |
+| Asset versions | `asset-versions.json` | Owns launch-critical `?v=` values for `public/mmir.html`; update the manifest and keep `smoke-check-asset-version-manifest.js` green. |
 | Model picker | `composer-model-picker.js`, `composer-model-picker.css`, `model-selection.js`, `model-catalog-ui.js` | Show proven routes first; do not present planned/offline routes as active. |
 | Privacy/control | `privacy-controls.js`, `privacy-controls.css`, `route-display.js`, `active-node-strip.js`, `route-chips.js` | Keep route, privacy, cost and node truth consistent. |
 | Voice | `voice-controls.js`, `voice-controls.css` | Mic must respond truthfully; no silent dead control. |
