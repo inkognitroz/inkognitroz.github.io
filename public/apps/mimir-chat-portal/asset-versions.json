@@ -23,7 +23,7 @@
     "p0-chat-shell.css": "20260604-local-private-ready-v42",
     "p0-chat-shell.js": "20260604-p0-canonical-input-v1",
     "platform-status.js": "20260524-status-static-v1",
-    "public-launch-guard.js": "20260531-public-first-chat-v1",
+    "public-launch-guard.js": "20260604-hidden-capability-guard-v1",
     "quiet-first-paint-hotfix.js": "20260531-local-loopback-v1",
     "route-chips.js": "20260531-model-chip-v2",
     "route-display.js": "20260604-route-display-v1",
