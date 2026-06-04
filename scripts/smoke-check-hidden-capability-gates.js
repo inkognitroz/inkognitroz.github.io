@@ -58,15 +58,16 @@ for (const label of riskyLabels) {
 requireText(guard, 'function hideUnprovenCapabilities()', 'Public launch guard must expose hideUnprovenCapabilities().');
 requireText(guard, 'data-mimir-capability-state', 'Public launch guard must inspect capability-state gates.');
 requireText(guard, 'node.hidden=true', 'Public launch guard must force unproven capability panels hidden.');
+requireText(guard, 'node.inert=true', 'Public launch guard must mark unproven panels inert so their children cannot receive focus.');
 requireText(guard, "node.setAttribute('aria-hidden','true')", 'Public launch guard must mark unproven panels aria-hidden.');
 requireText(guard, 'hideUnprovenCapabilities();', 'Public launch guard must run the hidden-capability guard on init.');
 requireText(guard, 'window.MimirPublicLaunchGuard={forceManagedRoute,sanitizeBrokenChatHistory,hideUnprovenCapabilities,returnIntent}', 'Public launch guard API must expose the hidden-capability guard for test/debug visibility.');
 
-if (assetVersions['public-launch-guard.js'] !== '20260604-hidden-capability-guard-v1') {
+if (assetVersions['public-launch-guard.js'] !== '20260604-hidden-capability-inert-v1') {
   fail('public-launch-guard.js asset version must be bumped for the hidden capability guard.');
 }
 
-if (!html.includes('./apps/mimir-chat-portal/public-launch-guard.js?v=20260604-hidden-capability-guard-v1')) {
+if (!html.includes('./apps/mimir-chat-portal/public-launch-guard.js?v=20260604-hidden-capability-inert-v1')) {
   fail('public/mmir.html must load the cache-busted hidden capability guard.');
 }
 
