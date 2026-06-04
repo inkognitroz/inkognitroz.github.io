@@ -201,8 +201,8 @@ requireIncludes(files.p0Runtime, "allowLocalProbes('p0-local-chat'", 'P0 local c
 requireIncludes(files.p0Runtime, "targetAddressSpace='loopback'", 'P0 local connector checks must request loopback address-space permission.');
 requireIncludes(files.mmir, 'api-client.js?v=20260531-local-loopback-v1', 'API client cache must bust for Local Network Access loopback support.');
 requireIncludes(files.mmir, 'public-launch-guard.js?v=20260531-public-first-chat-v1', 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
-requireIncludes(files.mmir, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS cache must bust for public first-chat recovery.');
-requireIncludes(files.mmir, 'chat-workspace.css?v=20260531-public-first-chat-v1', 'Chat workspace CSS cache must bust for public first-chat recovery.');
+requireIncludes(files.mmir, 'chat-runtime.css?v=20260604-composer-css-owner-v1', 'Chat runtime CSS cache must bust for composer CSS ownership cleanup.');
+requireIncludes(files.mmir, 'chat-workspace.css?v=20260604-composer-css-owner-v1', 'Chat workspace CSS cache must bust for composer CSS ownership cleanup.');
 requireIncludes(files.mmir, 'chat-runtime.js?v=20260602-webgpu-shader-f16-v1', 'Chat runtime cache must bust for public UI capability cleanup, Browser WebGPU truth, Local Network Access loopback support and Mac installer link repair.');
 requireIncludes(files.mmir, 'active-node-strip.js?v=20260602-webgpu-shader-f16-v1', 'Active node strip cache must bust for Browser WebGPU shader-f16 labels.');
 requireIncludes(files.mmir, 'quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1', 'Quiet-first-paint guard must load Local Network Access loopback support.');
@@ -218,8 +218,7 @@ for (const selector of [
   '.mimir-public-chat :is(#runtime-node-chip,#runtime-privacy-chip,#runtime-tunnel-chip,#runtime-resource-chip){display:none!important',
   '.composer-live-chip[data-state="offline"]'
 ]) {
-  const target = selector.includes(':is(#runtime-node-chip') ? files.workspaceCss : files.runtimeCss;
-  requireNormalized(target, selector, `First screen chip visibility/style missing: ${selector}`);
+  requireNormalized(files.workspaceCss, selector, `First screen chip visibility/style missing: ${selector}`);
 }
 
 forbid(files.runtimeCss, /not\(\.mimir-has-chat\).*composer-live-cluster[^{}]*display\s*:\s*none/i, 'Pre-chat composer live cluster must stay visible.');

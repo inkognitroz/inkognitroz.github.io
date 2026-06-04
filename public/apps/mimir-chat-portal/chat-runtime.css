@@ -479,28 +479,6 @@ body.mimir-composer-dock-ready .composer-actions #new-backend {
 
 .mimir-public-chat .mimir-chat-runtime{order:3;width:min(820px,100%);margin:.2rem auto 0}
 .mimir-public-chat :is(.runtime-toolbar,.runtime-live-proof,.runtime-proof-rail,.runtime-proof-actions,.runtime-message-actions,.runtime-answer-context-receipt,.runtime-message-action-status),.mimir-chat-first :is(#runtime-context-controls,.runtime-model-helper){display:none!important}
-.mimir-public-chat .composer-mode-dock{position:static;display:grid;grid-template-areas:"tools" "live" "feedback";grid-template-columns:minmax(0,1fr);border-top:1px solid #e5e7eb;padding:.55rem .3rem .3rem}
-.mimir-public-chat:not(.mimir-has-chat) .composer-mode-dock{display:grid!important;grid-template-areas:"tools" "live" "feedback"!important;grid-template-columns:minmax(0,1fr)!important}
-.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster{display:flex!important;grid-area:tools!important;flex-wrap:wrap!important}
-.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster{display:flex!important;grid-area:live!important;flex-wrap:wrap!important}
-.mimir-public-chat:not(.mimir-has-chat) .composer-tool-cluster > :not(#composer-add-model):not([data-chat-mode="private"]){display:none!important}
-.mimir-public-chat:not(.mimir-has-chat) .composer-live-cluster > :not(#runtime-model-chip):not(#composer-voice-input){display:none!important}
 .mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions{display:none!important}
 .mimir-public-chat .mimir-topbar nav a:not([href="#mimir-prompt"]){display:none!important}
 .mimir-public-chat:not(.mimir-local-return) :is(#mimir-instant-start,#local-connector,#node-dashboard,#pwa-install,#platform-status,#backend-settings){display:none!important}
-.mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){flex-wrap:nowrap;min-width:0;row-gap:6px}
-.mimir-public-chat .composer-live-cluster{justify-content:flex-start}
-.mimir-public-chat #runtime-model-chip{max-width:min(360px,90vw)}
-/* Open WebUI-style quiet metadata: status chips are compact, low-contrast secondary info, not equal-weight buttons. */
-.mimir-public-chat .composer-live-chip{min-height:28px;padding:0 9px;font-size:.76rem;font-weight:600;background:#f8fafc;border-color:rgba(148,163,184,.22);color:#64748b}
-/* The model chip is the one actionable control, so it keeps more presence. */
-.mimir-public-chat #runtime-model-chip{font-size:.8rem;font-weight:650;color:#0f172a;background:#fff;border-color:rgba(100,116,139,.3)}
-.mimir-public-chat .composer-live-chip[data-state="ready"]{border-color:rgba(4,120,87,.22);background:#f0fdf4;color:#15803d}
-.mimir-public-chat .composer-live-chip[data-state="setup"],.mimir-public-chat .composer-live-chip[data-state="degraded"]{border-color:rgba(217,119,6,.24);background:#fffbeb;color:#b45309}
-.mimir-public-chat .composer-live-chip[data-state="offline"]{border-color:rgba(185,28,28,.22);background:#fff1f2;color:#b91c1c}
-/* Don't show empty telemetry: tunnel/resource chips appear only when a paired node exposes real state. */
-.mimir-public-chat #runtime-tunnel-chip[data-state="idle"],.mimir-public-chat #runtime-resource-chip[data-state="idle"]{display:none}
-.mimir-public-chat .composer-bar{border-top:0;display:flex;justify-content:flex-end}
-.mimir-public-chat .composer-actions{display:flex;width:auto}
-.mimir-public-chat .composer-actions :is(.btn,#primary-chat-link){width:44px;min-width:44px;min-height:44px;padding:0}
-@media(max-width:720px){.mimir-public-chat .composer-mode-dock{grid-template-areas:"tools" "live" "feedback";grid-template-columns:1fr}.mimir-public-chat :is(.composer-tool-cluster,.composer-live-cluster){display:flex;flex-wrap:wrap;row-gap:6px}.mimir-public-chat #runtime-model-chip{max-width:min(280px,78vw)}}

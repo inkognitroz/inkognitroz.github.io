@@ -226,8 +226,8 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(mmirPath, 'runtime-controls-fix.js?v=20260604-p0-css-guard-v1', 'Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), 'function p0ReadyShell()', 'Runtime controls hotfix must detect the protected P0 shell.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}", 'Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.');
-requireText(mmirPath, 'chat-runtime.css?v=20260531-public-first-chat-v1', 'Chat runtime CSS must be cache-busted for public first-chat recovery.');
-requireText(mmirPath, 'chat-workspace.css?v=20260531-public-first-chat-v1', 'Chat workspace CSS must be cache-busted for public first-chat recovery.');
+requireText(mmirPath, 'chat-runtime.css?v=20260604-composer-css-owner-v1', 'Chat runtime CSS must be cache-busted for composer CSS ownership cleanup.');
+requireText(mmirPath, 'chat-workspace.css?v=20260604-composer-css-owner-v1', 'Chat workspace CSS must be cache-busted for composer CSS ownership cleanup.');
 requireText(mmirPath, 'model-catalog-ui.js?v=20260531-no-rag-v1', 'Model catalog UI must be cache-busted after hiding unready public routes.');
 requireText(mmirPath, 'chat-runtime.js?v=20260602-webgpu-shader-f16-v1', 'Chat runtime must be cache-busted after Browser WebGPU shader-f16 gating.');
 requireText(mmirPath, 'composer-model-picker.js?v=20260602-webgpu-shader-f16-v1', 'Composer model picker must be cache-busted after Browser WebGPU shader-f16 gating.');
