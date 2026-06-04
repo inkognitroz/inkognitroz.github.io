@@ -196,6 +196,9 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Compare answers', 'P0 + menu must expose compare in user language after local discovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'data-p0-action="best-answer-live"', 'P0 + menu must expose Best Answer after local discovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best Answer', 'P0 + menu must expose the simple parallel-model synthesis action.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function intelligencePoolSummary()', 'P0 shell must summarize the live intelligence pool without adding a dashboard.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'aria-label="Intelligence pool status"', 'P0 menus must expose a discreet intelligence pool status.');
+requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Single route now', 'P0 intelligence pool must be honest before local discovery.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'formatDuration', 'P0 answers must expose route timing.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function scoreClassSummary(score)', 'P0 Best Answer receipts must surface route answer/latency classes.');
