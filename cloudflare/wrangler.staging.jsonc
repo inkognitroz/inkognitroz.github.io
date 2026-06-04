@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mmir-web-staging",
+  "main": "staging-web.worker.js",
+  "compatibility_date": "2026-06-04",
+  "assets": {
+    "directory": "../public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  "routes": [
+    {
+      "pattern": "staging.mmir.ai",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
