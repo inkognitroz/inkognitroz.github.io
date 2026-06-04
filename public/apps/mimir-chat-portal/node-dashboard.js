@@ -140,7 +140,7 @@
     const arch=String(hardware?.arch||navigator.userAgent||'').toLowerCase();
     if(platform.includes('raspberry')||arch.includes('arm')&&platform.includes('linux'))return {label:'Raspberry Pi / Linux ARM',installer:'./downloads/mmir-local-connector-install.html',model:'qwen3:0.6b',note:'Use the Linux installer; it detects raspberry-pi and keeps starter models small.'};
     if(platform.includes('linux'))return {label:'Linux / VM',installer:'./downloads/mmir-local-connector-linux.sh',model:'qwen3:0.6b',note:'Run the Linux connector on the VM or local device, then refresh this dashboard.'};
-    if(platform.includes('mac'))return {label:'macOS',installer:'./downloads/mmir-local-connector-mac.command',model:'llama3.2:1b',note:'Use the signed-free command installer path; DMG remains optional until published.'};
+    if(platform.includes('mac'))return {label:'macOS',installer:'./downloads/mmir-local-connector-install.html#terminal-install',model:'gemma3:270m',note:'Use the Terminal curl command. ZIP, .command and DMG artifacts are advanced fallbacks until signing/notarization is production-ready.'};
     if(platform.includes('win'))return {label:'Windows',installer:'./downloads/mmir-local-connector-windows.cmd',model:'llama3.2:1b',note:'Use the Windows bootstrap, keep the connector on 127.0.0.1, then refresh.'};
     return {label:'This device',installer:'./downloads/mmir-local-connector-install.html',model:'qwen3:0.6b',note:'Use the universal installer, then return here for pairing and model proof.'};
   }

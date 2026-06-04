@@ -85,7 +85,7 @@
       "path": "/downloads/mmir-local-connector-windows.ps1",
       "sha256": "c1a28e9beeb9b862f139a3773b12d220959fe92b9025e3f9826d4991ad10a63c",
       "recommended": true,
-      "note": "Recommended Mac/Linux bootstrap. Run from Terminal to avoid macOS Gatekeeper blocking an unsigned downloaded .command file."
+      "note": "Recommended Windows PowerShell installer. The wrapper uses Windows-safe execution and keeps provider secrets out of the public frontend."
     },
     {
       "id": "linux-shell",
