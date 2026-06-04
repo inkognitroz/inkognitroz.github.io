@@ -63,6 +63,10 @@
   let pendingStarterHandoff=null;
   let pendingAutoFirstAnswer=false;
 
+  function p0ReadyShell(){
+    return Boolean(document.body?.classList.contains('mmir-p0-ready')||document.getElementById('mmir-p0-app'));
+  }
+
   function readProfiles(){return api.readProfiles();}
   function activeId(){return api.activeId();}
   function activeProfile(){return api.activeProfile();}
@@ -2414,6 +2418,12 @@
   }
 
   function init(){
+    if(p0ReadyShell()){
+      window.__MimirLegacyRuntimeSkippedForP0=true;
+      document.body.dataset.mimirLegacyRuntime='skipped-p0';
+      window.dispatchEvent(new CustomEvent('mmir-legacy-runtime-skipped',{detail:{reason:'p0-ready-shell'}}));
+      return;
+    }
     if(!promptEl||!formEl)return;
     installRuntimeUi();
     ensureSendControl();
