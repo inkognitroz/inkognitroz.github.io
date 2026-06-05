@@ -272,7 +272,10 @@ requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs',
 forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'models_available: readiness.models_available', 'Standalone connector status must expose UI-ready model availability.');
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'model_count: readiness.model_count', 'Standalone connector status must expose model count.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'chat_ready: readiness.chat_ready', 'Standalone connector status must expose actual paired chat readiness.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'chat_ready: readiness.chat_ready', 'Standalone connector status must expose local runtime chat readiness.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'local_chat_ready: readiness.local_chat_ready', 'Standalone connector status must expose local runtime chat readiness explicitly.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'browser_chat_ready: readiness.browser_chat_ready', 'Standalone connector status must distinguish current browser pairing readiness.');
+requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'requires_pairing_for_browser_chat: readiness.requires_pairing_for_browser_chat', 'Standalone connector status must expose pairing-required state without reporting the node offline.');
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'runtime_chat_ready', 'Standalone connector status must distinguish runtime capacity from paired chat readiness.');
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), "visibility: paired ? 'paired' : 'public-safe'", 'Standalone connector status must keep installed model names paired-only.');
 if (!existsSync(macConnectorZipPath)) fail('Published Mac Connector ZIP must exist for reliable browser download.');

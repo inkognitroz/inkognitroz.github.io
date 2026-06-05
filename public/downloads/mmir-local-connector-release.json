@@ -34,7 +34,7 @@
       "platform": "shared",
       "kind": "node-server",
       "path": "/downloads/mmir-local-connector-server.mjs",
-      "sha256": "1fca82c96fdbff3511da3cb71662a2fc8611aae011b20439215660c58813f351",
+      "sha256": "3da7310de2456a68081c015eae7c46ea87b636b7724285c18fb964c6ff675508",
       "contract_version": "0.1",
       "required": true
     },
@@ -137,7 +137,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-06-04T11:49:43.782Z",
+    "verified_at": "2026-06-05T05:59:19.432Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",
