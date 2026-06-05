@@ -44,9 +44,13 @@ if (
   !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}cleanShell();fixSend();dockPrimarySend();") &&
   !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}cleanShell();fixSend();dockPrimarySend();') &&
   !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}cleanShell();fixSend();dockPrimarySend();") &&
-  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}cleanShell();fixSend();dockPrimarySend();')
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}cleanShell();fixSend();dockPrimarySend();') &&
+  !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();") &&
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();') &&
+  !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();") &&
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();')
 ) {
-  fail('Runtime hotfix run() must keep the P0-ready return before cleanShell(), fixSend() and dockPrimarySend().');
+  fail('Runtime hotfix run() must keep the P0-ready return before cleanShell(), delegated fixPrimarySend() and dockPrimarySend().');
 }
 
 if (count(runtimeHotfix, /cleanShell\(/g) !== 2) {

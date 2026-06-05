@@ -65,6 +65,12 @@ const runtimeControlsFixPath = join(
   "mimir-chat-portal",
   "runtime-controls-fix.js",
 );
+const runtimeMobileAnchorsPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "runtime-mobile-anchors.js",
+);
 const modelCatalogPath = join(publicDir, "ai-model-catalog.json");
 const freeModelStartersPath = join(publicDir, "free-model-starters.json");
 const macConnectorInstallerPath = join(
@@ -884,6 +890,11 @@ requireText(
 );
 requireText(
   mmirPath,
+  assetRef("runtime-mobile-anchors.js"),
+  "Runtime mobile anchors must be cache-busted after split from runtime controls.",
+);
+requireText(
+  mmirPath,
   assetRef("runtime-controls-fix.js"),
   "Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.",
 );
@@ -896,6 +907,11 @@ requireText(
   runtimeControlsFixPath,
   "function p0ReadyShell()",
   "Runtime controls hotfix must detect the protected P0 shell.",
+);
+requireText(
+  runtimeMobileAnchorsPath,
+  "MimirRuntimeMobileAnchors",
+  "Runtime mobile anchors module must expose its delegated ownership API.",
 );
 requireCompactAny(
   runtimeControlsFixPath,

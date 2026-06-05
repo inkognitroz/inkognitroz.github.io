@@ -7,16 +7,19 @@ const portalDir = join(root, "public", "apps", "mimir-chat-portal");
 const hotfixPath = join(portalDir, "runtime-controls-fix.js");
 const factGuardPath = join(portalDir, "runtime-fact-answer-guard.js");
 const labelNormalizerPath = join(portalDir, "runtime-label-normalizer.js");
+const mobileAnchorsPath = join(portalDir, "runtime-mobile-anchors.js");
 const ownershipPath = join(portalDir, "MODULE_OWNERSHIP.md");
 const packagePath = join(root, "package.json");
 const hotfix = readFileSync(hotfixPath, "utf8");
 const factGuard = readFileSync(factGuardPath, "utf8");
 const labelNormalizer = readFileSync(labelNormalizerPath, "utf8");
+const mobileAnchors = readFileSync(mobileAnchorsPath, "utf8");
 const ownership = readFileSync(ownershipPath, "utf8");
 const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
 const compact = hotfix.replace(/\s+/g, "");
 const factCompact = factGuard.replace(/\s+/g, "");
 const labelCompact = labelNormalizer.replace(/\s+/g, "");
+const mobileCompact = mobileAnchors.replace(/\s+/g, "");
 const failures = [];
 
 function fail(message) {
@@ -38,8 +41,6 @@ function count(pattern) {
 [
   "cleanShell",
   "dockPrimarySend",
-  "bindPrimaryAnchors",
-  "handleMobileTap",
   "label",
   "run",
 ].forEach((name) =>
@@ -61,6 +62,21 @@ function count(pattern) {
     labelNormalizer,
     `function ${name}(`,
     `runtime-label-normalizer must keep named ${name}() ownership.`,
+  ),
+);
+[
+  "bindPrimaryAnchors",
+  "fixPrimarySend",
+  "focusChatTarget",
+  "handleMobileTap",
+  "markMobileFirstChatReady",
+  "openHash",
+  "openTarget",
+].forEach((name) =>
+  requireText(
+    mobileAnchors,
+    `function ${name}(`,
+    `runtime-mobile-anchors must keep named ${name}() ownership.`,
   ),
 );
 
@@ -85,9 +101,19 @@ requireText(
   "MODULE_OWNERSHIP.md must name runtime-label-normalizer.js.",
 );
 requireText(
+  ownership,
+  "runtime-mobile-anchors.js",
+  "MODULE_OWNERSHIP.md must name runtime-mobile-anchors.js.",
+);
+requireText(
   hotfix,
   "function p0ReadyShell()",
   "runtime-controls-fix must keep an explicit P0 ownership guard.",
+);
+requireText(
+  hotfix,
+  "MimirRuntimeMobileAnchors",
+  "runtime-controls-fix must delegate mobile/hash anchor ownership.",
 );
 if (
   !compact.includes(
@@ -144,8 +170,21 @@ if (
 ) {
   fail("runtime-label-normalizer must not observe the full document.");
 }
+if (
+  /observe\((?:d\.body|document\.body|d\.documentElement|document\.documentElement)/.test(
+    mobileAnchors,
+  )
+) {
+  fail("runtime-mobile-anchors must not observe the full document.");
+}
 if (!labelCompact.includes("w.MimirRuntimeLabels={")) {
   fail("runtime-label-normalizer must expose MimirRuntimeLabels for the hotfix caller.");
+}
+if (!mobileCompact.includes("w.MimirRuntimeMobileAnchors={")) {
+  fail("runtime-mobile-anchors must expose MimirRuntimeMobileAnchors for the hotfix caller.");
+}
+if (/function\s+(bindPrimaryAnchors|handleMobileTap|openHash|openTarget)\s*\(/.test(hotfix)) {
+  fail("runtime-controls-fix must not take mobile/hash anchor ownership back.");
 }
 forbid(
   /querySelectorAll\(['"]\*['"]\)/,
