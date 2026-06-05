@@ -330,7 +330,7 @@
     if(command){
       append(
         'assistant',
-        localInstallIntro(os)+'\n\nAfter it says "MMIR Local Connector is ready", return here and press + -> Find local models. If the browser asks, allow Local Network Access for mmir.ai.',
+        localInstallIntro(os)+'\n\nAfter it says "MMIR Local Connector is ready", return here and press + -> Find models. If the browser asks, allow Local Network Access for mmir.ai.',
         'Supergenious',
         'Local connector setup · no paid route',
         {
@@ -516,11 +516,11 @@
   function localNetworkHint(error){
     const message=String(error?.message||error||'');
     if(/local_probe_deferred/i.test(message)){
-      return 'Local connector check was deferred. Press Find local models again to allow this browser to check this Mac.';
+      return 'Local connector check was deferred. Press Find models again to allow this browser to check this Mac.';
     }
     if(error?.name==='AbortError')return 'Local connector timed out. Check that MMIR Local Connector and Ollama are running.';
     if(/Failed to fetch|NetworkError|Load failed|blocked|CORS/i.test(message)){
-      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Find local models again. The connector stays on 127.0.0.1.';
+      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Find models again. The connector stays on 127.0.0.1.';
     }
     return message||'Local connector is not reachable yet.';
   }
@@ -643,25 +643,6 @@
     return {detail:'Private local model',tags:['Private','Local'],quality:'local-general',score:60};
   }
 
-  function modelBadges(model){
-    const tags=Array.isArray(model?.tags)?model.tags:[];
-    return tags.slice(0,4).map(tag=>'<span class="p0-badge">'+safeText(tag)+'</span>').join('');
-  }
-
-  function modelChoiceBadges(model,bestLocal){
-    const tags=[];
-    if(model?.route==='hosted')tags.push('Best default');
-    if(bestLocal&&model?.id===bestLocal.id)tags.push('Best local');
-    if(model?.quality==='weak-facts')tags.push('Weak facts');
-    if(model?.quality==='best-local-starter')tags.push('Starter');
-    return tags
-      .concat(Array.isArray(model?.tags)?model.tags:[])
-      .filter((tag,index,list)=>tag&&list.indexOf(tag)===index)
-      .slice(0,5)
-      .map(tag=>'<span class="p0-badge">'+safeText(tag)+'</span>')
-      .join('');
-  }
-
   function bestLocalModel(){
     return rankedModels(state.models.filter(model=>model.route==='local'))[0]||null;
   }
@@ -681,23 +662,11 @@
       hostedRoutes:hosted.length,
       localRoutes:local.length,
       compareReady,
+      stateLabel:compareReady?'Best Answer ready':'Single route now',
       bestLocalLabel:bestLocal?.label||'',
       localHardware,
       details
     };
-  }
-
-  function renderIntelligencePoolHint(){
-    const pool=intelligencePoolSummary();
-    const badges=[
-      pool.liveRoutes+' live route'+(pool.liveRoutes===1?'':'s'),
-      pool.compareReady?'Best Answer ready':'Single route now',
-      pool.localRoutes?pool.localRoutes+' local':'local optional'
-    ];
-    return '<div class="p0-routing-hint p0-intelligence-pool" aria-label="Intelligence pool status">'+
-      '<span class="p0-menu-row"><strong>Intelligence pool</strong>'+badges.map(badge=>'<span class="p0-badge">'+safeText(badge)+'</span>').join('')+'</span>'+
-      '<small>'+safeText(pool.details+(pool.localHardware?' '+pool.localHardware:''))+'</small>'+
-    '</div>';
   }
 
   function compareLocalModel(preferredLocalModel=null){
@@ -813,19 +782,18 @@
     return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),score.reason].filter(Boolean).join(' · ');
   }
 
-  function modelRankBadges(model,bestLocal,rank){
+  function compactModelBadges(model,bestLocal){
     const badges=[];
-    if(rank)badges.push('Rank #'+rank);
-    badges.push('Score '+effectiveModelScore(model));
-    if(model?.route==='hosted')badges.push('Best default');
+    if(model?.id===state.activeModelId)badges.push('Selected');
+    if(model?.route==='hosted')badges.push('Default');
+    if(model?.route==='local')badges.push('Private');
     if(bestLocal&&model?.id===bestLocal.id)badges.push('Best local');
-    const stateLabel=routeRankState(model);
-    if(stateLabel==='demoted')badges.push('Demoted');
-    else if(stateLabel==='slow')badges.push('Slow');
-    else if(stateLabel==='strong')badges.push('Strong');
+    const rankState=routeRankState(model);
+    if(rankState==='demoted')badges.push('Demoted');
+    else if(rankState==='slow')badges.push('Slow');
     return badges
       .filter((tag,index,list)=>tag&&list.indexOf(tag)===index)
-      .slice(0,5)
+      .slice(0,2)
       .map(tag=>'<span class="p0-badge p0-badge-'+safeAttr(String(tag).toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'">'+safeText(tag)+'</span>')
       .join('');
   }
@@ -1027,7 +995,7 @@
       renderToolbar();
       if(!quiet){
         status(state.localError,'error');
-        routeStatus('Local access blocked · Allow Local Network Access, then Find local models','error');
+        routeStatus('Local access blocked · Allow Local Network Access, then Find models','error');
       }
       throw error;
     }
@@ -1253,15 +1221,14 @@
     const menu=menuEl('add');
     const compareModel=bestLocalModel();
     const compareAction=compareModel?(
-      '<button class="p0-featured-action" type="button" data-p0-action="best-answer-live"><span class="p0-menu-row"><strong>Best Answer</strong><span class="p0-badge">2 routes</span><span class="p0-badge">Synthesis</span></span><small>Supergenious + '+safeText(compareModel.label)+' answer in parallel, then MMIR gives one best answer.</small></button>'+
-      '<button type="button" data-p0-action="compare-live"><span class="p0-menu-row"><strong>Compare answers</strong><span class="p0-badge">Side by side</span></span><small>See both route answers before the synthesis.</small></button><div class="p0-menu-separator"></div>'
+      '<button class="p0-featured-action" type="button" data-p0-action="best-answer-live"><span class="p0-menu-row"><strong>Best Answer</strong><span class="p0-badge">2 routes</span></span><small>Ask Supergenious and '+safeText(compareModel.label)+', then synthesize one answer.</small></button>'+
+      '<button type="button" data-p0-action="compare-live"><span class="p0-menu-row"><strong>Compare answers</strong></span><small>Show both answers side by side.</small></button><div class="p0-menu-separator"></div>'
     ):'';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Tools</div>'+
-      renderIntelligencePoolHint()+
       compareAction+
-      '<button type="button" data-p0-action="connect-local"><strong>Connect local model</strong><small>Supergenious detects your OS or asks, then gives the right install command in chat.</small></button>'+
-      '<button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>'+
+      '<button type="button" data-p0-action="connect-local"><strong>Add model</strong><small>Local model setup. I will detect this device and give the install command here in chat.</small></button>'+
+      '<button type="button" data-p0-action="check-local"><strong>Find models</strong><small>Refresh after the connector says ready.</small></button>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
   }
@@ -1270,28 +1237,22 @@
     const menu=menuEl('model');
     if(!menu)return;
     const local=bestLocalModel();
-    const smartHint=local?(
-      '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Auto</span></span><small>Public facts use Supergenious. Private/local prompts use '+safeText(local.label)+'. Compare prompts use two routes.</small></div>'
-    ):(
-      '<div class="p0-routing-hint"><span class="p0-menu-row"><strong>Smart routing</strong><span class="p0-badge">Ready</span></span><small>Supergenious is the default. Connect local models to add private routing.</small></div>'
-    );
-    const capacityHint=local&&state.localHardware?(
-      '<div class="p0-routing-hint p0-capacity-hint"><span class="p0-menu-row"><strong>Local capacity</strong><span class="p0-badge">Live</span></span><small>'+safeText(state.localHardware.summary)+'</small></div>'
-    ):'';
     const rankMap=routeRankMap();
     const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'));
     const renderButtons=(models)=>models.map(model=>{
-      const selected=model.id===state.activeModelId?'Selected':'';
       const benchmark=routeBenchmarkSummary(model);
-      return '<button type="button" data-model-id="'+safeText(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+modelRankBadges(model,local,rankMap[model.id])+modelChoiceBadges(model,local)+'</span><small>'+safeText([selected,model.detail,benchmark].filter(Boolean).join(' · '))+'</small></button>';
+      const shortDetail=model.route==='local'
+        ? ['Private · This Mac',benchmark].filter(Boolean).join(' · ')
+        : 'Free · '+API_LABEL;
+      return '<button type="button" data-model-id="'+safeText(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
     }).join('');
     const buttons=''+
-      '<div class="p0-menu-section">Recommended</div>'+renderButtons(hostedModels)+
+      renderButtons(hostedModels)+
       (localModels.length?'<div class="p0-menu-section">Private local models</div>'+renderButtons(localModels):'');
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-separator"></div><button type="button" data-p0-action="check-local"><strong>Find local models</strong><small>If the browser asks, allow Local Network Access for mmir.ai.</small></button>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+renderIntelligencePoolHint()+smartHint+capacityHint+'<div class="p0-menu-separator"></div>'+buttons+localHint;
+      '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
@@ -1308,14 +1269,9 @@
     const route=model.route==='local'?'Private local model':'Supergenious hosted route';
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     const receipt=routeReceipt(model);
-    const localCount=state.models.filter(item=>item.route==='local').length;
-    const localReady=localCount?
-      '<button type="button"><strong>Private local ready</strong><small>'+safeText(localCount+' model'+(localCount===1?'':'s')+' available on this Mac. Select one from Models or use Best Answer.')+'</small></button>':
-      '<button type="button"><strong>Private local optional</strong><small>Use + -> Connect local model when you want private models on this Mac.</small></button>';
     menu.innerHTML=''+
       '<div class="p0-menu-title">Privacy</div>'+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
-      localReady+
       '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';
   }
@@ -1695,7 +1651,7 @@
       return;
     }
     if(explicit?.mode==='missing-local'){
-      status('Find local models first, then use @supergenius @gemma for compare.','error');
+      status('Find models first, then use @supergenius @gemma for compare.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
       return;
@@ -1783,7 +1739,7 @@
     const send=document.getElementById('p0-send');
     const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
-      status('Find local models first, then '+title+' can use two routes.','error');
+      status('Find models first, then '+title+' can use two routes.','error');
       input?.focus();
       return;
     }

@@ -58,26 +58,26 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  'After it says "MMIR Local Connector is ready", return here and press + -> Find local models.',
+  'After it says "MMIR Local Connector is ready", return here and press + -> Find models.',
   'Install instructions must tell the user exactly how to return to model discovery.'
 );
 
 requireIncludes(
   handleMenuSource,
   "if(action==='connect-local')",
-  '+ -> Connect local model must remain a first-class menu action.'
+  '+ -> Add model must remain a first-class menu action.'
 );
 requireOrder(
   handleMenuSource,
   "if(action==='connect-local')",
   'startLocalInstallAssistant();',
-  '+ -> Connect local model must call the chat-native install assistant.'
+  '+ -> Add model must call the chat-native install assistant.'
 );
 requireOrder(
   handleMenuSource,
   "if(action==='check-local')",
   'checkLocalModels().catch(()=>{});',
-  '+ -> Find local models must stay a separate explicit discovery step after install.'
+  '+ -> Find models must stay a separate explicit discovery step after install.'
 );
 forbidPattern(
   handleMenuSource,
