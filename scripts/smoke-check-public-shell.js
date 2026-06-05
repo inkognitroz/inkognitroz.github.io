@@ -834,6 +834,31 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-message-actions",
+  "P0 assistant answers must expose subtle answer actions.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'data-p0-message-action="copy"',
+  "P0 answer actions must include copy.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'data-p0-message-action="retry"',
+  "P0 answer actions must include retry.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'data-p0-message-action="share-safe"',
+  "P0 answer actions must include share-safe draft.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1'",
+  "P0 share-safe must store only a local safe draft.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
   "overscroll-behavior: contain",
   "P0 transcript must be an independently scrollable answer pane.",
 );

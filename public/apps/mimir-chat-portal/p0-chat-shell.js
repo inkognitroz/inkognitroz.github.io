@@ -13,6 +13,7 @@
   const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
+  const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
   const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
   const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
@@ -91,8 +92,12 @@
       .filter(validMessage)
       .filter(message=>!staleFailureMessage(message))
       .filter(message=>!transientInstallMessage(message))
-      .slice(-MAX_HISTORY);
-    if(clean.length!==raw.length)writeJson(HISTORY_KEY,clean);
+      .slice(-MAX_HISTORY)
+      .map(message=>({
+        ...message,
+        id:message.id||makeMessageId()
+      }));
+    if(clean.length!==raw.length||clean.some((message,index)=>message.id!==raw[index]?.id))writeJson(HISTORY_KEY,clean);
     return clean;
   }
 
@@ -226,6 +231,58 @@
     return safeText(value);
   }
 
+  function makeMessageId(){
+    return 'p0-'+Date.now().toString(36)+'-'+Math.random().toString(16).slice(2,8);
+  }
+
+  function messageById(id){
+    return state.messages.find(message=>String(message.id||'')===String(id||''))||null;
+  }
+
+  function previousUserMessageFor(message){
+    const index=state.messages.indexOf(message);
+    if(index<0)return null;
+    for(let i=index-1;i>=0;i-=1){
+      if(state.messages[i]?.role==='user')return state.messages[i];
+    }
+    return null;
+  }
+
+  function redactShareText(value){
+    return String(value||'')
+      .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g,'[redacted private key]')
+      .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}\b/gi,'Bearer [redacted]')
+      .replace(/\b(?:sk|or|ghp|github_pat|cf|xoxb)[A-Za-z0-9_:\-]{16,}\b/g,'[redacted token]')
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[redacted email]')
+      .replace(/\b(password|token|secret|api[_-]?key)\s*[:=]\s*[^,\s)]+/gi,'$1=[redacted]')
+      .slice(0,8000);
+  }
+
+  async function writeClipboard(text){
+    try{
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    }catch(error){}
+    const textarea=document.createElement('textarea');
+    textarea.value=text;
+    textarea.setAttribute('readonly','');
+    textarea.style.position='fixed';
+    textarea.style.left='-9999px';
+    textarea.style.top='0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try{
+      return document.execCommand('copy');
+    }catch(error){
+      return false;
+    }finally{
+      textarea.remove();
+    }
+  }
+
   function paragraphs(text){
     return String(text||'')
       .split(/\n{2,}/)
@@ -280,7 +337,8 @@
           variant:'install',
           command,
           commandLabel:'Copy command',
-          installOs:os
+          installOs:os,
+          actions:false
         }
       );
       status('Local connector command ready.','ready');
@@ -294,7 +352,8 @@
       'Local connector setup · no paid route',
       {
         variant:'install',
-        showOsChoices:true
+        showOsChoices:true,
+        actions:false
       }
     );
     status('Choose host OS for local model.','ready');
@@ -1061,6 +1120,16 @@
         copyCommand(copyButton.getAttribute('data-p0-copy-command')||'',copyButton);
         return;
       }
+      const messageAction=event.target.closest('[data-p0-message-action]');
+      if(messageAction){
+        event.preventDefault();
+        event.stopPropagation();
+        handleMessageAction(
+          messageAction.getAttribute('data-p0-message-action')||'',
+          messageAction.getAttribute('data-p0-message-id')||''
+        );
+        return;
+      }
       const osButton=event.target.closest('[data-p0-os-command]');
       if(osButton){
         event.preventDefault();
@@ -1310,6 +1379,99 @@
     return html;
   }
 
+  function answerActionsAllowed(message){
+    const content=String(message?.content||'').trim();
+    if(message?.role!=='assistant')return false;
+    if(message?.actions===false)return false;
+    if(message?.command||message?.showOsChoices||message?.variant==='install')return false;
+    if(!content)return false;
+    if(/^(Thinking|Synthesizing best answer)\.\.\.$/i.test(content))return false;
+    return true;
+  }
+
+  function renderMessageActions(message){
+    if(!answerActionsAllowed(message))return '';
+    const id=safeAttr(message.id||'');
+    return '<div class="p0-message-actions" aria-label="Answer actions">'+
+      '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'">Copy</button>'+
+      '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'">Retry</button>'+
+      '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'">Share safe</button>'+
+      '<span id="p0-action-status-'+id+'" class="p0-message-action-status" aria-live="polite"></span>'+
+    '</div>';
+  }
+
+  function setMessageActionStatus(id,message,stateValue='ready'){
+    const el=document.getElementById('p0-action-status-'+String(id||''));
+    if(el){
+      el.textContent=message||'';
+      el.dataset.state=stateValue;
+    }
+    if(message)status(message,stateValue==='error'?'error':'ready');
+  }
+
+  async function copyMessage(message){
+    const ok=await writeClipboard(message.content||'');
+    setMessageActionStatus(message.id,ok?'Copied.':'Copy blocked. Select the answer manually.',ok?'ready':'error');
+  }
+
+  function retryMessage(message){
+    if(state.busy){
+      setMessageActionStatus(message.id,'Wait for the current answer first.','error');
+      return;
+    }
+    const prompt=String(message.retryPrompt||previousUserMessageFor(message)?.content||'').trim();
+    const input=document.getElementById('p0-input');
+    if(!prompt||!input){
+      setMessageActionStatus(message.id,'No original prompt to retry.','error');
+      return;
+    }
+    input.value=prompt;
+    autosizeInput();
+    setMessageActionStatus(message.id,'Retrying...','ready');
+    sendMessage();
+  }
+
+  async function shareSafeMessage(message){
+    const user=previousUserMessageFor(message);
+    const draft=[
+      'MMIR answer draft',
+      '',
+      user?'Prompt: '+redactShareText(user.content):'Prompt: [not available]',
+      '',
+      'Answer: '+redactShareText(message.content),
+      '',
+      'Route: '+redactShareText(message.receipt||'MMIR')
+    ].join('\n');
+    writeJson(SHARE_DRAFT_KEY,{
+      createdAt:new Date().toISOString(),
+      messageId:message.id,
+      draft
+    });
+    const ok=await writeClipboard(draft);
+    setMessageActionStatus(message.id,ok?'Safe draft copied.':'Safe draft saved locally.',ok?'ready':'error');
+  }
+
+  function handleMessageAction(action,id){
+    const message=messageById(id);
+    if(!message||!answerActionsAllowed(message)){
+      status('Answer action is not available for this message.','error');
+      return;
+    }
+    if(action==='copy'){
+      copyMessage(message);
+      return true;
+    }
+    if(action==='retry'){
+      retryMessage(message);
+      return true;
+    }
+    if(action==='share-safe'){
+      shareSafeMessage(message);
+      return true;
+    }
+    return false;
+  }
+
   function renderTranscript(){
     const root=document.getElementById('p0-transcript');
     if(!root)return;
@@ -1318,10 +1480,11 @@
       return;
     }
     root.innerHTML=state.messages.map(message=>(
-      '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'">'+
+      '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'">'+
         '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
         renderReceipt(message.receipt)+
         '<div class="p0-message-body">'+paragraphs(message.content)+renderMessageTools(message)+'</div>'+
+        renderMessageActions(message)+
       '</article>'
     )).join('');
     requestAnimationFrame(()=>{root.scrollTop=root.scrollHeight;});
@@ -1354,6 +1517,7 @@
 
   function append(role,content,label,receipt,meta={}){
     const message={
+      id:meta.id||makeMessageId(),
       role,
       content:String(content||''),
       label:label||role,
@@ -1363,6 +1527,8 @@
       commandLabel:meta.commandLabel||'',
       installOs:meta.installOs||'',
       showOsChoices:Boolean(meta.showOsChoices),
+      actions:meta.actions===false?false:true,
+      retryPrompt:meta.retryPrompt||'',
       createdAt:new Date().toISOString()
     };
     state.messages.push(message);
@@ -1548,7 +1714,7 @@
     const model=smart.model;
     const routePrompt=smart.prompt||prompt;
     const receipt=routeReceipt(model);
-    const assistant=append('assistant','Thinking...',model.label,receipt.text);
+    const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
     const routePrefix=smart.reason?smart.reason+' · ':'';
     status(routePrefix+model.label+' is answering...','ready');
     routeStatus(routePrefix+receipt.text,receipt.state);
@@ -1635,8 +1801,8 @@
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
     const localQualityNote=wantsPublicFactRoute(prompt)?' · Local facts may be stale':'';
-    const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare'});
-    const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare'});
+    const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare',retryPrompt:prompt});
+    const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare',retryPrompt:prompt});
     let hostedAnswerText='';
     let localAnswerText='';
     let hostedScore=null;
@@ -1696,7 +1862,7 @@
     if(hostedAnswerText||localAnswerText){
       const winner=finalWinner||winningRoute(hostedModel,hostedScore,localModel,localScore);
       const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+scoringSource+' · '+winner.summary;
-      const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare'});
+      const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
       const synthesisStarted=performance.now();
       try{
         const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore);
