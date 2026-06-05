@@ -1,6 +1,6 @@
 {
   "scope": "public/mmir.html launch-critical chat assets",
-  "updated": "2026-06-04",
+  "updated": "2026-06-05",
   "assets": {
     "active-node-strip.js": "20260604-route-display-consumers-v1",
     "api-client.js": "20260531-local-loopback-v1",
@@ -27,9 +27,10 @@
     "quiet-first-paint-hotfix.js": "20260531-local-loopback-v1",
     "route-chips.js": "20260604-route-display-consumers-v1",
     "route-display.js": "20260604-route-display-v1",
-    "runtime-controls-fix.js": "20260604-p0-css-guard-v1",
+    "runtime-controls-fix.js": "20260605-label-normalizer-v1",
     "runtime-controls-webgpu-truth.js": "20260531-webgpu-truth-v2",
     "runtime-fact-answer-guard.js": "20260605-fact-answer-guard-v1",
+    "runtime-label-normalizer.js": "20260605-label-normalizer-v1",
     "runtime-legacy-installer-guard.js": "20260531-mac-installer-v1"
   }
 }
