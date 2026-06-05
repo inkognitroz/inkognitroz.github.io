@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install test dependencies
+        run: npm ci
+
       - name: Validate JSON files
         run: |
           set -euo pipefail
@@ -52,3 +55,17 @@ jobs:
 
       - name: Smoke check public shell
         run: node scripts/smoke-check-public-shell.js
+
+      - name: Install responsive browser
+        run: npx playwright install chromium
+
+      - name: Responsive P0 render check
+        run: npm run check:responsive
+
+      - name: Upload responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-responsive-screenshots
+          path: test-results/p0-responsive
+          if-no-files-found: ignore
