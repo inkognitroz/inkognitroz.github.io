@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import {
   dirname,
   extname,
@@ -104,6 +105,11 @@ const connectorReleasePath = join(
   "downloads",
   "mmir-local-connector-release.json",
 );
+const connectorServerPath = join(
+  publicDir,
+  "downloads",
+  "mmir-local-connector-server.mjs",
+);
 const assetVersionManifestPath = join(
   publicDir,
   "apps",
@@ -144,6 +150,21 @@ function forbidText(file, needle, message) {
 function requireCompactAny(file, needles, message) {
   const compact = read(file).replace(/\s+/g, "");
   if (!needles.some((needle) => compact.includes(needle))) fail(message);
+}
+
+function sha256Text(file) {
+  return createHash("sha256")
+    .update(read(file).replace(/\r\n/g, "\n"), "utf8")
+    .digest("hex");
+}
+
+function artifactSha(manifest, id) {
+  const artifact = manifest.artifacts?.find((item) => item.id === id);
+  if (!artifact?.sha256) {
+    fail(`Release manifest missing sha256 for ${id}`);
+    return "";
+  }
+  return artifact.sha256;
 }
 
 let assetVersions;
@@ -1059,6 +1080,19 @@ requireText(
   connectorReleasePath,
   '"source_repository": "inkognitroz/mmir-local-connector"',
   "Mac DMG metadata must point to the canonical local connector repo.",
+);
+const connectorManifest = JSON.parse(read(connectorReleasePath) || "{}");
+const connectorServerSha = sha256Text(connectorServerPath);
+const manifestServerSha = artifactSha(connectorManifest, "connector-server");
+if (connectorServerSha !== manifestServerSha) {
+  fail(
+    "Release manifest connector-server sha256 must match mmir-local-connector-server.mjs.",
+  );
+}
+requireText(
+  macConnectorInstallerPath,
+  `SERVER_SHA256="\${MMIR_LOCAL_CONNECTOR_SERVER_SHA256:-${connectorServerSha}}"`,
+  "Mac connector installer must embed the current connector server SHA-256 so the public Terminal install path does not fail after the bootstrap checksum passes.",
 );
 forbidText(
   connectorReleasePath,
