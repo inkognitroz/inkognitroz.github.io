@@ -229,6 +229,48 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   margin-bottom: 0;
 }
 
+.p0-message-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+  opacity: 0.74;
+}
+
+.p0-message-actions button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  min-height: 28px;
+  padding: 0 8px;
+}
+
+.p0-message-actions button:hover,
+.p0-message-actions button:focus-visible {
+  background: #f7f7f8;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+.p0-message-action-status {
+  color: #6b7280;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  min-height: 1em;
+}
+
+.p0-message-action-status[data-state="error"] {
+  color: #b91c1c;
+}
+
 .p0-command-card {
   background: #fafafa;
   border: 1px solid #e5e7eb;

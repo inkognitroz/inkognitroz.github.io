@@ -139,6 +139,11 @@ requireIncludes(files.p0Css, 'display: block;', 'P0 transcript must use block la
 requireIncludes(files.p0Css, '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
 requireIncludes(files.p0Css, '.p0-message-receipt', 'P0 assistant answers must include a visible route receipt.');
 requireIncludes(files.p0Css, '.p0-receipt-full', 'P0 compact receipts must expose full audit details when expanded.');
+requireIncludes(files.p0Css, '.p0-message-actions', 'P0 assistant answers must expose subtle answer actions.');
+requireIncludes(files.p0Runtime, 'data-p0-message-action="copy"', 'P0 answer actions must include copy.');
+requireIncludes(files.p0Runtime, 'data-p0-message-action="retry"', 'P0 answer actions must include retry.');
+requireIncludes(files.p0Runtime, 'data-p0-message-action="share-safe"', 'P0 answer actions must include share-safe draft.');
+requireIncludes(files.p0Runtime, "const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1'", 'P0 share-safe must store only a local safe draft.');
 requireIncludes(files.p0Runtime, "const PROD_API_URL='https://api.mmir.ai'", 'P0 shell must keep api.mmir.ai as the production chat route.');
 requireIncludes(files.p0Runtime, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must know the staging API route.');
 requireIncludes(files.p0Runtime, "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must route staging.mmir.ai to api-staging.mmir.ai without arbitrary browser overrides.');

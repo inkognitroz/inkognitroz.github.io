@@ -86,6 +86,15 @@ for (const marker of [
   requireText(runtime, marker, `P0 plus menu must expose only proven first-journey actions: ${marker}`);
 }
 
+for (const marker of [
+  'data-p0-message-action="copy"',
+  'data-p0-message-action="retry"',
+  'data-p0-message-action="share-safe"',
+  'Share safe'
+]) {
+  requireText(runtime, marker, `P0 assistant answers must expose proven answer action: ${marker}`);
+}
+
 forbidText(runtime, 'Install guide', 'P0 plus menu must not redirect local setup to a separate install guide.');
 forbidText(runtime, 'Install help', 'P0 plus menu must not redirect local setup to a separate install help page.');
 forbidText(html, '<a href="#platform-status">Status</a>', 'First screen must not expose diagnostics/status nav.');
@@ -101,6 +110,8 @@ for (const marker of [
   'overflow-y: auto;',
   'overscroll-behavior: contain;',
   '-webkit-overflow-scrolling: touch;',
+  '.p0-message-actions',
+  '.p0-message-action-status',
   '.p0-composer-wrap {',
   'env(safe-area-inset-bottom)',
   '.p0-toolbar {',
