@@ -517,15 +517,26 @@ http.createServer(async (req, res) => {
       }
       const requestPaired = isPairedRequest(req);
       const modelSummary = statusModelSummary({ runtime, models, paired: requestPaired });
+      const runtimeChatReady = runtime.status === 'online' && modelSummary.available;
+      const pairedChatReady = runtimeChatReady && requestPaired;
       const readiness = {
         node_online: true,
         ollama_online: runtime.status === 'online',
+        local_runtime_ready: runtime.status === 'online',
         paired_required: true,
+        pairing_required: true,
+        pairing_configured: true,
+        pairing_available: Boolean(TOKEN),
         paired: requestPaired,
         models_available: modelSummary.available,
+        local_models_ready: modelSummary.available,
         model_count: modelSummary.count,
-        runtime_chat_ready: runtime.status === 'online' && modelSummary.available,
-        chat_ready: runtime.status === 'online' && modelSummary.available && requestPaired,
+        runtime_chat_ready: runtimeChatReady,
+        local_chat_ready: runtimeChatReady,
+        chat_ready: runtimeChatReady,
+        paired_chat_ready: pairedChatReady,
+        browser_chat_ready: pairedChatReady,
+        requires_pairing_for_browser_chat: !requestPaired,
         model_metadata_visible: requestPaired,
       };
       send(res, 200, {
@@ -539,6 +550,10 @@ http.createServer(async (req, res) => {
         models_available: readiness.models_available,
         model_count: readiness.model_count,
         chat_ready: readiness.chat_ready,
+        local_chat_ready: readiness.local_chat_ready,
+        paired_chat_ready: readiness.paired_chat_ready,
+        browser_chat_ready: readiness.browser_chat_ready,
+        requires_pairing_for_browser_chat: readiness.requires_pairing_for_browser_chat,
         model_metadata_visible: readiness.model_metadata_visible,
         pairing: { required: true, configured: true },
         node: nodeIdentity(),
