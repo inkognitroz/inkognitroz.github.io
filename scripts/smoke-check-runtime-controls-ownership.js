@@ -55,11 +55,16 @@ requireText(
   'function p0ReadyShell()',
   'runtime-controls-fix must keep an explicit P0 ownership guard.'
 );
-requireText(
-  hotfix,
-  "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}",
-  'runtime-controls-fix must return before legacy mutations when P0 shell owns the page.'
-);
+if (
+  !compact.includes(
+    'if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}'
+  ) &&
+  !compact.includes(
+    "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}"
+  )
+) {
+  fail('runtime-controls-fix must return before legacy mutations when P0 shell owns the page.');
+}
 
 if (!compact.includes('functionrun(){if(p0ReadyShell()){')) {
   fail('run() must start with the P0 guard before any legacy cleanup/mutation work.');
@@ -69,19 +74,18 @@ if (count(/new MutationObserver/g) !== 1) {
   fail('runtime-controls-fix should keep exactly one scoped MutationObserver until the fact patch shim is retired.');
 }
 
-requireText(
-  hotfix,
-  'factObserver.observe(rt,{childList:true,subtree:true,characterData:true})',
-  'MutationObserver must stay scoped to #mimir-chat-runtime, not the full document.'
-);
+if (
+  !compact.includes('factObserver.observe(rt,{childList:true,subtree:true,characterData:true})') &&
+  !compact.includes('factObserver.observe(rt,{childList:true,subtree:true,characterData:true,})')
+) {
+  fail('MutationObserver must stay scoped to #mimir-chat-runtime, not the full document.');
+}
 forbid(/observe\((?:d\.body|document\.body|d\.documentElement|document\.documentElement)/, 'runtime-controls-fix must not observe the full document.');
 forbid(/querySelectorAll\(['"]\*['"]\)/, 'runtime-controls-fix must not scan every element with querySelectorAll("*").');
 forbid(/setInterval\([^)]*\)\s*;?\s*$/m, 'runtime-controls-fix interval must stay capped and self-clearing.');
-requireText(
-  hotfix,
-  'if(++i>=600)clearInterval(t)',
-  'runtime-controls-fix polling must stay capped while the hotfix is being retired.'
-);
+if (!compact.includes('if(++i>=600)clearInterval(t)')) {
+  fail('runtime-controls-fix polling must stay capped while the hotfix is being retired.');
+}
 
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-runtime-controls-ownership.js')) {
   fail('npm run check must include smoke-check-runtime-controls-ownership.js.');

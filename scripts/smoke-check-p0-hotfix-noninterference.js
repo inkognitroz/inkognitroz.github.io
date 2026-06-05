@@ -25,10 +25,27 @@ function requireText(source, needle, message) {
 const normalized = runtimeHotfix.replace(/\s+/g, '');
 
 requireText(runtimeHotfix, 'function p0ReadyShell()', 'Runtime controls hotfix must expose p0ReadyShell().');
-requireText(runtimeHotfix, "d.body?.classList.contains('mmir-p0-ready')&&q('#mmir-p0-app')", 'p0ReadyShell() must require both the P0-ready body class and the P0 app root.');
-requireText(runtimeHotfix, "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}", 'Runtime hotfix must return before legacy cleanShell/dock mutation when the P0 shell is ready.');
+if (
+  !normalized.includes("d.body?.classList.contains('mmir-p0-ready')&&q('#mmir-p0-app')") &&
+  !normalized.includes('d.body?.classList.contains("mmir-p0-ready")&&q("#mmir-p0-app")')
+) {
+  fail('p0ReadyShell() must require both the P0-ready body class and the P0 app root.');
+}
+if (
+  !normalized.includes("if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}") &&
+  !normalized.includes('if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}') &&
+  !normalized.includes("if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}") &&
+  !normalized.includes('if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}')
+) {
+  fail('Runtime hotfix must return before legacy cleanShell/dock mutation when the P0 shell is ready.');
+}
 
-if (!normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}cleanShell();fixSend();dockPrimarySend();")) {
+if (
+  !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}cleanShell();fixSend();dockPrimarySend();") &&
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}cleanShell();fixSend();dockPrimarySend();') &&
+  !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}cleanShell();fixSend();dockPrimarySend();") &&
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}cleanShell();fixSend();dockPrimarySend();')
+) {
   fail('Runtime hotfix run() must keep the P0-ready return before cleanShell(), fixSend() and dockPrimarySend().');
 }
 

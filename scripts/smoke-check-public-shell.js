@@ -17,6 +17,7 @@ const composerModelPickerPath = join(publicDir, 'apps', 'mimir-chat-portal', 'co
 const localConnectorPath = join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js');
 const modelCatalogUiPath = join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js');
 const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
+const runtimeControlsFixPath = join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js');
 const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
 const freeModelStartersPath = join(publicDir, 'free-model-starters.json');
 const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
@@ -54,6 +55,11 @@ function requireText(file, needle, message) {
 
 function forbidText(file, needle, message) {
   if (read(file).includes(needle)) fail(message);
+}
+
+function requireCompactAny(file, needles, message) {
+  const compact = read(file).replace(/\s+/g, '');
+  if (!needles.some((needle) => compact.includes(needle))) fail(message);
 }
 
 let assetVersions;
@@ -258,8 +264,17 @@ requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'display: block;', 'P0 transcript must use block layout so long chats produce real scroll height.');
 requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
 requireText(mmirPath, assetRef('runtime-controls-fix.js'), 'Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), 'function p0ReadyShell()', 'Runtime controls hotfix must detect the protected P0 shell.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js'), "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}", 'Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.');
+requireText(runtimeControlsFixPath, 'function p0ReadyShell()', 'Runtime controls hotfix must detect the protected P0 shell.');
+requireCompactAny(
+  runtimeControlsFixPath,
+  [
+    "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}",
+    "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}",
+    'if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}',
+    'if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}'
+  ],
+  'Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.'
+);
 requireText(mmirPath, assetRef('chat-runtime.css'), 'Chat runtime CSS must be cache-busted for composer CSS ownership cleanup.');
 requireText(mmirPath, assetRef('chat-workspace.css'), 'Chat workspace CSS must be cache-busted for composer CSS ownership cleanup.');
 requireText(mmirPath, assetRef('model-catalog-ui.js'), 'Model catalog UI must be cache-busted after hiding unready public routes.');
