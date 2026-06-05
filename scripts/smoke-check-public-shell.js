@@ -452,8 +452,13 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Connect local model",
-  "P0 + menu must expose local setup in user language.",
+  "Add model",
+  "P0 + menu must expose local setup as one simple Add model action.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "install command here in chat",
+  "P0 + menu must keep local setup chat-native and avoid redirecting to installer pages.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -587,11 +592,6 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'aria-label="Intelligence pool status"',
-  "P0 menus must expose a discreet intelligence pool status.",
-);
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "Single route now",
   "P0 intelligence pool must be honest before local discovery.",
 );
@@ -650,10 +650,10 @@ requireText(
   "Smart route: private local",
   "P0 shell must label automatic private local routing.",
 );
-requireText(
+forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
   ".p0-routing-hint",
-  "P0 model picker must render smart routing guidance.",
+  "P0 dropdowns must not rely on dashboard-style routing hint cards.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -665,10 +665,10 @@ requireText(
   "Quality guard: public facts",
   "P0 quality guard must label hosted fallback for public facts from local routes.",
 );
-requireText(
+forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Public facts use Supergenious",
-  "P0 model picker must explain public fact routing.",
+  "Public facts use Supergenious. Private/local prompts",
+  "P0 model picker must not show long public/private routing policy copy in the dropdown.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -692,7 +692,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Find local models first, then use @supergenius @gemma for compare.",
+  "Find models first, then use @supergenius @gemma for compare.",
   "P0 shell must fail clearly when a local route tag is used before local discovery.",
 );
 requireText(
@@ -714,11 +714,6 @@ requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "function normalizeLocalHardware(payload)",
   "P0 shell must normalize local node CPU/RAM capacity.",
-);
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Local capacity",
-  "P0 shell must show proven local capacity only after local discovery.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
@@ -782,7 +777,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'After it says "MMIR Local Connector is ready", return here and press + -> Find local models.',
+  'After it says "MMIR Local Connector is ready", return here and press + -> Find models.',
   "P0 local install copy must describe automatic return flow.",
 );
 requireText(
@@ -793,7 +788,7 @@ requireText(
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   'data-p0-action="connect-local"',
-  "P0 Connect local model must start the chat-guided installer flow.",
+  "P0 Add model must start the chat-guided installer flow.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

@@ -42,17 +42,17 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  'Local connector check was deferred. Press Find local models again to allow this browser to check this Mac.',
+  'Local connector check was deferred. Press Find models again to allow this browser to check this Mac.',
   'Deferred local probes must explain that the user can explicitly retry.'
 );
 requireIncludes(
   p0Shell,
-  'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Find local models again. The connector stays on 127.0.0.1.',
+  'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Find models again. The connector stays on 127.0.0.1.',
   'Browser/PNA local-network failures must give an actionable user-facing instruction.'
 );
 requireIncludes(
   p0Shell,
-  "routeStatus('Local access blocked · Allow Local Network Access, then Find local models','error')",
+  "routeStatus('Local access blocked · Allow Local Network Access, then Find models','error')",
   'Blocked local discovery must update the compact route/status line, not only throw a browser error.'
 );
 requireIncludes(
