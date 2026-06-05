@@ -1,31 +1,103 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, extname, join, normalize, relative, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import {
+  dirname,
+  extname,
+  join,
+  normalize,
+  relative,
+  resolve,
+} from "node:path";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const publicDir = resolve(root, 'public');
-const indexPath = join(publicDir, 'index.html');
-const mmirPath = join(publicDir, 'mmir.html');
-const contentPath = join(publicDir, 'content.json');
-const manifestPath = join(publicDir, 'manifest.webmanifest');
-const serviceWorkerPath = join(publicDir, 'sw.js');
-const activeNodesPath = join(publicDir, 'active-chat-nodes.json');
-const activeNodeStripPath = join(publicDir, 'apps', 'mimir-chat-portal', 'active-node-strip.js');
-const chatRuntimePath = join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.js');
-const composerQuickActionsPath = join(publicDir, 'apps', 'mimir-chat-portal', 'composer-quick-actions.js');
-const composerModelPickerPath = join(publicDir, 'apps', 'mimir-chat-portal', 'composer-model-picker.js');
-const localConnectorPath = join(publicDir, 'apps', 'mimir-chat-portal', 'local-connector.js');
-const modelCatalogUiPath = join(publicDir, 'apps', 'mimir-chat-portal', 'model-catalog-ui.js');
-const nodeDashboardPath = join(publicDir, 'apps', 'mimir-chat-portal', 'node-dashboard.js');
-const runtimeControlsFixPath = join(publicDir, 'apps', 'mimir-chat-portal', 'runtime-controls-fix.js');
-const modelCatalogPath = join(publicDir, 'ai-model-catalog.json');
-const freeModelStartersPath = join(publicDir, 'free-model-starters.json');
-const macConnectorInstallerPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.command');
-const macConnectorZipPath = join(publicDir, 'downloads', 'mmir-local-connector-mac.zip');
-const macDmgPath = join(publicDir, 'downloads', 'mmir-local-node-0.1.0-mac.dmg');
-const macLinuxBootstrapPath = join(publicDir, 'downloads', 'mmir-local-node-macos-linux.sh');
-const connectorReleasePath = join(publicDir, 'downloads', 'mmir-local-connector-release.json');
-const assetVersionManifestPath = join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json');
+const publicDir = resolve(root, "public");
+const indexPath = join(publicDir, "index.html");
+const mmirPath = join(publicDir, "mmir.html");
+const contentPath = join(publicDir, "content.json");
+const manifestPath = join(publicDir, "manifest.webmanifest");
+const serviceWorkerPath = join(publicDir, "sw.js");
+const activeNodesPath = join(publicDir, "active-chat-nodes.json");
+const activeNodeStripPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "active-node-strip.js",
+);
+const chatRuntimePath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "chat-runtime.js",
+);
+const composerQuickActionsPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "composer-quick-actions.js",
+);
+const composerModelPickerPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "composer-model-picker.js",
+);
+const localConnectorPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "local-connector.js",
+);
+const modelCatalogUiPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "model-catalog-ui.js",
+);
+const nodeDashboardPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "node-dashboard.js",
+);
+const runtimeControlsFixPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "runtime-controls-fix.js",
+);
+const modelCatalogPath = join(publicDir, "ai-model-catalog.json");
+const freeModelStartersPath = join(publicDir, "free-model-starters.json");
+const macConnectorInstallerPath = join(
+  publicDir,
+  "downloads",
+  "mmir-local-connector-mac.command",
+);
+const macConnectorZipPath = join(
+  publicDir,
+  "downloads",
+  "mmir-local-connector-mac.zip",
+);
+const macDmgPath = join(
+  publicDir,
+  "downloads",
+  "mmir-local-node-0.1.0-mac.dmg",
+);
+const macLinuxBootstrapPath = join(
+  publicDir,
+  "downloads",
+  "mmir-local-node-macos-linux.sh",
+);
+const connectorReleasePath = join(
+  publicDir,
+  "downloads",
+  "mmir-local-connector-release.json",
+);
+const assetVersionManifestPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "asset-versions.json",
+);
 
 const failures = [];
 
@@ -36,9 +108,9 @@ function fail(message) {
 function read(file) {
   if (!existsSync(file)) {
     fail(`Missing required file: ${relative(root, file)}`);
-    return '';
+    return "";
   }
-  return readFileSync(file, 'utf8');
+  return readFileSync(file, "utf8");
 }
 
 function walk(dir) {
@@ -58,14 +130,14 @@ function forbidText(file, needle, message) {
 }
 
 function requireCompactAny(file, needles, message) {
-  const compact = read(file).replace(/\s+/g, '');
+  const compact = read(file).replace(/\s+/g, "");
   if (!needles.some((needle) => compact.includes(needle))) fail(message);
 }
 
 let assetVersions;
 function assetRef(assetName) {
   if (!assetVersions) {
-    const manifest = JSON.parse(read(assetVersionManifestPath) || '{}');
+    const manifest = JSON.parse(read(assetVersionManifestPath) || "{}");
     assetVersions = manifest.assets || {};
   }
   const version = assetVersions[assetName];
@@ -77,273 +149,1051 @@ function assetRef(assetName) {
 }
 
 function localAssetPath(fromFile, asset) {
-  if (!asset || /^[a-z][a-z0-9+.-]*:/i.test(asset) || asset.startsWith('#') || asset.startsWith('//')) {
+  if (
+    !asset ||
+    /^[a-z][a-z0-9+.-]*:/i.test(asset) ||
+    asset.startsWith("#") ||
+    asset.startsWith("//")
+  ) {
     return null;
   }
   const cleanAsset = asset.split(/[?#]/)[0];
   if (!cleanAsset) return null;
-  const base = cleanAsset.startsWith('/') ? publicDir : dirname(fromFile);
-  return normalize(resolve(base, cleanAsset.replace(/^\//, '')));
+  const base = cleanAsset.startsWith("/") ? publicDir : dirname(fromFile);
+  return normalize(resolve(base, cleanAsset.replace(/^\//, "")));
 }
 
 function checkHtmlAssetRefs(filePath, label) {
   const html = read(filePath);
-  const assetRefs = Array.from(html.matchAll(/\b(?:src|href)=["']([^"']+)["']/g)).map((match) => match[1]);
+  const assetRefs = Array.from(
+    html.matchAll(/\b(?:src|href)=["']([^"']+)["']/g),
+  ).map((match) => match[1]);
   for (const ref of assetRefs) {
     const assetPath = localAssetPath(filePath, ref);
-    if (!assetPath || extname(assetPath) === '.html') continue;
+    if (!assetPath || extname(assetPath) === ".html") continue;
     if (!assetPath.startsWith(publicDir) || !existsSync(assetPath)) {
       fail(`Missing referenced asset from ${label}: ${ref}`);
     }
   }
 }
 
-checkHtmlAssetRefs(indexPath, 'public/index.html');
-checkHtmlAssetRefs(mmirPath, 'public/mmir.html');
+checkHtmlAssetRefs(indexPath, "public/index.html");
+checkHtmlAssetRefs(mmirPath, "public/mmir.html");
 
 for (const file of walk(publicDir)) {
   const rel = relative(root, file);
   const ext = extname(file);
-  if (ext === '.json' || ext === '.webmanifest') {
+  if (ext === ".json" || ext === ".webmanifest") {
     try {
       JSON.parse(read(file));
     } catch {
       fail(`Invalid JSON: ${rel}`);
     }
   }
-  if (ext === '.js' || ext === '.mjs') {
-    const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+  if (ext === ".js" || ext === ".mjs") {
+    const result = spawnSync(process.execPath, ["--check", file], {
+      encoding: "utf8",
+    });
     if (result.status !== 0) {
-      fail(`Invalid JavaScript syntax: ${rel}\n${result.stderr || result.stdout}`);
+      fail(
+        `Invalid JavaScript syntax: ${rel}\n${result.stderr || result.stdout}`,
+      );
     }
   }
   const publicText = read(file);
-  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /Supergeni(?:us|ous)\s+Free/i.test(publicText)) {
-    fail(`Use owner-approved visible label "Supergenious" without a Free suffix: ${rel}`);
+  if (
+    [".html", ".js", ".json", ".css", ".webmanifest"].includes(ext) &&
+    /Supergeni(?:us|ous)\s+Free/i.test(publicText)
+  ) {
+    fail(
+      `Use owner-approved visible label "Supergenious" without a Free suffix: ${rel}`,
+    );
   }
-  if (['.html', '.json', '.css', '.webmanifest'].includes(ext) && /MMIR\s+Supergeni(?:us|ous)/i.test(publicText)) {
-    fail(`Visible fallback label must be "Supergenious" without an MMIR prefix: ${rel}`);
+  if (
+    [".html", ".json", ".css", ".webmanifest"].includes(ext) &&
+    /MMIR\s+Supergeni(?:us|ous)/i.test(publicText)
+  ) {
+    fail(
+      `Visible fallback label must be "Supergenious" without an MMIR prefix: ${rel}`,
+    );
   }
-  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /(?:MMIR\s+){2,}Supergeni(?:us|ous)/i.test(publicText)) {
+  if (
+    [".html", ".js", ".json", ".css", ".webmanifest"].includes(ext) &&
+    /(?:MMIR\s+){2,}Supergeni(?:us|ous)/i.test(publicText)
+  ) {
     fail(`Do not duplicate the MMIR Supergenious brand prefix: ${rel}`);
   }
-  if (['.html', '.js', '.json', '.css', '.webmanifest'].includes(ext) && /mmir-MMIR Supergeni(?:us|ous)/i.test(publicText)) {
-    fail(`Do not leak internal mmir-supergenius ids into visible labels: ${rel}`);
+  if (
+    [".html", ".js", ".json", ".css", ".webmanifest"].includes(ext) &&
+    /mmir-MMIR Supergeni(?:us|ous)/i.test(publicText)
+  ) {
+    fail(
+      `Do not leak internal mmir-supergenius ids into visible labels: ${rel}`,
+    );
   }
-  if (['.html', '.js', '.css'].includes(ext) && /Ask\s+mmir-supergenius\b/i.test(publicText)) {
-    fail(`Do not leak internal mmir-supergenius ids into the chat placeholder: ${rel}`);
+  if (
+    [".html", ".js", ".css"].includes(ext) &&
+    /Ask\s+mmir-supergenius\b/i.test(publicText)
+  ) {
+    fail(
+      `Do not leak internal mmir-supergenius ids into the chat placeholder: ${rel}`,
+    );
   }
 }
 
-const content = JSON.parse(read(contentPath) || '{}');
-if (content?.site?.title !== 'MMIR') fail('content.json must define MMIR as the public product title.');
-const activeNodes = JSON.parse(read(activeNodesPath) || '{}');
+const content = JSON.parse(read(contentPath) || "{}");
+if (content?.site?.title !== "MMIR")
+  fail("content.json must define MMIR as the public product title.");
+const activeNodes = JSON.parse(read(activeNodesPath) || "{}");
 const managedNode = Array.isArray(activeNodes.nodes)
-  ? activeNodes.nodes.find((node) => node?.id === 'managed-api-bootstrap')
+  ? activeNodes.nodes.find((node) => node?.id === "managed-api-bootstrap")
   : null;
-if (!managedNode) fail('active-chat-nodes.json must keep the managed API route visible for setup.');
-if (managedNode?.status === 'online') fail('Managed api.mmir.ai must not claim live status from static manifest data.');
+if (!managedNode)
+  fail(
+    "active-chat-nodes.json must keep the managed API route visible for setup.",
+  );
+if (managedNode?.status === "online")
+  fail(
+    "Managed api.mmir.ai must not claim live status from static manifest data.",
+  );
 
-requireText(indexPath, 'Trusted AI Control Plane', 'Homepage must state the MMIR control-plane category.');
-requireText(indexPath, './mmir.html#mimir-instant-start', 'Homepage must point to the MMIR first journey.');
-requireText(mmirPath, 'id="mimir-prompt"', 'MMIR product page must expose the chat composer.');
-requireText(mmirPath, 'id="local-connector"', 'MMIR product page must expose local connector setup.');
-requireText(mmirPath, 'id="node-dashboard"', 'MMIR product page must expose public-safe node status.');
-requireText(mmirPath, './apps/mimir-chat-portal/mimir-chat-portal.js', 'MMIR product page must load the chat portal script.');
-requireText(mmirPath, assetRef('active-node-strip.js'), 'MMIR product page must load the cache-busted active-node strip.');
-requireText(manifestPath, '"display": "standalone"', 'PWA manifest must remain installable.');
-requireText(serviceWorkerPath, './offline.html', 'Service worker must cache the offline shell.');
-requireText(serviceWorkerPath, 'mmir-pwa-d347-20260604-local-private-ready-v42', 'Service worker cache must bust for local private-readiness clarity.');
-requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.css', 'Service worker shell must include the P0 simple chat CSS.');
-requireText(serviceWorkerPath, './apps/mimir-chat-portal/p0-chat-shell.js', 'Service worker shell must include the P0 simple chat runtime.');
-requireText(serviceWorkerPath, './apps/mimir-chat-portal/public-launch-guard.js', 'Service worker shell must include the public launch guard.');
-requireText(activeNodeStripPath, 'function activeProfile()', 'Active-node strip must read the selected backend profile before claiming managed API liveness.');
-requireText(activeNodeStripPath, 'function managedReady()', 'Active-node strip must gate managed API liveness on runtime proof.');
-requireText(activeNodeStripPath, "managedReady()?'online':'setup'", 'Managed API card must remain setup-only until runtime proof is ready.');
-requireText(activeNodeStripPath, "managedReady()?modelFromNode(node):'Verify route first'", 'Managed API card must avoid showing a live model before route verification.');
-requireText(activeNodeStripPath, 'function publicFirstNodes(nodes)', 'Active-node strip must keep the first-screen route list limited to proven public routes.');
-forbidText(activeNodeStripPath, "['auto','webllm','ollama']", 'Active-node starter rail must not surface Browser WebGPU as a first-screen route.');
-forbidText(composerQuickActionsPath, 'data-composer-quick-route="webgpu"', 'Composer quick actions must not show Browser WebGPU before it is production-ready.');
-forbidText(composerQuickActionsPath, 'data-composer-quick-action="knowledge"', 'Composer quick actions must not show Knowledge until it is part of the first-screen product.');
-forbidText(composerQuickActionsPath, 'data-composer-quick-action="voice"', 'Composer quick actions must not show Voice until it is part of the first-screen product.');
-forbidText(composerQuickActionsPath, 'data-composer-quick-action="settings"', 'Composer quick actions must not expose internal settings on the first-screen product.');
-forbidText(composerModelPickerPath, "id:'browser-model'", 'Composer model recommendations must not promote Browser Model until runtime proof is reliable.');
-forbidText(composerModelPickerPath, "id:'compare-models'", 'Composer model recommendations must not promote Compare Models before two live routes exist.');
-requireText(modelCatalogUiPath, 'function isHiddenPublicModel(model)', 'Model library must hide capability-specific routes that are not production-ready.');
-requireText(modelCatalogUiPath, "runtime.includes('rag')", 'Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.');
-requireText(modelCatalogUiPath, "cache:'no-cache'", 'Model library must refresh public catalogs instead of relying on stale browser cache.');
-requireText(mmirPath, assetRef('public-launch-guard.js'), 'Public page must load the first-chat recovery guard before chat runtime.');
-requireText(mmirPath, assetRef('p0-chat-shell.css'), 'Public page must load the P0 simple chat shell CSS.');
-requireText(mmirPath, assetRef('p0-chat-shell.js'), 'Public page must load the P0 simple chat shell runtime.');
-requireText(mmirPath, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Connect local model', 'P0 + menu must expose local setup in user language.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'id="p0-input"', 'P0 shell must expose #p0-input as the canonical visible first-chat input.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'aria-label="Message Supergenious"', 'P0 canonical input must have an accessible label for browser/UI automation.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function transientInstallMessage(message)', 'P0 shell must keep local install instructions chat-native but transient, not first-screen history.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function hostedRouteLabel()', 'P0 shell must generate hosted route receipts from the active API host.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "'Supergenious · Free · '+API_LABEL", 'P0 shell must show hosted route receipts.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must define the staging API route.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must switch staging.mmir.ai to api-staging.mmir.ai without arbitrary API overrides.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Private · This Mac', 'P0 shell must show local route receipts.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local fallback', 'P0 shell must keep answering through hosted fallback if local access fails.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best default', 'P0 model picker must label the safe default route.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best local', 'P0 model picker must identify the best local starter after discovery.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Private local models', 'P0 model picker must separate local models from the hosted default.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Private local ready:', 'P0 local discovery must clearly show paired private readiness after models are visible.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'mmir-local-private-readiness-updated', 'P0 local discovery must emit explicit paired/private readiness evidence.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'model_metadata_visible:true', 'P0 local discovery readiness event must distinguish paired model visibility from public-safe status.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function compareLocalModel(preferredLocalModel=null)', 'P0 compare must choose the best local model unless the user explicitly mentions another model.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'slower/weak fallback', 'P0 model picker must demote weak tiny local models.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-badge', 'P0 model picker must render model quality badges.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-menu-section', 'P0 model picker must visually group recommended and private local models.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Compare answers', 'P0 + menu must expose compare in user language after local discovery.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'data-p0-action="best-answer-live"', 'P0 + menu must expose Best Answer after local discovery.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best Answer', 'P0 + menu must expose the simple parallel-model synthesis action.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function intelligencePoolSummary()', 'P0 shell must summarize the live intelligence pool without adding a dashboard.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'aria-label="Intelligence pool status"', 'P0 menus must expose a discreet intelligence pool status.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Single route now', 'P0 intelligence pool must be honest before local discovery.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'formatDuration', 'P0 answers must expose route timing.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function scoreClassSummary(score)', 'P0 Best Answer receipts must surface route answer/latency classes.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'answer_class:found.answer_class', 'P0 Best Answer must preserve API answer class metadata.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'latency_class:found.latency_class', 'P0 Best Answer must preserve API latency class metadata.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function winningRoute(hostedModel,hostedScore,localModel,localScore)', 'P0 Best Answer must choose and explain a winner.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Winner:', 'P0 Best Answer receipts must show the winning route.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Score ', 'P0 Best Answer receipts must show route scores.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-featured-action', 'P0 compare action must be visually discoverable when live.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function smartDecision(prompt)', 'P0 shell must include smart route selection logic.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Smart route: private local', 'P0 shell must label automatic private local routing.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-routing-hint', 'P0 model picker must render smart routing guidance.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function wantsPublicFactRoute(prompt)', 'P0 quality guard must detect public/current factual prompts.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Quality guard: public facts', 'P0 quality guard must label hosted fallback for public facts from local routes.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Public facts use Supergenious', 'P0 model picker must explain public fact routing.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function refreshHostedModels()', 'P0 shell must refresh hosted model truth from the live gateway.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function executableHostedModel(model)', 'P0 shell must filter non-executable hosted models before showing them.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "route_state||'managed_provider_available'", 'P0 shell must consume route-aware model metadata from api.mmir.ai.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function explicitMentionDecision(prompt)', 'P0 shell must route explicit @model tags intentionally.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Find local models first, then use @supergenius @gemma for compare.', 'P0 shell must fail clearly when a local route tag is used before local discovery.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local-only: public facts may be outdated', 'P0 shell must warn when local-only routes answer public facts.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local facts may be stale', 'P0 compare must warn when a local model is included in public/current factual compare.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'say that you may be outdated instead of guessing', 'P0 local system prompt must discourage stale local factual guesses.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function normalizeLocalHardware(payload)', 'P0 shell must normalize local node CPU/RAM capacity.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Local capacity', 'P0 shell must show proven local capacity only after local discovery.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '@media (max-width: 380px)', 'P0 toolbar must have a narrow mobile hardening rule.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-left {\n  flex: 0 0 auto;', 'P0 toolbar must prevent left controls from collapsing on mobile.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Compare answer 1/2', 'P0 compare receipts must identify the hosted answer.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Compare answer 2/2', 'P0 compare receipts must identify the local answer.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-message-compare', 'P0 compare answers must be visually distinguishable without adding a dashboard.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore)', 'P0 compare must synthesize a best answer from real model outputs and route evidence.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function compactReceipt(receipt)', 'P0 route receipts must be compact by default.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'function renderReceipt(receipt)', 'P0 route receipts must keep full audit details available on click.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'After it says "MMIR Local Connector is ready", return here and press + -> Find local models.', 'P0 local install copy must describe automatic return flow.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'checkLocalModels().catch(()=>{})', 'P0 local model checks must catch browser-blocked probes in the UI handler.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "data-p0-action=\"connect-local\"", 'P0 Connect local model must start the chat-guided installer flow.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.', 'P0 local setup must use simple chat-first Mac copy.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'data-p0-os-command="windows"', 'P0 local setup must ask for OS when browser detection is uncertain.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Command selected. Press Cmd+C', 'P0 local setup must gracefully handle browsers that block clipboard writes.');
-forbidText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Install guide', 'P0 local setup must keep the connector install flow in chat.');
-forbidText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'Install help', 'P0 local setup must not send users to a separate install window from the + menu.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "status('Listening...','ready')", 'P0 mic button must give immediate feedback.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), "document.body.classList.add('mmir-p0-ready')", 'P0 runtime must use the CSS-backed ready class.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-mic', 'P0 toolbar must keep voice as a subtle icon control.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-route', 'P0 composer must expose a subtle route receipt.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-receipt-full', 'P0 compact receipts must expose full audit details when expanded.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'overscroll-behavior: contain', 'P0 transcript must be an independently scrollable answer pane.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'display: block;', 'P0 transcript must use block layout so long chats produce real scroll height.');
-requireText(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
-requireText(mmirPath, assetRef('runtime-controls-fix.js'), 'Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.');
-requireText(runtimeControlsFixPath, 'function p0ReadyShell()', 'Runtime controls hotfix must detect the protected P0 shell.');
+requireText(
+  indexPath,
+  "Trusted AI Control Plane",
+  "Homepage must state the MMIR control-plane category.",
+);
+requireText(
+  indexPath,
+  "./mmir.html#mimir-instant-start",
+  "Homepage must point to the MMIR first journey.",
+);
+requireText(
+  mmirPath,
+  'id="mimir-prompt"',
+  "MMIR product page must expose the chat composer.",
+);
+requireText(
+  mmirPath,
+  'id="local-connector"',
+  "MMIR product page must expose local connector setup.",
+);
+requireText(
+  mmirPath,
+  'id="node-dashboard"',
+  "MMIR product page must expose public-safe node status.",
+);
+requireText(
+  mmirPath,
+  "./apps/mimir-chat-portal/mimir-chat-portal.js",
+  "MMIR product page must load the chat portal script.",
+);
+requireText(
+  mmirPath,
+  assetRef("active-node-strip.js"),
+  "MMIR product page must load the cache-busted active-node strip.",
+);
+requireText(
+  manifestPath,
+  '"display": "standalone"',
+  "PWA manifest must remain installable.",
+);
+requireText(
+  serviceWorkerPath,
+  "./offline.html",
+  "Service worker must cache the offline shell.",
+);
+requireText(
+  serviceWorkerPath,
+  "mmir-pwa-d347-20260604-local-private-ready-v42",
+  "Service worker cache must bust for local private-readiness clarity.",
+);
+requireText(
+  serviceWorkerPath,
+  "./apps/mimir-chat-portal/p0-chat-shell.css",
+  "Service worker shell must include the P0 simple chat CSS.",
+);
+requireText(
+  serviceWorkerPath,
+  "./apps/mimir-chat-portal/p0-chat-shell.js",
+  "Service worker shell must include the P0 simple chat runtime.",
+);
+requireText(
+  serviceWorkerPath,
+  "./apps/mimir-chat-portal/public-launch-guard.js",
+  "Service worker shell must include the public launch guard.",
+);
+requireText(
+  activeNodeStripPath,
+  "function activeProfile()",
+  "Active-node strip must read the selected backend profile before claiming managed API liveness.",
+);
+requireText(
+  activeNodeStripPath,
+  "function managedReady()",
+  "Active-node strip must gate managed API liveness on runtime proof.",
+);
+requireText(
+  activeNodeStripPath,
+  "managedReady()?'online':'setup'",
+  "Managed API card must remain setup-only until runtime proof is ready.",
+);
+requireText(
+  activeNodeStripPath,
+  "managedReady()?modelFromNode(node):'Verify route first'",
+  "Managed API card must avoid showing a live model before route verification.",
+);
+requireText(
+  activeNodeStripPath,
+  "function publicFirstNodes(nodes)",
+  "Active-node strip must keep the first-screen route list limited to proven public routes.",
+);
+forbidText(
+  activeNodeStripPath,
+  "['auto','webllm','ollama']",
+  "Active-node starter rail must not surface Browser WebGPU as a first-screen route.",
+);
+forbidText(
+  composerQuickActionsPath,
+  'data-composer-quick-route="webgpu"',
+  "Composer quick actions must not show Browser WebGPU before it is production-ready.",
+);
+forbidText(
+  composerQuickActionsPath,
+  'data-composer-quick-action="knowledge"',
+  "Composer quick actions must not show Knowledge until it is part of the first-screen product.",
+);
+forbidText(
+  composerQuickActionsPath,
+  'data-composer-quick-action="voice"',
+  "Composer quick actions must not show Voice until it is part of the first-screen product.",
+);
+forbidText(
+  composerQuickActionsPath,
+  'data-composer-quick-action="settings"',
+  "Composer quick actions must not expose internal settings on the first-screen product.",
+);
+forbidText(
+  composerModelPickerPath,
+  "id:'browser-model'",
+  "Composer model recommendations must not promote Browser Model until runtime proof is reliable.",
+);
+forbidText(
+  composerModelPickerPath,
+  "id:'compare-models'",
+  "Composer model recommendations must not promote Compare Models before two live routes exist.",
+);
+requireText(
+  modelCatalogUiPath,
+  "function isHiddenPublicModel(model)",
+  "Model library must hide capability-specific routes that are not production-ready.",
+);
+requireText(
+  modelCatalogUiPath,
+  "runtime.includes('rag')",
+  "Model library must hide RAG/embedding routes until the knowledge user journey is production-ready.",
+);
+requireText(
+  modelCatalogUiPath,
+  "cache:'no-cache'",
+  "Model library must refresh public catalogs instead of relying on stale browser cache.",
+);
+requireText(
+  mmirPath,
+  assetRef("public-launch-guard.js"),
+  "Public page must load the first-chat recovery guard before chat runtime.",
+);
+requireText(
+  mmirPath,
+  assetRef("p0-chat-shell.css"),
+  "Public page must load the P0 simple chat shell CSS.",
+);
+requireText(
+  mmirPath,
+  assetRef("p0-chat-shell.js"),
+  "Public page must load the P0 simple chat shell runtime.",
+);
+requireText(
+  mmirPath,
+  '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">',
+  "Public page must hide legacy UI at first paint before the P0 runtime installs.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Connect local model",
+  "P0 + menu must expose local setup in user language.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'id="p0-input"',
+  "P0 shell must expose #p0-input as the canonical visible first-chat input.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'aria-label="Message Supergenious"',
+  "P0 canonical input must have an accessible label for browser/UI automation.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'id="p0-send"',
+  "P0 shell must expose #p0-send as the canonical visible first-chat submit control.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'",
+  "P0 shell must invalidate stale browser-error and install-card chat history.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function transientInstallMessage(message)",
+  "P0 shell must keep local install instructions chat-native but transient, not first-screen history.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function hostedRouteLabel()",
+  "P0 shell must generate hosted route receipts from the active API host.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "'Supergenious · Free · '+API_LABEL",
+  "P0 shell must show hosted route receipts.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "const STAGING_API_URL='https://api-staging.mmir.ai'",
+  "P0 shell must define the staging API route.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL",
+  "P0 shell must switch staging.mmir.ai to api-staging.mmir.ai without arbitrary API overrides.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Private · This Mac",
+  "P0 shell must show local route receipts.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Keep answers short by default",
+  "P0 chat must keep responses short unless the user asks for detail.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Local fallback",
+  "P0 shell must keep answering through hosted fallback if local access fails.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Best default",
+  "P0 model picker must label the safe default route.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Best local",
+  "P0 model picker must identify the best local starter after discovery.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Private local models",
+  "P0 model picker must separate local models from the hosted default.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Private local ready:",
+  "P0 local discovery must clearly show paired private readiness after models are visible.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "mmir-local-private-readiness-updated",
+  "P0 local discovery must emit explicit paired/private readiness evidence.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "model_metadata_visible:true",
+  "P0 local discovery readiness event must distinguish paired model visibility from public-safe status.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function compareLocalModel(preferredLocalModel=null)",
+  "P0 compare must choose the best local model unless the user explicitly mentions another model.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "slower/weak fallback",
+  "P0 model picker must demote weak tiny local models.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-badge",
+  "P0 model picker must render model quality badges.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-menu-section",
+  "P0 model picker must visually group recommended and private local models.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Compare answers",
+  "P0 + menu must expose compare in user language after local discovery.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'data-p0-action="best-answer-live"',
+  "P0 + menu must expose Best Answer after local discovery.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Best Answer",
+  "P0 + menu must expose the simple parallel-model synthesis action.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function intelligencePoolSummary()",
+  "P0 shell must summarize the live intelligence pool without adding a dashboard.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'aria-label="Intelligence pool status"',
+  "P0 menus must expose a discreet intelligence pool status.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Single route now",
+  "P0 intelligence pool must be honest before local discovery.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "formatDuration",
+  "P0 answers must expose route timing.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function routeScore(model,prompt,answer,elapsedMs,failed=false)",
+  "P0 Best Answer must score route quality from answer, prompt and latency.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function scoreClassSummary(score)",
+  "P0 Best Answer receipts must surface route answer/latency classes.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "answer_class:found.answer_class",
+  "P0 Best Answer must preserve API answer class metadata.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "latency_class:found.latency_class",
+  "P0 Best Answer must preserve API latency class metadata.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function winningRoute(hostedModel,hostedScore,localModel,localScore)",
+  "P0 Best Answer must choose and explain a winner.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Winner:",
+  "P0 Best Answer receipts must show the winning route.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Score ",
+  "P0 Best Answer receipts must show route scores.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-featured-action",
+  "P0 compare action must be visually discoverable when live.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function smartDecision(prompt)",
+  "P0 shell must include smart route selection logic.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Smart route: private local",
+  "P0 shell must label automatic private local routing.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-routing-hint",
+  "P0 model picker must render smart routing guidance.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function wantsPublicFactRoute(prompt)",
+  "P0 quality guard must detect public/current factual prompts.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Quality guard: public facts",
+  "P0 quality guard must label hosted fallback for public facts from local routes.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Public facts use Supergenious",
+  "P0 model picker must explain public fact routing.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function refreshHostedModels()",
+  "P0 shell must refresh hosted model truth from the live gateway.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function executableHostedModel(model)",
+  "P0 shell must filter non-executable hosted models before showing them.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "route_state||'managed_provider_available'",
+  "P0 shell must consume route-aware model metadata from api.mmir.ai.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function explicitMentionDecision(prompt)",
+  "P0 shell must route explicit @model tags intentionally.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Find local models first, then use @supergenius @gemma for compare.",
+  "P0 shell must fail clearly when a local route tag is used before local discovery.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Local-only: public facts may be outdated",
+  "P0 shell must warn when local-only routes answer public facts.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Local facts may be stale",
+  "P0 compare must warn when a local model is included in public/current factual compare.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "say that you may be outdated instead of guessing",
+  "P0 local system prompt must discourage stale local factual guesses.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function normalizeLocalHardware(payload)",
+  "P0 shell must normalize local node CPU/RAM capacity.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Local capacity",
+  "P0 shell must show proven local capacity only after local discovery.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  "@media (max-width: 380px)",
+  "P0 toolbar must have a narrow mobile hardening rule.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-left {\n  flex: 0 0 auto;",
+  "P0 toolbar must prevent left controls from collapsing on mobile.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Compare answer 1/2",
+  "P0 compare receipts must identify the hosted answer.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Compare answer 2/2",
+  "P0 compare receipts must identify the local answer.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-message-compare",
+  "P0 compare answers must be visually distinguishable without adding a dashboard.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore)",
+  "P0 compare must synthesize a best answer from real model outputs and route evidence.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Best answer synthesis",
+  "P0 compare synthesis must be labeled in the route receipt.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Best answer synthesis · No paid route",
+  "P0 compare synthesis must keep no-paid route trust visible.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function compactReceipt(receipt)",
+  "P0 route receipts must be compact by default.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function renderReceipt(receipt)",
+  "P0 route receipts must keep full audit details available on click.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "routeStatus('Listening...','hosted')",
+  "P0 voice feedback must be visible in the composer route line on mobile.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "routeStatus('Voice input stopped.','hosted')",
+  "P0 voice stop feedback must remain visible briefly when recognition ends quickly.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'After it says "MMIR Local Connector is ready", return here and press + -> Find local models.',
+  "P0 local install copy must describe automatic return flow.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "checkLocalModels().catch(()=>{})",
+  "P0 local model checks must catch browser-blocked probes in the UI handler.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'data-p0-action="connect-local"',
+  "P0 Connect local model must start the chat-guided installer flow.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash",
+  "P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.",
+  "P0 local setup must use simple chat-first Mac copy.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  'data-p0-os-command="windows"',
+  "P0 local setup must ask for OS when browser detection is uncertain.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Command selected. Press Cmd+C",
+  "P0 local setup must gracefully handle browsers that block clipboard writes.",
+);
+forbidText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Install guide",
+  "P0 local setup must keep the connector install flow in chat.",
+);
+forbidText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Install help",
+  "P0 local setup must not send users to a separate install window from the + menu.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "p0-icon-shield",
+  "P0 privacy button must render a real discreet shield icon.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "p0-icon-mic",
+  "P0 voice button must render a real discreet mic icon.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "status('Listening...','ready')",
+  "P0 mic button must give immediate feedback.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "document.body.classList.add('mmir-p0-ready')",
+  "P0 runtime must use the CSS-backed ready class.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-mic",
+  "P0 toolbar must keep voice as a subtle icon control.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  "stroke: currentColor",
+  "P0 toolbar icons must use monochrome currentColor styling.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-route",
+  "P0 composer must expose a subtle route receipt.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-receipt-full",
+  "P0 compact receipts must expose full audit details when expanded.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  "overscroll-behavior: contain",
+  "P0 transcript must be an independently scrollable answer pane.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  "-webkit-overflow-scrolling: touch",
+  "P0 transcript must support smooth touch scrolling.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  "display: block;",
+  "P0 transcript must use block layout so long chats produce real scroll height.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-message + .p0-message",
+  "P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.",
+);
+requireText(
+  mmirPath,
+  assetRef("runtime-controls-fix.js"),
+  "Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.",
+);
+requireText(
+  mmirPath,
+  assetRef("runtime-fact-answer-guard.js"),
+  "Runtime fact answer guard must be cache-busted after split from runtime controls.",
+);
+requireText(
+  runtimeControlsFixPath,
+  "function p0ReadyShell()",
+  "Runtime controls hotfix must detect the protected P0 shell.",
+);
 requireCompactAny(
   runtimeControlsFixPath,
   [
     "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}",
     "if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}",
     'if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}',
-    'if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}'
+    'if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}',
   ],
-  'Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.'
+  "Runtime controls hotfix must not inject legacy composer CSS into the P0 shell.",
 );
-requireText(mmirPath, assetRef('chat-runtime.css'), 'Chat runtime CSS must be cache-busted for composer CSS ownership cleanup.');
-requireText(mmirPath, assetRef('chat-workspace.css'), 'Chat workspace CSS must be cache-busted for composer CSS ownership cleanup.');
-requireText(mmirPath, assetRef('model-catalog-ui.js'), 'Model catalog UI must be cache-busted after hiding unready public routes.');
-requireText(mmirPath, assetRef('chat-runtime.js'), 'Chat runtime must be cache-busted after Browser WebGPU shader-f16 gating.');
-requireText(mmirPath, assetRef('composer-model-picker.js'), 'Composer model picker must be cache-busted after Browser WebGPU shader-f16 gating.');
-requireText(mmirPath, assetRef('active-node-strip.js'), 'Active node strip must be cache-busted after Browser WebGPU shader-f16 gating.');
-forbidText(modelCatalogPath, 'RAG', 'Public model catalog must not expose RAG wording before that user journey is production-ready.');
-forbidText(freeModelStartersPath, 'RAG', 'Free starter model catalog must not expose RAG wording before that user journey is production-ready.');
-requireText(macConnectorInstallerPath, 'mmir-local-connector-server.XXXXXX.mjs', 'Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.');
-forbidText(macConnectorInstallerPath, 'temp="$(mktemp)"', 'Mac connector installer must not syntax-check an extensionless temp file with Node 26.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'models_available: readiness.models_available', 'Standalone connector status must expose UI-ready model availability.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'model_count: readiness.model_count', 'Standalone connector status must expose model count.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'chat_ready: readiness.chat_ready', 'Standalone connector status must expose local runtime chat readiness.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'local_chat_ready: readiness.local_chat_ready', 'Standalone connector status must expose local runtime chat readiness explicitly.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'browser_chat_ready: readiness.browser_chat_ready', 'Standalone connector status must distinguish current browser pairing readiness.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'requires_pairing_for_browser_chat: readiness.requires_pairing_for_browser_chat', 'Standalone connector status must expose pairing-required state without reporting the node offline.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'runtime_chat_ready', 'Standalone connector status must distinguish runtime capacity from paired chat readiness.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), "visibility: paired ? 'paired' : 'public-safe'", 'Standalone connector status must keep installed model names paired-only.');
-if (!existsSync(macConnectorZipPath)) fail('Published Mac Connector ZIP must exist for reliable browser download.');
-if (!existsSync(macDmgPath)) fail('Mac DMG artifact may exist as advanced packaging evidence, but must not be the primary public installer.');
-requireText(connectorReleasePath, '"schema_version": "0.2"', 'Release manifest must mirror the current frontend-consumable local connector contract.');
-requireText(connectorReleasePath, '"canonical_repository": "inkognitroz/mmir-local-connector"', 'Release manifest must use the renamed local connector repo as canonical source.');
-requireText(connectorReleasePath, '"compatibility_repository_names"', 'Release manifest may keep legacy repo names only as compatibility metadata.');
-requireText(connectorReleasePath, '"private_git_archives_allowed": false', 'Release manifest must forbid private GitHub branch archives for public downloads.');
-requireText(connectorReleasePath, '"source_repository": "inkognitroz/mmir-local-connector"', 'Mac DMG metadata must point to the canonical local connector repo.');
-forbidText(connectorReleasePath, '"repository": "inkognitroz/mmir-local-node"', 'Release manifest must not use the legacy local-node repo as the upstream source.');
-requireText(connectorReleasePath, '"id": "legacy-macos-linux-local-node"', 'Release manifest must publish the Terminal bootstrap artifact for Mac/Linux.');
-requireText(connectorReleasePath, '"path": "/downloads/mmir-local-node-macos-linux.sh"', 'Release manifest must point Mac/Linux users to the Terminal bootstrap artifact.');
-requireText(connectorReleasePath, '"Recommended Mac/Linux bootstrap', 'Release manifest must explain Terminal bootstrap as the recommended Mac path.');
-requireText(macLinuxBootstrapPath, 'MMIR_LOCAL_CONNECTOR_RELEASE_MANIFEST', 'Terminal bootstrap must fetch the release manifest before delegating to downloaded installers.');
-requireText(macLinuxBootstrapPath, 'download_verified "mac-command"', 'Terminal bootstrap must verify the Mac command checksum before execution.');
-requireText(macLinuxBootstrapPath, 'download_verified "linux-shell"', 'Terminal bootstrap must verify the Linux installer checksum before execution.');
-requireText(macLinuxBootstrapPath, 'checksum mismatch', 'Terminal bootstrap must fail closed when a downloaded installer checksum mismatches.');
-requireText(macLinuxBootstrapPath, 'Dry run complete: verified Mac connector installer checksum. No installer was executed.', 'Terminal bootstrap dry-run must not point users at a temporary installer path.');
-requireText(connectorReleasePath, '"id": "mac-zip"', 'Release manifest must still publish the Mac ZIP as fallback evidence.');
-requireText(connectorReleasePath, '"Advanced fallback. Contains executable mmir-local-connector-mac.command', 'Mac ZIP must be labeled as an advanced fallback because Gatekeeper can block it.');
-requireText(connectorReleasePath, '"recommended": false', 'Unsigned Mac command/ZIP and DMG must not be the recommended public install path until signing/notarization is production-ready.');
-requireText(connectorReleasePath, 'Recommended Windows PowerShell installer', 'Windows artifact notes must not accidentally reuse Mac/Linux Gatekeeper copy.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'Mac install page must show the working Terminal bootstrap command.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Copy Mac install command', 'Mac install page primary action must copy the Terminal install command.');
-requireText(join(publicDir, 'downloads', 'mmir-local-connector-install.html'), 'Apple could not verify', 'Mac install page must explain the Gatekeeper warning path.');
-requireText(nodeDashboardPath, "installer:'./downloads/mmir-local-connector-install.html#terminal-install'", 'Node dashboard Mac repair must use the canonical Terminal install page.');
-forbidText(nodeDashboardPath, "installer:'./downloads/mmir-local-connector-mac.command'", 'Node dashboard must not promote unsigned Mac .command as the primary path.');
-requireText(localConnectorPath, 'Open Terminal command', 'Local connector fallback must point Mac users to the Terminal command.');
-forbidText(localConnectorPath, "target:'./downloads/mmir-local-connector-mac.zip'", 'Local connector fallback must not promote Mac ZIP as the primary path.');
-requireText(chatRuntimePath, 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | MMIR_MODEL=', 'Legacy model helper must use the canonical Mac/Linux Terminal bootstrap.');
-forbidText(chatRuntimePath, 'Download Mac installer', 'Legacy model helper must not promote the Mac ZIP/command path as primary.');
+requireText(
+  mmirPath,
+  assetRef("chat-runtime.css"),
+  "Chat runtime CSS must be cache-busted for composer CSS ownership cleanup.",
+);
+requireText(
+  mmirPath,
+  assetRef("chat-workspace.css"),
+  "Chat workspace CSS must be cache-busted for composer CSS ownership cleanup.",
+);
+requireText(
+  mmirPath,
+  assetRef("model-catalog-ui.js"),
+  "Model catalog UI must be cache-busted after hiding unready public routes.",
+);
+requireText(
+  mmirPath,
+  assetRef("chat-runtime.js"),
+  "Chat runtime must be cache-busted after Browser WebGPU shader-f16 gating.",
+);
+requireText(
+  mmirPath,
+  assetRef("composer-model-picker.js"),
+  "Composer model picker must be cache-busted after Browser WebGPU shader-f16 gating.",
+);
+requireText(
+  mmirPath,
+  assetRef("active-node-strip.js"),
+  "Active node strip must be cache-busted after Browser WebGPU shader-f16 gating.",
+);
+forbidText(
+  modelCatalogPath,
+  "RAG",
+  "Public model catalog must not expose RAG wording before that user journey is production-ready.",
+);
+forbidText(
+  freeModelStartersPath,
+  "RAG",
+  "Free starter model catalog must not expose RAG wording before that user journey is production-ready.",
+);
+requireText(
+  macConnectorInstallerPath,
+  "mmir-local-connector-server.XXXXXX.mjs",
+  "Mac connector installer must download server temp file with .mjs suffix so Node 26 can syntax-check it.",
+);
+forbidText(
+  macConnectorInstallerPath,
+  'temp="$(mktemp)"',
+  "Mac connector installer must not syntax-check an extensionless temp file with Node 26.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "models_available: readiness.models_available",
+  "Standalone connector status must expose UI-ready model availability.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "model_count: readiness.model_count",
+  "Standalone connector status must expose model count.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "chat_ready: readiness.chat_ready",
+  "Standalone connector status must expose local runtime chat readiness.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "local_chat_ready: readiness.local_chat_ready",
+  "Standalone connector status must expose local runtime chat readiness explicitly.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "browser_chat_ready: readiness.browser_chat_ready",
+  "Standalone connector status must distinguish current browser pairing readiness.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "requires_pairing_for_browser_chat: readiness.requires_pairing_for_browser_chat",
+  "Standalone connector status must expose pairing-required state without reporting the node offline.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "runtime_chat_ready",
+  "Standalone connector status must distinguish runtime capacity from paired chat readiness.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-server.mjs"),
+  "visibility: paired ? 'paired' : 'public-safe'",
+  "Standalone connector status must keep installed model names paired-only.",
+);
+if (!existsSync(macConnectorZipPath))
+  fail("Published Mac Connector ZIP must exist for reliable browser download.");
+if (!existsSync(macDmgPath))
+  fail(
+    "Mac DMG artifact may exist as advanced packaging evidence, but must not be the primary public installer.",
+  );
+requireText(
+  connectorReleasePath,
+  '"schema_version": "0.2"',
+  "Release manifest must mirror the current frontend-consumable local connector contract.",
+);
+requireText(
+  connectorReleasePath,
+  '"canonical_repository": "inkognitroz/mmir-local-connector"',
+  "Release manifest must use the renamed local connector repo as canonical source.",
+);
+requireText(
+  connectorReleasePath,
+  '"compatibility_repository_names"',
+  "Release manifest may keep legacy repo names only as compatibility metadata.",
+);
+requireText(
+  connectorReleasePath,
+  '"private_git_archives_allowed": false',
+  "Release manifest must forbid private GitHub branch archives for public downloads.",
+);
+requireText(
+  connectorReleasePath,
+  '"source_repository": "inkognitroz/mmir-local-connector"',
+  "Mac DMG metadata must point to the canonical local connector repo.",
+);
+forbidText(
+  connectorReleasePath,
+  '"repository": "inkognitroz/mmir-local-node"',
+  "Release manifest must not use the legacy local-node repo as the upstream source.",
+);
+requireText(
+  connectorReleasePath,
+  '"id": "legacy-macos-linux-local-node"',
+  "Release manifest must publish the Terminal bootstrap artifact for Mac/Linux.",
+);
+requireText(
+  connectorReleasePath,
+  '"path": "/downloads/mmir-local-node-macos-linux.sh"',
+  "Release manifest must point Mac/Linux users to the Terminal bootstrap artifact.",
+);
+requireText(
+  connectorReleasePath,
+  '"Recommended Mac/Linux bootstrap',
+  "Release manifest must explain Terminal bootstrap as the recommended Mac path.",
+);
+requireText(
+  macLinuxBootstrapPath,
+  "MMIR_LOCAL_CONNECTOR_RELEASE_MANIFEST",
+  "Terminal bootstrap must fetch the release manifest before delegating to downloaded installers.",
+);
+requireText(
+  macLinuxBootstrapPath,
+  'download_verified "mac-command"',
+  "Terminal bootstrap must verify the Mac command checksum before execution.",
+);
+requireText(
+  macLinuxBootstrapPath,
+  'download_verified "linux-shell"',
+  "Terminal bootstrap must verify the Linux installer checksum before execution.",
+);
+requireText(
+  macLinuxBootstrapPath,
+  "checksum mismatch",
+  "Terminal bootstrap must fail closed when a downloaded installer checksum mismatches.",
+);
+requireText(
+  macLinuxBootstrapPath,
+  "Dry run complete: verified Mac connector installer checksum. No installer was executed.",
+  "Terminal bootstrap dry-run must not point users at a temporary installer path.",
+);
+requireText(
+  connectorReleasePath,
+  '"id": "mac-zip"',
+  "Release manifest must still publish the Mac ZIP as fallback evidence.",
+);
+requireText(
+  connectorReleasePath,
+  '"Advanced fallback. Contains executable mmir-local-connector-mac.command',
+  "Mac ZIP must be labeled as an advanced fallback because Gatekeeper can block it.",
+);
+requireText(
+  connectorReleasePath,
+  '"recommended": false',
+  "Unsigned Mac command/ZIP and DMG must not be the recommended public install path until signing/notarization is production-ready.",
+);
+requireText(
+  connectorReleasePath,
+  "Recommended Windows PowerShell installer",
+  "Windows artifact notes must not accidentally reuse Mac/Linux Gatekeeper copy.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-install.html"),
+  "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash",
+  "Mac install page must show the working Terminal bootstrap command.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-install.html"),
+  "Copy Mac install command",
+  "Mac install page primary action must copy the Terminal install command.",
+);
+requireText(
+  join(publicDir, "downloads", "mmir-local-connector-install.html"),
+  "Apple could not verify",
+  "Mac install page must explain the Gatekeeper warning path.",
+);
+requireText(
+  nodeDashboardPath,
+  "installer:'./downloads/mmir-local-connector-install.html#terminal-install'",
+  "Node dashboard Mac repair must use the canonical Terminal install page.",
+);
+forbidText(
+  nodeDashboardPath,
+  "installer:'./downloads/mmir-local-connector-mac.command'",
+  "Node dashboard must not promote unsigned Mac .command as the primary path.",
+);
+requireText(
+  localConnectorPath,
+  "Open Terminal command",
+  "Local connector fallback must point Mac users to the Terminal command.",
+);
+forbidText(
+  localConnectorPath,
+  "target:'./downloads/mmir-local-connector-mac.zip'",
+  "Local connector fallback must not promote Mac ZIP as the primary path.",
+);
+requireText(
+  chatRuntimePath,
+  "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | MMIR_MODEL=",
+  "Legacy model helper must use the canonical Mac/Linux Terminal bootstrap.",
+);
+forbidText(
+  chatRuntimePath,
+  "Download Mac installer",
+  "Legacy model helper must not promote the Mac ZIP/command path as primary.",
+);
 
-forbidText(mmirPath, '#progress-dashboard', 'Public page must not link to the private progress dashboard.');
-forbidText(mmirPath, '#gui-parity', 'Public page must not link to the private GUI parity matrix.');
-forbidText(mmirPath, '<a href="#local-connector">Connect</a>', 'First-screen nav must not expose Connect before local-node onboarding is proven smooth.');
-forbidText(mmirPath, '<a href="#pwa-install">Install</a>', 'First-screen nav must not expose Install before installer UX is proven smooth.');
-forbidText(mmirPath, '<a href="#platform-status">Status</a>', 'First-screen nav must not expose diagnostics to first-time chat users.');
-forbidText(mmirPath, 'href="#workflow-builder"', 'First-screen nav must not link to Workflow Builder until the workflow user journey is production-ready.');
-forbidText(mmirPath, '<summary>More</summary>', 'First-screen nav must not expose a More menu full of unfinished capabilities.');
-forbidText(mmirPath, './apps/mimir-chat-portal/workflow-builder.js', 'Public first-screen must not load Workflow Builder until it is production-ready.');
-forbidText(mmirPath, './apps/mimir-chat-portal/dataset-manager.js', 'Public first-screen must not load Dataset Manager until it is production-ready.');
-forbidText(mmirPath, './apps/mimir-chat-portal/voice-controls.js', 'Public first-screen must not load Voice controls until voice is a supported user journey.');
-forbidText(mmirPath, './apps/mimir-chat-portal/vision-input.js', 'Public first-screen must not load Vision controls until vision is a supported user journey.');
-forbidText(mmirPath, './apps/mimir-chat-portal/admin-governance.js', 'Public first-screen must not load Admin governance.');
-requireText(mmirPath, 'id="workflow-builder" class="mimir-provider-drawer" hidden data-mimir-capability-state="planned"', 'Planned workflow UI must be hidden instead of visible on the first screen.');
-forbidText(mmirPath, './apps/mimir-chat-portal/progress-dashboard.js', 'Public page must not load the private progress dashboard.');
-forbidText(mmirPath, './apps/mimir-chat-portal/gui-parity-matrix.js', 'Public page must not load the private GUI parity matrix.');
-forbidText(indexPath, '#progress-dashboard', 'Public root must not route to private progress dashboard.');
+forbidText(
+  mmirPath,
+  "#progress-dashboard",
+  "Public page must not link to the private progress dashboard.",
+);
+forbidText(
+  mmirPath,
+  "#gui-parity",
+  "Public page must not link to the private GUI parity matrix.",
+);
+forbidText(
+  mmirPath,
+  '<a href="#local-connector">Connect</a>',
+  "First-screen nav must not expose Connect before local-node onboarding is proven smooth.",
+);
+forbidText(
+  mmirPath,
+  '<a href="#pwa-install">Install</a>',
+  "First-screen nav must not expose Install before installer UX is proven smooth.",
+);
+forbidText(
+  mmirPath,
+  '<a href="#platform-status">Status</a>',
+  "First-screen nav must not expose diagnostics to first-time chat users.",
+);
+forbidText(
+  mmirPath,
+  'href="#workflow-builder"',
+  "First-screen nav must not link to Workflow Builder until the workflow user journey is production-ready.",
+);
+forbidText(
+  mmirPath,
+  "<summary>More</summary>",
+  "First-screen nav must not expose a More menu full of unfinished capabilities.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/workflow-builder.js",
+  "Public first-screen must not load Workflow Builder until it is production-ready.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/dataset-manager.js",
+  "Public first-screen must not load Dataset Manager until it is production-ready.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/voice-controls.js",
+  "Public first-screen must not load Voice controls until voice is a supported user journey.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/vision-input.js",
+  "Public first-screen must not load Vision controls until vision is a supported user journey.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/admin-governance.js",
+  "Public first-screen must not load Admin governance.",
+);
+requireText(
+  mmirPath,
+  'id="workflow-builder" class="mimir-provider-drawer" hidden data-mimir-capability-state="planned"',
+  "Planned workflow UI must be hidden instead of visible on the first screen.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/progress-dashboard.js",
+  "Public page must not load the private progress dashboard.",
+);
+forbidText(
+  mmirPath,
+  "./apps/mimir-chat-portal/gui-parity-matrix.js",
+  "Public page must not load the private GUI parity matrix.",
+);
+forbidText(
+  indexPath,
+  "#progress-dashboard",
+  "Public root must not route to private progress dashboard.",
+);
 
 if (failures.length) {
-  console.error('Public shell smoke check failed:');
-  failures.forEach((failure) => console.error('- ' + failure));
+  console.error("Public shell smoke check failed:");
+  failures.forEach((failure) => console.error("- " + failure));
   process.exit(1);
 }
 
-console.log('Public shell smoke check passed.');
+console.log("Public shell smoke check passed.");
