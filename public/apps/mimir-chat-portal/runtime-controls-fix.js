@@ -1,19 +1,7 @@
 (function () {
   const d = document,
     w = window,
-    P = "#mimir-prompt",
-    R = "#mimir-chat-runtime",
-    L = "#local-connector",
-    C = "#connect-options",
-    AS =
-      'a[href="#mimir-prompt"],a[href="#mimir-chat-runtime"],a[href="#local-connector"],a[href="#connect-options"],a[href="#backend-settings"]',
-    K = "__MimirLocalProbeAllowedUntil",
-    q = (s) => d.querySelector(s),
-    qa = (s) => d.querySelectorAll(s),
-    FALLBACK = "Supergenious";
-  function setAttr(e, n, v) {
-    if (e && e.getAttribute(n) !== v) e.setAttribute(n, v);
-  }
+    q = (s) => d.querySelector(s);
   function p0ReadyShell() {
     return Boolean(
       d.body?.classList.contains("mmir-p0-ready") && q("#mmir-p0-app"),
@@ -53,133 +41,6 @@
     }
     if (dock && send) d.body?.classList.add("mimir-send-in-dock");
   }
-  function ret() {
-    const p = new URLSearchParams(location.search),
-      h = location.hash.toLowerCase();
-    return (
-      p.get("mmir_local_return") === "1" ||
-      p.get("local_node_ready") === "1" ||
-      h.includes("local-connector-ready") ||
-      h.includes("mmir-local-ready")
-    );
-  }
-  function fixSend() {
-    const link = q("#primary-chat-link");
-    if (!link) return;
-    link.textContent = "↑";
-    link.classList.remove("disabled");
-    setAttr(link, "aria-disabled", "false");
-    setAttr(link, "aria-label", "Send prompt to the active MMIR route");
-    if (link.tagName === "BUTTON") {
-      link.type = "submit";
-      link.removeAttribute("href");
-      link.removeAttribute("target");
-      link.removeAttribute("rel");
-      return;
-    }
-    setAttr(link, "href", R);
-    setAttr(link, "role", "button");
-    link.removeAttribute("target");
-    link.removeAttribute("rel");
-  }
-  function normalizeTarget(target) {
-    return target === C && !q(C) ? L : target;
-  }
-  function openEl(e) {
-    if (!e) return false;
-    for (let x = e; x; x = x.parentElement?.closest?.("details"))
-      if ("open" in x) x.open = true;
-    e.scrollIntoView({ block: "start", behavior: "smooth" });
-    return true;
-  }
-  function openTarget(t) {
-    const n = normalizeTarget(t);
-    if (
-      (t === L || t === C || n === L) &&
-      w.MimirBackendProfiles?.ensureFreeLocalProfile
-    )
-      w.MimirBackendProfiles.ensureFreeLocalProfile();
-    const f = () => openEl(q(t) || q(n));
-    if (!f() && w.MimirLoadDeferred) w.MimirLoadDeferred().then(f);
-  }
-  function openHash() {
-    const h = location.hash;
-    if (h && h !== P && h !== R) openTarget(h);
-  }
-  function focusChatTarget() {
-    const p = q(P),
-      r = q(R);
-    openEl(r || p);
-    if (p) p.focus({ preventScroll: true });
-    w.dispatchEvent(
-      new CustomEvent("mmir-mobile-chat-target-opened", {
-        detail: { target: r ? R : P },
-      }),
-    );
-  }
-  function send(v) {
-    const p = q(P);
-    if (!p) return false;
-    p.value = String(v || "").trim();
-    p.dispatchEvent(new Event("input", { bubbles: true }));
-    p.dispatchEvent(new Event("change", { bubbles: true }));
-    focusChatTarget();
-    fixSend();
-    if (!ret()) w[K] = 0;
-    setTimeout(() => q("#primary-chat-link")?.click(), 40);
-    return true;
-  }
-  function bindPrimaryAnchors() {
-    qa('a[href="#mimir-chat-runtime"]').forEach((link) => {
-      if (link.id !== "primary-chat-link") setAttr(link, "href", P);
-    });
-    qa('a[href="#connect-options"]').forEach((link) => {
-      if (!q(C)) setAttr(link, "href", L);
-    });
-    qa(AS).forEach((link) => {
-      link.dataset.runtimeAnchorBound = "true";
-    });
-  }
-  function handleMobileTap(event) {
-    if (event.target.closest?.("#primary-chat-link")) {
-      routeBlockedWebGpuToGuide("send");
-      return;
-    }
-    const p = event.target.closest?.("[data-prompt-action]");
-    if (p && p.dataset.firstImpressionBound !== "true") {
-      event.preventDefault();
-      send(
-        p.dataset.prompt || p.textContent || "Help me get started with MMIR.",
-      );
-      return;
-    }
-    const a = event.target.closest?.(
-      "#activation-chat-now,#activation-connect-local,#activation-open-models,#activation-open-node-dashboard",
-    );
-    if (a && a.dataset.firstImpressionBound !== "true") {
-      event.preventDefault();
-      a.id === "activation-chat-now"
-        ? send("Start " + FALLBACK + " instant chat.")
-        : openTarget(
-            a.id === "activation-connect-local"
-              ? C
-              : a.id === "activation-open-models"
-                ? "#model-library"
-                : "#node-dashboard",
-          );
-      return;
-    }
-    const n = event.target.closest?.(AS);
-    if (!n || n.id === "primary-chat-link") return;
-    const t = n.getAttribute("href") || P;
-    if (t[0] !== "#") return;
-    event.preventDefault();
-    t === P || t === R ? focusChatTarget() : openTarget(t);
-  }
-  function markMobileFirstChatReady() {
-    const composer = q(".mimir-composer");
-    if (composer) composer.dataset.mobileFirstChatReady = "true";
-  }
   function routeBlockedWebGpuToGuide(reason) {
     return !!w.MimirRuntimeTruth?.routeBlockedWebGpuToGuide?.(reason);
   }
@@ -195,20 +56,26 @@
       return;
     }
     cleanShell();
-    fixSend();
+    w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();
     dockPrimarySend();
     routeBlockedWebGpuToGuide("run");
     label();
     patchWebGpuFallbackAnswer();
-    markMobileFirstChatReady();
-    bindPrimaryAnchors();
-    openHash();
+    w.MimirRuntimeMobileAnchors?.markMobileFirstChatReady?.();
+    w.MimirRuntimeMobileAnchors?.bindPrimaryAnchors?.();
+    w.MimirRuntimeMobileAnchors?.openHash?.();
   }
   d.readyState === "loading"
     ? d.addEventListener("DOMContentLoaded", run)
     : run();
-  d.addEventListener("click", handleMobileTap, true);
-  w.addEventListener("hashchange", openHash);
+  d.addEventListener(
+    "click",
+    (event) => w.MimirRuntimeMobileAnchors?.handleMobileTap?.(event),
+    true,
+  );
+  w.addEventListener("hashchange", () =>
+    w.MimirRuntimeMobileAnchors?.openHash?.(),
+  );
   w.addEventListener("load", run, { once: true });
   [
     "mmir-backend-profiles-updated",
