@@ -5,18 +5,21 @@ import { join } from "node:path";
 const root = process.cwd();
 const portalDir = join(root, "public", "apps", "mimir-chat-portal");
 const hotfixPath = join(portalDir, "runtime-controls-fix.js");
+const cleanShellPath = join(portalDir, "runtime-clean-shell-guard.js");
 const factGuardPath = join(portalDir, "runtime-fact-answer-guard.js");
 const labelNormalizerPath = join(portalDir, "runtime-label-normalizer.js");
 const mobileAnchorsPath = join(portalDir, "runtime-mobile-anchors.js");
 const ownershipPath = join(portalDir, "MODULE_OWNERSHIP.md");
 const packagePath = join(root, "package.json");
 const hotfix = readFileSync(hotfixPath, "utf8");
+const cleanShell = readFileSync(cleanShellPath, "utf8");
 const factGuard = readFileSync(factGuardPath, "utf8");
 const labelNormalizer = readFileSync(labelNormalizerPath, "utf8");
 const mobileAnchors = readFileSync(mobileAnchorsPath, "utf8");
 const ownership = readFileSync(ownershipPath, "utf8");
 const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
 const compact = hotfix.replace(/\s+/g, "");
+const cleanShellCompact = cleanShell.replace(/\s+/g, "");
 const factCompact = factGuard.replace(/\s+/g, "");
 const labelCompact = labelNormalizer.replace(/\s+/g, "");
 const mobileCompact = mobileAnchors.replace(/\s+/g, "");
@@ -39,8 +42,6 @@ function count(pattern) {
 }
 
 [
-  "cleanShell",
-  "dockPrimarySend",
   "label",
   "run",
 ].forEach((name) =>
@@ -48,6 +49,13 @@ function count(pattern) {
     hotfix,
     `function ${name}(`,
     `runtime-controls-fix must keep named ${name}() ownership.`,
+  ),
+);
+["applyCleanShell", "dockPrimarySend", "ensureWorkspaceCss"].forEach((name) =>
+  requireText(
+    cleanShell,
+    `function ${name}(`,
+    `runtime-clean-shell-guard must keep named ${name}() ownership.`,
   ),
 );
 ["patchFactAnswer", "observeFacts", "run"].forEach((name) =>
@@ -92,6 +100,11 @@ requireText(
 );
 requireText(
   ownership,
+  "runtime-clean-shell-guard.js",
+  "MODULE_OWNERSHIP.md must name runtime-clean-shell-guard.js.",
+);
+requireText(
+  ownership,
   "runtime-fact-answer-guard.js",
   "MODULE_OWNERSHIP.md must name runtime-fact-answer-guard.js.",
 );
@@ -114,6 +127,11 @@ requireText(
   hotfix,
   "MimirRuntimeMobileAnchors",
   "runtime-controls-fix must delegate mobile/hash anchor ownership.",
+);
+requireText(
+  hotfix,
+  "MimirRuntimeCleanShell",
+  "runtime-controls-fix must delegate clean-shell/dock ownership.",
 );
 if (
   !compact.includes(
@@ -165,6 +183,13 @@ if (
 }
 if (
   /observe\((?:d\.body|document\.body|d\.documentElement|document\.documentElement)/.test(
+    cleanShell,
+  )
+) {
+  fail("runtime-clean-shell-guard must not observe the full document.");
+}
+if (
+  /observe\((?:d\.body|document\.body|d\.documentElement|document\.documentElement)/.test(
     labelNormalizer,
   )
 ) {
@@ -180,8 +205,14 @@ if (
 if (!labelCompact.includes("w.MimirRuntimeLabels={")) {
   fail("runtime-label-normalizer must expose MimirRuntimeLabels for the hotfix caller.");
 }
+if (!cleanShellCompact.includes("w.MimirRuntimeCleanShell={")) {
+  fail("runtime-clean-shell-guard must expose MimirRuntimeCleanShell for the hotfix caller.");
+}
 if (!mobileCompact.includes("w.MimirRuntimeMobileAnchors={")) {
   fail("runtime-mobile-anchors must expose MimirRuntimeMobileAnchors for the hotfix caller.");
+}
+if (/function\s+(cleanShell|dockPrimarySend)\s*\(/.test(hotfix)) {
+  fail("runtime-controls-fix must not take clean-shell/dock ownership back.");
 }
 if (/function\s+(bindPrimaryAnchors|handleMobileTap|openHash|openTarget)\s*\(/.test(hotfix)) {
   fail("runtime-controls-fix must not take mobile/hash anchor ownership back.");

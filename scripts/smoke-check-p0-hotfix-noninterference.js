@@ -48,21 +48,25 @@ if (
   !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();") &&
   !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();') &&
   !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();") &&
-  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();')
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}cleanShell();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();dockPrimarySend();') &&
+  !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return;}w.MimirRuntimeCleanShell?.applyCleanShell?.();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();w.MimirRuntimeCleanShell?.dockPrimarySend?.();") &&
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return;}w.MimirRuntimeCleanShell?.applyCleanShell?.();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();w.MimirRuntimeCleanShell?.dockPrimarySend?.();') &&
+  !normalized.includes("functionrun(){if(p0ReadyShell()){d.body?.classList.remove('mimir-clean-chat-shell','mimir-send-in-dock');return}w.MimirRuntimeCleanShell?.applyCleanShell?.();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();w.MimirRuntimeCleanShell?.dockPrimarySend?.();") &&
+  !normalized.includes('functionrun(){if(p0ReadyShell()){d.body?.classList.remove("mimir-clean-chat-shell","mimir-send-in-dock");return}w.MimirRuntimeCleanShell?.applyCleanShell?.();w.MimirRuntimeMobileAnchors?.fixPrimarySend?.();w.MimirRuntimeCleanShell?.dockPrimarySend?.();')
 ) {
   fail('Runtime hotfix run() must keep the P0-ready return before cleanShell(), delegated fixPrimarySend() and dockPrimarySend().');
 }
 
-if (count(runtimeHotfix, /cleanShell\(/g) !== 2) {
-  fail('cleanShell() should appear only as its function declaration and the guarded run() call.');
+if (/function\s+cleanShell\s*\(/.test(runtimeHotfix)) {
+  fail('cleanShell ownership must stay in runtime-clean-shell-guard.js, not runtime-controls-fix.js.');
 }
 
-if (count(runtimeHotfix, /dockPrimarySend\(/g) !== 2) {
-  fail('dockPrimarySend() should appear only as its function declaration and the guarded run() call.');
+if (/function\s+dockPrimarySend\s*\(/.test(runtimeHotfix)) {
+  fail('dockPrimarySend ownership must stay in runtime-clean-shell-guard.js, not runtime-controls-fix.js.');
 }
 
-if (count(runtimeHotfix, /mmir-clean-chat-shell-hotfix/g) !== 2) {
-  fail('The legacy hotfix style id should only be queried/created inside cleanShell().');
+if (runtimeHotfix.includes('mmir-clean-chat-shell-hotfix')) {
+  fail('The legacy hotfix style id must stay in runtime-clean-shell-guard.js.');
 }
 
 requireText(p0Runtime, "document.body.classList.remove('mimir-p0-ready')", 'P0 runtime must remove the legacy misspelled ready class.');
