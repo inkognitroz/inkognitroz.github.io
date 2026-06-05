@@ -1091,8 +1091,13 @@ if (connectorServerSha !== manifestServerSha) {
 }
 requireText(
   macConnectorInstallerPath,
-  `SERVER_SHA256="\${MMIR_LOCAL_CONNECTOR_SERVER_SHA256:-${connectorServerSha}}"`,
-  "Mac connector installer must embed the current connector server SHA-256 so the public Terminal install path does not fail after the bootstrap checksum passes.",
+  `SERVER_SHA256="${connectorServerSha}"`,
+  "Mac connector installer must embed the current connector server SHA-256 and must not let stale shell environment override it.",
+);
+forbidText(
+  macConnectorInstallerPath,
+  "MMIR_LOCAL_CONNECTOR_SERVER_SHA256",
+  "Mac connector installer must not accept user shell checksum overrides because stale env values break the public Terminal install path.",
 );
 forbidText(
   connectorReleasePath,

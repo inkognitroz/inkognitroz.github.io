@@ -78,7 +78,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "15dca577d579e700f7df600af3338643cfa944a66b0827564fa33b1dd8f23a94",
+      "sha256": "217bbff3b4717bf0739df4fc21acf99e8c843e34bac24e250a00ed648afe3225",
       "recommended": false,
       "note": "Advanced fallback. Unsigned downloaded .command files can trigger macOS Gatekeeper. Recommended Mac install path is the Terminal curl bootstrap."
     },
@@ -172,7 +172,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-06-05T18:26:38.847Z",
+    "verified_at": "2026-06-05T19:26:03.539Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",
