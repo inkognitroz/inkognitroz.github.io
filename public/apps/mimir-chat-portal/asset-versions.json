@@ -29,6 +29,7 @@
     "route-display.js": "20260604-route-display-v1",
     "runtime-controls-fix.js": "20260604-p0-css-guard-v1",
     "runtime-controls-webgpu-truth.js": "20260531-webgpu-truth-v2",
+    "runtime-fact-answer-guard.js": "20260605-fact-answer-guard-v1",
     "runtime-legacy-installer-guard.js": "20260531-mac-installer-v1"
   }
 }

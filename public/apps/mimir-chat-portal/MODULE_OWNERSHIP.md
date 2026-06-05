@@ -44,7 +44,7 @@ These files own the first public chat experience and need the highest caution:
 | API client | `api-client.js` | No provider secrets. Keep public API calls safe and bounded. |
 | Route receipts | `answer-context-receipts.js`, `route-display.js`, `route-chips.js`, `active-node-strip.js` | Shared display labels live in `route-display.js`; receipt naming still needs one cautious follow-up. |
 | Compare / Best Answer | `model-comparison.js`, `model-comparison.css` | Only compare proven live routes. Label weak/stale local outputs clearly. |
-| Runtime truth | `runtime-controls-webgpu-truth.js`, `runtime-controls-fix.js`, `runtime-legacy-installer-guard.js` | Fail closed; never mark Browser Model active before it answers. |
+| Runtime truth | `runtime-controls-webgpu-truth.js`, `runtime-controls-fix.js`, `runtime-fact-answer-guard.js`, `runtime-legacy-installer-guard.js` | Fail closed; never mark Browser Model active before it answers. |
 
 Runtime hotfix retirement rule: `runtime-controls-fix.js` may temporarily patch legacy UI, but it must keep the P0-ready return first, keep MutationObserver scoped to `#mimir-chat-runtime`, keep polling capped, and avoid full-document observers. `scripts/smoke-check-runtime-controls-ownership.js` guards this while stable behavior moves into owned modules.
 

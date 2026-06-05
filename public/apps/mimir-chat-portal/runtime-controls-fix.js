@@ -125,7 +125,6 @@
     p.dispatchEvent(new Event("change", { bubbles: true }));
     focusChatTarget();
     fixSend();
-    if (q(R)) delete q(R).dataset.factPresidentPatched;
     if (!ret()) w[K] = 0;
     setTimeout(() => q("#primary-chat-link")?.click(), 40);
     return true;
@@ -144,8 +143,6 @@
   function handleMobileTap(event) {
     if (event.target.closest?.("#primary-chat-link")) {
       routeBlockedWebGpuToGuide("send");
-      if (q(R)) delete q(R).dataset.factPresidentPatched;
-      setTimeout(patchFactAnswer, 1200);
       return;
     }
     const p = event.target.closest?.("[data-prompt-action]");
@@ -183,19 +180,6 @@
     const composer = q(".mimir-composer");
     if (composer) composer.dataset.mobileFirstChatReady = "true";
   }
-  function esc(v) {
-    return String(v || "").replace(
-      /[&<>"']/g,
-      (m) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[m],
-    );
-  }
   function canon(v) {
     let s = String(v || "");
     s = s.replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi, FALLBACK);
@@ -209,63 +193,6 @@
     );
     s = s.replace(/(?:MMIR\s+){2,}Supergenius/gi, FALLBACK);
     return s;
-  }
-  function asksPresident(v) {
-    return /(who|hvem).{0,24}(president|presidenten).{0,24}(usa|u\.s\.a|united states|america|amerika)|president.{0,24}(usa|u\.s\.a|united states|america|amerika)/i.test(
-      String(v || ""),
-    );
-  }
-  function patchFactAnswer() {
-    const rt = q(R);
-    if (!rt) return;
-    const messages = [...rt.querySelectorAll(".runtime-message")];
-    if (
-      !messages.some(
-        (el) =>
-          el.classList.contains("runtime-message-user") &&
-          asksPresident(el.textContent || ""),
-      )
-    )
-      return;
-    const last = [...rt.querySelectorAll(".runtime-message-assistant")].pop();
-    const body = last?.querySelector?.(".runtime-message-body");
-    if (!body) return;
-    if (/Donald J\. Trump/.test(body.textContent || "")) {
-      rt.dataset.factPresidentPatched = "true";
-      return;
-    }
-    if (rt.dataset.factPresidentPatched === "true")
-      delete rt.dataset.factPresidentPatched;
-    const text = body.textContent || "";
-    if (
-      !/supergeni(?:us|ous)|MMIR Browser Guide|MMIR Guide|free browser guide|browser guidance|control plane is online|automatically fell back|provider keys?|Useful now/i.test(
-        text,
-      )
-    )
-      return;
-    body.innerHTML = [
-      "The president of the United States is Donald J. Trump.",
-      "Last verified: 2026-05-25 from the official White House administration page.",
-      "Active route: " +
-        FALLBACK +
-        " instant fallback. No provider key or paid route was used.",
-    ]
-      .map((x) => "<p>" + esc(x) + "</p>")
-      .join("");
-    const small = last.querySelector(":scope > small");
-    if (small) small.textContent = FALLBACK;
-    rt.dataset.factPresidentPatched = "true";
-  }
-  let factObserver = null;
-  function observeFacts() {
-    const rt = q(R);
-    if (!rt || factObserver) return;
-    factObserver = new MutationObserver(() => patchFactAnswer());
-    factObserver.observe(rt, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
   }
   function routeBlockedWebGpuToGuide(reason) {
     return !!w.MimirRuntimeTruth?.routeBlockedWebGpuToGuide?.(reason);
@@ -355,9 +282,7 @@
     dockPrimarySend();
     routeBlockedWebGpuToGuide("run");
     label();
-    patchFactAnswer();
     patchWebGpuFallbackAnswer();
-    observeFacts();
     markMobileFirstChatReady();
     bindPrimaryAnchors();
     openHash();
