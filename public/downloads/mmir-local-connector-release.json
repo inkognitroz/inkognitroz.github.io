@@ -1,8 +1,13 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "release_id": "mmir-local-connector-2026-05-23",
   "connector_version": "0.1.0",
   "contract_version": "0.1",
+  "canonical_repository": "inkognitroz/mmir-local-connector",
+  "compatibility_repository_names": [
+    "inkognitroz/mmir-local-node"
+  ],
+  "public_download_base_url": "https://mmir.ai/downloads",
   "published_at": "2026-05-23T05:59:00Z",
   "default_port": 3000,
   "default_host": "127.0.0.1",
@@ -13,9 +18,39 @@
     "Tunnel control is disabled by default unless explicitly enabled by local policy.",
     "Legacy mmir-local-node entrypoints are compatibility shims that delegate to MMIR Local Connector."
   ],
-  "upstream_local_node_release": {
-    "repository": "inkognitroz/mmir-local-node",
-    "release_pr": "https://github.com/inkognitroz/mmir-local-node/pull/28",
+  "source_policy": {
+    "private_git_archives_allowed": false,
+    "public_frontend_secrets_allowed": false,
+    "paid_routes_started_by_installer": false,
+    "note": "mmir.ai links public artifact paths from this manifest, not private GitHub branch archives."
+  },
+  "recommended_entrypoints": {
+    "macos_terminal": {
+      "artifact": "mmir-local-node-macos-linux.sh",
+      "public_path": "/downloads/mmir-local-node-macos-linux.sh",
+      "command": "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash",
+      "reason": "Primary free-first Mac path while unsigned app/command artifacts can trigger Gatekeeper."
+    },
+    "macos_dmg": {
+      "artifact": "mmir-local-node-0.1.0-mac.dmg",
+      "status": "published",
+      "app_bundle": "MMIR Local Node Installer.app",
+      "recommended": false,
+      "reason": "Good consumer shape, but keep secondary until paid signing/notarization is approved."
+    },
+    "linux_terminal": {
+      "artifact": "mmir-local-node-macos-linux.sh",
+      "public_path": "/downloads/mmir-local-node-macos-linux.sh",
+      "command": "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash"
+    },
+    "windows_powershell": {
+      "artifact": "mmir-local-node-windows.ps1",
+      "public_path": "/downloads/mmir-local-node-windows.ps1"
+    }
+  },
+  "upstream_local_connector_release": {
+    "repository": "inkognitroz/mmir-local-connector",
+    "release_pr": "https://github.com/inkognitroz/mmir-local-connector/pull/54",
     "package_command": "npm run package:release",
     "no_paid_services": true,
     "macos_dmg": {
@@ -64,7 +99,7 @@
       "sha256": "26234a0e53bf704ee54dfe66f3b0d8e313d3fa30cba45b256ddd0f769f781f69",
       "recommended": false,
       "status": "published",
-      "source_repository": "inkognitroz/mmir-local-node",
+      "source_repository": "inkognitroz/mmir-local-connector",
       "app_bundle": "MMIR Local Node Installer.app",
       "applications_shortcut": true,
       "drag_to_applications": true,
@@ -137,7 +172,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-06-05T05:59:19.432Z",
+    "verified_at": "2026-06-05T08:14:03.269Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",

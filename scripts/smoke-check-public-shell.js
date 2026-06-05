@@ -280,6 +280,12 @@ requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), 'ru
 requireText(join(publicDir, 'downloads', 'mmir-local-connector-server.mjs'), "visibility: paired ? 'paired' : 'public-safe'", 'Standalone connector status must keep installed model names paired-only.');
 if (!existsSync(macConnectorZipPath)) fail('Published Mac Connector ZIP must exist for reliable browser download.');
 if (!existsSync(macDmgPath)) fail('Mac DMG artifact may exist as advanced packaging evidence, but must not be the primary public installer.');
+requireText(connectorReleasePath, '"schema_version": "0.2"', 'Release manifest must mirror the current frontend-consumable local connector contract.');
+requireText(connectorReleasePath, '"canonical_repository": "inkognitroz/mmir-local-connector"', 'Release manifest must use the renamed local connector repo as canonical source.');
+requireText(connectorReleasePath, '"compatibility_repository_names"', 'Release manifest may keep legacy repo names only as compatibility metadata.');
+requireText(connectorReleasePath, '"private_git_archives_allowed": false', 'Release manifest must forbid private GitHub branch archives for public downloads.');
+requireText(connectorReleasePath, '"source_repository": "inkognitroz/mmir-local-connector"', 'Mac DMG metadata must point to the canonical local connector repo.');
+forbidText(connectorReleasePath, '"repository": "inkognitroz/mmir-local-node"', 'Release manifest must not use the legacy local-node repo as the upstream source.');
 requireText(connectorReleasePath, '"id": "legacy-macos-linux-local-node"', 'Release manifest must publish the Terminal bootstrap artifact for Mac/Linux.');
 requireText(connectorReleasePath, '"path": "/downloads/mmir-local-node-macos-linux.sh"', 'Release manifest must point Mac/Linux users to the Terminal bootstrap artifact.');
 requireText(connectorReleasePath, '"Recommended Mac/Linux bootstrap', 'Release manifest must explain Terminal bootstrap as the recommended Mac path.');
