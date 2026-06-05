@@ -65,6 +65,12 @@ const runtimeControlsFixPath = join(
   "mimir-chat-portal",
   "runtime-controls-fix.js",
 );
+const runtimeCleanShellPath = join(
+  publicDir,
+  "apps",
+  "mimir-chat-portal",
+  "runtime-clean-shell-guard.js",
+);
 const runtimeMobileAnchorsPath = join(
   publicDir,
   "apps",
@@ -895,6 +901,11 @@ requireText(
 );
 requireText(
   mmirPath,
+  assetRef("runtime-clean-shell-guard.js"),
+  "Runtime clean shell guard must be cache-busted after split from runtime controls.",
+);
+requireText(
+  mmirPath,
   assetRef("runtime-controls-fix.js"),
   "Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.",
 );
@@ -912,6 +923,11 @@ requireText(
   runtimeMobileAnchorsPath,
   "MimirRuntimeMobileAnchors",
   "Runtime mobile anchors module must expose its delegated ownership API.",
+);
+requireText(
+  runtimeCleanShellPath,
+  "MimirRuntimeCleanShell",
+  "Runtime clean shell guard module must expose its delegated ownership API.",
 );
 requireCompactAny(
   runtimeControlsFixPath,
