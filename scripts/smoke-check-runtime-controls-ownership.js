@@ -6,14 +6,17 @@ const root = process.cwd();
 const portalDir = join(root, "public", "apps", "mimir-chat-portal");
 const hotfixPath = join(portalDir, "runtime-controls-fix.js");
 const factGuardPath = join(portalDir, "runtime-fact-answer-guard.js");
+const labelNormalizerPath = join(portalDir, "runtime-label-normalizer.js");
 const ownershipPath = join(portalDir, "MODULE_OWNERSHIP.md");
 const packagePath = join(root, "package.json");
 const hotfix = readFileSync(hotfixPath, "utf8");
 const factGuard = readFileSync(factGuardPath, "utf8");
+const labelNormalizer = readFileSync(labelNormalizerPath, "utf8");
 const ownership = readFileSync(ownershipPath, "utf8");
 const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
 const compact = hotfix.replace(/\s+/g, "");
 const factCompact = factGuard.replace(/\s+/g, "");
+const labelCompact = labelNormalizer.replace(/\s+/g, "");
 const failures = [];
 
 function fail(message) {
@@ -37,7 +40,6 @@ function count(pattern) {
   "dockPrimarySend",
   "bindPrimaryAnchors",
   "handleMobileTap",
-  "patchVisibleNames",
   "label",
   "run",
 ].forEach((name) =>
@@ -52,6 +54,13 @@ function count(pattern) {
     factGuard,
     `function ${name}(`,
     `runtime-fact-answer-guard must keep named ${name}() ownership.`,
+  ),
+);
+["canon", "patchVisibleNames", "normalizeLegacyLabels"].forEach((name) =>
+  requireText(
+    labelNormalizer,
+    `function ${name}(`,
+    `runtime-label-normalizer must keep named ${name}() ownership.`,
   ),
 );
 
@@ -69,6 +78,11 @@ requireText(
   ownership,
   "runtime-fact-answer-guard.js",
   "MODULE_OWNERSHIP.md must name runtime-fact-answer-guard.js.",
+);
+requireText(
+  ownership,
+  "runtime-label-normalizer.js",
+  "MODULE_OWNERSHIP.md must name runtime-label-normalizer.js.",
 );
 requireText(
   hotfix,
@@ -122,6 +136,16 @@ if (
   )
 ) {
   fail("runtime-fact-answer-guard must not observe the full document.");
+}
+if (
+  /observe\((?:d\.body|document\.body|d\.documentElement|document\.documentElement)/.test(
+    labelNormalizer,
+  )
+) {
+  fail("runtime-label-normalizer must not observe the full document.");
+}
+if (!labelCompact.includes("w.MimirRuntimeLabels={")) {
+  fail("runtime-label-normalizer must expose MimirRuntimeLabels for the hotfix caller.");
 }
 forbid(
   /querySelectorAll\(['"]\*['"]\)/,

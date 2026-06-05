@@ -180,97 +180,14 @@
     const composer = q(".mimir-composer");
     if (composer) composer.dataset.mobileFirstChatReady = "true";
   }
-  function canon(v) {
-    let s = String(v || "");
-    s = s.replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi, FALLBACK);
-    s = s.replace(
-      /MMIR Free Control Plane|MMIR Browser Guide|MMIR Guide|free browser guide/gi,
-      FALLBACK,
-    );
-    s = s.replace(
-      /(^|[^A-Za-z])supergeni(?:us|ous)(?:\s+free)?/gi,
-      (m, p) => p + FALLBACK,
-    );
-    s = s.replace(/(?:MMIR\s+){2,}Supergenius/gi, FALLBACK);
-    return s;
-  }
   function routeBlockedWebGpuToGuide(reason) {
     return !!w.MimirRuntimeTruth?.routeBlockedWebGpuToGuide?.(reason);
   }
   function patchWebGpuFallbackAnswer() {
     w.MimirRuntimeTruth?.patchWebGpuFallbackAnswer?.();
   }
-  function replaceTextNode(node) {
-    if (!node || node.nodeType !== 3) return;
-    const next = canon(node.nodeValue);
-    if (next !== node.nodeValue) node.nodeValue = next;
-  }
-  function patchVisibleNames(root = d.body) {
-    if (!root) return;
-    const walker = d.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode(node) {
-        return /MMIR Browser Guide|MMIR Guide|supergeni(?:us|ous)|(?:\bMMIR\b\s*){2,}/i.test(
-          node.nodeValue || "",
-        )
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-      },
-    });
-    const nodes = [];
-    while (nodes.length < 500) {
-      const n = walker.nextNode();
-      if (!n) break;
-      nodes.push(n);
-    }
-    nodes.forEach(replaceTextNode);
-    qa("option").forEach((option) => {
-      option.textContent = canon(option.textContent);
-    });
-  }
   function label() {
-    patchVisibleNames();
-    const p = q('[data-chat-mode="private"]');
-    if (p) {
-      p.textContent = "Privacy";
-      p.title = "Security and privacy route mode";
-      p.setAttribute("aria-label", "Toggle private route review mode");
-    }
-    const b = q("#active-badge");
-    let badgeText = String(b?.textContent || "").trim();
-    if (b) {
-      if (
-        !badgeText ||
-        /No backend|MMIR Browser Guide|MMIR Guide|supergeni(?:us|ous)/i.test(
-          badgeText,
-        )
-      )
-        b.textContent = "Node: " + FALLBACK;
-      else if (/MMIR Free Control Plane/i.test(badgeText))
-        b.textContent = "Node: api.mmir.ai free route";
-      else if (/^Active:\s*/i.test(badgeText))
-        b.textContent = canon(b.textContent.replace(/^Active:\s*/i, "Node: "));
-    }
-    [
-      ["#runtime-model-chip", "model"],
-      ["#runtime-node-chip", "node"],
-      ["#runtime-privacy-chip", "privacy"],
-      ["#runtime-tunnel-chip", "tunnel"],
-      ["#runtime-resource-chip", "resources"],
-    ].forEach(([selector, role]) => {
-      const el = q(selector);
-      if (!el) return;
-      let full = String(el.textContent || "").trim();
-      if (
-        selector === "#runtime-model-chip" &&
-        (!full || /^(No model|Model checking|Loading free routes)$/i.test(full))
-      ) {
-        el.textContent = FALLBACK;
-        el.dataset.state = "ready";
-        full = FALLBACK;
-      }
-      el.dataset.toolbarRole = role;
-      el.title = el.title || full || role;
-    });
+    w.MimirRuntimeLabels?.normalizeLegacyLabels?.();
   }
   function run() {
     if (p0ReadyShell()) {

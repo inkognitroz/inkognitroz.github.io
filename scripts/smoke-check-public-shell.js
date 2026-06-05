@@ -879,6 +879,11 @@ requireText(
 );
 requireText(
   mmirPath,
+  assetRef("runtime-label-normalizer.js"),
+  "Runtime label normalizer must be cache-busted after split from runtime controls.",
+);
+requireText(
+  mmirPath,
   assetRef("runtime-controls-fix.js"),
   "Runtime controls hotfix must be cache-busted for the P0 legacy CSS guard.",
 );
