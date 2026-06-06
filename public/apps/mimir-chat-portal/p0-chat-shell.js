@@ -27,6 +27,7 @@
   const P0_ICONS=window.MimirP0Icons||{};
   const P0_STORAGE=window.MimirP0Storage||{};
   const P0_ROUTE_RECEIPTS=window.MimirP0RouteReceipts||{};
+  const P0_HISTORY=window.MimirP0History||{};
   const MAX_HISTORY=40;
   const ICON_SHIELD=P0_ICONS.shield||'';
   const ICON_MIC=P0_ICONS.mic||'';
@@ -35,18 +36,6 @@
   const readStorageString=P0_STORAGE.readString;
   const writeStorageString=P0_STORAGE.writeString;
   const ensureStorageSchema=P0_STORAGE.ensureSchema;
-  const STALE_FAILURE_PATTERNS=[
-    /Selected browser LLM is not loaded/i,
-    /System prompt should always be the first message/i,
-    /This browser\/device does not expose WebGPU/i,
-    /Browser Model is unavailable/i,
-    /WebGPU unavailable/i,
-    /local_probe_deferred/i,
-    /Activate a backend profile/i,
-    /No model route is visible yet/i,
-    /Backend is unreachable/i,
-    /Runtime is unavailable/i
-  ];
   const DEFAULT_PROMPT_PRESETS=[
     {
       id:'quick-answer',
@@ -437,19 +426,15 @@
   }
 
   function validMessage(message){
-    return message&&
-      (message.role==='user'||message.role==='assistant')&&
-      typeof message.content==='string'&&
-      message.content.trim();
+    return P0_HISTORY.validMessage(message);
   }
 
   function staleFailureMessage(message){
-    const content=String(message?.content||'');
-    return STALE_FAILURE_PATTERNS.some(pattern=>pattern.test(content));
+    return P0_HISTORY.staleFailureMessage(message);
   }
 
   function transientInstallMessage(message){
-    return Boolean(message?.command||message?.showOsChoices||message?.variant==='install');
+    return P0_HISTORY.transientInstallMessage(message);
   }
 
   function safeText(value){
@@ -467,7 +452,7 @@
   }
 
   function makeMessageId(){
-    return 'p0-'+Date.now().toString(36)+'-'+Math.random().toString(16).slice(2,8);
+    return P0_HISTORY.makeMessageId();
   }
 
   function messageById(id){

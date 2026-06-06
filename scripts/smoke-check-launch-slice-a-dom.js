@@ -14,6 +14,7 @@ const files = {
   p0Runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'),
   p0Icons: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-icons.js'),
   p0RouteReceipts: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-receipts.js'),
+  p0History: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-history.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
@@ -239,7 +240,7 @@ requireIncludes(files.p0Runtime, "document.body.classList.add('mmir-p0-ready')",
 forbid(files.p0Runtime, /classList\.add\('mimir-p0-ready'\)/, 'P0 runtime must not use the misspelled ready class.');
 requireIncludes(files.p0Runtime, "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');
 requireIncludes(files.p0Runtime, 'function transientInstallMessage(message)', 'P0 shell must keep local install instructions chat-native but transient, not first-screen history.');
-requireIncludes(files.p0Runtime, 'Selected browser LLM is not loaded', 'P0 stale-state guard must explicitly purge the known Browser LLM failure copy.');
+requireIncludes(files.p0History, 'Selected browser LLM is not loaded', 'P0 stale-state guard must explicitly purge the known Browser LLM failure copy.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-find-local-models'", 'P0 Find local models must explicitly allow user-requested local probes.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-local-chat'", 'P0 local chat must explicitly allow user-requested local connector calls.');
 requireIncludes(files.p0Runtime, "targetAddressSpace='loopback'", 'P0 local connector checks must request loopback address-space permission.');
