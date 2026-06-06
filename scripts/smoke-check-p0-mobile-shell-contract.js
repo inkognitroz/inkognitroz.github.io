@@ -80,7 +80,7 @@ for (const marker of [
 for (const marker of [
   'Add model',
   'install command here in chat',
-  'Find models',
+  'Refresh models',
   'New chat',
   'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash'
 ]) {

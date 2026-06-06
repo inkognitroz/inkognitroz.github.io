@@ -68,7 +68,7 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  'After it says "MMIR Local Connector is ready", return here and press + -> Find models.',
+  'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models.',
   'Install instructions must tell the user exactly how to return to model discovery.'
 );
 
@@ -87,7 +87,7 @@ requireOrder(
   handleMenuSource,
   "if(action==='check-local')",
   'checkLocalModels().catch(()=>{});',
-  '+ -> Find models must stay a separate explicit discovery step after install.'
+  '+ -> Refresh models must stay a separate explicit discovery step after install.'
 );
 forbidPattern(
   handleMenuSource,

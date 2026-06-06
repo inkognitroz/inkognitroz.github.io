@@ -579,7 +579,7 @@
     if(command){
       append(
         'assistant',
-        localInstallIntro(os)+'\n\nAfter it says "MMIR Local Connector is ready", return here and press + -> Find models. If the browser asks, allow Local Network Access for mmir.ai.',
+        localInstallIntro(os)+'\n\nAfter it says "MMIR Local Connector is ready", return here and press + -> Refresh models. If the browser asks, allow Local Network Access for mmir.ai.',
         'Supergenious',
         'Local connector setup · no paid route',
         {
@@ -773,11 +773,11 @@
   function localNetworkHint(error){
     const message=String(error?.message||error||'');
     if(/local_probe_deferred/i.test(message)){
-      return 'Local connector check was deferred. Press Find models again to allow this browser to check this Mac.';
+      return 'Local connector check was deferred. Press Refresh models again to allow this browser to check this Mac.';
     }
     if(error?.name==='AbortError')return 'Local connector timed out. Check that MMIR Local Connector and Ollama are running.';
     if(/Failed to fetch|NetworkError|Load failed|blocked|CORS/i.test(message)){
-      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Find models again. The connector stays on 127.0.0.1.';
+      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Refresh models again. The connector stays on 127.0.0.1.';
     }
     return message||'Local connector is not reachable yet.';
   }
@@ -1309,7 +1309,7 @@
       renderToolbar();
       if(!quiet){
         status(state.localError,'error');
-        routeStatus('Local access blocked · Allow Local Network Access, then Find models','error');
+        routeStatus('Local access blocked · Allow Local Network Access, then Refresh models','error');
       }
       throw error;
     }
@@ -1570,21 +1570,42 @@
     button.setAttribute('aria-expanded','true');
   }
 
+  function menuTitle(text){
+    return '<div class="p0-menu-title">'+safeText(text)+'</div>';
+  }
+
+  function menuSection(text){
+    return '<div class="p0-menu-section">'+safeText(text)+'</div>';
+  }
+
+  function menuSeparator(){
+    return '<div class="p0-menu-separator"></div>';
+  }
+
+  function menuButton(action,title,detail='',options={}){
+    const className=options.className?' class="'+safeAttr(options.className)+'"':'';
+    const badge=options.badge?'<span class="p0-badge">'+safeText(options.badge)+'</span>':'';
+    const row='<span class="p0-menu-row"><strong>'+safeText(title)+'</strong>'+badge+'</span>';
+    const small=detail?'<small>'+safeText(detail)+'</small>':'';
+    return '<button'+className+' type="button" data-p0-action="'+safeAttr(action)+'">'+row+small+'</button>';
+  }
+
   function renderAddMenu(){
     const menu=menuEl('add');
     const compareModel=bestLocalModel();
     const compareAction=compareModel?(
-      '<button class="p0-featured-action" type="button" data-p0-action="best-answer-live"><span class="p0-menu-row"><strong>Best Answer</strong><span class="p0-badge">2 routes</span></span><small>Ask Supergenious and '+safeText(compareModel.label)+', then synthesize one answer.</small></button>'+
-      '<button type="button" data-p0-action="compare-live"><span class="p0-menu-row"><strong>Compare answers</strong></span><small>Show both answers side by side.</small></button><div class="p0-menu-separator"></div>'
+      menuButton('best-answer-live','Best Answer','Ask Supergenious and '+compareModel.label+', then synthesize one answer.',{className:'p0-featured-action',badge:'2 routes'})+
+      menuButton('compare-live','Compare answers','Show both answers side by side.')+
+      menuSeparator()
     ):'';
     menu.innerHTML=''+
-      '<div class="p0-menu-title">Tools</div>'+
+      menuTitle('Add')+
       compareAction+
-      '<button type="button" data-p0-action="connect-local"><strong>Add model</strong><small>Local model setup. I will detect this device and give the install command here in chat.</small></button>'+
-      '<button type="button" data-p0-action="check-local"><strong>Find models</strong><small>Refresh after the connector says ready.</small></button>'+
-      '<button type="button" data-p0-action="prompt-presets"><strong>Prompt presets</strong><small>Save and reuse prompt starters in this browser.</small></button>'+
-      '<div class="p0-menu-separator"></div>'+
-      '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
+      menuButton('connect-local','Add model','Get the exact install command here in chat.')+
+      menuButton('check-local','Refresh models','Use after the connector says ready.')+
+      menuButton('prompt-presets','Prompt presets','Use or save prompt starters in this browser.')+
+      menuSeparator()+
+      menuButton('new-chat','New chat','Clear this browser chat only.');
   }
 
   function renderPromptPresetMenu(){
@@ -1593,19 +1614,19 @@
     const catalog=promptPresetCatalog();
     const saved=savedPromptPresets();
     const presetButtons=catalog.map(preset=>
-      '<button type="button" data-p0-action="load-preset:'+safeAttr(preset.id)+'"><strong>'+safeText(preset.title)+'</strong><small>'+safeText(preset.detail||'Load into composer.')+'</small></button>'
+      menuButton('load-preset:'+preset.id,preset.title,preset.detail||'Load into composer.')
     ).join('');
     const savedButtons=saved.map(preset=>
-      '<button type="button" data-p0-action="load-preset:'+safeAttr(preset.id)+'"><strong>'+safeText(preset.title)+'</strong><small>Saved locally in this browser.</small></button>'
+      menuButton('load-preset:'+preset.id,preset.title,'Saved locally in this browser.')
     ).join('');
     menu.innerHTML=''+
-      '<div class="p0-menu-title">Prompt presets</div>'+
-      '<button type="button" data-p0-action="add-menu-main"><strong>Back</strong><small>Return to tools.</small></button>'+
-      '<button type="button" data-p0-action="save-prompt-local"><strong>Save current prompt</strong><small>Stores only in this browser, not on MMIR servers.</small></button>'+
-      '<div class="p0-menu-separator"></div>'+
-      '<div class="p0-menu-section">Starters</div>'+
+      menuTitle('Prompt presets')+
+      menuButton('add-menu-main','Back','Return to Add.')+
+      menuButton('save-prompt-local','Save current prompt','Stores only in this browser, not on MMIR servers.')+
+      menuSeparator()+
+      menuSection('Starters')+
       presetButtons+
-      (savedButtons?'<div class="p0-menu-section">Saved in this browser</div>'+savedButtons:'');
+      (savedButtons?menuSection('Saved in this browser')+savedButtons:'');
   }
 
   function renderModelMenu(){
@@ -2186,7 +2207,7 @@
       return;
     }
     if(explicit?.mode==='missing-local'){
-      status('Find models first, then use @supergenius @gemma for compare.','error');
+      status('Refresh models first, then use @supergenius @gemma for compare.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
       return;
@@ -2285,7 +2306,7 @@
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
-      status('Find models first, then '+title+' can use two routes.','error');
+      status('Refresh models first, then '+title+' can use two routes.','error');
       input?.focus();
       return;
     }
