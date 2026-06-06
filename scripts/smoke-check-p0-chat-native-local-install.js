@@ -43,13 +43,23 @@ const transientSource = functionSource('transientInstallMessage', 'safeText');
 
 requireIncludes(
   p0Shell,
-  "const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';",
+  'const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};',
+  'P0 local-node onboarding must consume the shared local install command helper.'
+);
+requireIncludes(
+  p0Shell,
+  "MAC_LINUX_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.macLinux||'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash'",
   'Mac/Linux local-node onboarding must keep the proven one-line Terminal command.'
 );
 requireIncludes(
   p0Shell,
-  "const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass",
+  "WINDOWS_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.windows||'powershell -NoProfile -ExecutionPolicy Bypass",
   'Windows local-node onboarding must remain a chat-provided PowerShell command, not a ZIP/download detour.'
+);
+requireIncludes(
+  p0Shell,
+  'window.MimirLocalInstallCommands?.commandFor?.(os)',
+  'P0 local install flow must ask the shared helper for the OS-specific command first.'
 );
 requireIncludes(
   p0Shell,
