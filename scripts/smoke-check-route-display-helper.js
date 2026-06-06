@@ -48,6 +48,9 @@ assert.equal(helper.routeName({ id: 'mmir-api-bootstrap' }), 'api.mmir.ai free r
 assert.equal(helper.routeName({ provider: 'local-node', name: 'MMIR Local Node' }), 'MMIR Local Node', 'local route label must stay human-readable');
 assert.equal(helper.trustLabel({ provider: 'local-node', url: 'http://127.0.0.1:3000' }), 'local/private', 'local node trust must stay private');
 assert.equal(helper.trustLabel({ provider: 'mmir', cost: 'free' }), 'free/protected', 'free hosted route trust must stay protected');
+assert.equal(helper.freshnessLabel({ freshness_state: 'verified_current' }), 'verified fact', 'verified route freshness must stay compact');
+assert.equal(helper.freshnessLabel({ freshness_state: 'stale', factuality_guardrail_action: 'demote' }), 'stale fact demoted', 'stale route freshness must warn clearly');
+assert.equal(helper.freshnessLabel({ freshness_state: 'uncertain', factuality_guardrail_action: 'requires_check' }), 'needs fact check', 'uncertain route freshness must stay cautious');
 assert.equal(windowTarget.lastEvent?.type, 'mimir-route-display-ready', 'helper must emit readiness evidence');
 
 for (const file of routeDisplayConsumers) {

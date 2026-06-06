@@ -26,7 +26,7 @@
     "public-launch-guard.js": "20260604-hidden-capability-inert-v1",
     "quiet-first-paint-hotfix.js": "20260531-local-loopback-v1",
     "route-chips.js": "20260604-route-display-consumers-v1",
-    "route-display.js": "20260604-route-display-v1",
+    "route-display.js": "20260606-route-display-freshness-v1",
     "runtime-clean-shell-guard.js": "20260605-clean-shell-guard-v1",
     "runtime-controls-fix.js": "20260605-clean-shell-guard-v1",
     "runtime-controls-webgpu-truth.js": "20260531-webgpu-truth-v2",
