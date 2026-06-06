@@ -22,8 +22,6 @@
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
-  const MAC_LINUX_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.macLinux||'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
-  const WINDOWS_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.windows||'powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
   const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
   const ICON_MIC='<svg class="p0-icon p0-icon-mic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>';
@@ -540,35 +538,19 @@
   }
 
   function detectInstallOs(){
-    const platform=String(navigator.userAgentData?.platform||navigator.platform||'').toLowerCase();
-    const agent=String(navigator.userAgent||'').toLowerCase();
-    const probe=platform+' '+agent;
-    if(/iphone|ipad|android|mobile/.test(probe))return 'mobile';
-    if(/mac|darwin/.test(probe))return 'mac';
-    if(/win/.test(probe))return 'windows';
-    if(/linux|x11|ubuntu|debian|raspbian|arm/.test(probe))return 'linux';
-    return 'unknown';
+    return LOCAL_INSTALL_COMMANDS.detectOs?.()||'unknown';
   }
 
   function localInstallCommand(os){
-    const sharedCommand=window.MimirLocalInstallCommands?.commandFor?.(os);
-    if(sharedCommand)return sharedCommand;
-    if(os==='windows')return WINDOWS_INSTALL_COMMAND;
-    if(os==='mac'||os==='linux')return MAC_LINUX_INSTALL_COMMAND;
-    return '';
+    return LOCAL_INSTALL_COMMANDS.commandFor?.(os)||'';
   }
 
   function localInstallIntro(os){
-    if(os==='mac'){
-      return 'I detected macOS. Do you have a Mac computer? Copy and paste this in Terminal to connect a local node. It installs MMIR Local Connector, downloads a small starter model when needed, and keeps the node on 127.0.0.1.';
-    }
-    if(os==='linux'){
-      return 'I detected Linux. Copy and paste this in the terminal on the computer that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
-    }
-    if(os==='windows'){
-      return 'I detected Windows. Copy and paste this in PowerShell on the PC that will host your local model. It installs MMIR Local Connector and keeps the node private on localhost.';
-    }
-    return 'Which computer will host your local model? Choose Mac, Windows or Linux, and I will give you the exact command here in chat.';
+    return LOCAL_INSTALL_COMMANDS.introFor?.(os)||'Which computer will host your local model? Choose Mac, Windows or Linux, and I will give you the exact command here in chat.';
+  }
+
+  function localInstallReturnInstruction(){
+    return LOCAL_INSTALL_COMMANDS.returnInstruction?.()||'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models. If the browser asks, allow Local Network Access for mmir.ai.';
   }
 
   function startLocalInstallAssistant(forcedOs=''){
@@ -579,7 +561,7 @@
     if(command){
       append(
         'assistant',
-        localInstallIntro(os)+'\n\nAfter it says "MMIR Local Connector is ready", return here and press + -> Refresh models. If the browser asks, allow Local Network Access for mmir.ai.',
+        localInstallIntro(os)+'\n\n'+localInstallReturnInstruction(),
         'Supergenious',
         'Local connector setup · no paid route',
         {

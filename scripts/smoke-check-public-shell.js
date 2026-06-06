@@ -822,8 +822,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models.',
-  "P0 local install copy must describe automatic return flow.",
+  "localInstallReturnInstruction()",
+  "P0 local install flow must get automatic return copy from the shared helper.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -837,13 +837,23 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash",
-  "P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.",
+  "LOCAL_INSTALL_COMMANDS.commandFor?.(os)",
+  "P0 local setup must get OS-specific commands from the shared helper.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "LOCAL_INSTALL_COMMANDS.introFor?.(os)",
+  "P0 local setup must get simple chat-first copy from the shared helper.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "local-install-commands.js"),
+  "curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash",
+  "Shared local install helper must expose the working Mac/Linux Terminal bootstrap command.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "local-install-commands.js"),
   "Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.",
-  "P0 local setup must use simple chat-first Mac copy.",
+  "Shared local install helper must use simple chat-first Mac copy.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

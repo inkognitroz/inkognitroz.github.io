@@ -48,23 +48,23 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  "MAC_LINUX_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.macLinux||'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash'",
-  'Mac/Linux local-node onboarding must keep the proven one-line Terminal command.'
+  'LOCAL_INSTALL_COMMANDS.commandFor?.(os)',
+  'P0 local install flow must ask the shared helper for the OS-specific command.'
 );
 requireIncludes(
   p0Shell,
-  "WINDOWS_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.windows||'powershell -NoProfile -ExecutionPolicy Bypass",
-  'Windows local-node onboarding must remain a chat-provided PowerShell command, not a ZIP/download detour.'
+  'LOCAL_INSTALL_COMMANDS.detectOs?.()',
+  'P0 local install flow must delegate OS detection to the shared helper.'
 );
 requireIncludes(
   p0Shell,
-  'window.MimirLocalInstallCommands?.commandFor?.(os)',
-  'P0 local install flow must ask the shared helper for the OS-specific command first.'
+  'LOCAL_INSTALL_COMMANDS.introFor?.(os)',
+  'P0 local install flow must delegate install copy to the shared helper.'
 );
 requireIncludes(
   p0Shell,
-  'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.',
-  'Mac onboarding must stay plain-language and chat-native.'
+  'localInstallIntro(os)+\'\\n\\n\'+localInstallReturnInstruction()',
+  'Mac onboarding must stay plain-language, helper-owned and chat-native.'
 );
 requireIncludes(
   p0Shell,
