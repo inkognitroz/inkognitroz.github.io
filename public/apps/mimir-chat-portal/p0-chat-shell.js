@@ -25,9 +25,15 @@
   const P0_TEXT=window.MimirP0Text||{};
   const P0_CLIPBOARD=window.MimirP0Clipboard||{};
   const P0_ICONS=window.MimirP0Icons||{};
+  const P0_STORAGE=window.MimirP0Storage||{};
   const MAX_HISTORY=40;
   const ICON_SHIELD=P0_ICONS.shield||'';
   const ICON_MIC=P0_ICONS.mic||'';
+  const readJson=P0_STORAGE.readJson;
+  const writeJson=P0_STORAGE.writeJson;
+  const readStorageString=P0_STORAGE.readString;
+  const writeStorageString=P0_STORAGE.writeString;
+  const ensureStorageSchema=P0_STORAGE.ensureSchema;
   const STALE_FAILURE_PATTERNS=[
     /Selected browser LLM is not loaded/i,
     /System prompt should always be the first message/i,
@@ -131,14 +137,7 @@
   let stopRequested=false;
 
   function initialMessages(){
-    const schema=localStorage.getItem(HISTORY_SCHEMA_KEY);
-    if(schema!==HISTORY_SCHEMA){
-      try{
-        localStorage.removeItem(HISTORY_KEY);
-        localStorage.setItem(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);
-      }catch(error){}
-      return [];
-    }
+    if(!ensureStorageSchema(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA,[HISTORY_KEY]))return [];
     const raw=readJson(HISTORY_KEY,[]);
     const clean=raw
       .filter(validMessage)
@@ -153,25 +152,12 @@
     return clean;
   }
 
-  function readJson(key,fallback){
-    try{
-      const value=JSON.parse(localStorage.getItem(key)||'null');
-      return value==null?fallback:value;
-    }catch(error){
-      return fallback;
-    }
-  }
-
-  function writeJson(key,value){
-    try{localStorage.setItem(key,JSON.stringify(value));}catch(error){}
-  }
-
   function readActiveModelId(){
-    return String(localStorage.getItem(ACTIVE_MODEL_KEY)||'mmir-supergenius');
+    return readStorageString(ACTIVE_MODEL_KEY,'mmir-supergenius');
   }
 
   function persistActiveModelId(){
-    try{localStorage.setItem(ACTIVE_MODEL_KEY,String(state.activeModelId||'mmir-supergenius'));}catch(error){}
+    writeStorageString(ACTIVE_MODEL_KEY,state.activeModelId||'mmir-supergenius');
   }
 
   function pinnedRouteIds(){
@@ -196,7 +182,7 @@
   }
 
   function modelFilter(){
-    const value=String(localStorage.getItem(MODEL_FILTER_KEY)||'all');
+    const value=readStorageString(MODEL_FILTER_KEY,'all');
     return ['all','hosted','local','pinned'].includes(value)?value:'all';
   }
 
@@ -225,7 +211,7 @@
 
   function setModelFilter(value){
     const next=['all','hosted','local','pinned'].includes(value)?value:'all';
-    try{localStorage.setItem(MODEL_FILTER_KEY,next);}catch(error){}
+    writeStorageString(MODEL_FILTER_KEY,next);
     return next;
   }
 
@@ -1926,7 +1912,7 @@
   }
 
   function saveHistory(){
-    try{localStorage.setItem(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);}catch(error){}
+    writeStorageString(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);
     writeJson(HISTORY_KEY,state.messages.slice(-MAX_HISTORY));
   }
 

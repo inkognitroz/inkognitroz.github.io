@@ -4,7 +4,9 @@ import vm from 'node:vm';
 
 const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
+const storagePath = resolve(root, 'public/apps/mimir-chat-portal/p0-storage.js');
 const runtime = readFileSync(runtimePath, 'utf8');
+const storageHelper = readFileSync(storagePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
 const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
 
@@ -34,6 +36,7 @@ context.window = context;
 context.globalThis = context;
 
 vm.createContext(context);
+vm.runInContext(storageHelper, context, { filename: storagePath });
 vm.runInContext(runtime.replace(bootBlock, exportBlock), context, { filename: runtimePath });
 
 const testApi = context.__p0RouteTagTest;
