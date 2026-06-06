@@ -12,6 +12,7 @@ const files = {
   routeChips: join(publicDir, 'apps', 'mimir-chat-portal', 'route-chips.js'),
   p0Css: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'),
   p0Runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'),
+  p0Icons: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-icons.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
@@ -126,8 +127,8 @@ requireIncludes(files.mmir, assetRef('p0-chat-shell.js'), 'P0 simple chat shell 
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
-requireIncludes(files.p0Runtime, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
-requireIncludes(files.p0Runtime, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
+requireIncludes(files.p0Icons, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
+requireIncludes(files.p0Icons, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
 requireIncludes(files.p0Runtime, 'id="p0-input"', 'P0 shell must expose #p0-input as the canonical visible first-chat input.');
 requireIncludes(files.p0Runtime, 'aria-label="Message Supergenious"', 'P0 canonical input must have an accessible label for browser/UI automation.');
 requireIncludes(files.p0Runtime, 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
