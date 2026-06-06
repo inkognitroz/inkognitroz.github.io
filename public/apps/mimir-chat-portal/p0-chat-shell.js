@@ -21,8 +21,9 @@
   const PROMPT_CATALOG_KEY='mmir-p0-prompt-catalog-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
-  const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
-  const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
+  const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
+  const MAC_LINUX_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.macLinux||'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
+  const WINDOWS_INSTALL_COMMAND=LOCAL_INSTALL_COMMANDS.windows||'powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
   const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
   const ICON_MIC='<svg class="p0-icon p0-icon-mic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>';
@@ -550,6 +551,8 @@
   }
 
   function localInstallCommand(os){
+    const sharedCommand=window.MimirLocalInstallCommands?.commandFor?.(os);
+    if(sharedCommand)return sharedCommand;
     if(os==='windows')return WINDOWS_INSTALL_COMMAND;
     if(os==='mac'||os==='linux')return MAC_LINUX_INSTALL_COMMAND;
     return '';

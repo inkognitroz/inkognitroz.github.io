@@ -3,7 +3,10 @@
   const panels=Array.from(document.querySelectorAll('[data-preview-panel]'));
   const copyButton=document.getElementById('copy-preview-command');
   const copyStatus=document.getElementById('copy-preview-status');
-  const installCommand='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
+  const commandEl=document.getElementById('preview-install-command');
+  const installCommand=window.MimirLocalInstallCommands?.commandFor?.('mac')||'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
+
+  if(commandEl)commandEl.textContent=installCommand;
 
   function show(name){
     tabs.forEach(tab=>{

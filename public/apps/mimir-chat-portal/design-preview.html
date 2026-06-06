@@ -88,7 +88,7 @@
           <section class="preview-answer preview-install">
             <p class="preview-route">Command ready · local setup</p>
             <h2>Detected Mac. Paste this into Terminal.</h2>
-            <pre><code>curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash</code></pre>
+            <pre><code id="preview-install-command"></code></pre>
             <button type="button" id="copy-preview-command">Copy install command</button>
             <p id="copy-preview-status" class="preview-note" aria-live="polite">No redirect. No zip. The instruction appears in chat.</p>
           </section>
@@ -110,6 +110,7 @@
       <span>No production UI change</span>
     </aside>
   </main>
+  <script src="./local-install-commands.js"></script>
   <script src="./design-preview.js"></script>
 </body>
 </html>

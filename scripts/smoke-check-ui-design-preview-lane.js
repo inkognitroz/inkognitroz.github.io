@@ -35,8 +35,11 @@ if (!previewHtml.includes('data-mimir-design-preview="B1-05"')) {
 if (!previewHtml.includes('data-preview-only="true"')) {
   fail('Preview HTML must mark itself preview-only.');
 }
-if (!previewHtml.includes('./design-preview.css') || !previewHtml.includes('./design-preview.js')) {
-  fail('Preview HTML must load only the isolated preview CSS/JS.');
+if (!previewHtml.includes('./design-preview.css') || !previewHtml.includes('./local-install-commands.js') || !previewHtml.includes('./design-preview.js')) {
+  fail('Preview HTML must load the isolated preview CSS/JS and shared local install command helper.');
+}
+if (previewHtml.indexOf('./local-install-commands.js') > previewHtml.indexOf('./design-preview.js')) {
+  fail('Preview HTML must load local-install-commands.js before design-preview.js.');
 }
 if (mmirHtml.includes('design-preview')) {
   fail('public/mmir.html must not load or link the design preview lane.');
@@ -60,6 +63,9 @@ if (!previewHtml.includes('role="tablist"') || !previewHtml.includes('role="tabp
 });
 if (!previewJs.includes('previewOnly:true') || /fetch\s*\(/.test(previewJs)) {
   fail('Preview JS must be preview-only and must not fetch live routes.');
+}
+if (!previewJs.includes('window.MimirLocalInstallCommands') || !previewHtml.includes('id="preview-install-command"')) {
+  fail('Preview Add Model command must come from the shared local install command helper.');
 }
 if (!previewJs.includes('panel.hidden=!active') || !previewJs.includes("tab.setAttribute('aria-selected'")) {
   fail('Preview JS must keep tab and panel accessibility state in sync.');
