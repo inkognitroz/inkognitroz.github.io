@@ -14,6 +14,7 @@
   const MODELS_KEY='mmir-p0-active-models-v1';
   const ACTIVE_MODEL_KEY='mmir-p0-active-model-id-v1';
   const PINNED_ROUTES_KEY='mmir-p0-pinned-routes-v1';
+  const MODEL_FILTER_KEY='mmir-p0-model-filter-v1';
   const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
   const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
   const PROMPT_PRESETS_KEY='mmir-p0-prompt-presets-v1';
@@ -190,6 +191,47 @@
       : pinnedRouteIds().filter(item=>item!==value);
     writeJson(PINNED_ROUTES_KEY,next);
     return next;
+  }
+
+  function modelFilter(){
+    const value=String(localStorage.getItem(MODEL_FILTER_KEY)||'all');
+    return ['all','hosted','local','pinned'].includes(value)?value:'all';
+  }
+
+  function modelFilterLabel(value=modelFilter()){
+    return {
+      all:'All',
+      hosted:'Hosted',
+      local:'Local',
+      pinned:'Pinned'
+    }[value]||'All';
+  }
+
+  function modelFilterDetail(value=modelFilter()){
+    return {
+      all:'Show every available route.',
+      hosted:'Show hosted/default routes only.',
+      local:'Show private local routes only.',
+      pinned:'Show routes pinned in this browser.'
+    }[value]||'Show every available route.';
+  }
+
+  function nextModelFilter(){
+    const order=['all','hosted','local','pinned'];
+    return order[(order.indexOf(modelFilter())+1)%order.length]||'all';
+  }
+
+  function setModelFilter(value){
+    const next=['all','hosted','local','pinned'].includes(value)?value:'all';
+    try{localStorage.setItem(MODEL_FILTER_KEY,next);}catch(error){}
+    return next;
+  }
+
+  function modelVisibleInFilter(model,value=modelFilter()){
+    if(value==='hosted')return model?.route==='hosted';
+    if(value==='local')return model?.route==='local';
+    if(value==='pinned')return routePinned(model);
+    return true;
   }
 
   function promptPresetCatalog(){
@@ -1510,10 +1552,12 @@
     const local=bestLocalModel();
     const active=activeModel();
     const activePinned=routePinned(active);
+    const filter=modelFilter();
     const pinControl='<button type="button" data-p0-action="'+(activePinned?'unpin-active-route':'pin-active-route')+'"><strong>'+(activePinned?'Unpin selected route':'Pin selected route')+'</strong><small>'+(activePinned?'Keep normal score ranking for '+safeText(active.label)+'.':'Keep '+safeText(active.label)+' at the top of this browser model picker.')+'</small></button><div class="p0-menu-separator"></div>';
+    const filterControl='<button type="button" data-p0-action="cycle-model-filter"><strong>Filter: '+safeText(modelFilterLabel(filter))+'</strong><small>'+safeText(modelFilterDetail(filter))+'</small></button>';
     const rankMap=routeRankMap();
-    const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'));
-    const localModels=rankedModels(state.models.filter(model=>model.route==='local'));
+    const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'&&modelVisibleInFilter(model,filter)));
+    const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
       const benchmark=routeBenchmarkSummary(model);
       const shortDetail=model.route==='local'
@@ -1524,9 +1568,11 @@
     const buttons=''+
       renderButtons(hostedModels)+
       (localModels.length?'<div class="p0-menu-section">Private local models</div>'+renderButtons(localModels):'');
+    const filterHint=(hostedModels.length||localModels.length)?'':
+      '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+pinControl+buttons+localHint;
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+pinControl+filterControl+'<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div><div class="p0-menu-separator"></div>'+buttons+filterHint+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
@@ -1561,6 +1607,10 @@
   }
 
   function handleMenuAction(action){
+    if(action==='cycle-model-filter'){
+      cycleModelFilter();
+      return true;
+    }
     if(action==='pin-active-route'){
       setActiveRoutePinned(true);
       return true;
@@ -1625,6 +1675,13 @@
     renderToolbar();
     status((pinned?'Pinned ':'Unpinned ')+model.label+'.','ready');
     routeStatus((pinned?'Pinned route':'Route unpinned')+' · '+routeReceipt(model).text,routeReceipt(model).state);
+  }
+
+  function cycleModelFilter(){
+    const value=setModelFilter(nextModelFilter());
+    renderModelMenu();
+    status('Model filter: '+modelFilterLabel(value)+'.','ready');
+    routeStatus('Model filter · '+modelFilterLabel(value)+' · browser local','hosted');
   }
 
   async function saveCurrentPromptPreset(){
