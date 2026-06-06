@@ -15,7 +15,7 @@ function fail(message) {
   process.exit(1);
 }
 
-if (!helper.includes("version='20260606-b1-06-p0-storage-v1'")) {
+if (!helper.includes("version='20260606-b1-06-p0-storage-v2'")) {
   fail('P0 storage helper version must be explicit.');
 }
 if (!helper.includes('readJson') || !helper.includes('writeJson') || !helper.includes('ensureSchema')) {
@@ -27,13 +27,13 @@ if (!shell.includes('const P0_STORAGE=window.MimirP0Storage||{};')) {
 if (!shell.includes('P0_STORAGE.readJson') || !shell.includes('P0_STORAGE.writeJson') || !shell.includes('P0_STORAGE.ensureSchema')) {
   fail('P0 shell must delegate JSON/schema storage to the helper.');
 }
-if (!html.includes('p0-storage.js?v=20260606-b1-06-p0-storage-v1')) {
+if (!html.includes('p0-storage.js?v=20260606-b1-06-p0-storage-v2')) {
   fail('Public MMIR shell must load p0-storage.js with a cache-busted version.');
 }
-if (html.indexOf('p0-storage.js?v=20260606-b1-06-p0-storage-v1') > html.indexOf('p0-chat-shell.js?v=')) {
+if (html.indexOf('p0-storage.js?v=20260606-b1-06-p0-storage-v2') > html.indexOf('p0-chat-shell.js?v=')) {
   fail('P0 storage helper must load before the P0 shell.');
 }
-if (!manifest.includes('"p0-storage.js": "20260606-b1-06-p0-storage-v1"')) {
+if (!manifest.includes('"p0-storage.js": "20260606-b1-06-p0-storage-v2"')) {
   fail('Asset manifest must track p0-storage.js.');
 }
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-storage-helper.js')) {
@@ -69,7 +69,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(helper, context, { filename: 'p0-storage.js' });
 const api = context.window.MimirP0Storage;
-if (!api || api.version !== '20260606-b1-06-p0-storage-v1') fail('P0 storage helper must register on window.');
+if (!api || api.version !== '20260606-b1-06-p0-storage-v2') fail('P0 storage helper must register on window.');
 if (!api.writeJson('models', [{ id: 'mmir-supergenius' }])) fail('writeJson should report success.');
 if (api.readJson('models', [])[0]?.id !== 'mmir-supergenius') fail('readJson should return stored JSON.');
 if (!api.writeString('active', 'mmir-supergenius')) fail('writeString should report success.');

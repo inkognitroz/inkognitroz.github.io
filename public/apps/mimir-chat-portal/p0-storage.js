@@ -1,5 +1,5 @@
 (function(){
-  const version='20260606-b1-06-p0-storage-v1';
+  const version='20260606-b1-06-p0-storage-v2';
 
   function readString(key,fallback=''){
     try{
