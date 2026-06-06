@@ -1571,23 +1571,19 @@
   }
 
   function menuTitle(text){
-    return '<div class="p0-menu-title">'+safeText(text)+'</div>';
+    return window.MimirP0Menu.title(text);
   }
 
   function menuSection(text){
-    return '<div class="p0-menu-section">'+safeText(text)+'</div>';
+    return window.MimirP0Menu.section(text);
   }
 
   function menuSeparator(){
-    return '<div class="p0-menu-separator"></div>';
+    return window.MimirP0Menu.separator();
   }
 
   function menuButton(action,title,detail='',options={}){
-    const className=options.className?' class="'+safeAttr(options.className)+'"':'';
-    const badge=options.badge?'<span class="p0-badge">'+safeText(options.badge)+'</span>':'';
-    const row='<span class="p0-menu-row"><strong>'+safeText(title)+'</strong>'+badge+'</span>';
-    const small=detail?'<small>'+safeText(detail)+'</small>':'';
-    return '<button'+className+' type="button" data-p0-action="'+safeAttr(action)+'">'+row+small+'</button>';
+    return window.MimirP0Menu.button(action,title,detail,options);
   }
 
   function renderAddMenu(){
@@ -1648,14 +1644,14 @@
     }).join('');
     const buttons=''+
       renderButtons(hostedModels)+
-      (localModels.length?'<div class="p0-menu-section">Private local models</div>'+renderButtons(localModels):'');
+      (localModels.length?menuSection('Private local models')+renderButtons(localModels):'');
     const filterHint=(hostedModels.length||localModels.length)?'':
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
-    const routeControls='<div class="p0-menu-separator"></div><button type="button" data-p0-action="model-route-controls"><strong>Route controls</strong><small>Pin routes, change filters and inspect route details.</small></button>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+detailReceipt+'<div class="p0-menu-separator"></div>'+buttons+filterHint+activeFilterHint+localHint+routeControls;
+    const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, change filters and inspect route details.');
+    menu.innerHTML=menuTitle('Models')+detailReceipt+menuSeparator()+buttons+filterHint+activeFilterHint+localHint+routeControls;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
@@ -1673,13 +1669,17 @@
     const active=activeModel();
     const activePinned=routePinned(active);
     const filter=modelFilter();
-    const pinControl='<button type="button" data-p0-action="'+(activePinned?'unpin-active-route':'pin-active-route')+'"><strong>'+(activePinned?'Unpin selected route':'Pin selected route')+'</strong><small>'+(activePinned?'Keep normal score ranking for '+safeText(active.label)+'.':'Keep '+safeText(active.label)+' at the top of this browser model picker.')+'</small></button>';
-    const filterControl='<button type="button" data-p0-action="cycle-model-filter"><strong>Filter: '+safeText(modelFilterLabel(filter))+'</strong><small>'+safeText(modelFilterDetail(filter))+'</small></button>';
+    const pinControl=menuButton(
+      activePinned?'unpin-active-route':'pin-active-route',
+      activePinned?'Unpin selected route':'Pin selected route',
+      activePinned?'Keep normal score ranking for '+active.label+'.':'Keep '+active.label+' at the top of this browser model picker.'
+    );
+    const filterControl=menuButton('cycle-model-filter','Filter: '+modelFilterLabel(filter),modelFilterDetail(filter));
     const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Route details</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
     menu.innerHTML=''+
-      '<div class="p0-menu-title">Route controls</div>'+
-      '<button type="button" data-p0-action="model-menu-main"><strong>Back to models</strong><small>Return to the simple model list.</small></button>'+
-      '<div class="p0-menu-separator"></div>'+
+      menuTitle('Route controls')+
+      menuButton('model-menu-main','Back to models','Return to the simple model list.')+
+      menuSeparator()+
       pinControl+
       filterControl+
       detailReceipt+
@@ -1693,7 +1693,7 @@
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     const receipt=routeReceipt(model);
     menu.innerHTML=''+
-      '<div class="p0-menu-title">Privacy</div>'+
+      menuTitle('Privacy')+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
       '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';

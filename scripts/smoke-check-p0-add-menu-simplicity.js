@@ -46,13 +46,13 @@ requireIncludes(
 );
 requireIncludes(
   menuButton,
-  'safeAttr(action)',
-  'Shared P0 menu button helper must escape actions.'
+  'window.MimirP0Menu.button(action,title,detail,options)',
+  'P0 menuButton wrapper must delegate rendering to the shared P0 menu helper.'
 );
 requireIncludes(
-  menuButton,
-  'safeText(title)',
-  'Shared P0 menu button helper must escape labels.'
+  p0Shell,
+  'window.MimirP0Menu.title(text)',
+  'P0 menuTitle wrapper must delegate rendering to the shared P0 menu helper.'
 );
 requireIncludes(
   renderAddMenu,
@@ -76,13 +76,13 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260606-b1-06-add-menu-v1',
-  'mmir.html must cache-bust the P0 runtime after add-menu changes.'
+  'p0-chat-shell.js?v=20260606-b1-06-p0-menu-v1',
+  'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260606-b1-06-add-menu-v1"',
-  'Asset manifest must track the P0 add-menu runtime version.'
+  '"p0-chat-shell.js": "20260606-b1-06-p0-menu-v1"',
+  'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(
   renderAddMenu,
