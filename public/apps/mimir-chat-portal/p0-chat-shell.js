@@ -608,37 +608,13 @@
       status('No command found to copy.','error');
       return;
     }
-    try{
-      await navigator.clipboard.writeText(command);
+    const copied=await writeClipboard(command);
+    if(copied){
       status('Command copied. Paste it into Terminal or PowerShell.','ready');
-    }catch(error){
-      const textarea=document.createElement('textarea');
-      textarea.value=command;
-      textarea.setAttribute('readonly','');
-      textarea.style.position='fixed';
-      textarea.style.left='-9999px';
-      textarea.style.top='0';
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      try{
-        const copied=document.execCommand('copy');
-        if(copied){
-          status('Command copied. Paste it into Terminal or PowerShell.','ready');
-        }else if(selectCommandText(trigger)){
-          status('Command selected. Press Cmd+C, then paste it into Terminal or PowerShell.','ready');
-        }else{
-          status('Copy failed. Select the command manually.','error');
-        }
-      }catch(fallbackError){
-        if(selectCommandText(trigger)){
-          status('Command selected. Press Cmd+C, then paste it into Terminal or PowerShell.','ready');
-        }else{
-          status('Copy failed. Select the command manually.','error');
-        }
-      }finally{
-        textarea.remove();
-      }
+    }else if(selectCommandText(trigger)){
+      status('Command selected. Press Cmd+C, then paste it into Terminal or PowerShell.','ready');
+    }else{
+      status('Copy failed. Select the command manually.','error');
     }
   }
 
