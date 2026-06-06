@@ -77,6 +77,8 @@
     localHardware:null,
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
   };
+  let activeChatController=null;
+  let stopRequested=false;
 
   function initialMessages(){
     const schema=localStorage.getItem(HISTORY_SCHEMA_KEY);
@@ -519,7 +521,13 @@
     const controller=new AbortController();
     const timeoutMs=options.timeoutMs||45000;
     const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-    const {timeoutMs:ignored,...rest}=options;
+    const externalSignal=options.signal;
+    const abortFromExternal=()=>controller.abort();
+    if(externalSignal){
+      if(externalSignal.aborted)controller.abort();
+      else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
+    }
+    const {timeoutMs:ignored,signal:ignoredSignal,...rest}=options;
     try{
       const response=await fetch(url,fetchOptions(url,{...rest,signal:controller.signal}));
       let data=null;
@@ -533,6 +541,7 @@
       return data;
     }finally{
       clearTimeout(timeout);
+      if(externalSignal)externalSignal.removeEventListener('abort',abortFromExternal);
     }
   }
 
@@ -1105,11 +1114,21 @@
     form.addEventListener('submit',(event)=>{
       event.preventDefault();
       event.stopImmediatePropagation();
+      if(state.busy){
+        stopActiveResponse();
+        return;
+      }
       sendMessage();
     },true);
     input.addEventListener('keydown',(event)=>{
+      if(event.key==='Escape'&&state.busy){
+        event.preventDefault();
+        stopActiveResponse();
+        return;
+      }
       if(event.key==='Enter'&&!event.shiftKey){
         event.preventDefault();
+        if(state.busy)return;
         sendMessage();
       }
     });
@@ -1547,6 +1566,40 @@
     document.getElementById('p0-input')?.focus();
   }
 
+  function updateSendControl(){
+    const send=document.getElementById('p0-send');
+    if(!send)return;
+    send.disabled=false;
+    send.classList.toggle('is-stopping',state.busy);
+    send.dataset.state=state.busy?'stopping':'send';
+    send.textContent=state.busy?'■':'↑';
+    send.setAttribute('aria-label',state.busy?'Stop current response':'Send message');
+    send.setAttribute('title',state.busy?'Stop':'Send');
+  }
+
+  function beginResponse(){
+    stopRequested=false;
+    activeChatController=new AbortController();
+    state.busy=true;
+    updateSendControl();
+    return activeChatController.signal;
+  }
+
+  function finishResponse(){
+    state.busy=false;
+    activeChatController=null;
+    updateSendControl();
+  }
+
+  function stopActiveResponse(){
+    if(!state.busy||!activeChatController)return;
+    stopRequested=true;
+    activeChatController.abort();
+    status('Stopping response...','loading');
+    routeStatus('Stopping · current route cancelled','hosted');
+    updateSendControl();
+  }
+
   function responseText(payload){
     return String(payload?.choices?.[0]?.message?.content||payload?.content||payload?.message||'').trim();
   }
@@ -1636,30 +1689,32 @@
       .trim();
   }
 
-  async function chatHosted(prompt){
+  async function chatHosted(prompt,signal){
     const payload=hostedPayload(prompt);
     const data=await fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
-      timeoutMs:45000
+      timeoutMs:45000,
+      signal
     });
     return responseText(data)||'Supergenious returned an empty response.';
   }
 
-  async function chatLocal(prompt,model){
+  async function chatLocal(prompt,model,signal){
     allowLocalProbes('p0-local-chat',120000);
     const token=await pairLocal();
     const data=await fetchJson(LOCAL_URL+CHAT_PATH,{
       method:'POST',
       headers:localHeaders(token),
       body:JSON.stringify(localPayload(prompt,model)),
-      timeoutMs:60000
+      timeoutMs:60000,
+      signal
     });
     return responseText(data)||'Local model returned an empty response.';
   }
 
-  async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore){
+  async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal){
     const localLabel=localModel?.label||'local model';
     const synthesisPrompt='Create one concise best answer for the user by comparing these two model answers. '+
       'Prefer current public facts from Supergenious when the local model is stale or vague. '+
@@ -1671,13 +1726,15 @@
       '- '+localLabel+': '+scoreSummary(localScore)+'\n\n'+
       'Supergenious answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
       localLabel+' answer:\n'+(localAnswer||'[no answer]');
-    return chatHosted(synthesisPrompt);
+    return chatHosted(synthesisPrompt,signal);
   }
 
   async function sendMessage(){
-    if(state.busy)return;
+    if(state.busy){
+      stopActiveResponse();
+      return;
+    }
     const input=document.getElementById('p0-input');
-    const send=document.getElementById('p0-send');
     const prompt=String(input?.value||'').trim();
     if(!prompt){
       input?.focus();
@@ -1700,8 +1757,7 @@
       return;
     }
     closeMenus();
-    state.busy=true;
-    if(send)send.disabled=true;
+    const signal=beginResponse();
     append('user',prompt,'You');
     input.value='';
     autosizeInput();
@@ -1714,7 +1770,7 @@
     routeStatus(routePrefix+receipt.text,receipt.state);
     try{
       const started=performance.now();
-      const answer=model.route==='local'?await chatLocal(routePrompt,model):await chatHosted(routePrompt);
+      const answer=model.route==='local'?await chatLocal(routePrompt,model,signal):await chatHosted(routePrompt,signal);
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
       recordRouteBenchmark(model,measuredScore);
@@ -1724,6 +1780,12 @@
       routeStatus(routePrefix+routeMicroStatus(model),receipt.state);
       status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
     }catch(error){
+      if(stopRequested||error?.name==='AbortError'){
+        updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
+        status('Response stopped.','idle');
+        routeStatus('Stopped · no failed first request','hosted');
+        return;
+      }
       if(model.route==='local'){
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         const hint=localNetworkHint(error);
@@ -1742,7 +1804,7 @@
         try{
           const fallbackReceipt=routeReceipt(activeModel());
           const fallbackStarted=performance.now();
-          const fallbackAnswer=await chatHosted(routePrompt);
+          const fallbackAnswer=await chatHosted(routePrompt,signal);
           const fallbackElapsedMs=performance.now()-fallbackStarted;
           recordRouteBenchmark(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs));
           const fallbackElapsed=formatDuration(fallbackElapsedMs);
@@ -1754,6 +1816,12 @@
           status('Supergenious answered in '+fallbackElapsed+' while local access waits for permission.','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
         }catch(fallbackError){
+          if(stopRequested||fallbackError?.name==='AbortError'){
+            updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
+            status('Response stopped.','idle');
+            routeStatus('Stopped · no failed first request','hosted');
+            return;
+          }
           updateMessage(assistant,hint+'\n\nSupergenious is still available from the model picker.');
           status('Chat failed: local node blocked/unavailable','error');
         }
@@ -1763,8 +1831,7 @@
         status('Chat failed: '+API_LABEL+' unreachable','error');
       }
     }finally{
-      state.busy=false;
-      if(send)send.disabled=false;
+      finishResponse();
       input?.focus();
     }
   }
@@ -1775,7 +1842,6 @@
     const title=mode==='best-answer'?'Best Answer':'Compare';
     const localModel=compareLocalModel(preferredLocalModel);
     const input=document.getElementById('p0-input');
-    const send=document.getElementById('p0-send');
     const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
       status('Find models first, then '+title+' can use two routes.','error');
@@ -1787,8 +1853,7 @@
       input?.focus();
       return;
     }
-    state.busy=true;
-    if(send)send.disabled=true;
+    const signal=beginResponse();
     append('user',prompt,'You');
     input.value='';
     autosizeInput();
@@ -1809,21 +1874,21 @@
     status(title+' is asking Supergenious and '+localModel.label+' in parallel...','ready');
     routeStatus(title+' · Supergenious + '+localModel.label,'ready');
     const hostedStarted=performance.now();
-    const hostedJob=chatHosted(prompt)
+    const hostedJob=chatHosted(prompt,signal)
       .then(answer=>{
         hostedAnswerText=answer||'Supergenious returned an empty response.';
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs);
         updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       })
-      .catch(()=>{
+      .catch((error)=>{
         hostedFailed=true;
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true);
-        updateMessage(hostedMessage,'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       });
     const localStarted=performance.now();
-    const localJob=chatLocal(prompt,localModel)
+    const localJob=chatLocal(prompt,localModel,signal)
       .then(answer=>{
         localAnswerText=answer||'Local model returned an empty response.';
         localElapsedMs=performance.now()-localStarted;
@@ -1834,9 +1899,16 @@
         localFailed=true;
         localElapsedMs=performance.now()-localStarted;
         localScore=routeScore(localModel,prompt,'',localElapsedMs,true);
-        updateMessage(localMessage,localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       });
     await Promise.allSettled([hostedJob,localJob]);
+    if(stopRequested){
+      status(title+' stopped.','idle');
+      routeStatus('Stopped · compare routes cancelled','hosted');
+      finishResponse();
+      input?.focus();
+      return;
+    }
     let finalWinner=null;
     let scoringSource='local fallback score';
     try{
@@ -1860,16 +1932,22 @@
       const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
       const synthesisStarted=performance.now();
       try{
-        const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore);
+        const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);
         updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(performance.now()-synthesisStarted)});
       }catch(error){
-        updateMessage(synthesisMessage,hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.',{receipt:synthesisReceipt+' · failed'});
+        updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':(hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.'),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed')});
+      }
+      if(stopRequested){
+        status(title+' stopped.','idle');
+        routeStatus('Stopped · compare routes cancelled','hosted');
+        finishResponse();
+        input?.focus();
+        return;
       }
       routeStatus(title+' · '+winner.summary,'ready');
     }
     status(title+' finished: '+finalWinner.summary+'.','ready');
-    state.busy=false;
-    if(send)send.disabled=false;
+    finishResponse();
     input?.focus();
   }
 
@@ -1886,6 +1964,7 @@
     installShell();
     enforceShellStyles();
     status('Ready','ready');
+    updateSendControl();
     refreshHostedModels().catch(()=>{});
     document.getElementById('p0-input')?.focus();
     let passes=0;
