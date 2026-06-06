@@ -1136,7 +1136,9 @@
     document.getElementById('p0-add').addEventListener('click',(event)=>toggleMenu('add',event.currentTarget));
     document.getElementById('p0-model').addEventListener('click',(event)=>toggleMenu('model',event.currentTarget));
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
-    document.getElementById('p0-mic').addEventListener('click',startVoice);
+    const mic=document.getElementById('p0-mic');
+    updateVoiceButtonState(mic);
+    mic.addEventListener('click',startVoice);
     document.addEventListener('click',(event)=>{
       const copyButton=event.target.closest('[data-p0-copy-command]');
       if(copyButton){
@@ -1172,11 +1174,6 @@
       if(event.target.closest('#p0-add,#p0-model,#p0-privacy,.p0-menu'))return;
       closeMenus();
     });
-    if(!speechSupported()){
-      const mic=document.getElementById('p0-mic');
-      mic.hidden=true;
-      mic.setAttribute('aria-hidden','true');
-    }
   }
 
   function autosizeInput(){
@@ -1190,11 +1187,37 @@
     return Boolean(window.SpeechRecognition||window.webkitSpeechRecognition);
   }
 
+  function updateVoiceButtonState(mic=document.getElementById('p0-mic')){
+    if(!mic)return;
+    const supported=speechSupported();
+    mic.dataset.voiceState=supported?'available':'unavailable';
+    mic.setAttribute('aria-disabled','false');
+    mic.title=supported?'Voice input: browser-local speech recognition':'Voice input is not available in this browser';
+    mic.setAttribute(
+      'aria-label',
+      supported?'Voice input: browser-local speech recognition':'Voice input unavailable in this browser'
+    );
+  }
+
+  function emitVoiceState(stateValue,detail={}){
+    window.dispatchEvent(new CustomEvent('mmir-p0-voice-state-updated',{
+      detail:{
+        state:stateValue,
+        supported:speechSupported(),
+        no_server_audio:true,
+        no_paid_route:true,
+        ...detail
+      }
+    }));
+  }
+
   function startVoice(){
     const restoreRouteLater=(delay=1800)=>setTimeout(()=>renderToolbar(),delay);
+    updateVoiceButtonState();
     if(!speechSupported()){
-      status('Voice input is not available in this browser.','error');
-      routeStatus('Voice input is not available in this browser.','error');
+      status('Voice input unavailable. Type instead.','error');
+      routeStatus('Voice unavailable · browser local only','error');
+      emitVoiceState('unavailable');
       restoreRouteLater(2200);
       return;
     }
@@ -1204,19 +1227,23 @@
     recognition.interimResults=false;
     recognition.maxAlternatives=1;
     let heardVoice=false;
+    emitVoiceState('starting');
     status('Listening...','ready');
     routeStatus('Listening...','hosted');
     recognition.onstart=()=>{
+      emitVoiceState('listening');
       status('Listening...','ready');
       routeStatus('Listening...','hosted');
     };
-    recognition.onerror=()=>{
+    recognition.onerror=(event)=>{
+      emitVoiceState('failed',{error:event?.error||'unknown'});
       status('Voice input failed or was cancelled.','error');
       routeStatus('Voice input failed or was cancelled.','error');
       restoreRouteLater(2200);
     };
     recognition.onend=()=>{
       if(!heardVoice){
+        emitVoiceState('stopped');
         status('Voice input stopped.','idle');
         routeStatus('Voice input stopped.','hosted');
         restoreRouteLater();
@@ -1230,6 +1257,7 @@
         input.value=(input.value?input.value+' ':'')+text;
         autosizeInput();
         input.focus();
+        emitVoiceState('transcribed',{text_length:text.length});
         status('Voice text added.','ready');
         routeStatus('Voice text added.','hosted');
         restoreRouteLater();
@@ -1238,6 +1266,7 @@
     try{
       recognition.start();
     }catch(error){
+      emitVoiceState('failed',{error:error?.message||'start failed'});
       status('Voice input failed or was cancelled.','error');
       routeStatus('Voice input failed or was cancelled.','error');
       restoreRouteLater(2200);
