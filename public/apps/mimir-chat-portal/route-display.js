@@ -54,6 +54,17 @@
     return profile?'policy required':'browser/no secret';
   }
 
-  w.MimirRouteDisplay={DEFAULT_LABEL,displayLabel,clip,modelLabel,isLocalProfile,routeName,trustLabel};
+  function freshnessLabel(score){
+    const state=String(score?.freshness_state||'').replace(/[_-]+/g,' ').trim().toLowerCase();
+    const action=String(score?.factuality_guardrail_action||'').replace(/[_-]+/g,' ').trim().toLowerCase();
+    const value=(state+' '+action).trim();
+    if(!value||value==='unknown')return '';
+    if(/stale/.test(value))return 'stale fact demoted';
+    if(/verified|fresh|current/.test(value))return 'verified fact';
+    if(/uncertain|check|required|refresh|needs/.test(value))return 'needs fact check';
+    return '';
+  }
+
+  w.MimirRouteDisplay={DEFAULT_LABEL,displayLabel,clip,modelLabel,isLocalProfile,routeName,trustLabel,freshnessLabel};
   w.dispatchEvent(new CustomEvent('mimir-route-display-ready',{detail:{ready:true,default_label:DEFAULT_LABEL,no_paid_routes_started:true}}));
 })();

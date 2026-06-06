@@ -400,6 +400,10 @@
   }
 
   function routeFreshnessLabel(score){
+    const shared=window.MimirRouteDisplay&&typeof window.MimirRouteDisplay.freshnessLabel==='function'
+      ?window.MimirRouteDisplay.freshnessLabel(score)
+      :'';
+    if(shared)return shared;
     const state=String(score?.freshness_state||'').replace(/[_-]+/g,' ').trim().toLowerCase();
     const action=String(score?.factuality_guardrail_action||'').replace(/[_-]+/g,' ').trim().toLowerCase();
     const text=(state+' '+action).trim();
