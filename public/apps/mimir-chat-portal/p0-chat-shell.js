@@ -14,6 +14,10 @@
   const MODELS_KEY='mmir-p0-active-models-v1';
   const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
   const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
+  const PROMPT_PRESETS_KEY='mmir-p0-prompt-presets-v1';
+  const PROMPT_CATALOG_KEY='mmir-p0-prompt-catalog-v1';
+  const PROMPT_PRESETS_PATH='/prompts/presets';
+  const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const MAC_LINUX_INSTALL_COMMAND='curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash';
   const WINDOWS_INSTALL_COMMAND='powershell -NoProfile -ExecutionPolicy Bypass -Command "$i=Join-Path $env:TEMP \'mmir-local-node-windows.ps1\'; Invoke-WebRequest \'https://mmir.ai/downloads/mmir-local-node-windows.ps1\' -OutFile $i -UseBasicParsing; powershell -NoProfile -ExecutionPolicy Bypass -File $i"';
   const MAX_HISTORY=40;
@@ -30,6 +34,32 @@
     /No model route is visible yet/i,
     /Backend is unreachable/i,
     /Runtime is unavailable/i
+  ];
+  const DEFAULT_PROMPT_PRESETS=[
+    {
+      id:'quick-answer',
+      title:'Quick answer',
+      detail:'Short, direct answer.',
+      prompt_template:'Answer directly and briefly: '
+    },
+    {
+      id:'compare-best-answer',
+      title:'Best Answer',
+      detail:'Use parallel routes when local models exist.',
+      prompt_template:'@compare '
+    },
+    {
+      id:'private-local',
+      title:'Private local',
+      detail:'Prefer this Mac when connected.',
+      prompt_template:'Use my private local model if available: '
+    },
+    {
+      id:'research-plan',
+      title:'Research plan',
+      detail:'Turn a topic into a focused plan.',
+      prompt_template:'Make a concise research plan for: '
+    }
   ];
 
   function apiUrlForCurrentHost(){
@@ -50,6 +80,21 @@
 
   function hostedRouteLabel(){
     return 'Supergenious · Free · '+API_LABEL;
+  }
+
+  function normalizePromptPreset(item){
+    const id=String(item?.id||item?.name||'').trim().toLowerCase().replace(/[^a-z0-9:_-]+/g,'-').slice(0,64);
+    const title=String(item?.title||item?.name||id||'Prompt').trim().slice(0,80);
+    const prompt=String(item?.prompt_template||item?.template||item?.prompt||'').trimEnd().slice(0,4000);
+    const detail=String(item?.detail||item?.description||'').trim().slice(0,140);
+    if(!id||!title||!prompt)return null;
+    return {
+      id,
+      title,
+      detail,
+      prompt_template:prompt,
+      source:item?.source==='browser-local'?'browser-local':'mmir'
+    };
   }
 
   const state={
@@ -114,6 +159,74 @@
 
   function writeJson(key,value){
     try{localStorage.setItem(key,JSON.stringify(value));}catch(error){}
+  }
+
+  function promptPresetCatalog(){
+    const seen=new Set();
+    const cached=readJson(PROMPT_CATALOG_KEY,{});
+    const apiPresets=Array.isArray(cached?.presets)?cached.presets:[];
+    return DEFAULT_PROMPT_PRESETS
+      .concat(apiPresets)
+      .map(normalizePromptPreset)
+      .filter(Boolean)
+      .filter(preset=>{
+        if(seen.has(preset.id))return false;
+        seen.add(preset.id);
+        return true;
+      })
+      .slice(0,8);
+  }
+
+  function savedPromptPresets(){
+    return readJson(PROMPT_PRESETS_KEY,[])
+      .map(normalizePromptPreset)
+      .filter(Boolean)
+      .slice(-8)
+      .reverse();
+  }
+
+  function writeSavedPromptPresets(presets){
+    writeJson(PROMPT_PRESETS_KEY,(presets||[]).map(normalizePromptPreset).filter(Boolean).slice(-12));
+  }
+
+  function promptPresetById(id){
+    const value=String(id||'');
+    return savedPromptPresets().concat(promptPresetCatalog()).find(preset=>preset.id===value)||null;
+  }
+
+  function promptPresetTitle(prompt){
+    return String(prompt||'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .slice(0,48)||'Saved prompt';
+  }
+
+  function promptPresetApiFetchAllowed(){
+    const host=String(location.hostname||'').toLowerCase();
+    return host==='mmir.ai'||host==='staging.mmir.ai';
+  }
+
+  async function refreshPromptPresets(){
+    if(!promptPresetApiFetchAllowed())return false;
+    try{
+      const data=await fetchJson(API_URL+PROMPT_PRESETS_PATH,{timeoutMs:7000});
+      const presets=(Array.isArray(data?.presets)?data.presets:Array.isArray(data?.data)?data.data:[])
+        .map(normalizePromptPreset)
+        .filter(Boolean);
+      if(presets.length){
+        writeJson(PROMPT_CATALOG_KEY,{fetchedAt:new Date().toISOString(),presets});
+      }
+    }catch(error){}
+  }
+
+  async function verifyPromptSavePlan(){
+    if(!promptPresetApiFetchAllowed())return false;
+    try{
+      await fetchJson(API_URL+PROMPT_SAVE_PLAN_PATH,{timeoutMs:5000});
+      return true;
+    }catch(error){
+      return false;
+    }
   }
 
   function routeKey(model){
@@ -1315,8 +1428,30 @@
       compareAction+
       '<button type="button" data-p0-action="connect-local"><strong>Add model</strong><small>Local model setup. I will detect this device and give the install command here in chat.</small></button>'+
       '<button type="button" data-p0-action="check-local"><strong>Find models</strong><small>Refresh after the connector says ready.</small></button>'+
+      '<button type="button" data-p0-action="prompt-presets"><strong>Prompt presets</strong><small>Save and reuse prompt starters in this browser.</small></button>'+
       '<div class="p0-menu-separator"></div>'+
       '<button type="button" data-p0-action="new-chat"><strong>New chat</strong><small>Clear this browser chat only.</small></button>';
+  }
+
+  function renderPromptPresetMenu(){
+    const menu=menuEl('add');
+    if(!menu)return;
+    const catalog=promptPresetCatalog();
+    const saved=savedPromptPresets();
+    const presetButtons=catalog.map(preset=>
+      '<button type="button" data-p0-action="load-preset:'+safeAttr(preset.id)+'"><strong>'+safeText(preset.title)+'</strong><small>'+safeText(preset.detail||'Load into composer.')+'</small></button>'
+    ).join('');
+    const savedButtons=saved.map(preset=>
+      '<button type="button" data-p0-action="load-preset:'+safeAttr(preset.id)+'"><strong>'+safeText(preset.title)+'</strong><small>Saved locally in this browser.</small></button>'
+    ).join('');
+    menu.innerHTML=''+
+      '<div class="p0-menu-title">Prompt presets</div>'+
+      '<button type="button" data-p0-action="add-menu-main"><strong>Back</strong><small>Return to tools.</small></button>'+
+      '<button type="button" data-p0-action="save-prompt-local"><strong>Save current prompt</strong><small>Stores only in this browser, not on MMIR servers.</small></button>'+
+      '<div class="p0-menu-separator"></div>'+
+      '<div class="p0-menu-section">Starters</div>'+
+      presetButtons+
+      (savedButtons?'<div class="p0-menu-section">Saved in this browser</div>'+savedButtons:'');
   }
 
   function renderModelMenu(){
@@ -1372,6 +1507,26 @@
   }
 
   function handleMenuAction(action){
+    if(action==='add-menu-main'){
+      renderAddMenu();
+      return true;
+    }
+    if(action==='prompt-presets'){
+      renderPromptPresetMenu();
+      refreshPromptPresets().then(()=>{
+        const menu=menuEl('add');
+        if(menu&&!menu.hidden)renderPromptPresetMenu();
+      });
+      return true;
+    }
+    if(action==='save-prompt-local'){
+      saveCurrentPromptPreset();
+      return true;
+    }
+    if(String(action||'').startsWith('load-preset:')){
+      loadPromptPreset(String(action).slice('load-preset:'.length));
+      return true;
+    }
     if(action==='connect-local'){
       startLocalInstallAssistant();
       return true;
@@ -1399,6 +1554,45 @@
       return true;
     }
     return false;
+  }
+
+  async function saveCurrentPromptPreset(){
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    if(!prompt){
+      status('Write a prompt first, then save it.','error');
+      routeStatus('Prompt preset not saved · composer empty','error');
+      input?.focus();
+      return;
+    }
+    const preset={
+      id:'local-'+Date.now().toString(36),
+      title:promptPresetTitle(prompt),
+      detail:'Saved locally in this browser.',
+      prompt_template:prompt,
+      source:'browser-local'
+    };
+    writeSavedPromptPresets(savedPromptPresets().reverse().concat([preset]));
+    status('Prompt saved locally.','ready');
+    routeStatus('Prompt saved · browser only · no server persistence','hosted');
+    verifyPromptSavePlan().catch(()=>{});
+    renderPromptPresetMenu();
+  }
+
+  function loadPromptPreset(id){
+    const preset=promptPresetById(id);
+    const input=document.getElementById('p0-input');
+    if(!preset||!input){
+      status('Prompt preset unavailable.','error');
+      routeStatus('Prompt preset unavailable','error');
+      return;
+    }
+    input.value=preset.prompt_template;
+    autosizeInput();
+    closeMenus();
+    status(preset.title+' loaded.','ready');
+    routeStatus('Prompt preset loaded · edit and send','hosted');
+    input.focus();
   }
 
   function renderMessageTools(message){
@@ -1995,6 +2189,7 @@
     status('Ready','ready');
     updateSendControl();
     refreshHostedModels().catch(()=>{});
+    refreshPromptPresets().catch(()=>{});
     document.getElementById('p0-input')?.focus();
     let passes=0;
     const timer=setInterval(()=>{
