@@ -15,7 +15,7 @@
     "composer-quick-actions.css": "20260531-clean-composer-v1",
     "composer-quick-actions.js": "20260604-route-display-consumers-v1",
     "first-impression.js": "20260604-shared-route-display-v1",
-    "local-install-commands.js": "20260606-b1-06-local-install-commands-v1",
+    "local-install-commands.js": "20260606-b1-06-local-install-commands-v2",
     "local-connector.js": "20260604-canonical-local-install-v1",
     "mimir-chat-portal.css": "20260531-capability-cleanup-v1",
     "mimir-chat-portal.js": "20260524-chat-first-v1",

@@ -7,6 +7,7 @@ const paths = {
   html: join(publicDir, 'mmir.html'),
   p0Css: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'),
   p0Runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'),
+  localInstall: join(publicDir, 'apps', 'mimir-chat-portal', 'local-install-commands.js'),
   packageJson: join(root, 'package.json')
 };
 
@@ -82,10 +83,16 @@ for (const marker of [
   'install command here in chat',
   'Refresh models',
   'New chat',
-  'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash'
+  'LOCAL_INSTALL_COMMANDS.commandFor?.(os)'
 ]) {
   requireText(runtime, marker, `P0 plus menu must expose only proven first-journey actions: ${marker}`);
 }
+
+requireText(
+  read(paths.localInstall),
+  'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash',
+  'Shared local install helper must expose the proven Mac/Linux command.'
+);
 
 for (const marker of [
   'data-p0-message-action="copy"',

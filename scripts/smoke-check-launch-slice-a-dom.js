@@ -148,8 +148,8 @@ requireIncludes(files.p0Runtime, "const PROD_API_URL='https://api.mmir.ai'", 'P0
 requireIncludes(files.p0Runtime, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must know the staging API route.');
 requireIncludes(files.p0Runtime, "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must route staging.mmir.ai to api-staging.mmir.ai without arbitrary browser overrides.');
 requireIncludes(files.p0Runtime, "menuButton('connect-local'", 'P0 shell must start local setup through the chat-guided installer flow.');
-requireIncludes(files.p0Runtime, 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.');
-requireIncludes(files.p0Runtime, 'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.', 'P0 local setup must use simple chat-first Mac copy.');
+requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.commandFor?.(os)', 'P0 local setup must get OS-specific commands from the shared helper.');
+requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.introFor?.(os)', 'P0 local setup must get chat-first install copy from the shared helper.');
 requireIncludes(files.p0Runtime, 'data-p0-os-command="windows"', 'P0 local setup must ask for OS when browser detection is uncertain.');
 requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setup must gracefully handle browsers that block clipboard writes.');
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
