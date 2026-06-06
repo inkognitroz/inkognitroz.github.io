@@ -13,6 +13,7 @@ const files = {
   p0Css: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'),
   p0Runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'),
   p0Icons: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-icons.js'),
+  p0RouteReceipts: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-receipts.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
   portal: join(publicDir, 'apps', 'mimir-chat-portal', 'mimir-chat-portal.js'),
@@ -158,8 +159,8 @@ requireIncludes(files.p0Runtime, 'Add model', 'P0 add menu must present local se
 requireIncludes(files.p0Runtime, 'install command here in chat', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
 requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
-requireIncludes(files.p0Runtime, "'Supergenious · Free · '+API_LABEL", 'P0 hosted route receipt must stay visible to users.');
-requireIncludes(files.p0Runtime, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
+requireIncludes(files.p0RouteReceipts, "'Supergenious · Free · '+String(apiLabel||'api.mmir.ai')", 'P0 hosted route receipt must stay visible to users.');
+requireIncludes(files.p0RouteReceipts, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
 requireIncludes(files.p0Runtime, "menuButton('compare-live'", 'P0 compare must be implemented as a gated toolbar action.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
