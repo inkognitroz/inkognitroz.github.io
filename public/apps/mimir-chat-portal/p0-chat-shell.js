@@ -399,12 +399,23 @@
     return parts.join(' · ');
   }
 
+  function routeFreshnessLabel(score){
+    const state=String(score?.freshness_state||'').replace(/[_-]+/g,' ').trim().toLowerCase();
+    const action=String(score?.factuality_guardrail_action||'').replace(/[_-]+/g,' ').trim().toLowerCase();
+    const text=(state+' '+action).trim();
+    if(!text||text==='unknown')return '';
+    if(/stale/.test(text))return 'stale fact demoted';
+    if(/verified|fresh|current/.test(text))return 'verified fact';
+    if(/uncertain|check|required|refresh|needs/.test(text))return 'needs fact check';
+    return '';
+  }
+
   function microKind(part,stateValue){
     const text=String(part||'').toLowerCase();
     if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
     if(/private|this mac|local/.test(text))return 'local';
-    if(/free|ready|strong|best|winner|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
-    if(/score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
+    if(/free|ready|strong|best|winner|verified|fresh|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
+    if(/needs fact check|uncertain|score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
     if(/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/.test(text))return 'time';
     if(/api\.mmir\.ai|routing\/score|route/.test(text))return 'route';
     return 'neutral';
@@ -414,7 +425,7 @@
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
-    const visible=parts.slice(0,8);
+    const visible=parts.slice(0,6);
     if(parts.length>visible.length)visible.push('+'+(parts.length-visible.length)+' more');
     el.setAttribute('aria-label',full);
     el.title=full;
@@ -1010,8 +1021,10 @@
     const parts=[];
     const answer=String(score.answer_class||'').replace(/_/g,' ').trim();
     const latency=String(score.latency_class||'').replace(/_/g,' ').trim();
+    const freshness=routeFreshnessLabel(score);
     if(answer&&answer!=='unknown'&&!reason.includes(answer.toLowerCase()))parts.push(answer==='complete'?'complete answer':answer);
     if(latency&&latency!=='unknown'&&!reason.includes(latency.toLowerCase()))parts.push(latency);
+    if(freshness&&!reason.includes(freshness.toLowerCase()))parts.push(freshness);
     return parts.join(' · ');
   }
 
@@ -1162,6 +1175,9 @@
       elapsedMs:Number(found.latency_ms)||fallback?.elapsedMs||0,
       answer_class:found.answer_class||fallback?.answer_class||'unknown',
       latency_class:found.latency_class||fallback?.latency_class||'unknown',
+      freshness_state:found.freshness_state||fallback?.freshness_state||'',
+      factuality_guardrail_action:found.factuality_guardrail_action||fallback?.factuality_guardrail_action||'',
+      requires_freshness_check:Boolean(found.requires_freshness_check||fallback?.requires_freshness_check),
       reason:reasons.slice(0,3).join(' · ')||found.summary||fallback?.reason||'api route policy',
       reasons,
       source:'api'
@@ -1590,12 +1606,9 @@
     if(!menu)return;
     const local=bestLocalModel();
     const active=activeModel();
-    const activePinned=routePinned(active);
     const filter=modelFilter();
-    const pinControl='<button type="button" data-p0-action="'+(activePinned?'unpin-active-route':'pin-active-route')+'"><strong>'+(activePinned?'Unpin selected route':'Pin selected route')+'</strong><small>'+(activePinned?'Keep normal score ranking for '+safeText(active.label)+'.':'Keep '+safeText(active.label)+' at the top of this browser model picker.')+'</small></button><div class="p0-menu-separator"></div>';
-    const filterControl='<button type="button" data-p0-action="cycle-model-filter"><strong>Filter: '+safeText(modelFilterLabel(filter))+'</strong><small>'+safeText(modelFilterDetail(filter))+'</small></button>';
     const rankMap=routeRankMap();
-    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Route details</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
+    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Active route</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
     const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'&&modelVisibleInFilter(model,filter)));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
@@ -1612,7 +1625,9 @@
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+pinControl+filterControl+detailReceipt+'<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div><div class="p0-menu-separator"></div>'+buttons+filterHint+localHint;
+    const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
+    const routeControls='<div class="p0-menu-separator"></div><button type="button" data-p0-action="model-route-controls"><strong>Route controls</strong><small>Pin routes, change filters and inspect route details.</small></button>';
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+detailReceipt+'<div class="p0-menu-separator"></div>'+buttons+filterHint+activeFilterHint+localHint+routeControls;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
@@ -1622,6 +1637,25 @@
         status(activeModel().label+' selected.','ready');
       });
     });
+  }
+
+  function renderRouteControlsMenu(){
+    const menu=menuEl('model');
+    if(!menu)return;
+    const active=activeModel();
+    const activePinned=routePinned(active);
+    const filter=modelFilter();
+    const pinControl='<button type="button" data-p0-action="'+(activePinned?'unpin-active-route':'pin-active-route')+'"><strong>'+(activePinned?'Unpin selected route':'Pin selected route')+'</strong><small>'+(activePinned?'Keep normal score ranking for '+safeText(active.label)+'.':'Keep '+safeText(active.label)+' at the top of this browser model picker.')+'</small></button>';
+    const filterControl='<button type="button" data-p0-action="cycle-model-filter"><strong>Filter: '+safeText(modelFilterLabel(filter))+'</strong><small>'+safeText(modelFilterDetail(filter))+'</small></button>';
+    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Route details</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
+    menu.innerHTML=''+
+      '<div class="p0-menu-title">Route controls</div>'+
+      '<button type="button" data-p0-action="model-menu-main"><strong>Back to models</strong><small>Return to the simple model list.</small></button>'+
+      '<div class="p0-menu-separator"></div>'+
+      pinControl+
+      filterControl+
+      detailReceipt+
+      '<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div>';
   }
 
   function renderPrivacyMenu(){
@@ -1649,6 +1683,14 @@
   function handleMenuAction(action){
     if(action==='cycle-model-filter'){
       cycleModelFilter();
+      return true;
+    }
+    if(action==='model-route-controls'){
+      renderRouteControlsMenu();
+      return true;
+    }
+    if(action==='model-menu-main'){
+      renderModelMenu();
       return true;
     }
     if(action==='pin-active-route'){
@@ -1711,7 +1753,7 @@
   function setActiveRoutePinned(pinned){
     const model=activeModel();
     setRoutePinned(model.id,pinned);
-    renderModelMenu();
+    renderRouteControlsMenu();
     renderToolbar();
     status((pinned?'Pinned ':'Unpinned ')+model.label+'.','ready');
     routeStatus((pinned?'Pinned route':'Route unpinned')+' · '+routeReceipt(model).text,routeReceipt(model).state);
@@ -1719,7 +1761,7 @@
 
   function cycleModelFilter(){
     const value=setModelFilter(nextModelFilter());
-    renderModelMenu();
+    renderRouteControlsMenu();
     status('Model filter: '+modelFilterLabel(value)+'.','ready');
     routeStatus('Model filter · '+modelFilterLabel(value)+' · browser local','hosted');
   }

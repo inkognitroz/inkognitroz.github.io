@@ -105,8 +105,8 @@ assertIncludes(testApi.scoreSummary(hostedPublicScore), 'Score ', 'Score summary
 
 const apiScoring = {
   scores: [
-    { node_id: 'browser-guide', model_id: 'mmir-supergenius', score: 100, latency_ms: 300, reasons: ['complete answer', 'public fact fit'] },
-    { route_class: 'local', model_id: 'gemma3:270m', score: 77, latency_ms: 1200, reasons: ['complete answer', 'small local model may be stale'] }
+    { node_id: 'browser-guide', model_id: 'mmir-supergenius', score: 100, latency_ms: 300, freshness_state: 'verified', factuality_guardrail_action: 'allow_verified_answer', reasons: ['complete answer', 'public fact fit'] },
+    { route_class: 'local', model_id: 'gemma3:270m', score: 77, latency_ms: 1200, freshness_state: 'stale', factuality_guardrail_action: 'demote_stale_answer', reasons: ['complete answer', 'small local model may be stale'] }
   ],
   winner: { route_class: 'free', node_id: 'browser-guide', model_id: 'mmir-supergenius', score: 100, reason: 'Best fit: complete answer' }
 };
@@ -114,6 +114,8 @@ const apiHostedScore = testApi.apiScoreForModel(apiScoring, hosted, hostedPublic
 const apiLocalScore = testApi.apiScoreForModel(apiScoring, gemma, localPublicScore);
 const apiPublicWinner = testApi.apiWinner(apiScoring, hosted, apiHostedScore, gemma, apiLocalScore);
 assertIncludes(testApi.scoreSummary(apiHostedScore), 'API score ', 'API scoring summary must be visible when server scoring is available');
+assertIncludes(testApi.scoreSummary(apiHostedScore), 'verified fact', 'Verified public fact guardrail must be visible in compact route receipts');
+assertIncludes(testApi.scoreSummary(apiLocalScore), 'stale fact demoted', 'Stale local public fact guardrail must be visible before selecting a weak route');
 assertIncludes(apiPublicWinner.summary, 'API score 100', 'API winner summary must use server-side route scoring');
 
 const hostedCandidate = testApi.routeScoreCandidate(hosted, 'The capital of Japan is Tokyo.', 300, false);
