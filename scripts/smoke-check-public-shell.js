@@ -337,8 +337,8 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d348-20260605-stop-control-v1",
-  "Service worker cache must bust for P0 stop-control release.",
+  "mmir-pwa-d349-20260605-voice-truth-v1",
+  "Service worker cache must bust for P0 voice-truth release.",
 );
 requireText(
   serviceWorkerPath,
@@ -879,6 +879,26 @@ requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "status('Listening...','ready')",
   "P0 mic button must give immediate feedback.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "mmir-p0-voice-state-updated",
+  "P0 mic button must emit testable voice-state evidence.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "no_server_audio:true",
+  "P0 voice path must stay browser-local and not imply server audio capture.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Voice input unavailable. Type instead.",
+  "P0 mic fallback must be concise and truthful when browser speech recognition is unavailable.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "input.value=(input.value?input.value+' ':'')+text",
+  "P0 supported voice route must add recognized browser-local text to the prompt.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

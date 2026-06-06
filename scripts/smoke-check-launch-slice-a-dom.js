@@ -206,6 +206,10 @@ requireIncludes(files.p0Runtime, 'function compactReceipt(receipt)', 'P0 route r
 requireIncludes(files.p0Runtime, 'function renderReceipt(receipt)', 'P0 route receipts must keep full audit details available on click.');
 requireIncludes(files.p0Runtime, "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
 requireIncludes(files.p0Runtime, "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
+requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path must emit testable state evidence.');
+requireIncludes(files.p0Runtime, 'no_server_audio:true', 'P0 voice path must stay browser-local with no server audio capture.');
+requireIncludes(files.p0Runtime, 'Voice input unavailable. Type instead.', 'P0 unsupported voice path must give concise truthful fallback.');
+requireIncludes(files.p0Runtime, "input.value=(input.value?input.value+' ':'')+text", 'P0 supported voice path must add recognized text to the prompt.');
 requireIncludes(files.p0Runtime, 'function handleMenuAction(action)', 'P0 menu actions must use a central handler so local discovery cannot silently close menus.');
 requireIncludes(files.p0Runtime, 'Checking this Mac for local models...', 'P0 local discovery must show immediate route feedback.');
 requireIncludes(files.p0Runtime, 'Tiny private model · slower/weak fallback', 'Tiny local models must be labeled as weak fallback routes.');
