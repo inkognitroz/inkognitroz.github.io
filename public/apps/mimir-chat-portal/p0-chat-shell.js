@@ -23,6 +23,7 @@
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
   const P0_TEXT=window.MimirP0Text||{};
+  const P0_CLIPBOARD=window.MimirP0Clipboard||{};
   const MAX_HISTORY=40;
   const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
   const ICON_MIC='<svg class="p0-icon p0-icon-mic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>';
@@ -505,28 +506,7 @@
   }
 
   async function writeClipboard(text){
-    try{
-      if(navigator.clipboard?.writeText){
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    }catch(error){}
-    const textarea=document.createElement('textarea');
-    textarea.value=text;
-    textarea.setAttribute('readonly','');
-    textarea.style.position='fixed';
-    textarea.style.left='-9999px';
-    textarea.style.top='0';
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    try{
-      return document.execCommand('copy');
-    }catch(error){
-      return false;
-    }finally{
-      textarea.remove();
-    }
+    return P0_CLIPBOARD.writeText?.(text)||false;
   }
 
   function paragraphs(text){
