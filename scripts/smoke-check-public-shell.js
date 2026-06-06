@@ -337,8 +337,8 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d347-20260604-local-private-ready-v42",
-  "Service worker cache must bust for local private-readiness clarity.",
+  "mmir-pwa-d348-20260605-stop-control-v1",
+  "Service worker cache must bust for P0 stop-control release.",
 );
 requireText(
   serviceWorkerPath,
@@ -474,6 +474,31 @@ requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   'id="p0-send"',
   "P0 shell must expose #p0-send as the canonical visible first-chat submit control.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function stopActiveResponse()",
+  "P0 shell must expose one canonical stop path while an answer is running.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "send.classList.toggle('is-stopping',state.busy)",
+  "P0 send control must visually become the stop control during a running response.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "externalSignal.addEventListener('abort',abortFromExternal,{once:true})",
+  "P0 fetch helper must propagate the active AbortController to route requests.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "routeStatus('Stopped · no failed first request','hosted')",
+  "P0 stop action must end cleanly without surfacing a failed first-request state.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-send.is-stopping",
+  "P0 shell must style the primary composer button as a stop control while busy.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -757,8 +782,13 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore)",
-  "P0 compare must synthesize a best answer from real model outputs and route evidence.",
+  "function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal)",
+  "P0 compare must synthesize a best answer from real model outputs and route evidence with abort support.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "return chatHosted(synthesisPrompt,signal)",
+  "P0 compare synthesis must use the active abort signal.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

@@ -199,7 +199,7 @@ requireIncludes(files.p0Css, '.p0-left {\n  flex: 0 0 auto;', 'P0 toolbar must p
 requireIncludes(files.p0Runtime, 'Compare answer 1/2', 'P0 compare receipts must identify the hosted answer.');
 requireIncludes(files.p0Runtime, 'Compare answer 2/2', 'P0 compare receipts must identify the local answer.');
 requireIncludes(files.p0Css, '.p0-message-compare', 'P0 compare answers must be visually distinguishable without adding a dashboard.');
-requireIncludes(files.p0Runtime, 'function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore)', 'P0 compare must synthesize a best answer from real model outputs and route evidence.');
+requireIncludes(files.p0Runtime, 'function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal)', 'P0 compare must synthesize a best answer from real model outputs and route evidence with abort support.');
 requireIncludes(files.p0Runtime, 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
 requireIncludes(files.p0Runtime, 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
 requireIncludes(files.p0Runtime, 'function compactReceipt(receipt)', 'P0 route receipts must be compact by default.');

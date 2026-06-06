@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d347-20260604-local-private-ready-v42';
+const CACHE_NAME='mmir-pwa-d348-20260605-stop-control-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

@@ -560,6 +560,14 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   padding-bottom: 2px;
 }
 
+.p0-send.is-stopping {
+  background: #991b1b;
+  border-color: #991b1b;
+  color: #ffffff;
+  font-size: 1rem;
+  padding-bottom: 0;
+}
+
 .p0-send:disabled {
   cursor: wait;
   opacity: 0.65;
