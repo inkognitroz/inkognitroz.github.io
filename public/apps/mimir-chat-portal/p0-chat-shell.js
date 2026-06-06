@@ -1021,12 +1021,51 @@
     return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),score.reason].filter(Boolean).join(' · ');
   }
 
-  function routeOperationalHint(model){
+  function routeOperationalState(model){
     const stats=routeBenchmark(model);
-    if(model?.route==='hosted')return 'Warm hosted';
-    if(stats?.samples)return 'Measured local';
-    if(model?.route==='local')return 'Ready local';
-    return 'Route ready';
+    if(model?.route==='hosted'){
+      return {
+        label:'Warm hosted',
+        detail:'Default route is ready through '+API_LABEL+'.',
+        state:'warm'
+      };
+    }
+    if(model?.route==='local'&&stats?.samples){
+      return {
+        label:(Number(stats.avgLatencyMs)||0)>3000?'Measured local slow':'Measured local',
+        detail:'This route has answered in this browser.',
+        state:'measured'
+      };
+    }
+    if(model?.route==='local'){
+      return {
+        label:'Cold local',
+        detail:'Installed on this Mac; first answer may load the model.',
+        state:'cold'
+      };
+    }
+    return {
+      label:'Route ready',
+      detail:'Route is available.',
+      state:'ready'
+    };
+  }
+
+  function routeOperationalHint(model){
+    return routeOperationalState(model).label;
+  }
+
+  function routeDetailReceipt(model){
+    const operational=routeOperationalState(model);
+    const stats=routeBenchmark(model);
+    const privacy=model?.route==='local'?'Private · This Mac':'Free · '+API_LABEL;
+    const score='Score '+effectiveModelScore(model);
+    const samples=stats?.samples
+      ? (stats.samples+' sample'+(stats.samples===1?'':'s'))
+      : (model?.route==='local'?'not measured yet':'managed route');
+    const pinned=routePinned(model)?'Pinned in this browser':'';
+    const safe=model?.route==='local'?'no public Ollama port':'no browser secrets';
+    return [operational.label,privacy,score,samples,pinned,safe].filter(Boolean).join(' · ');
   }
 
   function compactModelBadges(model,bestLocal){
@@ -1556,6 +1595,7 @@
     const pinControl='<button type="button" data-p0-action="'+(activePinned?'unpin-active-route':'pin-active-route')+'"><strong>'+(activePinned?'Unpin selected route':'Pin selected route')+'</strong><small>'+(activePinned?'Keep normal score ranking for '+safeText(active.label)+'.':'Keep '+safeText(active.label)+' at the top of this browser model picker.')+'</small></button><div class="p0-menu-separator"></div>';
     const filterControl='<button type="button" data-p0-action="cycle-model-filter"><strong>Filter: '+safeText(modelFilterLabel(filter))+'</strong><small>'+safeText(modelFilterDetail(filter))+'</small></button>';
     const rankMap=routeRankMap();
+    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Route details</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
     const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'&&modelVisibleInFilter(model,filter)));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
@@ -1572,7 +1612,7 @@
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+pinControl+filterControl+'<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div><div class="p0-menu-separator"></div>'+buttons+filterHint+localHint;
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+pinControl+filterControl+detailReceipt+'<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div><div class="p0-menu-separator"></div>'+buttons+filterHint+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
