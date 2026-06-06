@@ -85,8 +85,8 @@ requireIncludes(
 );
 requireIncludes(
   renderModelMenuSource,
-  'data-p0-action="',
-  'Model menu must use menu actions for advanced controls.'
+  "menuButton('model-route-controls'",
+  'Model menu must use the shared menu helper for advanced controls.'
 );
 requireIncludes(
   renderModelMenuSource,
@@ -210,12 +210,12 @@ forbidPattern(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260606-b1-06-add-menu-v1',
+  'p0-chat-shell.js?v=20260606-b1-06-p0-menu-v1',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260606-b1-06-add-menu-v1"',
+  '"p0-chat-shell.js": "20260606-b1-06-p0-menu-v1"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(
