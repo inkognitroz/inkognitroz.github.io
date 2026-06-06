@@ -6,6 +6,7 @@ import vm from 'node:vm';
 const root = process.cwd();
 const source = readFileSync(join(root, 'public', 'apps', 'mimir-chat-portal', 'route-display.js'), 'utf8');
 const routeDisplayConsumers = [
+  'p0-chat-shell.js',
   'active-node-strip.js',
   'route-chips.js',
   'composer-model-picker.js',
