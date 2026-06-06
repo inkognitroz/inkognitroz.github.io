@@ -602,6 +602,21 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function routeMicroStatus(model=activeModel())",
+  "P0 shell must compress route, score and latency into the composer micro-status line.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function renderMicroStatus(el,message,stateValue='hosted')",
+  "P0 route status must render compact chips instead of another dashboard.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-micro-chip",
+  "P0 composer status must use compact micro-status chips.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "function routeScore(model,prompt,answer,elapsedMs,failed=false)",
   "P0 Best Answer must score route quality from answer, prompt and latency.",
 );

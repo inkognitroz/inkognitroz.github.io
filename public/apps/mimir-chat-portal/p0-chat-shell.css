@@ -373,13 +373,16 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-route {
+  align-items: center;
   color: #6b7280;
+  display: flex;
+  flex-wrap: wrap;
   font-size: 0.76rem;
+  gap: 5px;
   line-height: 1.25;
   overflow: hidden;
   padding: 0 2px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-height: 48px;
 }
 
 .p0-route[data-state="hosted"] {
@@ -393,6 +396,58 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 .p0-route[data-state="error"] {
   color: #b91c1c;
   white-space: normal;
+}
+
+.p0-micro-chip {
+  align-items: center;
+  background: #f7f7f8;
+  border: 1px solid #ececf1;
+  border-radius: 999px;
+  color: #4b5563;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 680;
+  line-height: 1;
+  min-height: 22px;
+  max-width: min(100%, 260px);
+  overflow: hidden;
+  padding: 0 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p0-micro-chip[data-primary="true"] {
+  background: transparent;
+  border-color: transparent;
+  color: #047857;
+  font-weight: 760;
+  padding-left: 0;
+}
+
+.p0-micro-chip[data-kind="good"] {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+.p0-micro-chip[data-kind="local"],
+.p0-micro-chip[data-kind="time"],
+.p0-micro-chip[data-kind="route"] {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.p0-micro-chip[data-kind="warn"] {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.p0-micro-chip[data-kind="error"] {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
 }
 
 .p0-toolbar {
@@ -685,6 +740,14 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
   .p0-input {
     min-height: 50px;
+  }
+
+  .p0-route {
+    max-height: 27px;
+  }
+
+  .p0-micro-chip:nth-child(n+4) {
+    display: none;
   }
 
   .p0-toolbar {
