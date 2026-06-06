@@ -19,6 +19,7 @@ function indexOfAsset(asset) {
 
 const routeDisplayIndex = indexOfAsset('route-display.js');
 const consumers = [
+  'p0-chat-shell.js',
   'active-node-strip.js',
   'first-impression.js',
   'chat-runtime.js',
