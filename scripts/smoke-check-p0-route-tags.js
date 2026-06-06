@@ -6,7 +6,7 @@ const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankMap,bestLocalModel,intelligencePoolSummary};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -128,6 +128,8 @@ if (rankMap[gemma.id] >= rankMap[qwenTiny.id]) {
 }
 assertEqual(testApi.bestLocalModel().id, gemma.id, 'Best local model must use benchmark-adjusted route ranking');
 assertIncludes(testApi.routeBenchmarkSummary(gemma), 'avg 650ms', 'Route benchmark summary must expose measured latency');
+assertIncludes(testApi.routeMicroStatus(gemma), 'Score ', 'Route micro-status must expose effective route score in the compact composer line');
+assertIncludes(testApi.routeMicroStatus(gemma), 'avg 650ms', 'Route micro-status must expose measured route latency without opening a dashboard');
 if (testApi.effectiveModelScore(qwenTiny) >= testApi.effectiveModelScore(gemma)) {
   fail('Effective route score must keep slow/weak local model below stronger measured local model');
 }

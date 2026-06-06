@@ -192,6 +192,44 @@
     return parts.join(' · ');
   }
 
+  function routeMicroStatus(model=activeModel()){
+    const receipt=routeReceipt(model);
+    const benchmark=routeBenchmarkSummary(model)
+      .split(' · ')
+      .filter(part=>part&&!/^Score\s+/i.test(part))
+      .slice(0,2);
+    const parts=[
+      receipt.text,
+      'Score '+effectiveModelScore(model),
+      ...benchmark
+    ].filter(Boolean);
+    return parts.join(' · ');
+  }
+
+  function microKind(part,stateValue){
+    const text=String(part||'').toLowerCase();
+    if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
+    if(/private|this mac|local/.test(text))return 'local';
+    if(/free|ready|strong|best|winner|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
+    if(/score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
+    if(/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/.test(text))return 'time';
+    if(/api\.mmir\.ai|routing\/score|route/.test(text))return 'route';
+    return 'neutral';
+  }
+
+  function renderMicroStatus(el,message,stateValue='hosted'){
+    if(!el)return;
+    const full=String(message||routeReceipt().text).trim();
+    const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
+    const visible=parts.slice(0,8);
+    if(parts.length>visible.length)visible.push('+'+(parts.length-visible.length)+' more');
+    el.setAttribute('aria-label',full);
+    el.title=full;
+    el.innerHTML=visible.map((part,index)=>
+      '<span class="p0-micro-chip" data-kind="'+safeAttr(microKind(part,stateValue))+'" data-primary="'+(index===0?'true':'false')+'">'+safeText(part)+'</span>'
+    ).join('');
+  }
+
   function routeRankState(model){
     const stats=routeBenchmark(model);
     const score=effectiveModelScore(model);
@@ -1282,7 +1320,7 @@
     const input=document.getElementById('p0-input');
     if(label)label.textContent=model.label;
     if(input)input.placeholder='Message '+model.label+'...';
-    routeStatus(routeReceipt(model).text,routeReceipt(model).state);
+    routeStatus(routeMicroStatus(model),routeReceipt(model).state);
   }
 
   function handleMenuAction(action){
@@ -1462,8 +1500,8 @@
   function routeStatus(message,stateValue='hosted'){
     const el=document.getElementById('p0-route');
     if(!el)return;
-    el.textContent=message||routeReceipt().text;
     el.dataset.state=stateValue;
+    renderMicroStatus(el,message||routeMicroStatus(),stateValue);
   }
 
   function saveHistory(){
@@ -1683,6 +1721,7 @@
       const elapsed=formatDuration(elapsedMs);
       updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed+' · Score '+effectiveModelScore(model)});
       renderModelMenu();
+      routeStatus(routePrefix+routeMicroStatus(model),receipt.state);
       status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
     }catch(error){
       if(model.route==='local'){
@@ -1713,7 +1752,7 @@
             {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed}
           );
           status('Supergenious answered in '+fallbackElapsed+' while local access waits for permission.','ready');
-          routeStatus(fallbackReceipt.text,fallbackReceipt.state);
+          routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
         }catch(fallbackError){
           updateMessage(assistant,hint+'\n\nSupergenious is still available from the model picker.');
           status('Chat failed: local node blocked/unavailable','error');
