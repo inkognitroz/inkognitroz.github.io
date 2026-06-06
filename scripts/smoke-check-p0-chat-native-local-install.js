@@ -155,7 +155,7 @@ for (const os of ['mac', 'windows', 'linux']) {
 }
 requireIncludes(
   transientSource,
-  "message?.variant==='install'",
+  'P0_HISTORY.transientInstallMessage(message)',
   'Install helper messages must not be persisted as first-screen chat history.'
 );
 
