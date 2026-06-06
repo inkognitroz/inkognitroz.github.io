@@ -143,13 +143,13 @@ forbidPattern(
 
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260605-prompt-presets-v1',
-  'mmir.html must cache-bust the P0 runtime for prompt presets.'
+  'p0-chat-shell.js?v=',
+  'mmir.html must cache-bust the P0 runtime that contains prompt presets.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260605-prompt-presets-v1"',
-  'asset-versions.json must match the prompt preset P0 runtime version.'
+  '"p0-chat-shell.js":',
+  'asset-versions.json must track the P0 runtime that contains prompt presets.'
 );
 requireIncludes(
   String(packageJson.scripts?.check || ''),

@@ -12,6 +12,8 @@
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
   const MODELS_KEY='mmir-p0-active-models-v1';
+  const ACTIVE_MODEL_KEY='mmir-p0-active-model-id-v1';
+  const PINNED_ROUTES_KEY='mmir-p0-pinned-routes-v1';
   const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
   const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
   const PROMPT_PRESETS_KEY='mmir-p0-prompt-presets-v1';
@@ -116,7 +118,7 @@
         costState:'free'
       }
     ],
-    activeModelId:'mmir-supergenius',
+    activeModelId:readActiveModelId(),
     localChecked:false,
     localError:'',
     localHardware:null,
@@ -159,6 +161,35 @@
 
   function writeJson(key,value){
     try{localStorage.setItem(key,JSON.stringify(value));}catch(error){}
+  }
+
+  function readActiveModelId(){
+    return String(localStorage.getItem(ACTIVE_MODEL_KEY)||'mmir-supergenius');
+  }
+
+  function persistActiveModelId(){
+    try{localStorage.setItem(ACTIVE_MODEL_KEY,String(state.activeModelId||'mmir-supergenius'));}catch(error){}
+  }
+
+  function pinnedRouteIds(){
+    return readJson(PINNED_ROUTES_KEY,[])
+      .map(id=>String(id||'').trim())
+      .filter(Boolean)
+      .slice(0,8);
+  }
+
+  function routePinned(model){
+    return pinnedRouteIds().includes(String(model?.id||''));
+  }
+
+  function setRoutePinned(id,pinned){
+    const value=String(id||'').trim();
+    if(!value)return [];
+    const next=pinned
+      ? [value].concat(pinnedRouteIds().filter(item=>item!==value)).slice(0,8)
+      : pinnedRouteIds().filter(item=>item!==value);
+    writeJson(PINNED_ROUTES_KEY,next);
+    return next;
   }
 
   function promptPresetCatalog(){
@@ -286,7 +317,11 @@
   function rankedModels(models){
     return (models||[])
       .slice()
-      .sort((a,b)=>effectiveModelScore(b)-effectiveModelScore(a)||String(a.label||a.id).localeCompare(String(b.label||b.id)));
+      .sort((a,b)=>{
+        const pinnedDelta=(routePinned(b)?1:0)-(routePinned(a)?1:0);
+        if(pinnedDelta)return pinnedDelta;
+        return effectiveModelScore(b)-effectiveModelScore(a)||String(a.label||a.id).localeCompare(String(b.label||b.id));
+      });
   }
 
   function routeRankMap(models=state.models){
@@ -315,6 +350,7 @@
       .slice(0,2);
     const parts=[
       receipt.text,
+      routePinned(model)?'Pinned':'',
       'Score '+effectiveModelScore(model),
       ...benchmark
     ].filter(Boolean);
@@ -665,6 +701,7 @@
       const activeLocal=state.models.find(model=>model.id===state.activeModelId&&model.route==='local');
       state.models=models.concat(state.models.filter(model=>model.route==='local'));
       if(!activeLocal&&!state.models.some(model=>model.id===state.activeModelId))state.activeModelId=models[0].id;
+      persistActiveModelId();
       writeJson(MODELS_KEY,state.models);
       renderToolbar();
       window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'ready',models}}));
@@ -942,9 +979,18 @@
     return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),score.reason].filter(Boolean).join(' · ');
   }
 
+  function routeOperationalHint(model){
+    const stats=routeBenchmark(model);
+    if(model?.route==='hosted')return 'Warm hosted';
+    if(stats?.samples)return 'Measured local';
+    if(model?.route==='local')return 'Ready local';
+    return 'Route ready';
+  }
+
   function compactModelBadges(model,bestLocal){
     const badges=[];
     if(model?.id===state.activeModelId)badges.push('Selected');
+    if(routePinned(model))badges.push('Pinned');
     if(model?.route==='hosted')badges.push('Default');
     if(model?.route==='local')badges.push('Private');
     if(bestLocal&&model?.id===bestLocal.id)badges.push('Best local');
@@ -953,7 +999,7 @@
     else if(rankState==='slow')badges.push('Slow');
     return badges
       .filter((tag,index,list)=>tag&&list.indexOf(tag)===index)
-      .slice(0,2)
+      .slice(0,3)
       .map(tag=>'<span class="p0-badge p0-badge-'+safeAttr(String(tag).toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'">'+safeText(tag)+'</span>')
       .join('');
   }
@@ -1140,6 +1186,7 @@
       emitLocalReadiness(models,hardware);
       if(models.length&&!state.models.some(model=>model.id===state.activeModelId)){
         state.activeModelId=models[0].id;
+        persistActiveModelId();
       }
       renderModelMenu();
       renderToolbar();
@@ -1150,7 +1197,10 @@
       state.localError=localNetworkHint(error);
       state.localHardware=null;
       state.models=state.models.filter(model=>model.route!=='local');
-      if(!state.models.some(model=>model.id===state.activeModelId))state.activeModelId='mmir-supergenius';
+      if(!state.models.some(model=>model.id===state.activeModelId)){
+        state.activeModelId='mmir-supergenius';
+        persistActiveModelId();
+      }
       renderModelMenu();
       renderToolbar();
       if(!quiet){
@@ -1458,14 +1508,17 @@
     const menu=menuEl('model');
     if(!menu)return;
     const local=bestLocalModel();
+    const active=activeModel();
+    const activePinned=routePinned(active);
+    const pinControl='<button type="button" data-p0-action="'+(activePinned?'unpin-active-route':'pin-active-route')+'"><strong>'+(activePinned?'Unpin selected route':'Pin selected route')+'</strong><small>'+(activePinned?'Keep normal score ranking for '+safeText(active.label)+'.':'Keep '+safeText(active.label)+' at the top of this browser model picker.')+'</small></button><div class="p0-menu-separator"></div>';
     const rankMap=routeRankMap();
     const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'));
     const renderButtons=(models)=>models.map(model=>{
       const benchmark=routeBenchmarkSummary(model);
       const shortDetail=model.route==='local'
-        ? ['Private · This Mac',benchmark].filter(Boolean).join(' · ')
-        : 'Free · '+API_LABEL;
+        ? [routeOperationalHint(model),'Private · This Mac',benchmark].filter(Boolean).join(' · ')
+        : [routeOperationalHint(model),'Free · '+API_LABEL,benchmark].filter(Boolean).join(' · ');
       return '<button type="button" data-model-id="'+safeText(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
     }).join('');
     const buttons=''+
@@ -1473,10 +1526,11 @@
       (localModels.length?'<div class="p0-menu-section">Private local models</div>'+renderButtons(localModels):'');
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
-    menu.innerHTML='<div class="p0-menu-title">Models</div>'+buttons+localHint;
+    menu.innerHTML='<div class="p0-menu-title">Models</div>'+pinControl+buttons+localHint;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');
+        persistActiveModelId();
         closeMenus();
         renderToolbar();
         status(activeModel().label+' selected.','ready');
@@ -1507,6 +1561,14 @@
   }
 
   function handleMenuAction(action){
+    if(action==='pin-active-route'){
+      setActiveRoutePinned(true);
+      return true;
+    }
+    if(action==='unpin-active-route'){
+      setActiveRoutePinned(false);
+      return true;
+    }
     if(action==='add-menu-main'){
       renderAddMenu();
       return true;
@@ -1554,6 +1616,15 @@
       return true;
     }
     return false;
+  }
+
+  function setActiveRoutePinned(pinned){
+    const model=activeModel();
+    setRoutePinned(model.id,pinned);
+    renderModelMenu();
+    renderToolbar();
+    status((pinned?'Pinned ':'Unpinned ')+model.label+'.','ready');
+    routeStatus((pinned?'Pinned route':'Route unpinned')+' · '+routeReceipt(model).text,routeReceipt(model).state);
   }
 
   async function saveCurrentPromptPreset(){
@@ -2023,6 +2094,7 @@
           return;
         }
         state.activeModelId='mmir-supergenius';
+        persistActiveModelId();
         renderToolbar();
         try{
           const fallbackReceipt=routeReceipt(activeModel());
