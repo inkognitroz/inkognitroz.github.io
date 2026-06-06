@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>MMIR Chat Design Preview</title>
+  <link rel="icon" href="../../assets/mmir-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./design-preview.css" />
+</head>
+<body data-mimir-design-preview="B1-05" data-preview-only="true">
+  <main class="preview-page" aria-labelledby="preview-title">
+    <header class="preview-header">
+      <a class="preview-brand" href="../../mmir.html" aria-label="Back to MMIR chat">
+        <span class="preview-mark" aria-hidden="true">MM</span>
+        <span>
+          <strong>MMIR.ai</strong>
+          <small>Preview lane</small>
+        </span>
+      </a>
+      <p class="preview-pill">B1-05 · Design review only</p>
+    </header>
+
+    <section class="preview-intro">
+      <p class="preview-kicker">World-class minimal chat surface</p>
+      <h1 id="preview-title">Review bigger UI ideas before they touch the live chat.</h1>
+    </section>
+
+    <nav class="preview-tabs" role="tablist" aria-label="Preview variants">
+      <button type="button" id="preview-tab-clean" class="is-active" role="tab" aria-selected="true" aria-controls="preview-panel-clean" data-preview-tab="clean">Clean Chat</button>
+      <button type="button" id="preview-tab-compare" role="tab" aria-selected="false" aria-controls="preview-panel-compare" data-preview-tab="compare" tabindex="-1">Best Answer</button>
+      <button type="button" id="preview-tab-local" role="tab" aria-selected="false" aria-controls="preview-panel-local" data-preview-tab="local" tabindex="-1">Add Model</button>
+    </nav>
+
+    <section class="preview-stage" aria-live="polite">
+      <article id="preview-panel-clean" class="preview-chat" role="tabpanel" aria-labelledby="preview-tab-clean" data-preview-panel="clean" aria-hidden="false">
+        <div class="preview-transcript">
+          <div class="preview-empty">
+            <h2>Ask anything.</h2>
+            <p>One chat. All AI. Shared intelligence.</p>
+          </div>
+        </div>
+        <form class="preview-composer" aria-label="Clean chat composer">
+          <textarea rows="2" placeholder="Message Supergenious..." aria-label="Message Supergenious"></textarea>
+          <div class="preview-toolbar">
+            <div class="preview-left-tools">
+              <button type="button" aria-label="Add model or tool" title="Add model">+</button>
+              <button type="button" aria-label="Privacy status" title="Privacy status">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>
+              </button>
+            </div>
+            <div class="preview-right-tools">
+              <button type="button" class="preview-model">Supergenious <span aria-hidden="true">⌄</span></button>
+              <button type="button" aria-label="Voice input" title="Voice input">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>
+              </button>
+              <button type="submit" class="preview-send" aria-label="Send">↑</button>
+            </div>
+          </div>
+        </form>
+      </article>
+
+      <article id="preview-panel-compare" class="preview-chat is-hidden" role="tabpanel" aria-labelledby="preview-tab-compare" data-preview-panel="compare" hidden>
+        <div class="preview-transcript preview-transcript-filled">
+          <p class="preview-user">Who is the president of the USA?</p>
+          <section class="preview-answer">
+            <p class="preview-route">Supergenious · Best answer · Score 95 · 420ms</p>
+            <h2>Donald J. Trump is the current president of the United States.</h2>
+            <p class="preview-note">Best Answer synthesis can show why a route won without exposing private prompts, secrets or local model internals.</p>
+          </section>
+          <section class="preview-route-list" aria-label="Route comparison">
+            <div><strong>Supergenious</strong><span>verified public fact · fast</span></div>
+            <div><strong>Local model</strong><span>stale civic answer demoted</span></div>
+          </section>
+        </div>
+        <form class="preview-composer" aria-label="Best Answer composer">
+          <textarea rows="2" placeholder="Ask once, compare trusted routes..." aria-label="Ask once, compare trusted routes"></textarea>
+          <div class="preview-toolbar">
+            <div class="preview-left-tools"><button type="button">+</button><button type="button" aria-label="Privacy status">◌</button></div>
+            <div class="preview-right-tools"><button type="button" class="preview-model">Best Answer <span aria-hidden="true">⌄</span></button><button type="button" aria-label="Voice input">♩</button><button type="submit" class="preview-send" aria-label="Send">↑</button></div>
+          </div>
+        </form>
+      </article>
+
+      <article id="preview-panel-local" class="preview-chat is-hidden" role="tabpanel" aria-labelledby="preview-tab-local" data-preview-panel="local" hidden>
+        <div class="preview-transcript preview-transcript-filled">
+          <p class="preview-user">+ Add model</p>
+          <section class="preview-answer preview-install">
+            <p class="preview-route">Command ready · local setup</p>
+            <h2>Detected Mac. Paste this into Terminal.</h2>
+            <pre><code>curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash</code></pre>
+            <button type="button" id="copy-preview-command">Copy install command</button>
+            <p id="copy-preview-status" class="preview-note" aria-live="polite">No redirect. No zip. The instruction appears in chat.</p>
+          </section>
+        </div>
+        <form class="preview-composer" aria-label="Add model composer">
+          <textarea rows="2" placeholder="Message Supergenious..." aria-label="Message Supergenious"></textarea>
+          <div class="preview-toolbar">
+            <div class="preview-left-tools"><button type="button">+</button><button type="button" aria-label="Privacy status">◌</button></div>
+            <div class="preview-right-tools"><button type="button" class="preview-model">Supergenious <span aria-hidden="true">⌄</span></button><button type="button" aria-label="Voice input">♩</button><button type="submit" class="preview-send" aria-label="Send">↑</button></div>
+          </div>
+        </form>
+      </article>
+    </section>
+
+    <aside class="preview-guardrail" aria-label="Preview lane guardrails">
+      <span>Preview only</span>
+      <span>No live routes</span>
+      <span>No provider keys</span>
+      <span>No production UI change</span>
+    </aside>
+  </main>
+  <script src="./design-preview.js"></script>
+</body>
+</html>
