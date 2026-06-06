@@ -516,9 +516,9 @@ requireText(
   "P0 shell must generate hosted route receipts from the active API host.",
 );
 requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "'Supergenious · Free · '+API_LABEL",
-  "P0 shell must show hosted route receipts.",
+  join(publicDir, "apps", "mimir-chat-portal", "p0-route-receipts.js"),
+  "'Supergenious · Free · '+String(apiLabel||'api.mmir.ai')",
+  "P0 route receipts helper must show hosted route receipts.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

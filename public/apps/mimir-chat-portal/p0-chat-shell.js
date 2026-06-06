@@ -26,6 +26,7 @@
   const P0_CLIPBOARD=window.MimirP0Clipboard||{};
   const P0_ICONS=window.MimirP0Icons||{};
   const P0_STORAGE=window.MimirP0Storage||{};
+  const P0_ROUTE_RECEIPTS=window.MimirP0RouteReceipts||{};
   const MAX_HISTORY=40;
   const ICON_SHIELD=P0_ICONS.shield||'';
   const ICON_MIC=P0_ICONS.mic||'';
@@ -90,7 +91,7 @@
   }
 
   function hostedRouteLabel(){
-    return 'Supergenious · Free · '+API_LABEL;
+    return P0_ROUTE_RECEIPTS.hostedRouteLabel(API_LABEL);
   }
 
   function normalizePromptPreset(item){
@@ -590,22 +591,11 @@
   }
 
   function routeReceipt(model=activeModel()){
-    if(model.route==='local'){
-      return {
-        text:model.label+' · Private · This Mac',
-        detail:'Local connector on 127.0.0.1. Pairing token stays in this browser session.',
-        state:'local'
-      };
-    }
-    return {
-      text:hostedRouteLabel(),
-      detail:'Hosted MMIR free route. No provider key is stored in the browser. No paid route started.',
-      state:'hosted'
-    };
+    return P0_ROUTE_RECEIPTS.receipt(model,{apiLabel:API_LABEL});
   }
 
   function routeDisplayName(model){
-    return String(model?.display_name||model?.name||model?.label||model?.id||'Supergenious').trim();
+    return P0_ROUTE_RECEIPTS.displayName(model);
   }
 
   function executableHostedModel(model){
