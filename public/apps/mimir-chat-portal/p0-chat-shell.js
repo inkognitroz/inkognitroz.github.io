@@ -1499,7 +1499,7 @@
     menu.innerHTML=''+
       menuTitle('Add')+
       compareAction+
-      menuButton('connect-local','Add model','Get the exact install command here in chat.')+
+      menuButton('connect-local','Add model','Connect this computer as a private local node from chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('prompt-presets','Prompt presets','Use or save prompt starters in this browser.')+
       menuSeparator()+
@@ -1550,7 +1550,7 @@
     const filterHint=(hostedModels.length||localModels.length)?'':
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-note">More models appear after you press + and add one.</div>';
+      '<div class="p0-menu-note">Press + -> Add model to connect this computer and expand the intelligence pool.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
     const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, change filters and inspect route details.');
     menu.innerHTML=menuTitle('Models')+detailReceipt+menuSeparator()+buttons+filterHint+activeFilterHint+localHint+routeControls;
@@ -1852,7 +1852,7 @@
     const root=document.getElementById('p0-transcript');
     if(!root)return;
     if(!state.messages.length){
-      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergenious answers now. Use + later when you want private local models.</p></div>';
+      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergenious answers now. Use + to add local models and let MMIR route more intelligence into one chat.</p></div>';
       return;
     }
     root.innerHTML=state.messages.map(message=>(

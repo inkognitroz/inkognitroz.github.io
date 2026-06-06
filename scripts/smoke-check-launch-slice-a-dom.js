@@ -157,7 +157,7 @@ requireIncludes(files.p0Runtime, 'data-p0-os-command="windows"', 'P0 local setup
 requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setup must gracefully handle browsers that block clipboard writes.');
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
 requireIncludes(files.p0Runtime, 'Add model', 'P0 add menu must present local setup as one simple Add model task.');
-requireIncludes(files.p0Runtime, 'install command here in chat', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
+requireIncludes(files.p0Runtime, 'Connect this computer as a private local node from chat.', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
 requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
 requireIncludes(files.p0RouteReceipts, "'Supergenious · Free · '+String(apiLabel||'api.mmir.ai')", 'P0 hosted route receipt must stay visible to users.');
