@@ -709,6 +709,25 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   padding: 6px 10px 8px;
 }
 
+.p0-route-detail {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  display: grid;
+  gap: 3px;
+  margin: 6px 4px;
+  padding: 8px 10px;
+}
+
+.p0-route-detail strong {
+  color: #111827;
+  font-size: 0.75rem;
+}
+
+.p0-route-detail span {
+  color: #6b7280;
+}
+
 .p0-menu-separator {
   background: #ececf1;
   height: 1px;

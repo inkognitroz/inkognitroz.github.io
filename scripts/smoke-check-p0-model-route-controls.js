@@ -59,6 +59,16 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
+  'function routeOperationalState(model)',
+  'P0 model picker must expose explicit warm/cold/measured route state.'
+);
+requireIncludes(
+  p0Shell,
+  'function routeDetailReceipt(model)',
+  'P0 model picker must expose a safe route detail receipt.'
+);
+requireIncludes(
+  p0Shell,
   'function modelVisibleInFilter(model,value=modelFilter())',
   'P0 model picker must filter routes without changing first-screen controls.'
 );
@@ -101,6 +111,31 @@ requireIncludes(
   renderModelMenuSource,
   'Pinned routes stay in this browser. Route scores still show quality.',
   'Model menu must explain pinned-route behavior without cluttering first chat.'
+);
+requireIncludes(
+  renderModelMenuSource,
+  'p0-route-detail',
+  'Model menu must show safe route details only inside the model picker.'
+);
+requireIncludes(
+  p0Shell,
+  'Cold local',
+  'Local routes that have not answered yet must be marked as cold/local load truth.'
+);
+requireIncludes(
+  p0Shell,
+  'not measured yet',
+  'Unmeasured routes must not pretend to have benchmark evidence.'
+);
+requireIncludes(
+  p0Shell,
+  'no browser secrets',
+  'Hosted route details must preserve browser-secret guardrail wording.'
+);
+requireIncludes(
+  p0Shell,
+  'no public Ollama port',
+  'Local route details must preserve local isolation wording.'
 );
 requireIncludes(
   renderModelMenuSource,
@@ -149,12 +184,12 @@ forbidPattern(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260606-route-filters-v1',
+  'p0-chat-shell.js?v=20260606-route-detail-v1',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260606-route-filters-v1"',
+  '"p0-chat-shell.js": "20260606-route-detail-v1"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(
