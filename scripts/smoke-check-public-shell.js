@@ -602,7 +602,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'data-p0-action="best-answer-live"',
+  "menuButton('best-answer-live'",
   "P0 + menu must expose Best Answer after local discovery.",
 );
 requireText(
@@ -732,7 +732,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Find models first, then use @supergenius @gemma for compare.",
+  "Refresh models first, then use @supergenius @gemma for compare.",
   "P0 shell must fail clearly when a local route tag is used before local discovery.",
 );
 requireText(
@@ -822,7 +822,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'After it says "MMIR Local Connector is ready", return here and press + -> Find models.',
+  'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models.',
   "P0 local install copy must describe automatic return flow.",
 );
 requireText(
@@ -832,7 +832,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'data-p0-action="connect-local"',
+  "menuButton('connect-local'",
   "P0 Add model must start the chat-guided installer flow.",
 );
 requireText(

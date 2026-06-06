@@ -71,22 +71,22 @@ requireIncludes(
 
 requireIncludes(
   renderAddMenuSource,
-  'data-p0-action="prompt-presets"',
+  "menuButton('prompt-presets','Prompt presets','Use or save prompt starters in this browser.')",
   '+ menu must expose prompt presets only as a discrete submenu.'
 );
 requireIncludes(
   renderAddMenuSource,
-  'Save and reuse prompt starters in this browser.',
+  'Use or save prompt starters in this browser.',
   'Prompt preset entry must tell the user it is browser-scoped.'
 );
 requireIncludes(
   renderPromptMenuSource,
-  'data-p0-action="save-prompt-local"',
+  "menuButton('save-prompt-local','Save current prompt'",
   'Prompt preset submenu must support saving the current prompt.'
 );
 requireIncludes(
   renderPromptMenuSource,
-  'data-p0-action="load-preset:',
+  "menuButton('load-preset:'+preset.id",
   'Prompt preset submenu must support loading a preset into the composer.'
 );
 requireIncludes(

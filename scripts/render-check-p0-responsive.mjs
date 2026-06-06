@@ -236,7 +236,7 @@ async function checkViewport(browser, viewport) {
   layout = await collectLayout(page);
   assertMenuInViewport(layout.addMenu, viewport, `${viewport.name} add`);
   assert(layout.text.includes('Add model'), `${viewport.name}: add menu should expose Add model`);
-  assert(layout.text.includes('Find models'), `${viewport.name}: add menu should expose Find models`);
+  assert(layout.text.includes('Refresh models'), `${viewport.name}: add menu should expose Refresh models`);
 
   await page.locator('[data-p0-action="connect-local"]').click();
   await page.waitForSelector('.p0-command-card code');

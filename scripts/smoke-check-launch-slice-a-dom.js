@@ -147,7 +147,7 @@ requireIncludes(files.p0Runtime, "const SHARE_DRAFT_KEY='mmir-p0-share-safe-draf
 requireIncludes(files.p0Runtime, "const PROD_API_URL='https://api.mmir.ai'", 'P0 shell must keep api.mmir.ai as the production chat route.');
 requireIncludes(files.p0Runtime, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must know the staging API route.');
 requireIncludes(files.p0Runtime, "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must route staging.mmir.ai to api-staging.mmir.ai without arbitrary browser overrides.');
-requireIncludes(files.p0Runtime, "data-p0-action=\"connect-local\"", 'P0 shell must start local setup through the chat-guided installer flow.');
+requireIncludes(files.p0Runtime, "menuButton('connect-local'", 'P0 shell must start local setup through the chat-guided installer flow.');
 requireIncludes(files.p0Runtime, 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', 'P0 local setup copy must expose the working Mac/Linux Terminal bootstrap command.');
 requireIncludes(files.p0Runtime, 'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.', 'P0 local setup must use simple chat-first Mac copy.');
 requireIncludes(files.p0Runtime, 'data-p0-os-command="windows"', 'P0 local setup must ask for OS when browser detection is uncertain.');
@@ -160,9 +160,9 @@ requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route
 requireIncludes(files.p0Runtime, "'Supergenious · Free · '+API_LABEL", 'P0 hosted route receipt must stay visible to users.');
 requireIncludes(files.p0Runtime, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
-requireIncludes(files.p0Runtime, 'data-p0-action="compare-live"', 'P0 compare must be implemented as a gated toolbar action.');
+requireIncludes(files.p0Runtime, "menuButton('compare-live'", 'P0 compare must be implemented as a gated toolbar action.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
-requireIncludes(files.p0Runtime, 'data-p0-action="best-answer-live"', 'P0 Best Answer must be implemented as a gated toolbar action after real local discovery.');
+requireIncludes(files.p0Runtime, "menuButton('best-answer-live'", 'P0 Best Answer must be implemented as a gated toolbar action after real local discovery.');
 requireIncludes(files.p0Runtime, 'Best Answer', 'P0 Best Answer must be user-facing as the simple parallel-model action.');
 requireIncludes(files.p0Runtime, 'Compare answers', 'P0 compare must be user-facing as an answer comparison, not internal routing jargon.');
 requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must show route score and response timing.');
@@ -230,7 +230,7 @@ requireIncludes(files.p0Css, '.p0-menu-section', 'P0 model picker must visually 
 requireIncludes(files.p0Runtime, 'Allow Local Network Access for mmir.ai', 'P0 local permission failure must be actionable.');
 requireIncludes(files.p0Runtime, 'Local fallback', 'P0 local chat failures must keep answering through the hosted route.');
 requireIncludes(files.p0Runtime, 'while local access waits for permission', 'P0 local chat failures must explain that hosted fallback answered.');
-requireIncludes(files.p0Runtime, 'After it says "MMIR Local Connector is ready", return here and press + -> Find models.', 'P0 local install copy must describe the automatic return flow.');
+requireIncludes(files.p0Runtime, 'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models.', 'P0 local install copy must describe the automatic return flow.');
 requireIncludes(files.p0Runtime, 'checkLocalModels().catch(()=>{})', 'P0 local model checks must not leak browser-blocked probes as unhandled page errors.');
 requireIncludes(files.p0Runtime, "status('Listening...','ready')", 'P0 mic button must give immediate feedback when voice input is requested.');
 requireIncludes(files.p0Runtime, "document.body.classList.add('mmir-p0-ready')", 'P0 runtime must set the same ready class that the P0 CSS uses to hide legacy UI.');
