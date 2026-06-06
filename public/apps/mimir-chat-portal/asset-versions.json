@@ -21,7 +21,7 @@
     "model-catalog-ui.js": "20260531-no-rag-v1",
     "node-dashboard.js": "20260604-canonical-local-install-v1",
     "p0-chat-shell.css": "20260605-stop-control-v1",
-    "p0-chat-shell.js": "20260605-prompt-presets-v1",
+    "p0-chat-shell.js": "20260606-pinned-routes-v1",
     "platform-status.js": "20260524-status-static-v1",
     "public-launch-guard.js": "20260604-hidden-capability-inert-v1",
     "quiet-first-paint-hotfix.js": "20260531-local-loopback-v1",
