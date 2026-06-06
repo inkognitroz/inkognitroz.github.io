@@ -49,8 +49,18 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
+  "const MODEL_FILTER_KEY='mmir-p0-model-filter-v1';",
+  'P0 model picker must store route filter preference locally.'
+);
+requireIncludes(
+  p0Shell,
   'function routeOperationalHint(model)',
   'P0 model picker must expose compact warm/ready route truth.'
+);
+requireIncludes(
+  p0Shell,
+  'function modelVisibleInFilter(model,value=modelFilter())',
+  'P0 model picker must filter routes without changing first-screen controls.'
 );
 requireIncludes(
   p0Shell,
@@ -84,8 +94,23 @@ requireIncludes(
 );
 requireIncludes(
   renderModelMenuSource,
+  'Filter: ',
+  'Model menu must expose route filtering only inside the model picker.'
+);
+requireIncludes(
+  renderModelMenuSource,
+  'Pinned routes stay in this browser. Route scores still show quality.',
+  'Model menu must explain pinned-route behavior without cluttering first chat.'
+);
+requireIncludes(
+  renderModelMenuSource,
   'persistActiveModelId();',
   'Selecting a route must persist the active route locally.'
+);
+requireIncludes(
+  handleMenuSource,
+  "if(action==='cycle-model-filter')",
+  'Model menu action must cycle route filters.'
 );
 requireIncludes(
   handleMenuSource,
@@ -107,6 +132,11 @@ requireIncludes(
   "status((pinned?'Pinned ':'Unpinned ')+model.label+'.','ready');",
   'Pinning must give the user compact status feedback.'
 );
+requireIncludes(
+  p0Shell,
+  "routeStatus('Model filter · '+modelFilterLabel(value)+' · browser local','hosted');",
+  'Route filtering must provide compact browser-local status feedback.'
+);
 forbidPattern(
   renderModelMenuSource,
   /temperature|max tokens|system prompt|advanced settings|provider key|api key/i,
@@ -119,13 +149,13 @@ forbidPattern(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260606-pinned-routes-v1',
-  'mmir.html must cache-bust the P0 runtime for pinned route controls.'
+  'p0-chat-shell.js?v=20260606-route-filters-v1',
+  'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260606-pinned-routes-v1"',
-  'asset-versions.json must match the pinned route runtime version.'
+  '"p0-chat-shell.js": "20260606-route-filters-v1"',
+  'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(
   String(packageJson.scripts?.check || ''),
