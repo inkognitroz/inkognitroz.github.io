@@ -22,6 +22,7 @@
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
+  const P0_TEXT=window.MimirP0Text||{};
   const MAX_HISTORY=40;
   const ICON_SHIELD='<svg class="p0-icon p0-icon-shield" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3.1 8.2-7 10-3.9-1.8-7-5-7-10V6l7-3Z"></path><path d="m9.5 12 1.7 1.7 3.5-4"></path></svg>';
   const ICON_MIC='<svg class="p0-icon p0-icon-mic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><path d="M12 19v3"></path><path d="M8 22h8"></path></svg>';
@@ -463,7 +464,7 @@
   }
 
   function safeText(value){
-    return String(value||'').replace(/[&<>"']/g,(char)=>({
+    return P0_TEXT.safeText?.(value)||String(value||'').replace(/[&<>"']/g,(char)=>({
       '&':'&amp;',
       '<':'&lt;',
       '>':'&gt;',
@@ -473,7 +474,7 @@
   }
 
   function safeAttr(value){
-    return safeText(value);
+    return P0_TEXT.safeAttr?.(value)||safeText(value);
   }
 
   function makeMessageId(){
@@ -529,7 +530,7 @@
   }
 
   function paragraphs(text){
-    return String(text||'')
+    return P0_TEXT.paragraphs?.(text)||String(text||'')
       .split(/\n{2,}/)
       .map(part=>part.trim())
       .filter(Boolean)
@@ -917,6 +918,7 @@
   }
 
   function formatDuration(ms){
+    if(P0_TEXT.formatDuration)return P0_TEXT.formatDuration(ms);
     const value=Math.max(0,Number(ms)||0);
     if(value<1000)return Math.round(value)+'ms';
     return (value/1000).toFixed(value<10000?1:0)+'s';
