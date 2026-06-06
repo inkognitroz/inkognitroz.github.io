@@ -75,17 +75,25 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-status {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  max-width: min(44vw, 520px);
   overflow: hidden;
+  padding: 4px 8px;
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .p0-status[data-state="ready"] {
+  background: #ecfdf5;
+  border-color: rgba(4, 120, 87, 0.16);
   color: #047857;
 }
 
 .p0-status[data-state="error"] {
+  background: #fef2f2;
+  border-color: rgba(185, 28, 28, 0.16);
   color: #b91c1c;
 }
 

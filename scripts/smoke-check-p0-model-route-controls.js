@@ -33,7 +33,8 @@ function functionSource(name, nextName) {
 }
 
 const rankedModelsSource = functionSource('rankedModels', 'routeRankMap');
-const renderModelMenuSource = functionSource('renderModelMenu', 'renderPrivacyMenu');
+const renderModelMenuSource = functionSource('renderModelMenu', 'renderRouteControlsMenu');
+const renderRouteControlsMenuSource = functionSource('renderRouteControlsMenu', 'renderPrivacyMenu');
 const handleMenuSource = functionSource('handleMenuAction', 'setActiveRoutePinned');
 const setPinnedSource = functionSource('setActiveRoutePinned', 'saveCurrentPromptPreset');
 
@@ -89,13 +90,23 @@ requireIncludes(
 );
 requireIncludes(
   renderModelMenuSource,
-  'Pin selected route',
-  'Model menu must offer pinning only inside the model picker.'
+  'model-route-controls',
+  'Simple model menu must provide one route-controls escape hatch.'
 );
 requireIncludes(
-  renderModelMenuSource,
+  renderRouteControlsMenuSource,
+  'Back to models',
+  'Route controls menu must return to the simple model list.'
+);
+requireIncludes(
+  renderRouteControlsMenuSource,
+  'Pin selected route',
+  'Route controls menu must offer pinning without cluttering the simple model list.'
+);
+requireIncludes(
+  renderRouteControlsMenuSource,
   'Unpin selected route',
-  'Model menu must offer unpinning for a pinned selected route.'
+  'Route controls menu must offer unpinning for a pinned selected route.'
 );
 requireIncludes(
   renderModelMenuSource,
@@ -103,19 +114,24 @@ requireIncludes(
   'Model menu details must include compact warm/ready truth.'
 );
 requireIncludes(
-  renderModelMenuSource,
+  renderRouteControlsMenuSource,
   'Filter: ',
-  'Model menu must expose route filtering only inside the model picker.'
+  'Route controls menu must expose route filtering behind the simple picker.'
 );
 requireIncludes(
-  renderModelMenuSource,
+  renderRouteControlsMenuSource,
   'Pinned routes stay in this browser. Route scores still show quality.',
-  'Model menu must explain pinned-route behavior without cluttering first chat.'
+  'Route controls menu must explain pinned-route behavior without cluttering first chat.'
 );
 requireIncludes(
   renderModelMenuSource,
   'p0-route-detail',
   'Model menu must show safe route details only inside the model picker.'
+);
+forbidPattern(
+  renderModelMenuSource,
+  /Pin selected route|Unpin selected route|Filter: /,
+  'Simple model menu must hide pin/filter controls until Route controls is opened.'
 );
 requireIncludes(
   p0Shell,
@@ -141,6 +157,16 @@ requireIncludes(
   renderModelMenuSource,
   'persistActiveModelId();',
   'Selecting a route must persist the active route locally.'
+);
+requireIncludes(
+  handleMenuSource,
+  "if(action==='model-route-controls')",
+  'Model menu action must open advanced route controls through one explicit action.'
+);
+requireIncludes(
+  handleMenuSource,
+  "if(action==='model-menu-main')",
+  'Route controls menu must return to the simple model list.'
 );
 requireIncludes(
   handleMenuSource,
@@ -184,12 +210,12 @@ forbidPattern(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260606-route-detail-v1',
+  'p0-chat-shell.js?v=20260606-micro-status-v1',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260606-route-detail-v1"',
+  '"p0-chat-shell.js": "20260606-micro-status-v1"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(
