@@ -876,12 +876,12 @@ forbidText(
   "P0 local setup must not send users to a separate install window from the + menu.",
 );
 requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  join(publicDir, "apps", "mimir-chat-portal", "p0-icons.js"),
   "p0-icon-shield",
   "P0 privacy button must render a real discreet shield icon.",
 );
 requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  join(publicDir, "apps", "mimir-chat-portal", "p0-icons.js"),
   "p0-icon-mic",
   "P0 voice button must render a real discreet mic icon.",
 );
