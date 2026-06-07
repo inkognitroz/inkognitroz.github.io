@@ -32,7 +32,7 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  'Press + -> Add model to connect this computer and expand the intelligence pool.',
+  'Press + -> Add model to connect this computer.',
   'Model menu must explain why adding a local model matters without showing a dashboard.'
 );
 requireIncludes(
