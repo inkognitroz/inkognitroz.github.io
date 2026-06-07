@@ -16,6 +16,19 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.conversation-portability-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.conversation-portability-row span {
+  color: var(--mimir-muted, #64748b);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
 .conversation-save-row label,
 .conversation-filter-row label:not(.conversation-archive-toggle) {
   display: grid;
@@ -36,6 +49,7 @@
 }
 
 .conversation-save-row button,
+.conversation-portability-row button,
 .conversation-actions button {
   min-height: 36px;
   border: 1px solid rgba(16, 163, 127, 0.3);
@@ -48,6 +62,10 @@
 }
 
 .conversation-save-row button {
+  padding: 0 12px;
+}
+
+.conversation-portability-row button {
   padding: 0 12px;
 }
 
