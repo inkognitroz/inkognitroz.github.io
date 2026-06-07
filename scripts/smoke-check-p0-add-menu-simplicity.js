@@ -76,12 +76,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260606-b19-01-first-user-v1',
+  'p0-chat-shell.js?v=20260607-b0-06-01-compare-ux-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260606-b19-01-first-user-v1"',
+  '"p0-chat-shell.js": "20260607-b0-06-01-compare-ux-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

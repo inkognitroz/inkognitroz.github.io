@@ -1550,7 +1550,7 @@
     const filterHint=(hostedModels.length||localModels.length)?'':
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-note">Press + -> Add model to connect this computer and expand the intelligence pool.</div>';
+      '<div class="p0-menu-note">Press + -> Add model to connect this computer.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
     const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, change filters and inspect route details.');
     menu.innerHTML=menuTitle('Models')+detailReceipt+menuSeparator()+buttons+filterHint+activeFilterHint+localHint+routeControls;
