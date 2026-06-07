@@ -172,7 +172,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-06-05T19:26:03.539Z",
+    "verified_at": "2026-06-07T04:55:15.970Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",
