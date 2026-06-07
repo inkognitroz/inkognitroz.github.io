@@ -14,6 +14,7 @@ const files = {
   p0Runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'),
   p0Icons: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-icons.js'),
   p0RouteReceipts: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-receipts.js'),
+  p0RouteBenchmarks: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-benchmarks.js'),
   p0History: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-history.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
@@ -126,6 +127,7 @@ requireIncludes(files.runtime, 'mimir-route-chips-ready', 'Runtime must refresh 
 requireIncludes(files.mmir, assetRef('route-chips.js'), 'Route-chip polish must load progressively after first-paint chat runtime.');
 requireIncludes(files.mmir, assetRef('p0-chat-shell.css'), 'P0 simple chat shell CSS must load on the public page.');
 requireIncludes(files.mmir, assetRef('p0-chat-shell.js'), 'P0 simple chat shell runtime must load on the public page.');
+requireIncludes(files.mmir, assetRef('p0-route-benchmarks.js'), 'P0 route benchmark helper must load on the public page before the shell.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -221,6 +223,9 @@ requireIncludes(files.p0Runtime, "const ROUTE_BENCHMARK_KEY='mmir-p0-route-bench
 requireIncludes(files.p0Runtime, 'function recordRouteBenchmark(model,score)', 'P0 shell must record route benchmark score/latency data.');
 requireIncludes(files.p0Runtime, 'function effectiveModelScore(model)', 'P0 shell must demote weak/slow routes from benchmark data.');
 requireIncludes(files.p0Runtime, 'function routeRankMap(models=state.models)', 'P0 model picker must expose benchmark-adjusted route rank.');
+requireIncludes(files.p0RouteBenchmarks, 'function rankedModels(models)', 'P0 route benchmark helper must own benchmark-adjusted route ranking.');
+requireIncludes(files.p0RouteBenchmarks, 'const pinnedDelta=(routePinned(b)?1:0)-(routePinned(a)?1:0);', 'P0 route benchmark helper must keep pinned routes above unpinned routes.');
+requireIncludes(files.p0RouteBenchmarks, 'function routeRankState(model)', 'P0 route benchmark helper must expose discreet demotion state.');
 requireIncludes(files.p0Runtime, 'function compactModelBadges(model,bestLocal)', 'P0 model picker must keep benchmark evidence compact instead of rendering a score dashboard.');
 forbid(files.p0Runtime, /Rank #/, 'P0 model picker must not show rank numbers in the clean dropdown.');
 requireIncludes(files.p0Runtime, 'Demoted', 'P0 model picker may quietly demote weak or failed routes.');

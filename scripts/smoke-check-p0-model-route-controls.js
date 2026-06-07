@@ -5,6 +5,7 @@ const root = process.cwd();
 const publicDir = join(resolve(root, 'public'));
 const portalDir = join(publicDir, 'apps', 'mimir-chat-portal');
 const p0Shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
+const p0RouteBenchmarks = readFileSync(join(portalDir, 'p0-route-benchmarks.js'), 'utf8');
 const html = readFileSync(join(publicDir, 'mmir.html'), 'utf8');
 const assetVersions = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
@@ -22,17 +23,21 @@ function forbidPattern(source, pattern, message) {
   if (pattern.test(source)) fail(message);
 }
 
-function functionSource(name, nextName) {
-  const start = p0Shell.indexOf(`function ${name}(`);
-  const next = nextName ? p0Shell.indexOf(`function ${nextName}(`, start + 1) : -1;
+function functionSourceFrom(source, name, nextName) {
+  const start = source.indexOf(`function ${name}(`);
+  const next = nextName ? source.indexOf(`function ${nextName}(`, start + 1) : -1;
   if (start < 0) {
     fail(`Missing P0 function: ${name}`);
     return '';
   }
-  return p0Shell.slice(start, next > start ? next : undefined);
+  return source.slice(start, next > start ? next : undefined);
 }
 
-const rankedModelsSource = functionSource('rankedModels', 'routeRankMap');
+function functionSource(name, nextName) {
+  return functionSourceFrom(p0Shell, name, nextName);
+}
+
+const rankedModelsSource = functionSourceFrom(p0RouteBenchmarks, 'rankedModels', 'routeRankMap');
 const renderModelMenuSource = functionSource('renderModelMenu', 'renderRouteControlsMenu');
 const renderRouteControlsMenuSource = functionSource('renderRouteControlsMenu', 'renderPrivacyMenu');
 const handleMenuSource = functionSource('handleMenuAction', 'setActiveRoutePinned');
@@ -52,6 +57,16 @@ requireIncludes(
   p0Shell,
   "const MODEL_FILTER_KEY='mmir-p0-model-filter-v1';",
   'P0 model picker must store route filter preference locally.'
+);
+requireIncludes(
+  p0Shell,
+  'const P0_ROUTE_BENCHMARKS=window.MimirP0RouteBenchmarks||{};',
+  'P0 shell must consume the extracted route benchmark helper.'
+);
+requireIncludes(
+  p0RouteBenchmarks,
+  'window.MimirP0RouteBenchmarks={version,create,clampScore};',
+  'P0 route benchmark helper must expose a small explicit API.'
 );
 requireIncludes(
   p0Shell,
@@ -210,12 +225,22 @@ forbidPattern(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260607-b0-06-01-compare-ux-v1',
+  'p0-route-benchmarks.js?v=20260607-b0-06-02-route-benchmarks-v1',
+  'mmir.html must cache-bust the P0 route benchmark helper.'
+);
+requireIncludes(
+  html,
+  'p0-chat-shell.js?v=20260607-b0-06-02-shell-cleanup-v1',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260607-b0-06-01-compare-ux-v1"',
+  '"p0-route-benchmarks.js": "20260607-b0-06-02-route-benchmarks-v1"',
+  'asset-versions.json must match the P0 route benchmark helper version.'
+);
+requireIncludes(
+  assetVersions,
+  '"p0-chat-shell.js": "20260607-b0-06-02-shell-cleanup-v1"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(

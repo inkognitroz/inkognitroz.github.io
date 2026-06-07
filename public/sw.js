@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d349-20260605-voice-truth-v1';
+const CACHE_NAME='mmir-pwa-d350-20260607-route-benchmarks-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -13,6 +13,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/chat-runtime.css',
   './apps/mimir-chat-portal/chat-runtime-deferred.css',
   './apps/mimir-chat-portal/p0-chat-shell.css',
+  './apps/mimir-chat-portal/p0-route-benchmarks.js',
   './apps/mimir-chat-portal/p0-chat-shell.js',
   './apps/mimir-chat-portal/route-chips.js',
   './apps/mimir-chat-portal/backend-profiles-critical.js',
