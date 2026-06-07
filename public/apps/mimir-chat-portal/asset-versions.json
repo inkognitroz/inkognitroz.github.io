@@ -14,6 +14,8 @@
     "composer-model-picker.js": "20260604-route-display-consumers-v1",
     "composer-quick-actions.css": "20260531-clean-composer-v1",
     "composer-quick-actions.js": "20260604-route-display-consumers-v1",
+    "conversation-manager.css": "20260607-b0-06-13-conversation-portability-v1",
+    "conversation-manager.js": "20260607-b0-06-13-conversation-portability-v1",
     "first-impression.js": "20260604-shared-route-display-v1",
     "local-install-commands.js": "20260606-b1-06-local-install-commands-v2",
     "local-connector.js": "20260604-canonical-local-install-v1",

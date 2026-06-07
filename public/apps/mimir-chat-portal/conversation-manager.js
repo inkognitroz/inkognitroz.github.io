@@ -9,10 +9,14 @@
   const KNOWLEDGE_PREFIX='mimir-knowledge-v1:';
   const COLLECTIONS_PREFIX='mimir-knowledge-collections-v1:';
   const SAVED_CHAT_PROMOTION_PREFIX='mimir-saved-chat-promotion-v1:';
+  const CONVERSATION_EXPORT_SCHEMA='2026-06-07-b0-06-13-conversation-export-v1';
+  const MAX_IMPORTED_CONVERSATION_BYTES=1024*1024;
+  const MAX_IMPORTED_MESSAGES=240;
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   let titleEl=null;
   let searchEl=null;
   let archivedEl=null;
+  let importInputEl=null;
   let handoffEl=null;
   let listEl=null;
   let statusEl=null;
@@ -308,6 +312,120 @@
     setStatus('Conversation forked.','ready');
   }
 
+  function routeSnapshot(item){
+    const messages=Array.isArray(item?.messages)?item.messages:[];
+    const lastAssistant=messages.slice().reverse().find(message=>message?.role==='assistant');
+    const route=lastAssistant?.route||lastAssistant?.mmir?.route||lastAssistant?.metadata?.route||{};
+    return {
+      source:'browser-local-history',
+      route_id:String(route.route_id||route.id||lastAssistant?.route_id||''),
+      model_id:String(route.model_id||lastAssistant?.model||''),
+      model_display_name:String(route.model_display_name||route.model_label||lastAssistant?.model_display_name||''),
+      node_id:String(route.node_id||lastAssistant?.node_id||''),
+      cost_class:String(route.cost_class||lastAssistant?.cost_class||''),
+      provider_called:Boolean(route.provider_called===true||lastAssistant?.provider_called===true)
+    };
+  }
+
+  function portableConversationExport(item){
+    const messages=Array.isArray(item?.messages)?item.messages:[];
+    return {
+      object:'mmir.conversation_export',
+      schema_version:CONVERSATION_EXPORT_SCHEMA,
+      exported_at:new Date().toISOString(),
+      workspace_id:workspaceId(),
+      privacy:{
+        local_file_only:true,
+        owner_controlled_export:true,
+        includes_raw_messages:true,
+        backend_sync_started:false,
+        private_account_scraping:false,
+        public_report_safe:false,
+        provider_secrets_included:false,
+        no_paid_routes_started:true
+      },
+      manifest:{
+        conversation_id:String(item?.id||''),
+        title:redactedText(item?.title||'Conversation',160),
+        message_count:messages.length,
+        created_at:String(item?.created_at||''),
+        updated_at:String(item?.updated_at||''),
+        storage:'browser-localStorage',
+        import_target:'browser-localStorage',
+        import_mode:'local_browser_only',
+        route_snapshot:routeSnapshot(item)
+      },
+      conversation:item
+    };
+  }
+
+  function normalizeImportedMessages(messages){
+    if(!Array.isArray(messages))return [];
+    const allowedRoles=new Set(['user','assistant','tool']);
+    return messages
+      .filter(message=>message&&allowedRoles.has(String(message.role||'')))
+      .slice(0,MAX_IMPORTED_MESSAGES)
+      .map(message=>({
+        ...message,
+        role:String(message.role),
+        content:String(message.content||'').slice(0,24000)
+      }))
+      .filter(message=>message.content.trim());
+  }
+
+  function importedConversationFromPayload(payload){
+    const source=payload?.conversation||payload?.bundle?.conversation||payload;
+    if(!source||typeof source!=='object')return null;
+    const messages=normalizeImportedMessages(source.messages);
+    if(!messages.length)return null;
+    const now=new Date().toISOString();
+    const sourceTitle=source.title||payload?.manifest?.title||titleFromMessages(messages);
+    return {
+      ...source,
+      id:safeId(),
+      title:redactedText(sourceTitle,80)||'Imported conversation',
+      messages,
+      pinned:false,
+      archived:false,
+      imported:true,
+      imported_from_id:String(source.id||payload?.manifest?.conversation_id||''),
+      imported_from_schema:String(payload?.schema_version||payload?.version||'legacy'),
+      imported_at:now,
+      source:'local-file-import',
+      created_at:source.created_at||now,
+      updated_at:now
+    };
+  }
+
+  function importConversationPayload(payload){
+    const item=importedConversationFromPayload(payload);
+    if(!item){
+      setStatus('Import failed: no valid local conversation messages found.','error');
+      return null;
+    }
+    saveConversations([item,...readConversations()]);
+    localStorage.setItem(activeConversationKey(),item.id);
+    writeMessages(item.messages);
+    if(titleEl)titleEl.value=item.title;
+    render();
+    setStatus('Conversation imported locally. No backend sync started.','ready');
+    return item;
+  }
+
+  async function importConversationFile(file){
+    if(!file)return;
+    if(file.size>MAX_IMPORTED_CONVERSATION_BYTES){
+      setStatus('Import failed: file is larger than 1 MB.','error');
+      return;
+    }
+    try{
+      const payload=JSON.parse(await file.text());
+      importConversationPayload(payload);
+    }catch(error){
+      setStatus('Import failed: JSON could not be read.','error');
+    }
+  }
+
   function renderHandoff(){
     if(!handoffEl)return;
     const handoff=activeHandoff();
@@ -349,7 +467,7 @@
   function exportConversation(id){
     const item=readConversations().find(entry=>entry.id===id);
     if(!item)return;
-    const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),workspace_id:workspaceId(),conversation:item},null,2)],{type:'application/json'});
+    const blob=new Blob([JSON.stringify(portableConversationExport(item),null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
     link.href=url;
@@ -358,7 +476,7 @@
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    setStatus('Conversation exported.','ready');
+    setStatus('Conversation exported as a local file. No backend sync started.','ready');
   }
 
   function redact(value){
@@ -526,6 +644,8 @@
       if(target==='knowledge')return promoteToKnowledge(id);
       return promoteToMemory(id);
     },
+    exportConversation,
+    importConversationPayload,
     refresh:render
   };
 
@@ -546,6 +666,11 @@
           '<label for="conversation-search">Search<input id="conversation-search" type="search" placeholder="Search saved chats" /></label>'+
           '<label class="conversation-archive-toggle"><input id="conversation-show-archived" type="checkbox" /> Show archived</label>'+
         '</div>'+
+        '<div class="conversation-portability-row">'+
+          '<button id="conversation-import" type="button">Import JSON</button>'+
+          '<input id="conversation-import-file" type="file" accept="application/json,.json" hidden />'+
+          '<span>Local file only. No backend sync.</span>'+
+        '</div>'+
         '<p id="conversation-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>'+
         '<div id="conversation-handoff" class="conversation-handoff" aria-live="polite" hidden></div>'+
         '<div id="conversation-list" class="conversation-list" aria-live="polite"></div>'+
@@ -554,11 +679,18 @@
     titleEl=document.getElementById('conversation-title');
     searchEl=document.getElementById('conversation-search');
     archivedEl=document.getElementById('conversation-show-archived');
+    importInputEl=document.getElementById('conversation-import-file');
     handoffEl=document.getElementById('conversation-handoff');
     listEl=document.getElementById('conversation-list');
     statusEl=document.getElementById('conversation-status');
     document.getElementById('conversation-save')?.addEventListener('click',saveCurrentConversation);
     document.getElementById('conversation-new')?.addEventListener('click',clearCurrentChat);
+    document.getElementById('conversation-import')?.addEventListener('click',()=>importInputEl?.click());
+    importInputEl?.addEventListener('change',async()=>{
+      const file=importInputEl?.files?.[0]||null;
+      importInputEl.value='';
+      await importConversationFile(file);
+    });
     searchEl?.addEventListener('input',render);
     archivedEl?.addEventListener('change',render);
     listEl?.addEventListener('click',handleAction);
