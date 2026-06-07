@@ -27,6 +27,7 @@
   const P0_ICONS=window.MimirP0Icons||{};
   const P0_STORAGE=window.MimirP0Storage||{};
   const P0_ROUTE_RECEIPTS=window.MimirP0RouteReceipts||{};
+  const P0_ROUTE_BENCHMARKS=window.MimirP0RouteBenchmarks||{};
   const P0_HISTORY=window.MimirP0History||{};
   const MAX_HISTORY=40;
   const ICON_SHIELD=P0_ICONS.shield||'';
@@ -280,87 +281,22 @@
     }
   }
 
-  function routeKey(model){
-    if(!model)return 'hosted:mmir-supergenius';
-    return (model.route==='local'?'local:':'hosted:')+String(model.model||model.id||model.label||'auto').toLowerCase();
-  }
+  const routeBenchmarks=P0_ROUTE_BENCHMARKS.create?.({
+    getBenchmarks:()=>state.routeBenchmarks||{},
+    setBenchmarks:(next)=>{state.routeBenchmarks=next&&typeof next==='object'?next:{};},
+    writeBenchmarks:(next)=>writeJson(ROUTE_BENCHMARK_KEY,next||state.routeBenchmarks||{}),
+    routePinned,
+    formatDuration,
+    latencyClass
+  });
 
-  function routeBenchmark(model){
-    const stats=state.routeBenchmarks?.[routeKey(model)];
-    return stats&&typeof stats==='object'?stats:null;
-  }
-
-  function writeRouteBenchmarks(){
-    writeJson(ROUTE_BENCHMARK_KEY,state.routeBenchmarks||{});
-  }
-
-  function recordRouteBenchmark(model,score){
-    if(!model||!score)return;
-    const key=routeKey(model);
-    const previous=routeBenchmark(model)||{samples:0,avgScore:Number(model.score)||50,avgLatencyMs:0,failures:0,lastSeenAt:''};
-    const samples=Math.min(20,Number(previous.samples||0)+1);
-    const priorWeight=Math.max(0,samples-1);
-    const measuredScore=clampScore(score.score);
-    const measuredLatency=Math.max(0,Number(score.elapsedMs||score.latency_ms)||0);
-    const failed=score.answer_class==='failed'||score.failed||measuredScore<=0;
-    const avgScore=Math.round(((Number(previous.avgScore)||Number(model.score)||50)*priorWeight+measuredScore)/samples);
-    const avgLatencyMs=Math.round(((Number(previous.avgLatencyMs)||measuredLatency)*priorWeight+measuredLatency)/samples);
-    state.routeBenchmarks={...(state.routeBenchmarks||{}),[key]:{
-      samples,
-      avgScore,
-      avgLatencyMs,
-      failures:(Number(previous.failures)||0)+(failed?1:0),
-      lastScore:measuredScore,
-      lastLatencyMs:Math.round(measuredLatency),
-      lastClass:score.latency_class||latencyClass(measuredLatency),
-      lastSeenAt:new Date().toISOString()
-    }};
-    writeRouteBenchmarks();
-  }
-
-  function effectiveModelScore(model){
-    const base=Number(model?.score)||50;
-    const stats=routeBenchmark(model);
-    if(!stats||!stats.samples)return clampScore(base);
-    const avgScore=Number(stats.avgScore)||base;
-    const avgLatency=Number(stats.avgLatencyMs)||0;
-    const failures=Number(stats.failures)||0;
-    let score=(base*0.45)+(avgScore*0.55);
-    if(avgLatency>6000)score-=16;
-    else if(avgLatency>3000)score-=10;
-    else if(avgLatency>1800)score-=5;
-    else if(avgLatency&&avgLatency<900)score+=4;
-    if(failures)score-=Math.min(18,failures*6);
-    return clampScore(score);
-  }
-
-  function rankedModels(models){
-    return (models||[])
-      .slice()
-      .sort((a,b)=>{
-        const pinnedDelta=(routePinned(b)?1:0)-(routePinned(a)?1:0);
-        if(pinnedDelta)return pinnedDelta;
-        return effectiveModelScore(b)-effectiveModelScore(a)||String(a.label||a.id).localeCompare(String(b.label||b.id));
-      });
-  }
-
-  function routeRankMap(models=state.models){
-    const map={};
-    rankedModels(models).forEach((model,index)=>{map[model.id]=index+1;});
-    return map;
-  }
-
-  function routeBenchmarkSummary(model){
-    const stats=routeBenchmark(model);
-    if(!stats||!stats.samples)return '';
-    const parts=[
-      'Score '+effectiveModelScore(model),
-      stats.avgLatencyMs?('avg '+formatDuration(stats.avgLatencyMs)):'',
-      stats.samples+' sample'+(stats.samples===1?'':'s')
-    ].filter(Boolean);
-    if(stats.failures)parts.push(stats.failures+' failure'+(stats.failures===1?'':'s'));
-    return parts.join(' · ');
-  }
+  function routeKey(model){return routeBenchmarks?.routeKey(model)||'hosted:mmir-supergenius';}
+  function routeBenchmark(model){return routeBenchmarks?.routeBenchmark(model)||null;}
+  function recordRouteBenchmark(model,score){routeBenchmarks?.recordRouteBenchmark(model,score);}
+  function effectiveModelScore(model){return routeBenchmarks?.effectiveModelScore(model)||clampScore(model?.score||50);}
+  function rankedModels(models){return routeBenchmarks?.rankedModels(models)||((models||[]).slice());}
+  function routeRankMap(models=state.models){return routeBenchmarks?.routeRankMap(models)||{};}
+  function routeBenchmarkSummary(model){return routeBenchmarks?.routeBenchmarkSummary(model)||'';}
 
   function routeMicroStatus(model=activeModel()){
     const receipt=routeReceipt(model);
@@ -416,14 +352,7 @@
     ).join('');
   }
 
-  function routeRankState(model){
-    const stats=routeBenchmark(model);
-    const score=effectiveModelScore(model);
-    if((stats?.failures||0)>0||score<55)return 'demoted';
-    if((stats?.avgLatencyMs||0)>3000)return 'slow';
-    if(score>=82)return 'strong';
-    return 'measured';
-  }
+  function routeRankState(model){return routeBenchmarks?.routeRankState(model)||'measured';}
 
   function validMessage(message){
     return P0_HISTORY.validMessage(message);

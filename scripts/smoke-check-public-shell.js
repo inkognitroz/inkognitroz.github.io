@@ -337,8 +337,8 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d349-20260605-voice-truth-v1",
-  "Service worker cache must bust for P0 voice-truth release.",
+  "mmir-pwa-d350-20260607-route-benchmarks-v1",
+  "Service worker cache must bust for P0 route benchmark helper release.",
 );
 requireText(
   serviceWorkerPath,
@@ -349,6 +349,11 @@ requireText(
   serviceWorkerPath,
   "./apps/mimir-chat-portal/p0-chat-shell.js",
   "Service worker shell must include the P0 simple chat runtime.",
+);
+requireText(
+  serviceWorkerPath,
+  "./apps/mimir-chat-portal/p0-route-benchmarks.js",
+  "Service worker shell must include the P0 route benchmark helper.",
 );
 requireText(
   serviceWorkerPath,
@@ -444,6 +449,11 @@ requireText(
   mmirPath,
   assetRef("p0-chat-shell.js"),
   "Public page must load the P0 simple chat shell runtime.",
+);
+requireText(
+  mmirPath,
+  assetRef("p0-route-benchmarks.js"),
+  "Public page must load the P0 route benchmark helper.",
 );
 requireText(
   mmirPath,
