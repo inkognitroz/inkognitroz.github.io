@@ -1,13 +1,17 @@
 (function(){
   window.__MimirP0SimpleChat=true;
-  const PROD_API_URL='https://api.mmir.ai';
-  const STAGING_API_URL='https://api-staging.mmir.ai';
-  const API_URL=apiUrlForCurrentHost();
-  const API_LABEL=apiHostLabel(API_URL);
-  const LOCAL_URL='http://127.0.0.1:3000';
-  const CHAT_PATH='/v1/chat/completions';
-  const ROUTE_SCORE_PATH='/routing/score';
-  const TOKEN_KEY='mmir-p0-local-token';
+  const P0_ROUTE_ADAPTERS=window.MimirP0RouteAdapters||{};
+  const ROUTE_ADAPTER_CONFIG=typeof P0_ROUTE_ADAPTERS.config==='function'?P0_ROUTE_ADAPTERS.config():{};
+  const API_URL=ROUTE_ADAPTER_CONFIG.apiUrl||'https://api.mmir.ai';
+  const API_LABEL=ROUTE_ADAPTER_CONFIG.apiLabel||'api.mmir.ai';
+  const LOCAL_URL=ROUTE_ADAPTER_CONFIG.localUrl||'http://127.0.0.1:3000';
+  const CHAT_PATH=ROUTE_ADAPTER_CONFIG.chatPath||'/v1/chat/completions';
+  const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
+  const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
+  const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
+  const allowLocalProbes=P0_ROUTE_ADAPTERS.allowLocalProbes;
+  const pairLocal=P0_ROUTE_ADAPTERS.pairLocal;
+  const localHeaders=P0_ROUTE_ADAPTERS.localHeaders;
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
@@ -63,22 +67,6 @@
       prompt_template:'Make a concise research plan for: '
     }
   ];
-
-  function apiUrlForCurrentHost(){
-    try{
-      return String(location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL;
-    }catch(error){
-      return PROD_API_URL;
-    }
-  }
-
-  function apiHostLabel(url){
-    try{
-      return new URL(url).host;
-    }catch(error){
-      return 'api.mmir.ai';
-    }
-  }
 
   function hostedRouteLabel(){
     return P0_ROUTE_RECEIPTS.hostedRouteLabel(API_LABEL);
@@ -545,45 +533,6 @@
       }));
   }
 
-  function fetchOptions(url,options){
-    const init={...options};
-    try{
-      const parsed=new URL(url,location.href);
-      if(['127.0.0.1','localhost','::1'].includes(parsed.hostname)){
-        init.targetAddressSpace='loopback';
-      }
-    }catch(error){}
-    return init;
-  }
-
-  async function fetchJson(url,options={}){
-    const controller=new AbortController();
-    const timeoutMs=options.timeoutMs||45000;
-    const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-    const externalSignal=options.signal;
-    const abortFromExternal=()=>controller.abort();
-    if(externalSignal){
-      if(externalSignal.aborted)controller.abort();
-      else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
-    }
-    const {timeoutMs:ignored,signal:ignoredSignal,...rest}=options;
-    try{
-      const response=await fetch(url,fetchOptions(url,{...rest,signal:controller.signal}));
-      let data=null;
-      try{data=await response.json();}catch(error){data=null;}
-      if(!response.ok){
-        const err=new Error(data?.error?.message||('Request failed with '+response.status));
-        err.status=response.status;
-        err.payload=data;
-        throw err;
-      }
-      return data;
-    }finally{
-      clearTimeout(timeout);
-      if(externalSignal)externalSignal.removeEventListener('abort',abortFromExternal);
-    }
-  }
-
   async function refreshHostedModels(){
     try{
       const models=normalizeHostedModels(await fetchJson(API_URL+'/v1/models',{timeoutMs:9000}));
@@ -598,48 +547,6 @@
     }catch(error){
       window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'deferred',models:[]}}));
     }
-  }
-
-  function localNetworkHint(error){
-    const message=String(error?.message||error||'');
-    if(/local_probe_deferred/i.test(message)){
-      return 'Local connector check was deferred. Press Refresh models again to allow this browser to check this Mac.';
-    }
-    if(error?.name==='AbortError')return 'Local connector timed out. Check that MMIR Local Connector and Ollama are running.';
-    if(/Failed to fetch|NetworkError|Load failed|blocked|CORS/i.test(message)){
-      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Refresh models again. The connector stays on 127.0.0.1.';
-    }
-    return message||'Local connector is not reachable yet.';
-  }
-
-  function allowLocalProbes(reason='p0-local-action',durationMs=60000){
-    try{window.MimirAllowLocalProbes?.(reason,durationMs);}catch(error){}
-  }
-
-  async function pairLocal(){
-    const existing=sessionStorage.getItem(TOKEN_KEY);
-    try{
-      const data=await fetchJson(LOCAL_URL+'/pair',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:'{}',
-        timeoutMs:7000
-      });
-      if(data?.token){
-        sessionStorage.setItem(TOKEN_KEY,data.token);
-        return data.token;
-      }
-    }catch(error){
-      if(existing)return existing;
-      throw error;
-    }
-    return existing||'';
-  }
-
-  function localHeaders(token){
-    const headers={'Content-Type':'application/json'};
-    if(token)headers['x-mmir-local-token']=token;
-    return headers;
   }
 
   function normalizeLocalModels(payload){

@@ -496,9 +496,14 @@ requireText(
   "P0 send control must visually become the stop control during a running response.",
 );
 requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  join(publicDir, "apps", "mimir-chat-portal", "p0-route-adapters.js"),
   "externalSignal.addEventListener('abort',abortFromExternal,{once:true})",
-  "P0 fetch helper must propagate the active AbortController to route requests.",
+  "P0 route adapter helper must propagate the active AbortController to route requests.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "const fetchJson=P0_ROUTE_ADAPTERS.fetchJson",
+  "P0 shell must delegate route transport to the route adapter helper.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -531,14 +536,14 @@ requireText(
   "P0 route receipts helper must show hosted route receipts.",
 );
 requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  join(publicDir, "apps", "mimir-chat-portal", "p0-route-adapters.js"),
   "const STAGING_API_URL='https://api-staging.mmir.ai'",
-  "P0 shell must define the staging API route.",
+  "P0 route adapter helper must define the staging API route.",
 );
 requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  join(publicDir, "apps", "mimir-chat-portal", "p0-route-adapters.js"),
   "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL",
-  "P0 shell must switch staging.mmir.ai to api-staging.mmir.ai without arbitrary API overrides.",
+  "P0 route adapter helper must switch staging.mmir.ai to api-staging.mmir.ai without arbitrary API overrides.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

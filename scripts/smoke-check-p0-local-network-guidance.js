@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 const root = process.cwd();
 const publicDir = resolve(root, 'public');
 const p0Shell = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'utf8');
+const routeAdapters = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-adapters.js'), 'utf8');
 const quietGuard = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'quiet-first-paint-hotfix.js'), 'utf8');
 const mmirHtml = readFileSync(join(publicDir, 'mmir.html'), 'utf8');
 const failures = [];
@@ -36,19 +37,24 @@ const checkLocalModelsSource = functionSource('checkLocalModels', 'installShell'
 const chatLocalSource = functionSource('chatLocal', 'synthesizeCompareAnswer');
 
 requireIncludes(
-  p0Shell,
+  routeAdapters,
   'function localNetworkHint(error)',
-  'P0 shell must keep local-network failures normalized through one helper.'
+  'P0 route adapter helper must keep local-network failures normalized through one helper.'
 );
 requireIncludes(
-  p0Shell,
+  routeAdapters,
   'Local connector check was deferred. Press Refresh models again to allow this browser to check this Mac.',
   'Deferred local probes must explain that the user can explicitly retry.'
 );
 requireIncludes(
-  p0Shell,
+  routeAdapters,
   'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Refresh models again. The connector stays on 127.0.0.1.',
   'Browser/PNA local-network failures must give an actionable user-facing instruction.'
+);
+requireIncludes(
+  p0Shell,
+  'const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;',
+  'P0 shell must delegate local-network failure copy to the route adapter helper.'
 );
 requireIncludes(
   p0Shell,
