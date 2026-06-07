@@ -467,7 +467,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Connect this computer as a private local node from chat.",
+  "Get the install command in this chat.",
   "P0 + menu must keep local setup chat-native and avoid redirecting to installer pages.",
 );
 requireText(

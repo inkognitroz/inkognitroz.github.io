@@ -80,7 +80,7 @@ for (const marker of [
 
 for (const marker of [
   'Add model',
-  'Connect this computer as a private local node from chat.',
+  'Get the install command in this chat.',
   'Refresh models',
   'New chat',
   'LOCAL_INSTALL_COMMANDS.commandFor?.(os)'

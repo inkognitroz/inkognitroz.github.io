@@ -27,7 +27,7 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  "menuButton('connect-local','Add model','Connect this computer as a private local node from chat.')",
+  "menuButton('connect-local','Add model','Get the install command in this chat.')",
   '+ menu must expose exactly one plain Add model path for local node onboarding.'
 );
 requireIncludes(

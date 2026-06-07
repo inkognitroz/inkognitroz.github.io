@@ -71,12 +71,12 @@ requireIncludes(
 
 requireIncludes(
   renderAddMenuSource,
-  "menuButton('prompt-presets','Prompt presets','Use or save prompt starters in this browser.')",
+  "menuButton('prompt-presets','Prompts','Use or save starters in this browser.')",
   '+ menu must expose prompt presets only as a discrete submenu.'
 );
 requireIncludes(
   renderAddMenuSource,
-  'Use or save prompt starters in this browser.',
+  'Use or save starters in this browser.',
   'Prompt preset entry must tell the user it is browser-scoped.'
 );
 requireIncludes(
