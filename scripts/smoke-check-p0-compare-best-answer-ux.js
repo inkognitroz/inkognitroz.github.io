@@ -93,6 +93,11 @@ forbidText(
   'Connect local model',
   'Add menu should use one user-facing Add model label instead of repeating local-connector wording'
 );
+forbidText(
+  addMenu,
+  'Connect this computer as a private local node from chat.',
+  'Add menu should avoid technical local-node detail in the compact toolbar menu'
+);
 
 const addModelCount = (addMenu.match(/'Add model'/g) || []).length;
 if (addModelCount !== 1) {

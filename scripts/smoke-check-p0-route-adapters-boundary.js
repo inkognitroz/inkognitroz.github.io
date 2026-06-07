@@ -40,12 +40,12 @@ forbidPattern(shell, /function localHeaders\s*\(/, 'P0 shell must not own local 
 forbidPattern(shell, /function localNetworkHint\s*\(/, 'P0 shell must not own local network error copy.');
 forbidPattern(shell, /function allowLocalProbes\s*\(/, 'P0 shell must not own local probe gating.');
 requireIncludes(html, 'p0-route-adapters.js?v=20260607-b0-06-14-route-adapters-v1', 'mmir.html must load the route adapter helper with cache busting.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260607-b0-06-14-route-adapters-v1', 'mmir.html must cache-bust the P0 shell for the adapter-boundary slice.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260607-b0-06-16-composer-menu-v1', 'mmir.html must cache-bust the P0 shell for the adapter-boundary slice.');
 if (html.indexOf('p0-route-adapters.js?v=20260607-b0-06-14-route-adapters-v1') > html.indexOf('p0-chat-shell.js?v=')) {
   fail('P0 route adapter helper must load before the P0 shell.');
 }
 requireIncludes(manifest, '"p0-route-adapters.js": "20260607-b0-06-14-route-adapters-v1"', 'Asset manifest must track p0-route-adapters.js.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260607-b0-06-14-route-adapters-v1"', 'Asset manifest must track the P0 shell adapter-boundary version.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260607-b0-06-16-composer-menu-v1"', 'Asset manifest must track the P0 shell adapter-boundary version.');
 requireIncludes(String(packageJson.scripts?.check || ''), 'smoke-check-p0-route-adapters-boundary.js', 'npm run check must include the P0 route adapter boundary smoke.');
 forbidPattern(helper + shell, /OPENROUTER_API_KEY|CLOUDFLARE_API_TOKEN|BEGIN PRIVATE KEY|cash[- ]?out|token trading/i, 'Public route adapter boundary must not expose secrets or economic claims.');
 

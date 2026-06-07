@@ -1333,11 +1333,11 @@
       menuSeparator()
     ):'';
     menu.innerHTML=''+
-      menuTitle('Add')+
+      menuTitle('Tools')+
       compareAction+
-      menuButton('connect-local','Add model','Connect this computer as a private local node from chat.')+
+      menuButton('connect-local','Add model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
-      menuButton('prompt-presets','Prompt presets','Use or save prompt starters in this browser.')+
+      menuButton('prompt-presets','Prompts','Use or save starters in this browser.')+
       menuSeparator()+
       menuButton('new-chat','New chat','Clear this browser chat only.');
   }
@@ -1370,7 +1370,6 @@
     const active=activeModel();
     const filter=modelFilter();
     const rankMap=routeRankMap();
-    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Active route</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
     const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'&&modelVisibleInFilter(model,filter)));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
@@ -1389,7 +1388,7 @@
       '<div class="p0-menu-note">Press + -> Add model to connect this computer.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
     const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, change filters and inspect route details.');
-    menu.innerHTML=menuTitle('Models')+detailReceipt+menuSeparator()+buttons+filterHint+activeFilterHint+localHint+routeControls;
+    menu.innerHTML=menuTitle('Models')+buttons+filterHint+activeFilterHint+localHint+routeControls;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.activeModelId=button.getAttribute('data-model-id');

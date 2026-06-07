@@ -139,9 +139,14 @@ requireIncludes(
   'Route controls menu must explain pinned-route behavior without cluttering first chat.'
 );
 requireIncludes(
-  renderModelMenuSource,
+  renderRouteControlsMenuSource,
   'p0-route-detail',
-  'Model menu must show safe route details only inside the model picker.'
+  'Route controls must show safe route details away from the simple model list.'
+);
+forbidPattern(
+  renderModelMenuSource,
+  /p0-route-detail|Active route|Route details/,
+  'Simple model menu must not show route-detail cards before Route controls is opened.'
 );
 forbidPattern(
   renderModelMenuSource,
@@ -230,7 +235,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260607-b0-06-14-route-adapters-v1',
+  'p0-chat-shell.js?v=20260607-b0-06-16-composer-menu-v1',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
@@ -240,7 +245,7 @@ requireIncludes(
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260607-b0-06-14-route-adapters-v1"',
+  '"p0-chat-shell.js": "20260607-b0-06-16-composer-menu-v1"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(

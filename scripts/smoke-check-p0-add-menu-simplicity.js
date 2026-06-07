@@ -56,13 +56,13 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
-  "menuTitle('Add')",
-  '+ menu title must stay short and user-facing.'
+  "menuTitle('Tools')",
+  '+ menu title must stay short and match the expected chat toolbar pattern.'
 );
 requireIncludes(
   renderAddMenu,
-  "menuButton('connect-local','Add model','Connect this computer as a private local node from chat.')",
-  '+ menu must keep local onboarding as one plain Add model action.'
+  "menuButton('connect-local','Add model','Get the install command in this chat.')",
+  '+ menu must keep local onboarding as one plain Add model action with chat-native wording.'
 );
 requireIncludes(
   renderAddMenu,
@@ -76,12 +76,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260607-b0-06-14-route-adapters-v1',
+  'p0-chat-shell.js?v=20260607-b0-06-16-composer-menu-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260607-b0-06-14-route-adapters-v1"',
+  '"p0-chat-shell.js": "20260607-b0-06-16-composer-menu-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(
