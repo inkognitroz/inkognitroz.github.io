@@ -15,6 +15,7 @@ const files = {
   p0Icons: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-icons.js'),
   p0RouteReceipts: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-receipts.js'),
   p0RouteBenchmarks: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-benchmarks.js'),
+  p0RouteAdapters: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-route-adapters.js'),
   p0History: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-history.js'),
   runtimeCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-runtime.css'),
   workspaceCss: join(publicDir, 'apps', 'mimir-chat-portal', 'chat-workspace.css'),
@@ -128,6 +129,7 @@ requireIncludes(files.mmir, assetRef('route-chips.js'), 'Route-chip polish must 
 requireIncludes(files.mmir, assetRef('p0-chat-shell.css'), 'P0 simple chat shell CSS must load on the public page.');
 requireIncludes(files.mmir, assetRef('p0-chat-shell.js'), 'P0 simple chat shell runtime must load on the public page.');
 requireIncludes(files.mmir, assetRef('p0-route-benchmarks.js'), 'P0 route benchmark helper must load on the public page before the shell.');
+requireIncludes(files.mmir, assetRef('p0-route-adapters.js'), 'P0 route adapter helper must load on the public page before the shell.');
 requireIncludes(files.mmir, '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">', 'Public page must hide legacy UI at first paint before the P0 runtime installs.');
 requireIncludes(files.p0Css, 'body.mmir-p0-ready > :not(#mmir-p0-app)', 'P0 shell must hide legacy controls and show only the simple chat app.');
 requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compact icon control, not visible text.');
@@ -149,9 +151,10 @@ requireIncludes(files.p0Runtime, 'data-p0-message-action="copy"', 'P0 answer act
 requireIncludes(files.p0Runtime, 'data-p0-message-action="retry"', 'P0 answer actions must include retry.');
 requireIncludes(files.p0Runtime, 'data-p0-message-action="share-safe"', 'P0 answer actions must include share-safe draft.');
 requireIncludes(files.p0Runtime, "const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1'", 'P0 share-safe must store only a local safe draft.');
-requireIncludes(files.p0Runtime, "const PROD_API_URL='https://api.mmir.ai'", 'P0 shell must keep api.mmir.ai as the production chat route.');
-requireIncludes(files.p0Runtime, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 shell must know the staging API route.');
-requireIncludes(files.p0Runtime, "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 shell must route staging.mmir.ai to api-staging.mmir.ai without arbitrary browser overrides.');
+requireIncludes(files.p0RouteAdapters, "const PROD_API_URL='https://api.mmir.ai'", 'P0 route adapter helper must keep api.mmir.ai as the production chat route.');
+requireIncludes(files.p0RouteAdapters, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 route adapter helper must know the staging API route.');
+requireIncludes(files.p0RouteAdapters, "location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL", 'P0 route adapter helper must route staging.mmir.ai to api-staging.mmir.ai without arbitrary browser overrides.');
+requireIncludes(files.p0Runtime, 'const API_URL=ROUTE_ADAPTER_CONFIG.apiUrl', 'P0 shell must consume the active API route from the route adapter helper.');
 requireIncludes(files.p0Runtime, "menuButton('connect-local'", 'P0 shell must start local setup through the chat-guided installer flow.');
 requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.commandFor?.(os)', 'P0 local setup must get OS-specific commands from the shared helper.');
 requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.introFor?.(os)', 'P0 local setup must get chat-first install copy from the shared helper.');
@@ -175,7 +178,7 @@ requireIncludes(files.p0Runtime, 'function scoreClassSummary(score)', 'P0 compar
 requireIncludes(files.p0Runtime, 'answer_class:found.answer_class', 'P0 compare must preserve API answer class metadata.');
 requireIncludes(files.p0Runtime, 'latency_class:found.latency_class', 'P0 compare must preserve API latency class metadata.');
 requireIncludes(files.p0Runtime, 'function routeScore(model,prompt,answer,elapsedMs,failed=false)', 'P0 Best Answer must score route quality from answer, prompt and latency.');
-requireIncludes(files.p0Runtime, "const ROUTE_SCORE_PATH='/routing/score'", 'P0 Best Answer must know the API scoring route.');
+requireIncludes(files.p0RouteAdapters, "const ROUTE_SCORE_PATH='/routing/score'", 'P0 route adapter helper must know the API scoring route.');
 requireIncludes(files.p0Runtime, 'function scoreRoutesWithApi(prompt,hostedModel,hostedAnswer,hostedElapsed,hostedFailed,localModel,localAnswer,localElapsed,localFailed)', 'P0 Best Answer must call api.mmir.ai route scoring before selecting the winner.');
 requireIncludes(files.p0Runtime, "API_LABEL+'/routing/score'", 'P0 Best Answer synthesis receipt must identify the active API scoring source.');
 requireIncludes(files.p0Runtime, 'API score ', 'P0 Best Answer receipts must show API scoring when the API scorer is available.');
@@ -235,7 +238,7 @@ requireIncludes(files.p0Runtime, 'Private local ready:', 'P0 local discovery mus
 requireIncludes(files.p0Runtime, 'mmir-local-private-readiness-updated', 'P0 local discovery must emit explicit paired/private readiness evidence.');
 requireIncludes(files.p0Runtime, 'function compareLocalModel(preferredLocalModel=null)', 'P0 compare must choose the best local model unless the user explicitly mentions another model.');
 requireIncludes(files.p0Css, '.p0-menu-section', 'P0 model picker must visually group recommended and private local models.');
-requireIncludes(files.p0Runtime, 'Allow Local Network Access for mmir.ai', 'P0 local permission failure must be actionable.');
+requireIncludes(files.p0RouteAdapters, 'Allow Local Network Access for mmir.ai', 'P0 route adapter helper must keep local permission failure actionable.');
 requireIncludes(files.p0Runtime, 'Local fallback', 'P0 local chat failures must keep answering through the hosted route.');
 requireIncludes(files.p0Runtime, 'while local access waits for permission', 'P0 local chat failures must explain that hosted fallback answered.');
 requireIncludes(files.p0Runtime, 'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models.', 'P0 local install copy must describe the automatic return flow.');
@@ -248,7 +251,7 @@ requireIncludes(files.p0Runtime, 'function transientInstallMessage(message)', 'P
 requireIncludes(files.p0History, 'Selected browser LLM is not loaded', 'P0 stale-state guard must explicitly purge the known Browser LLM failure copy.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-find-local-models'", 'P0 Find local models must explicitly allow user-requested local probes.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-local-chat'", 'P0 local chat must explicitly allow user-requested local connector calls.');
-requireIncludes(files.p0Runtime, "targetAddressSpace='loopback'", 'P0 local connector checks must request loopback address-space permission.');
+requireIncludes(files.p0RouteAdapters, "targetAddressSpace='loopback'", 'P0 route adapter helper must request loopback address-space permission.');
 requireIncludes(files.mmir, assetRef('api-client.js'), 'API client cache must bust for Local Network Access loopback support.');
 requireIncludes(files.mmir, assetRef('public-launch-guard.js'), 'Public launch guard must load before runtime so stale local/WebGPU state cannot break first chat.');
 requireIncludes(files.mmir, assetRef('chat-runtime.css'), 'Chat runtime CSS cache must bust for composer CSS ownership cleanup.');
