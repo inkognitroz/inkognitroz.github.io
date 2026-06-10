@@ -2,7 +2,9 @@
   const d = document;
   const w = window;
   const R = "#mimir-chat-runtime";
-  const FALLBACK = "Supergenious";
+  const NOTE_ATTR = "data-mimir-fact-guard-note";
+  const NOTE_TEXT =
+    "Current fact guard: this looks time-sensitive. Verify with a live, source-aware route before relying on the answer. No hardcoded browser fact patch was applied.";
   const q = (selector) => d.querySelector(selector);
 
   function esc(value) {
@@ -19,15 +21,15 @@
     );
   }
 
-  function asksPresident(value) {
-    return /(who|hvem).{0,24}(president|presidenten).{0,24}(usa|u\.s\.a|united states|america|amerika)|president.{0,24}(usa|u\.s\.a|united states|america|amerika)/i.test(
+  function asksCurrentFact(value) {
+    return /\b(current|today|now|latest|weather|news|stock|price|who is|what is|when is|where is|hvem er|hva er|nyheter|vær|pris)\b/i.test(
       String(value || ""),
     );
   }
 
   function resetFactPatch() {
     const runtime = q(R);
-    if (runtime) delete runtime.dataset.factPresidentPatched;
+    if (runtime) delete runtime.dataset.factGuardNoted;
   }
 
   function patchFactAnswer() {
@@ -38,7 +40,7 @@
       !messages.some(
         (element) =>
           element.classList.contains("runtime-message-user") &&
-          asksPresident(element.textContent || ""),
+          asksCurrentFact(element.textContent || ""),
       )
     )
       return;
@@ -47,34 +49,13 @@
       ...runtime.querySelectorAll(".runtime-message-assistant"),
     ].pop();
     const body = last?.querySelector?.(".runtime-message-body");
-    if (!body) return;
-    if (/Donald J\. Trump/.test(body.textContent || "")) {
-      runtime.dataset.factPresidentPatched = "true";
-      return;
-    }
-    if (runtime.dataset.factPresidentPatched === "true") {
-      delete runtime.dataset.factPresidentPatched;
-    }
-    const text = body.textContent || "";
-    if (
-      !/supergeni(?:us|ous)|MMIR Browser Guide|MMIR Guide|free browser guide|browser guidance|control plane is online|automatically fell back|provider keys?|Useful now/i.test(
-        text,
-      )
-    )
-      return;
+    if (!body || body.querySelector("[" + NOTE_ATTR + "]")) return;
 
-    body.innerHTML = [
-      "The president of the United States is Donald J. Trump.",
-      "Last verified: 2026-05-25 from the official White House administration page.",
-      "Active route: " +
-        FALLBACK +
-        " instant fallback. No provider key or paid route was used.",
-    ]
-      .map((line) => "<p>" + esc(line) + "</p>")
-      .join("");
-    const small = last.querySelector(":scope > small");
-    if (small) small.textContent = FALLBACK;
-    runtime.dataset.factPresidentPatched = "true";
+    const note = d.createElement("p");
+    note.setAttribute(NOTE_ATTR, "source-required");
+    note.innerHTML = esc(NOTE_TEXT);
+    body.appendChild(note);
+    runtime.dataset.factGuardNoted = "source-required";
   }
 
   let factObserver = null;
