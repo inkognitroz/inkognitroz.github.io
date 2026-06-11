@@ -264,14 +264,20 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.privacyMenu, viewport, `${viewport.name} privacy`);
-  assert(/privacy/i.test(layout.text), `${viewport.name}: privacy menu should open`);
-  assert(/Private mode/i.test(layout.text), `${viewport.name}: privacy menu should expose private mode`);
+  assert(/Shield mode/i.test(layout.text), `${viewport.name}: shield mode menu should open`);
+  assert(/Public/i.test(layout.text), `${viewport.name}: shield menu should expose public mode`);
+  assert(/Private/i.test(layout.text), `${viewport.name}: shield menu should expose private mode`);
+  assert(/Superprivate/i.test(layout.text), `${viewport.name}: shield menu should expose superprivate mode`);
   assert(/Fact guard/i.test(layout.text), `${viewport.name}: privacy menu should expose hallucination-prevention guard`);
   assert(/No paid route started/i.test(layout.text), `${viewport.name}: privacy menu should keep cost boundary visible`);
-  await page.locator('[data-p0-action="toggle-private-mode"]').click();
-  await page.waitForFunction(() => /Private mode needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
-  await page.locator('[data-p0-action="toggle-private-mode"]').click();
-  await page.waitForFunction(() => !/Private mode needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.locator('[data-p0-action="set-privacy-mode:superprivate"]').click();
+  await page.waitForFunction(() => /Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
+  if (!(await page.locator('#p0-privacy-menu:not([hidden])').isVisible().catch(() => false))) {
+    await page.locator('#p0-privacy').click();
+    await page.waitForSelector('#p0-privacy-menu:not([hidden])');
+  }
+  await page.locator('[data-p0-action="set-privacy-mode:public"]').click();
+  await page.waitForFunction(() => !/Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
 
   await page.locator('#p0-model').click();
   await page.waitForSelector('#p0-model-menu:not([hidden])');

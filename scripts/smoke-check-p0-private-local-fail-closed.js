@@ -39,6 +39,10 @@ requireText(
   'P0 shell must block hosted fallback when the user has turned on shield private mode.',
 );
 requireText(
+  'superPrivateModeActive',
+  'P0 shell must expose superprivate mode as a stricter shield mode.',
+);
+requireText(
   'wantsPrivateRoute(originalPrompt)||',
   'P0 shell must block hosted fallback when the original prompt asks for private/local handling.',
 );
