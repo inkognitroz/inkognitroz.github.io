@@ -737,8 +737,18 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "toggle-private-mode",
-  "P0 privacy shield must expose a real private-mode toggle.",
+  "set-privacy-mode:public",
+  "P0 privacy shield must expose public mode.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "set-privacy-mode:private",
+  "P0 privacy shield must expose private mode.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "set-privacy-mode:superprivate",
+  "P0 privacy shield must expose superprivate mode.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -747,8 +757,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Private mode is on, but no local model is connected yet.",
-  "P0 private mode must fail closed instead of sending private prompts to hosted routes.",
+  "hosted route blocked",
+  "P0 private and superprivate modes must fail closed instead of sending private prompts to hosted routes.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

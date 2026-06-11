@@ -22,7 +22,8 @@
   const ACTIVE_MODEL_KEY='mmir-p0-active-model-id-v1';
   const PINNED_ROUTES_KEY='mmir-p0-pinned-routes-v1';
   const MODEL_FILTER_KEY='mmir-p0-model-filter-v1';
-  const PRIVACY_MODE_KEY='mmir-p0-private-mode-v1';
+  const PRIVACY_MODE_KEY='mmir-p0-privacy-mode-v1';
+  const LEGACY_PRIVATE_MODE_KEY='mmir-p0-private-mode-v1';
   const FACT_GUARD_KEY='mmir-p0-fact-guard-v1';
   const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
   const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
@@ -90,8 +91,33 @@
     writeStorageString(key,value?'on':'off');
   }
 
+  function normalizePrivacyMode(mode){
+    const value=String(mode||'').trim().toLowerCase();
+    return value==='private'||value==='superprivate'||value==='public'?value:'public';
+  }
+
+  function readPrivacyMode(){
+    const value=normalizePrivacyMode(readStorageString(PRIVACY_MODE_KEY,''));
+    if(value!=='public')return value;
+    return readBooleanPreference(LEGACY_PRIVATE_MODE_KEY,false)?'private':'public';
+  }
+
+  function writePrivacyMode(mode){
+    const value=normalizePrivacyMode(mode);
+    writeStorageString(PRIVACY_MODE_KEY,value);
+    writeBooleanPreference(LEGACY_PRIVATE_MODE_KEY,value!=='public');
+  }
+
+  function privacyMode(){
+    return normalizePrivacyMode(state.privacyMode);
+  }
+
   function privateModeActive(){
-    return state.privateMode===true;
+    return privacyMode()==='private'||privacyMode()==='superprivate';
+  }
+
+  function superPrivateModeActive(){
+    return privacyMode()==='superprivate';
   }
 
   function factGuardActive(){
@@ -136,7 +162,7 @@
     localChecked:false,
     localError:'',
     localHardware:null,
-    privateMode:readBooleanPreference(PRIVACY_MODE_KEY,false),
+    privacyMode:readPrivacyMode(),
     factGuard:readBooleanPreference(FACT_GUARD_KEY,true),
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
   };
@@ -1176,7 +1202,7 @@
     if(privateModeActive()){
       if(local||active.route==='local'){
         const model=local||active;
-        return {mode:'single',model,reason:routeReason('Private mode',prompt,model),prompt:cleanSmartPrompt(prompt)||prompt};
+        return {mode:'single',model,reason:routeReason(privacyModeLabel(),prompt,model),prompt:cleanSmartPrompt(prompt)||prompt};
       }
       return {mode:'private-unavailable',prompt:cleanSmartPrompt(prompt)||prompt};
     }
@@ -1646,13 +1672,39 @@
       '<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div>';
   }
 
-  function privateModeDetail(){
-    if(privateModeActive()){
+  function privacyModeLabel(mode=privacyMode()){
+    if(mode==='superprivate')return 'Superprivate mode';
+    if(mode==='private')return 'Private mode';
+    return 'Public mode';
+  }
+
+  function privacyModeDetail(mode){
+    const value=normalizePrivacyMode(mode);
+    if(value==='superprivate'){
+      return bestLocalModel()||activeModel().route==='local'
+        ? 'Local-only. Hosted routes are blocked and browser chat history is not saved.'
+        : 'Requires a local model. Hosted routes are blocked and browser chat history is not saved.';
+    }
+    if(value==='private'){
       return bestLocalModel()||activeModel().route==='local'
         ? 'Local-only. Hosted fallback is blocked.'
-        : 'Local-only is on. Connect a local model before sending private prompts.';
+        : 'Requires a local model before private prompts can be sent.';
     }
-    return 'Standard mode. MMIR may use Supergeni unless your prompt asks for private/local.';
+    return 'Standard mode. Supergeni hosted route is allowed for non-sensitive prompts.';
+  }
+
+  function privacyModeRouteStatus(){
+    if(superPrivateModeActive()){
+      return bestLocalModel()||activeModel().route==='local'
+        ? {text:'Superprivate mode',state:'local'}
+        : {text:'Superprivate needs local node',state:'error'};
+    }
+    if(privateModeActive()){
+      return bestLocalModel()||activeModel().route==='local'
+        ? {text:'Private mode',state:'local'}
+        : {text:'Private mode needs local node',state:'error'};
+    }
+    return {text:'Public mode',state:'hosted'};
   }
 
   function factGuardDetail(){
@@ -1661,13 +1713,20 @@
       : 'Off. MMIR follows the selected route with fewer factuality checks.';
   }
 
-  function setPrivateMode(enabled){
-    state.privateMode=Boolean(enabled);
-    writeBooleanPreference(PRIVACY_MODE_KEY,state.privateMode);
+  function clearPersistedHistory(){
+    writeHistorySchema();
+    writeHistoryJson([]);
+  }
+
+  function setPrivacyMode(mode){
+    state.privacyMode=normalizePrivacyMode(mode);
+    writePrivacyMode(state.privacyMode);
+    if(superPrivateModeActive())clearPersistedHistory();
     renderToolbar();
     renderPrivacyMenu();
-    status(state.privateMode?'Private mode on.':'Private mode off.','ready');
-    routeStatus(state.privateMode?(bestLocalModel()?'Private mode':'Private mode needs local node'):'Standard mode',state.privateMode?(bestLocalModel()?'local':'error'):'hosted');
+    const next=privacyModeRouteStatus();
+    status(privacyModeLabel()+' selected.','ready');
+    routeStatus(next.text,next.state);
   }
 
   function setFactGuard(enabled){
@@ -1676,7 +1735,6 @@
     renderToolbar();
     renderPrivacyMenu();
     status(state.factGuard?'Fact guard on.':'Fact guard off.','ready');
-    routeStatus(state.factGuard?'Fact guard on':'Fact guard off','hosted');
   }
 
   function renderPrivacyMenu(){
@@ -1685,9 +1743,13 @@
     const route=model.route==='local'?'Private local model':'Supergeni hosted route';
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     const receipt=routeReceipt(model);
+    const selected=privacyMode();
     menu.innerHTML=''+
-      menuTitle('Privacy & safety')+
-      menuButton('toggle-private-mode',privateModeActive()?'Private mode on':'Private mode off',privateModeDetail(),{badge:privateModeActive()?'On':'Off'})+
+      menuTitle('Shield mode')+
+      menuButton('set-privacy-mode:public','Public',privacyModeDetail('public'),{badge:selected==='public'?'Selected':''})+
+      menuButton('set-privacy-mode:private','Private',privacyModeDetail('private'),{badge:selected==='private'?'Selected':''})+
+      menuButton('set-privacy-mode:superprivate','Superprivate',privacyModeDetail('superprivate'),{badge:selected==='superprivate'?'Selected':''})+
+      menuSeparator()+
       menuButton('toggle-fact-guard',factGuardActive()?'Fact guard on':'Fact guard off',factGuardDetail(),{badge:factGuardActive()?'On':'Off'})+
       menuSeparator()+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
@@ -1703,18 +1765,18 @@
     const input=document.getElementById('p0-input');
     if(label)label.textContent=displayModel.label;
     if(input)input.placeholder='Message '+displayModel.label+'...';
-    if(privateModeActive()&&model.route!=='local'&&!local){
-      routeStatus('Private mode needs local node','error');
-    }else if(privateModeActive()){
-      routeStatus('Private mode','local');
+    if(privateModeActive()){
+      const next=privacyModeRouteStatus();
+      routeStatus(next.text,next.state);
     }else{
       routeStatus(routeMicroStatus(model),routeReceipt(model).state);
     }
   }
 
   function handleMenuAction(action){
-    if(action==='toggle-private-mode'){
-      setPrivateMode(!privateModeActive());
+    const actionId=String(action||'');
+    if(actionId.startsWith('set-privacy-mode:')){
+      setPrivacyMode(actionId.split(':')[1]);
       return true;
     }
     if(action==='toggle-fact-guard'){
@@ -1991,6 +2053,7 @@
   }
 
   function saveHistory(){
+    if(superPrivateModeActive())return;
     writeHistorySchema();
     writeHistoryJson(state.messages.slice(-MAX_HISTORY));
   }
@@ -2226,22 +2289,24 @@
     if(privateModeActive()){
       const local=bestLocalModel()||(smart.model?.route==='local'?smart.model:null);
       smart=local
-        ? {mode:'single',model:local,reason:routeReason('Private mode',prompt,local),prompt:cleanSmartPrompt(prompt)||prompt}
+        ? {mode:'single',model:local,reason:routeReason(privacyModeLabel(),prompt,local),prompt:cleanSmartPrompt(prompt)||prompt}
         : {mode:'private-unavailable',prompt:cleanSmartPrompt(prompt)||prompt};
     }
     if(smart.mode==='private-unavailable'){
+      const modeLabel=privacyModeLabel();
+      const modeNeed=superPrivateModeActive()?'Superprivate needs local node':'Private mode needs local node';
       closeMenus();
       append('user',prompt,'You');
       input.value='';
       autosizeInput();
       append(
         'assistant',
-        'Private mode is on, but no local model is connected yet. Press + -> Add model, install the local connector, then press + -> Refresh models.',
+        modeLabel+' is on, but no local model is connected yet. Press + -> Add model, install the local connector, then press + -> Refresh models.',
         'MMIR privacy guard',
-        'Private mode · hosted route blocked'
+        modeLabel+' · hosted route blocked'
       );
-      status('Private mode needs a local model.','error');
-      routeStatus('Private mode needs local node','error');
+      status(modeLabel+' needs a local model.','error');
+      routeStatus(modeNeed,'error');
       input?.focus();
       return;
     }
