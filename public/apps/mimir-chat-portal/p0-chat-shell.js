@@ -30,6 +30,7 @@
   const PROMPT_PRESETS_KEY='mmir-p0-prompt-presets-v1';
   const PROMPT_CATALOG_KEY='mmir-p0-prompt-catalog-v1';
   const TOOLBAR_TOOLS_KEY='mmir-p0-toolbar-tools-v1';
+  const ANSWER_STYLE_KEY='mmir-p0-answer-style-v1';
   const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
@@ -96,6 +97,52 @@
 
   function writeBooleanPreference(key,value){
     writeStorageString(key,value?'on':'off');
+  }
+
+  function normalizeAnswerStyle(value){
+    const style=String(value||'').trim().toLowerCase();
+    return style==='precise'||style==='detailed'||style==='short'?style:'short';
+  }
+
+  function readAnswerStyle(){
+    return normalizeAnswerStyle(readStorageString(ANSWER_STYLE_KEY,'short'));
+  }
+
+  function writeAnswerStyle(style){
+    writeStorageString(ANSWER_STYLE_KEY,normalizeAnswerStyle(style));
+  }
+
+  function answerStyle(){
+    return normalizeAnswerStyle(state.answerStyle);
+  }
+
+  function answerStyleLabel(style=answerStyle()){
+    const value=normalizeAnswerStyle(style);
+    if(value==='precise')return 'Precise';
+    if(value==='detailed')return 'Detailed';
+    return 'Short';
+  }
+
+  function answerStyleDetail(style=answerStyle()){
+    const value=normalizeAnswerStyle(style);
+    if(value==='precise')return 'Only necessary facts, compact wording, no route/source boilerplate in the answer.';
+    if(value==='detailed')return 'More complete answers when useful, with route/source proof still kept in status and receipts.';
+    return '1-3 useful sentences by default. Route, source and privacy proof stays in subtle green status.';
+  }
+
+  function answerStyleInstruction(style=answerStyle()){
+    const value=normalizeAnswerStyle(style);
+    const metadataRule=' Keep route, source, privacy and no-paid-route proof in metadata, receipts or subtle status text instead of the main answer unless the user explicitly asks for it.';
+    if(value==='precise')return 'Answer precisely with only the necessary facts. Avoid filler and avoid long setup explanations.'+metadataRule;
+    if(value==='detailed')return 'Give a complete answer when the task needs it, but stay organized and avoid unnecessary boilerplate.'+metadataRule;
+    return 'Answer in 1-3 concise sentences by default. Expand only when the user asks for detail.'+metadataRule;
+  }
+
+  function answerTokenBudget(style=answerStyle()){
+    const value=normalizeAnswerStyle(style);
+    if(value==='detailed')return 1200;
+    if(value==='precise')return 650;
+    return 450;
   }
 
   function normalizePrivacyMode(mode){
@@ -172,6 +219,7 @@
     localHardware:null,
     privacyMode:readPrivacyMode(),
     factGuard:readBooleanPreference(FACT_GUARD_KEY,true),
+    answerStyle:readAnswerStyle(),
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
   };
   let activeChatController=null;
@@ -1730,6 +1778,7 @@
       menuTitle('Tools')+
       menuButton('connect-local','Add model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
+      menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuSeparator()+
       menuSection('Add to toolbar')+
       toolbarTools+
@@ -2043,6 +2092,7 @@
       activeModelLabel:model.label,
       privacyMode:privacyMode(),
       factGuard:factGuardActive(),
+      answerStyle:answerStyle(),
       pinnedTools:pinnedToolbarToolIds(),
       messageCount:state.messages.length,
       messages:saveContent?state.messages.slice(-MAX_HISTORY).map(message=>({
@@ -2130,6 +2180,10 @@
       setFactGuard(!factGuardActive());
       return true;
     }
+    if(action==='cycle-answer-style'){
+      cycleAnswerStyle();
+      return true;
+    }
     if(action==='cycle-model-filter'){
       cycleModelFilter();
       return true;
@@ -2206,6 +2260,16 @@
     renderRouteControlsMenu();
     status('Model filter: '+modelFilterLabel(value)+'.','ready');
     routeStatus('Model filter · '+modelFilterLabel(value)+' · browser local','hosted');
+  }
+
+  function cycleAnswerStyle(){
+    const current=answerStyle();
+    const next=current==='short'?'precise':current==='precise'?'detailed':'short';
+    state.answerStyle=next;
+    writeAnswerStyle(next);
+    renderAddMenu();
+    status('Answer style: '+answerStyleLabel(next)+'.','ready');
+    routeStatus(answerStyleLabel(next)+' answers · browser local preference','hosted');
   }
 
   async function saveCurrentPromptPreset(){
@@ -2495,12 +2559,12 @@
     return {
       model:'mmir-supergenius',
       messages:[
-        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. Keep answers short by default; expand only when the user asks. Do not turn ordinary chats into setup support unless asked.'+factGuard},
+        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.'},
         {role:'user',content:prompt}
       ],
       stream:false,
       temperature:0.7,
-      max_tokens:900
+      max_tokens:answerTokenBudget()
     };
   }
 
@@ -2510,12 +2574,12 @@
     return {
       model:model.model,
       messages:[
-        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly and concisely. Keep answers short by default; expand only when the user asks.'+factGuard},
+        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly. '+answerStyleInstruction()+factGuard},
         {role:'user',content:prompt}
       ],
       stream:false,
       temperature:0.7,
-      max_tokens:900
+      max_tokens:answerTokenBudget()
     };
   }
 
@@ -2680,7 +2744,7 @@
     const routePrompt=fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
-    const routeParts=[fastAnswer?'Fast answer':'',smart.reason].filter(Boolean);
+    const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',smart.reason].filter(Boolean);
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
     status(routePrefix+model.label+' is answering...','ready');
     routeStatus(routePrefix+receipt.text,receipt.state);
