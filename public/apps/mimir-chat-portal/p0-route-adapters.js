@@ -1,5 +1,5 @@
 (function(){
-  const version='20260607-b0-06-14-route-adapters-v1';
+  const version='20260611-b0-06-21-active-local-attach-v1';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
@@ -104,6 +104,14 @@
     return headers;
   }
 
+  function hasLocalPairingToken(){
+    try{
+      return Boolean(sessionStorage.getItem(TOKEN_KEY));
+    }catch(error){
+      return false;
+    }
+  }
+
   function config(){
     const apiUrl=apiUrlForCurrentHost();
     return {
@@ -131,6 +139,7 @@
     localNetworkHint,
     allowLocalProbes,
     pairLocal,
+    hasLocalPairingToken,
     localHeaders
   };
   window.dispatchEvent(new CustomEvent('mimir-p0-route-adapters-ready',{

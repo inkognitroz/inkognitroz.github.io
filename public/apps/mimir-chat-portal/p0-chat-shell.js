@@ -11,6 +11,7 @@
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
   const allowLocalProbes=P0_ROUTE_ADAPTERS.allowLocalProbes;
   const pairLocal=P0_ROUTE_ADAPTERS.pairLocal;
+  const hasLocalPairingToken=P0_ROUTE_ADAPTERS.hasLocalPairingToken||(()=>false);
   const localHeaders=P0_ROUTE_ADAPTERS.localHeaders;
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
@@ -296,7 +297,8 @@
       receipt.text,
       routePinned(model)?'Pinned':'',
       'Score '+effectiveModelScore(model),
-      ...benchmark
+      ...benchmark,
+      localTelemetrySummary(model?.routeTelemetry)
     ].filter(Boolean);
     return parts.join(' · ');
   }
@@ -549,22 +551,49 @@
     }
   }
 
-  function normalizeLocalModels(payload){
+  function localTelemetryByModel(payload){
+    const map=new Map();
+    const rows=Array.isArray(payload?.data)?payload.data:[];
+    rows.forEach(item=>{
+      const id=String(item?.model_id||'').trim();
+      if(id)map.set(id,item);
+    });
+    return map;
+  }
+
+  function localTelemetrySummary(item){
+    const signals=item?.ranking_signals||{};
+    const parts=[];
+    if(typeof signals.score==='number')parts.push('route score '+clampScore(signals.score));
+    if(signals.latency_status&&signals.latency_status!=='unknown')parts.push(String(signals.latency_status).replace(/[_-]+/g,' '));
+    const latency=signals.avg_latency_ms??signals.last_latency_ms;
+    if(typeof latency==='number')parts.push(formatDuration(latency));
+    if(item?.status&&item.status!=='available')parts.push(String(item.status).replace(/[_-]+/g,' '));
+    return parts.slice(0,3).join(' · ');
+  }
+
+  function normalizeLocalModels(payload,routeTelemetryPayload=null){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+    const telemetry=localTelemetryByModel(routeTelemetryPayload);
     return raw
       .map(item=>String(item.id||item.name||item.model||'').trim())
       .filter(Boolean)
       .slice(0,12)
       .map(id=>{
         const profile=localModelProfile(id);
+        const routeTelemetry=telemetry.get(id)||null;
+        const telemetrySummary=localTelemetrySummary(routeTelemetry);
         return {
           id:'local:'+id,
           label:id,
           route:'local',
-          detail:profile.detail,
+          detail:[profile.detail,telemetrySummary].filter(Boolean).join(' · '),
           tags:profile.tags,
           quality:profile.quality,
-          score:profile.score,
+          score:typeof routeTelemetry?.ranking_signals?.score==='number'
+            ? Math.round((profile.score+clampScore(routeTelemetry.ranking_signals.score))/2)
+            : profile.score,
+          routeTelemetry,
           model:id
         };
       })
@@ -606,6 +635,7 @@
       url:LOCAL_URL,
       models:(models||[]).map(model=>({id:model.model||model.label||model.id,name:model.label||model.model||model.id})),
       hardware_summary:hardware?.summary||'',
+      source:'paired-local-status',
       readiness:{
         paired:true,
         models_available:count>0,
@@ -795,6 +825,13 @@
         state:'measured'
       };
     }
+    if(model?.route==='local'&&model?.routeTelemetry?.status==='available'){
+      return {
+        label:'Active local',
+        detail:'Paired local connector reports this route as available.',
+        state:'active'
+      };
+    }
     if(model?.route==='local'){
       return {
         label:'Cold local',
@@ -816,6 +853,7 @@
   function routeDetailReceipt(model){
     const operational=routeOperationalState(model);
     const stats=routeBenchmark(model);
+    const telemetry=localTelemetrySummary(model?.routeTelemetry);
     const privacy=model?.route==='local'?'Private · This Mac':'Free · '+API_LABEL;
     const score='Score '+effectiveModelScore(model);
     const samples=stats?.samples
@@ -823,7 +861,7 @@
       : (model?.route==='local'?'not measured yet':'managed route');
     const pinned=routePinned(model)?'Pinned in this browser':'';
     const safe=model?.route==='local'?'no public Ollama port':'no browser secrets';
-    return [operational.label,privacy,score,samples,pinned,safe].filter(Boolean).join(' · ');
+    return [operational.label,privacy,score,telemetry,samples,pinned,safe].filter(Boolean).join(' · ');
   }
 
   function compactModelBadges(model,bestLocal){
@@ -1008,11 +1046,21 @@
   async function checkLocalModels({quiet=false}={}){
     try{
       allowLocalProbes('p0-find-local-models',60000);
-      status('Checking local node...','loading');
+      if(!quiet)status('Checking local node...','loading');
       const token=await pairLocal();
-      const health=await fetchJson(LOCAL_URL+'/health',{headers:localHeaders(token),timeoutMs:7000});
-      if(!health||health.status==='offline')throw new Error('Local connector reports offline.');
-      const models=normalizeLocalModels(await fetchJson(LOCAL_URL+'/v1/models',{headers:localHeaders(token),timeoutMs:10000}));
+      const connectorStatus=await fetchJson(LOCAL_URL+'/status',{headers:localHeaders(token),timeoutMs:9000});
+      if(!connectorStatus||connectorStatus.status==='offline')throw new Error('Local connector reports offline.');
+      if(connectorStatus.readiness?.paired===false||connectorStatus.model_summary?.visibility==='public-safe'){
+        throw new Error('Local connector paired status is required before model metadata is visible.');
+      }
+      let modelPayload=connectorStatus.model_summary;
+      if(!Array.isArray(modelPayload?.data)||!modelPayload.data.length){
+        modelPayload=await fetchJson(LOCAL_URL+'/v1/models',{headers:localHeaders(token),timeoutMs:10000});
+      }
+      const routeTelemetry=connectorStatus.route_telemetry?.object==='mmir.local.route_telemetry.list'
+        ? connectorStatus.route_telemetry
+        : null;
+      const models=normalizeLocalModels(modelPayload,routeTelemetry);
       let hardware=null;
       try{
         hardware=normalizeLocalHardware(await fetchJson(LOCAL_URL+'/hardware',{headers:localHeaders(token),timeoutMs:7000}));
@@ -1032,7 +1080,7 @@
       }
       renderModelMenu();
       renderToolbar();
-      status(localReadinessSummary(models,hardware),models.length?'ready':'idle');
+      if(!quiet)status(localReadinessSummary(models,hardware),models.length?'ready':'idle');
       return models;
     }catch(error){
       state.localChecked=true;
@@ -2154,9 +2202,19 @@
     const params=new URLSearchParams(location.search);
     const hash=String(location.hash||'').toLowerCase();
     const shouldCheck=params.get('mmir_local_return')==='1'||params.get('local_node_ready')==='1'||hash.includes('local');
-    if(!shouldCheck)return;
+    if(!shouldCheck)return false;
     window.MimirAllowLocalProbes?.('p0-local-return',60000);
     checkLocalModels({quiet:false}).catch(()=>{});
+    return true;
+  }
+
+  function maybeAutoAttachPairedLocal(){
+    if(!hasLocalPairingToken())return;
+    window.MimirAllowLocalProbes?.('p0-paired-local-resume',30000);
+    checkLocalModels({quiet:true}).then(models=>{
+      if(!Array.isArray(models)||!models.length)return;
+      routeStatus('Local node attached · '+models.length+' model'+(models.length===1?'':'s')+' · Private · This Mac','local');
+    }).catch(()=>{});
   }
 
   function boot(){
@@ -2166,6 +2224,7 @@
     updateSendControl();
     refreshHostedModels().catch(()=>{});
     refreshPromptPresets().catch(()=>{});
+    if(!maybeAutoCheckLocal())maybeAutoAttachPairedLocal();
     document.getElementById('p0-input')?.focus();
     let passes=0;
     const timer=setInterval(()=>{
