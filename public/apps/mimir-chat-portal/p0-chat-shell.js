@@ -532,23 +532,63 @@
     const compactLocalReady=/^(local node attached|private local ready:|local node connected)/i.test(full)
       ? 'Local node ready'
       : '';
-    const visible=parts.filter(part=>
-      !/^free$/i.test(part) &&
-      !/^private$/i.test(part) &&
-      !/^api\.mmir\.ai$/i.test(part) &&
-      !/^this mac$/i.test(part) &&
-      !/^\d+\s+models?\.?$/i.test(part) &&
-      !/^score\s+\d+/i.test(part) &&
+    const primary=compactLocalReady||parts[0]||'Ready';
+    const candidates=parts.filter(part=>
+      part!==primary &&
       !/^target\s+/i.test(part) &&
-      !/^samples?$/i.test(part)
+      !/^samples?$/i.test(part) &&
+      !/^Winner:/i.test(part)
     );
-    const primary=compactLocalReady||visible[0]||parts[0]||'Ready';
-    const time=parts.find(part=>/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/i.test(part));
-    const text=[primary,time].filter(Boolean).join(' · ');
+    const pick=(test)=>candidates.find(part=>test.test(part))||'';
+    const priority=[
+      pick(/^\d+\s+models?\.?$/i),
+      pick(/^free$|^private$/i),
+      pick(/^this mac$/i),
+      pick(/^api\.mmir\.ai$/i),
+      pick(/^api score\s+\d+|^score\s+\d+/i),
+      pick(/^avg\s+|\b\d+(?:\.\d+)?(?:ms|s)\b/i),
+      pick(/best answer|synthesis/i),
+      pick(/no paid route/i),
+      pick(/routing\/score/i),
+      pick(/verified fact|needs fact check|complete answer|responsive|acceptable|fast|slow|private local|public facts/i)
+    ].filter(Boolean);
+    const fallback=candidates.filter(part=>!priority.includes(part)).slice(0,1);
+    const text=[primary,...priority,...fallback]
+      .filter((part,index,all)=>part&&all.indexOf(part)===index)
+      .slice(0,6)
+      .join(' · ');
     el.setAttribute('aria-label',full);
     el.title=full;
     el.dataset.kind=microKind(text,stateValue);
     el.innerHTML='<span class="p0-route-line">'+safeText(text)+'</span>';
+  }
+
+  function compactStatusText(message,maxParts=5){
+    const parts=String(message||'')
+      .split('·')
+      .map(part=>part.trim())
+      .filter(Boolean)
+      .filter(part=>!/^target\s+/i.test(part));
+    return parts
+      .filter((part,index,all)=>all.indexOf(part)===index)
+      .slice(0,maxParts)
+      .join(' · ');
+  }
+
+  function answerStatus(model,score,prefix=''){
+    const receipt=routeReceipt(model);
+    const label=routeDisplayName(model);
+    const elapsed=formatDuration(score?.elapsedMs||0);
+    const parts=[
+      prefix,
+      label+' answered in '+elapsed,
+      model?.route==='local'?'Private':'Free',
+      model?.route==='local'?'This Mac':API_LABEL,
+      (score?.source==='api'?'API score ':'Score ')+(score?.score??effectiveModelScore(model)),
+      scoreClassSummary(score),
+      model?.route==='hosted'?'No paid route':''
+    ];
+    return parts.filter(Boolean).join(' · ')||receipt.text;
   }
 
   function routeRankState(model){return routeBenchmarks?.routeRankState(model)||'measured';}
@@ -2351,7 +2391,10 @@
   function status(message,stateValue='idle'){
     const el=document.getElementById('p0-status');
     if(!el)return;
-    el.textContent=message||'';
+    const full=String(message||'').trim();
+    el.textContent=compactStatusText(full)||full;
+    el.title=full;
+    el.setAttribute('aria-label',full);
     el.dataset.state=stateValue;
   }
 
@@ -2651,7 +2694,7 @@
       updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)});
       renderModelMenu();
       routeStatus(routePrefix+routeMicroStatus(model),receipt.state);
-      status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
+      status(answerStatus(model,measuredScore,routePrefix),'ready');
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
         updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
@@ -2687,7 +2730,7 @@
             fallbackAnswer+'\n\nLocal model note: '+hint,
             {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)}
           );
-          status('Supergeni answered in '+fallbackElapsed+' while local access waits for permission.','ready');
+          status(answerStatus(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs),'Local fallback')+' · while local access waits for permission','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
         }catch(fallbackError){
           if(stopRequested||fallbackError?.name==='AbortError'){
