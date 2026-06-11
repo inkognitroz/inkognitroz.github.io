@@ -194,7 +194,13 @@ async function checkViewport(browser, viewport) {
   assert(!/Compare answers|Best Answer/i.test(addMenu), `${viewport.name}: add menu must not show compare/best-answer buttons before local discovery`);
 
   await page.locator('[data-p0-action="check-local"]').click();
-  await page.waitForFunction(() => /Private local ready:/i.test(document.getElementById('p0-status')?.textContent || ''));
+  await page.waitForFunction(() => {
+    const route = document.getElementById('p0-route');
+    const status = document.getElementById('p0-status');
+    return /Local node ready/i.test(route?.textContent || '') &&
+      /Private local ready:/i.test(route?.getAttribute('aria-label') || '') &&
+      !/Private local ready:|\d+\s+models?|Private/i.test(status?.textContent || '');
+  });
 
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');

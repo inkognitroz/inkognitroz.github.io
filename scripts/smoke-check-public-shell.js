@@ -582,6 +582,11 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Local node ready",
+  "P0 local discovery must keep the visible composer status subtle instead of showing model/private chips.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "mmir-local-private-readiness-updated",
   "P0 local discovery must emit explicit paired/private readiness evidence.",
 );

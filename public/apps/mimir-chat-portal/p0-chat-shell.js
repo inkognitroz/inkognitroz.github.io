@@ -402,15 +402,20 @@
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
+    const compactLocalReady=/^(local node attached|private local ready:|local node connected)/i.test(full)
+      ? 'Local node ready'
+      : '';
     const visible=parts.filter(part=>
       !/^free$/i.test(part) &&
+      !/^private$/i.test(part) &&
       !/^api\.mmir\.ai$/i.test(part) &&
       !/^this mac$/i.test(part) &&
+      !/^\d+\s+models?\.?$/i.test(part) &&
       !/^score\s+\d+/i.test(part) &&
       !/^target\s+/i.test(part) &&
       !/^samples?$/i.test(part)
     );
-    const primary=visible[0]||parts[0]||'Ready';
+    const primary=compactLocalReady||visible[0]||parts[0]||'Ready';
     const time=parts.find(part=>/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/i.test(part));
     const text=[primary,time].filter(Boolean).join(' · ');
     el.setAttribute('aria-label',full);
@@ -1194,7 +1199,10 @@
       }
       renderModelMenu();
       renderToolbar();
-      if(!quiet)status(localReadinessSummary(models,hardware),models.length?'ready':'idle');
+      if(!quiet){
+        status(models.length?'Ready':'No local models yet',models.length?'ready':'idle');
+        routeStatus(localReadinessSummary(models,hardware),models.length?'local':'hosted');
+      }
       return models;
     }catch(error){
       state.localChecked=true;

@@ -422,7 +422,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-route[data-state="local"] {
-  color: #1d4ed8;
+  color: #047857;
 }
 
 .p0-route[data-state="error"] {
