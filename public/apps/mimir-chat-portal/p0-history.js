@@ -1,5 +1,6 @@
 (function(){
-  const version='20260606-b1-06-p0-history-v1';
+  const version='20260611-b0-06-24-qa-history-v1';
+  const qaSessionParamPattern=/^(mmir_qa_session|first_click_guard|responsive_guard|b0_|codex_)/i;
   const staleFailurePatterns=[
     /Selected browser LLM is not loaded/i,
     /System prompt should always be the first message/i,
@@ -33,13 +34,21 @@
     return 'p0-'+Date.now().toString(36)+'-'+Math.random().toString(16).slice(2,8);
   }
 
+  function qaSessionEnabled(search){
+    const source=String(search??window?.location?.search??'');
+    return source.split(/[?&]/)
+      .map(part=>decodeURIComponent(part.split('=')[0]||'').trim())
+      .some(key=>qaSessionParamPattern.test(key));
+  }
+
   window.MimirP0History={
     version,
     staleFailurePatterns,
     validMessage,
     staleFailureMessage,
     transientInstallMessage,
-    makeMessageId
+    makeMessageId,
+    qaSessionEnabled
   };
 
   window.dispatchEvent?.(new CustomEvent('mimir-p0-history-ready',{detail:{version}}));

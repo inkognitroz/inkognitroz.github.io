@@ -230,6 +230,8 @@ async function checkViewport(browser, viewport) {
   });
   await page.waitForSelector('#mmir-p0-app');
   await page.waitForSelector('#p0-input');
+  const qaHistoryMode = await page.evaluate(() => window.__MimirP0HistorySessionMode === true);
+  assert(qaHistoryMode, `${viewport.name}: first-click QA must use session-scoped history`);
 
   let layout = await pageLayout(page);
   assert(layout.title.includes('MMIR'), `${viewport.name}: page title should identify MMIR`);
@@ -288,6 +290,17 @@ async function checkViewport(browser, viewport) {
   layout = await pageLayout(page);
   assertControls(layout, viewport, `${viewport.name} answer`);
   assert(layout.text.includes('First-click guard answer.'), `${viewport.name}: send control should produce a rendered answer`);
+  const historyState = await page.evaluate(() => {
+    const sessionHistory = JSON.parse(sessionStorage.getItem('mmir-p0-chat-history-qa-session-v1') || '[]');
+    return {
+      localHistoryExists: localStorage.getItem('mmir-p0-chat-history-v1') !== null,
+      sessionCount: sessionHistory.length,
+      sessionHasPrompt: sessionHistory.some(message => /First click guard prompt/.test(String(message.content || ''))),
+      sessionHasAnswer: sessionHistory.some(message => /First-click guard answer/.test(String(message.content || '')))
+    };
+  });
+  assert(!historyState.localHistoryExists, `${viewport.name}: first-click QA prompt must not persist into normal local history`);
+  assert(historyState.sessionCount > 0 && historyState.sessionHasPrompt && historyState.sessionHasAnswer, `${viewport.name}: first-click QA should keep prompt/answer in session history only`);
   await screenshot(page, `${viewport.name}-answer`);
 
   const relevantLogs = logs.filter(message => !/favicon|Failed to load resource/i.test(message));

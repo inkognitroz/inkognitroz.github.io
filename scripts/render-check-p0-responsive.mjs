@@ -125,8 +125,8 @@ async function seedBrowserState(page) {
   await page.addInitScript(history => {
     localStorage.clear();
     sessionStorage.clear();
-    localStorage.setItem('mmir-p0-chat-history-schema', '20260603-clean-first-chat-v40');
-    localStorage.setItem('mmir-p0-chat-history-v1', JSON.stringify(history));
+    sessionStorage.setItem('mmir-p0-chat-history-qa-session-schema', '20260603-clean-first-chat-v40');
+    sessionStorage.setItem('mmir-p0-chat-history-qa-session-v1', JSON.stringify(history));
   }, seededHistory());
 }
 
@@ -204,6 +204,8 @@ async function checkViewport(browser, viewport) {
   });
   await page.waitForSelector('#mmir-p0-app');
   await page.waitForSelector('#p0-input');
+  const qaHistoryMode = await page.evaluate(() => window.__MimirP0HistorySessionMode === true);
+  assert(qaHistoryMode, `${viewport.name}: responsive QA must use session-scoped history`);
 
   await page.locator('#p0-transcript').evaluate(element => {
     element.scrollTop = element.scrollHeight;
@@ -265,6 +267,16 @@ async function checkViewport(browser, viewport) {
   await page.waitForTimeout(220);
   const focusOpacity = Number(await lastActions.evaluate((el) => getComputedStyle(el).opacity));
   assert(focusOpacity > 0.6, `${viewport.name}: answer actions should reveal on keyboard/touch focus, opacity=${focusOpacity}`);
+  const qaHistoryState = await page.evaluate(() => {
+    const sessionHistory = JSON.parse(sessionStorage.getItem('mmir-p0-chat-history-qa-session-v1') || '[]');
+    return {
+      localHistoryExists: localStorage.getItem('mmir-p0-chat-history-v1') !== null,
+      sessionCount: sessionHistory.length,
+      sessionHasAnswer: sessionHistory.some(message => /Responsive guard answer/.test(String(message.content || '')))
+    };
+  });
+  assert(!qaHistoryState.localHistoryExists, `${viewport.name}: QA prompt must not persist into normal local history`);
+  assert(qaHistoryState.sessionCount > 0 && qaHistoryState.sessionHasAnswer, `${viewport.name}: QA session history should keep test flow state inside sessionStorage`);
 
   layout = await collectLayout(page);
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: answer actions must not create horizontal overflow`);

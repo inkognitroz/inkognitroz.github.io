@@ -252,8 +252,11 @@ requireIncludes(files.p0Runtime, "status('Listening...','ready')", 'P0 mic butto
 requireIncludes(files.p0Runtime, "document.body.classList.add('mmir-p0-ready')", 'P0 runtime must set the same ready class that the P0 CSS uses to hide legacy UI.');
 forbid(files.p0Runtime, /classList\.add\('mimir-p0-ready'\)/, 'P0 runtime must not use the misspelled ready class.');
 requireIncludes(files.p0Runtime, "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');
+requireIncludes(files.p0Runtime, "const HISTORY_SESSION_KEY='mmir-p0-chat-history-qa-session-v1'", 'P0 shell must isolate browser/live QA history from normal persisted chat history.');
+requireIncludes(files.p0Runtime, 'window.__MimirP0HistorySessionMode=historySessionMode', 'P0 shell must expose QA history isolation state for rendered proof.');
 requireIncludes(files.p0Runtime, 'function transientInstallMessage(message)', 'P0 shell must keep local install instructions chat-native but transient, not first-screen history.');
 requireIncludes(files.p0History, 'Selected browser LLM is not loaded', 'P0 stale-state guard must explicitly purge the known Browser LLM failure copy.');
+requireIncludes(files.p0History, 'function qaSessionEnabled(search)', 'P0 history helper must own QA-session detection.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-find-local-models'", 'P0 Find local models must explicitly allow user-requested local probes.');
 requireIncludes(files.p0Runtime, "allowLocalProbes('p0-local-chat'", 'P0 local chat must explicitly allow user-requested local connector calls.');
 requireIncludes(files.p0RouteAdapters, "targetAddressSpace='loopback'", 'P0 route adapter helper must request loopback address-space permission.');
