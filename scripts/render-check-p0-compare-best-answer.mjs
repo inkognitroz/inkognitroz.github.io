@@ -212,6 +212,9 @@ async function checkViewport(browser, viewport) {
   assert(text.includes('Best answer'), `${viewport.name}: compact best-answer receipt should render`);
   assert(text.includes('Winner: Supergenious'), `${viewport.name}: winner receipt should name Supergenious`);
   assert(text.includes('No paid route'), `${viewport.name}: receipt must keep no-paid route visible`);
+  assert(text.includes('target 3.0s met'), `${viewport.name}: hosted compare receipt should show the compact latency target`);
+  assert(text.includes('target 9.0s met'), `${viewport.name}: local compare receipt should show the compact latency target`);
+  assert(text.includes('target 3.5s met'), `${viewport.name}: synthesis receipt should show the compact latency target`);
 
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,

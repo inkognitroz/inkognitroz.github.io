@@ -799,15 +799,41 @@
     return 'slow';
   }
 
-  function routeScore(model,prompt,answer,elapsedMs,failed=false){
+  function latencyTargetMs(model,mode='single'){
+    if(mode==='synthesis')return 3500;
+    if(model?.route==='local')return mode==='compare'?9000:8000;
+    return mode==='compare'?3000:2500;
+  }
+
+  function latencyTargetState(elapsedMs,targetMs,failed=false){
+    if(failed)return 'failed';
+    return (Number(elapsedMs)||0)<=targetMs?'met':'missed';
+  }
+
+  function latencyTargetReceipt(model,elapsedMs,mode='single',failed=false){
+    const targetMs=latencyTargetMs(model,mode);
+    const targetState=latencyTargetState(elapsedMs,targetMs,failed);
+    if(targetState==='met')return 'target '+formatDuration(targetMs)+' met';
+    if(targetState==='missed')return 'over '+formatDuration(targetMs)+' target';
+    return '';
+  }
+
+  function latencyTargetSummary(score){
+    return String(score?.latency_target_label||'').trim();
+  }
+
+  function routeScore(model,prompt,answer,elapsedMs,failed=false,mode='single'){
     const route=model?.route||'hosted';
     const text=String(answer||'').trim();
     const publicFact=wantsPublicFactRoute(prompt);
     const privateIntent=wantsPrivateRoute(prompt);
     const reasons=[];
     let score=50;
+    const latency_target_ms=latencyTargetMs(model,mode);
+    const latency_target_state=latencyTargetState(elapsedMs,latency_target_ms,failed||!text);
+    const latency_target_label=latencyTargetReceipt(model,elapsedMs,mode,failed||!text);
     if(failed||!text){
-      return {score:0,elapsedMs,answer_class:'failed',latency_class:latencyClass(elapsedMs),reason:'no answer',reasons:['no answer']};
+      return {score:0,elapsedMs,answer_class:'failed',latency_class:latencyClass(elapsedMs),latency_target_ms,latency_target_state,latency_target_label,reason:'no answer',reasons:['no answer']};
     }
     if(text.length>24){
       score+=8;
@@ -856,7 +882,7 @@
       score-=7;
       reasons.push('slow');
     }
-    return {score:clampScore(score),elapsedMs,answer_class:answerClass(text),latency_class:latencyClass(elapsedMs),reason:reasons.slice(0,3).join(' · '),reasons};
+    return {score:clampScore(score),elapsedMs,answer_class:answerClass(text),latency_class:latencyClass(elapsedMs),latency_target_ms,latency_target_state,latency_target_label,reason:reasons.slice(0,3).join(' · '),reasons};
   }
 
   function scoreClassSummary(score){
@@ -875,7 +901,7 @@
   function scoreSummary(score){
     if(!score)return 'Score pending';
     const prefix=score.source==='api'?'API score ':'Score ';
-    return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),score.reason].filter(Boolean).join(' · ');
+    return [prefix+score.score,scoreClassSummary(score),formatDuration(score.elapsedMs),latencyTargetSummary(score),score.reason].filter(Boolean).join(' · ');
   }
 
   function routeOperationalState(model){
@@ -958,13 +984,14 @@
     const winner=parts.find(part=>/^Winner:/i.test(part));
     const score=parts.find(part=>/^(API score|Score)\s+\d+/i.test(part));
     const timing=[...parts].reverse().find(part=>/^\d+(?:\.\d+)?(?:ms|s)$/i.test(part));
+    const target=parts.find(part=>/^target\s+\d+(?:\.\d+)?(?:ms|s)\s+met$/i.test(part)||/^over\s+\d+(?:\.\d+)?(?:ms|s)\s+target$/i.test(part));
     const noPaid=parts.find(part=>/No paid route/i.test(part));
     const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
-      return ['Best answer',winner,score,timing,noPaid].filter(Boolean).join(' · ');
+      return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
     }
     if(compare){
-      return [compare.replace('Compare answer','Compare'),score,timing,parts[0]].filter(Boolean).join(' · ');
+      return [compare.replace('Compare answer','Compare'),score,timing,target,parts[0]].filter(Boolean).join(' · ');
     }
     return [parts.slice(0,3).join(' · '),score,timing].filter(Boolean).join(' · ');
   }
@@ -993,6 +1020,9 @@
 
   function routeScoreCandidate(model,answer,elapsedMs,failed=false){
     const isLocal=model?.route==='local';
+    const latency_target_ms=latencyTargetMs(model,'compare');
+    const latency_target_state=latencyTargetState(elapsedMs,latency_target_ms,failed);
+    const latency_target_label=latencyTargetReceipt(model,elapsedMs,'compare',failed);
     return {
       id:isLocal?'local/'+(model.model||model.id):'browser-guide/free',
       route_id:isLocal?'local/'+(model.model||model.id):'browser-guide/free',
@@ -1008,6 +1038,9 @@
       answer:String(answer||'').slice(0,8000),
       latency_ms:Math.max(0,Math.round(Number(elapsedMs)||0)),
       latency_class:latencyClass(elapsedMs),
+      latency_target_ms,
+      latency_target_state,
+      latency_target_label,
       answer_class:answerClass(answer,failed),
       failed:Boolean(failed)
     };
@@ -1028,6 +1061,9 @@
       elapsedMs:Number(found.latency_ms)||fallback?.elapsedMs||0,
       answer_class:found.answer_class||fallback?.answer_class||'unknown',
       latency_class:found.latency_class||fallback?.latency_class||'unknown',
+      latency_target_ms:Number(found.latency_target_ms)||fallback?.latency_target_ms||0,
+      latency_target_state:found.latency_target_state||fallback?.latency_target_state||'',
+      latency_target_label:found.latency_target_label||fallback?.latency_target_label||'',
       freshness_state:found.freshness_state||fallback?.freshness_state||'',
       factuality_guardrail_action:found.factuality_guardrail_action||fallback?.factuality_guardrail_action||'',
       requires_freshness_check:Boolean(found.requires_freshness_check||fallback?.requires_freshness_check),
@@ -2107,7 +2143,7 @@
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
       recordRouteBenchmark(model,measuredScore);
       const elapsed=formatDuration(elapsedMs);
-      updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed+' · Score '+effectiveModelScore(model)});
+      updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)});
       renderModelMenu();
       routeStatus(routePrefix+routeMicroStatus(model),receipt.state);
       status(routePrefix+model.label+' answered in '+elapsed+'.','ready');
@@ -2144,7 +2180,7 @@
           updateMessage(
             assistant,
             fallbackAnswer+'\n\nLocal model note: '+hint,
-            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed}
+            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)}
           );
           status('Supergenious answered in '+fallbackElapsed+' while local access waits for permission.','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
@@ -2211,13 +2247,13 @@
       .then(answer=>{
         hostedAnswerText=answer||'Supergenious returned an empty response.';
         hostedElapsedMs=performance.now()-hostedStarted;
-        hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs);
+        hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs,false,'compare');
         updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       })
       .catch((error)=>{
         hostedFailed=true;
         hostedElapsedMs=performance.now()-hostedStarted;
-        hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true);
+        hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true,'compare');
         updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       });
     const localStarted=performance.now();
@@ -2225,13 +2261,13 @@
       .then(answer=>{
         localAnswerText=answer||'Local model returned an empty response.';
         localElapsedMs=performance.now()-localStarted;
-        localScore=routeScore(localModel,prompt,localAnswerText,localElapsedMs);
+        localScore=routeScore(localModel,prompt,localAnswerText,localElapsedMs,false,'compare');
         updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       })
       .catch(error=>{
         localFailed=true;
         localElapsedMs=performance.now()-localStarted;
-        localScore=routeScore(localModel,prompt,'',localElapsedMs,true);
+        localScore=routeScore(localModel,prompt,'',localElapsedMs,true,'compare');
         updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       });
     await Promise.allSettled([hostedJob,localJob]);
@@ -2266,7 +2302,8 @@
       const synthesisStarted=performance.now();
       try{
         const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);
-        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(performance.now()-synthesisStarted)});
+        const synthesisElapsedMs=performance.now()-synthesisStarted;
+        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(synthesisElapsedMs)+' · '+latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis')});
       }catch(error){
         updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':(hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.'),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed')});
       }
