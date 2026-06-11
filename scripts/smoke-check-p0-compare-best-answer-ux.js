@@ -68,20 +68,30 @@ forbidText(
   'Smart routing',
   'Add menu must not bring back dashboard-style Smart routing cards'
 );
-forbidText(
+requireText(
   addMenu,
-  "menuButton('best-answer-live'",
-  'Add menu must not add a Best Answer button; smart prompt text should trigger compare'
+  'pool.compareReady',
+  'Add menu must truth-gate two-model tools behind local discovery'
 );
-forbidText(
+requireText(
   addMenu,
-  "menuButton('compare-live'",
-  'Add menu must not add a Compare button; smart prompt text should trigger compare'
+  "menuSection('Two models')",
+  'Add menu must group parallel tools only when the intelligence pool is ready'
 );
-forbidText(
+requireText(
   addMenu,
-  'Compare answers',
-  'Add menu must avoid compare clutter in the compact toolbar menu'
+  "menuButton('compare-live','Compare answers'",
+  'Add menu must expose Compare answers after Supergeni plus a local model are ready'
+);
+requireText(
+  addMenu,
+  "menuButton('best-answer-live','Best answer benchmark'",
+  'Add menu must expose a scored Best Answer benchmark after two live routes are ready'
+);
+requireText(
+  addMenu,
+  "menuButton('discuss-topic','Model discussion'",
+  'Add menu must expose model discussion through the proven compare/synthesis path'
 );
 forbidText(
   addMenu,
@@ -103,6 +113,26 @@ requireText(
   runtime,
   'function compareLiveRoutes(comparePrompt',
   'Compare flow must remain implemented behind prompt intent and explicit @model tags'
+);
+requireText(
+  runtime,
+  'function runTwoModelTool(action)',
+  'Two-model menu tools must use the existing compare flow instead of separate unproven UI'
+);
+requireText(
+  runtime,
+  "compareLiveRoutes(prompt,local,{mode:'compare'});",
+  'Compare answers menu action must run the proven compare path'
+);
+requireText(
+  runtime,
+  "compareLiveRoutes(prompt,local,{mode:'best-answer'});",
+  'Best answer benchmark menu action must run the proven synthesis path'
+);
+requireText(
+  runtime,
+  'Discuss this topic from two model perspectives',
+  'Model discussion must be implemented as a structured prompt over the proven synthesis path'
 );
 requireText(
   runtime,

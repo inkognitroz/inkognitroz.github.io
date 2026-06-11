@@ -176,8 +176,10 @@ requireIncludes(files.p0RouteReceipts, 'Private · This Mac', 'P0 local route re
 requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
 requireIncludes(files.p0Runtime, 'function compareLiveRoutes(comparePrompt', 'P0 compare must stay implemented behind prompt intent.');
-forbid(files.p0Runtime, /menuButton\('compare-live'/, 'P0 compare must not add a toolbar/menu button.');
-forbid(files.p0Runtime, /menuButton\('best-answer-live'/, 'P0 Best Answer must not add a toolbar/menu button.');
+requireIncludes(files.p0Runtime, 'pool.compareReady', 'P0 compare tools must be hidden until a second live route exists.');
+requireIncludes(files.p0Runtime, "menuButton('compare-live','Compare answers'", 'P0 compare must expose a gated + menu tool after local discovery.');
+requireIncludes(files.p0Runtime, "menuButton('best-answer-live','Best answer benchmark'", 'P0 Best Answer must expose a gated + menu tool after local discovery.');
+requireIncludes(files.p0Runtime, "menuButton('discuss-topic','Model discussion'", 'P0 model discussion must expose a gated + menu tool after local discovery.');
 requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must show route score and response timing.');
 requireIncludes(files.p0Runtime, 'function scoreClassSummary(score)', 'P0 compare must show route answer/latency classes.');
 requireIncludes(files.p0Runtime, 'answer_class:found.answer_class', 'P0 compare must preserve API answer class metadata.');

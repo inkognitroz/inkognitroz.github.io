@@ -70,18 +70,38 @@ requireIncludes(
   '+ menu must keep post-install discovery short and explicit.'
 );
 requireIncludes(
+  renderAddMenu,
+  'pool.compareReady',
+  '+ menu must only reveal two-model tools after local discovery.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('compare-live','Compare answers'",
+  '+ menu must expose Compare answers only through the truth-gated two-model section.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('best-answer-live','Best answer benchmark'",
+  '+ menu must expose Best answer benchmark only through the truth-gated two-model section.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('discuss-topic','Model discussion'",
+  '+ menu must expose Model discussion only through the truth-gated two-model section.'
+);
+requireIncludes(
   renderPromptPresetMenu,
   "menuButton('add-menu-main','Back','Return to Add.')",
   'Prompt preset submenu must return to the compact Add menu.'
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260611-shield-local-state-v1',
+  'p0-chat-shell.js?v=20260611-two-model-tools-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260611-shield-local-state-v1"',
+  '"p0-chat-shell.js": "20260611-two-model-tools-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

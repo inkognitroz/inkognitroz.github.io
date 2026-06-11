@@ -1581,10 +1581,19 @@
 
   function renderAddMenu(){
     const menu=menuEl('add');
+    const pool=intelligencePoolSummary();
+    const twoModelTools=pool.compareReady
+      ? menuSeparator()+
+        menuSection('Two models')+
+        menuButton('compare-live','Compare answers','Ask Supergeni + '+pool.bestLocalLabel+'.')+
+        menuButton('best-answer-live','Best answer benchmark','Scores both routes, then synthesizes.')+
+        menuButton('discuss-topic','Model discussion','Two perspectives, one conclusion.')
+      : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
       menuButton('connect-local','Add model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
+      twoModelTools+
       menuButton('prompt-presets','Prompts','Use or save starters in this browser.')+
       menuSeparator()+
       menuButton('new-chat','New chat','Clear this browser chat only.');
@@ -1799,6 +1808,51 @@
     }
   }
 
+  function runTwoModelTool(action){
+    const local=bestLocalModel();
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    if(!local){
+      status('Refresh models first, then two-model tools can run.','error');
+      routeStatus('Two-model tools need a local model','error');
+      input?.focus();
+      return true;
+    }
+    if(!prompt){
+      if(action==='discuss-topic'&&input){
+        input.value='Discuss this topic between Supergeni and '+local.label+': ';
+        autosizeInput();
+        closeMenus();
+        status('Add a topic, then send or choose Model discussion again.','ready');
+        routeStatus('Model discussion ready · two-model tool','ready');
+        input.focus();
+        return true;
+      }
+      status('Write a prompt first, then choose this two-model tool.','error');
+      routeStatus('Two-model tool needs a prompt','error');
+      input?.focus();
+      return true;
+    }
+    closeMenus();
+    if(action==='compare-live'){
+      compareLiveRoutes(prompt,local,{mode:'compare'});
+      return true;
+    }
+    if(action==='best-answer-live'){
+      compareLiveRoutes(prompt,local,{mode:'best-answer'});
+      return true;
+    }
+    if(action==='discuss-topic'){
+      compareLiveRoutes(
+        'Discuss this topic from two model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
+        local,
+        {mode:'best-answer'}
+      );
+      return true;
+    }
+    return false;
+  }
+
   function handleMenuAction(action){
     const actionId=String(action||'');
     if(actionId.startsWith('set-privacy-mode:')){
@@ -1859,6 +1913,9 @@
       closeMenus();
       checkLocalModels().catch(()=>{});
       return true;
+    }
+    if(action==='compare-live'||action==='best-answer-live'||action==='discuss-topic'){
+      return runTwoModelTool(action);
     }
     if(action==='new-chat'){
       closeMenus();
