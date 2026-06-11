@@ -1469,15 +1469,8 @@
 
   function renderAddMenu(){
     const menu=menuEl('add');
-    const compareModel=bestLocalModel();
-    const compareAction=compareModel?(
-      menuButton('best-answer-live','Best Answer','Ask Supergenious and '+compareModel.label+', then synthesize one answer.',{className:'p0-featured-action',badge:'2 routes'})+
-      menuButton('compare-live','Compare answers','Show both answers side by side.')+
-      menuSeparator()
-    ):'';
     menu.innerHTML=''+
       menuTitle('Tools')+
-      compareAction+
       menuButton('connect-local','Add model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('prompt-presets','Prompts','Use or save starters in this browser.')+
@@ -1638,16 +1631,6 @@
       routeStatus('Checking this Mac for local models...','hosted');
       closeMenus();
       checkLocalModels().catch(()=>{});
-      return true;
-    }
-    if(action==='compare-live'){
-      closeMenus();
-      compareLiveRoutes('',null,{mode:'compare'});
-      return true;
-    }
-    if(action==='best-answer-live'){
-      closeMenus();
-      compareLiveRoutes('',null,{mode:'best-answer'});
       return true;
     }
     if(action==='new-chat'){
