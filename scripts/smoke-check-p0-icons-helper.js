@@ -15,7 +15,7 @@ function fail(message) {
   process.exit(1);
 }
 
-if (!helper.includes("version='20260606-b1-06-p0-icons-v1'")) {
+if (!helper.includes("version='20260611-custom-toolbar-icons-v1'")) {
   fail('P0 icons helper version must be explicit.');
 }
 if (!helper.includes('p0-icon-shield') || !helper.includes('p0-icon-mic')) {
@@ -27,13 +27,13 @@ if (!shell.includes('const P0_ICONS=window.MimirP0Icons||{};')) {
 if (shell.includes('<svg class="p0-icon')) {
   fail('P0 shell must not own inline SVG icon markup.');
 }
-if (!html.includes('p0-icons.js?v=20260606-b1-06-p0-icons-v1')) {
+if (!html.includes('p0-icons.js?v=20260611-custom-toolbar-icons-v1')) {
   fail('Public MMIR shell must load p0-icons.js with a cache-busted version.');
 }
-if (html.indexOf('p0-icons.js?v=20260606-b1-06-p0-icons-v1') > html.indexOf('p0-chat-shell.js?v=')) {
+if (html.indexOf('p0-icons.js?v=20260611-custom-toolbar-icons-v1') > html.indexOf('p0-chat-shell.js?v=')) {
   fail('P0 icons helper must load before the P0 shell.');
 }
-if (!manifest.includes('"p0-icons.js": "20260606-b1-06-p0-icons-v1"')) {
+if (!manifest.includes('"p0-icons.js": "20260611-custom-toolbar-icons-v1"')) {
   fail('Asset manifest must track p0-icons.js.');
 }
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-icons-helper.js')) {
@@ -57,7 +57,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(helper, context, { filename: 'p0-icons.js' });
 const api = context.window.MimirP0Icons;
-if (!api || api.version !== '20260606-b1-06-p0-icons-v1') fail('P0 icons helper must register on window.');
+if (!api || api.version !== '20260611-custom-toolbar-icons-v1') fail('P0 icons helper must register on window.');
 if (!api.shield.includes('p0-icon-shield') || !api.mic.includes('p0-icon-mic')) fail('P0 icons helper API must expose shield and mic.');
 if (events[0]?.type !== 'mimir-p0-icons-ready') fail('P0 icons helper must emit readiness evidence.');
 
