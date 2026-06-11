@@ -1,0 +1,123 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import vm from 'node:vm';
+
+const root = process.cwd();
+const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
+const storagePath = resolve(root, 'public/apps/mimir-chat-portal/p0-storage.js');
+const routeReceiptsPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-receipts.js');
+const routeBenchmarksPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-benchmarks.js');
+const historyPath = resolve(root, 'public/apps/mimir-chat-portal/p0-history.js');
+const runtime = readFileSync(runtimePath, 'utf8');
+const storageHelper = readFileSync(storagePath, 'utf8');
+const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
+const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
+const historyHelper = readFileSync(historyPath, 'utf8');
+const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
+const exportBlock = "  globalThis.__p0SubtleStatusTest={state,renderMicroStatus,compactStatusText,answerStatus,routeScore,routeMicroStatus,recordRouteBenchmark,effectiveModelScore};";
+
+if (!runtime.includes(bootBlock)) {
+  throw new Error('P0 subtle status smoke cannot find boot block.');
+}
+
+const storage = new Map();
+const context = {
+  console,
+  URL,
+  URLSearchParams,
+  setTimeout,
+  clearTimeout,
+  setInterval,
+  clearInterval,
+  performance: { now: () => 0 },
+  location: { href: 'https://mmir.ai/mmir.html', hash: '', search: '' },
+  document: { readyState: 'loading', addEventListener() {} },
+  localStorage: {
+    getItem: (key) => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, String(value)),
+    removeItem: (key) => storage.delete(key)
+  }
+};
+context.window = context;
+context.globalThis = context;
+
+vm.createContext(context);
+vm.runInContext(storageHelper, context, { filename: storagePath });
+vm.runInContext(routeReceiptsHelper, context, { filename: routeReceiptsPath });
+vm.runInContext(routeBenchmarksHelper, context, { filename: routeBenchmarksPath });
+vm.runInContext(historyHelper, context, { filename: historyPath });
+vm.runInContext(runtime.replace(bootBlock, exportBlock), context, { filename: runtimePath });
+
+const testApi = context.__p0SubtleStatusTest;
+if (!testApi) throw new Error('P0 subtle status smoke did not expose test API.');
+
+function fail(message) {
+  throw new Error(message);
+}
+
+function assertIncludes(actual, needle, message) {
+  if (!String(actual).includes(needle)) fail(`${message}: missing ${needle}`);
+}
+
+function assertExcludes(actual, needle, message) {
+  if (String(actual).includes(needle)) fail(`${message}: should not include ${needle}`);
+}
+
+function fakeElement() {
+  return {
+    attrs: {},
+    dataset: {},
+    title: '',
+    innerHTML: '',
+    setAttribute(name, value) {
+      this.attrs[name] = String(value);
+    }
+  };
+}
+
+const hosted = testApi.state.models[0];
+const hostedScore = testApi.routeScore(
+  hosted,
+  'Who is president of USA?',
+  'Donald J. Trump is the current president of the United States.',
+  746
+);
+const topStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore), 6);
+assertIncludes(topStatus, 'Supergeni answered in 746ms', 'Top-right green status must keep answer latency visible.');
+assertIncludes(topStatus, 'Free', 'Top-right green status must keep route cost class visible as text, not a chip.');
+assertIncludes(topStatus, 'api.mmir.ai', 'Top-right green status must keep the active route visible as text.');
+assertIncludes(topStatus, 'Score ', 'Top-right green status must keep route score visible.');
+assertExcludes(topStatus, 'Supergenious', 'Public status text must use Supergeni branding.');
+
+const bestAnswerEl = fakeElement();
+testApi.renderMicroStatus(
+  bestAnswerEl,
+  'Supergeni · Free · api.mmir.ai · Best answer synthesis · No paid route · api.mmir.ai/routing/score · Winner: Supergeni · API score 84 · complete answer · hosted default route · acceptable latency · 746ms',
+  'hosted'
+);
+assertIncludes(bestAnswerEl.innerHTML, 'Supergeni', 'Under-chat green micro-status must keep the active route label.');
+assertIncludes(bestAnswerEl.innerHTML, 'Free', 'Under-chat green micro-status must keep Free as subtle text.');
+assertIncludes(bestAnswerEl.innerHTML, 'api.mmir.ai', 'Under-chat green micro-status must keep API route text.');
+assertIncludes(bestAnswerEl.innerHTML, 'API score 84', 'Under-chat green micro-status must keep score evidence.');
+assertIncludes(bestAnswerEl.innerHTML, '746ms', 'Under-chat green micro-status must keep answer latency evidence.');
+assertExcludes(bestAnswerEl.innerHTML, 'Winner:', 'Under-chat green micro-status must not show winner clutter.');
+assertIncludes(bestAnswerEl.attrs['aria-label'], 'No paid route', 'Full route receipt must remain available through aria-label/title even when visible text is compact.');
+assertIncludes(bestAnswerEl.attrs['aria-label'], 'Winner: Supergeni', 'Full route receipt must keep winner data inspectable outside visible text.');
+
+const localEl = fakeElement();
+testApi.renderMicroStatus(
+  localEl,
+  'Local node attached · 5 models · Private · This Mac · Score 82 · avg 650ms',
+  'local'
+);
+assertIncludes(localEl.innerHTML, 'Local node ready', 'Local attach status must be condensed, not repeated as a large chip.');
+assertIncludes(localEl.innerHTML, '5 models', 'Local attach status must keep model count in subtle text.');
+assertIncludes(localEl.innerHTML, 'Private', 'Local attach status must keep privacy state in subtle text.');
+assertIncludes(localEl.innerHTML, 'Score 82', 'Local attach status must keep route score in subtle text.');
+assertIncludes(localEl.innerHTML, 'avg 650ms', 'Local attach status must keep measured latency in subtle text.');
+
+testApi.recordRouteBenchmark(hosted, { score: 84, elapsedMs: 746, answer_class: 'complete', latency_class: 'responsive' });
+assertIncludes(testApi.routeMicroStatus(hosted), 'Score ', 'Route micro-status helper must preserve effective score.');
+assertIncludes(testApi.routeMicroStatus(hosted), 'avg 746ms', 'Route micro-status helper must preserve benchmark latency.');
+
+console.log('P0 subtle status smoke passed.');
