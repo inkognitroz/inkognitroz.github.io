@@ -15,6 +15,8 @@
   const localHeaders=P0_ROUTE_ADAPTERS.localHeaders;
   const HISTORY_KEY='mmir-p0-chat-history-v1';
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
+  const HISTORY_SESSION_KEY='mmir-p0-chat-history-qa-session-v1';
+  const HISTORY_SESSION_SCHEMA_KEY='mmir-p0-chat-history-qa-session-schema';
   const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const ACTIVE_MODEL_KEY='mmir-p0-active-model-id-v1';
@@ -42,6 +44,8 @@
   const readStorageString=P0_STORAGE.readString;
   const writeStorageString=P0_STORAGE.writeString;
   const ensureStorageSchema=P0_STORAGE.ensureSchema;
+  const historySessionMode=Boolean(typeof P0_HISTORY.qaSessionEnabled==='function'&&P0_HISTORY.qaSessionEnabled(window.location?.search||''));
+  window.__MimirP0HistorySessionMode=historySessionMode;
   const DEFAULT_PROMPT_PRESETS=[
     {
       id:'quick-answer',
@@ -116,9 +120,71 @@
   let activeChatController=null;
   let stopRequested=false;
 
+  function readSessionJson(key,fallback){
+    try{
+      const value=JSON.parse(sessionStorage.getItem(key)||'null');
+      return value==null?fallback:value;
+    }catch(error){
+      return fallback;
+    }
+  }
+
+  function writeSessionJson(key,value){
+    try{
+      sessionStorage.setItem(key,JSON.stringify(value));
+      return true;
+    }catch(error){
+      return false;
+    }
+  }
+
+  function writeSessionString(key,value){
+    try{
+      sessionStorage.setItem(key,String(value));
+      return true;
+    }catch(error){
+      return false;
+    }
+  }
+
+  function removeSessionKey(key){
+    try{
+      sessionStorage.removeItem(key);
+      return true;
+    }catch(error){
+      return false;
+    }
+  }
+
+  function ensureHistorySchema(){
+    if(!historySessionMode)return ensureStorageSchema(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA,[HISTORY_KEY]);
+    try{
+      if(sessionStorage.getItem(HISTORY_SESSION_SCHEMA_KEY)===HISTORY_SCHEMA)return true;
+      removeSessionKey(HISTORY_SESSION_KEY);
+      writeSessionString(HISTORY_SESSION_SCHEMA_KEY,HISTORY_SCHEMA);
+      return false;
+    }catch(error){
+      return false;
+    }
+  }
+
+  function readHistoryJson(){
+    return historySessionMode?readSessionJson(HISTORY_SESSION_KEY,[]):readJson(HISTORY_KEY,[]);
+  }
+
+  function writeHistoryJson(messages){
+    return historySessionMode?writeSessionJson(HISTORY_SESSION_KEY,messages):writeJson(HISTORY_KEY,messages);
+  }
+
+  function writeHistorySchema(){
+    return historySessionMode
+      ? writeSessionString(HISTORY_SESSION_SCHEMA_KEY,HISTORY_SCHEMA)
+      : writeStorageString(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);
+  }
+
   function initialMessages(){
-    if(!ensureStorageSchema(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA,[HISTORY_KEY]))return [];
-    const raw=readJson(HISTORY_KEY,[]);
+    if(!ensureHistorySchema())return [];
+    const raw=readHistoryJson();
     const clean=raw
       .filter(validMessage)
       .filter(message=>!staleFailureMessage(message))
@@ -128,7 +194,7 @@
         ...message,
         id:message.id||makeMessageId()
       }));
-    if(clean.length!==raw.length||clean.some((message,index)=>message.id!==raw[index]?.id))writeJson(HISTORY_KEY,clean);
+    if(clean.length!==raw.length||clean.some((message,index)=>message.id!==raw[index]?.id))writeHistoryJson(clean);
     return clean;
   }
 
@@ -1802,8 +1868,8 @@
   }
 
   function saveHistory(){
-    writeStorageString(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);
-    writeJson(HISTORY_KEY,state.messages.slice(-MAX_HISTORY));
+    writeHistorySchema();
+    writeHistoryJson(state.messages.slice(-MAX_HISTORY));
   }
 
   function append(role,content,label,receipt,meta={}){
