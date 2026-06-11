@@ -158,6 +158,8 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   display: grid;
   gap: 6px;
   max-width: min(760px, 100%);
+  outline: none;
+  position: relative;
 }
 
 .p0-message-user {
@@ -242,8 +244,26 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-top: 2px;
-  opacity: 0.74;
+  margin-top: 0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.16s ease, transform 0.16s ease, max-height 0.16s ease, margin-top 0.16s ease;
+}
+
+.p0-message:hover .p0-message-actions,
+.p0-message:focus .p0-message-actions,
+.p0-message:focus-within .p0-message-actions,
+.p0-message[data-actions-open="true"] .p0-message-actions,
+.p0-message-actions[data-has-status="true"] {
+  margin-top: 4px;
+  max-height: 34px;
+  opacity: 0.82;
+  overflow: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .p0-message-actions button {
@@ -255,10 +275,10 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 650;
-  min-height: 28px;
-  padding: 0 8px;
+  min-height: 24px;
+  padding: 0 6px;
 }
 
 .p0-message-actions button:hover,

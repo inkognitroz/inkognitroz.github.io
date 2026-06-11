@@ -1192,6 +1192,35 @@
     const mic=document.getElementById('p0-mic');
     updateVoiceButtonState(mic);
     mic.addEventListener('click',startVoice);
+    document.addEventListener('focusin',(event)=>{
+      const message=event.target.closest?.('.p0-message');
+      if(message)message.dataset.actionsOpen='true';
+    });
+    document.addEventListener('focusout',(event)=>{
+      const message=event.target.closest?.('.p0-message');
+      if(!message)return;
+      const next=event.relatedTarget;
+      if(next&&message.contains(next))return;
+      window.setTimeout(()=>{
+        if(document.activeElement&&message.contains(document.activeElement))return;
+        const actions=message.querySelector('.p0-message-actions');
+        if(actions?.dataset.hasStatus==='true')return;
+        delete message.dataset.actionsOpen;
+      },0);
+    });
+    document.addEventListener('pointerover',(event)=>{
+      const message=event.target.closest?.('.p0-message');
+      if(message)message.dataset.actionsOpen='true';
+    });
+    document.addEventListener('pointerout',(event)=>{
+      const message=event.target.closest?.('.p0-message');
+      if(!message)return;
+      const next=event.relatedTarget;
+      if(next&&message.contains(next))return;
+      const actions=message.querySelector('.p0-message-actions');
+      if(actions?.dataset.hasStatus==='true'||message.contains(document.activeElement))return;
+      delete message.dataset.actionsOpen;
+    });
     document.addEventListener('click',(event)=>{
       const copyButton=event.target.closest('[data-p0-copy-command]');
       if(copyButton){
@@ -1651,10 +1680,10 @@
   function renderMessageActions(message){
     if(!answerActionsAllowed(message))return '';
     const id=safeAttr(message.id||'');
-    return '<div class="p0-message-actions" aria-label="Answer actions">'+
-      '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'">Copy</button>'+
-      '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'">Retry</button>'+
-      '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'">Share safe</button>'+
+    return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
+      '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
+      '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
+      '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'" aria-label="Copy safe share draft">Share safe</button>'+
       '<span id="p0-action-status-'+id+'" class="p0-message-action-status" aria-live="polite"></span>'+
     '</div>';
   }
@@ -1664,6 +1693,8 @@
     if(el){
       el.textContent=message||'';
       el.dataset.state=stateValue;
+      const actions=el.closest('.p0-message-actions');
+      if(actions)actions.dataset.hasStatus=message?'true':'false';
     }
     if(message)status(message,stateValue==='error'?'error':'ready');
   }
@@ -1738,14 +1769,15 @@
       root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergenious answers now. Use + to add local models and let MMIR route more intelligence into one chat.</p></div>';
       return;
     }
-    root.innerHTML=state.messages.map(message=>(
-      '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'">'+
+    root.innerHTML=state.messages.map(message=>{
+      const focusAttr=answerActionsAllowed(message)?' tabindex="0"':'';
+      return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
         renderReceipt(message.receipt)+
         '<div class="p0-message-body">'+paragraphs(message.content)+renderMessageTools(message)+'</div>'+
         renderMessageActions(message)+
-      '</article>'
-    )).join('');
+      '</article>';
+    }).join('');
     requestAnimationFrame(()=>{root.scrollTop=root.scrollHeight;});
   }
 
