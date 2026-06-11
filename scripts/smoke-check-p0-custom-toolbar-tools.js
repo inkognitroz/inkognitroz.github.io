@@ -41,6 +41,7 @@ const updateSendControl = functionSource('updateSendControl', 'beginResponse');
 
 requireIncludes(shell, "const TOOLBAR_TOOLS_KEY='mmir-p0-toolbar-tools-v1'", 'Pinned toolbar tools must have a browser-local storage key.');
 requireIncludes(shell, "const ANSWER_STYLE_KEY='mmir-p0-answer-style-v1'", 'Answer style must have a browser-local storage key.');
+requireIncludes(shell, "const ROLE_PROFILE_KEY='mmir-p0-role-profile-v1'", 'Role profiles must have a browser-local storage key.');
 requireIncludes(shell, "const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1'", 'Memory must have an explicit browser-local snapshot key.');
 requireIncludes(installShell, 'id="p0-toolbar-tools"', 'Default toolbar must include an empty pinned-tool slot.');
 forbidIncludes(installShell, 'data-p0-toolbar-tool', 'Default toolbar must not ship optional tools as visible buttons.');
@@ -54,8 +55,14 @@ requireIncludes(shell, "id:'memory'", '+ menu must include the memory tool.');
 requireIncludes(shell, "id:'stop'", '+ menu must include the explicit stop tool.');
 requireIncludes(shell, "id:'fast-answer'", '+ menu must include the lightning fast-answer tool.');
 requireIncludes(renderAddMenu, "menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())", '+ menu must expose answer style without adding a toolbar button.');
+requireIncludes(renderAddMenu, "menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())", '+ menu must expose role profiles without adding a toolbar button.');
 requireIncludes(handleMenuAction, "action==='cycle-answer-style'", 'Menu actions must handle answer style cycling.');
+requireIncludes(handleMenuAction, "action==='role-profile-menu'", 'Menu actions must open role profile selection.');
+requireIncludes(handleMenuAction, "actionId.startsWith('set-role-profile:')", 'Menu actions must handle role profile selection.');
 requireIncludes(shell, 'function answerStyleInstruction(style=answerStyle())', 'Answer style must influence hosted and local model prompts.');
+requireIncludes(shell, 'function roleProfileInstruction()', 'Role profiles must influence hosted and local model prompts.');
+requireIncludes(shell, "label:'Fact analyst'", 'Role profiles must include a factual presence preset.');
+requireIncludes(shell, "label:'Playful'", 'Role profiles must include a playful presence preset without adding toolbar clutter.');
 requireIncludes(shell, 'max_tokens:answerTokenBudget()', 'Answer style must cap response size instead of only changing visible labels.');
 requireIncludes(renderPinnedToolbarTools, 'data-p0-toolbar-tool', 'Pinned tools must render as toolbar actions only after user opt-in.');
 requireIncludes(handleMenuAction, "actionId.startsWith('pin-toolbar-tool:')", 'Menu actions must handle toolbar pinning.');
@@ -75,10 +82,10 @@ requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion b
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
 requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260611-answer-style-v1', 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260612-role-profile-v1', 'Public page must cache-bust the toolbar runtime.');
 requireIncludes(html, 'p0-chat-shell.css?v=20260611-lightning-fast-answer-v1', 'Public page must cache-bust the toolbar CSS.');
 requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260611-answer-style-v1"', 'Asset manifest must track toolbar runtime version.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260612-role-profile-v1"', 'Asset manifest must track toolbar runtime version.');
 requireIncludes(manifest, '"p0-chat-shell.css": "20260611-lightning-fast-answer-v1"', 'Asset manifest must track toolbar CSS version.');
 requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
 
