@@ -31,6 +31,7 @@
   const PROMPT_CATALOG_KEY='mmir-p0-prompt-catalog-v1';
   const TOOLBAR_TOOLS_KEY='mmir-p0-toolbar-tools-v1';
   const ANSWER_STYLE_KEY='mmir-p0-answer-style-v1';
+  const ROLE_PROFILE_KEY='mmir-p0-role-profile-v1';
   const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
@@ -81,6 +82,44 @@
       title:'Research plan',
       detail:'Turn a topic into a focused plan.',
       prompt_template:'Make a concise research plan for: '
+    }
+  ];
+  const ROLE_PROFILES=[
+    {
+      id:'default',
+      label:'Default',
+      detail:'Balanced Supergeni presence.',
+      instruction:'Use the standard Supergeni presence: helpful, calm, direct and honest.'
+    },
+    {
+      id:'concise',
+      label:'Concise operator',
+      detail:'Short, concrete and action-oriented.',
+      instruction:'Use a concise operator presence: cut filler, lead with the answer and keep next steps practical.'
+    },
+    {
+      id:'fact',
+      label:'Fact analyst',
+      detail:'Careful, factual and uncertainty-aware.',
+      instruction:'Use a fact analyst presence: separate facts from uncertainty, avoid overclaiming and flag when verification is needed.'
+    },
+    {
+      id:'coach',
+      label:'Friendly coach',
+      detail:'Supportive, simple and practical.',
+      instruction:'Use a friendly coach presence: explain simply, make the user feel capable and keep advice actionable.'
+    },
+    {
+      id:'creative',
+      label:'Creative partner',
+      detail:'Original ideas without losing usefulness.',
+      instruction:'Use a creative partner presence: offer fresh angles and useful options while staying grounded.'
+    },
+    {
+      id:'playful',
+      label:'Playful',
+      detail:'Light, witty and still useful.',
+      instruction:'Use a playful presence: be light and witty, but keep the answer useful and avoid derailing the task.'
     }
   ];
 
@@ -143,6 +182,40 @@
     if(value==='detailed')return 1200;
     if(value==='precise')return 650;
     return 450;
+  }
+
+  function normalizeRoleProfileId(value){
+    const id=String(value||'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-');
+    return ROLE_PROFILES.some(profile=>profile.id===id)?id:'default';
+  }
+
+  function roleProfileById(id){
+    const normalized=normalizeRoleProfileId(id);
+    return ROLE_PROFILES.find(profile=>profile.id===normalized)||ROLE_PROFILES[0];
+  }
+
+  function readRoleProfileId(){
+    return normalizeRoleProfileId(readStorageString(ROLE_PROFILE_KEY,'default'));
+  }
+
+  function writeRoleProfileId(id){
+    writeStorageString(ROLE_PROFILE_KEY,normalizeRoleProfileId(id));
+  }
+
+  function roleProfile(){
+    return roleProfileById(state.roleProfileId);
+  }
+
+  function roleProfileLabel(id=state.roleProfileId){
+    return roleProfileById(id).label;
+  }
+
+  function roleProfileDetail(id=state.roleProfileId){
+    return roleProfileById(id).detail;
+  }
+
+  function roleProfileInstruction(){
+    return roleProfile().instruction;
   }
 
   function normalizePrivacyMode(mode){
@@ -220,6 +293,7 @@
     privacyMode:readPrivacyMode(),
     factGuard:readBooleanPreference(FACT_GUARD_KEY,true),
     answerStyle:readAnswerStyle(),
+    roleProfileId:readRoleProfileId(),
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
   };
   let activeChatController=null;
@@ -1779,6 +1853,7 @@
       menuButton('connect-local','Add model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
+      menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
       menuSeparator()+
       menuSection('Add to toolbar')+
       toolbarTools+
@@ -1807,6 +1882,21 @@
       menuSection('Starters')+
       presetButtons+
       (savedButtons?menuSection('Saved in this browser')+savedButtons:'');
+  }
+
+  function renderRoleProfileMenu(){
+    const menu=menuEl('add');
+    if(!menu)return;
+    const selected=normalizeRoleProfileId(state.roleProfileId);
+    const buttons=ROLE_PROFILES.map(profile=>
+      menuButton('set-role-profile:'+profile.id,profile.label,profile.detail,{badge:profile.id===selected?'Selected':''})
+    ).join('');
+    menu.innerHTML=''+
+      menuTitle('Role profile')+
+      menuButton('add-menu-main','Back','Return to Add.')+
+      '<div class="p0-menu-note">Role profiles are personal presence instructions sent with the prompt. They stay in this browser.</div>'+
+      menuSeparator()+
+      buttons;
   }
 
   function renderModelMenu(){
@@ -2093,6 +2183,7 @@
       privacyMode:privacyMode(),
       factGuard:factGuardActive(),
       answerStyle:answerStyle(),
+      roleProfileId:normalizeRoleProfileId(state.roleProfileId),
       pinnedTools:pinnedToolbarToolIds(),
       messageCount:state.messages.length,
       messages:saveContent?state.messages.slice(-MAX_HISTORY).map(message=>({
@@ -2184,6 +2275,14 @@
       cycleAnswerStyle();
       return true;
     }
+    if(action==='role-profile-menu'){
+      renderRoleProfileMenu();
+      return true;
+    }
+    if(actionId.startsWith('set-role-profile:')){
+      setRoleProfile(actionId.slice('set-role-profile:'.length));
+      return true;
+    }
     if(action==='cycle-model-filter'){
       cycleModelFilter();
       return true;
@@ -2270,6 +2369,15 @@
     renderAddMenu();
     status('Answer style: '+answerStyleLabel(next)+'.','ready');
     routeStatus(answerStyleLabel(next)+' answers · browser local preference','hosted');
+  }
+
+  function setRoleProfile(id){
+    const next=normalizeRoleProfileId(id);
+    state.roleProfileId=next;
+    writeRoleProfileId(next);
+    renderRoleProfileMenu();
+    status('Role profile: '+roleProfileLabel(next)+'.','ready');
+    routeStatus('Role profile · '+roleProfileLabel(next)+' · browser local preference','hosted');
   }
 
   async function saveCurrentPromptPreset(){
@@ -2559,7 +2667,7 @@
     return {
       model:'mmir-supergenius',
       messages:[
-        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.'},
+        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.'},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -2574,7 +2682,7 @@
     return {
       model:model.model,
       messages:[
-        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly. '+answerStyleInstruction()+factGuard},
+        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -2744,7 +2852,8 @@
     const routePrompt=fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
-    const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',smart.reason].filter(Boolean);
+    const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
+    const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',rolePart,smart.reason].filter(Boolean);
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
     status(routePrefix+model.label+' is answering...','ready');
     routeStatus(routePrefix+receipt.text,receipt.state);

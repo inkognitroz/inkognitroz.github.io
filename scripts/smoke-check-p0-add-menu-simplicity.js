@@ -71,6 +71,16 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
+  "menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())",
+  '+ menu must expose answer style without adding a toolbar button.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())",
+  '+ menu must expose role profiles without adding a toolbar button.'
+);
+requireIncludes(
+  renderAddMenu,
   'pool.compareReady',
   '+ menu must only reveal two-model tools after local discovery.'
 );
@@ -96,12 +106,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260611-answer-style-v1',
+  'p0-chat-shell.js?v=20260612-role-profile-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260611-answer-style-v1"',
+  '"p0-chat-shell.js": "20260612-role-profile-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

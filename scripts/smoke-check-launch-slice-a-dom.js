@@ -175,6 +175,8 @@ requireIncludes(files.p0RouteReceipts, "'Supergeni · Free · '+String(apiLabel|
 requireIncludes(files.p0RouteReceipts, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'function answerStyleInstruction(style=answerStyle())', 'P0 chat must keep response style configurable.');
 requireIncludes(files.p0Runtime, 'Keep route, source, privacy and no-paid-route proof in metadata', 'P0 chat must keep route/source/privacy proof out of the main answer.');
+requireIncludes(files.p0Runtime, 'function roleProfileInstruction()', 'P0 chat must support browser-local role profiles.');
+requireIncludes(files.p0Runtime, "menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())", 'P0 role profiles must live under the compact Add menu.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
 requireIncludes(files.p0Runtime, 'function compareLiveRoutes(comparePrompt', 'P0 compare must stay implemented behind prompt intent.');
 requireIncludes(files.p0Runtime, 'pool.compareReady', 'P0 compare tools must be hidden until a second live route exists.');
