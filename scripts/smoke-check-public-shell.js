@@ -770,6 +770,11 @@ requireText(
   ".p0-shield[data-state=\"local\"]",
   "P0 privacy shield must turn green when local connector route is active.",
 );
+forbidText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-shield[data-state=\"local\"],\n.p0-shield[data-state=\"private\"],\n.p0-shield[data-state=\"superprivate\"] {\n  background:",
+  "P0 privacy shield state must color only the icon, not the button background.",
+);
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
   ".p0-shield[data-state=\"superprivate\"]",
