@@ -22,6 +22,8 @@
   const ACTIVE_MODEL_KEY='mmir-p0-active-model-id-v1';
   const PINNED_ROUTES_KEY='mmir-p0-pinned-routes-v1';
   const MODEL_FILTER_KEY='mmir-p0-model-filter-v1';
+  const PRIVACY_MODE_KEY='mmir-p0-private-mode-v1';
+  const FACT_GUARD_KEY='mmir-p0-fact-guard-v1';
   const ROUTE_BENCHMARK_KEY='mmir-p0-route-benchmarks-v1';
   const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
   const PROMPT_PRESETS_KEY='mmir-p0-prompt-presets-v1';
@@ -77,6 +79,25 @@
     return P0_ROUTE_RECEIPTS.hostedRouteLabel(API_LABEL);
   }
 
+  function readBooleanPreference(key,fallback){
+    const value=String(readStorageString(key,'')).trim().toLowerCase();
+    if(value==='on'||value==='true'||value==='1')return true;
+    if(value==='off'||value==='false'||value==='0')return false;
+    return fallback;
+  }
+
+  function writeBooleanPreference(key,value){
+    writeStorageString(key,value?'on':'off');
+  }
+
+  function privateModeActive(){
+    return state.privateMode===true;
+  }
+
+  function factGuardActive(){
+    return state.factGuard!==false;
+  }
+
   function normalizePromptPreset(item){
     const id=String(item?.id||item?.name||'').trim().toLowerCase().replace(/[^a-z0-9:_-]+/g,'-').slice(0,64);
     const title=String(item?.title||item?.name||id||'Prompt').trim().slice(0,80);
@@ -115,6 +136,8 @@
     localChecked:false,
     localError:'',
     localHardware:null,
+    privateMode:readBooleanPreference(PRIVACY_MODE_KEY,false),
+    factGuard:readBooleanPreference(FACT_GUARD_KEY,true),
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
   };
   let activeChatController=null;
@@ -838,8 +861,8 @@
   function routeScore(model,prompt,answer,elapsedMs,failed=false,mode='single'){
     const route=model?.route||'hosted';
     const text=String(answer||'').trim();
-    const publicFact=wantsPublicFactRoute(prompt);
-    const privateIntent=wantsPrivateRoute(prompt);
+    const publicFact=factGuardActive()&&wantsPublicFactRoute(prompt);
+    const privateIntent=privateModeActive()||wantsPrivateRoute(prompt);
     const reasons=[];
     let score=50;
     const latency_target_ms=latencyTargetMs(model,mode);
@@ -1141,7 +1164,7 @@
   }
 
   function routeReason(reason,prompt,model){
-    if(model?.route==='local'&&wantsPublicFactRoute(prompt)){
+    if(factGuardActive()&&model?.route==='local'&&wantsPublicFactRoute(prompt)){
       return 'Local-only: public facts may be outdated';
     }
     return reason||'';
@@ -1150,10 +1173,17 @@
   function smartDecision(prompt){
     const local=bestLocalModel();
     const active=activeModel();
+    if(privateModeActive()){
+      if(local||active.route==='local'){
+        const model=local||active;
+        return {mode:'single',model,reason:routeReason('Private mode',prompt,model),prompt:cleanSmartPrompt(prompt)||prompt};
+      }
+      return {mode:'private-unavailable',prompt:cleanSmartPrompt(prompt)||prompt};
+    }
     if(local&&wantsCompareRoute(prompt)){
       return {mode:'compare',model:local,prompt:cleanSmartPrompt(prompt)||prompt};
     }
-    if(active.route==='local'&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
+    if(factGuardActive()&&active.route==='local'&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
       return {mode:'single',model:defaultHostedModel(),reason:'Quality guard: public facts'};
     }
     if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
@@ -1616,6 +1646,39 @@
       '<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div>';
   }
 
+  function privateModeDetail(){
+    if(privateModeActive()){
+      return bestLocalModel()||activeModel().route==='local'
+        ? 'Local-only. Hosted fallback is blocked.'
+        : 'Local-only is on. Connect a local model before sending private prompts.';
+    }
+    return 'Standard mode. MMIR may use Supergeni unless your prompt asks for private/local.';
+  }
+
+  function factGuardDetail(){
+    return factGuardActive()
+      ? 'On. Current facts prefer verified/fresher routes and stale local facts are demoted.'
+      : 'Off. MMIR follows the selected route with fewer factuality checks.';
+  }
+
+  function setPrivateMode(enabled){
+    state.privateMode=Boolean(enabled);
+    writeBooleanPreference(PRIVACY_MODE_KEY,state.privateMode);
+    renderToolbar();
+    renderPrivacyMenu();
+    status(state.privateMode?'Private mode on.':'Private mode off.','ready');
+    routeStatus(state.privateMode?(bestLocalModel()?'Private mode':'Private mode needs local node'):'Standard mode',state.privateMode?(bestLocalModel()?'local':'error'):'hosted');
+  }
+
+  function setFactGuard(enabled){
+    state.factGuard=Boolean(enabled);
+    writeBooleanPreference(FACT_GUARD_KEY,state.factGuard);
+    renderToolbar();
+    renderPrivacyMenu();
+    status(state.factGuard?'Fact guard on.':'Fact guard off.','ready');
+    routeStatus(state.factGuard?'Fact guard on':'Fact guard off','hosted');
+  }
+
   function renderPrivacyMenu(){
     const model=activeModel();
     const menu=menuEl('privacy');
@@ -1623,7 +1686,10 @@
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     const receipt=routeReceipt(model);
     menu.innerHTML=''+
-      menuTitle('Privacy')+
+      menuTitle('Privacy & safety')+
+      menuButton('toggle-private-mode',privateModeActive()?'Private mode on':'Private mode off',privateModeDetail(),{badge:privateModeActive()?'On':'Off'})+
+      menuButton('toggle-fact-guard',factGuardActive()?'Fact guard on':'Fact guard off',factGuardDetail(),{badge:factGuardActive()?'On':'Off'})+
+      menuSeparator()+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
       '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';
@@ -1631,14 +1697,30 @@
 
   function renderToolbar(){
     const model=activeModel();
+    const local=bestLocalModel();
+    const displayModel=privateModeActive()&&local?local:model;
     const label=document.querySelector('#p0-model .p0-model-name');
     const input=document.getElementById('p0-input');
-    if(label)label.textContent=model.label;
-    if(input)input.placeholder='Message '+model.label+'...';
-    routeStatus(routeMicroStatus(model),routeReceipt(model).state);
+    if(label)label.textContent=displayModel.label;
+    if(input)input.placeholder='Message '+displayModel.label+'...';
+    if(privateModeActive()&&model.route!=='local'&&!local){
+      routeStatus('Private mode needs local node','error');
+    }else if(privateModeActive()){
+      routeStatus('Private mode','local');
+    }else{
+      routeStatus(routeMicroStatus(model),routeReceipt(model).state);
+    }
   }
 
   function handleMenuAction(action){
+    if(action==='toggle-private-mode'){
+      setPrivateMode(!privateModeActive());
+      return true;
+    }
+    if(action==='toggle-fact-guard'){
+      setFactGuard(!factGuardActive());
+      return true;
+    }
     if(action==='cycle-model-filter'){
       cycleModelFilter();
       return true;
@@ -1990,10 +2072,13 @@
   }
 
   function hostedPayload(prompt){
+    const factGuard=factGuardActive()
+      ? ' If current facts are uncertain, say you need verification instead of guessing.'
+      : '';
     return {
       model:'mmir-supergenius',
       messages:[
-        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. Keep answers short by default; expand only when the user asks. Do not turn ordinary chats into setup support unless asked.'},
+        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. Keep answers short by default; expand only when the user asks. Do not turn ordinary chats into setup support unless asked.'+factGuard},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -2003,7 +2088,7 @@
   }
 
   function localPayload(prompt,model){
-    const factGuard=wantsPublicFactRoute(prompt)?
+    const factGuard=factGuardActive()&&wantsPublicFactRoute(prompt)?
       ' Current or public factual questions may be stale in local models; say that you may be outdated instead of guessing if you are not certain.':'';
     return {
       model:model.model,
@@ -2037,6 +2122,7 @@
 
   function hostedFallbackAllowedForLocalFailure(originalPrompt,routePrompt){
     return !(
+      privateModeActive()||
       wantsPrivateRoute(originalPrompt)||
       wantsPrivateRoute(routePrompt)||
       localModelMentioned(originalPrompt)
@@ -2126,7 +2212,7 @@
       return;
     }
     const explicit=explicitMentionDecision(prompt);
-    if(explicit?.mode==='compare'){
+    if(explicit?.mode==='compare'&&!privateModeActive()){
       compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
       return;
     }
@@ -2136,7 +2222,29 @@
       input?.focus();
       return;
     }
-    const smart=explicit||smartDecision(prompt);
+    let smart=explicit||smartDecision(prompt);
+    if(privateModeActive()){
+      const local=bestLocalModel()||(smart.model?.route==='local'?smart.model:null);
+      smart=local
+        ? {mode:'single',model:local,reason:routeReason('Private mode',prompt,local),prompt:cleanSmartPrompt(prompt)||prompt}
+        : {mode:'private-unavailable',prompt:cleanSmartPrompt(prompt)||prompt};
+    }
+    if(smart.mode==='private-unavailable'){
+      closeMenus();
+      append('user',prompt,'You');
+      input.value='';
+      autosizeInput();
+      append(
+        'assistant',
+        'Private mode is on, but no local model is connected yet. Press + -> Add model, install the local connector, then press + -> Refresh models.',
+        'MMIR privacy guard',
+        'Private mode · hosted route blocked'
+      );
+      status('Private mode needs a local model.','error');
+      routeStatus('Private mode needs local node','error');
+      input?.focus();
+      return;
+    }
     if(smart.mode==='compare'){
       compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
       return;

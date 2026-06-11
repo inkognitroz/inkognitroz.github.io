@@ -265,7 +265,13 @@ async function checkViewport(browser, viewport) {
   layout = await pageLayout(page);
   assertMenuBounds(layout.privacyMenu, viewport, `${viewport.name} privacy`);
   assert(/privacy/i.test(layout.text), `${viewport.name}: privacy menu should open`);
+  assert(/Private mode/i.test(layout.text), `${viewport.name}: privacy menu should expose private mode`);
+  assert(/Fact guard/i.test(layout.text), `${viewport.name}: privacy menu should expose hallucination-prevention guard`);
   assert(/No paid route started/i.test(layout.text), `${viewport.name}: privacy menu should keep cost boundary visible`);
+  await page.locator('[data-p0-action="toggle-private-mode"]').click();
+  await page.waitForFunction(() => /Private mode needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.locator('[data-p0-action="toggle-private-mode"]').click();
+  await page.waitForFunction(() => !/Private mode needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
 
   await page.locator('#p0-model').click();
   await page.waitForSelector('#p0-model-menu:not([hidden])');

@@ -35,6 +35,10 @@ requireText(
   'P0 shell must centralize the local-failure hosted fallback privacy decision.',
 );
 requireText(
+  'privateModeActive()||',
+  'P0 shell must block hosted fallback when the user has turned on shield private mode.',
+);
+requireText(
   'wantsPrivateRoute(originalPrompt)||',
   'P0 shell must block hosted fallback when the original prompt asks for private/local handling.',
 );
