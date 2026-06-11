@@ -233,6 +233,8 @@ requireIncludes(files.p0Runtime, 'function routeRankMap(models=state.models)', '
 requireIncludes(files.p0RouteBenchmarks, 'function rankedModels(models)', 'P0 route benchmark helper must own benchmark-adjusted route ranking.');
 requireIncludes(files.p0RouteBenchmarks, 'const pinnedDelta=(routePinned(b)?1:0)-(routePinned(a)?1:0);', 'P0 route benchmark helper must keep pinned routes above unpinned routes.');
 requireIncludes(files.p0RouteBenchmarks, 'function routeRankState(model)', 'P0 route benchmark helper must expose discreet demotion state.');
+requireIncludes(files.p0RouteBenchmarks, 'function routeRankReasons(model)', 'P0 route benchmark helper must explain demotion with compact reason codes.');
+requireIncludes(files.p0Runtime, 'function routeRankSummary(model)', 'P0 shell must surface route demotion receipts without adding controls.');
 requireIncludes(files.p0Runtime, 'function compactModelBadges(model,bestLocal)', 'P0 model picker must keep benchmark evidence compact instead of rendering a score dashboard.');
 forbid(files.p0Runtime, /Rank #/, 'P0 model picker must not show rank numbers in the clean dropdown.');
 requireIncludes(files.p0Runtime, 'Demoted', 'P0 model picker may quietly demote weak or failed routes.');

@@ -352,9 +352,11 @@
   function rankedModels(models){return routeBenchmarks?.rankedModels(models)||((models||[]).slice());}
   function routeRankMap(models=state.models){return routeBenchmarks?.routeRankMap(models)||{};}
   function routeBenchmarkSummary(model){return routeBenchmarks?.routeBenchmarkSummary(model)||'';}
+  function routeRankSummary(model){return routeBenchmarks?.routeRankSummary(model)||'';}
 
   function routeMicroStatus(model=activeModel()){
     const receipt=routeReceipt(model);
+    const rankSummary=routeRankSummary(model);
     const benchmark=routeBenchmarkSummary(model)
       .split(' · ')
       .filter(part=>part&&!/^Score\s+/i.test(part))
@@ -363,6 +365,7 @@
       receipt.text,
       routePinned(model)?'Pinned':'',
       'Score '+effectiveModelScore(model),
+      rankSummary,
       ...benchmark,
       localTelemetrySummary(model?.routeTelemetry)
     ].filter(Boolean);
@@ -922,12 +925,13 @@
     const telemetry=localTelemetrySummary(model?.routeTelemetry);
     const privacy=model?.route==='local'?'Private · This Mac':'Free · '+API_LABEL;
     const score='Score '+effectiveModelScore(model);
+    const rankSummary=routeRankSummary(model);
     const samples=stats?.samples
       ? (stats.samples+' sample'+(stats.samples===1?'':'s'))
       : (model?.route==='local'?'not measured yet':'managed route');
     const pinned=routePinned(model)?'Pinned in this browser':'';
     const safe=model?.route==='local'?'no public Ollama port':'no browser secrets';
-    return [operational.label,privacy,score,telemetry,samples,pinned,safe].filter(Boolean).join(' · ');
+    return [operational.label,privacy,score,rankSummary,telemetry,samples,pinned,safe].filter(Boolean).join(' · ');
   }
 
   function compactModelBadges(model,bestLocal){
@@ -1510,9 +1514,10 @@
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
       const benchmark=routeBenchmarkSummary(model);
+      const rankSummary=routeRankSummary(model);
       const shortDetail=model.route==='local'
-        ? [routeOperationalHint(model),'Private · This Mac',benchmark].filter(Boolean).join(' · ')
-        : [routeOperationalHint(model),'Free · '+API_LABEL,benchmark].filter(Boolean).join(' · ');
+        ? [routeOperationalHint(model),rankSummary,'Private · This Mac',benchmark].filter(Boolean).join(' · ')
+        : [routeOperationalHint(model),rankSummary,'Free · '+API_LABEL,benchmark].filter(Boolean).join(' · ');
       return '<button type="button" data-model-id="'+safeText(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
     }).join('');
     const buttons=''+

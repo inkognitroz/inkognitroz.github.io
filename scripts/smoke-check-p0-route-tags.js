@@ -14,7 +14,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -144,6 +144,12 @@ assertEqual(testApi.bestLocalModel().id, gemma.id, 'Best local model must use be
 assertIncludes(testApi.routeBenchmarkSummary(gemma), 'avg 650ms', 'Route benchmark summary must expose measured latency');
 assertIncludes(testApi.routeMicroStatus(gemma), 'Score ', 'Route micro-status must expose effective route score in the compact composer line');
 assertIncludes(testApi.routeMicroStatus(gemma), 'avg 650ms', 'Route micro-status must expose measured route latency without opening a dashboard');
+assertEqual(testApi.routeRankState(qwenTiny), 'demoted', 'Route rank state must demote weak or slow routes.');
+assertIncludes(testApi.routeRankSummary(qwenTiny), 'Demoted', 'Demoted route summary must stay compact but explicit.');
+assertIncludes(testApi.routeRankSummary(qwenTiny), 'weak score', 'Demoted route summary must explain weak scores.');
+assertIncludes(testApi.routeRankSummary(qwenTiny), 'slow avg 3.6s', 'Demoted route summary must explain slow average latency.');
+assertIncludes(testApi.routeMicroStatus(qwenTiny), 'Demoted', 'Composer micro-status must surface demotion without adding buttons.');
+assertIncludes(testApi.routeMicroStatus(qwenTiny), 'weak score', 'Composer micro-status must keep the demotion reason visible.');
 if (testApi.effectiveModelScore(qwenTiny) >= testApi.effectiveModelScore(gemma)) {
   fail('Effective route score must keep slow/weak local model below stronger measured local model');
 }
