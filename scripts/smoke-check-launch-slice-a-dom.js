@@ -173,11 +173,10 @@ requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route
 requireIncludes(files.p0RouteReceipts, "'Supergenious · Free · '+String(apiLabel||'api.mmir.ai')", 'P0 hosted route receipt must stay visible to users.');
 requireIncludes(files.p0RouteReceipts, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
-requireIncludes(files.p0Runtime, "menuButton('compare-live'", 'P0 compare must be implemented as a gated toolbar action.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
-requireIncludes(files.p0Runtime, "menuButton('best-answer-live'", 'P0 Best Answer must be implemented as a gated toolbar action after real local discovery.');
-requireIncludes(files.p0Runtime, 'Best Answer', 'P0 Best Answer must be user-facing as the simple parallel-model action.');
-requireIncludes(files.p0Runtime, 'Compare answers', 'P0 compare must be user-facing as an answer comparison, not internal routing jargon.');
+requireIncludes(files.p0Runtime, 'function compareLiveRoutes(comparePrompt', 'P0 compare must stay implemented behind prompt intent.');
+forbid(files.p0Runtime, /menuButton\('compare-live'/, 'P0 compare must not add a toolbar/menu button.');
+forbid(files.p0Runtime, /menuButton\('best-answer-live'/, 'P0 Best Answer must not add a toolbar/menu button.');
 requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must show route score and response timing.');
 requireIncludes(files.p0Runtime, 'function scoreClassSummary(score)', 'P0 compare must show route answer/latency classes.');
 requireIncludes(files.p0Runtime, 'answer_class:found.answer_class', 'P0 compare must preserve API answer class metadata.');
@@ -190,7 +189,7 @@ requireIncludes(files.p0Runtime, 'API score ', 'P0 Best Answer receipts must sho
 requireIncludes(files.p0Runtime, 'function winningRoute(hostedModel,hostedScore,localModel,localScore)', 'P0 Best Answer must choose and explain a winner.');
 requireIncludes(files.p0Runtime, 'Winner:', 'P0 Best Answer receipts must show the winning route.');
 requireIncludes(files.p0Runtime, 'Score ', 'P0 Best Answer receipts must show route scores.');
-requireIncludes(files.p0Css, '.p0-featured-action', 'P0 compare action must be visually discoverable without exposing unfinished capabilities.');
+forbid(files.p0Css, /\.p0-featured-action/, 'P0 compare must not reserve special menu styling for removed compare buttons.');
 requireIncludes(files.p0Runtime, 'function smartDecision(prompt)', 'P0 shell must include smart route selection logic.');
 requireIncludes(files.p0Runtime, 'function wantsPrivateRoute(prompt)', 'P0 smart routing must detect private/local intent.');
 requireIncludes(files.p0Runtime, 'function wantsCompareRoute(prompt)', 'P0 smart routing must detect compare intent.');

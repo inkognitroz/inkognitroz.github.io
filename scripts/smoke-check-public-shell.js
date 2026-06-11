@@ -610,20 +610,20 @@ requireText(
   ".p0-menu-section",
   "P0 model picker must visually group recommended and private local models.",
 );
-requireText(
+forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Compare answers",
-  "P0 + menu must expose compare in user language after local discovery.",
+  "menuButton('compare-live'",
+  "P0 + menu must not expose a separate compare button.",
 );
-requireText(
+forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "menuButton('best-answer-live'",
-  "P0 + menu must expose Best Answer after local discovery.",
+  "P0 + menu must not expose a separate Best Answer button.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Best Answer",
-  "P0 + menu must expose the simple parallel-model synthesis action.",
+  "function compareLiveRoutes(comparePrompt",
+  "P0 compare must remain available through smart prompt routing.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -690,10 +690,10 @@ requireText(
   "Score ",
   "P0 Best Answer receipts must show route scores.",
 );
-requireText(
+forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
   ".p0-featured-action",
-  "P0 compare action must be visually discoverable when live.",
+  "P0 compare must not reserve special menu styling for removed compare buttons.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

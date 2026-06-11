@@ -40,26 +40,6 @@ const addMenu = functionBody(runtime, 'renderAddMenu');
 
 requireText(
   addMenu,
-  'const compareModel=bestLocalModel();',
-  'Add menu must decide Compare/Best Answer from the best proven local route'
-);
-requireText(
-  addMenu,
-  "compareModel?(",
-  'Compare/Best Answer actions must stay hidden until a local route exists'
-);
-requireText(
-  addMenu,
-  "menuButton('best-answer-live','Best Answer'",
-  'Add menu must expose one simple Best Answer action after local discovery'
-);
-requireText(
-  addMenu,
-  "menuButton('compare-live','Compare answers'",
-  'Add menu must expose one simple Compare answers action after local discovery'
-);
-requireText(
-  addMenu,
   "menuButton('connect-local','Add model'",
   'Add menu must expose local setup once as Add model'
 );
@@ -90,6 +70,21 @@ forbidText(
 );
 forbidText(
   addMenu,
+  "menuButton('best-answer-live'",
+  'Add menu must not add a Best Answer button; smart prompt text should trigger compare'
+);
+forbidText(
+  addMenu,
+  "menuButton('compare-live'",
+  'Add menu must not add a Compare button; smart prompt text should trigger compare'
+);
+forbidText(
+  addMenu,
+  'Compare answers',
+  'Add menu must avoid compare clutter in the compact toolbar menu'
+);
+forbidText(
+  addMenu,
   'Connect local model',
   'Add menu should use one user-facing Add model label instead of repeating local-connector wording'
 );
@@ -104,6 +99,16 @@ if (addModelCount !== 1) {
   fail(`Add menu should contain exactly one Add model action, found ${addModelCount}`);
 }
 
+requireText(
+  runtime,
+  'function compareLiveRoutes(comparePrompt',
+  'Compare flow must remain implemented behind prompt intent and explicit @model tags'
+);
+requireText(
+  runtime,
+  'function wantsCompareRoute(prompt)',
+  'Best Answer language must trigger compare without adding toolbar buttons'
+);
 requireText(
   runtime,
   "status(title+' is asking Supergenious and '+localModel.label+' in parallel...'",
@@ -149,10 +154,10 @@ requireText(
   '.p0-message-compare',
   'Compare answers must have a distinguishable but non-dashboard message style'
 );
-requireText(
+forbidText(
   css,
-  '.p0-menu .p0-featured-action',
-  'Best Answer action must have a focused menu treatment when live'
+  '.p0-featured-action',
+  'P0 compare must not reserve special menu styling for removed compare buttons'
 );
 forbidText(
   css,
