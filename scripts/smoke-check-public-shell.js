@@ -615,15 +615,25 @@ requireText(
   ".p0-menu-section",
   "P0 model picker must visually group recommended and private local models.",
 );
-forbidText(
+requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('compare-live'",
-  "P0 + menu must not expose a separate compare button.",
+  "pool.compareReady",
+  "P0 + menu must truth-gate two-model tools behind local discovery.",
 );
-forbidText(
+requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('best-answer-live'",
-  "P0 + menu must not expose a separate Best Answer button.",
+  "menuButton('compare-live','Compare answers'",
+  "P0 + menu must expose Compare answers after Supergeni plus a local model are ready.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "menuButton('best-answer-live','Best answer benchmark'",
+  "P0 + menu must expose Best Answer benchmark after two live routes are ready.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "menuButton('discuss-topic','Model discussion'",
+  "P0 + menu must expose model discussion after two live routes are ready.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

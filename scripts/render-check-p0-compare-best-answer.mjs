@@ -191,7 +191,7 @@ async function checkViewport(browser, viewport) {
   let addMenu = await menuText(page);
   assert(addMenu.includes('Add model'), `${viewport.name}: add menu should keep Add model`);
   assert(addMenu.includes('Refresh models'), `${viewport.name}: add menu should keep Refresh models`);
-  assert(!/Compare answers|Best Answer/i.test(addMenu), `${viewport.name}: add menu must not show compare/best-answer buttons before local discovery`);
+  assert(!/Compare answers|Best answer benchmark|Model discussion/i.test(addMenu), `${viewport.name}: add menu must not show two-model tools before local discovery`);
 
   await page.locator('[data-p0-action="check-local"]').click();
   await page.waitForFunction(() => {
@@ -205,11 +205,19 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   addMenu = await menuText(page);
-  assert(!/Compare answers|Best Answer/i.test(addMenu), `${viewport.name}: add menu must stay clean after local discovery`);
+  assert(/Two models/i.test(addMenu), `${viewport.name}: add menu must group gated two-model tools after local discovery`);
+  assert(/Compare answers/i.test(addMenu), `${viewport.name}: add menu must expose Compare answers after local discovery`);
+  assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu must expose Best answer benchmark after local discovery`);
+  assert(/Model discussion/i.test(addMenu), `${viewport.name}: add menu must expose Model discussion after local discovery`);
   await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForSelector('#p0-add-menu[hidden]', { timeout: 2000 }).catch(() => {});
 
   await page.locator('#p0-input').fill('Give me the best answer: what is 2+2?');
-  await page.locator('#p0-send').click();
+  if ((await page.locator('#p0-add-menu:not([hidden])').count()) === 0) {
+    await page.locator('#p0-add').click();
+  }
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="best-answer-live"]').click();
   await page.waitForSelector('text=Best answer: four.');
 
   const text = await page.locator('#p0-transcript').innerText();
