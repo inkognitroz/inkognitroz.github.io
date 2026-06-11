@@ -76,12 +76,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260611-supergeni-vision-v1',
+  'p0-chat-shell.js?v=20260611-subtle-route-status-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260611-supergeni-vision-v1"',
+  '"p0-chat-shell.js": "20260611-subtle-route-status-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

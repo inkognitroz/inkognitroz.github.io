@@ -402,13 +402,21 @@
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
-    const visible=parts.slice(0,6);
-    if(parts.length>visible.length)visible.push('+'+(parts.length-visible.length)+' more');
+    const visible=parts.filter(part=>
+      !/^free$/i.test(part) &&
+      !/^api\.mmir\.ai$/i.test(part) &&
+      !/^this mac$/i.test(part) &&
+      !/^score\s+\d+/i.test(part) &&
+      !/^target\s+/i.test(part) &&
+      !/^samples?$/i.test(part)
+    );
+    const primary=visible[0]||parts[0]||'Ready';
+    const time=parts.find(part=>/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/i.test(part));
+    const text=[primary,time].filter(Boolean).join(' · ');
     el.setAttribute('aria-label',full);
     el.title=full;
-    el.innerHTML=visible.map((part,index)=>
-      '<span class="p0-micro-chip" data-kind="'+safeAttr(microKind(part,stateValue))+'" data-primary="'+(index===0?'true':'false')+'">'+safeText(part)+'</span>'
-    ).join('');
+    el.dataset.kind=microKind(text,stateValue);
+    el.innerHTML='<span class="p0-route-line">'+safeText(text)+'</span>';
   }
 
   function routeRankState(model){return routeBenchmarks?.routeRankState(model)||'measured';}

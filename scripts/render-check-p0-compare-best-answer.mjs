@@ -222,13 +222,15 @@ async function checkViewport(browser, viewport) {
     actionButtons: Array.from(document.querySelectorAll('#p0-add-menu [data-p0-action]')).map(button => button.textContent),
     compareMessages: document.querySelectorAll('.p0-message-compare').length,
     status: document.getElementById('p0-status')?.textContent || '',
-    route: document.getElementById('p0-route')?.textContent || ''
+    route: document.getElementById('p0-route')?.textContent || '',
+    routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || ''
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: compare flow must not create horizontal overflow`);
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: compare flow body must not overflow`);
   assert(layout.compareMessages >= 3, `${viewport.name}: compare flow should render hosted, local and synthesis messages`);
   assert(/finished/i.test(layout.status), `${viewport.name}: compare status should finish cleanly`);
-  assert(/Winner:/i.test(layout.route), `${viewport.name}: composer route receipt should show winner summary`);
+  assert(!/Winner:/i.test(layout.route), `${viewport.name}: composer route line should stay subtle and not show winner clutter`);
+  assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: composer route receipt must preserve winner summary for inspection`);
 
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
