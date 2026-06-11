@@ -230,22 +230,22 @@ forbidPattern(
 );
 requireIncludes(
   html,
-  'p0-route-benchmarks.js?v=20260607-b0-06-02-route-benchmarks-v1',
+  'p0-route-benchmarks.js?v=20260611-b0-06-27-demotion-receipts-v1',
   'mmir.html must cache-bust the P0 route benchmark helper.'
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260611-b0-06-26-compare-no-clutter-v1',
+  'p0-chat-shell.js?v=20260611-b0-06-27-demotion-receipts-v1',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-route-benchmarks.js": "20260607-b0-06-02-route-benchmarks-v1"',
+  '"p0-route-benchmarks.js": "20260611-b0-06-27-demotion-receipts-v1"',
   'asset-versions.json must match the P0 route benchmark helper version.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260611-b0-06-26-compare-no-clutter-v1"',
+  '"p0-chat-shell.js": "20260611-b0-06-27-demotion-receipts-v1"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(

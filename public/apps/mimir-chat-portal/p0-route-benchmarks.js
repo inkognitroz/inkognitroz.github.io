@@ -1,5 +1,5 @@
 (function(){
-  const version='20260607-b0-06-02-route-benchmarks-v1';
+  const version='20260611-b0-06-27-demotion-receipts-v1';
 
   function clampScore(value){
     return Math.max(0,Math.min(100,Math.round(Number(value)||0)));
@@ -114,6 +114,27 @@
       return 'measured';
     }
 
+    function routeRankReasons(model){
+      const stats=routeBenchmark(model);
+      if(!stats||!stats.samples)return [];
+      const reasons=[];
+      const failures=Number(stats.failures)||0;
+      const score=effectiveModelScore(model);
+      const avgLatency=Number(stats.avgLatencyMs)||0;
+      if(failures)reasons.push(failures+' failed sample'+(failures===1?'':'s'));
+      if(score<55)reasons.push('weak score');
+      if(avgLatency>3000)reasons.push('slow avg '+formatDuration(avgLatency));
+      else if(String(stats.lastClass||'').toLowerCase()==='slow')reasons.push('last slow');
+      return reasons.slice(0,2);
+    }
+
+    function routeRankSummary(model){
+      const state=routeRankState(model);
+      if(state!=='demoted'&&state!=='slow')return '';
+      const label=state==='demoted'?'Demoted':'Slow';
+      return [label,...routeRankReasons(model)].filter(Boolean).join(' · ');
+    }
+
     return {
       routeKey,
       routeBenchmark,
@@ -122,7 +143,9 @@
       rankedModels,
       routeRankMap,
       routeBenchmarkSummary,
-      routeRankState
+      routeRankState,
+      routeRankReasons,
+      routeRankSummary
     };
   }
 

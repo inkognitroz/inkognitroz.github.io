@@ -647,6 +647,11 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function routeRankSummary(model)",
+  "P0 shell must expose compact route demotion reasons without adding controls.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "function renderMicroStatus(el,message,stateValue='hosted')",
   "P0 route status must render compact chips instead of another dashboard.",
 );
