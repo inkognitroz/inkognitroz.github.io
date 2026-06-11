@@ -48,6 +48,7 @@
   const ICON_BUBBLES=P0_ICONS.bubbles||'';
   const ICON_BRAIN=P0_ICONS.brain||'';
   const ICON_STOP=P0_ICONS.stop||'';
+  const ICON_LIGHTNING=P0_ICONS.lightning||'';
   const readJson=P0_STORAGE.readJson;
   const writeJson=P0_STORAGE.writeJson;
   const readStorageString=P0_STORAGE.readString;
@@ -147,6 +148,7 @@
 
   const state={
     busy:false,
+    fastAnswerOnce:false,
     messages:initialMessages(),
     models:[
       {
@@ -175,6 +177,13 @@
   let activeChatController=null;
   let stopRequested=false;
   const TOOLBAR_TOOL_DEFINITIONS=[
+    {
+      id:'fast-answer',
+      label:'Fast answer',
+      detail:'One-tap short answer mode for the next prompt.',
+      title:'Fast answer',
+      icon:ICON_LIGHTNING||'<span aria-hidden="true">L</span>'
+    },
     {
       id:'stop',
       label:'Stop',
@@ -1970,6 +1979,7 @@
 
   function freshStart(){
     const input=document.getElementById('p0-input');
+    state.fastAnswerOnce=false;
     state.messages=[];
     clearPersistedHistory();
     if(input){
@@ -2011,9 +2021,34 @@
     routeStatus(saveContent?'Memory saved · browser only':'Memory saved · superprivate metadata only','hosted');
   }
 
+  function fastAnswerPrompt(prompt){
+    return 'Answer fast. Give the shortest useful answer, usually 1-3 concise sentences. If steps are needed, use a compact list. User request: '+String(prompt||'').trim();
+  }
+
+  function fastAnswer(){
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    state.fastAnswerOnce=true;
+    closeMenus();
+    if(!prompt){
+      status('Fast answer ready.','ready');
+      routeStatus('Lightning · next answer short','hosted');
+      input?.focus();
+      return true;
+    }
+    status('Fast answer...','ready');
+    routeStatus('Lightning · short answer','hosted');
+    sendMessage();
+    return true;
+  }
+
   function handleToolbarTool(id){
     const tool=toolbarToolById(id);
     if(!tool)return false;
+    if(tool.id==='fast-answer'){
+      fastAnswer();
+      return true;
+    }
     if(tool.id==='stop'){
       if(state.busy)stopActiveResponse();
       else status('No active response to stop.','idle');
@@ -2550,6 +2585,8 @@
       input?.focus();
       return;
     }
+    const fastAnswer=Boolean(state.fastAnswerOnce);
+    state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
     if(explicit?.mode==='compare'&&!privateModeActive()){
       compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
@@ -2596,10 +2633,12 @@
     input.value='';
     autosizeInput();
     const model=smart.model;
-    const routePrompt=smart.prompt||prompt;
+    const baseRoutePrompt=smart.prompt||prompt;
+    const routePrompt=fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
-    const routePrefix=smart.reason?smart.reason+' · ':'';
+    const routeParts=[fastAnswer?'Fast answer':'',smart.reason].filter(Boolean);
+    const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
     status(routePrefix+model.label+' is answering...','ready');
     routeStatus(routePrefix+receipt.text,receipt.state);
     try{

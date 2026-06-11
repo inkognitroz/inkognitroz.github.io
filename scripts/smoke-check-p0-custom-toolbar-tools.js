@@ -51,13 +51,17 @@ requireIncludes(shell, "id:'fresh-start'", '+ menu must include the fresh-start 
 requireIncludes(shell, "id:'discuss'", '+ menu must include the model discussion tool.');
 requireIncludes(shell, "id:'memory'", '+ menu must include the memory tool.');
 requireIncludes(shell, "id:'stop'", '+ menu must include the explicit stop tool.');
+requireIncludes(shell, "id:'fast-answer'", '+ menu must include the lightning fast-answer tool.');
 requireIncludes(renderPinnedToolbarTools, 'data-p0-toolbar-tool', 'Pinned tools must render as toolbar actions only after user opt-in.');
 requireIncludes(handleMenuAction, "actionId.startsWith('pin-toolbar-tool:')", 'Menu actions must handle toolbar pinning.');
 requireIncludes(handleMenuAction, "actionId.startsWith('unpin-toolbar-tool:')", 'Menu actions must handle toolbar removal.');
 requireIncludes(handleToolbarTool, "runTwoModelTool('discuss-topic')", 'Toolbar discussion must reuse the proven two-model route.');
+requireIncludes(handleToolbarTool, 'fastAnswer();', 'Toolbar lightning must trigger fast answer mode.');
 requireIncludes(handleToolbarTool, 'freshStart();', 'Toolbar flame must trigger fresh start.');
 requireIncludes(handleToolbarTool, 'saveMemorySnapshot();', 'Toolbar brain must save memory locally.');
 requireIncludes(handleToolbarTool, 'stopActiveResponse();', 'Toolbar stop must reuse the active abort path.');
+requireIncludes(shell, 'function fastAnswerPrompt(prompt)', 'Fast answer must keep a dedicated short-answer prompt wrapper.');
+requireIncludes(shell, 'state.fastAnswerOnce=false;', 'Fast answer must be a one-shot mode, not a hidden permanent setting.');
 requireIncludes(updateSendControl, 'updatePinnedToolbarToolStates();', 'Pinned stop state must track the active send/stop state.');
 requireIncludes(css, '.p0-toolbar-tools', 'CSS must keep optional tools aligned in the composer toolbar.');
 requireIncludes(css, '.p0-toolbar-tool:disabled', 'CSS must make inactive optional tools visibly subtle.');
@@ -65,12 +69,13 @@ requireIncludes(icons, "const flame='", 'Icon helper must provide flame icon.');
 requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion bubbles icon.');
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260611-custom-toolbar-tools-v1', 'Public page must cache-bust the toolbar runtime.');
-requireIncludes(html, 'p0-chat-shell.css?v=20260611-custom-toolbar-tools-v1', 'Public page must cache-bust the toolbar CSS.');
-requireIncludes(html, 'p0-icons.js?v=20260611-custom-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260611-custom-toolbar-tools-v1"', 'Asset manifest must track toolbar runtime version.');
-requireIncludes(manifest, '"p0-chat-shell.css": "20260611-custom-toolbar-tools-v1"', 'Asset manifest must track toolbar CSS version.');
-requireIncludes(manifest, '"p0-icons.js": "20260611-custom-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
+requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260611-lightning-fast-answer-v1', 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, 'p0-chat-shell.css?v=20260611-lightning-fast-answer-v1', 'Public page must cache-bust the toolbar CSS.');
+requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260611-lightning-fast-answer-v1"', 'Asset manifest must track toolbar runtime version.');
+requireIncludes(manifest, '"p0-chat-shell.css": "20260611-lightning-fast-answer-v1"', 'Asset manifest must track toolbar CSS version.');
+requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
 
 if (failures.length) {
   console.error('P0 custom toolbar tools smoke failed:');
