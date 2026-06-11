@@ -34,7 +34,7 @@
     const now=new Date().toISOString();
     return {
       id:MANAGED_ID,
-      name:'Supergenious',
+      name:'Supergeni',
       url:MANAGED_URL,
       provider:'openai-compatible',
       models:existing?.health==='ready'?'mmir-supergenius auto-discovered':'checked at runtime',

@@ -2,7 +2,7 @@
   const STARTER_PREFIX='starter:';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
-  const SUPERGENIUS_LABEL='Supergenious';
+  const SUPERGENIUS_LABEL='Supergeni';
   let picker=null;
   let starterModels=fallbackStarterModels();
   let starterCatalogLoaded=false;

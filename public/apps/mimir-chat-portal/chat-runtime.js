@@ -17,7 +17,7 @@
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const STARTER_MODEL_CATALOG='./free-model-starters.json?v=20260531-atlas-ux-v1';
   const STARTER_PREFIX='starter:';
-  const SUPERGENIUS_LABEL='Supergenious';
+  const SUPERGENIUS_LABEL='Supergeni';
   const MAX_STORED_MESSAGES=80;
   const MAX_CONTEXT_MESSAGES=24;
   const promptEl=document.getElementById('mimir-prompt');
@@ -909,7 +909,7 @@
         '<button id="runtime-resource-chip" type="button" class="composer-live-chip composer-chip-button composer-core-control composer-core-control--resources" aria-label="Open node resource status">Resources checking</button>'+
         '<button id="composer-voice-input" type="button" class="composer-icon-button composer-core-control composer-core-control--voice" aria-label="Voice input" title="Voice input">Mic</button>'+
       '</div>'+
-      '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: Supergenious first, local model when connected.</small>';
+      '<small id="composer-action-feedback" class="composer-action-feedback" data-state="idle" aria-live="polite">Ready: Supergeni first, local model when connected.</small>';
     const bar=formEl.querySelector('.composer-bar');
     if(bar)formEl.insertBefore(dock,bar); else formEl.appendChild(dock);
     modelChipEl=document.getElementById('runtime-model-chip');
@@ -1211,7 +1211,7 @@
 
   function defaultMmirInstruction(){
     return [
-      'You are Supergenious, the default assistant on MMIR.ai.',
+      'You are Supergeni, the default assistant on MMIR.ai.',
       'Answer the user question first with useful, direct substance.',
       'Do not turn ordinary chats into setup/support flows.',
       'MMIR is the orchestration layer for trusted AI; explain that only when relevant.',
@@ -1507,7 +1507,7 @@
         '<a class="button-link" href="#backend-settings">Connect local profile</a>'+
       '</div>'+
       '<p>'+escapeHtml(model.best_for||model.install_note||'Free model option.')+'</p>'+
-      (isAuto?'<p>Ready now. MMIR routes this prompt to the hosted free Supergenious path first, then local/private routes can take over after they are verified live.</p>':
+      (isAuto?'<p>Ready now. MMIR routes this prompt to the hosted free Supergeni path first, then local/private routes can take over after they are verified live.</p>':
       isGuide?'<p>This helper works immediately in the browser. Choose Browser Node/WebGPU or Ollama when you want a real local LLM.</p>':
       isWebLlm?'<p>'+escapeHtml(browserNodeStatusCopy())+'</p><p>Route receipt shape: node_type=browser, trust_class=device-local, cost_class=free-user-device, quality_tier=starter, execution_boundary=current-browser-session, prompt_left_device=false.</p>':
         '<div class="runtime-install-grid">'+
@@ -1876,8 +1876,8 @@
     const modelId=String(starter?.model||'').trim();
     if(!modelId)throw new Error('Browser model id is missing.');
     const support=browserNodeSupport();
-    if(!support.secure||!support.wasm||!support.webgpu)throw new Error('WebGPU is unavailable. Use Supergenious now or install the Ollama local-node path.');
-    if(webGpuAvailable()&&modelNeedsShaderF16(modelId)&&support.shader_f16===false)throw new Error('WebGPU adapter missing shader-f16 for this browser model. Use Supergenious now or install the Ollama local-node path.');
+    if(!support.secure||!support.wasm||!support.webgpu)throw new Error('WebGPU is unavailable. Use Supergeni now or install the Ollama local-node path.');
+    if(webGpuAvailable()&&modelNeedsShaderF16(modelId)&&support.shader_f16===false)throw new Error('WebGPU adapter missing shader-f16 for this browser model. Use Supergeni now or install the Ollama local-node path.');
     if(!webGpuAvailable()){
       onProgress('Checking browser WebGPU adapter...');
       let adapter=null;
@@ -1898,7 +1898,7 @@
         };
         window.__MimirBrowserNodeSupport=detail;
         window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
-        throw new Error('WebGPU adapter check failed. Use Supergenious now or install the Ollama local-node path.');
+        throw new Error('WebGPU adapter check failed. Use Supergeni now or install the Ollama local-node path.');
       }
       const shaderF16=Boolean(adapter?.features?.has?.('shader-f16'));
       const shaderBlocked=Boolean(adapter)&&modelNeedsShaderF16(modelId)&&!shaderF16;
@@ -1919,7 +1919,7 @@
       };
       window.__MimirBrowserNodeSupport=detail;
       window.dispatchEvent(new CustomEvent('mmir-browser-node-support-updated',{detail}));
-      if(!supported)throw new Error(detail.reason+'. Use Supergenious now or install the Ollama local-node path.');
+      if(!supported)throw new Error(detail.reason+'. Use Supergeni now or install the Ollama local-node path.');
     }
     if(!webllmModule){
       onProgress('Loading browser model runtime...');

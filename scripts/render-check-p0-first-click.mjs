@@ -57,8 +57,8 @@ async function installApiFixtures(page) {
         data: [
           {
             id: 'mmir-supergenius',
-            name: 'Supergenious',
-            display_name: 'Supergenious',
+            name: 'Supergeni',
+            display_name: 'Supergeni',
             executable: true,
             recommended: true,
             availability: 'available',
@@ -272,7 +272,7 @@ async function checkViewport(browser, viewport) {
   layout = await pageLayout(page);
   assertMenuBounds(layout.modelMenu, viewport, `${viewport.name} model`);
   assert(layout.text.includes('MODELS'), `${viewport.name}: model menu should open`);
-  assert(layout.text.includes('Supergenious'), `${viewport.name}: model menu should show active route`);
+  assert(layout.text.includes('Supergeni'), `${viewport.name}: model menu should show active route`);
   assert(!/Active route/i.test(layout.text), `${viewport.name}: simple model menu must not show active route detail card`);
   assert(layout.text.includes('Route controls'), `${viewport.name}: route details should stay behind Route controls`);
   await screenshot(page, `${viewport.name}-model-menu`);

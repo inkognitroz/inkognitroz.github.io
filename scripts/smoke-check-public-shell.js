@@ -239,7 +239,7 @@ for (const file of walk(publicDir)) {
     /Supergeni(?:us|ous)\s+Free/i.test(publicText)
   ) {
     fail(
-      `Use owner-approved visible label "Supergenious" without a Free suffix: ${rel}`,
+      `Use owner-approved visible label "Supergeni" without a Free suffix: ${rel}`,
     );
   }
   if (
@@ -247,14 +247,14 @@ for (const file of walk(publicDir)) {
     /MMIR\s+Supergeni(?:us|ous)/i.test(publicText)
   ) {
     fail(
-      `Visible fallback label must be "Supergenious" without an MMIR prefix: ${rel}`,
+      `Visible fallback label must be "Supergeni" without an MMIR prefix: ${rel}`,
     );
   }
   if (
     [".html", ".js", ".json", ".css", ".webmanifest"].includes(ext) &&
     /(?:MMIR\s+){2,}Supergeni(?:us|ous)/i.test(publicText)
   ) {
-    fail(`Do not duplicate the MMIR Supergenious brand prefix: ${rel}`);
+    fail(`Do not duplicate the MMIR Supergeni brand prefix: ${rel}`);
   }
   if (
     [".html", ".js", ".json", ".css", ".webmanifest"].includes(ext) &&
@@ -477,7 +477,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'aria-label="Message Supergenious"',
+  'aria-label="Message Supergeni"',
   "P0 canonical input must have an accessible label for browser/UI automation.",
 );
 requireText(
@@ -532,7 +532,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-route-receipts.js"),
-  "'Supergenious · Free · '+String(apiLabel||'api.mmir.ai')",
+  "'Supergeni · Free · '+String(apiLabel||'api.mmir.ai')",
   "P0 route receipts helper must show hosted route receipts.",
 );
 requireText(
@@ -737,7 +737,7 @@ requireText(
 );
 forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Public facts use Supergenious. Private/local prompts",
+  "Public facts use Supergeni. Private/local prompts",
   "P0 model picker must not show long public/private routing policy copy in the dropdown.",
 );
 requireText(

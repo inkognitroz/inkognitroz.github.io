@@ -26,7 +26,7 @@ const mmir = readFileSync(mmirPath, 'utf8');
 
 for (const [needle, message] of [
   ['One clean chat for every AI model you trust.', 'waitlist must explain the core user value.'],
-  ['Supergenious', 'waitlist must name the current default route.'],
+  ['Supergeni', 'waitlist must name the current default route.'],
   ['route receipt', 'waitlist must explain trust/route visibility.'],
   ['Use + in chat to connect a private local node.', 'waitlist must explain add-model path without an installer maze.'],
   ['Best Answer appears only when more than one proven route is available.', 'waitlist must keep compare/best-answer truth-gated.'],

@@ -2,7 +2,7 @@
   const d = document;
   const w = window;
   const R = "#mimir-chat-runtime";
-  const FALLBACK = "Supergenious";
+  const FALLBACK = "Supergeni";
   const q = (selector) => d.querySelector(selector);
 
   function esc(value) {

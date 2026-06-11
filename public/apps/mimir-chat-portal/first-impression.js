@@ -371,8 +371,8 @@ const managedRoute=profile?.id==='mmir-api-bootstrap'||/api\.mmir\.ai/i.test(Str
 if(kind.live){
 if(managedRoute){
 setText(statusEl,'Ask anything.');
-setText(detailEl,'Supergenious is ready now. More models appear after they are connected and verified.');
-setNode(backendNode,'Supergenious',true);
+setText(detailEl,'Supergeni is ready now. More models appear after they are connected and verified.');
+setNode(backendNode,'Supergeni',true);
 setNode(modelNode,'Ready',true);
 }else{
 setText(statusEl,'Your local AI is ready in MMIR.');
@@ -386,9 +386,9 @@ return;
 }
 
 if(kind.browser||kind.webgpu){
-setText(statusEl,kind.webgpu?'Browser model can be tried here.':'Ask now. Supergenious is ready.');
-setText(detailEl,kind.webgpu?'Runs only after WebGPU loads the model and answers. Supergenious remains the safe default.':'Supergenious answers immediately. Connect local AI when you want private models.');
-setNode(backendNode,kind.webgpu?'Browser':'Supergenious',true);
+setText(statusEl,kind.webgpu?'Browser model can be tried here.':'Ask now. Supergeni is ready.');
+setText(detailEl,kind.webgpu?'Runs only after WebGPU loads the model and answers. Supergeni remains the safe default.':'Supergeni answers immediately. Connect local AI when you want private models.');
+setNode(backendNode,kind.webgpu?'Browser':'Supergeni',true);
 setNode(modelNode,kind.webgpu?(model.text||'Browser model'):'Ready',true);
 setBodyState('mimir-first-guide','mimir-first-ready','mimir-first-install');
 syncActivationCockpit(model,kind);
@@ -407,8 +407,8 @@ return;
 
 const loadingDefault=state==='Select a backend to start.'||state==='Loading free model routes...';
 setText(statusEl,state&&!loadingDefault?state:'Chat first. Connect more later.');
-setText(detailEl,'Supergenious is the safe default. Local models appear after a real node connects.');
-setNode(backendNode,'Supergenious',true);
+setText(detailEl,'Supergeni is the safe default. Local models appear after a real node connects.');
+setNode(backendNode,'Supergeni',true);
 setNode(modelNode,'Ready',true);
 syncActivationCockpit(model,kind);
 }
@@ -451,12 +451,12 @@ const browser=Boolean(model.value.startsWith('starter:')&&model.runtime==='brows
 const webgpu=Boolean(model.runtime==='webllm');
 const health=String(profile?.health||'unknown').toLowerCase();
 const nodeReady=['ready','degraded','testing'].includes(health);
-const modelRaw=(model.text||'Supergenious').replace(/\s+-\s+live$/i,'');
-const modelLabel=window.MimirRouteDisplay?.displayLabel?window.MimirRouteDisplay.displayLabel(modelRaw,'Supergenious'):modelRaw.replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergenious');
+const modelRaw=(model.text||'Supergeni').replace(/\s+-\s+live$/i,'');
+const modelLabel=window.MimirRouteDisplay?.displayLabel?window.MimirRouteDisplay.displayLabel(modelRaw,'Supergeni'):modelRaw.replace(/MMIR Guide|MMIR Supergenius|Supergeni(?:us|ous)/gi,'Supergeni');
 const browserSupport=window.__MimirBrowserNodeSupport;
 const webGpuReady=Boolean(browserSupport&&browserSupport.status==='ready'&&browserSupport.supported===true);
 const pills=[
-{label:'Free start',value:browser?'Guide ready':webgpu?(webGpuReady?'Browser model':'Supergenious ready'):'Guide available',state:webgpu&&!webGpuReady?'watch':'ready',target:'#mimir-prompt'},
+{label:'Free start',value:browser?'Guide ready':webgpu?(webGpuReady?'Browser model':'Supergeni ready'):'Guide available',state:webgpu&&!webGpuReady?'watch':'ready',target:'#mimir-prompt'},
 {label:'Privacy',value:modes.private?'Private on':'Turn on',state:'ready',target:'#composer-mode-dock'},
 {label:'Node',value:nodeReady?(profile.name||'Local node'):'Auto-checking',state:nodeReady?'ready':'watch',target:'#node-dashboard'},
 {label:'Model',value:live?modelLabel:modelLabel||'Installable free',state:live?'ready':'watch',target:'#model-library'}

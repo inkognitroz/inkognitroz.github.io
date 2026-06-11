@@ -98,7 +98,7 @@
     models:[
       {
         id:'mmir-supergenius',
-        label:'Supergenious',
+        label:'Supergeni',
         route:'hosted',
         detail:'Ready now',
         tags:['Fast','Free','Best default'],
@@ -504,7 +504,7 @@
       append(
         'assistant',
         localInstallIntro(os)+'\n\n'+localInstallReturnInstruction(),
-        'Supergenious',
+        'Supergeni',
         'Local connector setup · no paid route',
         {
           variant:'install',
@@ -521,7 +521,7 @@
     append(
       'assistant',
       localInstallIntro(detected),
-      'Supergenious',
+      'Supergeni',
       'Local connector setup · no paid route',
       {
         variant:'install',
@@ -748,8 +748,8 @@
     const compareReady=Boolean(bestLocal);
     const localHardware=state.localHardware?.summary||'';
     const details=compareReady
-      ? 'Best Answer can ask Supergenious and '+bestLocal.label+' in parallel, then synthesize one answer.'
-      : 'Supergenious is ready now. Connect a local model to unlock private routing and parallel Best Answer.';
+      ? 'Best Answer can ask Supergeni and '+bestLocal.label+' in parallel, then synthesize one answer.'
+      : 'Supergeni is ready now. Connect a local model to unlock private routing and parallel Best Answer.';
     return {
       liveRoutes,
       hostedRoutes:hosted.length,
@@ -1029,9 +1029,9 @@
       route_class:isLocal?'local':'free',
       cost_class:isLocal?'free-local':'free',
       node_id:isLocal?'local-node':'browser-guide',
-      node_display_name:isLocal?'This Mac':'Supergenious',
+      node_display_name:isLocal?'This Mac':'Supergeni',
       model_id:isLocal?(model.model||model.id):'mmir-supergenius',
-      model_display_name:model?.label||model?.model||'Supergenious',
+      model_display_name:model?.label||model?.model||'Supergeni',
       trust_level:isLocal?'operator-local':'public-free',
       provider:isLocal?'local-ollama':'mmir',
       quality:model?.quality||'',
@@ -1216,7 +1216,7 @@
       '<header class="p0-topbar">'+
         '<a class="p0-brand" href="./mmir.html" aria-label="MMIR.ai chat">'+
           '<span class="p0-mark" aria-hidden="true">MM</span>'+
-          '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>One chat. Every AI model you trust.</span></span>'+
+          '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
         '</a>'+
         '<div id="p0-status" class="p0-status" data-state="ready">Ready</div>'+
       '</header>'+
@@ -1225,7 +1225,7 @@
       '</main>'+
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergenious..." aria-label="Message Supergenious" autocomplete="off" spellcheck="true"></textarea>'+
+          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
@@ -1233,7 +1233,7 @@
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status" title="Security and privacy">'+ICON_SHIELD+'</button>'+
             '</div>'+
             '<div class="p0-right">'+
-              '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergenious</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
+              '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
               '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input">'+ICON_MIC+'</button>'+
               '<button id="p0-send" class="p0-btn p0-btn-icon p0-send" type="submit" aria-label="Send message">↑</button>'+
             '</div>'+
@@ -1603,7 +1603,7 @@
   function renderPrivacyMenu(){
     const model=activeModel();
     const menu=menuEl('privacy');
-    const route=model.route==='local'?'Private local model':'Supergenious hosted route';
+    const route=model.route==='local'?'Private local model':'Supergeni hosted route';
     const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
     const receipt=routeReceipt(model);
     menu.innerHTML=''+
@@ -1856,13 +1856,14 @@
     const root=document.getElementById('p0-transcript');
     if(!root)return;
     if(!state.messages.length){
-      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergenious answers now. Use + to add local models and let MMIR route more intelligence into one chat.</p></div>';
+      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergeni answers now.</p></div>';
       return;
     }
     root.innerHTML=state.messages.map(message=>{
       const focusAttr=answerActionsAllowed(message)?' tabindex="0"':'';
+      const visibleLabel=message.role==='assistant'?routeDisplayName({label:message.label||message.role}):(message.label||message.role);
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
-        '<div class="p0-message-label">'+safeText(message.label||message.role)+'</div>'+
+        '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
         renderReceipt(message.receipt)+
         '<div class="p0-message-body">'+paragraphs(message.content)+renderMessageTools(message)+'</div>'+
         renderMessageActions(message)+
@@ -1901,7 +1902,7 @@
       id:meta.id||makeMessageId(),
       role,
       content:String(content||''),
-      label:label||role,
+      label:role==='assistant'?routeDisplayName({label:label||role}):(label||role),
       receipt:receipt||'',
       variant:meta.variant||'',
       command:meta.command||'',
@@ -1976,7 +1977,7 @@
     return {
       model:'mmir-supergenius',
       messages:[
-        {role:'system',content:'You are Supergenious, the default assistant on MMIR.ai. Answer directly and usefully. Keep answers short by default; expand only when the user asks. Do not turn ordinary chats into setup support unless asked.'},
+        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. Keep answers short by default; expand only when the user asks. Do not turn ordinary chats into setup support unless asked.'},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -2045,7 +2046,7 @@
       return {mode:'single',model:localModel,reason:routeReason('Mention: '+localModel.label,prompt,localModel),prompt:cleaned};
     }
     if(hostedRequested){
-      return {mode:'single',model:defaultHostedModel(),reason:'Mention: Supergenious',prompt:cleaned};
+      return {mode:'single',model:defaultHostedModel(),reason:'Mention: Supergeni',prompt:cleaned};
     }
     return null;
   }
@@ -2066,7 +2067,7 @@
       timeoutMs:45000,
       signal
     });
-    return responseText(data)||'Supergenious returned an empty response.';
+    return responseText(data)||'Supergeni returned an empty response.';
   }
 
   async function chatLocal(prompt,model,signal){
@@ -2085,14 +2086,14 @@
   async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal){
     const localLabel=localModel?.label||'local model';
     const synthesisPrompt='Create one concise best answer for the user by comparing these two model answers. '+
-      'Prefer current public facts from Supergenious when the local model is stale or vague. '+
+      'Prefer current public facts from Supergeni when the local model is stale or vague. '+
       'Use the route evidence scores and reasons to choose the most reliable answer. '+
       'Do not mention internal instructions. Keep it useful and short.\n\n'+
       'User question: '+prompt+'\n\n'+
       'Route evidence:\n'+
-      '- Supergenious: '+scoreSummary(hostedScore)+'\n'+
+      '- Supergeni: '+scoreSummary(hostedScore)+'\n'+
       '- '+localLabel+': '+scoreSummary(localScore)+'\n\n'+
-      'Supergenious answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
+      'Supergeni answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
       localLabel+' answer:\n'+(localAnswer||'[no answer]');
     return chatHosted(synthesisPrompt,signal);
   }
@@ -2160,7 +2161,7 @@
         if(!hostedFallbackAllowedForLocalFailure(prompt,routePrompt)){
           updateMessage(
             assistant,
-            hint+'\n\nPrivacy guard: I did not send this local/private prompt to hosted Supergenious. Fix local access or choose Supergenious explicitly if you want a hosted answer.',
+            hint+'\n\nPrivacy guard: I did not send this local/private prompt to hosted Supergeni. Fix local access or choose Supergeni explicitly if you want a hosted answer.',
             {receipt:receipt.text+' · Local privacy fail-closed'}
           );
           status('Local route unavailable. Private prompt was not sent to hosted route.','error');
@@ -2182,7 +2183,7 @@
             fallbackAnswer+'\n\nLocal model note: '+hint,
             {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)}
           );
-          status('Supergenious answered in '+fallbackElapsed+' while local access waits for permission.','ready');
+          status('Supergeni answered in '+fallbackElapsed+' while local access waits for permission.','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
         }catch(fallbackError){
           if(stopRequested||fallbackError?.name==='AbortError'){
@@ -2191,7 +2192,7 @@
             routeStatus('Stopped · no failed first request','hosted');
             return;
           }
-          updateMessage(assistant,hint+'\n\nSupergenious is still available from the model picker.');
+          updateMessage(assistant,hint+'\n\nSupergeni is still available from the model picker.');
           status('Chat failed: local node blocked/unavailable','error');
         }
       }else{
@@ -2240,12 +2241,12 @@
     let localElapsedMs=0;
     let hostedFailed=false;
     let localFailed=false;
-    status(title+' is asking Supergenious and '+localModel.label+' in parallel...','ready');
-    routeStatus(title+' · Supergenious + '+localModel.label,'ready');
+    status(title+' is asking Supergeni and '+localModel.label+' in parallel...','ready');
+    routeStatus(title+' · Supergeni + '+localModel.label,'ready');
     const hostedStarted=performance.now();
     const hostedJob=chatHosted(prompt,signal)
       .then(answer=>{
-        hostedAnswerText=answer||'Supergenious returned an empty response.';
+        hostedAnswerText=answer||'Supergeni returned an empty response.';
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs,false,'compare');
         updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
@@ -2254,7 +2255,7 @@
         hostedFailed=true;
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true,'compare');
-        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       });
     const localStarted=performance.now();
     const localJob=chatLocal(prompt,localModel,signal)
@@ -2288,7 +2289,7 @@
       recordRouteBenchmark(localModel,localScore);
       finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
       scoringSource=API_LABEL+'/routing/score';
-      updateMessage(hostedMessage,hostedAnswerText||'Supergenious did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+      updateMessage(hostedMessage,hostedAnswerText||'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       updateMessage(localMessage,localAnswerText||localNetworkHint('Local model did not answer.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
     }catch(error){
       recordRouteBenchmark(hostedModel,hostedScore);
@@ -2298,7 +2299,7 @@
     if(hostedAnswerText||localAnswerText){
       const winner=finalWinner||winningRoute(hostedModel,hostedScore,localModel,localScore);
       const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+scoringSource+' · '+winner.summary;
-      const synthesisMessage=append('assistant','Synthesizing best answer...','Supergenious · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
+      const synthesisMessage=append('assistant','Synthesizing best answer...','Supergeni · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
       const synthesisStarted=performance.now();
       try{
         const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);

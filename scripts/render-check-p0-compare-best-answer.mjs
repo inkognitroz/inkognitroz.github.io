@@ -77,8 +77,8 @@ async function installFixtures(page) {
         object: 'list',
         data: [{
           id: 'mmir-supergenius',
-          name: 'Supergenious',
-          display_name: 'Supergenious',
+          name: 'Supergeni',
+          display_name: 'Supergeni',
           executable: true,
           recommended: true,
           availability: 'available',
@@ -93,8 +93,8 @@ async function installFixtures(page) {
     const payload = request.postDataJSON();
     const text = String(payload?.messages?.map(message => message.content).join('\n') || '');
     const content = /Create one concise best answer/i.test(text)
-      ? 'Best answer: four. Both routes agree, and Supergenious is the selected winner.'
-      : 'Supergenious says four.';
+      ? 'Best answer: four. Both routes agree, and Supergeni is the selected winner.'
+      : 'Supergeni says four.';
     await fulfillJson(route, chatCompletion(content));
   });
 
@@ -207,10 +207,10 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('text=Best answer: four.');
 
   const text = await page.locator('#p0-transcript').innerText();
-  assert(text.includes('Supergenious says four.'), `${viewport.name}: hosted compare answer should render`);
+  assert(text.includes('Supergeni says four.'), `${viewport.name}: hosted compare answer should render`);
   assert(text.includes('Local Gemma also says four.'), `${viewport.name}: local compare answer should render`);
   assert(text.includes('Best answer'), `${viewport.name}: compact best-answer receipt should render`);
-  assert(text.includes('Winner: Supergenious'), `${viewport.name}: winner receipt should name Supergenious`);
+  assert(text.includes('Winner: Supergeni'), `${viewport.name}: winner receipt should name Supergeni`);
   assert(text.includes('No paid route'), `${viewport.name}: receipt must keep no-paid route visible`);
   assert(text.includes('target 3.0s met'), `${viewport.name}: hosted compare receipt should show the compact latency target`);
   assert(text.includes('target 9.0s met'), `${viewport.name}: local compare receipt should show the compact latency target`);

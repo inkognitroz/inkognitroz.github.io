@@ -47,7 +47,7 @@ requireText(
   'P0 shell must block hosted fallback when the user explicitly mentions a local model route.',
 );
 requireText(
-  'Privacy guard: I did not send this local/private prompt to hosted Supergenious.',
+  'Privacy guard: I did not send this local/private prompt to hosted Supergeni.',
   'P0 shell must tell the user when a private/local prompt failed closed instead of falling back to hosted.',
 );
 requireText(

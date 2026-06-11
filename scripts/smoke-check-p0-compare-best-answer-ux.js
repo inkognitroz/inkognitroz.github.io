@@ -111,7 +111,7 @@ requireText(
 );
 requireText(
   runtime,
-  "status(title+' is asking Supergenious and '+localModel.label+' in parallel...'",
+  "status(title+' is asking Supergeni and '+localModel.label+' in parallel...'",
   'Compare flow must make parallel routing visible while running'
 );
 requireText(

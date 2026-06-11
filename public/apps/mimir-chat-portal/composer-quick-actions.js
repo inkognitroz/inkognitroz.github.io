@@ -75,11 +75,11 @@
   }
   function selectedModelLabel(){
     const select=q('#runtime-model');
-    const label=String(select?.selectedOptions?.[0]?.textContent||q('#runtime-model-chip')?.textContent||'Supergenious').trim();
+    const label=String(select?.selectedOptions?.[0]?.textContent||q('#runtime-model-chip')?.textContent||'Supergeni').trim();
     const cleaned=label.replace(/\s+-\s+(live|ready now|browser helper|active in browser|hosted free model).*$/i,'');
     const shared=window.MimirRouteDisplay;
-    const display=shared?.displayLabel?shared.displayLabel(cleaned,'Supergenious'):(cleaned||'Supergenious');
-    return display.slice(0,52)||'Supergenious';
+    const display=shared?.displayLabel?shared.displayLabel(cleaned,'Supergeni'):(cleaned||'Supergeni');
+    return display.slice(0,52)||'Supergeni';
   }
   function resourceSummary(){
     const value=String(q('#runtime-resource-chip')?.textContent||'Free route').trim();
@@ -92,7 +92,7 @@
   function renderRouteStrip(){
     const lm=localModel();
     return '<div class="composer-quick-route-strip" aria-label="Free chat routes">'+
-      '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>Supergenious</span><small>Free now</small></button>'+
+      '<button type="button" class="composer-quick-route" data-composer-quick-route="guide" data-route-state="ready"><span>Supergeni</span><small>Free now</small></button>'+
       '<button type="button" class="composer-quick-route" data-composer-quick-route="local" data-route-state="'+(localReady()?'ready':'install')+'"><span>'+(localReady()?'Local ready':'Install local')+'</span><small>'+escapeHtml(lm||'Qwen3 0.6B')+'</small></button>'+
     '</div>';
   }
@@ -106,7 +106,7 @@
       '</div>'+
       renderRouteStrip()+
       '<button type="button" role="menuitem" class="composer-quick-primary" data-composer-quick-action="chat-now"><span>Chat now</span><small>Start with the safest free route</small></button>'+
-      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Supergenious, live local and advanced routes</small></button>'+
+      '<button type="button" role="menuitem" data-composer-quick-action="models"><span>Models</span><small>Supergeni, live local and advanced routes</small></button>'+
       '<button type="button" role="menuitem" data-composer-quick-action="install-node"><span>Install node</span><small>Mac, Windows, Linux or Pi</small></button>'+
       '<button type="button" role="menuitem" data-composer-quick-action="new-chat"><span>New chat</span><small>Reset local conversation</small></button>';
   }
@@ -235,7 +235,7 @@
   }
   function runQuickRoute(route){
     if(route==='guide'){
-      startStarterRoute('mmir-supergenius','Start free chat with Supergenious. Tell me what is active and one useful next action.','Starting Supergenious chat.');
+      startStarterRoute('mmir-supergenius','Start free chat with Supergeni. Tell me what is active and one useful next action.','Starting Supergeni chat.');
       return;
     }
     if(route==='local')startLocalRoute();
