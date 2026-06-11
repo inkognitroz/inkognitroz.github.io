@@ -140,6 +140,7 @@ requireIncludes(files.p0Runtime, 'aria-label="Message Supergeni"', 'P0 canonical
 requireIncludes(files.p0Runtime, 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
 requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
+requireIncludes(files.p0Css, '.p0-route-line', 'P0 route receipt must render as a subtle text line, not noisy chips.');
 requireIncludes(files.p0Css, 'overscroll-behavior: contain', 'P0 transcript must be an independently scrollable answer pane.');
 requireIncludes(files.p0Css, '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
 requireIncludes(files.p0Css, 'display: block;', 'P0 transcript must use block layout so long chats produce real scroll height.');

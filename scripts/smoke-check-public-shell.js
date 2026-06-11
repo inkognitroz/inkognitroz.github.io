@@ -653,12 +653,12 @@ requireText(
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "function renderMicroStatus(el,message,stateValue='hosted')",
-  "P0 route status must render compact chips instead of another dashboard.",
+  "P0 route status must render a subtle text line instead of another dashboard.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
-  ".p0-micro-chip",
-  "P0 composer status must use compact micro-status chips.",
+  ".p0-route-line",
+  "P0 composer status must use a subtle route text line instead of chip clutter.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
