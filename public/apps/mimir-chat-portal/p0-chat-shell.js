@@ -1302,7 +1302,7 @@
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Add or connect model" aria-expanded="false">+</button>'+
-              '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status" title="Security and privacy">'+ICON_SHIELD+'</button>'+
+              '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
             '</div>'+
             '<div class="p0-right">'+
               '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
@@ -1757,6 +1757,31 @@
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';
   }
 
+  function shieldStateFor(model,local){
+    if(superPrivateModeActive()){
+      return local||model?.route==='local'
+        ? {state:'superprivate',label:'Superprivate mode · local connector active'}
+        : {state:'error',label:'Superprivate mode needs local node'};
+    }
+    if(privateModeActive()){
+      return local||model?.route==='local'
+        ? {state:'private',label:'Private mode · local connector active'}
+        : {state:'error',label:'Private mode needs local node'};
+    }
+    if(model?.route==='local')return {state:'local',label:'Local connector active'};
+    if(local)return {state:'local',label:'Local connector ready · Public mode'};
+    return {state:'public',label:'Public mode · Supergeni hosted route allowed'};
+  }
+
+  function renderShieldState(model=activeModel(),local=bestLocalModel()){
+    const shield=document.getElementById('p0-privacy');
+    if(!shield)return;
+    const next=shieldStateFor(model,local);
+    shield.dataset.state=next.state;
+    shield.setAttribute('aria-label','Security and privacy status: '+next.label);
+    shield.setAttribute('title','Security and privacy · '+next.label);
+  }
+
   function renderToolbar(){
     const model=activeModel();
     const local=bestLocalModel();
@@ -1765,6 +1790,7 @@
     const input=document.getElementById('p0-input');
     if(label)label.textContent=displayModel.label;
     if(input)input.placeholder='Message '+displayModel.label+'...';
+    renderShieldState(displayModel,local);
     if(privateModeActive()){
       const next=privacyModeRouteStatus();
       routeStatus(next.text,next.state);

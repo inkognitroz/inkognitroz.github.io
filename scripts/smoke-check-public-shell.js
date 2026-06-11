@@ -752,6 +752,31 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function renderShieldState",
+  "P0 privacy shield must render public/local/private/superprivate visual state.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Local connector ready · Public mode",
+  "P0 privacy shield must turn green when a local connector is ready even if public mode remains selected.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "data-state=\"public\"",
+  "P0 privacy shield must start with an explicit public state.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-shield[data-state=\"local\"]",
+  "P0 privacy shield must turn green when local connector route is active.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
+  ".p0-shield[data-state=\"superprivate\"]",
+  "P0 privacy shield must show a proven superprivate visual state.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "toggle-fact-guard",
   "P0 privacy shield must expose hallucination-prevention/fact guard control.",
 );
