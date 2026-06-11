@@ -254,9 +254,17 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-input').fill('Ping responsive guard');
   await page.locator('#p0-send').click();
   await page.waitForSelector('text=Responsive guard answer.');
-  assert(await page.locator('[data-p0-message-action="copy"]').last().isVisible(), `${viewport.name}: answer copy action should render`);
-  assert(await page.locator('[data-p0-message-action="retry"]').last().isVisible(), `${viewport.name}: answer retry action should render`);
-  assert(await page.locator('[data-p0-message-action="share-safe"]').last().isVisible(), `${viewport.name}: answer share-safe action should render`);
+  const lastActions = page.locator('.p0-message-actions').last();
+  assert(await lastActions.count() === 1, `${viewport.name}: answer action group should render`);
+  assert(await page.locator('[data-p0-message-action="copy"]').last().isVisible(), `${viewport.name}: answer copy action should remain accessible`);
+  assert(await page.locator('[data-p0-message-action="retry"]').last().isVisible(), `${viewport.name}: answer retry action should remain accessible`);
+  assert(await page.locator('[data-p0-message-action="share-safe"]').last().isVisible(), `${viewport.name}: answer share-safe action should remain accessible`);
+  const hiddenOpacity = Number(await lastActions.evaluate((el) => getComputedStyle(el).opacity));
+  assert(hiddenOpacity < 0.2, `${viewport.name}: answer actions should be visually subtle before focus, opacity=${hiddenOpacity}`);
+  await page.locator('.p0-message-assistant').last().focus();
+  await page.waitForTimeout(220);
+  const focusOpacity = Number(await lastActions.evaluate((el) => getComputedStyle(el).opacity));
+  assert(focusOpacity > 0.6, `${viewport.name}: answer actions should reveal on keyboard/touch focus, opacity=${focusOpacity}`);
 
   layout = await collectLayout(page);
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: answer actions must not create horizontal overflow`);

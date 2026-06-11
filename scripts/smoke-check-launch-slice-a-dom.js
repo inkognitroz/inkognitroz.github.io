@@ -147,9 +147,14 @@ requireIncludes(files.p0Css, '.p0-message + .p0-message', 'P0 messages must pres
 requireIncludes(files.p0Css, '.p0-message-receipt', 'P0 assistant answers must include a visible route receipt.');
 requireIncludes(files.p0Css, '.p0-receipt-full', 'P0 compact receipts must expose full audit details when expanded.');
 requireIncludes(files.p0Css, '.p0-message-actions', 'P0 assistant answers must expose subtle answer actions.');
+requireIncludes(files.p0Css, '.p0-message:focus-within .p0-message-actions', 'P0 answer actions must reveal on focus without always-visible clutter.');
+requireIncludes(files.p0Css, '.p0-message[data-actions-open="true"] .p0-message-actions', 'P0 answer actions must support JS-assisted keyboard/touch reveal.');
+requireIncludes(files.p0Css, 'pointer-events: none', 'P0 answer actions must stay non-interactive while visually hidden.');
 requireIncludes(files.p0Runtime, 'data-p0-message-action="copy"', 'P0 answer actions must include copy.');
 requireIncludes(files.p0Runtime, 'data-p0-message-action="retry"', 'P0 answer actions must include retry.');
 requireIncludes(files.p0Runtime, 'data-p0-message-action="share-safe"', 'P0 answer actions must include share-safe draft.');
+requireIncludes(files.p0Runtime, 'data-has-status="false"', 'P0 answer actions must keep status-aware reveal state.');
+requireIncludes(files.p0Runtime, 'actionsOpen', 'P0 answer actions must expose focus/hover state without default button clutter.');
 requireIncludes(files.p0Runtime, "const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1'", 'P0 share-safe must store only a local safe draft.');
 requireIncludes(files.p0RouteAdapters, "const PROD_API_URL='https://api.mmir.ai'", 'P0 route adapter helper must keep api.mmir.ai as the production chat route.');
 requireIncludes(files.p0RouteAdapters, "const STAGING_API_URL='https://api-staging.mmir.ai'", 'P0 route adapter helper must know the staging API route.');
