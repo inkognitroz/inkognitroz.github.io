@@ -662,13 +662,23 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function routeScore(model,prompt,answer,elapsedMs,failed=false)",
-  "P0 Best Answer must score route quality from answer, prompt and latency.",
+  "function routeScore(model,prompt,answer,elapsedMs,failed=false,mode='single')",
+  "P0 Best Answer must score route quality from answer, prompt, latency and route mode.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "function scoreClassSummary(score)",
   "P0 Best Answer receipts must surface route answer/latency classes.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "function latencyTargetReceipt(model,elapsedMs,mode='single',failed=false)",
+  "P0 route receipts must surface answer-time targets without adding dashboard UI.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "latencyTargetSummary(score)",
+  "P0 score summaries must include compact answer-time target state.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

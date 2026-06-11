@@ -14,7 +14,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -114,6 +114,8 @@ const publicWinner = testApi.winningRoute(hosted, hostedPublicScore, gemma, loca
 assertEqual(publicWinner.model.id, hosted.id, 'Public fact Best Answer winner must be Supergenious');
 assertIncludes(publicWinner.summary, 'Winner: Supergenious', 'Winner summary must name the hosted route');
 assertIncludes(testApi.scoreSummary(hostedPublicScore), 'Score ', 'Score summary must expose the score');
+assertIncludes(testApi.scoreSummary(hostedPublicScore), 'target 2.5s met', 'Hosted first answer receipt must show the answer-time target compactly.');
+assertIncludes(testApi.scoreSummary(localPublicScore), 'target 8.0s met', 'Local first answer receipt must show its local answer-time target compactly.');
 
 const apiScoring = {
   scores: [
@@ -133,6 +135,13 @@ assertIncludes(apiPublicWinner.summary, 'API score 100', 'API winner summary mus
 const hostedCandidate = testApi.routeScoreCandidate(hosted, 'The capital of Japan is Tokyo.', 300, false);
 assertEqual(hostedCandidate.route_id, 'browser-guide/free', 'Hosted scoring candidate must use the API route id');
 assertEqual(hostedCandidate.provider, 'mmir', 'Hosted scoring candidate must not use browser/provider secrets');
+assertEqual(hostedCandidate.latency_target_ms, 3000, 'Hosted compare scoring candidate must include the compare latency target.');
+assertEqual(hostedCandidate.latency_target_state, 'met', 'Hosted compare scoring candidate must mark the target as met when in budget.');
+
+const hostedCompareScore = testApi.routeScore(hosted, 'compare quickly', 'This is a complete hosted answer.', 2800, false, 'compare');
+assertIncludes(testApi.scoreSummary(hostedCompareScore), 'target 3.0s met', 'Hosted compare answer must carry its compare latency target.');
+const slowLocalCompareScore = testApi.routeScore(gemma, 'compare privately', 'This is a complete local answer.', 9500, false, 'compare');
+assertIncludes(testApi.scoreSummary(slowLocalCompareScore), 'over 9.0s target', 'Slow local compare answer must be labeled over target without blocking chat.');
 
 testApi.recordRouteBenchmark(gemma, { score: 82, elapsedMs: 650, answer_class: 'complete', latency_class: 'fast' });
 testApi.recordRouteBenchmark(qwenTiny, { score: 34, elapsedMs: 3600, answer_class: 'thin', latency_class: 'acceptable' });

@@ -136,6 +136,11 @@ requireText(
 );
 requireText(
   runtime,
+  "latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis')",
+  'Best Answer synthesis must carry a compact answer-time target receipt'
+);
+requireText(
+  runtime,
   'recordRouteBenchmark(localModel,localScore)',
   'Compare flow must feed local route benchmark data back into ranking'
 );
