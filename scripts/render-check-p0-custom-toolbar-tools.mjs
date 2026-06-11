@@ -55,6 +55,7 @@ async function checkViewport(browser, viewport) {
     isMobile: viewport.width <= 430
   });
   const logs = [];
+  let fastPayloadSeen = false;
   page.on('console', message => {
     if (['warning', 'error'].includes(message.type())) logs.push(`${message.type()}: ${message.text()}`);
   });
@@ -78,6 +79,28 @@ async function checkViewport(browser, viewport) {
       })
     });
   });
+  await page.route('https://api.mmir.ai/v1/chat/completions', async route => {
+    const payload = route.request().postDataJSON();
+    const content = String(payload?.messages?.find(message => message.role === 'user')?.content || '');
+    if (/Answer fast/i.test(content) && /What is MMIR/i.test(content)) fastPayloadSeen = true;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: corsHeaders,
+      body: JSON.stringify({
+        id: 'chatcmpl_toolbar_fast',
+        object: 'chat.completion',
+        model: 'mmir-supergenius',
+        choices: [{
+          index: 0,
+          message: { role: 'assistant', content: 'MMIR connects AI models and nodes in one chat.' },
+          finish_reason: 'stop'
+        }],
+        usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+        mmir: { no_paid_routes_started: true }
+      })
+    });
+  });
   await page.addInitScript(() => {
     localStorage.clear();
     sessionStorage.clear();
@@ -97,15 +120,31 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const menuText = await page.locator('#p0-add-menu').innerText();
   assert(menuText.includes('Add to toolbar'), `${viewport.name}: + menu must expose Add to toolbar`);
+  assert(menuText.includes('Add Fast answer'), `${viewport.name}: + menu must expose Fast answer pin`);
   assert(menuText.includes('Add Fresh start'), `${viewport.name}: + menu must expose Fresh start pin`);
   assert(menuText.includes('Add Memory'), `${viewport.name}: + menu must expose Memory pin`);
   assert(menuText.includes('Add Stop'), `${viewport.name}: + menu must expose Stop pin`);
   assert(!/Model discussion/i.test(menuText), `${viewport.name}: Model discussion must wait for two routes`);
 
+  await page.locator('[data-p0-action="pin-toolbar-tool:fast-answer"]').click();
+  await page.waitForTimeout(100);
+  assert(await page.locator('[data-p0-toolbar-tool="fast-answer"]').count() === 1, `${viewport.name}: Fast answer must pin to toolbar`);
+  await page.locator('[data-p0-toolbar-tool="fast-answer"]').click();
+  await page.waitForTimeout(100);
+  assert(/Fast answer ready/i.test(await page.locator('#p0-status').innerText()), `${viewport.name}: Fast answer must confirm readiness in subtle status text`);
+  assert(/next answer short/i.test(await page.locator('#p0-route').getAttribute('aria-label') || ''), `${viewport.name}: Fast answer must mark next response as short`);
+  await page.locator('#p0-input').fill('What is MMIR?');
+  await page.locator('#p0-send').click();
+  await page.waitForSelector('.p0-message-assistant >> text=MMIR connects AI models and nodes in one chat.');
+  assert(fastPayloadSeen, `${viewport.name}: Fast answer must send a short-answer instruction to the route`);
+  assert(!(await page.locator('.p0-message-user').innerText()).includes('Answer fast'), `${viewport.name}: user bubble must keep the original prompt clean`);
+
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
   await page.locator('[data-p0-action="pin-toolbar-tool:fresh-start"]').click();
   await page.waitForTimeout(100);
   assert(await page.locator('[data-p0-toolbar-tool="fresh-start"]').count() === 1, `${viewport.name}: Fresh start must pin to toolbar`);
-  assert(await page.locator('[data-p0-toolbar-tool]').count() === 1, `${viewport.name}: pinning one tool must not add extra toolbar clutter`);
+  assert(await page.locator('[data-p0-toolbar-tool]').count() === 2, `${viewport.name}: pinning two tools must not add unrelated toolbar clutter`);
 
   await page.locator('[data-p0-toolbar-tool="fresh-start"]').click();
   await page.waitForTimeout(100);
