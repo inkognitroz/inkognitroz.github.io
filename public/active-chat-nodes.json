@@ -4,7 +4,7 @@
   "nodes": [
     {
       "id": "browser-guide",
-      "name": "Supergenious",
+      "name": "Supergeni",
       "type": "free",
       "status": "online",
       "trust_level": "public-free",
@@ -14,7 +14,7 @@
       "models": [
         {
           "id": "mmir-supergenius",
-          "name": "Supergenious",
+          "name": "Supergeni",
           "status": "available",
           "provider": "mmir",
           "source": "browser-helper"
@@ -23,7 +23,7 @@
     },
     {
       "id": "managed-api-bootstrap",
-      "name": "Supergenious",
+      "name": "Supergeni",
       "type": "managed-api",
       "status": "verify_before_chat",
       "trust_level": "public-free",
@@ -33,7 +33,7 @@
       "models": [
         {
           "id": "mmir-supergenius",
-          "name": "Supergenious",
+          "name": "Supergeni",
           "status": "available",
           "provider": "mmir",
           "source": "api.mmir.ai"

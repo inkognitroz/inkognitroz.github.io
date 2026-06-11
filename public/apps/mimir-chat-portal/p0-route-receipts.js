@@ -1,12 +1,14 @@
 (function(){
-  const version='20260606-b1-06-p0-route-receipts-v1';
+  const version='20260611-supergeni-vision-v1';
 
   function hostedRouteLabel(apiLabel='api.mmir.ai'){
-    return 'Supergenious · Free · '+String(apiLabel||'api.mmir.ai');
+    return 'Supergeni · Free · '+String(apiLabel||'api.mmir.ai');
   }
 
   function displayName(model){
-    return String(model?.display_name||model?.name||model?.label||model?.id||'Supergenious').trim();
+    const raw=String(model?.display_name||model?.name||model?.label||model?.id||'Supergeni').trim();
+    const display=window.MimirRouteDisplay;
+    return display?.displayLabel ? display.displayLabel(raw,'Supergeni') : raw;
   }
 
   function receipt(model,{apiLabel='api.mmir.ai'}={}){

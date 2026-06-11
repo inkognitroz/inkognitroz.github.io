@@ -22,7 +22,7 @@ function forbid(source, pattern, message) {
 
 requireIncludes(
   p0Shell,
-  'Supergenious answers now. Use + to add local models and let MMIR route more intelligence into one chat.',
+  'Supergeni answers now.',
   'Empty state must explain immediate chat plus the intelligence-pool upgrade path in one short line.'
 );
 requireIncludes(

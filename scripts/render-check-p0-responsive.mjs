@@ -34,8 +34,8 @@ function seededHistory() {
       id: `responsive-assistant-${index}`,
       role: 'assistant',
       content: `Responsive QA answer ${index + 1}. This answer is intentionally short, scrollable and safe.`,
-      label: 'Supergenious',
-      receipt: 'Supergenious · Free · api.mmir.ai'
+      label: 'Supergeni',
+      receipt: 'Supergeni · Free · api.mmir.ai'
     });
   }
   return messages;
@@ -77,8 +77,8 @@ async function installApiFixtures(page) {
         data: [
           {
             id: 'mmir-supergenius',
-            name: 'Supergenious',
-            display_name: 'Supergenious',
+            name: 'Supergeni',
+            display_name: 'Supergeni',
             executable: true,
             recommended: true,
             availability: 'available',
@@ -251,7 +251,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-model-menu:not([hidden])');
   layout = await collectLayout(page);
   assertMenuInViewport(layout.modelMenu, viewport, `${viewport.name} model`);
-  assert(layout.text.includes('Supergenious'), `${viewport.name}: model picker should show active model`);
+  assert(layout.text.includes('Supergeni'), `${viewport.name}: model picker should show active model`);
 
   await page.locator('#p0-input').fill('Ping responsive guard');
   await page.locator('#p0-send').click();

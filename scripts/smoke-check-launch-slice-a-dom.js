@@ -96,7 +96,7 @@ for (const selector of [
 }
 
 for (const text of [
-  'Supergenious',
+  'Supergeni',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
@@ -109,7 +109,7 @@ for (const text of [
 }
 
 for (const text of [
-  'Supergenious answers immediately',
+  'Supergeni answers immediately',
   'Node: ',
   'Privacy: ',
   'Tunnel: ',
@@ -136,7 +136,7 @@ requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compa
 requireIncludes(files.p0Icons, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
 requireIncludes(files.p0Icons, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
 requireIncludes(files.p0Runtime, 'id="p0-input"', 'P0 shell must expose #p0-input as the canonical visible first-chat input.');
-requireIncludes(files.p0Runtime, 'aria-label="Message Supergenious"', 'P0 canonical input must have an accessible label for browser/UI automation.');
+requireIncludes(files.p0Runtime, 'aria-label="Message Supergeni"', 'P0 canonical input must have an accessible label for browser/UI automation.');
 requireIncludes(files.p0Runtime, 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
 requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
@@ -168,9 +168,9 @@ requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setu
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
 requireIncludes(files.p0Runtime, 'Add model', 'P0 add menu must present local setup as one simple Add model task.');
 requireIncludes(files.p0Runtime, 'Get the install command in this chat.', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
-requireIncludes(files.p0Runtime, 'Supergenious answers now', 'P0 empty state must make the immediate chat path clear.');
+requireIncludes(files.p0Runtime, 'Supergeni answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
-requireIncludes(files.p0RouteReceipts, "'Supergenious · Free · '+String(apiLabel||'api.mmir.ai')", 'P0 hosted route receipt must stay visible to users.');
+requireIncludes(files.p0RouteReceipts, "'Supergeni · Free · '+String(apiLabel||'api.mmir.ai')", 'P0 hosted route receipt must stay visible to users.');
 requireIncludes(files.p0RouteReceipts, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'Keep answers short by default', 'P0 chat must keep responses short unless the user asks for detail.');
 requireIncludes(files.p0Runtime, 'function bestLocalModel()', 'P0 compare must pick a ranked local model after real local discovery.');
@@ -198,7 +198,7 @@ forbid(files.p0Runtime, /<strong>Smart routing<\/strong>/, 'P0 model picker must
 forbid(files.p0Css, /\.p0-routing-hint/, 'P0 dropdowns must not rely on dashboard-style routing hint cards.');
 requireIncludes(files.p0Runtime, 'function wantsPublicFactRoute(prompt)', 'P0 quality guard must detect public/current factual prompts.');
 requireIncludes(files.p0Runtime, 'Quality guard: public facts', 'P0 quality guard must label hosted fallback for public facts from local routes.');
-forbid(files.p0Runtime, /Public facts use Supergenious\. Private\/local prompts/, 'P0 model picker must not show long public/private routing policy copy in the dropdown.');
+forbid(files.p0Runtime, /Public facts use Supergeni\. Private\/local prompts/, 'P0 model picker must not show long public/private routing policy copy in the dropdown.');
 requireIncludes(files.p0Runtime, 'function explicitMentionDecision(prompt)', 'P0 chat must treat explicit @model tags as route commands.');
 requireIncludes(files.p0Runtime, "return {mode:'compare',model:localModel,prompt:cleaned}", 'P0 chat must support explicit @supergenius + local-model compare intent.');
 requireIncludes(files.p0Runtime, 'Local-only: public facts may be outdated', 'P0 chat must warn when explicit local-only routing is used for public facts.');

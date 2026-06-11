@@ -41,10 +41,10 @@ vm.runInContext(source, context, { filename: 'route-display.js' });
 
 const helper = windowTarget.MimirRouteDisplay;
 assert.equal(typeof helper.displayLabel, 'function', 'route display helper must expose displayLabel');
-assert.equal(helper.DEFAULT_LABEL, 'Supergenious', 'canonical public model label must stay stable');
-assert.equal(helper.displayLabel('MMIR Supergenius Free'), 'Supergenious', 'legacy Supergenius names must normalize');
-assert.equal(helper.displayLabel('MMIR Browser Guide'), 'Supergenious', 'bootstrap guide must normalize to public model label');
-assert.equal(helper.modelLabel({ display_name: 'MMIR Supergenious Free' }), 'Supergenious', 'object model labels must normalize');
+assert.equal(helper.DEFAULT_LABEL, 'Supergeni', 'canonical public model label must stay stable');
+assert.equal(helper.displayLabel('MMIR Supergenius Free'), 'Supergeni', 'legacy Supergenius names must normalize');
+assert.equal(helper.displayLabel('MMIR Browser Guide'), 'Supergeni', 'bootstrap guide must normalize to public model label');
+assert.equal(helper.modelLabel({ display_name: 'MMIR Supergeni Free' }), 'Supergeni', 'object model labels must normalize');
 assert.equal(helper.routeName({ id: 'mmir-api-bootstrap' }), 'api.mmir.ai free route', 'hosted bootstrap route name must remain explicit');
 assert.equal(helper.routeName({ provider: 'local-node', name: 'MMIR Local Node' }), 'MMIR Local Node', 'local route label must stay human-readable');
 assert.equal(helper.trustLabel({ provider: 'local-node', url: 'http://127.0.0.1:3000' }), 'local/private', 'local node trust must stay private');

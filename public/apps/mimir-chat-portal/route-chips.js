@@ -1,6 +1,6 @@
 (function(){
   const w=window,d=document,api=w.MimirApiClient||{},displayApi=w.MimirRouteDisplay||{},q=id=>d.getElementById(id);
-  const FALLBACK_LABEL=displayApi.DEFAULT_LABEL||'Supergenious';
+  const FALLBACK_LABEL=displayApi.DEFAULT_LABEL||'Supergeni';
   function clip(v,m=34){return displayApi.clip?displayApi.clip(v,m):(()=>{const s=String(v||'').replace(/\s+/g,' ').trim();return s.length<=m?s:s.slice(0,m-3).trim()+'...';})();}
   function display(v){return displayApi.displayLabel?displayApi.displayLabel(v,FALLBACK_LABEL):(String(v||'').replace(/\s+/g,' ').trim()||FALLBACK_LABEL);}
   function chip(id,text,state,title){const e=typeof id==='string'?q(id):id;if(!e)return;const v=display(String(text||'').trim());e.textContent=v;e.dataset.state=state||'idle';if(title||v)e.title=display(title||v);}
@@ -24,7 +24,7 @@
   function modelState(sel,webGpu){const r=selectedRuntime(sel);if(!sel||r==='live'||r==='browser-guide'||r==='auto')return 'ready';if(r==='webllm')return webGpu?'setup':'offline';if(r==='ollama')return 'setup';return 'idle';}
   function updateRuntime({modelSelect=q('runtime-model'),profile=null,webGpu=Boolean(navigator.gpu)}={}){
     const m=modelLabel(modelSelect),r=selectedRuntime(modelSelect);
-    chip('runtime-model-chip',clip(m,38),modelState(modelSelect,webGpu),r==='auto'||r==='browser-guide'?'Supergenious answers immediately. MMIR upgrades automatically to verified browser, API or Local Node routes when available.':m);
+    chip('runtime-model-chip',clip(m,38),modelState(modelSelect,webGpu),r==='auto'||r==='browser-guide'?'Supergeni answers immediately. MMIR upgrades automatically to verified browser, API or Local Node routes when available.':m);
     const t=trust(profile);
     if(q('runtime-node-chip')&&!q('runtime-node-chip').textContent)chip('runtime-node-chip','Node: '+clip(route(profile),32),profile?.health==='offline'?'offline':'idle','Selected node or route. Proof updates this state when backend checks finish.');
     chip('runtime-privacy-chip',t==='policy required'?'Privacy: policy required':'Privacy: '+t,t==='policy required'?'degraded':'ready','Security/privacy state. No browser provider secrets; prompts are not stored in the public repo.');

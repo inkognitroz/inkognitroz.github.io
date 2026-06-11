@@ -1,6 +1,6 @@
 (function(){
   const w=window;
-  const DEFAULT_LABEL='Supergenious';
+  const DEFAULT_LABEL='Supergeni';
 
   function text(value){
     return String(value||'').replace(/\s+/g,' ').trim();
@@ -10,8 +10,9 @@
     const raw=text(value);
     if(!raw)return fallback;
     return raw
-      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi,fallback)
+      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)?(?:\s+free)?\b/gi,fallback)
       .replace(/MMIR Browser Guide|MMIR Guide/gi,fallback)
+      .replace(/\bsupergeni\s+free\b/gi,fallback)
       .replace(/supergenious(?:\s+free)?/gi,fallback)
       .replace(/(^|[^A-Za-z])supergenius(?:\s+free)?/gi,(match,prefix)=>prefix+fallback)
       .replace(/(?:MMIR\s+){2,}Supergenius/gi,fallback)

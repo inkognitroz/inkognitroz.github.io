@@ -50,8 +50,8 @@ async function installApiFixtures(page) {
         data: [
           {
             id: 'mmir-supergenius',
-            name: 'Supergenious',
-            display_name: 'Supergenious',
+            name: 'Supergeni',
+            display_name: 'Supergeni',
             executable: true,
             recommended: true,
             availability: 'available',

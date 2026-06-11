@@ -1,7 +1,7 @@
 (function () {
   const d = document,
     w = window,
-    FALLBACK = "Supergenious",
+    FALLBACK = "Supergeni",
     q = (s) => d.querySelector(s),
     qa = (s) => d.querySelectorAll(s);
 

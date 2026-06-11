@@ -68,7 +68,7 @@ for (const marker of [
 }
 
 for (const marker of [
-  'aria-label="Message Supergenious"',
+  'aria-label="Message Supergeni"',
   'aria-label="Add or connect model"',
   'aria-label="Security and privacy status"',
   'aria-label="Choose model"',

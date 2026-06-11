@@ -8,7 +8,7 @@
     AS =
       'a[href="#mimir-prompt"],a[href="#mimir-chat-runtime"],a[href="#local-connector"],a[href="#connect-options"],a[href="#backend-settings"]',
     K = "__MimirLocalProbeAllowedUntil",
-    FALLBACK = "Supergenious",
+    FALLBACK = "Supergeni",
     q = (s) => d.querySelector(s),
     qa = (s) => d.querySelectorAll(s);
 

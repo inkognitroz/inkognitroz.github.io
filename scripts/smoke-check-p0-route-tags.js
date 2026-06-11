@@ -103,7 +103,7 @@ assertEqual(compare.prompt, 'who is president of USA?', 'Explicit compare must r
 
 const bestAnswer = testApi.smartDecision('Give me the best answer in parallel: what is the capital of Japan?');
 assertEqual(bestAnswer.mode, 'compare', 'Best Answer wording must trigger the two-route compare/synthesis path');
-assertEqual(bestAnswer.model.id, gemma.id, 'Best Answer must use the best discovered local model alongside Supergenious');
+assertEqual(bestAnswer.model.id, gemma.id, 'Best Answer must use the best discovered local model alongside Supergeni');
 
 const hostedPublicScore = testApi.routeScore(hosted, 'Who is president of USA?', 'Donald J. Trump is the current president.', 400);
 const localPublicScore = testApi.routeScore(gemma, 'Who is president of USA?', 'Joe Biden', 700);
@@ -111,8 +111,8 @@ if (hostedPublicScore.score <= localPublicScore.score) {
   fail(`Public facts must prefer hosted route score: hosted ${hostedPublicScore.score}, local ${localPublicScore.score}`);
 }
 const publicWinner = testApi.winningRoute(hosted, hostedPublicScore, gemma, localPublicScore);
-assertEqual(publicWinner.model.id, hosted.id, 'Public fact Best Answer winner must be Supergenious');
-assertIncludes(publicWinner.summary, 'Winner: Supergenious', 'Winner summary must name the hosted route');
+assertEqual(publicWinner.model.id, hosted.id, 'Public fact Best Answer winner must be Supergeni');
+assertIncludes(publicWinner.summary, 'Winner: Supergeni', 'Winner summary must name the hosted route');
 assertIncludes(testApi.scoreSummary(hostedPublicScore), 'Score ', 'Score summary must expose the score');
 assertIncludes(testApi.scoreSummary(hostedPublicScore), 'target 2.5s met', 'Hosted first answer receipt must show the answer-time target compactly.');
 assertIncludes(testApi.scoreSummary(localPublicScore), 'target 8.0s met', 'Local first answer receipt must show its local answer-time target compactly.');
@@ -177,13 +177,13 @@ assertEqual(localOnly.prompt, 'who is president of USA?', 'Explicit local prompt
 
 const hostedOnly = testApi.explicitMentionDecision('@supergenius hi');
 assertEqual(hostedOnly.mode, 'single', 'Explicit hosted tag must route to hosted model');
-assertEqual(hostedOnly.model.id, hosted.id, 'Explicit hosted tag must preserve Supergenious route');
+assertEqual(hostedOnly.model.id, hosted.id, 'Explicit hosted tag must preserve Supergeni route');
 assertEqual(hostedOnly.prompt, 'hi', 'Explicit hosted prompt must remove route tag');
 
 testApi.state.activeModelId = gemma.id;
 const guarded = testApi.smartDecision('Who is president of USA?');
 assertEqual(guarded.mode, 'single', 'Public fact guard must stay single-route');
-assertEqual(guarded.model.id, hosted.id, 'Public fact guard must route local-selected public facts to hosted Supergenious');
+assertEqual(guarded.model.id, hosted.id, 'Public fact guard must route local-selected public facts to hosted Supergeni');
 assertIncludes(guarded.reason, 'Quality guard: public facts', 'Public fact guard must label the hosted route');
 
 testApi.state.models = [hosted];

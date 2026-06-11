@@ -52,7 +52,7 @@
   function profileMeasured(p){return Boolean(String(p.latency||'').trim()||String(p.throughput||'').trim()||String(p.uptime||'').trim());}
 
   function defaultProfile(){return {id:uid(),name:'MMIR Local Node',url:DEFAULT_LOCAL_URL,provider:'local-node',models:'auto-discovered',keyRef:'local pairing token only',cost:'free local',latency:'local best effort',throughput:'depends on model',uptime:'dev/local',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
-  function defaultApiProfile(){return {id:'mmir-api-bootstrap',name:'Supergenious',url:DEFAULT_API_URL,provider:'openai-compatible',models:'checked at runtime',keyRef:'no browser secret',cost:'free no paid routes',latency:'edge bootstrap',throughput:'hosted free route',uptime:'cloudflare worker',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
+  function defaultApiProfile(){return {id:'mmir-api-bootstrap',name:'Supergeni',url:DEFAULT_API_URL,provider:'openai-compatible',models:'checked at runtime',keyRef:'no browser secret',cost:'free no paid routes',latency:'edge bootstrap',throughput:'hosted free route',uptime:'cloudflare worker',health:'unknown',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
   function openModelLibraryFallback(){
     const drawer=document.getElementById('model-library');if(drawer){drawer.open=true;drawer.scrollIntoView({block:'start',behavior:'smooth'});}
   }
@@ -102,7 +102,7 @@
       activeDesc.textContent=(active.provider||'local-node')+' \u00b7 '+(active.models||'models selected in backend')+' \u00b7 '+(active.health||'unknown');
       primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }else{
-      activeBadge.textContent='Free chat ready';activeTitle.textContent='Ask MMIR now. Add your own model when ready.';activeDesc.textContent='Supergenious answers immediately; Connect Model stays optional for private local models and trusted backends.';primaryLink.href='#mimir-chat-runtime';primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
+      activeBadge.textContent='Free chat ready';activeTitle.textContent='Ask MMIR now. Add your own model when ready.';activeDesc.textContent='Supergeni answers immediately; Connect Model stays optional for private local models and trusted backends.';primaryLink.href='#mimir-chat-runtime';primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }
   }
 
@@ -154,10 +154,10 @@
       profiles.unshift(profile);
     }
     profile.id='mmir-api-bootstrap';
-    profile.name='Supergenious';
+    profile.name='Supergeni';
     profile.url=DEFAULT_API_URL;
     profile.provider='openai-compatible';
-    profile.models=profile.health==='ready'?'Supergenious auto-discovered':'checked at runtime';
+    profile.models=profile.health==='ready'?'Supergeni auto-discovered':'checked at runtime';
     profile.keyRef='no browser secret';
     profile.cost='free no paid routes';
     profile.latency='edge bootstrap';
