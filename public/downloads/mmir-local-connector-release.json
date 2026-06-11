@@ -1,14 +1,14 @@
 {
   "schema_version": "0.2",
-  "release_id": "mmir-local-connector-2026-05-23",
-  "connector_version": "0.1.0",
+  "release_id": "mmir-local-connector-2026-06-11-contract-parity",
+  "connector_version": "0.1.1-standalone-device-contract",
   "contract_version": "0.1",
   "canonical_repository": "inkognitroz/mmir-local-connector",
   "compatibility_repository_names": [
     "inkognitroz/mmir-local-node"
   ],
   "public_download_base_url": "https://mmir.ai/downloads",
-  "published_at": "2026-05-23T05:59:00Z",
+  "published_at": "2026-06-11T00:00:00Z",
   "default_port": 3000,
   "default_host": "127.0.0.1",
   "cost_policy": "zero-cost local install only; no paid cloud or provider route is started by these artifacts",
@@ -69,8 +69,15 @@
       "platform": "shared",
       "kind": "node-server",
       "path": "/downloads/mmir-local-connector-server.mjs",
-      "sha256": "3da7310de2456a68081c015eae7c46ea87b636b7724285c18fb964c6ff675508",
+      "sha256": "6cc4f0310e1eb1dd8bf5d50451f73fb7f15901df0bc7d96706da25f395d2b85a",
       "contract_version": "0.1",
+      "connector_version": "0.1.1-standalone-device-contract",
+      "contract_parity": [
+        "paired-status-route-telemetry",
+        "paired-node-contract",
+        "paired-telemetry-routes",
+        "public-safe-unpaired-status"
+      ],
       "required": true
     },
     {
@@ -78,7 +85,7 @@
       "platform": "macos",
       "kind": "command-installer",
       "path": "/downloads/mmir-local-connector-mac.command",
-      "sha256": "217bbff3b4717bf0739df4fc21acf99e8c843e34bac24e250a00ed648afe3225",
+      "sha256": "8d308181d5664f34c1c2e7f435a0d8d75ac43c257d354706ea420c3e10dbceb3",
       "recommended": false,
       "note": "Advanced fallback. Unsigned downloaded .command files can trigger macOS Gatekeeper. Recommended Mac install path is the Terminal curl bootstrap."
     },
@@ -172,7 +179,7 @@
     }
   ],
   "installer_qa": {
-    "verified_at": "2026-06-07T04:55:15.970Z",
+    "verified_at": "2026-06-11T05:08:17.053Z",
     "checksum_algorithm": "sha256",
     "artifacts_with_checksums": 10,
     "checksums_refreshed_by": "scripts/update-installer-release-hashes.js",

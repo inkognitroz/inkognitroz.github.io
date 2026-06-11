@@ -10,8 +10,9 @@ const OLLAMA_URL = (process.env.OLLAMA_URL || 'http://127.0.0.1:11434').replace(
 const TOKEN = fs.readFileSync(process.env.MMIR_PAIRING_TOKEN_FILE, 'utf8').trim();
 const MODEL = fs.readFileSync(process.env.MMIR_DEFAULT_MODEL_FILE, 'utf8').trim() || 'llama3.2:1b';
 const PLATFORM = process.env.MMIR_CONNECTOR_PLATFORM || os.platform();
-const VERSION = '0.1.0-standalone-device';
+const VERSION = '0.1.1-standalone-device-contract';
 const CONTRACT_VERSION = '0.1';
+const ROUTE_TELEMETRY_SCHEMA_VERSION = '2026-06-06-local-route-telemetry-v1';
 const TUNNEL_CONTROL_ENABLED = process.env.MMIR_ENABLE_TUNNEL_CONTROL === 'true';
 const TUNNEL_LOCAL_URL = `http://127.0.0.1:${PORT}`;
 
@@ -25,6 +26,7 @@ const tunnelState = {
   logs: [],
 };
 const modelPulls = new Map();
+const routeStats = new Map();
 let remotePairingSession = null;
 
 const allowed = new Set([
@@ -83,9 +85,11 @@ function nodeCapabilities() {
     'status',
     'doctor',
     'node.identity',
+    'node.contract',
     'pairing',
     'pairing.remote-code',
     'hardware',
+    'telemetry.routes',
     'models',
     'models.pull',
     'models.pull.status',
@@ -97,12 +101,158 @@ function nodeCapabilities() {
   ];
 }
 
+function cleanString(value, max = 160) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function finiteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function routeIdFor(nodeId, modelId) {
+  const encodedModel = Buffer.from(String(modelId || 'unknown'), 'utf8').toString('base64url').slice(0, 160);
+  return `${cleanString(nodeId, 80) || 'local-node'}/ollama/${encodedModel}`;
+}
+
+function latencyStatus(latencyMs) {
+  const latency = finiteNumber(latencyMs);
+  if (latency === null) return 'unknown';
+  if (latency <= 1500) return 'fast';
+  if (latency <= 5000) return 'usable';
+  return 'slow';
+}
+
+function latencyPenalty(status) {
+  return { fast: 0, usable: 8, slow: 24, unknown: 6 }[status] ?? 10;
+}
+
+function scoreBand(score) {
+  if (score >= 85) return 'strong';
+  if (score >= 70) return 'usable';
+  if (score >= 50) return 'degraded';
+  return 'avoid';
+}
+
+function normalizeStats(stats = {}) {
+  const successCount = Math.max(0, Math.trunc(finiteNumber(stats.success_count) || 0));
+  const failureCount = Math.max(0, Math.trunc(finiteNumber(stats.failure_count) || 0));
+  const sampleCount = Math.max(0, Math.trunc(finiteNumber(stats.sample_count) || successCount + failureCount));
+  const avgLatencyMs = finiteNumber(stats.avg_latency_ms);
+
+  return {
+    sample_count: sampleCount,
+    success_count: successCount,
+    failure_count: failureCount,
+    last_latency_ms: finiteNumber(stats.last_latency_ms),
+    avg_latency_ms: avgLatencyMs === null ? null : Math.round(avgLatencyMs),
+    min_latency_ms: finiteNumber(stats.min_latency_ms),
+    max_latency_ms: finiteNumber(stats.max_latency_ms),
+    last_status: cleanString(stats.last_status, 32) || 'unknown',
+    last_sampled_at: stats.last_sampled_at || null,
+  };
+}
+
+function recordRouteSample(modelId, sample = {}) {
+  const id = cleanString(modelId, 160);
+  if (!id) return null;
+
+  const rawPrevious = routeStats.get(id) || {};
+  const previous = normalizeStats(rawPrevious);
+  const durationMs = Math.max(0, Math.round(finiteNumber(sample.durationMs) || 0));
+  const ok = sample.ok !== false;
+  const latencySamples = Array.isArray(rawPrevious.latency_samples) ? rawPrevious.latency_samples : [];
+  const nextLatencySamples = ok ? [...latencySamples, durationMs].slice(-20) : latencySamples;
+  const avg = nextLatencySamples.length
+    ? Math.round(nextLatencySamples.reduce((sum, value) => sum + value, 0) / nextLatencySamples.length)
+    : previous.avg_latency_ms;
+
+  const next = {
+    sample_count: Math.min(20, previous.sample_count + 1),
+    success_count: previous.success_count + (ok ? 1 : 0),
+    failure_count: previous.failure_count + (ok ? 0 : 1),
+    last_latency_ms: durationMs,
+    avg_latency_ms: avg,
+    min_latency_ms: nextLatencySamples.length ? Math.min(...nextLatencySamples) : previous.min_latency_ms,
+    max_latency_ms: nextLatencySamples.length ? Math.max(...nextLatencySamples) : previous.max_latency_ms,
+    last_status: ok ? 'success' : 'error',
+    last_sampled_at: sample.finishedAt || new Date().toISOString(),
+    latency_samples: nextLatencySamples,
+  };
+
+  routeStats.set(id, next);
+  return normalizeStats(next);
+}
+
+function safeTelemetrySummary() {
+  const totalMb = Math.round(os.totalmem() / 1024 / 1024);
+  const freeMb = Math.round(os.freemem() / 1024 / 1024);
+  const usedPercent = totalMb > 0 ? Math.round(((totalMb - freeMb) / totalMb) * 100) : null;
+  const load1m = os.loadavg()[0] || 0;
+  const cpuCount = os.cpus().length || 1;
+
+  return {
+    object: 'mmir.local.telemetry.summary',
+    schema_version: '2026-06-06-local-safe-telemetry-v1',
+    cpu: {
+      count: cpuCount,
+      load_1m_percent: Math.max(0, Math.min(100, Math.round((load1m / cpuCount) * 100))),
+    },
+    ram: {
+      total_mb: totalMb,
+      available_mb: freeMb,
+      used_percent: usedPercent,
+    },
+    gpu: {
+      status: 'not_reported',
+      count: null,
+      memory_available_mb: null,
+    },
+    privacy: {
+      metadata_only: true,
+      no_hostname: true,
+      no_serial_number: true,
+      no_prompt_capture: true,
+      no_answer_capture: true,
+      no_pairing_token: true,
+    },
+  };
+}
+
+function nodeHealth(runtime) {
+  if (runtime?.status !== 'online') {
+    return {
+      status: 'degraded',
+      detail: 'Ollama is offline or not reachable from the connector.',
+    };
+  }
+
+  return {
+    status: 'online',
+    detail: 'Ollama is reachable from the connector.',
+  };
+}
+
+function publicPairingState(req) {
+  const pairedNow = isPairedRequest(req);
+  return {
+    required: true,
+    configured: Boolean(TOKEN),
+    paired: pairedNow,
+    model_metadata_visible: pairedNow,
+    header: 'x-mmir-local-token',
+  };
+}
+
 function nodeIdentity() {
   const profile = hardware();
   return {
     id: `mmir-local-${PLATFORM}`,
     name: 'MMIR Local Connector',
+    display_name: 'MMIR Local Connector',
     type: 'local',
+    trust_type: 'local',
     device_class: profile.memory_tier,
     platform: os.platform(),
     arch: os.arch(),
@@ -315,14 +465,187 @@ function normalizeModels(models) {
   return Array.isArray(models) ? models.map(normalizeModel).filter(Boolean) : [];
 }
 
+function createRouteTelemetrySummary() {
+  const stats = Array.from(routeStats.values()).map(normalizeStats);
+  const measuredRoutes = stats.filter((entry) => entry.sample_count > 0).length;
+  const successfulRoutes = stats.filter((entry) => entry.success_count > 0).length;
+  const avgLatencySamples = stats.map((entry) => entry.avg_latency_ms).filter((value) => value !== null);
+  const avgLatencyMs = avgLatencySamples.length
+    ? Math.round(avgLatencySamples.reduce((sum, value) => sum + value, 0) / avgLatencySamples.length)
+    : null;
+
+  return {
+    object: 'mmir.local.route_telemetry.summary',
+    schema_version: ROUTE_TELEMETRY_SCHEMA_VERSION,
+    measured_routes: measuredRoutes,
+    successful_routes: successfulRoutes,
+    avg_latency_ms: avgLatencyMs,
+    privacy: {
+      metadata_only: true,
+      model_names_hidden_until_paired: true,
+      no_prompts: true,
+      no_answers: true,
+      no_hostname: true,
+      no_serial_number: true,
+      no_pairing_token: true,
+    },
+  };
+}
+
+function createLocalRouteTelemetry({ runtime, models = [], paired = false } = {}) {
+  const profile = hardware();
+  const telemetry = safeTelemetrySummary();
+  const sampledAt = new Date().toISOString();
+  const nodeId = nodeIdentity().id;
+  const routeData = paired && Array.isArray(models) ? models.map((model) => {
+    const stats = normalizeStats(routeStats.get(model.id));
+    const latency = stats.avg_latency_ms ?? stats.last_latency_ms;
+    const latencyState = latencyStatus(latency);
+    const noSuccessfulSamples = stats.success_count === 0;
+    const score = Math.max(0, Math.min(100, Math.round(
+      100 -
+      latencyPenalty(latencyState) -
+      (noSuccessfulSamples ? 12 : 0) -
+      Math.min(20, stats.failure_count * 4)
+    )));
+
+    return {
+      object: 'mmir.local.route_telemetry',
+      route_id: routeIdFor(nodeId, model.id),
+      node_id: nodeId,
+      model_id: model.id,
+      model_display_name: model.name || model.id,
+      provider: model.provider || 'ollama',
+      source: 'local',
+      status: runtime?.status === 'online' && score >= 50 ? 'available' : 'degraded',
+      sampled_at: sampledAt,
+      ranking_signals: {
+        score,
+        score_band: scoreBand(score),
+        trust_level: 'paired-local',
+        cost_class: 'private-free',
+        latency_status: latencyState,
+        latency_source: noSuccessfulSamples ? 'not_sampled' : 'observed_chat',
+        avg_latency_ms: stats.avg_latency_ms,
+        last_latency_ms: stats.last_latency_ms,
+        latency_sample_count: stats.success_count,
+        failure_count: stats.failure_count,
+        last_sampled_at: stats.last_sampled_at,
+        resource_pressure: 'unknown',
+        runtime_status: runtime?.status || 'unknown',
+        cpu_load_percent: telemetry.cpu.load_1m_percent,
+        ram_available_mb: telemetry.ram.available_mb,
+        ram_used_percent: telemetry.ram.used_percent,
+        model_estimated_ram_gb: null,
+        model_disk_gb: null,
+      },
+      capacity: {
+        device_class: profile.memory_tier,
+        memory_tier: profile.memory_tier,
+        cpu_count: telemetry.cpu.count,
+        ram_total_mb: telemetry.ram.total_mb,
+        ram_available_mb: telemetry.ram.available_mb,
+        gpu_status: telemetry.gpu.status,
+        gpu_count: telemetry.gpu.count,
+        gpu_available_mb: telemetry.gpu.memory_available_mb,
+      },
+      privacy: {
+        metadata_only: true,
+        no_prompt_capture: true,
+        no_answer_capture: true,
+        no_hostname: true,
+        no_serial_number: true,
+        no_raw_hardware_id: true,
+        no_pairing_token: true,
+      },
+    };
+  }) : [];
+
+  return {
+    object: 'mmir.local.route_telemetry.list',
+    schema_version: ROUTE_TELEMETRY_SCHEMA_VERSION,
+    provider: 'local-node',
+    source: 'ollama',
+    node_id: nodeId,
+    runtime: {
+      provider: runtime?.provider || 'ollama',
+      status: runtime?.status || 'offline',
+      version: runtime?.version || null,
+    },
+    sampled_at: sampledAt,
+    route_count: routeData.length,
+    data: routeData,
+    summary: createRouteTelemetrySummary(),
+    privacy: {
+      metadata_only: true,
+      no_prompts: true,
+      no_answers: true,
+      no_provider_secrets: true,
+      no_hostname: true,
+      no_serial_number: true,
+      no_pairing_token: true,
+    },
+  };
+}
+
+function buildNodeContract({ req, runtime, models }) {
+  const pairedNow = isPairedRequest(req);
+  const normalizedModels = normalizeModels(models);
+  return {
+    object: 'mmir.node.contract',
+    contract_version: CONTRACT_VERSION,
+    connector: {
+      name: 'MMIR Local Connector',
+      version: VERSION,
+      standalone: true,
+    },
+    node: {
+      ...nodeIdentity(),
+      health: nodeHealth(runtime).status,
+    },
+    health: nodeHealth(runtime),
+    pairing: publicPairingState(req),
+    secure_tunnel: tunnelPayload(),
+    control_plane: {
+      enabled: false,
+      status: 'not_configured',
+      note: 'Standalone public installer does not auto-register with a control plane.',
+    },
+    models: {
+      available: runtime?.status === 'online' && normalizedModels.length > 0,
+      source: 'ollama',
+      count: normalizedModels.length,
+      data: pairedNow ? normalizedModels : [],
+      error: runtime?.status === 'online' ? null : 'runtime_offline',
+      visibility: pairedNow ? 'paired' : 'public-safe',
+    },
+    route_telemetry: createLocalRouteTelemetry({ runtime, models: normalizedModels, paired: pairedNow }),
+    telemetry: safeTelemetrySummary(),
+    limits: {
+      max_messages: 64,
+      max_prompt_chars: 24000,
+      streaming: false,
+    },
+    compatibility: {
+      repo_connector_contract_parity: true,
+      route_telemetry: true,
+      node_contract: true,
+      public_safe_unpaired_status: true,
+    },
+    last_heartbeat_at: new Date().toISOString(),
+  };
+}
+
 function publicRoutes() {
   return [
     '/health',
     '/status',
     '/node/identity',
+    '/node/contract',
     '/pair',
     '/pairing/sessions',
     '/hardware',
+    '/telemetry/routes',
     '/models',
     '/v1/models',
     '/chat',
@@ -464,12 +787,27 @@ async function chat(req, res, origin) {
   }
 
   const model = String(payload.model || MODEL);
-  const data = await ollama('/api/chat', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ model, messages, stream: false }),
-  });
-  send(res, 200, completion(model, data?.message?.content || '', data), origin);
+  const startedAt = Date.now();
+  try {
+    const data = await ollama('/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model, messages, stream: false }),
+    });
+    recordRouteSample(model, {
+      ok: true,
+      durationMs: Date.now() - startedAt,
+      finishedAt: new Date().toISOString(),
+    });
+    send(res, 200, completion(model, data?.message?.content || '', data), origin);
+  } catch (error) {
+    recordRouteSample(model, {
+      ok: false,
+      durationMs: Date.now() - startedAt,
+      finishedAt: new Date().toISOString(),
+    });
+    throw error;
+  }
 }
 
 http.createServer(async (req, res) => {
@@ -517,6 +855,12 @@ http.createServer(async (req, res) => {
       }
       const requestPaired = isPairedRequest(req);
       const modelSummary = statusModelSummary({ runtime, models, paired: requestPaired });
+      const normalizedModels = normalizeModels(models);
+      const routeTelemetry = createLocalRouteTelemetry({
+        runtime,
+        models: normalizedModels,
+        paired: requestPaired,
+      });
       const runtimeChatReady = runtime.status === 'online' && modelSummary.available;
       const pairedChatReady = runtimeChatReady && requestPaired;
       const readiness = {
@@ -560,6 +904,7 @@ http.createServer(async (req, res) => {
         routes: publicRoutes(),
         models: modelSummary.data,
         model_summary: modelSummary,
+        route_telemetry: routeTelemetry,
         tunnel: {
           provider: tunnelState.provider,
           status: tunnelState.status,
@@ -583,6 +928,27 @@ http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === 'GET' && url.pathname === '/node/contract') {
+      if (!paired(req, res, origin)) return;
+      let runtime;
+      let models = [];
+      try {
+        runtime = { provider: 'ollama', status: 'online', ...(await ollama('/api/version', { timeoutMs: 2500 })) };
+      } catch {
+        runtime = { provider: 'ollama', status: 'offline', reason: 'unreachable' };
+      }
+      if (runtime.status === 'online') {
+        try {
+          const tags = await ollama('/api/tags', { timeoutMs: 8000 });
+          models = Array.isArray(tags.models) ? tags.models : [];
+        } catch {
+          models = [];
+        }
+      }
+      send(res, 200, buildNodeContract({ req, runtime, models }), origin);
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/doctor') {
       if (!paired(req, res, origin)) return;
       let runtime;
@@ -601,6 +967,31 @@ http.createServer(async (req, res) => {
         }
       }
       send(res, 200, doctorReport({ runtime, models }), origin);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/telemetry/routes') {
+      if (!paired(req, res, origin)) return;
+      let runtime;
+      let models = [];
+      try {
+        runtime = { provider: 'ollama', status: 'online', ...(await ollama('/api/version', { timeoutMs: 2500 })) };
+      } catch {
+        runtime = { provider: 'ollama', status: 'offline', reason: 'unreachable' };
+      }
+      if (runtime.status === 'online') {
+        try {
+          const tags = await ollama('/api/tags', { timeoutMs: 8000 });
+          models = Array.isArray(tags.models) ? tags.models : [];
+        } catch {
+          models = [];
+        }
+      }
+      send(res, 200, createLocalRouteTelemetry({
+        runtime,
+        models: normalizeModels(models),
+        paired: true,
+      }), origin);
       return;
     }
 
