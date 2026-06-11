@@ -552,8 +552,13 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Keep answers short by default",
-  "P0 chat must keep responses short unless the user asks for detail.",
+  "function answerStyleInstruction(style=answerStyle())",
+  "P0 chat must keep response style explicit and configurable.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Keep route, source, privacy and no-paid-route proof in metadata",
+  "P0 chat must keep route/source/privacy proof out of the main answer.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
