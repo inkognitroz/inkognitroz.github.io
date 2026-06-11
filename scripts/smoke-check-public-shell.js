@@ -737,6 +737,21 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "toggle-private-mode",
+  "P0 privacy shield must expose a real private-mode toggle.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "toggle-fact-guard",
+  "P0 privacy shield must expose hallucination-prevention/fact guard control.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+  "Private mode is on, but no local model is connected yet.",
+  "P0 private mode must fail closed instead of sending private prompts to hosted routes.",
+);
+requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "Quality guard: public facts",
   "P0 quality guard must label hosted fallback for public facts from local routes.",
 );
