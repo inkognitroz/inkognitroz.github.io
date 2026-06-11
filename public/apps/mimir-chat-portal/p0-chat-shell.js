@@ -29,6 +29,8 @@
   const SHARE_DRAFT_KEY='mmir-p0-share-safe-draft-v1';
   const PROMPT_PRESETS_KEY='mmir-p0-prompt-presets-v1';
   const PROMPT_CATALOG_KEY='mmir-p0-prompt-catalog-v1';
+  const TOOLBAR_TOOLS_KEY='mmir-p0-toolbar-tools-v1';
+  const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
@@ -42,6 +44,10 @@
   const MAX_HISTORY=40;
   const ICON_SHIELD=P0_ICONS.shield||'';
   const ICON_MIC=P0_ICONS.mic||'';
+  const ICON_FLAME=P0_ICONS.flame||'';
+  const ICON_BUBBLES=P0_ICONS.bubbles||'';
+  const ICON_BRAIN=P0_ICONS.brain||'';
+  const ICON_STOP=P0_ICONS.stop||'';
   const readJson=P0_STORAGE.readJson;
   const writeJson=P0_STORAGE.writeJson;
   const readStorageString=P0_STORAGE.readString;
@@ -168,6 +174,36 @@
   };
   let activeChatController=null;
   let stopRequested=false;
+  const TOOLBAR_TOOL_DEFINITIONS=[
+    {
+      id:'stop',
+      label:'Stop',
+      detail:'Adds an explicit stop button while an answer is running.',
+      title:'Stop current response',
+      icon:ICON_STOP||'<span aria-hidden="true">■</span>'
+    },
+    {
+      id:'fresh-start',
+      label:'Fresh start',
+      detail:'Clears this browser chat and composer. Pairing stays intact.',
+      title:'Fresh start',
+      icon:ICON_FLAME||'<span aria-hidden="true">F</span>'
+    },
+    {
+      id:'discuss',
+      label:'Model discussion',
+      detail:'Lets Supergeni and a local model discuss one topic when two routes are ready.',
+      title:'Model discussion',
+      icon:ICON_BUBBLES||'<span aria-hidden="true">D</span>'
+    },
+    {
+      id:'memory',
+      label:'Memory',
+      detail:'Saves this chat/setup locally in this browser.',
+      title:'Save memory',
+      icon:ICON_BRAIN||'<span aria-hidden="true">M</span>'
+    }
+  ];
 
   function readSessionJson(key,fallback){
     try{
@@ -273,6 +309,39 @@
       ? [value].concat(pinnedRouteIds().filter(item=>item!==value)).slice(0,8)
       : pinnedRouteIds().filter(item=>item!==value);
     writeJson(PINNED_ROUTES_KEY,next);
+    return next;
+  }
+
+  function toolbarToolById(id){
+    const value=String(id||'').trim();
+    return TOOLBAR_TOOL_DEFINITIONS.find(tool=>tool.id===value)||null;
+  }
+
+  function pinnedToolbarToolIds(){
+    const seen=new Set();
+    return readJson(TOOLBAR_TOOLS_KEY,[])
+      .map(id=>String(id||'').trim())
+      .filter(id=>toolbarToolById(id))
+      .filter(id=>{
+        if(seen.has(id))return false;
+        seen.add(id);
+        return true;
+      })
+      .slice(0,4);
+  }
+
+  function toolbarToolPinned(id){
+    return pinnedToolbarToolIds().includes(String(id||''));
+  }
+
+  function setToolbarToolPinned(id,pinned){
+    const value=String(id||'').trim();
+    if(!toolbarToolById(value))return [];
+    const current=pinnedToolbarToolIds();
+    const next=pinned
+      ? current.concat([value]).filter((item,index,all)=>all.indexOf(item)===index).slice(0,4)
+      : current.filter(item=>item!==value);
+    writeJson(TOOLBAR_TOOLS_KEY,next);
     return next;
   }
 
@@ -1303,6 +1372,7 @@
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Add or connect model" aria-expanded="false">+</button>'+
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
+              '<span id="p0-toolbar-tools" class="p0-toolbar-tools" aria-label="Pinned chat tools"></span>'+
             '</div>'+
             '<div class="p0-right">'+
               '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
@@ -1422,6 +1492,13 @@
         event.preventDefault();
         event.stopPropagation();
         startLocalInstallAssistant(osButton.getAttribute('data-p0-os-command')||'');
+        return;
+      }
+      const toolbarTool=event.target.closest('[data-p0-toolbar-tool]');
+      if(toolbarTool){
+        event.preventDefault();
+        event.stopPropagation();
+        handleToolbarTool(toolbarTool.getAttribute('data-p0-toolbar-tool')||'');
         return;
       }
       const actionButton=event.target.closest('[data-p0-action]');
@@ -1582,6 +1659,17 @@
   function renderAddMenu(){
     const menu=menuEl('add');
     const pool=intelligencePoolSummary();
+    const toolbarTools=TOOLBAR_TOOL_DEFINITIONS
+      .filter(tool=>tool.id!=='discuss'||pool.compareReady)
+      .map(tool=>{
+        const pinned=toolbarToolPinned(tool.id);
+        return menuButton(
+          (pinned?'unpin-toolbar-tool:':'pin-toolbar-tool:')+tool.id,
+          pinned?'Remove '+tool.label:'Add '+tool.label,
+          tool.detail,
+          {badge:pinned?'On toolbar':''}
+        );
+      }).join('');
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
         menuSection('Two models')+
@@ -1593,6 +1681,9 @@
       menuTitle('Tools')+
       menuButton('connect-local','Add model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
+      menuSeparator()+
+      menuSection('Add to toolbar')+
+      toolbarTools+
       twoModelTools+
       menuButton('prompt-presets','Prompts','Use or save starters in this browser.')+
       menuSeparator()+
@@ -1791,6 +1882,29 @@
     shield.setAttribute('title','Security and privacy · '+next.label);
   }
 
+  function renderPinnedToolbarTools(){
+    const target=document.getElementById('p0-toolbar-tools');
+    if(!target)return;
+    target.innerHTML=pinnedToolbarToolIds()
+      .map(id=>toolbarToolById(id))
+      .filter(Boolean)
+      .map(tool=>
+        '<button class="p0-btn p0-btn-icon p0-toolbar-tool" type="button" data-p0-toolbar-tool="'+safeAttr(tool.id)+'" aria-label="'+safeAttr(tool.title)+'" title="'+safeAttr(tool.title)+'">'+tool.icon+'</button>'
+      )
+      .join('');
+    updatePinnedToolbarToolStates();
+  }
+
+  function updatePinnedToolbarToolStates(){
+    document.querySelectorAll('[data-p0-toolbar-tool="stop"]').forEach(button=>{
+      const enabled=Boolean(state.busy);
+      button.toggleAttribute('disabled',!enabled);
+      button.dataset.busy=enabled?'true':'false';
+      button.setAttribute('aria-label',enabled?'Stop current response':'No active response to stop');
+      button.setAttribute('title',enabled?'Stop current response':'No active response');
+    });
+  }
+
   function renderToolbar(){
     const model=activeModel();
     const local=bestLocalModel();
@@ -1800,6 +1914,7 @@
     if(label)label.textContent=displayModel.label;
     if(input)input.placeholder='Message '+displayModel.label+'...';
     renderShieldState(displayModel,local);
+    renderPinnedToolbarTools();
     if(privateModeActive()){
       const next=privacyModeRouteStatus();
       routeStatus(next.text,next.state);
@@ -1853,8 +1968,85 @@
     return false;
   }
 
+  function freshStart(){
+    const input=document.getElementById('p0-input');
+    state.messages=[];
+    clearPersistedHistory();
+    if(input){
+      input.value='';
+      autosizeInput();
+    }
+    renderTranscript();
+    closeMenus();
+    status('Fresh start ready.','ready');
+    routeStatus('Chat cleared · pairing kept','hosted');
+    input?.focus();
+  }
+
+  function saveMemorySnapshot(){
+    const model=activeModel();
+    const input=document.getElementById('p0-input');
+    const saveContent=!superPrivateModeActive();
+    const snapshot={
+      savedAt:new Date().toISOString(),
+      activeModelId:model.id,
+      activeModelLabel:model.label,
+      privacyMode:privacyMode(),
+      factGuard:factGuardActive(),
+      pinnedTools:pinnedToolbarToolIds(),
+      messageCount:state.messages.length,
+      messages:saveContent?state.messages.slice(-MAX_HISTORY).map(message=>({
+        role:message.role,
+        label:message.label||'',
+        content:message.content||'',
+        variant:message.variant||''
+      })):[],
+      inputDraft:saveContent?String(input?.value||''):'',
+      browserLocalOnly:true,
+      secretsStored:false
+    };
+    writeJson(MEMORY_SNAPSHOT_KEY,snapshot);
+    closeMenus();
+    status('Memory saved locally.','ready');
+    routeStatus(saveContent?'Memory saved · browser only':'Memory saved · superprivate metadata only','hosted');
+  }
+
+  function handleToolbarTool(id){
+    const tool=toolbarToolById(id);
+    if(!tool)return false;
+    if(tool.id==='stop'){
+      if(state.busy)stopActiveResponse();
+      else status('No active response to stop.','idle');
+      return true;
+    }
+    if(tool.id==='fresh-start'){
+      freshStart();
+      return true;
+    }
+    if(tool.id==='discuss'){
+      return runTwoModelTool('discuss-topic');
+    }
+    if(tool.id==='memory'){
+      saveMemorySnapshot();
+      return true;
+    }
+    return false;
+  }
+
   function handleMenuAction(action){
     const actionId=String(action||'');
+    if(actionId.startsWith('pin-toolbar-tool:')||actionId.startsWith('unpin-toolbar-tool:')){
+      const pinned=actionId.startsWith('pin-toolbar-tool:');
+      const id=actionId.split(':')[1];
+      const tool=toolbarToolById(id);
+      if(!tool)return false;
+      setToolbarToolPinned(id,pinned);
+      renderToolbar();
+      renderAddMenu();
+      status((pinned?'Added ':'Removed ')+tool.label.toLowerCase()+'.','ready');
+      routeStatus((pinned?'Toolbar added':'Toolbar removed')+' · browser local','hosted');
+      return true;
+    }
     if(actionId.startsWith('set-privacy-mode:')){
       setPrivacyMode(actionId.split(':')[1]);
       return true;
@@ -2188,6 +2380,7 @@
     send.textContent=state.busy?'■':'↑';
     send.setAttribute('aria-label',state.busy?'Stop current response':'Send message');
     send.setAttribute('title',state.busy?'Stop':'Send');
+    updatePinnedToolbarToolStates();
   }
 
   function beginResponse(){

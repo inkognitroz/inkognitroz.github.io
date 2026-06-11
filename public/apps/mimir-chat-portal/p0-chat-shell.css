@@ -461,6 +461,13 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   justify-content: flex-end;
 }
 
+.p0-toolbar-tools {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  min-width: 0;
+}
+
 .p0-btn,
 .p0-model-button {
   align-items: center;
@@ -525,6 +532,20 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-mic {
   color: #111827;
+}
+
+.p0-toolbar-tool {
+  color: #374151;
+}
+
+.p0-toolbar-tool:hover,
+.p0-toolbar-tool:focus-visible {
+  color: #111827;
+}
+
+.p0-toolbar-tool:disabled {
+  cursor: default;
+  opacity: 0.4;
 }
 
 .p0-model-button {
@@ -765,7 +786,8 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   }
 
   .p0-left,
-  .p0-right {
+  .p0-right,
+  .p0-toolbar-tools {
     gap: 6px;
   }
 
