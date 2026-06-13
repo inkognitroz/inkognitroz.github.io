@@ -49,6 +49,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "if(model?.candidate||model?.executable===false)return 'setup';",
+  'Provider candidates must use setup rank state, not demoted/slow scoring badges.'
+);
+requireIncludes(
+  shell,
   "model.executable!==false&&model.selectable!==false",
   'Active/default model selection must skip non-executable candidates.'
 );
@@ -69,7 +74,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260613-visible-provider-candidates-v1',
+  'p0-chat-shell.js?v=20260613-provider-candidate-polish-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -79,7 +84,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260613-visible-provider-candidates-v1"',
+  '"p0-chat-shell.js": "20260613-provider-candidate-polish-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
