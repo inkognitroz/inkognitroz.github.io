@@ -536,6 +536,11 @@ requireText(
   "P0 route receipts helper must show hosted route receipts.",
 );
 requireText(
+  join(publicDir, "apps", "mimir-chat-portal", "p0-route-receipts.js"),
+  "displayName(model)+' · External · '+String(apiLabel||'api.mmir.ai')",
+  "P0 route receipts helper must show external route receipts.",
+);
+requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-route-adapters.js"),
   "const STAGING_API_URL='https://api-staging.mmir.ai'",
   "P0 route adapter helper must define the staging API route.",
