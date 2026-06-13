@@ -3139,7 +3139,7 @@
   }
 
   function attemptProviderLabel(attempt){
-    const provider=String(attempt?.provider||'').trim();
+    const provider=String(attempt?.provider||attempt?.receipt?.provider||'').trim();
     if(provider&&provider!=='mmir')return providerLabel(provider);
     return routeDisplayName({label:attempt?.model_display_name||attempt?.model_id||'Supergeni'});
   }
