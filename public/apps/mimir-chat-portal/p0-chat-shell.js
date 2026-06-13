@@ -993,18 +993,23 @@
         const id=String(model.id||model.model).trim();
         const executable=executableHostedModel(model);
         const candidate=model?.candidate===true||String(model?.route_type||'')==='external_candidate';
+        const routeClass=String(model.route_class||'').trim();
+        const trustLevel=String(model.trust_level||'').trim();
+        const externalUntrustedFree=routeClass==='external-untrusted-free'||trustLevel==='external-untrusted-free'||String(model.route_type||'')==='external_untrusted_free';
         const provider=providerLabel(model.provider);
         return {
           id,
           label:routeDisplayName(model),
           route:'hosted',
-          detail:candidate?'Candidate · setup needed':(model.availability==='available'?'Ready now':(model.route_state||'Ready')),
-          tags:candidate?[provider,'Candidate','Setup']:(index===0?['Fast','Free','Best default']:['Free','Hosted']),
-          score:candidate?25:(model.recommended?100:(90-index)),
+          detail:candidate?'Candidate · setup needed':(externalUntrustedFree?'Ready now · external untrusted-free':(model.availability==='available'?'Ready now':(model.route_state||'Ready'))),
+          tags:candidate?[provider,'Candidate','Setup']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
+          score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
           model:id,
           executable,
           candidate,
           provider,
+          routeClass,
+          trustLevel,
           routeState:model.route_state||'managed_provider_available',
           routeType:model.route_type||'managed_provider',
           availability:model.availability||'available',
@@ -1372,7 +1377,7 @@
     const operational=routeOperationalState(model);
     const stats=routeBenchmark(model);
     const telemetry=localTelemetrySummary(model?.routeTelemetry);
-    const privacy=model?.route==='local'?'Private · This Mac':'Free · '+API_LABEL;
+    const privacy=model?.route==='local'?'Private · This Mac':(model?.routeClass==='external-untrusted-free'?'External · '+API_LABEL:'Free · '+API_LABEL);
     const score='Score '+effectiveModelScore(model);
     const rankSummary=routeRankSummary(model);
     const samples=stats?.samples
@@ -1389,7 +1394,8 @@
     if(routePinned(model))badges.push('Pinned');
     if(model?.candidate)badges.push('Candidate');
     if(model?.executable===false)badges.push('Setup');
-    if(model?.route==='hosted'&&!model?.candidate)badges.push('Default');
+    if(model?.route==='hosted'&&!model?.candidate&&(model?.id==='supergeni'||model?.id==='mmir-supergenius'))badges.push('Default');
+    else if(model?.route==='hosted'&&!model?.candidate&&model?.routeClass==='external-untrusted-free')badges.push('External');
     if(model?.route==='local')badges.push('Private');
     if(bestLocal&&model?.id===bestLocal.id)badges.push('Best local');
     const rankState=routeRankState(model);
@@ -2794,14 +2800,19 @@
     return String(payload?.choices?.[0]?.message?.content||payload?.content||payload?.message||'').trim();
   }
 
-  function hostedPayload(prompt){
+  function hostedPayload(prompt,model=defaultHostedModel()){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
+    const modelId=String(model?.model||model?.id||'mmir-supergenius').trim()||'mmir-supergenius';
+    const externalUntrustedFree=model?.routeClass==='external-untrusted-free'||model?.trustLevel==='external-untrusted-free';
+    const systemPrompt=externalUntrustedFree
+      ? 'You are an external untrusted-free model connected through MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
+      : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.';
     return {
-      model:'mmir-supergenius',
+      model:modelId,
       messages:[
-        {role:'system',content:'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.'},
+        {role:'system',content:systemPrompt},
         {role:'user',content:prompt}
       ],
       stream:false,
@@ -2883,8 +2894,8 @@
       .trim();
   }
 
-  async function chatHosted(prompt,signal){
-    const payload=hostedPayload(prompt);
+  async function chatHosted(prompt,signal,model=defaultHostedModel()){
+    const payload=hostedPayload(prompt,model);
     const data=await fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -3000,7 +3011,7 @@
     routeStatus(routePrefix+receipt.text,receipt.state);
     try{
       const started=performance.now();
-      const answer=model.route==='local'?await chatLocal(routePrompt,model,signal):await chatHosted(routePrompt,signal);
+      const answer=model.route==='local'?await chatLocal(routePrompt,model,signal):await chatHosted(routePrompt,signal,model);
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
       recordRouteBenchmark(model,measuredScore);
