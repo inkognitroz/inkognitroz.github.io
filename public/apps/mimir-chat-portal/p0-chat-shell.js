@@ -792,7 +792,10 @@
     return parts.filter(Boolean).join(' · ')||receipt.text;
   }
 
-  function routeRankState(model){return routeBenchmarks?.routeRankState(model)||'measured';}
+  function routeRankState(model){
+    if(model?.candidate||model?.executable===false)return 'setup';
+    return routeBenchmarks?.routeRankState(model)||'measured';
+  }
 
   function validMessage(message){
     return P0_HISTORY.validMessage(message);
