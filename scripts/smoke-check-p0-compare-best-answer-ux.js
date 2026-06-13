@@ -71,7 +71,7 @@ forbidText(
 requireText(
   addMenu,
   'pool.compareReady',
-  'Add menu must truth-gate two-model tools behind local discovery'
+  'Add menu must truth-gate two-model tools behind a second active route'
 );
 requireText(
   addMenu,
@@ -121,12 +121,12 @@ requireText(
 );
 requireText(
   runtime,
-  "compareLiveRoutes(prompt,local,{mode:'compare'});",
+  "compareLiveRoutes(prompt,partner,{mode:'compare'});",
   'Compare answers menu action must run the proven compare path'
 );
 requireText(
   runtime,
-  "compareLiveRoutes(prompt,local,{mode:'best-answer'});",
+  "compareLiveRoutes(prompt,partner,{mode:'best-answer'});",
   'Best answer benchmark menu action must run the proven synthesis path'
 );
 requireText(
@@ -141,8 +141,8 @@ requireText(
 );
 requireText(
   runtime,
-  "status(title+' is asking Supergeni and '+localModel.label+' in parallel...'",
-  'Compare flow must make parallel routing visible while running'
+  "status(title+' is asking '+hostedModel.label+' and '+localModel.label+' in parallel...'",
+  'Compare flow must make dynamic parallel routing visible while running'
 );
 requireText(
   runtime,
@@ -176,8 +176,8 @@ requireText(
 );
 requireText(
   runtime,
-  "return {mode:'compare',model:local,prompt:cleanSmartPrompt(prompt)||prompt};",
-  'Best Answer language must trigger the compare/synthesis path when a local route exists'
+  "return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};",
+  'Best Answer language must trigger the compare/synthesis path when a second active route exists'
 );
 requireText(
   runtime,
