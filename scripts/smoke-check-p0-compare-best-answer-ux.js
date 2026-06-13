@@ -126,6 +126,11 @@ requireText(
 );
 requireText(
   runtime,
+  'function compareAttemptIssueSummary(attempt)',
+  'Gateway compare receipts must expose blocked/partial provider routes instead of hiding them'
+);
+requireText(
+  runtime,
   'function gatewayComparePreferred(preferredModel=null)',
   'Gateway compare must be preferred in public mode without stealing private/local compare flows'
 );
