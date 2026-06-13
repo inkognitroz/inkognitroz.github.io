@@ -59,6 +59,8 @@
   const ensureStorageSchema=P0_STORAGE.ensureSchema;
   const historySessionMode=Boolean(typeof P0_HISTORY.qaSessionEnabled==='function'&&P0_HISTORY.qaSessionEnabled(window.location?.search||''));
   window.__MimirP0HistorySessionMode=historySessionMode;
+  let legacyPromptBridgeBound=false;
+  let legacyPromptSyncing=false;
   const DEFAULT_PROMPT_PRESETS=[
     {
       id:'quick-answer',
@@ -1806,7 +1808,11 @@
         sendMessage();
       }
     });
-    input.addEventListener('input',autosizeInput);
+    input.addEventListener('input',()=>{
+      autosizeInput();
+      syncLegacyPromptFromP0();
+    });
+    bindLegacyPromptBridge();
     document.getElementById('p0-add').addEventListener('click',(event)=>toggleMenu('add',event.currentTarget));
     document.getElementById('p0-model').addEventListener('click',(event)=>toggleMenu('model',event.currentTarget));
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
@@ -1891,6 +1897,69 @@
     if(!input)return;
     input.style.height='auto';
     input.style.height=Math.min(180,Math.max(58,input.scrollHeight))+'px';
+    syncLegacyPromptFromP0();
+  }
+
+  function legacyPromptInput(){
+    return document.getElementById('mimir-prompt');
+  }
+
+  function p0Input(){
+    return document.getElementById('p0-input');
+  }
+
+  function syncLegacyPromptFromP0(){
+    if(legacyPromptSyncing)return;
+    const legacy=legacyPromptInput();
+    const input=p0Input();
+    if(!legacy||!input)return;
+    legacyPromptSyncing=true;
+    try{
+      if(legacy.value!==input.value)legacy.value=input.value;
+    }finally{
+      legacyPromptSyncing=false;
+    }
+  }
+
+  function syncP0InputFromLegacy(){
+    if(legacyPromptSyncing)return;
+    const legacy=legacyPromptInput();
+    const input=p0Input();
+    if(!legacy||!input)return;
+    legacyPromptSyncing=true;
+    try{
+      if(input.value!==legacy.value){
+        input.value=legacy.value;
+        autosizeInput();
+      }
+    }finally{
+      legacyPromptSyncing=false;
+    }
+  }
+
+  function bindLegacyPromptBridge(){
+    if(legacyPromptBridgeBound)return;
+    legacyPromptBridgeBound=true;
+    const legacy=legacyPromptInput();
+    if(legacy){
+      legacy.addEventListener('input',syncP0InputFromLegacy);
+      legacy.addEventListener('change',syncP0InputFromLegacy);
+    }
+    document.getElementById('primary-chat-link')?.addEventListener('click',(event)=>{
+      if(!document.getElementById('mmir-p0-app'))return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      syncP0InputFromLegacy();
+      if(state.busy)stopActiveResponse();
+      else sendMessage();
+    },true);
+    document.getElementById('new-backend')?.addEventListener('click',(event)=>{
+      if(!document.getElementById('mmir-p0-app'))return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      document.getElementById('p0-add')?.click();
+    },true);
+    syncLegacyPromptFromP0();
   }
 
   function speechSupported(){
