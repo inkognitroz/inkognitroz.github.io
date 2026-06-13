@@ -35,6 +35,7 @@
   const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
+  const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
   const P0_TEXT=window.MimirP0Text||{};
   const P0_CLIPBOARD=window.MimirP0Clipboard||{};
@@ -583,6 +584,84 @@
     }catch(error){
       return false;
     }
+  }
+
+  function ownerSuggestionCommand(prompt){
+    const match=String(prompt||'').trim().match(/^\/admin\s+([^\s]+)\s+([\s\S]+)$/i);
+    if(!match)return null;
+    const suggestion=String(match[2]||'').replace(/\s+/g,' ').trim().slice(0,1600);
+    if(!suggestion)return null;
+    return {code:String(match[1]||'').trim(),suggestion};
+  }
+
+  function ownerSuggestionRouteText(plan){
+    if(plan?.accepted&&plan?.submission?.issue_number){
+      return 'Owner intake · issue #'+plan.submission.issue_number+' · Project Control';
+    }
+    if(plan?.submission?.reason==='owner_code_invalid'){
+      return 'Owner intake · code not accepted · no issue created';
+    }
+    if(plan?.owner_auth_configured===false){
+      return 'Owner intake · draft ready · server setup needed';
+    }
+    return 'Owner intake · draft ready · no paid route';
+  }
+
+  function ownerSuggestionAnswer(plan){
+    if(plan?.accepted){
+      const issue=plan?.submission?.issue_url?'\n\n'+plan.submission.issue_url:'';
+      return 'Development issue created in Project Control.'+issue;
+    }
+    if(plan?.submission?.reason==='owner_code_invalid'){
+      return 'Owner code was not accepted. I did not create an issue.';
+    }
+    if(plan?.owner_auth_configured===false){
+      return 'Improvement draft ready. Owner intake needs server-side setup before chat can auto-create issues.';
+    }
+    return 'Improvement draft ready for Project Control.';
+  }
+
+  async function submitOwnerSuggestionCommand(parsed){
+    return fetchJson(API_URL+OWNER_SUGGESTION_PLAN_PATH,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-mmir-owner-command-code':parsed.code
+      },
+      body:JSON.stringify({
+        suggestion:parsed.suggestion,
+        source:'mmir-chat',
+        submit:true
+      }),
+      timeoutMs:12000
+    });
+  }
+
+  async function handleOwnerSuggestionCommand(prompt,input){
+    const parsed=ownerSuggestionCommand(prompt);
+    if(!parsed)return false;
+    closeMenus();
+    append('user','Owner improvement: '+parsed.suggestion,'You','',{actions:false});
+    if(input){
+      input.value='';
+      autosizeInput();
+    }
+    const assistant=append('assistant','Capturing improvement suggestion...','MMIR Project Control','Owner intake · secure draft',{actions:false});
+    status('Owner suggestion captured.','ready');
+    routeStatus('Owner intake · code not stored · no paid route','ready');
+    try{
+      const plan=await submitOwnerSuggestionCommand(parsed);
+      const routeText=ownerSuggestionRouteText(plan);
+      updateMessage(assistant,ownerSuggestionAnswer(plan),{receipt:routeText,actions:false});
+      status(plan?.accepted?'Owner suggestion filed.':'Owner suggestion drafted.','ready');
+      routeStatus(routeText,'ready');
+    }catch(error){
+      updateMessage(assistant,'Owner intake is unreachable right now. The suggestion stayed local in this chat.',{receipt:'MMIR Project Control · not filed',actions:false});
+      status('Owner intake unreachable.','error');
+      routeStatus('Owner intake unavailable · no issue created','error');
+    }
+    input?.focus();
+    return true;
   }
 
   const routeBenchmarks=P0_ROUTE_BENCHMARKS.create?.({
@@ -2800,6 +2879,7 @@
       input?.focus();
       return;
     }
+    if(await handleOwnerSuggestionCommand(prompt,input))return;
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
