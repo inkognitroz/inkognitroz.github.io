@@ -842,7 +842,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Refresh models first, then use @supergenius @gemma for compare.",
+  "Refresh models first, then use @supergeni @gemma for compare.",
   "P0 shell must fail clearly when a local route tag is used before local discovery.",
 );
 requireText(
