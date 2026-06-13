@@ -750,7 +750,10 @@
     const providers=parts
       .map(part=>String(part||'').trim())
       .filter(part=>/^(OpenRouter|Google|NVIDIA|Groq)\b/i.test(part))
-      .map(part=>part.replace(/\s+\d+(?:\.\d+)?(?:ms|s)\b.*$/i,'').trim())
+      .map(part=>part
+        .replace(/\s+\d+(?:\.\d+)?(?:ms|s)\b.*$/i,'')
+        .replace(/\s+blocked.*$/i,' blocked')
+        .trim())
       .filter(Boolean)
       .filter((part,index,list)=>list.indexOf(part)===index)
       .slice(0,3);
@@ -3150,16 +3153,30 @@
     ].filter(Boolean).join(' ');
   }
 
+  function compareAttemptIssueSummary(attempt){
+    const reason=String(attempt?.blocker||attempt?.route_state||attempt?.reason||attempt?.status||'blocked')
+      .replace(/[_-]+/g,' ')
+      .trim();
+    return [
+      attemptProviderLabel(attempt),
+      'blocked',
+      reason&&!/^blocked$/i.test(reason)?reason:''
+    ].filter(Boolean).join(' ');
+  }
+
   function gatewayCompareReceipt(data){
     const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
     const best=data?.best_answer||{};
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
+    const succeeded=attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary).slice(0,3);
+    const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const parts=[
       'Best answer',
       attempts.length?String(attempts.length)+' routes':'',
       winner?'Winner: '+winner:'',
       typeof best?.score==='number'?'Score '+best.score:'',
-      ...attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary).slice(0,3),
+      ...succeeded,
+      ...blocked,
       'No paid route'
     ];
     return parts.filter(Boolean).join(' · ');
