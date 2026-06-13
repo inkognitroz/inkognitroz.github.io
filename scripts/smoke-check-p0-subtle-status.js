@@ -120,4 +120,39 @@ testApi.recordRouteBenchmark(hosted, { score: 84, elapsedMs: 746, answer_class: 
 assertIncludes(testApi.routeMicroStatus(hosted), 'Score ', 'Route micro-status helper must preserve effective score.');
 assertIncludes(testApi.routeMicroStatus(hosted), 'avg 746ms', 'Route micro-status helper must preserve benchmark latency.');
 
+testApi.state.models.push(
+  {
+    id: 'poolside/laguna-xs.2:free',
+    label: 'OpenRouter: poolside/laguna-xs.2:free',
+    route: 'hosted',
+    model: 'poolside/laguna-xs.2:free',
+    provider: 'OpenRouter',
+    routeClass: 'external-untrusted-free',
+    trustLevel: 'external-untrusted-free',
+    executable: true,
+    selectable: true,
+    score: 86
+  },
+  {
+    id: 'gemini-2.5-flash',
+    label: 'Google: gemini-2.5-flash',
+    route: 'hosted',
+    model: 'gemini-2.5-flash',
+    provider: 'Google',
+    routeClass: 'external-untrusted-free',
+    trustLevel: 'external-untrusted-free',
+    executable: true,
+    selectable: true,
+    score: 86
+  }
+);
+assertIncludes(testApi.routeMicroStatus(hosted), '3 active intelligences connected', 'Route micro-status must surface connected intelligence capacity in subtle green text.');
+const poolEl = fakeElement();
+testApi.renderMicroStatus(
+  poolEl,
+  'Supergeni · Free · api.mmir.ai · 3 active intelligences connected · Score 100 · avg 746ms',
+  'hosted'
+);
+assertIncludes(poolEl.innerHTML, '3 active intelligences connected', 'Under-chat micro-status must keep active intelligence count visible as subtle text.');
+
 console.log('P0 subtle status smoke passed.');

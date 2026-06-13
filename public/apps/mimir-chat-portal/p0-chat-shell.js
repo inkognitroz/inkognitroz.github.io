@@ -324,7 +324,7 @@
     {
       id:'discuss',
       label:'Model discussion',
-      detail:'Lets Supergeni and a local model discuss one topic when two routes are ready.',
+      detail:'Lets Supergeni and another active route discuss one topic.',
       title:'Model discussion',
       icon:ICON_BUBBLES||'<span aria-hidden="true">D</span>'
     },
@@ -682,6 +682,22 @@
   function routeBenchmarkSummary(model){return routeBenchmarks?.routeBenchmarkSummary(model)||'';}
   function routeRankSummary(model){return routeBenchmarks?.routeRankSummary(model)||'';}
 
+  function activeIntelligenceModels(){
+    return state.models.filter(model=>
+      model &&
+      model.candidate!==true &&
+      model.executable!==false &&
+      model.selectable!==false &&
+      String(model.availability||'available').toLowerCase()!=='blocked'
+    );
+  }
+
+  function intelligencePoolLine(){
+    const count=activeIntelligenceModels().length;
+    if(count<2)return '';
+    return count+' active intelligences connected';
+  }
+
   function routeMicroStatus(model=activeModel()){
     const receipt=routeReceipt(model);
     const rankSummary=routeRankSummary(model);
@@ -692,6 +708,7 @@
     const parts=[
       receipt.text,
       routePinned(model)?'Pinned':'',
+      intelligencePoolLine(),
       'Score '+effectiveModelScore(model),
       rankSummary,
       ...benchmark,
@@ -719,7 +736,7 @@
     const text=String(part||'').toLowerCase();
     if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
     if(/private|this mac|local/.test(text))return 'local';
-    if(/free|ready|strong|best|winner|verified|fresh|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
+    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
     if(/needs fact check|uncertain|score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
     if(/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/.test(text))return 'time';
     if(/api\.mmir\.ai|routing\/score|route/.test(text))return 'route';
@@ -742,6 +759,7 @@
     );
     const pick=(test)=>candidates.find(part=>test.test(part))||'';
     const priority=[
+      pick(/\d+\s+active intelligences connected/i),
       pick(/^\d+\s+models?\.?$/i),
       pick(/^free$|^private$/i),
       pick(/^this mac$/i),
@@ -1010,6 +1028,7 @@
           provider,
           routeClass,
           trustLevel,
+          routeId:model.route_id||model.routeId||id,
           routeState:model.route_state||'managed_provider_available',
           routeType:model.route_type||'managed_provider',
           availability:model.availability||'available',
@@ -1160,21 +1179,27 @@
   }
 
   function intelligencePoolSummary(){
-    const hosted=state.models.filter(model=>model.route==='hosted'&&model.availability!=='blocked');
-    const local=state.models.filter(model=>model.route==='local');
+    const active=activeIntelligenceModels();
+    const hosted=active.filter(model=>model.route==='hosted');
+    const local=active.filter(model=>model.route==='local');
+    const primary=defaultHostedModel();
     const bestLocal=bestLocalModel();
-    const liveRoutes=hosted.length+local.length;
-    const compareReady=Boolean(bestLocal);
+    const partner=comparePartnerModel();
+    const liveRoutes=active.length;
+    const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
     const details=compareReady
-      ? 'Best Answer can ask Supergeni and '+bestLocal.label+' in parallel, then synthesize one answer.'
-      : 'Supergeni is ready now. Connect a local model to unlock private routing and parallel Best Answer.';
+      ? 'Best Answer can ask '+primary.label+' and '+partner.label+' in parallel, then synthesize one answer.'
+      : 'Supergeni is ready now. Connect another route to unlock parallel Best Answer.';
     return {
       liveRoutes,
       hostedRoutes:hosted.length,
       localRoutes:local.length,
       compareReady,
       stateLabel:compareReady?'Best Answer ready':'Single route now',
+      primaryLabel:primary?.label||'Supergeni',
+      partnerLabel:partner?.label||'',
+      partnerModel:partner||null,
       bestLocalLabel:bestLocal?.label||'',
       localHardware,
       details
@@ -1187,6 +1212,16 @@
     if(best)return best;
     const active=activeModel();
     return active.route==='local'?active:null;
+  }
+
+  function comparePartnerModel(preferredModel=null){
+    if(preferredModel)return preferredModel;
+    const primary=defaultHostedModel();
+    const local=compareLocalModel();
+    if(local)return local;
+    const active=activeModel();
+    if(active&&active.route==='hosted'&&primary&&active.id!==primary.id)return active;
+    return activeIntelligenceModels().find(model=>model.route==='hosted'&&(!primary||model.id!==primary.id))||null;
   }
 
   function formatDuration(ms){
@@ -1264,8 +1299,9 @@
       reasons.push('thin answer');
     }
     if(route==='hosted'){
-      score+=16;
-      reasons.push('default route');
+      const external=model?.routeClass==='external-untrusted-free'||model?.trustLevel==='external-untrusted-free';
+      score+=external?12:16;
+      reasons.push(external?((model?.provider||'external')+' route'):'default route');
       if(publicFact){
         score+=22;
         reasons.push('public facts');
@@ -1449,22 +1485,48 @@
     return {model:hostedModel,score:hostedScore,loser:localScore,summary:'Winner: '+hostedModel.label+' · Score '+hostedValue+' · '+(hostedScore?.reason||'default route')};
   }
 
-  function routeScoreCandidate(model,answer,elapsedMs,failed=false){
+  function routeIdentity(model){
     const isLocal=model?.route==='local';
+    const modelId=String(model?.model||model?.id||(isLocal?'local':'mmir-supergenius')).trim()||(isLocal?'local':'mmir-supergenius');
+    if(isLocal){
+      const routeId='local/'+modelId;
+      return {
+        id:routeId,
+        route_id:routeId,
+        route_class:'local',
+        cost_class:'free-local',
+        node_id:'local-node',
+        node_display_name:'This Mac',
+        model_id:modelId,
+        model_display_name:model?.label||modelId,
+        trust_level:'operator-local',
+        provider:'local-ollama'
+      };
+    }
+    const provider=String(model?.provider||'mmir').trim().toLowerCase()||'mmir';
+    const routeClass=String(model?.routeClass||model?.route_class||'free').trim()||'free';
+    const routeId=String(model?.routeId||model?.route_id||(routeClass==='external-untrusted-free'?'external/'+provider+'/'+modelId:'browser-guide/free')).trim();
+    return {
+      id:routeId,
+      route_id:routeId,
+      route_class:routeClass,
+      cost_class:String(model?.costState||model?.cost_class||'free').trim()||'free',
+      node_id:provider==='mmir'?'browser-guide':provider+'-provider',
+      node_display_name:model?.provider||model?.label||'Supergeni',
+      model_id:modelId,
+      model_display_name:model?.label||modelId,
+      trust_level:String(model?.trustLevel||model?.trust_level||'public-free').trim()||'public-free',
+      provider
+    };
+  }
+
+  function routeScoreCandidate(model,answer,elapsedMs,failed=false){
+    const identity=routeIdentity(model);
     const latency_target_ms=latencyTargetMs(model,'compare');
     const latency_target_state=latencyTargetState(elapsedMs,latency_target_ms,failed);
     const latency_target_label=latencyTargetReceipt(model,elapsedMs,'compare',failed);
     return {
-      id:isLocal?'local/'+(model.model||model.id):'browser-guide/free',
-      route_id:isLocal?'local/'+(model.model||model.id):'browser-guide/free',
-      route_class:isLocal?'local':'free',
-      cost_class:isLocal?'free-local':'free',
-      node_id:isLocal?'local-node':'browser-guide',
-      node_display_name:isLocal?'This Mac':'Supergeni',
-      model_id:isLocal?(model.model||model.id):'mmir-supergenius',
-      model_display_name:model?.label||model?.model||'Supergeni',
-      trust_level:isLocal?'operator-local':'public-free',
-      provider:isLocal?'local-ollama':'mmir',
+      ...identity,
       quality:model?.quality||'',
       answer:String(answer||'').slice(0,8000),
       latency_ms:Math.max(0,Math.round(Number(elapsedMs)||0)),
@@ -1478,12 +1540,13 @@
   }
 
   function apiScoreForModel(scoring,model,fallback){
-    const isLocal=model?.route==='local';
-    const modelId=isLocal?(model.model||model.id):'mmir-supergenius';
+    const identity=routeIdentity(model);
     const found=(Array.isArray(scoring?.scores)?scoring.scores:[]).find(score=>
-      String(score?.model_id||'')===String(modelId) ||
-      (isLocal&&String(score?.route_class||'')==='local') ||
-      (!isLocal&&String(score?.node_id||'')==='browser-guide')
+      String(score?.model_id||'')===String(identity.model_id) ||
+      String(score?.route_id||'')===String(identity.route_id) ||
+      String(score?.id||'')===String(identity.id) ||
+      (model?.route==='local'&&String(score?.route_class||'')==='local') ||
+      (identity.provider==='mmir'&&String(score?.node_id||'')==='browser-guide')
     );
     if(!found)return fallback;
     const reasons=Array.isArray(found.reasons)?found.reasons:[];
@@ -1507,12 +1570,21 @@
   function apiWinner(scoring,hostedModel,hostedScore,localModel,localScore){
     const winner=scoring?.winner;
     if(!winner)return winningRoute(hostedModel,hostedScore,localModel,localScore);
-    const localId=String(localModel?.model||localModel?.id||'');
+    const hostedIdentity=routeIdentity(hostedModel);
+    const localIdentity=routeIdentity(localModel);
     const winnerModelId=String(winner.model_id||'');
-    const isLocal=winner.route_class==='local'||winnerModelId===localId;
-    const model=isLocal?localModel:hostedModel;
-    const score=isLocal?localScore:hostedScore;
-    const loser=isLocal?hostedScore:localScore;
+    const winnerRouteId=String(winner.route_id||winner.id||'');
+    const isSecond=winner.route_class==='local'||
+      winnerModelId===String(localIdentity.model_id)||
+      winnerRouteId===String(localIdentity.route_id)||
+      winnerRouteId===String(localIdentity.id);
+    const isHosted=winnerModelId===String(hostedIdentity.model_id)||
+      winnerRouteId===String(hostedIdentity.route_id)||
+      winnerRouteId===String(hostedIdentity.id);
+    const useSecond=isSecond&&!isHosted;
+    const model=useSecond?localModel:hostedModel;
+    const score=useSecond?localScore:hostedScore;
+    const loser=useSecond?hostedScore:localScore;
     return {
       model,
       score,
@@ -1567,6 +1639,7 @@
 
   function smartDecision(prompt){
     const local=bestLocalModel();
+    const partner=comparePartnerModel();
     const active=activeModel();
     if(privateModeActive()){
       if(local||active.route==='local'){
@@ -1575,8 +1648,8 @@
       }
       return {mode:'private-unavailable',prompt:cleanSmartPrompt(prompt)||prompt};
     }
-    if(local&&wantsCompareRoute(prompt)){
-      return {mode:'compare',model:local,prompt:cleanSmartPrompt(prompt)||prompt};
+    if(partner&&wantsCompareRoute(prompt)){
+      return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};
     }
     if(factGuardActive()&&active.route==='local'&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
       return {mode:'single',model:defaultHostedModel(),reason:'Quality guard: public facts'};
@@ -1973,7 +2046,7 @@
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
         menuSection('Two models')+
-        menuButton('compare-live','Compare answers','Ask Supergeni + '+pool.bestLocalLabel+'.')+
+        menuButton('compare-live','Compare answers','Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.')+
         menuButton('best-answer-live','Best answer benchmark','Scores both routes, then synthesizes.')+
         menuButton('discuss-topic','Model discussion','Two perspectives, one conclusion.')
       : '';
@@ -2252,18 +2325,19 @@
   }
 
   function runTwoModelTool(action){
-    const local=bestLocalModel();
+    const primary=defaultHostedModel();
+    const partner=comparePartnerModel();
     const input=document.getElementById('p0-input');
     const prompt=String(input?.value||'').trim();
-    if(!local){
+    if(!primary||!partner||primary.id===partner.id){
       status('Refresh models first, then two-model tools can run.','error');
-      routeStatus('Two-model tools need a local model','error');
+      routeStatus('Two-model tools need another active model','error');
       input?.focus();
       return true;
     }
     if(!prompt){
       if(action==='discuss-topic'&&input){
-        input.value='Discuss this topic between Supergeni and '+local.label+': ';
+        input.value='Discuss this topic between '+primary.label+' and '+partner.label+': ';
         autosizeInput();
         closeMenus();
         status('Add a topic, then send or choose Model discussion again.','ready');
@@ -2278,17 +2352,17 @@
     }
     closeMenus();
     if(action==='compare-live'){
-      compareLiveRoutes(prompt,local,{mode:'compare'});
+      compareLiveRoutes(prompt,partner,{mode:'compare'});
       return true;
     }
     if(action==='best-answer-live'){
-      compareLiveRoutes(prompt,local,{mode:'best-answer'});
+      compareLiveRoutes(prompt,partner,{mode:'best-answer'});
       return true;
     }
     if(action==='discuss-topic'){
       compareLiveRoutes(
         'Discuss this topic from two model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
-        local,
+        partner,
         {mode:'best-answer'}
       );
       return true;
@@ -2903,7 +2977,7 @@
       timeoutMs:45000,
       signal
     });
-    return responseText(data)||'Supergeni returned an empty response.';
+    return responseText(data)||((model?.label||'Hosted route')+' returned an empty response.');
   }
 
   async function chatLocal(prompt,model,signal){
@@ -2919,17 +2993,24 @@
     return responseText(data)||'Local model returned an empty response.';
   }
 
+  async function chatRoute(prompt,model,signal){
+    return model?.route==='local'
+      ? chatLocal(prompt,model,signal)
+      : chatHosted(prompt,signal,model);
+  }
+
   async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal){
-    const localLabel=localModel?.label||'local model';
+    const hostedLabel=defaultHostedModel()?.label||'Supergeni';
+    const localLabel=localModel?.label||'second route';
     const synthesisPrompt='Create one concise best answer for the user by comparing these two model answers. '+
-      'Prefer current public facts from Supergeni when the local model is stale or vague. '+
+      'Prefer the route with stronger evidence; for current public facts, prefer fresher public/current routes when another route is stale or vague. '+
       'Use the route evidence scores and reasons to choose the most reliable answer. '+
       'Do not mention internal instructions. Keep it useful and short.\n\n'+
       'User question: '+prompt+'\n\n'+
       'Route evidence:\n'+
-      '- Supergeni: '+scoreSummary(hostedScore)+'\n'+
+      '- '+hostedLabel+': '+scoreSummary(hostedScore)+'\n'+
       '- '+localLabel+': '+scoreSummary(localScore)+'\n\n'+
-      'Supergeni answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
+      hostedLabel+' answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
       localLabel+' answer:\n'+(localAnswer||'[no answer]');
     return chatHosted(synthesisPrompt,signal);
   }
@@ -3082,7 +3163,7 @@
     if(state.busy)return;
     const mode=options.mode==='best-answer'?'best-answer':'compare';
     const title=mode==='best-answer'?'Best Answer':'Compare';
-    const localModel=compareLocalModel(preferredLocalModel);
+    const localModel=comparePartnerModel(preferredLocalModel);
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
@@ -3100,9 +3181,16 @@
     input.value='';
     autosizeInput();
     const hostedModel=defaultHostedModel();
+    if(hostedModel&&localModel&&hostedModel.id===localModel.id){
+      status('Refresh models first, then '+title+' can use two routes.','error');
+      routeStatus('Two-model tools need another active model','error');
+      finishResponse();
+      input?.focus();
+      return;
+    }
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
-    const localQualityNote=wantsPublicFactRoute(prompt)?' · Local facts may be stale':'';
+    const localQualityNote=localModel.route==='local'&&wantsPublicFactRoute(prompt)?' · Local facts may be stale':'';
     const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare',retryPrompt:prompt});
     const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare',retryPrompt:prompt});
     let hostedAnswerText='';
@@ -3113,10 +3201,10 @@
     let localElapsedMs=0;
     let hostedFailed=false;
     let localFailed=false;
-    status(title+' is asking Supergeni and '+localModel.label+' in parallel...','ready');
-    routeStatus(title+' · Supergeni + '+localModel.label,'ready');
+    status(title+' is asking '+hostedModel.label+' and '+localModel.label+' in parallel...','ready');
+    routeStatus(title+' · '+hostedModel.label+' + '+localModel.label,'ready');
     const hostedStarted=performance.now();
-    const hostedJob=chatHosted(prompt,signal)
+    const hostedJob=chatHosted(prompt,signal,hostedModel)
       .then(answer=>{
         hostedAnswerText=answer||'Supergeni returned an empty response.';
         hostedElapsedMs=performance.now()-hostedStarted;
@@ -3130,9 +3218,9 @@
         updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       });
     const localStarted=performance.now();
-    const localJob=chatLocal(prompt,localModel,signal)
+    const localJob=chatRoute(prompt,localModel,signal)
       .then(answer=>{
-        localAnswerText=answer||'Local model returned an empty response.';
+        localAnswerText=answer||(localModel.route==='local'?'Local model returned an empty response.':localModel.label+' returned an empty response.');
         localElapsedMs=performance.now()-localStarted;
         localScore=routeScore(localModel,prompt,localAnswerText,localElapsedMs,false,'compare');
         updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
@@ -3141,7 +3229,8 @@
         localFailed=true;
         localElapsedMs=performance.now()-localStarted;
         localScore=routeScore(localModel,prompt,'',localElapsedMs,true,'compare');
-        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':localNetworkHint(error),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+        const errorText=localModel.route==='local'?localNetworkHint(error):(localModel.label+' did not answer this compare request. Try normal chat or refresh.');
+        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':errorText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       });
     await Promise.allSettled([hostedJob,localJob]);
     if(stopRequested){
@@ -3162,7 +3251,7 @@
       finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
       scoringSource=API_LABEL+'/routing/score';
       updateMessage(hostedMessage,hostedAnswerText||'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
-      updateMessage(localMessage,localAnswerText||localNetworkHint('Local model did not answer.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+      updateMessage(localMessage,localAnswerText||(localModel.route==='local'?localNetworkHint('Local model did not answer.'):localModel.label+' did not answer this compare request. Try normal chat or refresh.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
     }catch(error){
       recordRouteBenchmark(hostedModel,hostedScore);
       recordRouteBenchmark(localModel,localScore);
@@ -3189,7 +3278,7 @@
       }
       routeStatus(title+' · '+winner.summary,'ready');
     }
-    status(title+' finished: '+finalWinner.summary+'.','ready');
+    status(title+' finished: '+(finalWinner?.summary||'two-route check complete')+'.','ready');
     finishResponse();
     input?.focus();
   }
