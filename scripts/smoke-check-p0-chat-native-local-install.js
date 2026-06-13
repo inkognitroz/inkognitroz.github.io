@@ -75,13 +75,13 @@ requireIncludes(
 requireIncludes(
   handleMenuSource,
   "if(action==='connect-local')",
-  '+ -> Add model must remain a first-class menu action.'
+  '+ -> Connect local model must remain a first-class menu action.'
 );
 requireOrder(
   handleMenuSource,
   "if(action==='connect-local')",
   'startLocalInstallAssistant();',
-  '+ -> Add model must call the chat-native install assistant.'
+  '+ -> Connect local model must call the chat-native install assistant.'
 );
 requireOrder(
   handleMenuSource,

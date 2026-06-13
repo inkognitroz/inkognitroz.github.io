@@ -61,8 +61,8 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
-  "menuButton('connect-local','Add model','Get the install command in this chat.')",
-  '+ menu must keep local onboarding as one plain Add model action with chat-native wording.'
+  "menuButton('connect-local','Connect local model','Get the install command in this chat.')",
+  '+ menu must keep local onboarding as one plain connect-local action with chat-native wording.'
 );
 requireIncludes(
   renderAddMenu,
@@ -106,12 +106,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260612-role-profile-v1',
+  'p0-chat-shell.js?v=20260613-minimal-subtle-ui-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260612-role-profile-v1"',
+  '"p0-chat-shell.js": "20260613-minimal-subtle-ui-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

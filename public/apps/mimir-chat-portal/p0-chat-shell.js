@@ -1541,7 +1541,7 @@
           '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
-              '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Add or connect model" aria-expanded="false">+</button>'+
+              '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
               '<span id="p0-toolbar-tools" class="p0-toolbar-tools" aria-label="Pinned chat tools"></span>'+
             '</div>'+
@@ -1850,7 +1850,7 @@
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
-      menuButton('connect-local','Add model','Get the install command in this chat.')+
+      menuButton('connect-local','Connect local model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
@@ -1922,7 +1922,7 @@
     const filterHint=(hostedModels.length||localModels.length)?'':
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-note">Press + -> Add model to connect this computer.</div>';
+      '<div class="p0-menu-note">Press + -> Connect local model to connect this computer.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
     const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, change filters and inspect route details.');
     menu.innerHTML=menuTitle('Models')+buttons+filterHint+activeFilterHint+localHint+routeControls;
@@ -2829,7 +2829,7 @@
       autosizeInput();
       append(
         'assistant',
-        modeLabel+' is on, but no local model is connected yet. Press + -> Add model, install the local connector, then press + -> Refresh models.',
+        modeLabel+' is on, but no local model is connected yet. Press + -> Connect local model, install the local connector, then press + -> Refresh models.',
         'MMIR privacy guard',
         modeLabel+' · hosted route blocked'
       );
@@ -3057,7 +3057,7 @@
     window.MimirAllowLocalProbes?.('p0-paired-local-resume',30000);
     checkLocalModels({quiet:true}).then(models=>{
       if(!Array.isArray(models)||!models.length)return;
-      routeStatus('Local node attached · '+models.length+' model'+(models.length===1?'':'s')+' · Private · This Mac','local');
+      routeStatus('Local node ready · '+models.length+' model'+(models.length===1?'':'s')+' · Private · This Mac','local');
     }).catch(()=>{});
   }
 

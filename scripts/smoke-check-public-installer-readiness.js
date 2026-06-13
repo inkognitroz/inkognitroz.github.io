@@ -153,12 +153,12 @@ const nextFunctionIndex = p0Shell.indexOf('function selectCommandText', startLoc
 const startLocalInstallSource = startLocalInstallIndex >= 0
   ? p0Shell.slice(startLocalInstallIndex, nextFunctionIndex > startLocalInstallIndex ? nextFunctionIndex : undefined)
   : '';
-requireIncludes(startLocalInstallSource, "routeStatus('Copy install command · local setup','hosted')", 'Add model flow must keep install guidance inside the compact chat status.');
-requireIncludes(startLocalInstallSource, "commandLabel:'Copy command'", 'Add model flow must expose one obvious copy action.');
+requireIncludes(startLocalInstallSource, "routeStatus('Copy install command · local setup','hosted')", 'Connect local model flow must keep install guidance inside the compact chat status.');
+requireIncludes(startLocalInstallSource, "commandLabel:'Copy command'", 'Connect local model flow must expose one obvious copy action.');
 forbidPattern(
   startLocalInstallSource,
   /window\.open|location\.href|location\.assign|mmir-local-connector-install|\.zip|\.command/i,
-  'Add model flow must not redirect to installer pages, ZIPs or unsigned command files.'
+  'Connect local model flow must not redirect to installer pages, ZIPs or unsigned command files.'
 );
 
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-public-installer-readiness.js')) {

@@ -237,7 +237,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   layout = await collectLayout(page);
   assertMenuInViewport(layout.addMenu, viewport, `${viewport.name} add`);
-  assert(layout.text.includes('Add model'), `${viewport.name}: add menu should expose Add model`);
+  assert(layout.text.includes('Connect local model'), `${viewport.name}: add menu should expose Connect local model`);
   assert(layout.text.includes('Refresh models'), `${viewport.name}: add menu should expose Refresh models`);
 
   await page.locator('[data-p0-action="connect-local"]').click();

@@ -599,9 +599,13 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   box-sizing: border-box;
   display: grid;
   gap: 6px;
+  max-height: min(70vh, calc(100vh - 118px));
   max-width: min(360px, calc(100vw - 28px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px;
   position: fixed;
+  scrollbar-width: thin;
   width: 320px;
   z-index: 1000;
 }

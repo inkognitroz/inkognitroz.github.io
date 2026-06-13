@@ -104,7 +104,7 @@ requireIncludes(
 );
 requireIncludes(
   maybeAutoAttachPairedLocal,
-  "routeStatus('Local node attached · '+models.length",
+  "routeStatus('Local node ready · '+models.length",
   'Successful paired resume must show one compact green/local route receipt.'
 );
 requireOrder(
