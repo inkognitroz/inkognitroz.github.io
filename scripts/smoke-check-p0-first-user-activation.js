@@ -27,12 +27,12 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  "menuButton('connect-local','Add model','Get the install command in this chat.')",
-  '+ menu must expose exactly one plain Add model path for local node onboarding.'
+  "menuButton('connect-local','Connect local model','Get the install command in this chat.')",
+  '+ menu must expose exactly one plain connect-local path for local node onboarding.'
 );
 requireIncludes(
   p0Shell,
-  'Press + -> Add model to connect this computer.',
+  'Press + -> Connect local model to connect this computer.',
   'Model menu must explain why adding a local model matters without showing a dashboard.'
 );
 requireIncludes(

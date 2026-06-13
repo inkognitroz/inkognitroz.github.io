@@ -40,8 +40,8 @@ const addMenu = functionBody(runtime, 'renderAddMenu');
 
 requireText(
   addMenu,
-  "menuButton('connect-local','Add model'",
-  'Add menu must expose local setup once as Add model'
+  "menuButton('connect-local','Connect local model'",
+  'Add menu must expose local setup once as Connect local model'
 );
 requireText(
   addMenu,
@@ -50,7 +50,7 @@ requireText(
 );
 requireText(
   runtime,
-  'Press + -> Add model to connect this computer.',
+  'Press + -> Connect local model to connect this computer.',
   'Model menu local hint must stay short and avoid repeating platform strategy copy'
 );
 forbidText(
@@ -95,8 +95,8 @@ requireText(
 );
 forbidText(
   addMenu,
-  'Connect local model',
-  'Add menu should use one user-facing Add model label instead of repeating local-connector wording'
+  'Add model',
+  'Add menu should not reintroduce repeated Add model wording'
 );
 forbidText(
   addMenu,
@@ -104,9 +104,9 @@ forbidText(
   'Add menu should avoid technical local-node detail in the compact toolbar menu'
 );
 
-const addModelCount = (addMenu.match(/'Add model'/g) || []).length;
-if (addModelCount !== 1) {
-  fail(`Add menu should contain exactly one Add model action, found ${addModelCount}`);
+const connectLocalCount = (addMenu.match(/'Connect local model'/g) || []).length;
+if (connectLocalCount !== 1) {
+  fail(`Add menu should contain exactly one Connect local model action, found ${connectLocalCount}`);
 }
 
 requireText(

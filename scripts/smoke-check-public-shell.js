@@ -462,8 +462,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Add model",
-  "P0 + menu must expose local setup as one simple Add model action.",
+  "Connect local model",
+  "P0 + menu must expose local setup as one simple connect-local action.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -938,7 +938,7 @@ requireText(
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "menuButton('connect-local'",
-  "P0 Add model must start the chat-guided installer flow.",
+  "P0 connect-local action must start the chat-guided installer flow.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

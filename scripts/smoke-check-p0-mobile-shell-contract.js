@@ -69,7 +69,7 @@ for (const marker of [
 
 for (const marker of [
   'aria-label="Message Supergeni"',
-  'aria-label="Add or connect model"',
+  'aria-label="Tools"',
   'aria-label="Security and privacy status: public mode"',
   'aria-label="Choose model"',
   'aria-label="Voice input"',
@@ -79,7 +79,7 @@ for (const marker of [
 }
 
 for (const marker of [
-  'Add model',
+  'Connect local model',
   'Get the install command in this chat.',
   'Refresh models',
   'New chat',

@@ -245,7 +245,7 @@ async function checkViewport(browser, viewport) {
   layout = await pageLayout(page);
   assertMenuBounds(layout.addMenu, viewport, `${viewport.name} add`);
   assert(layout.text.includes('TOOLS'), `${viewport.name}: add menu title should be Tools`);
-  assert(layout.text.includes('Add model'), `${viewport.name}: add menu should expose Add model`);
+  assert(layout.text.includes('Connect local model'), `${viewport.name}: add menu should expose Connect local model`);
   assert(!/Intelligence pool|Smart routing/i.test(layout.text), `${viewport.name}: add menu must not show strategy cards`);
   await screenshot(page, `${viewport.name}-add-menu`);
 
@@ -255,7 +255,7 @@ async function checkViewport(browser, viewport) {
   }
   await page.waitForSelector('.p0-command-card code');
   const commandText = await page.locator('.p0-command-card code').last().innerText();
-  assert(commandText.trim() === 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', `${viewport.name}: Add model should write the canonical Mac/Linux install command into chat`);
+  assert(commandText.trim() === 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', `${viewport.name}: Connect local model should write the canonical Mac/Linux install command into chat`);
   layout = await pageLayout(page);
   assertControls(layout, viewport, `${viewport.name} command`);
   await screenshot(page, `${viewport.name}-install-command`);

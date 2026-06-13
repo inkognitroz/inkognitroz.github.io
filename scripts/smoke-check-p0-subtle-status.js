@@ -107,7 +107,7 @@ assertIncludes(bestAnswerEl.attrs['aria-label'], 'Winner: Supergeni', 'Full rout
 const localEl = fakeElement();
 testApi.renderMicroStatus(
   localEl,
-  'Local node attached · 5 models · Private · This Mac · Score 82 · avg 650ms',
+  'Local node ready · 5 models · Private · This Mac · Score 82 · avg 650ms',
   'local'
 );
 assertIncludes(localEl.innerHTML, 'Local node ready', 'Local attach status must be condensed, not repeated as a large chip.');

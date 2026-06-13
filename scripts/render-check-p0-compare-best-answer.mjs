@@ -189,7 +189,7 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   let addMenu = await menuText(page);
-  assert(addMenu.includes('Add model'), `${viewport.name}: add menu should keep Add model`);
+  assert(addMenu.includes('Connect local model'), `${viewport.name}: add menu should keep Connect local model`);
   assert(addMenu.includes('Refresh models'), `${viewport.name}: add menu should keep Refresh models`);
   assert(!/Compare answers|Best answer benchmark|Model discussion/i.test(addMenu), `${viewport.name}: add menu must not show two-model tools before local discovery`);
 

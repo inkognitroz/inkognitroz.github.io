@@ -142,6 +142,7 @@ requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use 
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
 requireIncludes(files.p0Css, '.p0-route-line', 'P0 route receipt must render as a subtle text line, not noisy chips.');
 requireIncludes(files.p0Css, 'overscroll-behavior: contain', 'P0 transcript must be an independently scrollable answer pane.');
+requireIncludes(files.p0Css, 'max-height: min(70vh, calc(100vh - 118px));', 'P0 menus must stay inside the viewport and scroll internally.');
 requireIncludes(files.p0Css, '-webkit-overflow-scrolling: touch', 'P0 transcript must support smooth touch scrolling.');
 requireIncludes(files.p0Css, 'display: block;', 'P0 transcript must use block layout so long chats produce real scroll height.');
 requireIncludes(files.p0Css, '.p0-message + .p0-message', 'P0 messages must preserve spacing without relying on grid gap that can collapse scroll height.');
@@ -167,7 +168,7 @@ requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.introFor?.(os)', 'P0 lo
 requireIncludes(files.p0Runtime, 'data-p0-os-command="windows"', 'P0 local setup must ask for OS when browser detection is uncertain.');
 requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setup must gracefully handle browsers that block clipboard writes.');
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
-requireIncludes(files.p0Runtime, 'Add model', 'P0 add menu must present local setup as one simple Add model task.');
+requireIncludes(files.p0Runtime, 'Connect local model', 'P0 add menu must present local setup as one simple connect-local task.');
 requireIncludes(files.p0Runtime, 'Get the install command in this chat.', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
 requireIncludes(files.p0Runtime, 'Supergeni answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
