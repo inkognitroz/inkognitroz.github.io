@@ -1,0 +1,102 @@
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+const root = resolve(new URL('..', import.meta.url).pathname);
+const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
+const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
+const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
+const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
+const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const errors = [];
+
+function requireIncludes(source, needle, message) {
+  if (!source.includes(needle)) errors.push(message);
+}
+
+function requireNotIncludes(source, needle, message) {
+  if (source.includes(needle)) errors.push(message);
+}
+
+requireIncludes(
+  shell,
+  'function visibleHostedModel(model)',
+  'P0 shell must keep provider candidates visible even when they are not executable.'
+);
+requireIncludes(
+  shell,
+  "String(model?.route_type||'')==='external_candidate'",
+  'P0 shell must recognize external provider candidate inventory.'
+);
+requireIncludes(
+  shell,
+  "tags:candidate?[provider,'Candidate','Setup']",
+  'Provider candidates must be visibly marked as candidate/setup in the model picker.'
+);
+requireIncludes(
+  shell,
+  "data-model-selectable=\"'+(selectable?'true':'false')+'\"",
+  'Model menu must expose a selectable flag for candidate safety.'
+);
+requireIncludes(
+  shell,
+  "aria-disabled=\"'+(selectable?'false':'true')+'\"",
+  'Provider candidates must be marked non-selectable without hiding them.'
+);
+requireIncludes(
+  shell,
+  "Candidate visible · setup/probe needed",
+  'Clicking a provider candidate must explain the setup/probe gate instead of selecting it.'
+);
+requireIncludes(
+  shell,
+  "model.executable!==false&&model.selectable!==false",
+  'Active/default model selection must skip non-executable candidates.'
+);
+requireIncludes(
+  css,
+  '.p0-menu button[data-model-selectable="false"]',
+  'Candidate rows must have a discrete disabled visual state.'
+);
+requireIncludes(
+  css,
+  '.p0-badge-candidate',
+  'Candidate badge styling must be present.'
+);
+requireIncludes(
+  css,
+  '.p0-badge-setup',
+  'Setup badge styling must be present.'
+);
+requireIncludes(
+  html,
+  'p0-chat-shell.js?v=20260613-visible-provider-candidates-v1',
+  'Public page must cache-bust the visible provider candidate runtime.'
+);
+requireIncludes(
+  html,
+  'p0-chat-shell.css?v=20260613-visible-provider-candidates-v1',
+  'Public page must cache-bust the visible provider candidate CSS.'
+);
+requireIncludes(
+  manifest,
+  '"p0-chat-shell.js": "20260613-visible-provider-candidates-v1"',
+  'Asset manifest must track the visible provider candidate runtime.'
+);
+requireIncludes(
+  manifest,
+  '"p0-chat-shell.css": "20260613-visible-provider-candidates-v1"',
+  'Asset manifest must track the visible provider candidate CSS.'
+);
+requireNotIncludes(
+  html,
+  'OpenRouter Candidate',
+  'Provider candidates must be loaded from API inventory, not hardcoded into static HTML.'
+);
+
+if (errors.length) {
+  console.error('P0 provider candidate visibility smoke failed:');
+  for (const error of errors) console.error('- ' + error);
+  process.exit(1);
+}
+
+console.log('P0 provider candidate visibility smoke passed.');
