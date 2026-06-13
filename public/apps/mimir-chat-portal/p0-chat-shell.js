@@ -7,6 +7,7 @@
   const LOCAL_URL=ROUTE_ADAPTER_CONFIG.localUrl||'http://127.0.0.1:3000';
   const CHAT_PATH=ROUTE_ADAPTER_CONFIG.chatPath||'/v1/chat/completions';
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
+  const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
   const allowLocalProbes=P0_ROUTE_ADAPTERS.allowLocalProbes;
@@ -71,7 +72,7 @@
     {
       id:'compare-best-answer',
       title:'Best Answer',
-      detail:'Use parallel routes when local models exist.',
+      detail:'Use parallel active routes when available.',
       prompt_template:'@compare '
     },
     {
@@ -326,7 +327,7 @@
     {
       id:'discuss',
       label:'Model discussion',
-      detail:'Lets Supergeni and another active route discuss one topic.',
+      detail:'Lets active routes discuss one topic.',
       title:'Model discussion',
       icon:ICON_BUBBLES||'<span aria-hidden="true">D</span>'
     },
@@ -745,6 +746,17 @@
     return 'neutral';
   }
 
+  function gatewayProviderSummary(parts){
+    const providers=parts
+      .map(part=>String(part||'').trim())
+      .filter(part=>/^(OpenRouter|Google|NVIDIA|Groq)\b/i.test(part))
+      .map(part=>part.replace(/\s+\d+(?:\.\d+)?(?:ms|s)\b.*$/i,'').trim())
+      .filter(Boolean)
+      .filter((part,index,list)=>list.indexOf(part)===index)
+      .slice(0,3);
+    return providers.join(' + ');
+  }
+
   function renderMicroStatus(el,message,stateValue='hosted'){
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
@@ -760,8 +772,11 @@
       !/^Winner:/i.test(part)
     );
     const pick=(test)=>candidates.find(part=>test.test(part))||'';
+    const providers=gatewayProviderSummary(parts);
     const priority=[
       pick(/\d+\s+active intelligences connected/i),
+      pick(/^\d+\s+routes?$/i),
+      providers,
       pick(/^\d+\s+models?\.?$/i),
       pick(/^free$|^private$/i),
       pick(/^this mac$/i),
@@ -1191,7 +1206,7 @@
     const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
     const details=compareReady
-      ? 'Best Answer can ask '+primary.label+' and '+partner.label+' in parallel, then synthesize one answer.'
+      ? 'Best Answer can ask '+(hosted.length>1?String(hosted.length)+' hosted/provider routes':(primary.label+' and '+partner.label))+' in parallel, then synthesize one answer.'
       : 'Supergeni is ready now. Connect another route to unlock parallel Best Answer.';
     return {
       liveRoutes,
@@ -1224,6 +1239,20 @@
     const active=activeModel();
     if(active&&active.route==='hosted'&&primary&&active.id!==primary.id)return active;
     return activeIntelligenceModels().find(model=>model.route==='hosted'&&(!primary||model.id!==primary.id))||null;
+  }
+
+  function activeHostedCompareModels(){
+    return activeIntelligenceModels().filter(model=>model.route==='hosted'&&!model.candidate&&model.executable!==false&&model.selectable!==false);
+  }
+
+  function gatewayCompareAvailable(){
+    return activeHostedCompareModels().length>1;
+  }
+
+  function gatewayComparePreferred(preferredModel=null){
+    if(privateModeActive()||!gatewayCompareAvailable())return false;
+    const active=activeModel();
+    return !(preferredModel?.route==='local'||active?.route==='local');
   }
 
   function formatDuration(ms){
@@ -1456,6 +1485,11 @@
     const target=parts.find(part=>/^target\s+\d+(?:\.\d+)?(?:ms|s)\s+met$/i.test(part)||/^over\s+\d+(?:\.\d+)?(?:ms|s)\s+target$/i.test(part));
     const noPaid=parts.find(part=>/No paid route/i.test(part));
     const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
+    const routeCount=parts.find(part=>/^\d+\s+routes?$/i.test(part));
+    const providers=gatewayProviderSummary(parts);
+    if(/^Best answer$/i.test(parts[0]||'')&&routeCount){
+      return ['Best answer',routeCount,winner,providers,score,noPaid].filter(Boolean).join(' · ');
+    }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
     }
@@ -2114,10 +2148,10 @@
       }).join('');
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
-        menuSection('Two models')+
-        menuButton('compare-live','Compare answers','Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.')+
-        menuButton('best-answer-live','Best answer benchmark','Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Model discussion','Two perspectives, one conclusion.')
+        menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
+        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' active routes through MMIR.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
+        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?'Scores active routes, then returns one answer.':'Scores both routes, then synthesizes.')+
+        menuButton('discuss-topic','Model discussion',gatewayCompareAvailable()?'Active routes debate, then converge.':'Two perspectives, one conclusion.')
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
@@ -2420,6 +2454,23 @@
       return true;
     }
     closeMenus();
+    if(gatewayComparePreferred()){
+      if(action==='compare-live'){
+        compareGatewayRoutes(prompt,{mode:'compare'});
+        return true;
+      }
+      if(action==='best-answer-live'){
+        compareGatewayRoutes(prompt,{mode:'best-answer'});
+        return true;
+      }
+      if(action==='discuss-topic'){
+        compareGatewayRoutes(
+          'Discuss this topic from multiple model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
+          {mode:'best-answer'}
+        );
+        return true;
+      }
+    }
     if(action==='compare-live'){
       compareLiveRoutes(prompt,partner,{mode:'compare'});
       return true;
@@ -3068,6 +3119,138 @@
       : chatHosted(prompt,signal,model);
   }
 
+  function compareApiPayload(prompt){
+    const factGuard=factGuardActive()
+      ? ' If current facts are uncertain, prefer the verified/fresher route and say when verification is needed.'
+      : '';
+    return {
+      model:'supergeni',
+      messages:[
+        {role:'system',content:'You are Supergeni inside MMIR Best Answer. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Keep route/source/privacy proof in receipts/status, not in the main answer unless asked.'},
+        {role:'user',content:prompt}
+      ],
+      stream:false,
+      temperature:0.4,
+      max_tokens:answerTokenBudget()
+    };
+  }
+
+  function attemptProviderLabel(attempt){
+    const provider=String(attempt?.provider||'').trim();
+    if(provider&&provider!=='mmir')return providerLabel(provider);
+    return routeDisplayName({label:attempt?.model_display_name||attempt?.model_id||'Supergeni'});
+  }
+
+  function compareAttemptSummary(attempt){
+    const latency=Number(attempt?.latency_ms)||Number(attempt?.receipt?.latency_ms)||0;
+    return [
+      attemptProviderLabel(attempt),
+      latency?formatDuration(latency):'',
+      typeof attempt?.score==='number'?'Score '+attempt.score:''
+    ].filter(Boolean).join(' ');
+  }
+
+  function gatewayCompareReceipt(data){
+    const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
+    const best=data?.best_answer||{};
+    const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
+    const parts=[
+      'Best answer',
+      attempts.length?String(attempts.length)+' routes':'',
+      winner?'Winner: '+winner:'',
+      typeof best?.score==='number'?'Score '+best.score:'',
+      ...attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary).slice(0,3),
+      'No paid route'
+    ];
+    return parts.filter(Boolean).join(' · ');
+  }
+
+  function modelForCompareAttempt(attempt){
+    const modelId=String(attempt?.model_id||attempt?.receipt?.model_id||'').toLowerCase();
+    const routeId=String(attempt?.route_id||attempt?.receipt?.route_id||'').toLowerCase();
+    const provider=String(attempt?.provider||attempt?.receipt?.provider||'').toLowerCase();
+    return state.models.find(model=>
+      String(model.id||'').toLowerCase()===modelId ||
+      String(model.model||'').toLowerCase()===modelId ||
+      String(model.routeId||'').toLowerCase()===routeId ||
+      (provider&&String(model.provider||'').toLowerCase()===provider)
+    )||null;
+  }
+
+  function recordGatewayCompareBenchmarks(data){
+    (Array.isArray(data?.route_attempts)?data.route_attempts:[]).forEach(attempt=>{
+      const model=modelForCompareAttempt(attempt);
+      if(!model||attempt.status!=='succeeded')return;
+      recordRouteBenchmark(model,{
+        score:clampScore(attempt.score||model.score||50),
+        elapsedMs:Number(attempt.latency_ms)||Number(attempt.receipt?.latency_ms)||0,
+        answer_class:attempt.answer_class||'complete',
+        latency_class:attempt.latency_class||'unknown',
+        reason:attempt.reason||'gateway compare',
+        source:'api'
+      });
+    });
+  }
+
+  async function compareGatewayRoutes(comparePrompt='',options={}){
+    if(state.busy)return;
+    const input=document.getElementById('p0-input');
+    const prompt=String(comparePrompt||input?.value||'').trim();
+    const mode=options.mode==='compare'?'compare':'best-answer';
+    const title=mode==='compare'?'Compare':'Best Answer';
+    if(privateModeActive()){
+      status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
+      routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
+      input?.focus();
+      return;
+    }
+    if(!prompt){
+      status('Write a prompt first, then '+title+' can run.','error');
+      input?.focus();
+      return;
+    }
+    const signal=beginResponse();
+    append('user',prompt,'You');
+    if(input){
+      input.value='';
+      autosizeInput();
+    }
+    const assistant=append('assistant','Comparing active routes...','Supergeni · Best answer','Best Answer · active routes · no paid route',{variant:'compare',retryPrompt:prompt});
+    status(title+' is asking '+String(activeHostedCompareModels().length)+' active routes...','ready');
+    routeStatus(title+' · '+String(activeHostedCompareModels().length)+' active intelligences connected','ready');
+    try{
+      const data=await fetchJson(API_URL+COMPARE_PATH,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(compareApiPayload(prompt)),
+        timeoutMs:70000,
+        signal
+      });
+      if(data?.object!=='chat.compare')throw new Error('Gateway compare unavailable');
+      const content=String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.';
+      const receipt=gatewayCompareReceipt(data);
+      updateMessage(assistant,content,{receipt});
+      recordGatewayCompareBenchmarks(data);
+      renderModelMenu();
+      renderToolbar();
+      status(title+' ready: '+String(data.route_attempts?.length||0)+' routes, winner '+attemptProviderLabel({provider:data.best_answer?.receipt?.provider,model_display_name:data.best_answer?.model_display_name,model_id:data.best_answer?.model_id})+'.','ready');
+      routeStatus(receipt,'ready');
+    }catch(error){
+      if(stopRequested||error?.name==='AbortError'){
+        updateMessage(assistant,'Response stopped.',{receipt:'Best Answer · stopped'});
+        status(title+' stopped.','idle');
+        routeStatus('Stopped · compare routes cancelled','hosted');
+      }else{
+        updateMessage(assistant,'Best Answer is unavailable right now. Try normal chat or refresh models.',{receipt:'Best Answer · gateway compare failed'});
+        status(title+' failed: '+(error?.message||'gateway unavailable'),'error');
+        routeStatus('Best Answer unavailable · refresh routes','error');
+      }
+    }finally{
+      finishResponse();
+      input?.focus();
+    }
+  }
+
   async function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal){
     const hostedLabel=defaultHostedModel()?.label||'Supergeni';
     const localLabel=localModel?.label||'second route';
@@ -3104,7 +3287,7 @@
       return;
     }
     if(explicit?.mode==='missing-local'){
-      status('Refresh models first, then use @supergenius @gemma for compare.','error');
+      status('Refresh models first, then use @supergeni @gemma for compare.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
       return;
@@ -3230,6 +3413,10 @@
 
   async function compareLiveRoutes(comparePrompt='',preferredLocalModel=null,options={}){
     if(state.busy)return;
+    if(gatewayComparePreferred(preferredLocalModel)){
+      await compareGatewayRoutes(comparePrompt,options);
+      return;
+    }
     const mode=options.mode==='best-answer'?'best-answer':'compare';
     const title=mode==='best-answer'?'Best Answer':'Compare';
     const localModel=comparePartnerModel(preferredLocalModel);

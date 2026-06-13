@@ -58,10 +58,10 @@ forbidText(
   'expand the intelligence pool',
   'Model menu must not repeat intelligence-pool strategy copy in the compact route picker'
 );
-forbidText(
+requireText(
   addMenu,
-  'Intelligence pool',
-  'Add menu must not bring back dashboard-style Intelligence pool cards'
+  "gatewayCompareAvailable()?'Intelligence pool':'Two models'",
+  'Add menu may show a compact Intelligence pool section only when hosted compare routes are active'
 );
 forbidText(
   addMenu,
@@ -75,7 +75,7 @@ requireText(
 );
 requireText(
   addMenu,
-  "menuSection('Two models')",
+  "menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')",
   'Add menu must group parallel tools only when the intelligence pool is ready'
 );
 requireText(
@@ -113,6 +113,26 @@ requireText(
   runtime,
   'function compareLiveRoutes(comparePrompt',
   'Compare flow must remain implemented behind prompt intent and explicit @model tags'
+);
+requireText(
+  runtime,
+  "const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';",
+  'Gateway compare path must be configurable through the route adapter boundary'
+);
+requireText(
+  runtime,
+  'function compareGatewayRoutes(comparePrompt',
+  'Active hosted/provider routes must use the gateway compare path'
+);
+requireText(
+  runtime,
+  'function gatewayComparePreferred(preferredModel=null)',
+  'Gateway compare must be preferred in public mode without stealing private/local compare flows'
+);
+requireText(
+  runtime,
+  'fetchJson(API_URL+COMPARE_PATH',
+  'Gateway compare must call the live API compare endpoint'
 );
 requireText(
   runtime,
