@@ -637,6 +637,15 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   background: #f7f7f8;
 }
 
+.p0-menu button[data-model-selectable="false"] {
+  cursor: not-allowed;
+  opacity: 0.64;
+}
+
+.p0-menu button[data-model-selectable="false"]:hover {
+  background: #fafafa;
+}
+
 .p0-menu strong {
   font-size: 0.9rem;
 }
@@ -680,6 +689,13 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   background: #fffbeb;
   border-color: #fde68a;
   color: #92400e;
+}
+
+.p0-badge-candidate,
+.p0-badge-setup {
+  background: #f8fafc;
+  border-color: #dbeafe;
+  color: #1d4ed8;
 }
 
 .p0-badge-demoted {
