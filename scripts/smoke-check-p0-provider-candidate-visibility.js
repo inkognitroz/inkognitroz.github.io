@@ -58,6 +58,26 @@ requireIncludes(
   'Active/default model selection must skip non-executable candidates.'
 );
 requireIncludes(
+  shell,
+  'function hostedPayload(prompt,model=defaultHostedModel())',
+  'Hosted payload must accept the selected hosted model.'
+);
+requireIncludes(
+  shell,
+  "const modelId=String(model?.model||model?.id||'mmir-supergenius')",
+  'Hosted payload must send the selected model id to api.mmir.ai.'
+);
+requireIncludes(
+  shell,
+  'await chatHosted(routePrompt,signal,model)',
+  'Sending a selected hosted route must call chatHosted with that model.'
+);
+requireIncludes(
+  shell,
+  "routeClass==='external-untrusted-free'",
+  'P0 shell must treat owner-promoted external untrusted-free routes separately from setup candidates.'
+);
+requireIncludes(
   css,
   '.p0-menu button[data-model-selectable="false"]',
   'Candidate rows must have a discrete disabled visual state.'
@@ -74,7 +94,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260613-provider-candidate-polish-v1',
+  'p0-chat-shell.js?v=20260613-google-route-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -84,7 +104,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260613-provider-candidate-polish-v1"',
+  '"p0-chat-shell.js": "20260613-google-route-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
