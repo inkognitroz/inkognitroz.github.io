@@ -28,6 +28,31 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function redactOwnerSuggestionText(value)',
+  'P0 shell must redact owner suggestions locally before display or API submission.'
+);
+requireIncludes(
+  shell,
+  "const OWNER_SECRETISH_RE=",
+  'P0 shell must recognize provider-prefixed secret assignment shapes.'
+);
+requireIncludes(
+  shell,
+  "const OWNER_PROVIDER_KEY_RE=",
+  'P0 shell must recognize common standalone provider-key shapes.'
+);
+requireIncludes(
+  shell,
+  ".replace(OWNER_SECRETISH_RE,'[redacted-secret-like-value]')",
+  'P0 shell must replace secret-like assignments before owner intake.'
+);
+requireIncludes(
+  shell,
+  ".replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]')",
+  'P0 shell must replace standalone provider keys before owner intake.'
+);
+requireIncludes(
+  shell,
   "'x-mmir-owner-command-code':parsed.code",
   'P0 shell must send the owner command code only as a request header.'
 );
@@ -63,12 +88,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260614-first-user-ux-cleanup-v1',
+  'p0-chat-shell.js?v=20260614-owner-intake-redaction-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260614-first-user-ux-cleanup-v1"',
+  '"p0-chat-shell.js": "20260614-owner-intake-redaction-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

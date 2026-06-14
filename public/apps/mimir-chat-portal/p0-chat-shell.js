@@ -40,6 +40,8 @@
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
+  const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
+  const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
   const P0_TEXT=window.MimirP0Text||{};
   const P0_CLIPBOARD=window.MimirP0Clipboard||{};
@@ -595,9 +597,18 @@
   function ownerSuggestionCommand(prompt){
     const match=String(prompt||'').trim().match(/^\/admin\s+([^\s]+)\s+([\s\S]+)$/i);
     if(!match)return null;
-    const suggestion=String(match[2]||'').replace(/\s+/g,' ').trim().slice(0,1600);
+    const suggestion=redactOwnerSuggestionText(match[2]);
     if(!suggestion)return null;
     return {code:String(match[1]||'').trim(),suggestion};
+  }
+
+  function redactOwnerSuggestionText(value){
+    return String(value||'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .slice(0,1600)
+      .replace(OWNER_SECRETISH_RE,'[redacted-secret-like-value]')
+      .replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]');
   }
 
   function ownerSuggestionRouteText(plan){

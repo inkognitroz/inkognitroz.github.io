@@ -47,8 +47,8 @@ requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Boost answer must
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260614-first-user-ux-cleanup-v1', 'mmir.html must cache-bust the P0 runtime after WOW demo changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260614-first-user-ux-cleanup-v1"', 'Asset manifest must track the WOW demo runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260614-owner-intake-redaction-v1', 'mmir.html must cache-bust the P0 runtime after WOW demo changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260614-owner-intake-redaction-v1"', 'Asset manifest must track the WOW demo runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');
