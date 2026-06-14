@@ -778,9 +778,11 @@
     const providers=gatewayProviderSummary(parts);
     const priority=[
       pick(/\d+\s+active intelligences connected/i),
+      pick(/^\d+\s+routes? compared$/i),
       pick(/^\d+\s+routes?$/i),
       providers,
       pick(/^\d+\s+models?\.?$/i),
+      pick(/^signed receipts$/i),
       pick(/^free$|^private$/i),
       pick(/^this mac$/i),
       pick(/^api\.mmir\.ai$/i),
@@ -1487,11 +1489,12 @@
     const timing=[...parts].reverse().find(part=>/^\d+(?:\.\d+)?(?:ms|s)$/i.test(part));
     const target=parts.find(part=>/^target\s+\d+(?:\.\d+)?(?:ms|s)\s+met$/i.test(part)||/^over\s+\d+(?:\.\d+)?(?:ms|s)\s+target$/i.test(part));
     const noPaid=parts.find(part=>/No paid route/i.test(part));
+    const signed=parts.find(part=>/^signed receipts$/i.test(part));
     const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
-    const routeCount=parts.find(part=>/^\d+\s+routes?$/i.test(part));
+    const routeCount=parts.find(part=>/^\d+\s+routes?(?:\s+compared)?$/i.test(part));
     const providers=gatewayProviderSummary(parts);
     if(/^Best answer$/i.test(parts[0]||'')&&routeCount){
-      return ['Best answer',routeCount,winner,providers,score,noPaid].filter(Boolean).join(' · ');
+      return ['Best answer',routeCount,signed,winner,providers,score,noPaid].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -3202,13 +3205,19 @@
 
   function gatewayCompareReceipt(data){
     const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
+    const pool=data?.intelligence_pool||data?.pool||{};
     const best=data?.best_answer||{};
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
-    const succeeded=attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary).slice(0,3);
+    const poolRouteCount=Number(pool.route_attempt_count)||Number(data?.candidate_count)||attempts.length;
+    const activeProviderCount=Number(pool.active_public_provider_route_count)||Number(data?.active_public_provider_route_count)||0;
+    const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
+    const succeeded=attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const parts=[
       'Best answer',
-      attempts.length?String(attempts.length)+' routes':'',
+      poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
+      activeProviderCount?String(activeProviderCount)+' active provider routes':'',
+      signedReceipts?'signed receipts':'',
       winner?'Winner: '+winner:'',
       typeof best?.score==='number'?'Score '+best.score:'',
       ...succeeded,

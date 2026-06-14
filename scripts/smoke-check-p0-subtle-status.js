@@ -150,9 +150,12 @@ assertIncludes(testApi.routeMicroStatus(hosted), '3 active intelligences connect
 const poolEl = fakeElement();
 testApi.renderMicroStatus(
   poolEl,
-  'Supergeni · Free · api.mmir.ai · 3 active intelligences connected · Score 100 · avg 746ms',
+  'Best answer · 4 routes compared · 3 active provider routes · signed receipts · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83 · Google 620ms Score 88 · No paid route',
   'hosted'
 );
-assertIncludes(poolEl.innerHTML, '3 active intelligences connected', 'Under-chat micro-status must keep active intelligence count visible as subtle text.');
+assertIncludes(poolEl.innerHTML, '4 routes compared', 'Under-chat micro-status must keep compared route count visible as subtle text.');
+assertIncludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof visible as subtle text.');
+assertExcludes(poolEl.innerHTML, 'Winner:', 'Under-chat micro-status must keep winner detail out of visible text.');
+assertIncludes(poolEl.attrs['aria-label'], 'Winner: Supergeni', 'Full gateway compare receipt must keep winner detail inspectable.');
 
 console.log('P0 subtle status smoke passed.');
