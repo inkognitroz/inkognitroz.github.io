@@ -879,6 +879,7 @@
 
   function microKind(part,stateValue){
     const text=String(part||'').toLowerCase();
+    if(/answered/.test(text)&&/demoted/.test(text)&&/no paid route/.test(text))return 'good';
     if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
     if(/private|this mac|local/.test(text))return 'local';
     if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
@@ -922,16 +923,18 @@
       pick(/\d+\s+model routes visible/i),
       pick(/^\d+\s+routes? compared$/i),
       pick(/^\d+\s+routes?$/i),
+      pick(/^\d+\s+answered$/i),
+      pick(/^\d+\s+demoted$/i),
+      pick(/no paid route/i),
+      pick(/^signed receipts$/i),
       providers,
       pick(/^\d+\s+models?\.?$/i),
-      pick(/^signed receipts$/i),
       pick(/^free$|^private$/i),
       pick(/^this mac$/i),
       pick(/^api\.mmir\.ai$/i),
       pick(/^api score\s+\d+|^score\s+\d+/i),
       pick(/^avg\s+|\b\d+(?:\.\d+)?(?:ms|s)\b/i),
       pick(/best answer|synthesis/i),
-      pick(/no paid route/i),
       pick(/verified fact|needs fact check|complete answer|responsive|acceptable|fast|slow|private local|public facts/i)
     ].filter(Boolean);
     const fallback=candidates
@@ -1647,9 +1650,11 @@
     const signed=parts.find(part=>/^signed receipts$/i.test(part));
     const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
     const routeCount=parts.find(part=>/^\d+\s+routes?(?:\s+compared)?$/i.test(part));
+    const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
+    const demoted=parts.find(part=>/^\d+\s+demoted$/i.test(part));
     const providers=gatewayProviderSummary(parts);
-    if(/^Best answer$/i.test(parts[0]||'')&&routeCount){
-      return ['Best answer',routeCount,signed,winner,providers,score,noPaid].filter(Boolean).join(' · ');
+    if(/^(Best answer|Intelligence boost)$/i.test(parts[0]||'')&&routeCount){
+      return [parts[0],routeCount,answered,demoted,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -3544,19 +3549,30 @@
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
     const poolRouteCount=Number(pool.route_attempt_count)||Number(data?.candidate_count)||attempts.length;
     const activeProviderCount=Number(pool.active_public_provider_route_count)||Number(data?.active_public_provider_route_count)||0;
+    const providerSuccessCount=Number(pool.successful_public_provider_route_count)||Number(data?.successful_public_provider_route_count)||0;
+    const succeededAttempts=attempts.filter(attempt=>attempt?.status==='succeeded');
+    const blockedAttempts=attempts.filter(attempt=>attempt?.status!=='succeeded').length;
+    const blockedCandidateCount=Array.isArray(data?.blocked_candidates)?data.blocked_candidates.length:0;
+    const poolBlockedCount=Number(pool.blocked_candidate_count)||Number(data?.blocked_candidate_count)||0;
+    const demotedCount=Math.max(blockedAttempts,blockedCandidateCount,poolBlockedCount);
+    const answeredCount=providerSuccessCount||succeededAttempts.length;
+    const answeredLabel=answeredCount?String(answeredCount)+' answered':'';
+    const demotedLabel=demotedCount?String(demotedCount)+' demoted':'';
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
-    const succeeded=attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary);
+    const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const parts=[
       label,
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
-      activeProviderCount?String(activeProviderCount)+' active provider routes':'',
+      answeredLabel,
+      demotedLabel,
       signedReceipts?'signed receipts':'',
+      'No paid route',
+      activeProviderCount?String(activeProviderCount)+' active provider routes':'',
       winner?'Winner: '+winner:'',
       typeof best?.score==='number'?'Score '+best.score:'',
       ...succeeded,
       ...blocked,
-      'No paid route'
     ];
     return parts.filter(Boolean).join(' · ');
   }
