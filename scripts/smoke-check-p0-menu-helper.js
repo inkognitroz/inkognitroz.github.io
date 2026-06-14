@@ -23,7 +23,7 @@ function forbidPattern(source, pattern, message) {
 }
 
 const helperIndex = html.indexOf('p0-menu.js?v=20260606-b1-06-p0-menu-v1');
-const shellIndex = html.indexOf('p0-chat-shell.js?v=20260614-wow-demo-memory-boost-v1');
+const shellIndex = html.indexOf('p0-chat-shell.js?v=20260614-owner-intelligence-ping-v1');
 
 if (helperIndex < 0) fail('mmir.html must load the P0 menu helper.');
 if (shellIndex < 0) fail('mmir.html must cache-bust the P0 shell for the menu-helper slice.');
@@ -39,7 +39,7 @@ requireIncludes(shell, 'window.MimirP0Menu.button(action,title,detail,options)',
 requireIncludes(shell, 'window.MimirP0Menu.title(text)', 'P0 shell must delegate menu title rendering to the helper.');
 forbidPattern(shell, /data-p0-action=["']/i, 'P0 shell must not own raw menu action button HTML.');
 requireIncludes(assetVersions, '"p0-menu.js": "20260606-b1-06-p0-menu-v1"', 'Asset manifest must track the P0 menu helper.');
-requireIncludes(assetVersions, '"p0-chat-shell.js": "20260614-wow-demo-memory-boost-v1"', 'Asset manifest must track the P0 shell helper slice.');
+requireIncludes(assetVersions, '"p0-chat-shell.js": "20260614-owner-intelligence-ping-v1"', 'Asset manifest must track the P0 shell helper slice.');
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-menu-helper.js')) {
   fail('npm run check must include smoke-check-p0-menu-helper.js.');
 }

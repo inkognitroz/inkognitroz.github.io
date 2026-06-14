@@ -39,6 +39,7 @@
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
+  const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
   const P0_TEXT=window.MimirP0Text||{};
   const P0_CLIPBOARD=window.MimirP0Clipboard||{};
@@ -666,6 +667,130 @@
       routeStatus('Owner intake unavailable · no issue created','error');
     }
     input?.focus();
+    return true;
+  }
+
+  function ownerPingCommand(prompt){
+    const text=String(prompt||'').trim();
+    const owner=text.match(/^\/admin\s+([^\s]+)\s+\/?ping(?:\s+([\s\S]+))?$/i);
+    if(owner){
+      const pingPrompt=String(owner[2]||'hei').replace(/\s+/g,' ').trim().slice(0,2000)||'hei';
+      return {mode:'owner',code:String(owner[1]||'').trim(),prompt:pingPrompt};
+    }
+    const publicPing=text.match(/^\/ping(?:\s+([\s\S]+))?$/i);
+    if(publicPing){
+      const pingPrompt=String(publicPing[1]||'hei').replace(/\s+/g,' ').trim().slice(0,2000)||'hei';
+      return {mode:'public',code:'',prompt:pingPrompt};
+    }
+    return null;
+  }
+
+  function responseReceiptEnvelope(response){
+    return response?.mmir?.receipt||response?.mmir?.route_receipt||{};
+  }
+
+  function ownerPingLine(response){
+    const receipt=responseReceiptEnvelope(response);
+    const label=attemptProviderLabel({
+      provider:receipt.provider||response?.provider,
+      model_display_name:receipt.model_display_name||response?.model_display_name,
+      model_id:receipt.model_id||response?.model
+    });
+    const latency=Number(response?.latency_ms)||Number(receipt.latency_ms)||0;
+    const answer=responseText(response).replace(/\s+/g,' ').trim();
+    return '- '+label+(latency?' in '+formatDuration(latency):'')+': '+(answer.slice(0,140)||'answered')+(answer.length>140?'...':'');
+  }
+
+  function ownerPingAnswer(data){
+    const first=data?.first_answer||{};
+    const firstLabel=attemptProviderLabel(first);
+    const firstLatency=Number(first.latency_ms)||Number(first.receipt?.latency_ms)||0;
+    const responses=(Array.isArray(data?.data)?data.data:[]).map(ownerPingLine).slice(0,10);
+    const blocked=(Array.isArray(data?.blocked_candidates)?data.blocked_candidates:[])
+      .slice(0,3)
+      .map(item=>'- '+attemptProviderLabel({provider:item.provider,model_display_name:item.model_display_name,model_id:item.model_id})+': '+String(item.reason||item.route_state||'blocked'));
+    const header='First: '+(firstLabel||'route')+(firstLatency?' in '+formatDuration(firstLatency):'')+'.';
+    const lines=[header];
+    if(responses.length)lines.push('', 'Responses:', ...responses);
+    if(blocked.length)lines.push('', 'Not active for this ping:', ...blocked);
+    return lines.join('\n');
+  }
+
+  function ownerPingReceipt(data){
+    const pool=data?.intelligence_pool||data?.pool||{};
+    const first=data?.first_answer||{};
+    const firstLabel=attemptProviderLabel(first);
+    const firstLatency=Number(first.latency_ms)||Number(first.receipt?.latency_ms)||0;
+    const routes=Number(pool.route_attempt_count)||Number(data?.candidate_count)||0;
+    const providers=Number(data?.successful_provider_route_count)||Number(pool.successful_hidden_candidate_count)||0;
+    return [
+      'Owner ping',
+      routes?String(routes)+' routes checked':'routes checked',
+      providers?String(providers)+' provider candidates answered':'',
+      firstLabel?'First: '+firstLabel+(firstLatency?' '+formatDuration(firstLatency):''):'',
+      'signed receipts',
+      'no paid route'
+    ].filter(Boolean).join(' · ');
+  }
+
+  async function submitOwnerPingCommand(parsed,signal){
+    return fetchJson(API_URL+OWNER_INTELLIGENCE_PING_PATH,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-mmir-owner-command-code':parsed.code
+      },
+      body:JSON.stringify(compareApiPayload(parsed.prompt)),
+      timeoutMs:70000,
+      signal
+    });
+  }
+
+  async function handleOwnerPingCommand(prompt,input){
+    const parsed=ownerPingCommand(prompt);
+    if(!parsed)return false;
+    if(parsed.mode==='public'){
+      if(input){
+        input.value=parsed.prompt;
+        autosizeInput();
+      }
+      compareGatewayRoutes(parsed.prompt,{mode:'boost'});
+      return true;
+    }
+    closeMenus();
+    const signal=beginResponse();
+    append('user','/ping '+parsed.prompt,'You','',{actions:false});
+    if(input){
+      input.value='';
+      autosizeInput();
+    }
+    const assistant=append('assistant','Pinging connected intelligence...','MMIR Intelligence Well','Owner ping · asking all owner routes · no paid route',{variant:'compare',retryPrompt:'/ping '+parsed.prompt});
+    status('Owner ping is asking available intelligence routes...','ready');
+    routeStatus('Owner ping · Supergeni + configured free candidates · no paid route','ready');
+    try{
+      const data=await submitOwnerPingCommand(parsed,signal);
+      if(data?.object!=='owner.intelligence.ping')throw new Error('Owner ping unavailable');
+      const receipt=ownerPingReceipt(data);
+      updateMessage(assistant,ownerPingAnswer(data),{receipt,actions:true});
+      recordGatewayCompareBenchmarks(data);
+      renderModelMenu();
+      renderToolbar();
+      status('Owner ping ready: '+String(data.route_attempts?.length||0)+' routes checked.','ready');
+      routeStatus(receipt,'ready');
+    }catch(error){
+      if(stopRequested||error?.name==='AbortError'){
+        updateMessage(assistant,'Owner ping stopped.',{receipt:'Owner ping · stopped',actions:false});
+        status('Owner ping stopped.','idle');
+        routeStatus('Stopped · owner ping cancelled','hosted');
+      }else{
+        updateMessage(assistant,'Owner ping needs active owner identity on api.mmir.ai. Use /ping for public Boost, or check owner auth/server config.',{receipt:'Owner ping · owner auth/config needed',actions:false});
+        status('Owner ping unavailable: '+(error?.message||'owner auth/config needed'),'error');
+        routeStatus('Owner ping unavailable · owner auth/config needed','error');
+      }
+    }finally{
+      finishResponse();
+      input?.focus();
+    }
     return true;
   }
 
@@ -3521,6 +3646,7 @@
       input?.focus();
       return;
     }
+    if(await handleOwnerPingCommand(prompt,input))return;
     if(await handleOwnerSuggestionCommand(prompt,input))return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
     const fastAnswer=Boolean(state.fastAnswerOnce);
