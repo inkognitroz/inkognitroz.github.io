@@ -532,13 +532,13 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-route-receipts.js"),
-  "'Supergeni · Free · '+String(apiLabel||'api.mmir.ai')",
-  "P0 route receipts helper must show hosted route receipts.",
+  "'Supergeni ready · hosted'",
+  "P0 route receipts helper must show clean hosted route receipts.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-route-receipts.js"),
-  "displayName(model)+' · External · '+String(apiLabel||'api.mmir.ai')",
-  "P0 route receipts helper must show external route receipts.",
+  "displayName(model)+' · external free route'",
+  "P0 route receipts helper must show clean external route receipts.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-route-adapters.js"),

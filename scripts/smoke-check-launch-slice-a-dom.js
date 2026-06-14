@@ -172,8 +172,9 @@ requireIncludes(files.p0Runtime, 'Connect local model', 'P0 add menu must presen
 requireIncludes(files.p0Runtime, 'Get the install command in this chat.', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
 requireIncludes(files.p0Runtime, 'Supergeni answers now', 'P0 empty state must make the immediate chat path clear.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
-requireIncludes(files.p0RouteReceipts, "'Supergeni · Free · '+String(apiLabel||'api.mmir.ai')", 'P0 hosted route receipt must stay visible to users.');
-requireIncludes(files.p0RouteReceipts, 'Private · This Mac', 'P0 local route receipt must be visible to users.');
+requireIncludes(files.p0RouteReceipts, "'Supergeni ready · hosted'", 'P0 hosted route receipt must stay clean for first-time users.');
+requireIncludes(files.p0RouteReceipts, 'No provider key is stored in the browser', 'P0 hosted route receipt must keep browser-secret proof in details.');
+requireIncludes(files.p0RouteReceipts, 'private local', 'P0 local route receipt must be visible to users.');
 requireIncludes(files.p0Runtime, 'function answerStyleInstruction(style=answerStyle())', 'P0 chat must keep response style configurable.');
 requireIncludes(files.p0Runtime, 'Keep route, source, privacy and no-paid-route proof in metadata', 'P0 chat must keep route/source/privacy proof out of the main answer.');
 requireIncludes(files.p0Runtime, 'function roleProfileInstruction()', 'P0 chat must support browser-local role profiles.');

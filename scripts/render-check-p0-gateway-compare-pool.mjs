@@ -236,7 +236,7 @@ async function checkViewport(browser, viewport) {
   });
   await page.goto(`${baseUrl}/mmir.html?gateway_compare_pool=${viewport.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
   await page.waitForSelector('#mmir-p0-app');
-  await page.waitForFunction(() => /active intelligences connected|Score 100/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.waitForFunction(() => /model routes visible|Score 100/i.test(document.getElementById('p0-route')?.textContent || ''));
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();

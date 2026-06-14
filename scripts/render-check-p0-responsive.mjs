@@ -35,7 +35,7 @@ function seededHistory() {
       role: 'assistant',
       content: `Responsive QA answer ${index + 1}. This answer is intentionally short, scrollable and safe.`,
       label: 'Supergeni',
-      receipt: 'Supergeni · Free · api.mmir.ai'
+      receipt: 'Supergeni ready · hosted'
     });
   }
   return messages;

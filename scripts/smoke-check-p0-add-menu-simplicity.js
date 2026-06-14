@@ -106,12 +106,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260614-owner-intelligence-ping-v1',
+  'p0-chat-shell.js?v=20260614-first-user-ux-cleanup-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260614-owner-intelligence-ping-v1"',
+  '"p0-chat-shell.js": "20260614-first-user-ux-cleanup-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(
