@@ -238,29 +238,26 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#mmir-p0-app');
   await page.waitForFunction(() => /active intelligences connected|Score 100/i.test(document.getElementById('p0-route')?.textContent || ''));
 
+  await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
   assert(/Intelligence pool/i.test(addMenu), `${viewport.name}: add menu should expose compact Intelligence pool when hosted routes are active`);
+  assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
+  assert(/Ask 4 free active routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
   assert(/Ask 4 active routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
 
-  await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
-  await page.locator('[data-p0-action="best-answer-live"]').click();
+  await page.locator('[data-p0-action="boost-answer-live"]').click();
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
-    return /\b4\b/.test(text) && /Winner: Supergeni/i.test(text);
+    return /\b4\b/.test(text) && /Intelligence boost/i.test(text);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
-  assert(text.includes('Best answer'), `${viewport.name}: gateway compare receipt should render`);
+  assert(text.includes('Intelligence boost'), `${viewport.name}: boost receipt should render`);
   assert(text.includes('4 routes compared'), `${viewport.name}: gateway compare receipt should show route count`);
-  assert(text.includes('signed receipts'), `${viewport.name}: gateway compare receipt should show signed receipt proof`);
-  assert(text.includes('Winner: Supergeni'), `${viewport.name}: gateway compare receipt should name the winner`);
-  assert(text.includes('OpenRouter'), `${viewport.name}: gateway compare receipt should include OpenRouter evidence`);
-  assert(text.includes('Google'), `${viewport.name}: gateway compare receipt should include Google evidence`);
-  assert(text.includes('No paid route'), `${viewport.name}: gateway compare receipt should preserve no-paid proof`);
 
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,
@@ -272,11 +269,16 @@ async function checkViewport(browser, viewport) {
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare must not create horizontal overflow`);
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare body must not overflow`);
-  assert(/ready/i.test(layout.status), `${viewport.name}: gateway compare should finish cleanly`);
+  assert(/ready/i.test(layout.status), `${viewport.name}: boost compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
+  assert(/Intelligence boost/i.test(layout.route), `${viewport.name}: visible green route line should show boost mode subtly`);
   assert(/4 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
   assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
+  assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
+  assert(/OpenRouter/i.test(layout.routeFull), `${viewport.name}: full receipt should include OpenRouter evidence`);
+  assert(/Google/i.test(layout.routeFull), `${viewport.name}: full receipt should include Google evidence`);
+  assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
   assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);
 
   await mkdir(screenshotDir, { recursive: true });
