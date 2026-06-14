@@ -34,6 +34,8 @@
   const ANSWER_STYLE_KEY='mmir-p0-answer-style-v1';
   const ROLE_PROFILE_KEY='mmir-p0-role-profile-v1';
   const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
+  const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1';
+  const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
@@ -2165,6 +2167,12 @@
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
+      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free active routes, score them, then return one clean answer.'):'Use active free routes when route inventory is ready.')+
+      menuSeparator()+
+      menuSection('Local memory')+
+      menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
+      menuButton('show-local-memory','Show memory','Browser-only memory and document notes.')+
+      menuButton('add-document-note','Add document note','Prepare a browser-only /doc note.')+
       menuSeparator()+
       menuSection('Add to toolbar')+
       toolbarTools+
@@ -2481,6 +2489,10 @@
       compareLiveRoutes(prompt,partner,{mode:'compare'});
       return true;
     }
+    if(action==='boost-answer-live'){
+      compareLiveRoutes(prompt,partner,{mode:'boost'});
+      return true;
+    }
     if(action==='best-answer-live'){
       compareLiveRoutes(prompt,partner,{mode:'best-answer'});
       return true;
@@ -2542,6 +2554,109 @@
     routeStatus(saveContent?'Memory saved · browser only':'Memory saved · superprivate metadata only','hosted');
   }
 
+  function localMemoryItems(){
+    const items=readJson(LOCAL_MEMORY_ITEMS_KEY,[]);
+    return Array.isArray(items)?items.filter(item=>item&&String(item.text||'').trim()).slice(-30):[];
+  }
+
+  function localDocumentNotes(){
+    const notes=readJson(LOCAL_DOCUMENT_NOTES_KEY,[]);
+    return Array.isArray(notes)?notes.filter(note=>note&&String(note.title||note.text||'').trim()).slice(-20):[];
+  }
+
+  function cleanLocalNoteText(text){
+    return String(text||'').replace(/\s+/g,' ').trim().slice(0,1200);
+  }
+
+  function addLocalMemory(text){
+    const value=cleanLocalNoteText(text);
+    if(!value)return null;
+    const item={id:'mem-'+Date.now(),text:value,savedAt:new Date().toISOString(),browserLocalOnly:true,secretsStored:false};
+    writeJson(LOCAL_MEMORY_ITEMS_KEY,localMemoryItems().concat(item).slice(-30));
+    return item;
+  }
+
+  function addLocalDocumentNote(title,text){
+    const noteTitle=cleanLocalNoteText(title)||'Untitled note';
+    const noteText=cleanLocalNoteText(text);
+    if(!noteText)return null;
+    const note={id:'doc-'+Date.now(),title:noteTitle.slice(0,80),text:noteText,savedAt:new Date().toISOString(),browserLocalOnly:true,secretsStored:false};
+    writeJson(LOCAL_DOCUMENT_NOTES_KEY,localDocumentNotes().concat(note).slice(-20));
+    return note;
+  }
+
+  function localMemoryAnswer(){
+    const memories=localMemoryItems();
+    const notes=localDocumentNotes();
+    const memoryLines=memories.length
+      ? memories.slice(-8).map(item=>'- '+item.text).join('\n')
+      : '- No saved memory yet. Use /remember followed by what MMIR should keep in this browser.';
+    const noteLines=notes.length
+      ? notes.slice(-5).map(note=>'- '+note.title+': '+note.text).join('\n')
+      : '- No document notes yet. Use /doc Title: short note.';
+    return 'Local memory in this browser:\n'+memoryLines+'\n\nLocal document notes:\n'+noteLines+'\n\nStorage: browser only. No cloud storage, no provider call, no owner cost.';
+  }
+
+  function isLocalMemoryQuestion(prompt){
+    const value=String(prompt||'').trim().toLowerCase();
+    return /^\/memory\b/.test(value)||
+      /^\/docs\b/.test(value)||
+      /^(what|hva|vis|show).*(remember|memory|husker|minne|docs|documents|dokument)/.test(value);
+  }
+
+  function handleLocalKnowledgeCommand(prompt,input){
+    const value=String(prompt||'').trim();
+    const remember=value.match(/^\/remember\s+([\s\S]+)/i);
+    const doc=value.match(/^\/doc(?:ument)?\s+([^:\n]{1,100})(?::|\n)\s*([\s\S]+)/i);
+    const forget=/^\/forget(?:-|\s+)?(?:memory|local|docs?)\b/i.test(value);
+    const guide=/^\/memory-help\b/i.test(value);
+    if(remember){
+      const item=addLocalMemory(remember[1]);
+      closeMenus();
+      append('user',value,'You');
+      if(input){input.value='';autosizeInput();}
+      append('assistant',item?('Saved locally in this browser:\n- '+item.text):'Nothing was saved. Add text after /remember.','MMIR local memory','Memory saved · browser only · no API call');
+      status(item?'Memory saved locally.':'Memory was empty.','ready');
+      routeStatus(item?'Memory saved · browser only · no owner cost':'Memory not saved · empty input','hosted');
+      input?.focus();
+      return true;
+    }
+    if(doc){
+      const note=addLocalDocumentNote(doc[1],doc[2]);
+      closeMenus();
+      append('user',value,'You');
+      if(input){input.value='';autosizeInput();}
+      append('assistant',note?('Document note saved locally:\n- '+note.title+': '+note.text):'Nothing was saved. Use /doc Title: short note.','MMIR local documents','Document note · browser only · no API call');
+      status(note?'Document note saved locally.':'Document note was empty.','ready');
+      routeStatus(note?'Document note · browser only · no owner cost':'Document note not saved · empty input','hosted');
+      input?.focus();
+      return true;
+    }
+    if(forget){
+      writeJson(LOCAL_MEMORY_ITEMS_KEY,[]);
+      writeJson(LOCAL_DOCUMENT_NOTES_KEY,[]);
+      closeMenus();
+      append('user',value,'You');
+      if(input){input.value='';autosizeInput();}
+      append('assistant','Local memory and local document notes were cleared in this browser.','MMIR local memory','Memory cleared · browser only · no API call');
+      status('Local memory cleared.','ready');
+      routeStatus('Memory cleared · browser only','hosted');
+      input?.focus();
+      return true;
+    }
+    if(guide||isLocalMemoryQuestion(value)){
+      closeMenus();
+      append('user',value,'You');
+      if(input){input.value='';autosizeInput();}
+      append('assistant',guide?'Use /remember something important, /memory to show it, /doc Title: note to save a document note, and /forget memory to clear local memory.\n\nEverything stays in this browser unless you explicitly send it in a later prompt.':localMemoryAnswer(),'MMIR local memory','Memory recall · browser only · no API call');
+      status('Local memory shown.','ready');
+      routeStatus('Memory recall · browser only · no owner cost','hosted');
+      input?.focus();
+      return true;
+    }
+    return false;
+  }
+
   function fastAnswerPrompt(prompt){
     return 'Answer fast. Give the shortest useful answer, usually 1-3 concise sentences. If steps are needed, use a compact list. User request: '+String(prompt||'').trim();
   }
@@ -2560,6 +2675,38 @@
     status('Fast answer...','ready');
     routeStatus('Lightning · short answer','hosted');
     sendMessage();
+    return true;
+  }
+
+  function boostAnswer(){
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    closeMenus();
+    if(!prompt){
+      status('Write a prompt first, then Boost answer can run.','error');
+      routeStatus('Boost needs a prompt','error');
+      input?.focus();
+      return true;
+    }
+    if(gatewayCompareAvailable()||comparePartnerModel()){
+      compareLiveRoutes(prompt,comparePartnerModel(),{mode:'boost'});
+      return true;
+    }
+    status('Checking active free routes for Boost...','loading');
+    routeStatus('Boost checks route inventory · no paid route','hosted');
+    refreshHostedModels().then(()=>{
+      if(gatewayCompareAvailable()||comparePartnerModel()){
+        compareLiveRoutes(prompt,comparePartnerModel(),{mode:'boost'});
+        return;
+      }
+      status('Boost needs at least two active routes.','ready');
+      routeStatus('Boost waiting for another active route · connect local or provider node','hosted');
+      input?.focus();
+    }).catch(()=>{
+      status('Boost route refresh failed.','error');
+      routeStatus('Boost unavailable · route inventory unreachable','error');
+      input?.focus();
+    });
     return true;
   }
 
@@ -2659,6 +2806,34 @@
       saveCurrentPromptPreset();
       return true;
     }
+    if(action==='local-memory-guide'){
+      closeMenus();
+      append('assistant','Use /remember something important, /memory to show it, /doc Title: note to save a local document note, and /forget memory to clear it.\n\nThis stays in this browser and does not call MMIR servers.','MMIR local memory','Memory guide · browser only · no API call');
+      status('Local memory guide ready.','ready');
+      routeStatus('Memory guide · browser only','hosted');
+      document.getElementById('p0-input')?.focus();
+      return true;
+    }
+    if(action==='show-local-memory'){
+      closeMenus();
+      append('assistant',localMemoryAnswer(),'MMIR local memory','Memory recall · browser only · no API call');
+      status('Local memory shown.','ready');
+      routeStatus('Memory recall · browser only · no owner cost','hosted');
+      document.getElementById('p0-input')?.focus();
+      return true;
+    }
+    if(action==='add-document-note'){
+      const input=document.getElementById('p0-input');
+      if(input){
+        input.value='/doc Demo note: ';
+        autosizeInput();
+      }
+      closeMenus();
+      status('Document note ready.','ready');
+      routeStatus('Document note · browser only until sent','hosted');
+      input?.focus();
+      return true;
+    }
     if(String(action||'').startsWith('load-preset:')){
       loadPromptPreset(String(action).slice('load-preset:'.length));
       return true;
@@ -2673,6 +2848,9 @@
       closeMenus();
       checkLocalModels().catch(()=>{});
       return true;
+    }
+    if(action==='boost-answer-live'){
+      return boostAnswer();
     }
     if(action==='compare-live'||action==='best-answer-live'||action==='discuss-topic'){
       return runTwoModelTool(action);
@@ -3203,7 +3381,7 @@
     ].filter(Boolean).join(' ');
   }
 
-  function gatewayCompareReceipt(data){
+  function gatewayCompareReceipt(data,label='Best answer'){
     const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
     const pool=data?.intelligence_pool||data?.pool||{};
     const best=data?.best_answer||{};
@@ -3214,7 +3392,7 @@
     const succeeded=attempts.filter(attempt=>attempt?.status==='succeeded').map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const parts=[
-      'Best answer',
+      label,
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
       activeProviderCount?String(activeProviderCount)+' active provider routes':'',
       signedReceipts?'signed receipts':'',
@@ -3258,8 +3436,8 @@
     if(state.busy)return;
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
-    const mode=options.mode==='compare'?'compare':'best-answer';
-    const title=mode==='compare'?'Compare':'Best Answer';
+    const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':'best-answer');
+    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':'Best Answer');
     if(privateModeActive()){
       status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
       routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
@@ -3277,9 +3455,12 @@
       input.value='';
       autosizeInput();
     }
-    const assistant=append('assistant','Comparing active routes...','Supergeni · Best answer','Best Answer · active routes · no paid route',{variant:'compare',retryPrompt:prompt});
-    status(title+' is asking '+String(activeHostedCompareModels().length)+' active routes...','ready');
-    routeStatus(title+' · '+String(activeHostedCompareModels().length)+' active intelligences connected','ready');
+    const routeCount=String(activeHostedCompareModels().length);
+    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':'Supergeni · Best answer';
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':'Best Answer')+' · '+routeCount+' active routes · signed receipt check · no paid route';
+    const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
+    status(title+' is asking '+routeCount+' active routes...','ready');
+    routeStatus(title+' · '+routeCount+' active intelligences connected · no paid route','ready');
     try{
       const data=await fetchJson(API_URL+COMPARE_PATH,{
         method:'POST',
@@ -3290,7 +3471,7 @@
       });
       if(data?.object!=='chat.compare')throw new Error('Gateway compare unavailable');
       const content=String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.';
-      const receipt=gatewayCompareReceipt(data);
+      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':'Best answer');
       updateMessage(assistant,content,{receipt});
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
@@ -3341,6 +3522,7 @@
       return;
     }
     if(await handleOwnerSuggestionCommand(prompt,input))return;
+    if(handleLocalKnowledgeCommand(prompt,input))return;
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
