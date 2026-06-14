@@ -69,8 +69,13 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'await chatHosted(routePrompt,signal,model)',
-  'Sending a selected hosted route must call chatHosted with that model.'
+  'await chatHostedData(routePrompt,signal,model)',
+  'Sending a selected hosted route must call chatHostedData with that model.'
+);
+requireIncludes(
+  shell,
+  'responseText((hostedData=await chatHostedData(routePrompt,signal,model)))',
+  'Selected hosted route responses must preserve API metadata before extracting answer text.'
 );
 requireIncludes(
   shell,
@@ -94,7 +99,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260613-gateway-compare-provider-label-v1',
+  'p0-chat-shell.js?v=20260614-connect-guide-metadata-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -104,7 +109,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260613-gateway-compare-provider-label-v1"',
+  '"p0-chat-shell.js": "20260614-connect-guide-metadata-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(

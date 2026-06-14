@@ -37,6 +37,9 @@ function functionSource(name, nextName) {
 }
 
 const startInstallSource = functionSource('startLocalInstallAssistant', 'selectCommandText');
+const chatHostedDataSource = functionSource('chatHostedData', 'chatHosted');
+const responseConnectGuideSource = functionSource('responseConnectGuide', 'connectGuideMessageUpdates');
+const connectGuideUpdatesSource = functionSource('connectGuideMessageUpdates', 'connectGuideStatusText');
 const handleMenuSource = functionSource('handleMenuAction', 'renderMessageTools');
 const renderToolsSource = functionSource('renderMessageTools', 'renderTranscript');
 const transientSource = functionSource('transientInstallMessage', 'safeText');
@@ -129,6 +132,36 @@ requireIncludes(
   startInstallSource,
   "routeStatus('Copy install command · local setup','hosted')",
   'Install assistant must update the compact route/status line instead of opening another page.'
+);
+requireIncludes(
+  chatHostedDataSource,
+  'return fetchJson(API_URL+CHAT_PATH',
+  'Hosted chat must keep raw API metadata available for chat-native connect guidance.'
+);
+requireIncludes(
+  responseConnectGuideSource,
+  "guide.object==='mmir.connect_guide'",
+  'P0 must detect the API connect guide contract before rendering install metadata.'
+);
+requireIncludes(
+  connectGuideUpdatesSource,
+  "variant:'install'",
+  'API /connect node responses must reuse the existing compact install command card.'
+);
+requireIncludes(
+  connectGuideUpdatesSource,
+  "commandLabel:'Copy install command'",
+  'API /connect node responses must keep the one obvious copy command action.'
+);
+requireIncludes(
+  p0Shell,
+  'const connectGuide=responseConnectGuide(hostedData);',
+  'P0 send flow must read connect guide metadata from hosted API responses.'
+);
+requireIncludes(
+  p0Shell,
+  "routeStatus(routeText||routePrefix+routeMicroStatus(model),receipt.state);",
+  'P0 send flow must move connect guidance into the subtle route/status line.'
 );
 forbidPattern(
   startInstallSource,
