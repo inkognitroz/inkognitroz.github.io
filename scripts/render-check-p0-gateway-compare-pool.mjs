@@ -92,6 +92,20 @@ async function installFixtures(page) {
           cost_class: 'free'
         },
         {
+          id: 'openai/gpt-oss-20b:free',
+          name: 'OpenRouter GPT OSS 20B',
+          display_name: 'OpenRouter GPT OSS 20B',
+          provider: 'openrouter',
+          executable: true,
+          selectable: true,
+          availability: 'available',
+          route_state: 'managed_provider_available',
+          route_type: 'external_untrusted_free',
+          route_class: 'external-untrusted-free',
+          trust_level: 'external-untrusted-free',
+          cost_class: 'free'
+        },
+        {
           id: 'gemini-2.5-flash',
           name: 'Google Gemini 2.5 Flash',
           display_name: 'Gemini 2.5 Flash',
@@ -117,8 +131,28 @@ async function installFixtures(page) {
     await fulfillJson(route, {
       object: 'chat.compare',
       compare_status: 'ready',
-      candidate_count: 3,
-      active_public_provider_route_count: 2,
+      candidate_count: 4,
+      active_public_provider_route_count: 3,
+      successful_public_provider_route_count: 3,
+      intelligence_pool: {
+        object: 'mmir.intelligence_pool',
+        mode: 'active_public_free_fanout',
+        strategy: 'fanout_score_select_best',
+        route_attempt_count: 4,
+        active_answer_route_count: 4,
+        active_public_provider_route_count: 3,
+        successful_public_provider_route_count: 3,
+        blocked_candidate_count: 0,
+        no_paid_routes_started: true,
+        provider_secrets_in_browser: false,
+        free_or_free_quota_only: true,
+        signals_available: {
+          signed_route_receipts: true,
+          route_scoring: true,
+          best_answer: true,
+          capability_graph_ingest_candidate: true
+        }
+      },
       best_answer: {
         model_id: 'supergeni',
         model_display_name: 'Supergeni',
@@ -153,7 +187,18 @@ async function installFixtures(page) {
           latency_ms: 1370,
           answer_class: 'complete',
           latency_class: 'responsive',
-          receipt: { provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free', route_id: 'external/openrouter/poolside/laguna-xs.2:free', latency_ms: 1370 }
+          receipt: { provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free', route_id: 'external/openrouter/poolside/laguna-xs.2:free', latency_ms: 1370, receipt_signature: 'hmac-sha256:test' }
+        },
+        {
+          status: 'succeeded',
+          provider: 'openrouter',
+          model_id: 'openai/gpt-oss-20b:free',
+          model_display_name: 'OpenRouter GPT OSS 20B',
+          score: 81,
+          latency_ms: 1260,
+          answer_class: 'complete',
+          latency_class: 'responsive',
+          receipt: { provider: 'openrouter', model_id: 'openai/gpt-oss-20b:free', route_id: 'openrouter/openai-gpt-oss-20b:free', latency_ms: 1260, receipt_signature: 'hmac-sha256:test' }
         },
         {
           status: 'succeeded',
@@ -164,7 +209,7 @@ async function installFixtures(page) {
           latency_ms: 620,
           answer_class: 'complete',
           latency_class: 'fast',
-          receipt: { provider: 'google', model_id: 'gemini-2.5-flash', route_id: 'external/google/gemini-2.5-flash', latency_ms: 620 }
+          receipt: { provider: 'google', model_id: 'gemini-2.5-flash', route_id: 'external/google/gemini-2.5-flash', latency_ms: 620, receipt_signature: 'hmac-sha256:test' }
         }
       ],
       blocked: [],
@@ -197,7 +242,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
   assert(/Intelligence pool/i.test(addMenu), `${viewport.name}: add menu should expose compact Intelligence pool when hosted routes are active`);
-  assert(/Ask 3 active routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
+  assert(/Ask 4 active routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
@@ -210,7 +255,8 @@ async function checkViewport(browser, viewport) {
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
   assert(text.includes('Best answer'), `${viewport.name}: gateway compare receipt should render`);
-  assert(text.includes('3 routes'), `${viewport.name}: gateway compare receipt should show route count`);
+  assert(text.includes('4 routes compared'), `${viewport.name}: gateway compare receipt should show route count`);
+  assert(text.includes('signed receipts'), `${viewport.name}: gateway compare receipt should show signed receipt proof`);
   assert(text.includes('Winner: Supergeni'), `${viewport.name}: gateway compare receipt should name the winner`);
   assert(text.includes('OpenRouter'), `${viewport.name}: gateway compare receipt should include OpenRouter evidence`);
   assert(text.includes('Google'), `${viewport.name}: gateway compare receipt should include Google evidence`);
@@ -228,6 +274,8 @@ async function checkViewport(browser, viewport) {
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare body must not overflow`);
   assert(/ready/i.test(layout.status), `${viewport.name}: gateway compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
+  assert(/4 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
+  assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
   assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);
 
