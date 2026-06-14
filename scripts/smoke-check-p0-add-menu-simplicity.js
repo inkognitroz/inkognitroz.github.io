@@ -81,6 +81,11 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
+  "menuButton('ask-all-active','Ask all active'",
+  '+ menu must expose Ask all active without adding a toolbar button.'
+);
+requireIncludes(
+  renderAddMenu,
   'pool.compareReady',
   '+ menu must only reveal two-model tools after local discovery.'
 );
@@ -106,12 +111,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260614-boost-route-summary-v1',
+  'p0-chat-shell.js?v=20260615-ask-all-active-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260614-boost-route-summary-v1"',
+  '"p0-chat-shell.js": "20260615-ask-all-active-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(
@@ -123,6 +128,11 @@ forbidPattern(
   renderAddMenu,
   /<button type="button" data-p0-action=/,
   '+ menu should use the shared menuButton helper for ordinary actions.'
+);
+forbidPattern(
+  p0Shell,
+  /id="p0-ask-all|data-tool-id="ask-all-active"/,
+  'Ask all active must not add another visible toolbar button by default.'
 );
 
 if (failures.length) {

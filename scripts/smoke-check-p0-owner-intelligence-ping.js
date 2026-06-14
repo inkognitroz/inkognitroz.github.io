@@ -53,6 +53,16 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "const publicAll=text.match(/^\\/all",
+  'Plain /all must be parsed as public all-active fanout before normal chat routing.'
+);
+requireIncludes(
+  shell,
+  "compareGatewayRoutes(parsed.prompt,{mode:'all'});",
+  'Plain /all must use public Ask all active fanout without adding a visible control.'
+);
+requireIncludes(
+  shell,
   "routeStatus('Owner ping · Supergeni + configured free candidates · no paid route','ready');",
   'P0 owner ping must use subtle green route status.'
 );
@@ -60,6 +70,11 @@ requireNotIncludes(
   shell,
   'id="p0-owner-ping',
   'Owner ping must not add another visible toolbar button.'
+);
+requireNotIncludes(
+  shell,
+  'id="p0-ask-all',
+  'Ask all must not add another visible toolbar button.'
 );
 requireNotIncludes(
   shell,
@@ -73,12 +88,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260614-boost-route-summary-v1',
+  'p0-chat-shell.js?v=20260615-ask-all-active-v1',
   'Public page must cache-bust the owner ping runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260614-boost-route-summary-v1"',
+  '"p0-chat-shell.js": "20260615-ask-all-active-v1"',
   'Asset manifest must track the owner ping runtime version.'
 );
 
