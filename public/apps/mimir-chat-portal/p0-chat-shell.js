@@ -3091,16 +3091,52 @@
       .trim();
   }
 
-  async function chatHosted(prompt,signal,model=defaultHostedModel()){
+  async function chatHostedData(prompt,signal,model=defaultHostedModel()){
     const payload=hostedPayload(prompt,model);
-    const data=await fetchJson(API_URL+CHAT_PATH,{
+    return fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
       timeoutMs:45000,
       signal
     });
+  }
+
+  async function chatHosted(prompt,signal,model=defaultHostedModel()){
+    const data=await chatHostedData(prompt,signal,model);
     return responseText(data)||((model?.label||'Hosted route')+' returned an empty response.');
+  }
+
+  function responseConnectGuide(data){
+    const guide=data?.mmir?.connect_guide||data?.connect_guide||null;
+    return guide&&guide.object==='mmir.connect_guide'?guide:null;
+  }
+
+  function connectGuideMessageUpdates(guide){
+    if(!guide)return {};
+    if(guide.intent==='connect_node'){
+      const command=String(guide.commands?.[0]?.command||'').trim();
+      return command?{
+        variant:'install',
+        command,
+        commandLabel:'Copy install command',
+        installOs:detectInstallOs(),
+        actions:false
+      }:{actions:false};
+    }
+    return {actions:false};
+  }
+
+  function connectGuideStatusText(guide){
+    if(guide?.intent==='connect_node')return 'Local connector command ready.';
+    if(guide?.intent==='connect_llm')return 'Provider-node setup ready.';
+    return '';
+  }
+
+  function connectGuideRouteText(guide){
+    if(guide?.intent==='connect_node')return 'Copy install command · local setup';
+    if(guide?.intent==='connect_llm')return 'Provider node setup · mmir-node-[name] · no browser secrets';
+    return '';
   }
 
   async function chatLocal(prompt,model,signal){
@@ -3361,15 +3397,28 @@
     routeStatus(routePrefix+receipt.text,receipt.state);
     try{
       const started=performance.now();
-      const answer=model.route==='local'?await chatLocal(routePrompt,model,signal):await chatHosted(routePrompt,signal,model);
+      let hostedData=null;
+      const answer=model.route==='local'
+        ? await chatLocal(routePrompt,model,signal)
+        : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
       recordRouteBenchmark(model,measuredScore);
       const elapsed=formatDuration(elapsedMs);
-      updateMessage(assistant,answer,{receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)});
+      const connectGuide=responseConnectGuide(hostedData);
+      updateMessage(assistant,answer,{
+        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model),
+        ...connectGuideMessageUpdates(connectGuide)
+      });
       renderModelMenu();
-      routeStatus(routePrefix+routeMicroStatus(model),receipt.state);
-      status(answerStatus(model,measuredScore,routePrefix),'ready');
+      if(connectGuide){
+        const routeText=connectGuideRouteText(connectGuide);
+        status(connectGuideStatusText(connectGuide)||answerStatus(model,measuredScore,routePrefix),'ready');
+        routeStatus(routeText||routePrefix+routeMicroStatus(model),receipt.state);
+      }else{
+        routeStatus(routePrefix+routeMicroStatus(model),receipt.state);
+        status(answerStatus(model,measuredScore,routePrefix),'ready');
+      }
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
         updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
