@@ -148,11 +148,14 @@ assertIncludes(testApi.routeMicroStatus(hosted), '3 model routes visible', 'Rout
 const poolEl = fakeElement();
 testApi.renderMicroStatus(
   poolEl,
-  'Best answer · 4 routes compared · 3 active provider routes · signed receipts · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83 · Google 620ms Score 88 · No paid route',
+  'Best answer · 4 routes compared · 2 answered · 1 demoted · signed receipts · No paid route · 3 active provider routes · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83 · Google blocked provider route failed',
   'hosted'
 );
 assertIncludes(poolEl.innerHTML, '4 routes compared', 'Under-chat micro-status must keep compared route count visible as subtle text.');
+assertIncludes(poolEl.innerHTML, '2 answered', 'Under-chat micro-status must show successful provider answer count as subtle text.');
+assertIncludes(poolEl.innerHTML, '1 demoted', 'Under-chat micro-status must show demoted route count as subtle text.');
 assertIncludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof visible as subtle text.');
+assertIncludes(poolEl.innerHTML, 'No paid route', 'Under-chat micro-status must keep no-paid proof visible as subtle text.');
 assertExcludes(poolEl.innerHTML, 'Winner:', 'Under-chat micro-status must keep winner detail out of visible text.');
 assertIncludes(poolEl.attrs['aria-label'], 'Winner: Supergeni', 'Full gateway compare receipt must keep winner detail inspectable.');
 

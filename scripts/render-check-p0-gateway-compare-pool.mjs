@@ -130,19 +130,19 @@ async function installFixtures(page) {
   await page.route('https://api.mmir.ai/chat/compare', async route => {
     await fulfillJson(route, {
       object: 'chat.compare',
-      compare_status: 'ready',
+      compare_status: 'partial',
       candidate_count: 4,
       active_public_provider_route_count: 3,
-      successful_public_provider_route_count: 3,
+      successful_public_provider_route_count: 2,
       intelligence_pool: {
         object: 'mmir.intelligence_pool',
         mode: 'active_public_free_fanout',
         strategy: 'fanout_score_select_best',
         route_attempt_count: 4,
-        active_answer_route_count: 4,
+        active_answer_route_count: 3,
         active_public_provider_route_count: 3,
-        successful_public_provider_route_count: 3,
-        blocked_candidate_count: 0,
+        successful_public_provider_route_count: 2,
+        blocked_candidate_count: 1,
         no_paid_routes_started: true,
         provider_secrets_in_browser: false,
         free_or_free_quota_only: true,
@@ -201,18 +201,31 @@ async function installFixtures(page) {
           receipt: { provider: 'openrouter', model_id: 'openai/gpt-oss-20b:free', route_id: 'openrouter/openai-gpt-oss-20b:free', latency_ms: 1260, receipt_signature: 'hmac-sha256:test' }
         },
         {
-          status: 'succeeded',
+          status: 'blocked',
           provider: 'google',
           model_id: 'gemini-2.5-flash',
           model_display_name: 'Gemini 2.5 Flash',
-          score: 88,
-          latency_ms: 620,
-          answer_class: 'complete',
-          latency_class: 'fast',
-          receipt: { provider: 'google', model_id: 'gemini-2.5-flash', route_id: 'external/google/gemini-2.5-flash', latency_ms: 620, receipt_signature: 'hmac-sha256:test' }
+          route_id: 'google/gemini-2.5-flash',
+          route_state: 'provider_route_failed',
+          reason: 'Google Gemini returned no non-empty answer.',
+          next_action: 'Keep route visible but demoted; retry after provider health or quota recovers.',
+          latency_ms: 0,
+          answer_class: 'empty',
+          latency_class: 'unknown',
+          receipt: { provider: 'google', model_id: 'gemini-2.5-flash', route_id: 'google/gemini-2.5-flash', status: 'blocked', no_paid_routes_started: true }
         }
       ],
-      blocked: [],
+      blocked_candidates: [
+        {
+          provider: 'google',
+          model_id: 'gemini-2.5-flash',
+          model_display_name: 'Gemini 2.5 Flash',
+          route_id: 'google/gemini-2.5-flash',
+          route_state: 'provider_route_failed',
+          reason: 'Google Gemini returned no non-empty answer.',
+          next_action: 'Keep route visible but demoted; retry after provider health or quota recovers.'
+        }
+      ],
       no_paid_routes_started: true
     });
   });
@@ -273,6 +286,8 @@ async function checkViewport(browser, viewport) {
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
   assert(/Intelligence boost/i.test(layout.route), `${viewport.name}: visible green route line should show boost mode subtly`);
   assert(/4 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
+  assert(/2 answered/i.test(layout.route), `${viewport.name}: visible green route line should show successful provider answer count`);
+  assert(/1 demoted/i.test(layout.route), `${viewport.name}: visible green route line should show demoted provider count`);
   assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
