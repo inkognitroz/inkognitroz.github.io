@@ -737,12 +737,14 @@
     const first=data?.first_answer||{};
     const firstLabel=attemptProviderLabel(first);
     const firstLatency=Number(first.latency_ms)||Number(first.receipt?.latency_ms)||0;
-    const routes=Number(pool.route_attempt_count)||Number(data?.candidate_count)||0;
-    const providers=Number(data?.successful_provider_route_count)||Number(pool.successful_hidden_candidate_count)||0;
+    const routes=gatewayRouteCount(data);
+    const providers=gatewayAnswerCount(data);
+    const quiet=gatewayQuietCount(data);
     return [
       'Owner ping',
       routes?String(routes)+' routes checked':'routes checked',
       providers?String(providers)+' provider candidates answered':'',
+      quiet?String(quiet)+' quiet':'',
       firstLabel?'First: '+firstLabel+(firstLatency?' '+formatDuration(firstLatency):''):'',
       'signed receipts',
       'no paid route'
@@ -895,7 +897,7 @@
     if(/answered/.test(text)&&/demoted/.test(text)&&/no paid route/.test(text))return 'good';
     if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
     if(/private|this mac|local/.test(text))return 'local';
-    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
+    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|quiet|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
     if(/needs fact check|uncertain|score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
     if(/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/.test(text))return 'time';
     if(/api\.mmir\.ai|routing\/score|route/.test(text))return 'route';
@@ -938,6 +940,7 @@
       pick(/^\d+\s+routes?$/i),
       pick(/^\d+\s+answered$/i),
       pick(/^\d+\s+demoted$/i),
+      pick(/^\d+\s+quiet$/i),
       pick(/no paid route/i),
       pick(/^signed receipts$/i),
       providers,
@@ -1665,9 +1668,10 @@
     const routeCount=parts.find(part=>/^\d+\s+routes?(?:\s+compared)?$/i.test(part));
     const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
     const demoted=parts.find(part=>/^\d+\s+demoted$/i.test(part));
+    const quiet=parts.find(part=>/^\d+\s+quiet$/i.test(part));
     const providers=gatewayProviderSummary(parts);
-    if(/^(Best answer|Intelligence boost)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],routeCount,answered,demoted,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
+    if(/^(Best answer|Intelligence boost|Ask all active)$/i.test(parts[0]||'')&&routeCount){
+      return [parts[0],routeCount,answered,demoted,quiet,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -3623,6 +3627,54 @@
     return '- '+label+': '+reason;
   }
 
+  function gatewayPool(data){
+    return data?.intelligence_pool||data?.pool||{};
+  }
+
+  function gatewayRouteCount(data){
+    const pool=gatewayPool(data);
+    const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
+    return Math.max(
+      Number(pool.active_public_provider_route_count)||0,
+      Number(data?.active_public_provider_route_count)||0,
+      Number(pool.route_attempt_count)||0,
+      Number(data?.candidate_count)||0,
+      attempts.length
+    );
+  }
+
+  function gatewayAnswerCount(data){
+    const pool=gatewayPool(data);
+    const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
+    const responses=Array.isArray(data?.data)?data.data.filter(response=>responseText(response)).length:0;
+    return Math.max(
+      Number(pool.successful_public_provider_route_count)||0,
+      Number(data?.successful_public_provider_route_count)||0,
+      Number(pool.active_answer_route_count)||0,
+      attempts.filter(attempt=>attempt?.status==='succeeded').length,
+      responses
+    );
+  }
+
+  function gatewayVisibleBlockedCount(data){
+    const pool=gatewayPool(data);
+    const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
+    return Math.max(
+      attempts.filter(attempt=>attempt?.status&&attempt.status!=='succeeded').length,
+      Array.isArray(data?.blocked_candidates)?data.blocked_candidates.length:0,
+      Number(pool.blocked_candidate_count)||0,
+      Number(data?.blocked_candidate_count)||0
+    );
+  }
+
+  function gatewayQuietCount(data){
+    const pool=gatewayPool(data);
+    const quiet=Number(pool.quiet_blocked_candidate_count)||Number(data?.quiet_blocked_candidate_count)||0;
+    const total=Number(pool.total_blocked_candidate_count)||Number(data?.total_blocked_candidate_count)||0;
+    const visible=gatewayVisibleBlockedCount(data);
+    return Math.max(quiet,total-visible,0);
+  }
+
   function gatewayCompareAllAnswer(data){
     const responses=(Array.isArray(data?.data)?data.data:[]).filter(response=>responseText(response));
     const blockedCandidates=(Array.isArray(data?.blocked_candidates)?data.blocked_candidates:[]);
@@ -3637,10 +3689,12 @@
       .map(gatewayCompareBlockedLine);
     const best=data?.best_answer||{};
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
+    const quiet=gatewayQuietCount(data);
     const header=[
       winner?'Best live score: '+winner:'',
       typeof best?.score==='number'?'Score '+best.score:'',
-      responses.length?String(responses.length)+' active answer'+(responses.length===1?'':'s'):'No active answers'
+      responses.length?String(responses.length)+' active answer'+(responses.length===1?'':'s'):'No active answers',
+      quiet?String(quiet)+' quiet':''
     ].filter(Boolean).join(' · ');
     const lines=[header||'All active route check complete.'];
     if(responses.length)lines.push('', 'All active answers:', ...responses.slice(0,10).map(gatewayCompareResponseLine));
@@ -3650,20 +3704,18 @@
 
   function gatewayCompareReceipt(data,label='Best answer'){
     const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
-    const pool=data?.intelligence_pool||data?.pool||{};
+    const pool=gatewayPool(data);
     const best=data?.best_answer||{};
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
-    const poolRouteCount=Number(pool.route_attempt_count)||Number(data?.candidate_count)||attempts.length;
+    const poolRouteCount=gatewayRouteCount(data);
     const activeProviderCount=Number(pool.active_public_provider_route_count)||Number(data?.active_public_provider_route_count)||0;
-    const providerSuccessCount=Number(pool.successful_public_provider_route_count)||Number(data?.successful_public_provider_route_count)||0;
     const succeededAttempts=attempts.filter(attempt=>attempt?.status==='succeeded');
-    const blockedAttempts=attempts.filter(attempt=>attempt?.status!=='succeeded').length;
-    const blockedCandidateCount=Array.isArray(data?.blocked_candidates)?data.blocked_candidates.length:0;
-    const poolBlockedCount=Number(pool.blocked_candidate_count)||Number(data?.blocked_candidate_count)||0;
-    const demotedCount=Math.max(blockedAttempts,blockedCandidateCount,poolBlockedCount);
-    const answeredCount=providerSuccessCount||succeededAttempts.length;
+    const demotedCount=gatewayVisibleBlockedCount(data);
+    const quietCount=gatewayQuietCount(data);
+    const answeredCount=gatewayAnswerCount(data);
     const answeredLabel=answeredCount?String(answeredCount)+' answered':'';
     const demotedLabel=demotedCount?String(demotedCount)+' demoted':'';
+    const quietLabel=quietCount?String(quietCount)+' quiet':'';
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
@@ -3672,6 +3724,7 @@
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
       answeredLabel,
       demotedLabel,
+      quietLabel,
       signedReceipts?'signed receipts':'',
       'No paid route',
       activeProviderCount?String(activeProviderCount)+' active provider routes':'',

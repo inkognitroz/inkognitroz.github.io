@@ -130,19 +130,23 @@ async function installFixtures(page) {
   await page.route('https://api.mmir.ai/chat/compare', async route => {
     await fulfillJson(route, {
       object: 'chat.compare',
-      compare_status: 'partial',
-      candidate_count: 4,
+      compare_status: 'ready',
+      candidate_count: 5,
       active_public_provider_route_count: 3,
-      successful_public_provider_route_count: 2,
+      successful_public_provider_route_count: 3,
+      quiet_blocked_candidate_count: 2,
+      total_blocked_candidate_count: 2,
       intelligence_pool: {
         object: 'mmir.intelligence_pool',
         mode: 'active_public_free_fanout',
         strategy: 'fanout_score_select_best',
-        route_attempt_count: 4,
+        route_attempt_count: 3,
         active_answer_route_count: 3,
         active_public_provider_route_count: 3,
-        successful_public_provider_route_count: 2,
-        blocked_candidate_count: 1,
+        successful_public_provider_route_count: 3,
+        blocked_candidate_count: 0,
+        quiet_blocked_candidate_count: 2,
+        total_blocked_candidate_count: 2,
         no_paid_routes_started: true,
         provider_secrets_in_browser: false,
         free_or_free_quota_only: true,
@@ -241,32 +245,8 @@ async function installFixtures(page) {
           latency_class: 'responsive',
           receipt: { provider: 'openrouter', model_id: 'openai/gpt-oss-20b:free', route_id: 'openrouter/openai-gpt-oss-20b:free', latency_ms: 1260, receipt_signature: 'hmac-sha256:test' }
         },
-        {
-          status: 'blocked',
-          provider: 'google',
-          model_id: 'gemini-2.5-flash',
-          model_display_name: 'Gemini 2.5 Flash',
-          route_id: 'google/gemini-2.5-flash',
-          route_state: 'provider_route_failed',
-          reason: 'Google Gemini returned no non-empty answer.',
-          next_action: 'Keep route visible but demoted; retry after provider health or quota recovers.',
-          latency_ms: 0,
-          answer_class: 'empty',
-          latency_class: 'unknown',
-          receipt: { provider: 'google', model_id: 'gemini-2.5-flash', route_id: 'google/gemini-2.5-flash', status: 'blocked', no_paid_routes_started: true }
-        }
       ],
-      blocked_candidates: [
-        {
-          provider: 'google',
-          model_id: 'gemini-2.5-flash',
-          model_display_name: 'Gemini 2.5 Flash',
-          route_id: 'google/gemini-2.5-flash',
-          route_state: 'provider_route_failed',
-          reason: 'Google Gemini returned no non-empty answer.',
-          next_action: 'Keep route visible but demoted; retry after provider health or quota recovers.'
-        }
-      ],
+      blocked_candidates: [],
       no_paid_routes_started: true
     });
   });
@@ -307,13 +287,13 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Intelligence boost/i.test(text) && /4 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Intelligence boost/i.test(text) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
   assert(/Intelligence boost/i.test(text), `${viewport.name}: boost receipt should render`);
-  assert(text.includes('4 routes compared'), `${viewport.name}: gateway compare receipt should show route count`);
+  assert(text.includes('5 routes compared'), `${viewport.name}: gateway compare receipt should show route count`);
 
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,
@@ -328,14 +308,15 @@ async function checkViewport(browser, viewport) {
   assert(/ready/i.test(layout.status), `${viewport.name}: boost compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
   assert(/Intelligence boost/i.test(layout.route), `${viewport.name}: visible green route line should show boost mode subtly`);
-  assert(/4 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
-  assert(/2 answered/i.test(layout.route), `${viewport.name}: visible green route line should show successful provider answer count`);
-  assert(/1 demoted/i.test(layout.route), `${viewport.name}: visible green route line should show demoted provider count`);
+  assert(/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
+  assert(/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should show successful provider answer count`);
+  assert(/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should show quiet provider count without error clutter`);
+  assert(!/demoted/i.test(layout.route), `${viewport.name}: quiet provider throttling should not render as demoted error text`);
   assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
   assert(/OpenRouter/i.test(layout.routeFull), `${viewport.name}: full receipt should include OpenRouter evidence`);
-  assert(/Google/i.test(layout.routeFull), `${viewport.name}: full receipt should include Google evidence`);
+  assert(/2 quiet/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve quiet provider count`);
   assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
   assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);
 
@@ -351,7 +332,8 @@ async function checkViewport(browser, viewport) {
   assert(/Best live score: Supergeni/i.test(allText), `${viewport.name}: Ask all should keep the winning route visible in the answer`);
   assert(/All active answers:/i.test(allText), `${viewport.name}: Ask all should render every active answer`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
-  assert(/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should show demoted candidates truthfully`);
+  assert(/2 quiet/i.test(allText), `${viewport.name}: Ask all should show quiet route count without noisy blocked lines`);
+  assert(!/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should not show hidden throttled routes as visible failures`);
 
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
