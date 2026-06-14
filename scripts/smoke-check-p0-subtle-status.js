@@ -84,22 +84,20 @@ const hostedScore = testApi.routeScore(
 );
 const topStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore), 6);
 assertIncludes(topStatus, 'Supergeni answered in 746ms', 'Top-right green status must keep answer latency visible.');
-assertIncludes(topStatus, 'Free', 'Top-right green status must keep route cost class visible as text, not a chip.');
-assertIncludes(topStatus, 'api.mmir.ai', 'Top-right green status must keep the active route visible as text.');
+assertIncludes(topStatus, 'hosted route', 'Top-right green status must keep the route class visible as subtle text.');
 assertIncludes(topStatus, 'Score ', 'Top-right green status must keep route score visible.');
 assertExcludes(topStatus, 'Supergenious', 'Public status text must use Supergeni branding.');
 
 const bestAnswerEl = fakeElement();
 testApi.renderMicroStatus(
   bestAnswerEl,
-  'Supergeni · Free · api.mmir.ai · Best answer synthesis · No paid route · api.mmir.ai/routing/score · Winner: Supergeni · API score 84 · complete answer · hosted default route · acceptable latency · 746ms',
+  'Supergeni ready · hosted · Best answer synthesis · No paid route · api.mmir.ai/routing/score · Winner: Supergeni · API score 84 · complete answer · hosted default route · acceptable latency · 746ms',
   'hosted'
 );
 assertIncludes(bestAnswerEl.innerHTML, 'Supergeni', 'Under-chat green micro-status must keep the active route label.');
-assertIncludes(bestAnswerEl.innerHTML, 'Free', 'Under-chat green micro-status must keep Free as subtle text.');
-assertIncludes(bestAnswerEl.innerHTML, 'api.mmir.ai', 'Under-chat green micro-status must keep API route text.');
 assertIncludes(bestAnswerEl.innerHTML, 'API score 84', 'Under-chat green micro-status must keep score evidence.');
 assertIncludes(bestAnswerEl.innerHTML, '746ms', 'Under-chat green micro-status must keep answer latency evidence.');
+assertExcludes(bestAnswerEl.innerHTML, 'api.mmir.ai', 'Under-chat green micro-status must keep API host in details, not visible first-user text.');
 assertExcludes(bestAnswerEl.innerHTML, 'Winner:', 'Under-chat green micro-status must not show winner clutter.');
 assertIncludes(bestAnswerEl.attrs['aria-label'], 'No paid route', 'Full route receipt must remain available through aria-label/title even when visible text is compact.');
 assertIncludes(bestAnswerEl.attrs['aria-label'], 'Winner: Supergeni', 'Full route receipt must keep winner data inspectable outside visible text.');
@@ -146,7 +144,7 @@ testApi.state.models.push(
     score: 86
   }
 );
-assertIncludes(testApi.routeMicroStatus(hosted), '3 active intelligences connected', 'Route micro-status must surface connected intelligence capacity in subtle green text.');
+assertIncludes(testApi.routeMicroStatus(hosted), '3 model routes visible', 'Route micro-status must surface connected route capacity in subtle green text.');
 const poolEl = fakeElement();
 testApi.renderMicroStatus(
   poolEl,

@@ -28,8 +28,8 @@
     return [
       {id:'mmir-supergenius',label:SUPERGENIUS_LABEL,runtime:'auto',status:'hosted-free',model:'mmir-supergenius',install_note:'Works immediately with no install, key or paid route.'},
       {id:'webllm-qwen25-05b',label:'Browser Model - experimental',runtime:'webllm',status:'lab_proof_required',trust_level:'unverified',promotion_state:'hidden_candidate',visibility:'advanced',public_headline:false,promotion_allowed:false,proof_status:'pending_supported_browser_live_answer',license_review_status:'pending',integrity_review_status:'pending',fallback_status:'fallback_to_supergenious_until_model_answers',runtime_package:'@mlc-ai/web-llm',public_surface:'advanced_only_until_proven',model:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',install_note:'Experimental. Runs locally only when this browser supports WebGPU/WASM and remains an untrusted advanced candidate until live-browser proof and policy review pass.'},
-      {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',model:'gemma3:270m',install_note:'Fastest useful local starter through MMIR Local Node.'},
-      {id:'ollama-qwen3-06b',label:'Qwen3 0.6B - tiny reasoning local',runtime:'ollama',status:'installable-free',model:'qwen3:0.6b',install_note:'Small reasoning-capable local starter.'}
+      {id:'ollama-gemma3-270m',label:'Gemma 3 270M - tiny free local',runtime:'ollama',status:'installable-free',model:'gemma3:270m',install_note:'Fastest useful local starter through MMIR Local Node. Good for private demo; weak for factual answers.'},
+      {id:'ollama-qwen3-06b',label:'Qwen3 0.6B - tiny reasoning local',runtime:'ollama',status:'installable-free',model:'qwen3:0.6b',install_note:'Small reasoning-capable local starter. Good for private tests; limited quality.'}
     ];
   }
   function starterGroupLabel(model){
@@ -146,12 +146,12 @@
   function optionKind(option){
     const value=String(option?.value||'');
     const runtime=String(option?.dataset?.runtime||'');
-    if(runtime==='live')return {state:'live',label:'Live',action:'Use live',detail:'Active backend route. Proof stays cost-guarded.'};
-    if(runtime==='auto')return {state:'ready',label:'Instant chat',action:'Use now',detail:'Works immediately with no install, key or paid route.'};
+    if(runtime==='live')return {state:'live',label:'Live',action:'Use live',detail:'Active backend route. Good for Compare/Boost. Proof stays cost-guarded.'};
+    if(runtime==='auto')return {state:'ready',label:'Instant chat',action:'Use now',detail:'Hosted default. Good for general chat and public facts. Not private local.'};
     if(runtime==='browser-guide')return {state:'ready',label:'Internal helper',action:'Use advanced',detail:'Internal guidance route; hidden from first-time model choice.'};
     if(runtime==='webllm')return browserNodeKind();
-    if(runtime==='ollama'||starterId(value))return {state:'install',label:'Free local install',action:'Install / prove',detail:'Installs through MMIR Local Node and Ollama.'};
-    return {state:'planned',label:'Model option',action:'Use',detail:'Select without starting paid compute.'};
+    if(runtime==='ollama'||starterId(value))return {state:'install',label:'Free local install',action:'Install / prove',detail:'Installs through MMIR Local Node and Ollama. Private on this device; tiny starters are limited on facts.'};
+    return {state:'planned',label:'Model option',action:'Use',detail:'Select without starting paid compute. Advanced route details stay behind proof gates.'};
   }
   function activeWorkspaceId(){return localStorage.getItem(WORKSPACE_KEY)||'personal';}
   function writeRepairResume(payload){
@@ -227,8 +227,8 @@
     const local=firstInstallableStarter();
     const liveLocal=localReady()&&{id:'live-local',label:'Local ready',detail:'Private Local Node model. No installer needed.',model:{id:'live-local',label:localModel(),runtime:'live-local'},value:liveLocalValue(),action:'chat-local',state:'live'};
     const items=[
-      supergenius&&{id:'supergenius-free',label:SUPERGENIUS_LABEL,detail:'Ask immediately. No setup, no key, no paid route.',model:supergenius,action:'chat',state:'ready'},
-      liveLocal||(local&&{id:'local-model',label:'Local Model',detail:localReady()?'Private Local Node model ready.':'Install a small local model when you want private/on-device chat.',model:local,action:'install',state:'install'})
+      supergenius&&{id:'supergenius-free',label:SUPERGENIUS_LABEL,detail:'Ask immediately. Hosted free route; no setup, no key, no paid route.',model:supergenius,action:'chat',state:'ready'},
+      liveLocal||(local&&{id:'local-model',label:'Local Model',detail:localReady()?'Private Local Node model ready.':'Install a small private starter when you want local/on-device chat.',model:local,action:'install',state:'install'})
     ].filter(Boolean);
     return '<div class="composer-model-recommendations" aria-label="Recommended free model paths">'+items.map(item=>{
       const value=item.value||starterValue(item.model);
@@ -368,12 +368,12 @@
     const options=freeRouteFloor(rawOptions).filter(pickerOptionVisible);
     const floorActive=options.length>rawOptions.length;
     if(!options.length){
-      el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose a model</strong><p>MMIR is loading free browser and local model routes. No paid route starts here.</p></div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>';
+      el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Start with Supergeni, add private local models when ready, and compare routes from +. No paid route starts here.</p></div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>';
       el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
       el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
       return;
     }
-    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Start simple; advanced routes stay folded until you need them.</p>'+(floorActive?'<small class="composer-route-floor">Free starter choices stay available while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<details class="composer-model-advanced"><summary>Advanced routes</summary><label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, browser or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label>'+routeFilterControls()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><div class="composer-model-empty" data-picker-search-empty hidden><span>No matching route. Try all routes, qwen, gemma, browser, local or live.</span><button type="button" data-picker-empty-reset>Show all routes</button></div></details>';
+    el.innerHTML='<div class="composer-model-picker-head"><div><strong>Choose model</strong><p>Current: '+escapeHtml(selectedLabel())+'. Start simple; use + for Boost, Compare and local setup.</p>'+(floorActive?'<small class="composer-route-floor">Free starter choices stay available while live backend discovery catches up.</small>':'')+'</div><div class="composer-model-picker-head-actions"><button type="button" data-picker-close aria-label="Close model picker">Close</button><a href="#model-library">Full library</a></div></div>'+recommendationCards()+'<details class="composer-model-advanced"><summary>Advanced routes</summary><label class="composer-model-search"><span>Find model</span><input type="search" data-picker-search autocomplete="off" inputmode="search" placeholder="Search free, local, browser or live routes" aria-label="Search model routes" /><small data-picker-search-count>'+options.length+' routes</small></label>'+routeFilterControls()+'<div class="composer-model-picker-grid">'+options.map(card).join('')+'</div><div class="composer-model-empty" data-picker-search-empty hidden><span>No matching route. Try all routes, qwen, gemma, browser, local or live.</span><button type="button" data-picker-empty-reset>Show all routes</button></div></details>';
     el.querySelector('[data-picker-close]')?.addEventListener('click',()=>closePicker(true));
     el.querySelector('.composer-model-picker-head a')?.addEventListener('click',()=>closePicker(false));
     wireFilters(el);

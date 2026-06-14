@@ -282,8 +282,8 @@
         id:'mmir-supergenius',
         label:'Supergeni',
         route:'hosted',
-        detail:'Ready now',
-        tags:['Fast','Free','Best default'],
+        detail:'Hosted default · ready now',
+        tags:['Ready','Hosted','Best default'],
         score:100,
         model:'mmir-supergenius',
         executable:true,
@@ -825,7 +825,7 @@
   function intelligencePoolLine(){
     const count=activeIntelligenceModels().length;
     if(count<2)return '';
-    return count+' active intelligences connected';
+    return count+' model routes visible';
   }
 
   function routeMicroStatus(model=activeModel()){
@@ -845,6 +845,10 @@
       localTelemetrySummary(model?.routeTelemetry)
     ].filter(Boolean);
     return parts.join(' · ');
+  }
+
+  function routeScoreExplainer(){
+    return 'Route score is fit for this request: latency, answer completeness, privacy mode, cost class and trust signals. It is not a truth percentage.';
   }
 
   function routeFreshnessLabel(score){
@@ -904,7 +908,7 @@
     const pick=(test)=>candidates.find(part=>test.test(part))||'';
     const providers=gatewayProviderSummary(parts);
     const priority=[
-      pick(/\d+\s+active intelligences connected/i),
+      pick(/\d+\s+model routes visible/i),
       pick(/^\d+\s+routes? compared$/i),
       pick(/^\d+\s+routes?$/i),
       providers,
@@ -917,10 +921,11 @@
       pick(/^avg\s+|\b\d+(?:\.\d+)?(?:ms|s)\b/i),
       pick(/best answer|synthesis/i),
       pick(/no paid route/i),
-      pick(/routing\/score/i),
       pick(/verified fact|needs fact check|complete answer|responsive|acceptable|fast|slow|private local|public facts/i)
     ].filter(Boolean);
-    const fallback=candidates.filter(part=>!priority.includes(part)).slice(0,1);
+    const fallback=candidates
+      .filter(part=>!priority.includes(part)&&!/api\.mmir\.ai|routing\/score/i.test(part))
+      .slice(0,1);
     const text=[primary,...priority,...fallback]
       .filter((part,index,all)=>part&&all.indexOf(part)===index)
       .slice(0,6)
@@ -944,14 +949,12 @@
   }
 
   function answerStatus(model,score,prefix=''){
-    const receipt=routeReceipt(model);
     const label=routeDisplayName(model);
     const elapsed=formatDuration(score?.elapsedMs||0);
     const parts=[
       prefix,
       label+' answered in '+elapsed,
-      model?.route==='local'?'Private':'Free',
-      model?.route==='local'?'This Mac':API_LABEL,
+      model?.route==='local'?'private local':'hosted route',
       (score?.source==='api'?'API score ':'Score ')+(score?.score??effectiveModelScore(model)),
       scoreClassSummary(score),
       model?.route==='hosted'?'No paid route':''
@@ -1168,7 +1171,7 @@
           id,
           label:routeDisplayName(model),
           route:'hosted',
-          detail:candidate?'Candidate · setup needed':(externalUntrustedFree?'Ready now · external untrusted-free':(model.availability==='available'?'Ready now':(model.route_state||'Ready'))),
+          detail:candidate?'Setup needed':(externalUntrustedFree?'Ready external route':(model.availability==='available'?'Ready now':(model.route_state||'Ready'))),
           tags:candidate?[provider,'Candidate','Setup']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
           model:id,
@@ -1528,14 +1531,14 @@
     const stats=routeBenchmark(model);
     if(model?.candidate||model?.executable===false){
       return {
-        label:'Candidate',
-        detail:model?.nextAction||'Visible candidate; not selectable until probe, benchmark and owner promotion are green.',
+        label:'Setup needed',
+        detail:model?.nextAction||'Not active until probe, benchmark and owner promotion are green.',
         state:'setup'
       };
     }
     if(model?.route==='hosted'){
       return {
-        label:'Warm hosted',
+        label:'Ready',
         detail:'Default route is ready through '+API_LABEL+'.',
         state:'warm'
       };
@@ -1576,7 +1579,7 @@
     const operational=routeOperationalState(model);
     const stats=routeBenchmark(model);
     const telemetry=localTelemetrySummary(model?.routeTelemetry);
-    const privacy=model?.route==='local'?'Private · This Mac':(model?.routeClass==='external-untrusted-free'?'External · '+API_LABEL:'Free · '+API_LABEL);
+    const privacy=model?.route==='local'?'Private · This Mac':(model?.routeClass==='external-untrusted-free'?'External free · '+API_LABEL:'Hosted free · '+API_LABEL);
     const score='Score '+effectiveModelScore(model);
     const rankSummary=routeRankSummary(model);
     const samples=stats?.samples
@@ -1585,6 +1588,20 @@
     const pinned=routePinned(model)?'Pinned in this browser':'';
     const safe=model?.route==='local'?'no public Ollama port':'no browser secrets';
     return [operational.label,privacy,score,rankSummary,telemetry,samples,pinned,safe].filter(Boolean).join(' · ');
+  }
+
+  function modelUseCase(model){
+    if(model?.candidate||model?.executable===false)return 'Needs setup/probe before use.';
+    if(model?.route==='local'){
+      if(model.quality==='best-local-starter')return 'Good for: fast private demo and local setup proof. Limit: weak factual recall.';
+      if(model.quality==='weak-facts')return 'Good for: tiny private tests. Limit: not recommended for factual answers.';
+      if(model.quality==='small')return 'Good for: quick private drafts. Limit: small-model quality.';
+      return 'Good for: private/local work. Limit: may be slower or stale on public facts.';
+    }
+    if(model?.routeClass==='external-untrusted-free'||model?.trustLevel==='external-untrusted-free'){
+      return 'Good for: extra perspective in Boost/Best Answer. Limit: external route; verify important facts.';
+    }
+    return 'Good for: general chat and public facts. Limit: hosted, not private local.';
   }
 
   function compactModelBadges(model,bestLocal){
@@ -2356,10 +2373,10 @@
       const benchmark=routeBenchmarkSummary(model);
       const rankSummary=routeRankSummary(model);
       const shortDetail=model.route==='local'
-        ? [routeOperationalHint(model),rankSummary,'Private · This Mac',benchmark].filter(Boolean).join(' · ')
+        ? [routeOperationalHint(model),modelUseCase(model),rankSummary,'Private · This Mac',benchmark].filter(Boolean).join(' · ')
         : model.candidate
-          ? [routeOperationalHint(model),model.provider,'visible only',model.nextAction].filter(Boolean).join(' · ')
-          : [routeOperationalHint(model),rankSummary,'Free · '+API_LABEL,benchmark].filter(Boolean).join(' · ');
+          ? [routeOperationalHint(model),modelUseCase(model),model.provider,'not active yet'].filter(Boolean).join(' · ')
+          : [routeOperationalHint(model),modelUseCase(model),rankSummary,(model.routeClass==='external-untrusted-free'||model.trustLevel==='external-untrusted-free')?'External':'Hosted',benchmark].filter(Boolean).join(' · ');
       const selectable=model.executable!==false&&model.selectable!==false;
       const title=selectable?('Select '+model.label):(model.nextAction||'Candidate is visible, but not selectable yet.');
       return '<button type="button" data-model-id="'+safeAttr(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'" data-model-selectable="'+(selectable?'true':'false')+'" aria-disabled="'+(selectable?'false':'true')+'" title="'+safeAttr(title)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
@@ -2372,8 +2389,9 @@
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">Press + -> Connect local model to connect this computer.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
-    const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, change filters and inspect route details.');
-    menu.innerHTML=menuTitle('Models')+buttons+filterHint+activeFilterHint+localHint+routeControls;
+    const scoreHint='<div class="p0-menu-note">Score means route fit for this request, not truth percentage.</div>';
+    const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, filter models and inspect route/score details.');
+    menu.innerHTML=menuTitle('Models')+buttons+filterHint+activeFilterHint+localHint+scoreHint+routeControls;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         const model=state.models.find(item=>item.id===button.getAttribute('data-model-id'));
@@ -2412,6 +2430,7 @@
       pinControl+
       filterControl+
       detailReceipt+
+      '<div class="p0-menu-note">'+safeText(routeScoreExplainer())+'</div>'+
       '<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div>';
   }
 
@@ -2426,14 +2445,14 @@
     if(value==='superprivate'){
       return bestLocalModel()||activeModel().route==='local'
         ? 'Local-only. Hosted routes are blocked and browser chat history is not saved.'
-        : 'Requires a local model. Hosted routes are blocked and browser chat history is not saved.';
+        : 'Requires a local model. Hosted routes stay blocked and browser chat history is not saved.';
     }
     if(value==='private'){
       return bestLocalModel()||activeModel().route==='local'
-        ? 'Local-only. Hosted fallback is blocked.'
+        ? 'Uses your local model when available. Hosted fallback is blocked.'
         : 'Requires a local model before private prompts can be sent.';
     }
-    return 'Standard mode. Supergeni hosted route is allowed for non-sensitive prompts.';
+    return 'Standard mode. Supergeni hosted route is allowed. Do not paste private secrets or sensitive files.';
   }
 
   function privacyModeRouteStatus(){
@@ -2483,8 +2502,8 @@
   function renderPrivacyMenu(){
     const model=activeModel();
     const menu=menuEl('privacy');
-    const route=model.route==='local'?'Private local model':'Supergeni hosted route';
-    const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser.';
+    const route=model.route==='local'?'Current route: private local model':'Current route: Supergeni hosted route';
+    const secret=model.route==='local'?'This browser talks only to the paired connector on this device.':'No provider key is stored in the browser. Use Private mode for local-only prompts.';
     const receipt=routeReceipt(model);
     const selected=privacyMode();
     menu.innerHTML=''+
@@ -2497,6 +2516,7 @@
       menuSeparator()+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
       '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
+      '<button type="button"><strong>Score meaning</strong><small>'+safeText(routeScoreExplainer())+'</small></button>'+
       '<button type="button"><strong>No paid route started</strong><small>MMIR uses free routes here unless a protected backend is added later.</small></button>';
   }
 
@@ -3181,7 +3201,7 @@
     const root=document.getElementById('p0-transcript');
     if(!root)return;
     if(!state.messages.length){
-      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergeni answers now.</p></div>';
+      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergeni answers now. Add private local models and compare routes from + when ready.</p></div>';
       return;
     }
     root.innerHTML=state.messages.map(message=>{
@@ -3585,7 +3605,7 @@
     const initialReceipt=(mode==='boost'?'Intelligence Boost':'Best Answer')+' · '+routeCount+' active routes · signed receipt check · no paid route';
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     status(title+' is asking '+routeCount+' active routes...','ready');
-    routeStatus(title+' · '+routeCount+' active intelligences connected · no paid route','ready');
+      routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
     try{
       const data=await fetchJson(API_URL+COMPARE_PATH,{
         method:'POST',
