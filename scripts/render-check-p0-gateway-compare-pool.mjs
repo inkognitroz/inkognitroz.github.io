@@ -166,6 +166,47 @@ async function installFixtures(page) {
           no_paid_routes_started: true
         }
       },
+      data: [
+        {
+          model: 'supergeni',
+          choices: [{ message: { content: '4' } }],
+          mmir: {
+            receipt: {
+              provider: 'mmir',
+              model_id: 'supergeni',
+              model_display_name: 'Supergeni',
+              latency_ms: 420,
+              no_paid_routes_started: true
+            }
+          }
+        },
+        {
+          model: 'poolside/laguna-xs.2:free',
+          choices: [{ message: { content: 'The answer is 4.' } }],
+          mmir: {
+            receipt: {
+              provider: 'openrouter',
+              model_id: 'poolside/laguna-xs.2:free',
+              model_display_name: 'Laguna XS',
+              latency_ms: 1370,
+              no_paid_routes_started: true
+            }
+          }
+        },
+        {
+          model: 'openai/gpt-oss-20b:free',
+          choices: [{ message: { content: '4.' } }],
+          mmir: {
+            receipt: {
+              provider: 'openrouter',
+              model_id: 'openai/gpt-oss-20b:free',
+              model_display_name: 'OpenRouter GPT OSS 20B',
+              latency_ms: 1260,
+              no_paid_routes_started: true
+            }
+          }
+        }
+      ],
       route_attempts: [
         {
           status: 'succeeded',
@@ -257,6 +298,7 @@ async function checkViewport(browser, viewport) {
   const addMenu = await page.locator('#p0-add-menu').innerText();
   assert(/Intelligence pool/i.test(addMenu), `${viewport.name}: add menu should expose compact Intelligence pool when hosted routes are active`);
   assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
+  assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
   assert(/Ask 4 free active routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
   assert(/Ask 4 active routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
@@ -264,12 +306,13 @@ async function checkViewport(browser, viewport) {
   await page.locator('[data-p0-action="boost-answer-live"]').click();
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
-    return /\b4\b/.test(text) && /Intelligence boost/i.test(text);
+    const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
+    return /\b4\b/.test(text) && /Intelligence boost/i.test(text) && /4 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
-  assert(text.includes('Intelligence boost'), `${viewport.name}: boost receipt should render`);
+  assert(/Intelligence boost/i.test(text), `${viewport.name}: boost receipt should render`);
   assert(text.includes('4 routes compared'), `${viewport.name}: gateway compare receipt should show route count`);
 
   const layout = await page.evaluate(() => ({
@@ -295,6 +338,20 @@ async function checkViewport(browser, viewport) {
   assert(/Google/i.test(layout.routeFull), `${viewport.name}: full receipt should include Google evidence`);
   assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
   assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);
+
+  await page.locator('#p0-input').fill('Say hello from every active model.');
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="ask-all-active"]').click();
+  await page.waitForFunction(() => {
+    const text = document.getElementById('p0-transcript')?.innerText || '';
+    return /All active answers:/i.test(text) && /OpenRouter · Laguna XS/i.test(text);
+  });
+  const allText = await page.locator('#p0-transcript').innerText();
+  assert(/Best live score: Supergeni/i.test(allText), `${viewport.name}: Ask all should keep the winning route visible in the answer`);
+  assert(/All active answers:/i.test(allText), `${viewport.name}: Ask all should render every active answer`);
+  assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
+  assert(/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should show demoted candidates truthfully`);
 
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });

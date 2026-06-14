@@ -33,22 +33,27 @@ const compareGatewayRoutes = functionSource('compareGatewayRoutes', 'synthesizeC
 requireIncludes(shell, "const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1'", 'Local memory must have a browser-local storage key.');
 requireIncludes(shell, "const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1'", 'Local document notes must have a browser-local storage key.');
 requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Boost answer'", '+ menu must expose Boost answer without adding a visible toolbar button.');
+requireIncludes(renderAddMenu, "menuButton('ask-all-active','Ask all active'", '+ menu must expose Ask all active without adding a visible toolbar button.');
 requireIncludes(renderAddMenu, "menuSection('Local memory')", '+ menu must group local memory under a secondary section.');
 requireIncludes(renderAddMenu, "menuButton('local-memory-guide','Memory guide'", '+ menu must explain memory through chat-native commands.');
 requireIncludes(renderAddMenu, "menuButton('show-local-memory','Show memory'", '+ menu must let users inspect browser-local memory.');
 requireIncludes(renderAddMenu, "menuButton('add-document-note','Add document note'", '+ menu must prepare browser-only document notes.');
 requireIncludes(handleMenuAction, "action==='boost-answer-live'", 'Menu actions must handle Boost answer.');
+requireIncludes(handleMenuAction, "action==='ask-all-active'", 'Menu actions must handle Ask all active.');
 requireIncludes(handleMenuAction, "action==='local-memory-guide'", 'Menu actions must handle local memory guide.');
 requireIncludes(handleMenuAction, "action==='show-local-memory'", 'Menu actions must handle local memory display.');
 requireIncludes(handleMenuAction, "action==='add-document-note'", 'Menu actions must handle document note template.');
 requireIncludes(sendMessage, 'handleLocalKnowledgeCommand(prompt,input)', 'Local memory commands must be handled before provider calls.');
 requireIncludes(compareGatewayRoutes, "options.mode==='boost'", 'Gateway compare must have a dedicated Boost answer mode.');
+requireIncludes(compareGatewayRoutes, "options.mode==='all'", 'Gateway compare must have a dedicated Ask all active mode.');
+requireIncludes(shell, 'function gatewayCompareAllAnswer(data)', 'Ask all active must render each active route answer, not only the winning synthesis.');
+requireIncludes(shell, 'function localAllActiveRoutes(prompt,signal)', 'Ask all active must include paired browser-local models when available.');
 requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Boost answer must use demo-friendly Intelligence Boost status text.');
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260614-boost-route-summary-v1', 'mmir.html must cache-bust the P0 runtime after WOW demo changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260614-boost-route-summary-v1"', 'Asset manifest must track the WOW demo runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260615-ask-all-active-v1', 'mmir.html must cache-bust the P0 runtime after WOW demo changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260615-ask-all-active-v1"', 'Asset manifest must track the WOW demo runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');

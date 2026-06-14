@@ -683,10 +683,15 @@
 
   function ownerPingCommand(prompt){
     const text=String(prompt||'').trim();
-    const owner=text.match(/^\/admin\s+([^\s]+)\s+\/?ping(?:\s+([\s\S]+))?$/i);
+    const owner=text.match(/^\/admin\s+([^\s]+)\s+\/?(?:ping|all)(?:\s+([\s\S]+))?$/i);
     if(owner){
       const pingPrompt=String(owner[2]||'hei').replace(/\s+/g,' ').trim().slice(0,2000)||'hei';
       return {mode:'owner',code:String(owner[1]||'').trim(),prompt:pingPrompt};
+    }
+    const publicAll=text.match(/^\/all(?:\s+([\s\S]+))?$/i);
+    if(publicAll){
+      const allPrompt=String(publicAll[1]||'hei').replace(/\s+/g,' ').trim().slice(0,2000)||'hei';
+      return {mode:'all',code:'',prompt:allPrompt};
     }
     const publicPing=text.match(/^\/ping(?:\s+([\s\S]+))?$/i);
     if(publicPing){
@@ -760,6 +765,14 @@
   async function handleOwnerPingCommand(prompt,input){
     const parsed=ownerPingCommand(prompt);
     if(!parsed)return false;
+    if(parsed.mode==='all'){
+      if(input){
+        input.value=parsed.prompt;
+        autosizeInput();
+      }
+      compareGatewayRoutes(parsed.prompt,{mode:'all'});
+      return true;
+    }
     if(parsed.mode==='public'){
       if(input){
         input.value=parsed.prompt;
@@ -2326,6 +2339,7 @@
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
       menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free active routes, score them, then return one clean answer.'):'Use active free routes when route inventory is ready.')+
+      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every active route answer in one chat response.'):('Use /all after route inventory finds at least two active routes.'))+
       menuSeparator()+
       menuSection('Local memory')+
       menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
@@ -2871,6 +2885,38 @@
     return true;
   }
 
+  function askAllActive(){
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    closeMenus();
+    if(!prompt){
+      status('Write a prompt first, then Ask all active can run.','error');
+      routeStatus('Ask all needs a prompt','error');
+      input?.focus();
+      return true;
+    }
+    if(gatewayCompareAvailable()||comparePartnerModel()){
+      compareGatewayRoutes(prompt,{mode:'all'});
+      return true;
+    }
+    status('Checking active routes for Ask all...','loading');
+    routeStatus('Ask all checks route inventory · no paid route','hosted');
+    refreshHostedModels().then(()=>{
+      if(gatewayCompareAvailable()||comparePartnerModel()){
+        compareGatewayRoutes(prompt,{mode:'all'});
+        return;
+      }
+      status('Ask all needs at least two active routes.','ready');
+      routeStatus('Ask all waiting for another active route · connect local or provider node','hosted');
+      input?.focus();
+    }).catch(()=>{
+      status('Ask all route refresh failed.','error');
+      routeStatus('Ask all unavailable · route inventory unreachable','error');
+      input?.focus();
+    });
+    return true;
+  }
+
   function handleToolbarTool(id){
     const tool=toolbarToolById(id);
     if(!tool)return false;
@@ -3012,6 +3058,9 @@
     }
     if(action==='boost-answer-live'){
       return boostAnswer();
+    }
+    if(action==='ask-all-active'){
+      return askAllActive();
     }
     if(action==='compare-live'||action==='best-answer-live'||action==='discuss-topic'){
       return runTwoModelTool(action);
@@ -3542,6 +3591,63 @@
     ].filter(Boolean).join(' ');
   }
 
+  function allAnswerRouteLabel(response){
+    const receipt=responseReceiptEnvelope(response);
+    const provider=String(receipt.provider||response?.provider||'').trim().toLowerCase();
+    const model=String(receipt.model_display_name||receipt.model_id||response?.model_display_name||response?.model||'').trim();
+    if(provider==='mmir')return model&&/supergeni/i.test(model)?'Supergeni':'Supergeni'+(model?' · '+model:'');
+    if(provider)return providerLabel(provider)+(model?' · '+model:'');
+    return model||'Route';
+  }
+
+  function allAnswerText(text,limit=900){
+    const clean=String(text||'').replace(/\s+/g,' ').trim();
+    if(!clean)return 'answered';
+    return clean.length>limit?clean.slice(0,limit-3).trim()+'...':clean;
+  }
+
+  function gatewayCompareResponseLine(response,index){
+    const receipt=responseReceiptEnvelope(response);
+    const latency=Number(response?.latency_ms)||Number(receipt.latency_ms)||0;
+    const answer=allAnswerText(responseText(response));
+    return String(index+1)+'. '+allAnswerRouteLabel(response)+(latency?' in '+formatDuration(latency):'')+': '+answer;
+  }
+
+  function gatewayCompareBlockedLine(item){
+    const label=attemptProviderLabel({
+      provider:item?.provider||item?.receipt?.provider,
+      model_display_name:item?.model_display_name||item?.receipt?.model_display_name,
+      model_id:item?.model_id||item?.receipt?.model_id
+    });
+    const reason=String(item?.reason||item?.blocker||item?.route_state||item?.status||'not active').replace(/[_-]+/g,' ').trim();
+    return '- '+label+': '+reason;
+  }
+
+  function gatewayCompareAllAnswer(data){
+    const responses=(Array.isArray(data?.data)?data.data:[]).filter(response=>responseText(response));
+    const blockedCandidates=(Array.isArray(data?.blocked_candidates)?data.blocked_candidates:[]);
+    const blockedAttempts=(Array.isArray(data?.route_attempts)?data.route_attempts:[])
+      .filter(attempt=>attempt?.status&&attempt.status!=='succeeded');
+    const blocked=[...blockedCandidates,...blockedAttempts]
+      .filter((item,index,items)=>{
+        const key=String(item?.provider||'')+'|'+String(item?.model_id||item?.receipt?.model_id||'')+'|'+String(item?.reason||item?.blocker||item?.route_state||item?.status||'');
+        return items.findIndex(other=>String(other?.provider||'')+'|'+String(other?.model_id||other?.receipt?.model_id||'')+'|'+String(other?.reason||other?.blocker||other?.route_state||other?.status||'')===key)===index;
+      })
+      .slice(0,6)
+      .map(gatewayCompareBlockedLine);
+    const best=data?.best_answer||{};
+    const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
+    const header=[
+      winner?'Best live score: '+winner:'',
+      typeof best?.score==='number'?'Score '+best.score:'',
+      responses.length?String(responses.length)+' active answer'+(responses.length===1?'':'s'):'No active answers'
+    ].filter(Boolean).join(' · ');
+    const lines=[header||'All active route check complete.'];
+    if(responses.length)lines.push('', 'All active answers:', ...responses.slice(0,10).map(gatewayCompareResponseLine));
+    if(blocked.length)lines.push('', 'Not active in this run:', ...blocked);
+    return lines.join('\n');
+  }
+
   function gatewayCompareReceipt(data,label='Best answer'){
     const attempts=Array.isArray(data?.route_attempts)?data.route_attempts:[];
     const pool=data?.intelligence_pool||data?.pool||{};
@@ -3604,12 +3710,109 @@
     });
   }
 
+  function localAllResponseEnvelope(model,content,latencyMs,prompt){
+    const score=routeScore(model,prompt,content,latencyMs,false,'compare');
+    const receipt={
+      object:'mmir.route_receipt',
+      provider:'local',
+      model_id:model.model||model.id,
+      model_display_name:model.label,
+      latency_ms:Math.round(latencyMs),
+      route_visibility:'browser-local',
+      provider_called:true,
+      provider_secrets_in_browser:false,
+      no_paid_routes_started:true
+    };
+    return {
+      model:model.model||model.id,
+      provider:'local',
+      model_display_name:model.label,
+      latency_ms:Math.round(latencyMs),
+      score:score.score,
+      choices:[{message:{content}}],
+      mmir:{receipt,route_receipt:receipt}
+    };
+  }
+
+  function localAllRouteAttempt(response){
+    const receipt=responseReceiptEnvelope(response);
+    return {
+      provider:'local',
+      model_id:receipt.model_id||response.model,
+      model_display_name:receipt.model_display_name||response.model_display_name,
+      status:'succeeded',
+      latency_ms:Number(receipt.latency_ms)||Number(response.latency_ms)||0,
+      score:Number(response.score)||0,
+      answer_class:'complete',
+      receipt
+    };
+  }
+
+  function localAllBlockedCandidate(model,reason){
+    return {
+      provider:'local',
+      model_id:model?.model||model?.id||'local',
+      model_display_name:model?.label||model?.model||'Local model',
+      reason,
+      route_state:'blocked'
+    };
+  }
+
+  async function localAllActiveRoutes(prompt,signal){
+    const models=state.models.filter(model=>model.route==='local'&&model.executable!==false&&model.selectable!==false).slice(0,8);
+    if(!models.length)return {responses:[],attempts:[],blocked:[]};
+    try{
+      allowLocalProbes('p0-local-all-active',120000);
+      const token=await pairLocal();
+      const settled=await Promise.allSettled(models.map(async model=>{
+        const started=performance.now();
+        const data=await fetchJson(LOCAL_URL+CHAT_PATH,{
+          method:'POST',
+          headers:localHeaders(token),
+          body:JSON.stringify(localPayload(prompt,model)),
+          timeoutMs:45000,
+          signal
+        });
+        const answer=responseText(data);
+        if(!answer)throw new Error('empty local answer');
+        return localAllResponseEnvelope(model,answer,performance.now()-started,prompt);
+      }));
+      const responses=[];
+      const blocked=[];
+      settled.forEach((result,index)=>{
+        if(result.status==='fulfilled')responses.push(result.value);
+        else blocked.push(localAllBlockedCandidate(models[index],result.reason?.message||'local route failed'));
+      });
+      return {responses,attempts:responses.map(localAllRouteAttempt),blocked};
+    }catch(error){
+      const reason=error?.name==='AbortError'?'stopped':'local pairing unavailable';
+      return {responses:[],attempts:[],blocked:models.map(model=>localAllBlockedCandidate(model,reason))};
+    }
+  }
+
+  function mergeLocalAllRoutes(data,local){
+    if(!local||(local.responses.length===0&&local.blocked.length===0))return data;
+    const merged={...data};
+    merged.data=[...(Array.isArray(data?.data)?data.data:[]),...local.responses];
+    merged.route_attempts=[...(Array.isArray(data?.route_attempts)?data.route_attempts:[]),...local.attempts];
+    merged.blocked_candidates=[...(Array.isArray(data?.blocked_candidates)?data.blocked_candidates:[]),...local.blocked];
+    const pool={...(data?.intelligence_pool||data?.pool||{})};
+    pool.route_attempt_count=merged.route_attempts.length;
+    pool.active_answer_route_count=merged.data.filter(response=>responseText(response)).length;
+    pool.local_browser_answer_route_count=local.responses.length;
+    pool.blocked_candidate_count=merged.blocked_candidates.length;
+    merged.intelligence_pool=pool;
+    merged.pool=pool;
+    merged.candidate_count=merged.data.length+merged.blocked_candidates.length;
+    return merged;
+  }
+
   async function compareGatewayRoutes(comparePrompt='',options={}){
     if(state.busy)return;
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
-    const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':'best-answer');
-    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':'Best Answer');
+    const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':(options.mode==='all'?'all':'best-answer'));
+    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':'Best Answer'));
     if(privateModeActive()){
       status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
       routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
@@ -3628,22 +3831,27 @@
       autosizeInput();
     }
     const routeCount=String(activeHostedCompareModels().length);
-    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':'Supergeni · Best answer';
-    const initialReceipt=(mode==='boost'?'Intelligence Boost':'Best Answer')+' · '+routeCount+' active routes · signed receipt check · no paid route';
+    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':'Supergeni · Best answer');
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':'Best Answer'))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     status(title+' is asking '+routeCount+' active routes...','ready');
       routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
     try{
-      const data=await fetchJson(API_URL+COMPARE_PATH,{
+      const gatewayPromise=fetchJson(API_URL+COMPARE_PATH,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify(compareApiPayload(prompt)),
         timeoutMs:70000,
         signal
       });
+      const localPromise=mode==='all'?localAllActiveRoutes(prompt,signal):Promise.resolve({responses:[],attempts:[],blocked:[]});
+      const [gatewayData,localData]=await Promise.all([gatewayPromise,localPromise]);
+      const data=mode==='all'?mergeLocalAllRoutes(gatewayData,localData):gatewayData;
       if(data?.object!=='chat.compare')throw new Error('Gateway compare unavailable');
-      const content=String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.';
-      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':'Best answer');
+      const content=mode==='all'
+        ? gatewayCompareAllAnswer(data)
+        : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
+      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':'Best answer'));
       updateMessage(assistant,content,{receipt});
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
