@@ -1189,10 +1189,9 @@
 
   function normalizeHostedModels(payload){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
-    return raw
+    const normalized=raw
       .filter(visibleHostedModel)
       .filter(model=>String(model?.id||model?.model||'').trim())
-      .slice(0,8)
       .map((model,index)=>{
         const id=String(model.id||model.model).trim();
         const executable=executableHostedModel(model);
@@ -1205,8 +1204,8 @@
           id,
           label:routeDisplayName(model),
           route:'hosted',
-          detail:candidate?'Setup needed':(externalUntrustedFree?'Ready external route':(model.availability==='available'?'Ready now':(model.route_state||'Ready'))),
-          tags:candidate?[provider,'Candidate','Setup']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
+          detail:candidate?'Future node':(externalUntrustedFree?'Ready external route':(model.availability==='available'?'Ready now':(model.route_state||'Ready'))),
+          tags:candidate?[provider,'Candidate','Future']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
           model:id,
           executable,
@@ -1223,6 +1222,13 @@
           selectable:executable&&model.selectable!==false
         };
       });
+    const active=normalized
+      .filter(model=>model.executable!==false&&model.selectable!==false&&!model.candidate)
+      .slice(0,24);
+    const future=normalized
+      .filter(model=>model.candidate||model.executable===false||model.selectable===false)
+      .slice(0,4);
+    return active.concat(future);
   }
 
   async function refreshHostedModels(){
@@ -1565,8 +1571,8 @@
     const stats=routeBenchmark(model);
     if(model?.candidate||model?.executable===false){
       return {
-        label:'Setup needed',
-        detail:model?.nextAction||'Not active until probe, benchmark and owner promotion are green.',
+        label:'Future node',
+        detail:model?.nextAction||'Needs deployed node endpoint, route proof and owner promotion before chat.',
         state:'setup'
       };
     }
@@ -1625,7 +1631,7 @@
   }
 
   function modelUseCase(model){
-    if(model?.candidate||model?.executable===false)return 'Needs setup/probe before use.';
+    if(model?.candidate||model?.executable===false)return 'Future capacity; not active yet.';
     if(model?.route==='local'){
       if(model.quality==='best-local-starter')return 'Good for: fast private demo and local setup proof. Limit: weak factual recall.';
       if(model.quality==='weak-facts')return 'Good for: tiny private tests. Limit: not recommended for factual answers.';
@@ -1643,7 +1649,7 @@
     if(model?.id===state.activeModelId)badges.push('Selected');
     if(routePinned(model))badges.push('Pinned');
     if(model?.candidate)badges.push('Candidate');
-    if(model?.executable===false)badges.push('Setup');
+    if(model?.executable===false)badges.push('Future');
     if(model?.route==='hosted'&&!model?.candidate&&(model?.id==='supergeni'||model?.id==='mmir-supergenius'))badges.push('Default');
     else if(model?.route==='hosted'&&!model?.candidate&&model?.routeClass==='external-untrusted-free')badges.push('External');
     if(model?.route==='local')badges.push('Private');
@@ -2407,7 +2413,18 @@
     const active=activeModel();
     const filter=modelFilter();
     const rankMap=routeRankMap();
-    const hostedModels=rankedModels(state.models.filter(model=>model.route==='hosted'&&modelVisibleInFilter(model,filter)));
+    const hostedActiveModels=rankedModels(state.models.filter(model=>
+      model.route==='hosted'&&
+      modelVisibleInFilter(model,filter)&&
+      model.executable!==false&&
+      model.selectable!==false&&
+      !model.candidate
+    ));
+    const hostedFutureModels=rankedModels(state.models.filter(model=>
+      model.route==='hosted'&&
+      modelVisibleInFilter(model,filter)&&
+      (model.candidate||model.executable===false||model.selectable===false)
+    ));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
       const benchmark=routeBenchmarkSummary(model);
@@ -2415,16 +2432,18 @@
       const shortDetail=model.route==='local'
         ? [routeOperationalHint(model),modelUseCase(model),rankSummary,'Private · This Mac',benchmark].filter(Boolean).join(' · ')
         : model.candidate
-          ? [routeOperationalHint(model),modelUseCase(model),model.provider,'not active yet'].filter(Boolean).join(' · ')
+          ? [routeOperationalHint(model),modelUseCase(model),model.provider,'node handoff needed'].filter(Boolean).join(' · ')
           : [routeOperationalHint(model),modelUseCase(model),rankSummary,(model.routeClass==='external-untrusted-free'||model.trustLevel==='external-untrusted-free')?'External':'Hosted',benchmark].filter(Boolean).join(' · ');
       const selectable=model.executable!==false&&model.selectable!==false;
       const title=selectable?('Select '+model.label):(model.nextAction||'Candidate is visible, but not selectable yet.');
       return '<button type="button" data-model-id="'+safeAttr(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'" data-model-selectable="'+(selectable?'true':'false')+'" aria-disabled="'+(selectable?'false':'true')+'" title="'+safeAttr(title)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
     }).join('');
     const buttons=''+
-      renderButtons(hostedModels)+
+      menuSection('Active free routes')+
+      renderButtons(hostedActiveModels)+
+      (hostedFutureModels.length?menuSection('Future node candidates')+renderButtons(hostedFutureModels):'')+
       (localModels.length?menuSection('Private local models')+renderButtons(localModels):'');
-    const filterHint=(hostedModels.length||localModels.length)?'':
+    const filterHint=(hostedActiveModels.length||hostedFutureModels.length||localModels.length)?'':
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
       '<div class="p0-menu-note">Press + -> Connect local model to connect this computer.</div>';
@@ -2437,8 +2456,8 @@
         const model=state.models.find(item=>item.id===button.getAttribute('data-model-id'));
         if(!model||model.executable===false||model.selectable===false){
           const label=model?.label||'Provider candidate';
-          status(label+' visible. Setup/probe needed before chat selection.','ready');
-          routeStatus('Candidate visible · setup/probe needed','hosted');
+          status(label+' is future capacity. Active free routes are ready now.','ready');
+          routeStatus('Future node · deploy handoff needed','hosted');
           return;
         }
         state.activeModelId=model.id;
@@ -4113,8 +4132,8 @@
     autosizeInput();
     const model=smart.model;
     if(!model||model.executable===false||model.selectable===false){
-      status((model?.label||'Provider candidate')+' is visible, but not ready for chat yet.','ready');
-      routeStatus('Candidate visible · setup/probe needed','hosted');
+      status((model?.label||'Provider candidate')+' is future capacity. Active free routes are ready now.','ready');
+      routeStatus('Future node · deploy handoff needed','hosted');
       input?.focus();
       return;
     }

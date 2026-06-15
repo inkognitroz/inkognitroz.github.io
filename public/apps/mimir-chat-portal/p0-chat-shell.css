@@ -692,7 +692,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-badge-candidate,
-.p0-badge-setup {
+.p0-badge-future {
   background: #f8fafc;
   border-color: #dbeafe;
   color: #1d4ed8;
