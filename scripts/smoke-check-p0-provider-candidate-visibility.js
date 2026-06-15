@@ -29,8 +29,28 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "tags:candidate?[provider,'Candidate','Setup']",
-  'Provider candidates must be visibly marked as candidate/setup in the model picker.'
+  "tags:candidate?[provider,'Candidate','Future']",
+  'Provider candidates must be visibly marked as future capacity in the model picker.'
+);
+requireIncludes(
+  shell,
+  'menuSection(\'Active free routes\')',
+  'Model picker must lead with active free routes, not future candidates.'
+);
+requireIncludes(
+  shell,
+  'menuSection(\'Future node candidates\')',
+  'Model picker must group non-active provider candidates separately.'
+);
+requireIncludes(
+  shell,
+  '.slice(0,24)',
+  'Model normalization must keep enough active free routes visible before future candidates.'
+);
+requireIncludes(
+  shell,
+  '.slice(0,4)',
+  'Model normalization must keep future candidates compact in the clean picker.'
 );
 requireIncludes(
   shell,
@@ -44,8 +64,13 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "Candidate visible · setup/probe needed",
-  'Clicking a provider candidate must explain the setup/probe gate instead of selecting it.'
+  "Future node · deploy handoff needed",
+  'Clicking a provider candidate must explain the deploy handoff gate instead of selecting it.'
+);
+requireNotIncludes(
+  shell,
+  'setup/probe needed',
+  'Clean demo UI must not lead with setup/probe language for future node candidates.'
 );
 requireIncludes(
   shell,
@@ -94,12 +119,12 @@ requireIncludes(
 );
 requireIncludes(
   css,
-  '.p0-badge-setup',
-  'Setup badge styling must be present.'
+  '.p0-badge-future',
+  'Future badge styling must be present.'
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260615-council-wow-v1',
+  'p0-chat-shell.js?v=20260615-active-routes-first-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -109,7 +134,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260615-council-wow-v1"',
+  '"p0-chat-shell.js": "20260615-active-routes-first-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
