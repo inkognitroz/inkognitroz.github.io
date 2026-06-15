@@ -304,7 +304,15 @@
     factGuard:readBooleanPreference(FACT_GUARD_KEY,true),
     answerStyle:readAnswerStyle(),
     roleProfileId:readRoleProfileId(),
-    routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{})
+    routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{}),
+    routeInventory:{
+      activeRoutes:1,
+      futureRoutes:0,
+      totalRoutes:1,
+      activePublicProviderRoutes:0,
+      activeExternalNodeRoutes:0,
+      visibleCandidateCount:0
+    }
   };
   let activeChatController=null;
   let stopRequested=false;
@@ -850,9 +858,17 @@
   }
 
   function intelligencePoolLine(){
-    const count=activeIntelligenceModels().length;
+    const inventory=state.routeInventory||{};
+    const count=Math.max(Number(inventory.activeRoutes)||0,activeIntelligenceModels().length);
     if(count<2)return '';
-    return count+' model routes visible';
+    const future=Number(inventory.futureRoutes)||0;
+    const total=Number(inventory.totalRoutes)||0;
+    const parts=[
+      count+' model routes visible',
+      future?future+' queued':'',
+      total&&total!==count?total+' visible total':''
+    ];
+    return parts.filter(Boolean).join(' · ');
   }
 
   function routeMicroStatus(model=activeModel()){
@@ -945,8 +961,12 @@
       pick(/^council ready$/i),
       pick(/^signed receipts$/i),
       pick(/no paid route/i),
+      pick(/^\d+\s+queued$/i),
+      pick(/^\d+\s+visible total$/i),
       pick(/^target\s+\d+/i),
       pick(/^sync\s+\d+/i),
+      pick(/^\d+\s+active provider routes$/i),
+      pick(/^\d+\s+external nodes$/i),
       providers,
       pick(/^\d+\s+models?\.?$/i),
       pick(/^free$|^private$/i),
@@ -1187,6 +1207,29 @@
     return value?value.charAt(0).toUpperCase()+value.slice(1):'Provider';
   }
 
+  function hostedCandidateModel(model){
+    return model?.candidate===true||
+      String(model?.route_type||'')==='external_candidate'||
+      model?.executable===false||
+      model?.selectable===false;
+  }
+
+  function modelInventorySummary(payload,models=[]){
+    const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+    const active=raw.filter(model=>executableHostedModel(model)&&!hostedCandidateModel(model)).length;
+    const future=raw.filter(hostedCandidateModel).length;
+    const fallbackActive=(models||[]).filter(model=>model?.executable!==false&&model?.selectable!==false&&!model?.candidate).length;
+    const fallbackFuture=(models||[]).filter(model=>model?.candidate||model?.executable===false||model?.selectable===false).length;
+    return {
+      activeRoutes:active||fallbackActive||1,
+      futureRoutes:future||fallbackFuture||0,
+      totalRoutes:raw.length||((models||[]).length)||1,
+      activePublicProviderRoutes:Number(payload?.active_public_provider_route_count)||0,
+      activeExternalNodeRoutes:Number(payload?.active_external_node_route_count)||0,
+      visibleCandidateCount:Number(payload?.visible_candidate_count)||future||fallbackFuture||0
+    };
+  }
+
   function normalizeHostedModels(payload){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
     const normalized=raw
@@ -1195,7 +1238,7 @@
       .map((model,index)=>{
         const id=String(model.id||model.model).trim();
         const executable=executableHostedModel(model);
-        const candidate=model?.candidate===true||String(model?.route_type||'')==='external_candidate';
+        const candidate=hostedCandidateModel(model);
         const routeClass=String(model.route_class||'').trim();
         const trustLevel=String(model.trust_level||'').trim();
         const externalUntrustedFree=routeClass==='external-untrusted-free'||trustLevel==='external-untrusted-free'||String(model.route_type||'')==='external_untrusted_free';
@@ -1233,9 +1276,11 @@
 
   async function refreshHostedModels(){
     try{
-      const models=normalizeHostedModels(await fetchJson(API_URL+'/v1/models',{timeoutMs:9000}));
+      const payload=await fetchJson(API_URL+'/v1/models',{timeoutMs:9000});
+      const models=normalizeHostedModels(payload);
       if(!models.length)return;
       const activeLocal=state.models.find(model=>model.id===state.activeModelId&&model.route==='local');
+      state.routeInventory=modelInventorySummary(payload,models);
       state.models=models.concat(state.models.filter(model=>model.route==='local'));
       const selected=state.models.find(model=>model.id===state.activeModelId);
       if(!activeLocal&&(!selected||selected.executable===false||selected.selectable===false)){
@@ -1374,19 +1419,37 @@
     const active=activeIntelligenceModels();
     const hosted=active.filter(model=>model.route==='hosted');
     const local=active.filter(model=>model.route==='local');
+    const inventory=state.routeInventory||{};
     const primary=defaultHostedModel();
     const bestLocal=bestLocalModel();
     const partner=comparePartnerModel();
     const liveRoutes=active.length;
+    const activeRouteTotal=Math.max(Number(inventory.activeRoutes)||0,liveRoutes);
+    const futureRoutes=Number(inventory.futureRoutes)||state.models.filter(model=>model.candidate||model.executable===false||model.selectable===false).length;
+    const visibleRoutes=Number(inventory.totalRoutes)||state.models.length||activeRouteTotal;
+    const activeProviderRoutes=Number(inventory.activePublicProviderRoutes)||Math.max(0,hosted.length-1);
+    const activeExternalNodeRoutes=Number(inventory.activeExternalNodeRoutes)||0;
     const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
+    const scaleLine=[
+      activeRouteTotal+' active',
+      futureRoutes?futureRoutes+' queued':'',
+      visibleRoutes&&visibleRoutes!==activeRouteTotal?visibleRoutes+' visible':'',
+      activeExternalNodeRoutes?activeExternalNodeRoutes+' external nodes':''
+    ].filter(Boolean).join(' / ');
     const details=compareReady
-      ? 'Best Answer can ask '+(hosted.length>1?String(hosted.length)+' hosted/provider routes':(primary.label+' and '+partner.label))+' in parallel, then synthesize one answer.'
+      ? 'Best Answer can ask '+(activeProviderRoutes?String(activeProviderRoutes)+' provider routes':(hosted.length>1?String(hosted.length)+' hosted routes':(primary.label+' and '+partner.label)))+' in parallel, then synthesize one answer.'
       : 'Supergeni is ready now. Connect another route to unlock parallel Best Answer.';
     return {
       liveRoutes,
       hostedRoutes:hosted.length,
       localRoutes:local.length,
+      activeRouteTotal,
+      futureRoutes,
+      visibleRoutes,
+      activeProviderRoutes,
+      activeExternalNodeRoutes,
+      scaleLine,
       compareReady,
       stateLabel:compareReady?'Best Answer ready':'Single route now',
       primaryLabel:primary?.label||'Supergeni',
@@ -1680,10 +1743,14 @@
     const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
     const demoted=parts.find(part=>/^\d+\s+demoted$/i.test(part));
     const quiet=parts.find(part=>/^\d+\s+quiet$/i.test(part));
+    const activeProviders=parts.find(part=>/^\d+\s+active provider routes$/i.test(part));
+    const externalNodes=parts.find(part=>/^\d+\s+external nodes$/i.test(part));
+    const queued=parts.find(part=>/^\d+\s+queued$/i.test(part));
+    const visibleTotal=parts.find(part=>/^\d+\s+visible total$/i.test(part));
     const council=parts.find(part=>/^council ready$/i.test(part));
     const providers=gatewayProviderSummary(parts);
     if(/^(Best answer|Intelligence boost|Ask all active|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],swarm,routeCount,answered,demoted,quiet,council,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
+      return [parts[0],swarm,routeCount,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -2344,18 +2411,19 @@
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
         menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
-        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' active routes through MMIR.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
-        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?'Scores active routes, then returns one answer.':'Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?'Active routes challenge each other, then converge.':'Two perspectives, one conclusion.')
+        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' active routes through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
+        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores active routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
+        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Active routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
+      '<div class="p0-menu-note p0-intelligence-map"><strong>Intelligence connected</strong><span>'+safeText(pool.scaleLine||pool.stateLabel)+'</span></div>'+
       menuButton('connect-local','Connect local model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
-      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free active routes, score them, then return one clean answer.'):'Use active free routes when route inventory is ready.')+
-      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every active route answer in one chat response.'):('Use /all after route inventory finds at least two active routes.'))+
+      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free active routes, score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
+      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every active route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two active routes.'))+
       menuSeparator()+
       menuSection('Local memory')+
       menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
@@ -3833,6 +3901,9 @@
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
     const poolRouteCount=gatewayRouteCount(data);
     const activeProviderCount=Number(pool.active_public_provider_route_count)||Number(data?.active_public_provider_route_count)||0;
+    const activeExternalNodeCount=Number(pool.active_external_node_route_count)||Number(data?.active_external_node_route_count)||Number(state.routeInventory?.activeExternalNodeRoutes)||0;
+    const queuedRouteCount=Number(pool.visible_candidate_count)||Number(data?.visible_candidate_count)||Number(state.routeInventory?.futureRoutes)||0;
+    const visibleRouteCount=Number(state.routeInventory?.totalRoutes)||0;
     const succeededAttempts=attempts.filter(attempt=>attempt?.status==='succeeded');
     const demotedCount=gatewayVisibleBlockedCount(data);
     const quietCount=gatewayQuietCount(data);
@@ -3860,6 +3931,9 @@
       signedReceipts?'signed receipts':'',
       'No paid route',
       activeProviderCount?String(activeProviderCount)+' active provider routes':'',
+      activeExternalNodeCount?String(activeExternalNodeCount)+' external nodes':'',
+      queuedRouteCount?String(queuedRouteCount)+' queued':'',
+      visibleRouteCount?String(visibleRouteCount)+' visible total':'',
       winner?'Winner: '+winner:'',
       typeof best?.score==='number'?'Score '+best.score:'',
       ...succeeded,
@@ -4035,7 +4109,9 @@
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
       renderToolbar();
-      status(title+' ready: '+String(data.route_attempts?.length||0)+' routes, winner '+attemptProviderLabel({provider:data.best_answer?.receipt?.provider,model_display_name:data.best_answer?.model_display_name,model_id:data.best_answer?.model_id})+'.','ready');
+      const answered=String(gatewayAnswerCount(data)||0);
+      const winner=attemptProviderLabel({provider:data.best_answer?.receipt?.provider,model_display_name:data.best_answer?.model_display_name,model_id:data.best_answer?.model_id});
+      status(title+' ready: '+answered+' answered · winner '+winner+'.','ready');
       routeStatus(receipt,'ready');
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
