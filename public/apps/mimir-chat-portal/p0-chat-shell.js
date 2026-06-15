@@ -8,6 +8,7 @@
   const CHAT_PATH=ROUTE_ADAPTER_CONFIG.chatPath||'/v1/chat/completions';
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
+  const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
   const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
   const allowLocalProbes=P0_ROUTE_ADAPTERS.allowLocalProbes;
@@ -897,7 +898,7 @@
     if(/answered/.test(text)&&/demoted/.test(text)&&/no paid route/.test(text))return 'good';
     if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
     if(/private|this mac|local/.test(text))return 'local';
-    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|quiet|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
+    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|swarm|quiet|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
     if(/needs fact check|uncertain|score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
     if(/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/.test(text))return 'time';
     if(/api\.mmir\.ai|routing\/score|route/.test(text))return 'route';
@@ -928,21 +929,23 @@
     const primary=compactLocalReady||parts[0]||'Ready';
     const candidates=parts.filter(part=>
       part!==primary &&
-      !/^target\s+/i.test(part) &&
       !/^samples?$/i.test(part) &&
       !/^Winner:/i.test(part)
     );
     const pick=(test)=>candidates.find(part=>test.test(part))||'';
     const providers=gatewayProviderSummary(parts);
     const priority=[
+      pick(/^Swarm\s+\d+|^Swarm preview$/i),
       pick(/\d+\s+model routes visible/i),
       pick(/^\d+\s+routes? compared$/i),
       pick(/^\d+\s+routes?$/i),
       pick(/^\d+\s+answered$/i),
       pick(/^\d+\s+demoted$/i),
       pick(/^\d+\s+quiet$/i),
-      pick(/no paid route/i),
       pick(/^signed receipts$/i),
+      pick(/no paid route/i),
+      pick(/^target\s+\d+/i),
+      pick(/^sync\s+\d+/i),
       providers,
       pick(/^\d+\s+models?\.?$/i),
       pick(/^free$|^private$/i),
@@ -1664,6 +1667,7 @@
     const target=parts.find(part=>/^target\s+\d+(?:\.\d+)?(?:ms|s)\s+met$/i.test(part)||/^over\s+\d+(?:\.\d+)?(?:ms|s)\s+target$/i.test(part));
     const noPaid=parts.find(part=>/No paid route/i.test(part));
     const signed=parts.find(part=>/^signed receipts$/i.test(part));
+    const swarm=parts.find(part=>/^Swarm\s+\d+|^Swarm preview$/i.test(part));
     const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
     const routeCount=parts.find(part=>/^\d+\s+routes?(?:\s+compared)?$/i.test(part));
     const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
@@ -1671,7 +1675,7 @@
     const quiet=parts.find(part=>/^\d+\s+quiet$/i.test(part));
     const providers=gatewayProviderSummary(parts);
     if(/^(Best answer|Intelligence boost|Ask all active)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],routeCount,answered,demoted,quiet,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
+      return [parts[0],swarm,routeCount,answered,demoted,quiet,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -3675,6 +3679,105 @@
     return Math.max(quiet,total-visible,0);
   }
 
+  function swarmReceiptLabel(data){
+    if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview')return '';
+    const target=Number(data?.target_route_count)||Number(data?.intelligence_pool?.target_route_count)||Number(data?.pool?.target_route_count)||0;
+    return target?'Swarm '+String(target):'Swarm preview';
+  }
+
+  function normalizeSwarmPreviewResponse(data){
+    if(data?.object!=='chat.swarm.preview')return data;
+    const first=data.first_round||{};
+    const routeAttempts=Array.isArray(data.route_attempts)?data.route_attempts:[];
+    const responses=Array.isArray(data.data)?data.data:[];
+    const blocked=Array.isArray(data.blocked_candidates)?data.blocked_candidates:[];
+    const pool={
+      ...(data.intelligence_pool||data.pool||{}),
+      route_attempt_count: Number(first.route_attempt_count)||routeAttempts.length,
+      active_answer_route_count: responses.length||Number(data.intelligence_pool?.active_answer_route_count)||routeAttempts.filter(attempt=>attempt?.status==='succeeded').length,
+      active_public_provider_route_count: Number(first.active_public_provider_route_count)||Number(data.intelligence_pool?.active_public_provider_route_count)||0,
+      successful_public_provider_route_count: Number(first.successful_public_provider_route_count)||Number(data.intelligence_pool?.successful_public_provider_route_count)||0,
+      active_external_node_route_count: Number(first.active_external_node_route_count)||Number(data.intelligence_pool?.active_external_node_route_count)||0,
+      successful_external_node_route_count: Number(first.successful_external_node_route_count)||Number(data.intelligence_pool?.successful_external_node_route_count)||0,
+      blocked_candidate_count: blocked.length||Number(data.intelligence_pool?.blocked_candidate_count)||0,
+      quiet_blocked_candidate_count: Number(first.quiet_blocked_candidate_count)||Number(data.intelligence_pool?.quiet_blocked_candidate_count)||0,
+      total_blocked_candidate_count: Number(first.total_blocked_candidate_count)||Number(data.intelligence_pool?.total_blocked_candidate_count)||0,
+      no_paid_routes_started: true,
+      provider_secrets_in_browser: false
+    };
+    return {
+      ...data,
+      object:'chat.compare',
+      compare_status:first.compare_status||data.status||'first_round_ready',
+      candidate_count:Number(first.candidate_count)||Number(data.candidate_count)||responses.length+blocked.length,
+      active_public_provider_route_count:pool.active_public_provider_route_count,
+      successful_public_provider_route_count:pool.successful_public_provider_route_count,
+      active_external_node_route_count:pool.active_external_node_route_count,
+      successful_external_node_route_count:pool.successful_external_node_route_count,
+      quiet_blocked_candidate_count:pool.quiet_blocked_candidate_count,
+      total_blocked_candidate_count:pool.total_blocked_candidate_count,
+      data:responses,
+      scores:Array.isArray(data.ranking)?data.ranking:[],
+      route_attempts:routeAttempts,
+      blocked_candidates:blocked,
+      intelligence_pool:pool,
+      pool,
+      swarm_preview:true,
+      swarm_status:data.status||'first_round_ready',
+      target_route_count:Number(data.target_route_count)||Number(pool.target_route_count)||0,
+      sync_route_limit:Number(data.sync_route_limit)||Number(pool.sync_route_limit)||0,
+      current_round:Number(data.current_round)||1,
+      planned_debate_rounds:Number(data.planned_debate_rounds)||0
+    };
+  }
+
+  function attachSwarmMetadata(compareData,swarmData){
+    if(!swarmData?.swarm_preview)return compareData;
+    const pool={
+      ...(compareData?.intelligence_pool||compareData?.pool||{}),
+      target_route_count:swarmData.target_route_count,
+      sync_route_limit:swarmData.sync_route_limit,
+      swarm_ready:true,
+      arena_ready:swarmData?.debate_plan?.consensus_ready===true
+    };
+    return {
+      ...compareData,
+      swarm_preview:true,
+      swarm_status:swarmData.swarm_status,
+      target_route_count:swarmData.target_route_count,
+      sync_route_limit:swarmData.sync_route_limit,
+      current_round:swarmData.current_round,
+      planned_debate_rounds:swarmData.planned_debate_rounds,
+      debate_plan:swarmData.debate_plan,
+      intelligence_pool:pool,
+      pool
+    };
+  }
+
+  async function fetchGatewayFanout(prompt,mode,signal){
+    const payload=compareApiPayload(prompt);
+    const request={
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      timeoutMs:70000,
+      signal
+    };
+    let swarmData=null;
+    if(mode==='boost'||mode==='all'){
+      try{
+        swarmData=normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH,request));
+        if(swarmData?.object==='chat.compare'&&(mode!=='all'||Array.isArray(swarmData.data)&&swarmData.data.length)){
+          return swarmData;
+        }
+      }catch(error){
+        if(error?.name==='AbortError')throw error;
+      }
+    }
+    const compareData=await fetchJson(API_URL+COMPARE_PATH,request);
+    return attachSwarmMetadata(compareData,swarmData);
+  }
+
   function gatewayCompareAllAnswer(data){
     const responses=(Array.isArray(data?.data)?data.data:[]).filter(response=>responseText(response));
     const blockedCandidates=(Array.isArray(data?.blocked_candidates)?data.blocked_candidates:[]);
@@ -3716,15 +3819,21 @@
     const answeredLabel=answeredCount?String(answeredCount)+' answered':'';
     const demotedLabel=demotedCount?String(demotedCount)+' demoted':'';
     const quietLabel=quietCount?String(quietCount)+' quiet':'';
+    const swarmLabel=swarmReceiptLabel(data);
+    const syncLimit=Number(data?.sync_route_limit)||Number(pool.sync_route_limit)||0;
+    const arenaReady=data?.debate_plan?.consensus_ready===true||pool.arena_ready===true;
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const parts=[
       label,
+      swarmLabel,
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
       answeredLabel,
       demotedLabel,
       quietLabel,
+      syncLimit?('sync '+String(syncLimit)):'',
+      arenaReady?'arena ready':'',
       signedReceipts?'signed receipts':'',
       'No paid route',
       activeProviderCount?String(activeProviderCount)+' active provider routes':'',
@@ -3890,13 +3999,7 @@
     status(title+' is asking '+routeCount+' active routes...','ready');
       routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
     try{
-      const gatewayPromise=fetchJson(API_URL+COMPARE_PATH,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(compareApiPayload(prompt)),
-        timeoutMs:70000,
-        signal
-      });
+      const gatewayPromise=fetchGatewayFanout(prompt,mode,signal);
       const localPromise=mode==='all'?localAllActiveRoutes(prompt,signal):Promise.resolve({responses:[],attempts:[],blocked:[]});
       const [gatewayData,localData]=await Promise.all([gatewayPromise,localPromise]);
       const data=mode==='all'?mergeLocalAllRoutes(gatewayData,localData):gatewayData;

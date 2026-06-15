@@ -127,6 +127,160 @@ async function installFixtures(page) {
     await fulfillJson(route, { object: 'list', data: [] });
   });
 
+  await page.route('https://api.mmir.ai/chat/swarm/preview', async route => {
+    await fulfillJson(route, {
+      object: 'chat.swarm.preview',
+      status: 'first_round_ready',
+      mode: 'sync_swarm_preview',
+      vision: 'Intelligence. Connected.',
+      default_meta_model: 'Supergeni',
+      target_route_count: 472,
+      sync_route_limit: 40,
+      current_round: 1,
+      planned_debate_rounds: 3,
+      first_round: {
+        object: 'chat.compare',
+        compare_status: 'ready',
+        candidate_count: 5,
+        response_count: 3,
+        route_attempt_count: 5,
+        active_public_provider_route_count: 3,
+        successful_public_provider_route_count: 3,
+        quiet_blocked_candidate_count: 2,
+        total_blocked_candidate_count: 2
+      },
+      intelligence_pool: {
+        object: 'mmir.intelligence_pool',
+        mode: 'active_public_free_fanout',
+        strategy: 'fanout_score_select_best',
+        route_attempt_count: 5,
+        active_answer_route_count: 3,
+        active_public_provider_route_count: 3,
+        successful_public_provider_route_count: 3,
+        blocked_candidate_count: 0,
+        quiet_blocked_candidate_count: 2,
+        total_blocked_candidate_count: 2,
+        target_route_count: 472,
+        sync_route_limit: 40,
+        swarm_ready: true,
+        arena_ready: true,
+        no_paid_routes_started: true,
+        provider_secrets_in_browser: false,
+        free_or_free_quota_only: true,
+        signals_available: {
+          signed_route_receipts: true,
+          route_scoring: true,
+          best_answer: true,
+          capability_graph_ingest_candidate: true
+        }
+      },
+      best_answer: {
+        model_id: 'supergeni',
+        model_display_name: 'Supergeni',
+        content: '4',
+        score: 96,
+        receipt: {
+          provider: 'mmir',
+          model_id: 'supergeni',
+          route_id: 'browser-guide/free',
+          latency_ms: 420,
+          no_paid_routes_started: true
+        }
+      },
+      data: [
+        {
+          model: 'supergeni',
+          choices: [{ message: { content: '4' } }],
+          mmir: {
+            receipt: {
+              provider: 'mmir',
+              model_id: 'supergeni',
+              model_display_name: 'Supergeni',
+              latency_ms: 420,
+              no_paid_routes_started: true
+            }
+          }
+        },
+        {
+          model: 'poolside/laguna-xs.2:free',
+          choices: [{ message: { content: 'The answer is 4.' } }],
+          mmir: {
+            receipt: {
+              provider: 'openrouter',
+              model_id: 'poolside/laguna-xs.2:free',
+              model_display_name: 'Laguna XS',
+              latency_ms: 1370,
+              no_paid_routes_started: true,
+              receipt_signature: 'hmac-sha256:test'
+            }
+          }
+        },
+        {
+          model: 'openai/gpt-oss-20b:free',
+          choices: [{ message: { content: '4.' } }],
+          mmir: {
+            receipt: {
+              provider: 'openrouter',
+              model_id: 'openai/gpt-oss-20b:free',
+              model_display_name: 'OpenRouter GPT OSS 20B',
+              latency_ms: 1260,
+              no_paid_routes_started: true,
+              receipt_signature: 'hmac-sha256:test'
+            }
+          }
+        }
+      ],
+      route_attempts: [
+        {
+          status: 'succeeded',
+          provider: 'mmir',
+          model_id: 'supergeni',
+          model_display_name: 'Supergeni',
+          score: 96,
+          latency_ms: 420,
+          answer_class: 'complete',
+          latency_class: 'fast',
+          receipt: { provider: 'mmir', model_id: 'supergeni', route_id: 'browser-guide/free', latency_ms: 420, receipt_signature: 'hmac-sha256:test' }
+        },
+        {
+          status: 'succeeded',
+          provider: 'openrouter',
+          model_id: 'poolside/laguna-xs.2:free',
+          model_display_name: 'Laguna XS',
+          score: 83,
+          latency_ms: 1370,
+          answer_class: 'complete',
+          latency_class: 'responsive',
+          receipt: { provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free', route_id: 'external/openrouter/poolside/laguna-xs.2:free', latency_ms: 1370, receipt_signature: 'hmac-sha256:test' }
+        },
+        {
+          status: 'succeeded',
+          provider: 'openrouter',
+          model_id: 'openai/gpt-oss-20b:free',
+          model_display_name: 'OpenRouter GPT OSS 20B',
+          score: 81,
+          latency_ms: 1260,
+          answer_class: 'complete',
+          latency_class: 'responsive',
+          receipt: { provider: 'openrouter', model_id: 'openai/gpt-oss-20b:free', route_id: 'openrouter/openai-gpt-oss-20b:free', latency_ms: 1260, receipt_signature: 'hmac-sha256:test' }
+        }
+      ],
+      ranking: [
+        { model_id: 'supergeni', score: 96 },
+        { model_id: 'poolside/laguna-xs.2:free', score: 83 },
+        { model_id: 'openai/gpt-oss-20b:free', score: 81 }
+      ],
+      debate_plan: {
+        object: 'mmir.swarm_debate_plan',
+        consensus_ready: true,
+        ranking_ready: true,
+        planned_rounds: [{ round: 1 }, { round: 2 }, { round: 3 }]
+      },
+      no_paid_routes_started: true,
+      provider_secrets_in_browser: false
+    });
+  });
+
   await page.route('https://api.mmir.ai/chat/compare', async route => {
     await fulfillJson(route, {
       object: 'chat.compare',
@@ -287,7 +441,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Intelligence boost/i.test(text) && /5 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Intelligence boost/i.test(text) && /Swarm 472/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
@@ -308,11 +462,14 @@ async function checkViewport(browser, viewport) {
   assert(/ready/i.test(layout.status), `${viewport.name}: boost compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
   assert(/Intelligence boost/i.test(layout.route), `${viewport.name}: visible green route line should show boost mode subtly`);
+  assert(/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should show swarm scale subtly`);
   assert(/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
   assert(/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should show successful provider answer count`);
   assert(/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should show quiet provider count without error clutter`);
   assert(!/demoted/i.test(layout.route), `${viewport.name}: quiet provider throttling should not render as demoted error text`);
   assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
+  assert(/sync 40/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve sync fanout limit`);
+  assert(/arena ready/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve arena readiness`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
   assert(/OpenRouter/i.test(layout.routeFull), `${viewport.name}: full receipt should include OpenRouter evidence`);
