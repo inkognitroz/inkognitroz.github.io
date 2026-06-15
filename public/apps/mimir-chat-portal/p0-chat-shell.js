@@ -332,9 +332,9 @@
     },
     {
       id:'discuss',
-      label:'Model discussion',
-      detail:'Lets active routes discuss one topic.',
-      title:'Model discussion',
+      label:'Supergeni Council',
+      detail:'Lets active routes challenge each other, then converge.',
+      title:'Supergeni Council',
       icon:ICON_BUBBLES||'<span aria-hidden="true">D</span>'
     },
     {
@@ -898,7 +898,7 @@
     if(/answered/.test(text)&&/demoted/.test(text)&&/no paid route/.test(text))return 'good';
     if(stateValue==='error'||/blocked|failed|unavailable|error|demoted|stale/.test(text))return 'error';
     if(/private|this mac|local/.test(text))return 'local';
-    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|swarm|quiet|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
+    if(/free|ready|strong|best|winner|verified|fresh|connected|intelligences|swarm|council|quiet|score\s+(8[0-9]|9[0-9]|100)/.test(text))return 'good';
     if(/needs fact check|uncertain|score\s+[0-5][0-9]|slow|queued|acceptable|failure/.test(text))return 'warn';
     if(/\b\d+(?:\.\d+)?(?:ms|s)\b|avg\s+/.test(text))return 'time';
     if(/api\.mmir\.ai|routing\/score|route/.test(text))return 'route';
@@ -942,6 +942,7 @@
       pick(/^\d+\s+answered$/i),
       pick(/^\d+\s+demoted$/i),
       pick(/^\d+\s+quiet$/i),
+      pick(/^council ready$/i),
       pick(/^signed receipts$/i),
       pick(/no paid route/i),
       pick(/^target\s+\d+/i),
@@ -961,7 +962,7 @@
       .slice(0,1);
     const text=[primary,...priority,...fallback]
       .filter((part,index,all)=>part&&all.indexOf(part)===index)
-      .slice(0,6)
+      .slice(0,7)
       .join(' · ');
     el.setAttribute('aria-label',full);
     el.title=full;
@@ -1673,9 +1674,10 @@
     const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
     const demoted=parts.find(part=>/^\d+\s+demoted$/i.test(part));
     const quiet=parts.find(part=>/^\d+\s+quiet$/i.test(part));
+    const council=parts.find(part=>/^council ready$/i.test(part));
     const providers=gatewayProviderSummary(parts);
-    if(/^(Best answer|Intelligence boost|Ask all active)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],swarm,routeCount,answered,demoted,quiet,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
+    if(/^(Best answer|Intelligence boost|Ask all active|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
+      return [parts[0],swarm,routeCount,answered,demoted,quiet,council,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -2338,7 +2340,7 @@
         menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
         menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' active routes through MMIR.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
         menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?'Scores active routes, then returns one answer.':'Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Model discussion',gatewayCompareAvailable()?'Active routes debate, then converge.':'Two perspectives, one conclusion.')
+        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?'Active routes challenge each other, then converge.':'Two perspectives, one conclusion.')
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
@@ -2637,11 +2639,11 @@
     }
     if(!prompt){
       if(action==='discuss-topic'&&input){
-        input.value='Discuss this topic between '+primary.label+' and '+partner.label+': ';
+        input.value='Supergeni Council topic: ';
         autosizeInput();
         closeMenus();
-        status('Add a topic, then send or choose Model discussion again.','ready');
-        routeStatus('Model discussion ready · two-model tool','ready');
+        status('Add a topic, then send or choose Supergeni Council again.','ready');
+        routeStatus('Supergeni Council ready · two-model tool','ready');
         input.focus();
         return true;
       }
@@ -2662,8 +2664,8 @@
       }
       if(action==='discuss-topic'){
         compareGatewayRoutes(
-          'Discuss this topic from multiple model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
-          {mode:'best-answer'}
+          'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+          {mode:'council'}
         );
         return true;
       }
@@ -3764,7 +3766,7 @@
       signal
     };
     let swarmData=null;
-    if(mode==='boost'||mode==='all'){
+    if(mode==='boost'||mode==='all'||mode==='council'){
       try{
         swarmData=normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH,request));
         if(swarmData?.object==='chat.compare'&&(mode!=='all'||Array.isArray(swarmData.data)&&swarmData.data.length)){
@@ -3822,6 +3824,7 @@
     const swarmLabel=swarmReceiptLabel(data);
     const syncLimit=Number(data?.sync_route_limit)||Number(pool.sync_route_limit)||0;
     const arenaReady=data?.debate_plan?.consensus_ready===true||pool.arena_ready===true;
+    const councilReady=/council/i.test(label)&&arenaReady;
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
@@ -3833,6 +3836,7 @@
       demotedLabel,
       quietLabel,
       syncLimit?('sync '+String(syncLimit)):'',
+      councilReady?'council ready':'',
       arenaReady?'arena ready':'',
       signedReceipts?'signed receipts':'',
       'No paid route',
@@ -3973,8 +3977,8 @@
     if(state.busy)return;
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
-    const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':(options.mode==='all'?'all':'best-answer'));
-    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':'Best Answer'));
+    const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':(options.mode==='all'?'all':(options.mode==='council'?'council':'best-answer')));
+    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':(mode==='council'?'Supergeni Council':'Best Answer')));
     if(privateModeActive()){
       status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
       routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
@@ -3993,8 +3997,8 @@
       autosizeInput();
     }
     const routeCount=String(activeHostedCompareModels().length);
-    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':'Supergeni · Best answer');
-    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':'Best Answer'))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
+    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     status(title+' is asking '+routeCount+' active routes...','ready');
       routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
@@ -4007,7 +4011,7 @@
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
         : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
-      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':'Best answer'));
+      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')));
       updateMessage(assistant,content,{receipt});
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
