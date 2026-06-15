@@ -39,7 +39,7 @@ function requireGate(value, label) {
   requireValue(value, 'proof_status', 'pending_supported_browser_live_answer', label);
   requireValue(value, 'license_review_status', 'pending', label);
   requireValue(value, 'integrity_review_status', 'pending', label);
-  requireValue(value, 'fallback_status', 'fallback_to_supergenious_until_model_answers', label);
+  requireValue(value, 'fallback_status', 'fallback_to_supergeni_until_model_answers', label);
   requireValue(value, 'runtime_package', '@mlc-ai/web-llm', label);
   requireValue(value, 'public_surface', 'advanced_only_until_proven', label);
   const gate = value.promotion_gate || {};
@@ -104,7 +104,7 @@ for (const [label, file] of Object.entries({ picker: pickerPath, runtime: runtim
     "proof_status:'pending_supported_browser_live_answer'",
     "license_review_status:'pending'",
     "integrity_review_status:'pending'",
-    "fallback_status:'fallback_to_supergenious_until_model_answers'",
+    "fallback_status:'fallback_to_supergeni_until_model_answers'",
     "runtime_package:'@mlc-ai/web-llm'",
     "public_surface:'advanced_only_until_proven'"
   ]) {
