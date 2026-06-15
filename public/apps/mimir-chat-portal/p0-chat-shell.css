@@ -737,6 +737,27 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   padding: 6px 10px 8px;
 }
 
+.p0-intelligence-map {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  color: #047857;
+  display: grid;
+  gap: 2px;
+  margin: 2px 4px 4px;
+  padding: 8px 10px;
+}
+
+.p0-intelligence-map strong {
+  color: #065f46;
+  font-size: 0.72rem;
+}
+
+.p0-intelligence-map span {
+  color: #047857;
+  font-size: 0.74rem;
+}
+
 .p0-route-detail {
   background: #f8fafc;
   border: 1px solid #e5e7eb;

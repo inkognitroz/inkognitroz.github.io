@@ -144,11 +144,21 @@ testApi.state.models.push(
     score: 86
   }
 );
+testApi.state.routeInventory = {
+  activeRoutes: 3,
+  futureRoutes: 43,
+  totalRoutes: 63,
+  activePublicProviderRoutes: 2,
+  activeExternalNodeRoutes: 0,
+  visibleCandidateCount: 43
+};
 assertIncludes(testApi.routeMicroStatus(hosted), '3 model routes visible', 'Route micro-status must surface connected route capacity in subtle green text.');
+assertIncludes(testApi.routeMicroStatus(hosted), '43 queued', 'Route micro-status must surface queued intelligence in subtle green text.');
+assertIncludes(testApi.routeMicroStatus(hosted), '63 visible total', 'Route micro-status must surface total visible model inventory in subtle green text.');
 const poolEl = fakeElement();
 testApi.renderMicroStatus(
   poolEl,
-  'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 3 active provider routes · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
+  'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 3 active provider routes · 43 queued · 63 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
   'hosted'
 );
 assertIncludes(poolEl.innerHTML, '5 routes compared', 'Under-chat micro-status must keep compared route count visible as subtle text.');
@@ -156,6 +166,8 @@ assertIncludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must sho
 assertIncludes(poolEl.innerHTML, '2 quiet', 'Under-chat micro-status must show quiet throttled routes without noisy failure text.');
 assertIncludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof visible as subtle text.');
 assertIncludes(poolEl.innerHTML, 'No paid route', 'Under-chat micro-status must keep no-paid proof visible as subtle text.');
+assertIncludes(poolEl.attrs['aria-label'], '43 queued', 'Full gateway compare receipt must keep queued route data inspectable.');
+assertIncludes(poolEl.attrs['aria-label'], '63 visible total', 'Full gateway compare receipt must keep visible route data inspectable.');
 assertExcludes(poolEl.innerHTML, 'demoted', 'Under-chat micro-status must avoid demoted/error language for hidden quiet routes.');
 assertExcludes(poolEl.innerHTML, 'Winner:', 'Under-chat micro-status must keep winner detail out of visible text.');
 assertIncludes(poolEl.attrs['aria-label'], 'Winner: Supergeni', 'Full gateway compare receipt must keep winner detail inspectable.');
