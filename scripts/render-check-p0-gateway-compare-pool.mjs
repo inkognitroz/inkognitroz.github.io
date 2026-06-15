@@ -436,6 +436,7 @@ async function checkViewport(browser, viewport) {
   assert(/Ask 4 free active routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
   assert(/Ask 4 active routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
+  assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
 
   await page.locator('[data-p0-action="boost-answer-live"]').click();
   await page.waitForFunction(() => {
@@ -488,6 +489,26 @@ async function checkViewport(browser, viewport) {
   const allText = await page.locator('#p0-transcript').innerText();
   assert(/Best live score: Supergeni/i.test(allText), `${viewport.name}: Ask all should keep the winning route visible in the answer`);
   assert(/All active answers:/i.test(allText), `${viewport.name}: Ask all should render every active answer`);
+
+  await page.locator('#p0-input').fill('Should MMIR prioritize speed or quality?');
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="discuss-topic"]').click();
+  await page.waitForFunction(() => {
+    const text = document.getElementById('p0-transcript')?.innerText || '';
+    const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
+    return /Supergeni Council/i.test(text) && /council ready/i.test(routeFull) && /Swarm 472/i.test(routeFull);
+  });
+  const councilLayout = await page.evaluate(() => ({
+    route: document.getElementById('p0-route')?.textContent || '',
+    routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
+    toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
+  }));
+  assert(/Supergeni Council/i.test(councilLayout.route), `${viewport.name}: Council proof should stay in subtle green status`);
+  assert(/council ready/i.test(councilLayout.route), `${viewport.name}: Council status should show debate readiness subtly`);
+  assert(/signed receipts/i.test(councilLayout.route), `${viewport.name}: Council status should preserve signed receipt proof`);
+  assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Council proof should preserve no-paid route truth`);
+  assert(councilLayout.toolbarButtons <= 6, `${viewport.name}: Council must not add extra visible toolbar buttons`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
   assert(/2 quiet/i.test(allText), `${viewport.name}: Ask all should show quiet route count without noisy blocked lines`);
   assert(!/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should not show hidden throttled routes as visible failures`);
