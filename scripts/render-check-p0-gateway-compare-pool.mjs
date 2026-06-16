@@ -424,7 +424,7 @@ async function checkViewport(browser, viewport) {
   });
   await page.goto(`${baseUrl}/mmir.html?gateway_compare_pool=${viewport.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
   await page.waitForSelector('#mmir-p0-app');
-  await page.waitForFunction(() => /model routes visible|Score 100/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.waitForFunction(() => /live routes|model routes visible|Score 100/i.test(document.getElementById('p0-route')?.textContent || ''));
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();
@@ -433,8 +433,8 @@ async function checkViewport(browser, viewport) {
   assert(/Intelligence pool/i.test(addMenu), `${viewport.name}: add menu should expose compact Intelligence pool when hosted routes are active`);
   assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
   assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
-  assert(/Ask 4 free active routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
-  assert(/Ask 4 active routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
+  assert(/Ask 4 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
+  assert(/Ask 4 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
   assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
 

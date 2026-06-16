@@ -152,13 +152,13 @@ testApi.state.routeInventory = {
   activeExternalNodeRoutes: 0,
   visibleCandidateCount: 43
 };
-assertIncludes(testApi.routeMicroStatus(hosted), '3 model routes visible', 'Route micro-status must surface connected route capacity in subtle green text.');
+assertIncludes(testApi.routeMicroStatus(hosted), '3 live routes', 'Route micro-status must surface connected route capacity in subtle green text.');
 assertIncludes(testApi.routeMicroStatus(hosted), '43 queued', 'Route micro-status must surface queued intelligence in subtle green text.');
 assertIncludes(testApi.routeMicroStatus(hosted), '63 visible total', 'Route micro-status must surface total visible model inventory in subtle green text.');
 const poolEl = fakeElement();
 testApi.renderMicroStatus(
   poolEl,
-  'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 3 active provider routes · 43 queued · 63 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
+  'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 3 live provider routes · 43 queued · 63 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
   'hosted'
 );
 assertIncludes(poolEl.innerHTML, '5 routes compared', 'Under-chat micro-status must keep compared route count visible as subtle text.');

@@ -864,7 +864,7 @@
     const future=Number(inventory.futureRoutes)||0;
     const total=Number(inventory.totalRoutes)||0;
     const parts=[
-      count+' model routes visible',
+      count+' live routes',
       future?future+' queued':'',
       total&&total!==count?total+' visible total':''
     ];
@@ -952,7 +952,7 @@
     const providers=gatewayProviderSummary(parts);
     const priority=[
       pick(/^Swarm\s+\d+|^Swarm preview$/i),
-      pick(/\d+\s+model routes visible/i),
+      pick(/\d+\s+(?:model routes visible|live routes)/i),
       pick(/^\d+\s+routes? compared$/i),
       pick(/^\d+\s+routes?$/i),
       pick(/^\d+\s+answered$/i),
@@ -965,8 +965,8 @@
       pick(/^\d+\s+visible total$/i),
       pick(/^target\s+\d+/i),
       pick(/^sync\s+\d+/i),
-      pick(/^\d+\s+active provider routes$/i),
-      pick(/^\d+\s+external nodes$/i),
+      pick(/^\d+\s+(?:active|live) provider routes$/i),
+      pick(/^\d+\s+(?:external nodes|live external nodes)$/i),
       providers,
       pick(/^\d+\s+models?\.?$/i),
       pick(/^free$|^private$/i),
@@ -1432,10 +1432,10 @@
     const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
     const scaleLine=[
-      activeRouteTotal+' active',
+      activeRouteTotal+' live',
       futureRoutes?futureRoutes+' queued':'',
       visibleRoutes&&visibleRoutes!==activeRouteTotal?visibleRoutes+' visible':'',
-      activeExternalNodeRoutes?activeExternalNodeRoutes+' external nodes':''
+      activeExternalNodeRoutes?activeExternalNodeRoutes+' live external nodes':''
     ].filter(Boolean).join(' / ');
     const details=compareReady
       ? 'Best Answer can ask '+(activeProviderRoutes?String(activeProviderRoutes)+' provider routes':(hosted.length>1?String(hosted.length)+' hosted routes':(primary.label+' and '+partner.label)))+' in parallel, then synthesize one answer.'
@@ -1743,8 +1743,8 @@
     const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
     const demoted=parts.find(part=>/^\d+\s+demoted$/i.test(part));
     const quiet=parts.find(part=>/^\d+\s+quiet$/i.test(part));
-    const activeProviders=parts.find(part=>/^\d+\s+active provider routes$/i.test(part));
-    const externalNodes=parts.find(part=>/^\d+\s+external nodes$/i.test(part));
+    const activeProviders=parts.find(part=>/^\d+\s+(?:active|live) provider routes$/i.test(part));
+    const externalNodes=parts.find(part=>/^\d+\s+(?:external nodes|live external nodes)$/i.test(part));
     const queued=parts.find(part=>/^\d+\s+queued$/i.test(part));
     const visibleTotal=parts.find(part=>/^\d+\s+visible total$/i.test(part));
     const council=parts.find(part=>/^council ready$/i.test(part));
@@ -2411,9 +2411,9 @@
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
         menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
-        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' active routes through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
-        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores active routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Active routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
+        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' live routes through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
+        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores live routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
+        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
@@ -2422,8 +2422,8 @@
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
-      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free active routes, score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
-      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every active route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two active routes.'))+
+      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free live routes, score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
+      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
       menuSection('Local memory')+
       menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
@@ -3930,8 +3930,8 @@
       arenaReady?'arena ready':'',
       signedReceipts?'signed receipts':'',
       'No paid route',
-      activeProviderCount?String(activeProviderCount)+' active provider routes':'',
-      activeExternalNodeCount?String(activeExternalNodeCount)+' external nodes':'',
+      activeProviderCount?String(activeProviderCount)+' live provider routes':'',
+      activeExternalNodeCount?String(activeExternalNodeCount)+' live external nodes':'',
       queuedRouteCount?String(queuedRouteCount)+' queued':'',
       visibleRouteCount?String(visibleRouteCount)+' visible total':'',
       winner?'Winner: '+winner:'',
