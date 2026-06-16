@@ -6,7 +6,8 @@ const publicDir = join(resolve(root, 'public'));
 const html = readFileSync(join(publicDir, 'mmir.html'), 'utf8');
 const shell = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'utf8');
 const helper = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'p0-menu.js'), 'utf8');
-const assetVersions = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json'), 'utf8');
+const assetVersionsText = readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(assetVersionsText);
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
 
@@ -22,11 +23,13 @@ function forbidPattern(source, pattern, message) {
   if (pattern.test(source)) fail(message);
 }
 
-const helperIndex = html.indexOf('p0-menu.js?v=20260606-b1-06-p0-menu-v1');
-const shellIndex = html.indexOf('p0-chat-shell.js?v=20260615-intelligence-map-v1');
+const helperVersion = assetVersions.assets?.['p0-menu.js'];
+const shellVersion = assetVersions.assets?.['p0-chat-shell.js'];
+const helperIndex = html.indexOf(`p0-menu.js?v=${helperVersion}`);
+const shellIndex = html.indexOf(`p0-chat-shell.js?v=${shellVersion}`);
 
 if (helperIndex < 0) fail('mmir.html must load the P0 menu helper.');
-if (shellIndex < 0) fail('mmir.html must cache-bust the P0 shell for the menu-helper slice.');
+if (shellIndex < 0) fail('mmir.html must cache-bust the P0 shell with the manifest version.');
 if (helperIndex >= 0 && shellIndex >= 0 && helperIndex > shellIndex) {
   fail('P0 menu helper must load before the P0 shell.');
 }
@@ -38,8 +41,8 @@ requireIncludes(helper, 'replaceAll(\'&\',\'&amp;\')', 'P0 menu helper must esca
 requireIncludes(shell, 'window.MimirP0Menu.button(action,title,detail,options)', 'P0 shell must delegate menu button rendering to the helper.');
 requireIncludes(shell, 'window.MimirP0Menu.title(text)', 'P0 shell must delegate menu title rendering to the helper.');
 forbidPattern(shell, /data-p0-action=["']/i, 'P0 shell must not own raw menu action button HTML.');
-requireIncludes(assetVersions, '"p0-menu.js": "20260606-b1-06-p0-menu-v1"', 'Asset manifest must track the P0 menu helper.');
-requireIncludes(assetVersions, '"p0-chat-shell.js": "20260615-intelligence-map-v1"', 'Asset manifest must track the P0 shell helper slice.');
+if (helperVersion !== '20260606-b1-06-p0-menu-v1') fail('Asset manifest must track the P0 menu helper.');
+if (!shellVersion) fail('Asset manifest must track the P0 shell.');
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-menu-helper.js')) {
   fail('npm run check must include smoke-check-p0-menu-helper.js.');
 }
