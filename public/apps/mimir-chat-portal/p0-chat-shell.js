@@ -3680,10 +3680,12 @@
 
   function compareAttemptSummary(attempt){
     const latency=Number(attempt?.latency_ms)||Number(attempt?.receipt?.latency_ms)||0;
+    const truncated=attempt?.answer_truncated===true||attempt?.receipt?.completion_truncated===true;
     return [
       attemptProviderLabel(attempt),
       latency?formatDuration(latency):'',
-      typeof attempt?.score==='number'?'Score '+attempt.score:''
+      typeof attempt?.score==='number'?'Score '+attempt.score:'',
+      truncated?'truncated':''
     ].filter(Boolean).join(' ');
   }
 
@@ -3717,7 +3719,8 @@
     const receipt=responseReceiptEnvelope(response);
     const latency=Number(response?.latency_ms)||Number(receipt.latency_ms)||0;
     const answer=allAnswerText(responseText(response));
-    return String(index+1)+'. '+allAnswerRouteLabel(response)+(latency?' in '+formatDuration(latency):'')+': '+answer;
+    const truncated=receipt.completion_truncated===true||/length|max[_-]?tokens?|token_limit|output_limit/i.test(String(response?.choices?.[0]?.finish_reason||receipt.finish_reason||''));
+    return String(index+1)+'. '+allAnswerRouteLabel(response)+(latency?' in '+formatDuration(latency):'')+(truncated?' · truncated':'')+': '+answer;
   }
 
   function gatewayCompareBlockedLine(item){
