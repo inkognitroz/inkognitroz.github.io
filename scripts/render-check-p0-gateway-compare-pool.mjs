@@ -118,6 +118,24 @@ async function installFixtures(page) {
           route_class: 'external-untrusted-free',
           trust_level: 'external-untrusted-free',
           cost_class: 'free'
+        },
+        {
+          id: 'qwen/qwen3-32b',
+          name: 'qwen/qwen3-32b',
+          display_name: 'Groq Candidate: qwen/qwen3-32b',
+          provider: 'groq',
+          executable: false,
+          selectable: false,
+          candidate: true,
+          visible_to_public_ui: true,
+          availability: 'setup_needed',
+          route_state: 'candidate_setup_needed',
+          route_type: 'external_candidate',
+          route_class: 'external-candidate',
+          trust_level: 'external-candidate',
+          cost_class: 'free-quota',
+          missing_gates: ['gateway_provider_secret'],
+          next_action: 'Use /connect llm groq for the standard mmir-node-groq autonomous node path.'
         }
       ]
     });
@@ -474,6 +492,7 @@ async function checkViewport(browser, viewport) {
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
   assert(/OpenRouter/i.test(layout.routeFull), `${viewport.name}: full receipt should include OpenRouter evidence`);
+  assert(/Groq deploy needed/i.test(layout.routeFull), `${viewport.name}: full receipt should explain Groq node handoff without noisy setup errors`);
   assert(/2 quiet/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve quiet provider count`);
   assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
   assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);

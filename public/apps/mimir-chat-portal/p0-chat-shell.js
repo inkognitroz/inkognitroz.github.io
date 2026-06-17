@@ -311,7 +311,12 @@
       totalRoutes:1,
       activePublicProviderRoutes:0,
       activeExternalNodeRoutes:0,
-      visibleCandidateCount:0
+      visibleCandidateCount:0,
+      providerReadiness:{
+        activeLabels:[],
+        deployNeededLabels:[],
+        probeQueuedLabels:[]
+      }
     }
   };
   let activeChatController=null;
@@ -871,6 +876,21 @@
     return parts.filter(Boolean).join(' · ');
   }
 
+  function providerReadinessLine(){
+    const readiness=state.routeInventory?.providerReadiness||providerReadinessSummary(state.models);
+    const activeLabels=Array.isArray(readiness.activeLabels)?readiness.activeLabels:[];
+    const deployLabels=Array.isArray(readiness.deployNeededLabels)?readiness.deployNeededLabels:[];
+    const probeLabels=Array.isArray(readiness.probeQueuedLabels)?readiness.probeQueuedLabels:[];
+    const live=activeLabels.slice(0,3).map(label=>label+' live');
+    if(activeLabels.length>3)live.push('+'+(activeLabels.length-3)+' live');
+    const deploy=deployLabels.slice(0,2).map(label=>label+' deploy needed');
+    const probe=probeLabels
+      .filter(label=>!activeLabels.includes(label)&&!deployLabels.includes(label))
+      .slice(0,1)
+      .map(label=>label+' probe queued');
+    return [...live,...deploy,...probe].join(' + ');
+  }
+
   function routeMicroStatus(model=activeModel()){
     const receipt=routeReceipt(model);
     const rankSummary=routeRankSummary(model);
@@ -882,6 +902,7 @@
       receipt.text,
       routePinned(model)?'Pinned':'',
       intelligencePoolLine(),
+      providerReadinessLine(),
       'Score '+effectiveModelScore(model),
       rankSummary,
       ...benchmark,
@@ -1223,6 +1244,87 @@
       model?.selectable===false;
   }
 
+  function providerSortKey(label){
+    const value=String(label||'').toLowerCase();
+    const order=['openrouter','nvidia','google','groq'];
+    const index=order.indexOf(value);
+    return index===-1?order.length:index;
+  }
+
+  function uniqueProviderLabels(map){
+    return Array.from(map.entries())
+      .sort((left,right)=>providerSortKey(left[0])-providerSortKey(right[0])||left[1].localeCompare(right[1]))
+      .map(entry=>entry[1]);
+  }
+
+  function modelReadinessText(model){
+    return [
+      model?.route_state,
+      model?.availability,
+      model?.readiness_status,
+      model?.status,
+      model?.readiness?.status,
+      model?.readiness?.blocking_reason,
+      model?.readiness?.standard_integration_status,
+      model?.readiness?.preferred_integration_mode,
+      model?.next_action,
+      model?.readiness?.next_action,
+      Array.isArray(model?.missing_gates)?model.missing_gates.join(' '):'',
+      Array.isArray(model?.readiness?.missing)?model.readiness.missing.join(' '):'',
+      Array.isArray(model?.readiness?.standard_public_route_blockers)?model.readiness.standard_public_route_blockers.join(' '):''
+    ].filter(Boolean).join(' ').toLowerCase();
+  }
+
+  function providerReadinessSummary(models=[]){
+    const active=new Map();
+    const deployNeeded=new Map();
+    const probeQueued=new Map();
+    (models||[]).forEach(model=>{
+      const rawProvider=String(model?.provider||model?.owned_by||'').trim().toLowerCase();
+      if(!rawProvider||rawProvider==='mmir')return;
+      const label=providerLabel(rawProvider);
+      const key=rawProvider;
+      const isActive=executableHostedModel(model)&&!hostedCandidateModel(model)&&model?.selectable!==false;
+      if(isActive){
+        active.set(key,label);
+        return;
+      }
+      if(!hostedCandidateModel(model)&&model?.visible_to_public_ui!==true)return;
+      const readiness=modelReadinessText(model);
+      if(/autonomous_node_handoff_required|owner_active_route_handoff_required|deploy|handoff|\/connect llm|node path|setup_needed|requires_server_config|gateway_provider_secret/.test(readiness)){
+        deployNeeded.set(key,label);
+        return;
+      }
+      if(/probe|benchmark|promote|candidate_ready|candidate_internal_probe_ready/.test(readiness)){
+        probeQueued.set(key,label);
+      }
+    });
+    active.forEach((label,key)=>{
+      deployNeeded.delete(key);
+      probeQueued.delete(key);
+    });
+    deployNeeded.forEach((label,key)=>probeQueued.delete(key));
+    return {
+      activeLabels:uniqueProviderLabels(active),
+      deployNeededLabels:uniqueProviderLabels(deployNeeded),
+      probeQueuedLabels:uniqueProviderLabels(probeQueued)
+    };
+  }
+
+  function candidateDetail(model,provider){
+    const readiness=modelReadinessText(model);
+    if(/autonomous_node_handoff_required|owner_active_route_handoff_required|deploy|handoff|\/connect llm|node path/.test(readiness)){
+      return 'Deploy node endpoint';
+    }
+    if(/gateway_provider_secret|setup_needed|requires_server_config/.test(readiness)){
+      return provider==='Groq'?'Deploy node endpoint':'Deploy handoff needed';
+    }
+    if(/probe|benchmark|promote|candidate_ready|candidate_internal_probe_ready/.test(readiness)){
+      return 'Probe and promote';
+    }
+    return 'Future capacity';
+  }
+
   function modelInventorySummary(payload,models=[]){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
     const active=raw.filter(model=>executableHostedModel(model)&&!hostedCandidateModel(model)).length;
@@ -1235,7 +1337,8 @@
       totalRoutes:raw.length||((models||[]).length)||1,
       activePublicProviderRoutes:Number(payload?.active_public_provider_route_count)||0,
       activeExternalNodeRoutes:Number(payload?.active_external_node_route_count)||0,
-      visibleCandidateCount:Number(payload?.visible_candidate_count)||future||fallbackFuture||0
+      visibleCandidateCount:Number(payload?.visible_candidate_count)||future||fallbackFuture||0,
+      providerReadiness:providerReadinessSummary(raw.length?raw:models)
     };
   }
 
@@ -1252,11 +1355,12 @@
         const trustLevel=String(model.trust_level||'').trim();
         const externalUntrustedFree=routeClass==='external-untrusted-free'||trustLevel==='external-untrusted-free'||String(model.route_type||'')==='external_untrusted_free';
         const provider=providerLabel(model.provider);
+        const detail=candidate?candidateDetail(model,provider):(externalUntrustedFree?'Ready external route':(model.availability==='available'?'Ready now':(model.route_state||'Ready')));
         return {
           id,
           label:routeDisplayName(model),
           route:'hosted',
-          detail:candidate?'Future node':(externalUntrustedFree?'Ready external route':(model.availability==='available'?'Ready now':(model.route_state||'Ready'))),
+          detail,
           tags:candidate?[provider,'Candidate','Future']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
           model:id,
@@ -1438,6 +1542,13 @@
     const visibleRoutes=Number(inventory.totalRoutes)||state.models.length||activeRouteTotal;
     const activeProviderRoutes=Number(inventory.activePublicProviderRoutes)||Math.max(0,hosted.length-1);
     const activeExternalNodeRoutes=Number(inventory.activeExternalNodeRoutes)||0;
+    const compareRouteTotal=activeHostedCompareModels().length;
+    const compareRouteLabel=compareRouteTotal===activeRouteTotal
+      ? String(compareRouteTotal)+' live routes'
+      : String(compareRouteTotal)+' routes now ('+String(activeRouteTotal)+' live total)';
+    const boostRouteLabel=compareRouteTotal===activeRouteTotal
+      ? String(compareRouteTotal)+' free live routes'
+      : String(compareRouteTotal)+' free routes now ('+String(activeRouteTotal)+' live total)';
     const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
     const scaleLine=[
@@ -1458,6 +1569,9 @@
       visibleRoutes,
       activeProviderRoutes,
       activeExternalNodeRoutes,
+      compareRouteTotal,
+      compareRouteLabel,
+      boostRouteLabel,
       scaleLine,
       compareReady,
       stateLabel:compareReady?'Best Answer ready':'Single route now',
@@ -2420,7 +2534,7 @@
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
         menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
-        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' live routes through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
+        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+pool.compareRouteLabel+' through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
         menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores live routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
         menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
       : '';
@@ -2431,7 +2545,7 @@
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
-      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+String(activeHostedCompareModels().length)+' free live routes, score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
+      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
       menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
       menuSection('Local memory')+
@@ -3931,6 +4045,7 @@
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
+    const providerReadiness=providerReadinessLine();
     const parts=[
       label,
       swarmLabel,
@@ -3945,6 +4060,7 @@
       'No paid route',
       activeProviderCount?String(activeProviderCount)+' live provider routes':'',
       activeExternalNodeCount?String(activeExternalNodeCount)+' live external nodes':'',
+      providerReadiness,
       queuedRouteCount?String(queuedRouteCount)+' queued':'',
       visibleRouteCount?String(visibleRouteCount)+' visible total':'',
       winner?'Winner: '+winner:'',
