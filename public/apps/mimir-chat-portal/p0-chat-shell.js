@@ -1181,6 +1181,15 @@
     return P0_ROUTE_RECEIPTS.displayName(model);
   }
 
+  function canonicalBrandText(value){
+    const text=String(value||'');
+    if(window.MimirRuntimeLabels?.canon)return window.MimirRuntimeLabels.canon(text);
+    return text
+      .replace(/\bmmir[-_\s]+supergeni(?:us|ous)?(?:\s+free)?\b/gi,'Supergeni')
+      .replace(/(^|[^A-Za-z])supergeni(?:us|ous)?(?:\s+free)?/gi,(match,prefix)=>prefix+'Supergeni')
+      .replace(/(?:MMIR\s+){2,}Supergeni(?:us|ous)?/gi,'Supergeni');
+  }
+
   function executableHostedModel(model){
     const routeState=String(model?.route_state||'managed_provider_available');
     const availability=String(model?.availability||model?.status||'available').toLowerCase();
@@ -1762,7 +1771,7 @@
   }
 
   function renderReceipt(receipt){
-    const full=String(receipt||'').trim();
+    const full=canonicalBrandText(receipt).trim();
     if(!full)return '';
     const compact=compactReceipt(full);
     if(compact===full){
@@ -3368,11 +3377,12 @@
     }
     root.innerHTML=state.messages.map(message=>{
       const focusAttr=answerActionsAllowed(message)?' tabindex="0"':'';
-      const visibleLabel=message.role==='assistant'?routeDisplayName({label:message.label||message.role}):(message.label||message.role);
+      const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):(message.label||message.role);
+      const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
         renderReceipt(message.receipt)+
-        '<div class="p0-message-body">'+paragraphs(message.content)+renderMessageTools(message)+'</div>'+
+        '<div class="p0-message-body">'+paragraphs(visibleContent)+renderMessageTools(message)+'</div>'+
         renderMessageActions(message)+
       '</article>';
     }).join('');

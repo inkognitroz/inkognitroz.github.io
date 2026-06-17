@@ -7,16 +7,16 @@
 
   function canon(value) {
     let text = String(value || "");
-    text = text.replace(/\bmmir[-_\s]+supergeni(?:us|ous)\b/gi, FALLBACK);
+    text = text.replace(/\bmmir[-_\s]+supergeni(?:us|ous)?(?:\s+free)?\b/gi, FALLBACK);
     text = text.replace(
       /MMIR Free Control Plane|MMIR Browser Guide|MMIR Guide|free browser guide/gi,
       FALLBACK,
     );
     text = text.replace(
-      /(^|[^A-Za-z])supergeni(?:us|ous)(?:\s+free)?/gi,
+      /(^|[^A-Za-z])supergeni(?:us|ous)?(?:\s+free)?/gi,
       (match, prefix) => prefix + FALLBACK,
     );
-    text = text.replace(/(?:MMIR\s+){2,}Supergenius/gi, FALLBACK);
+    text = text.replace(/(?:MMIR\s+){2,}Supergeni(?:us|ous)?/gi, FALLBACK);
     return text;
   }
 
@@ -47,6 +47,21 @@
     qa("option").forEach((option) => {
       option.textContent = canon(option.textContent);
     });
+    patchElementAttributes(root);
+  }
+
+  function patchElementAttributes(root = d.body) {
+    if (!root || !root.querySelectorAll) return;
+    root
+      .querySelectorAll("[title],[aria-label],[placeholder]")
+      .forEach((element) => {
+        ["title", "aria-label", "placeholder"].forEach((name) => {
+          if (!element.hasAttribute(name)) return;
+          const current = element.getAttribute(name);
+          const next = canon(current);
+          if (next !== current) element.setAttribute(name, next);
+        });
+      });
   }
 
   function normalizeLegacyLabels() {
