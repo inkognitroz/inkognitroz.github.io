@@ -55,13 +55,15 @@ requireIncludes(shell, 'function swarmReceiptLabel(data)', 'Swarm status must st
 requireIncludes(shell, "queuedRouteCount?String(queuedRouteCount)+' queued'", 'Swarm/compare receipts must surface queued intelligence without noisy errors.');
 requireIncludes(shell, "visibleRouteCount?String(visibleRouteCount)+' visible total'", 'Swarm/compare receipts must surface total visible intelligence.');
 requireIncludes(shell, 'function gatewayCompareAllAnswer(data)', 'Ask all active must render each active route answer, not only the winning synthesis.');
+requireIncludes(shell, 'function gatewayWinnerReason(data,best)', 'Swarm scorecards must expose a compact winner reason from route evidence.');
+requireIncludes(shell, "winnerReason?'Why: '+winnerReason", 'Swarm scorecards must include why the winning route won in green receipt/status proof.');
 requireIncludes(shell, 'function localAllActiveRoutes(prompt,signal)', 'Ask all active must include paired browser-local models when available.');
 requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Boost answer must use demo-friendly Intelligence Boost status text.');
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260617-groq-live-label-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260617-groq-live-label-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260618-swarm-scorecard-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260618-swarm-scorecard-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');
