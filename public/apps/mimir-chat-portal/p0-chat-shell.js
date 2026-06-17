@@ -982,6 +982,7 @@
       pick(/^council ready$/i),
       pick(/^signed receipts$/i),
       pick(/no paid route/i),
+      pick(/^Why:/i),
       pick(/^\d+\s+queued$/i),
       pick(/^\d+\s+visible total$/i),
       pick(/^target\s+\d+/i),
@@ -1003,7 +1004,7 @@
       .slice(0,1);
     const text=[primary,...priority,...fallback]
       .filter((part,index,all)=>part&&all.indexOf(part)===index)
-      .slice(0,7)
+      .slice(0,8)
       .join(' · ');
     el.setAttribute('aria-label',full);
     el.title=full;
@@ -1855,6 +1856,7 @@
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
     if(parts.length<=4)return full;
     const winner=parts.find(part=>/^Winner:/i.test(part));
+    const winnerReason=parts.find(part=>/^Why:/i.test(part));
     const score=parts.find(part=>/^(API score|Score)\s+\d+/i.test(part));
     const timing=[...parts].reverse().find(part=>/^\d+(?:\.\d+)?(?:ms|s)$/i.test(part));
     const target=parts.find(part=>/^target\s+\d+(?:\.\d+)?(?:ms|s)\s+met$/i.test(part)||/^over\s+\d+(?:\.\d+)?(?:ms|s)\s+target$/i.test(part));
@@ -1873,7 +1875,7 @@
     const council=parts.find(part=>/^council ready$/i.test(part));
     const providers=gatewayProviderSummary(parts);
     if(/^(Best answer|Intelligence boost|Ask all active|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],swarm,routeCount,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,providers,score].filter(Boolean).join(' · ');
+      return [parts[0],swarm,routeCount,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,winnerReason,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -3799,8 +3801,45 @@
       attemptProviderLabel(attempt),
       latency?formatDuration(latency):'',
       typeof attempt?.score==='number'?'Score '+attempt.score:'',
+      compareAttemptReason(attempt),
       truncated?'truncated':''
     ].filter(Boolean).join(' ');
+  }
+
+  function compareAttemptReason(attempt){
+    const rawReason=String(attempt?.reason||attempt?.receipt?.reason||attempt?.ranking_reason||attempt?.score_reason||'')
+      .replace(/[_-]+/g,' ')
+      .trim();
+    const parts=[];
+    if(rawReason&&!/^(succeeded|ok|complete)$/i.test(rawReason))parts.push(rawReason);
+    const answerClass=String(attempt?.answer_class||attempt?.receipt?.answer_class||'').replace(/[_-]+/g,' ').trim();
+    if(answerClass&&answerClass!=='unknown'&&!parts.some(part=>part.toLowerCase().includes(answerClass.toLowerCase()))){
+      parts.push(answerClass==='complete'?'complete answer':answerClass);
+    }
+    const latencyClass=String(attempt?.latency_class||attempt?.receipt?.latency_class||'').replace(/[_-]+/g,' ').trim();
+    if(latencyClass&&latencyClass!=='unknown'&&!parts.some(part=>part.toLowerCase().includes(latencyClass.toLowerCase()))){
+      parts.push(latencyClass);
+    }
+    return parts.slice(0,2).join(', ');
+  }
+
+  function gatewayWinnerAttempt(data,best){
+    const attempts=(Array.isArray(data?.route_attempts)?data.route_attempts:[]).filter(attempt=>attempt?.status==='succeeded');
+    if(!attempts.length)return null;
+    const bestModel=String(best?.model_id||best?.receipt?.model_id||'').trim().toLowerCase();
+    const bestProvider=String(best?.receipt?.provider||best?.provider||'').trim().toLowerCase();
+    const matched=attempts.find(attempt=>{
+      const model=String(attempt?.model_id||attempt?.receipt?.model_id||'').trim().toLowerCase();
+      const provider=String(attempt?.provider||attempt?.receipt?.provider||'').trim().toLowerCase();
+      return (bestModel&&model===bestModel)||(bestProvider&&provider===bestProvider&&(!bestModel||model.includes(bestModel)||bestModel.includes(model)));
+    });
+    if(matched)return matched;
+    return attempts.slice().sort((a,b)=>(Number(b?.score)||0)-(Number(a?.score)||0))[0]||null;
+  }
+
+  function gatewayWinnerReason(data,best){
+    const attempt=gatewayWinnerAttempt(data,best);
+    return compareAttemptReason(attempt);
   }
 
   function compareAttemptIssueSummary(attempt){
@@ -4008,10 +4047,12 @@
       .map(gatewayCompareBlockedLine);
     const best=data?.best_answer||{};
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
+    const winnerReason=gatewayWinnerReason(data,best);
     const quiet=gatewayQuietCount(data);
     const header=[
       winner?'Best live score: '+winner:'',
       typeof best?.score==='number'?'Score '+best.score:'',
+      winnerReason?'Why: '+winnerReason:'',
       responses.length?String(responses.length)+' active answer'+(responses.length===1?'':'s'):'No active answers',
       quiet?String(quiet)+' quiet':''
     ].filter(Boolean).join(' · ');
@@ -4026,6 +4067,7 @@
     const pool=gatewayPool(data);
     const best=data?.best_answer||{};
     const winner=attemptProviderLabel({provider:best?.receipt?.provider,model_display_name:best?.model_display_name,model_id:best?.model_id});
+    const winnerReason=gatewayWinnerReason(data,best);
     const poolRouteCount=gatewayRouteCount(data);
     const activeProviderCount=Number(pool.active_public_provider_route_count)||Number(data?.active_public_provider_route_count)||0;
     const activeExternalNodeCount=Number(pool.active_external_node_route_count)||Number(data?.active_external_node_route_count)||Number(state.routeInventory?.activeExternalNodeRoutes)||0;
@@ -4064,6 +4106,7 @@
       queuedRouteCount?String(queuedRouteCount)+' queued':'',
       visibleRouteCount?String(visibleRouteCount)+' visible total':'',
       winner?'Winner: '+winner:'',
+      winnerReason?'Why: '+winnerReason:'',
       typeof best?.score==='number'?'Score '+best.score:'',
       ...succeeded,
       ...blocked,

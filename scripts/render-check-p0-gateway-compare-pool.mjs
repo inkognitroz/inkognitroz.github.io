@@ -485,10 +485,12 @@ async function checkViewport(browser, viewport) {
   assert(/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should show quiet provider count without error clutter`);
   assert(!/demoted/i.test(layout.route), `${viewport.name}: quiet provider throttling should not render as demoted error text`);
   assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
+  assert(/Why: complete answer, fast/i.test(layout.route), `${viewport.name}: visible green route line should explain why the winner won`);
   assert(/sync 40/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve sync fanout limit`);
   assert(/arena ready/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve arena readiness`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
+  assert(/Why: complete answer, fast/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner reason proof`);
   assert(/OpenRouter/i.test(layout.routeFull), `${viewport.name}: full receipt should include OpenRouter evidence`);
   assert(/Groq live/i.test(layout.routeFull), `${viewport.name}: full receipt should name active Groq intelligence`);
   assert(/2 quiet/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve quiet provider count`);
@@ -505,6 +507,7 @@ async function checkViewport(browser, viewport) {
   });
   const allText = await page.locator('#p0-transcript').innerText();
   assert(/Best live score: Supergeni/i.test(allText), `${viewport.name}: Ask all should keep the winning route visible in the answer`);
+  assert(/Why: complete answer, fast/i.test(allText), `${viewport.name}: Ask all should explain the winning route briefly`);
   assert(/All active answers:/i.test(allText), `${viewport.name}: Ask all should render every active answer`);
 
   await page.locator('#p0-input').fill('Should MMIR prioritize speed or quality?');
