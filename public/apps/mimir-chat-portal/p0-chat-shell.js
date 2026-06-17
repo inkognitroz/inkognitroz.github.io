@@ -881,8 +881,8 @@
     const activeLabels=Array.isArray(readiness.activeLabels)?readiness.activeLabels:[];
     const deployLabels=Array.isArray(readiness.deployNeededLabels)?readiness.deployNeededLabels:[];
     const probeLabels=Array.isArray(readiness.probeQueuedLabels)?readiness.probeQueuedLabels:[];
-    const live=activeLabels.slice(0,3).map(label=>label+' live');
-    if(activeLabels.length>3)live.push('+'+(activeLabels.length-3)+' live');
+    const live=activeLabels.slice(0,4).map(label=>label+' live');
+    if(activeLabels.length>4)live.push('+'+(activeLabels.length-4)+' live');
     const deploy=deployLabels.slice(0,2).map(label=>label+' deploy needed');
     const probe=probeLabels
       .filter(label=>!activeLabels.includes(label)&&!deployLabels.includes(label))
