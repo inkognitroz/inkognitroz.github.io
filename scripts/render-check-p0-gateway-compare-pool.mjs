@@ -122,20 +122,18 @@ async function installFixtures(page) {
         {
           id: 'qwen/qwen3-32b',
           name: 'qwen/qwen3-32b',
-          display_name: 'Groq Candidate: qwen/qwen3-32b',
+          display_name: 'Groq: qwen/qwen3-32b',
           provider: 'groq',
-          executable: false,
-          selectable: false,
-          candidate: true,
+          executable: true,
+          selectable: true,
+          candidate: false,
           visible_to_public_ui: true,
-          availability: 'setup_needed',
-          route_state: 'candidate_setup_needed',
-          route_type: 'external_candidate',
-          route_class: 'external-candidate',
-          trust_level: 'external-candidate',
-          cost_class: 'free-quota',
-          missing_gates: ['gateway_provider_secret'],
-          next_action: 'Use /connect llm groq for the standard mmir-node-groq autonomous node path.'
+          availability: 'available',
+          route_state: 'public_untrusted_free_available',
+          route_type: 'external_untrusted_free',
+          route_class: 'external-untrusted-free',
+          trust_level: 'external-untrusted-free',
+          cost_class: 'free-quota'
         }
       ]
     });
@@ -162,7 +160,7 @@ async function installFixtures(page) {
         candidate_count: 5,
         response_count: 3,
         route_attempt_count: 5,
-        active_public_provider_route_count: 3,
+        active_public_provider_route_count: 4,
         successful_public_provider_route_count: 3,
         quiet_blocked_candidate_count: 2,
         total_blocked_candidate_count: 2
@@ -173,7 +171,7 @@ async function installFixtures(page) {
         strategy: 'fanout_score_select_best',
         route_attempt_count: 5,
         active_answer_route_count: 3,
-        active_public_provider_route_count: 3,
+        active_public_provider_route_count: 4,
         successful_public_provider_route_count: 3,
         blocked_candidate_count: 0,
         quiet_blocked_candidate_count: 2,
@@ -304,7 +302,7 @@ async function installFixtures(page) {
       object: 'chat.compare',
       compare_status: 'ready',
       candidate_count: 5,
-      active_public_provider_route_count: 3,
+      active_public_provider_route_count: 4,
       successful_public_provider_route_count: 3,
       quiet_blocked_candidate_count: 2,
       total_blocked_candidate_count: 2,
@@ -314,7 +312,7 @@ async function installFixtures(page) {
         strategy: 'fanout_score_select_best',
         route_attempt_count: 3,
         active_answer_route_count: 3,
-        active_public_provider_route_count: 3,
+        active_public_provider_route_count: 4,
         successful_public_provider_route_count: 3,
         blocked_candidate_count: 0,
         quiet_blocked_candidate_count: 2,
@@ -451,8 +449,8 @@ async function checkViewport(browser, viewport) {
   assert(/Intelligence pool/i.test(addMenu), `${viewport.name}: add menu should expose compact Intelligence pool when hosted routes are active`);
   assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
   assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
-  assert(/Ask 4 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
-  assert(/Ask 4 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
+  assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
+  assert(/Ask 5 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
   assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
 
@@ -492,7 +490,7 @@ async function checkViewport(browser, viewport) {
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
   assert(/OpenRouter/i.test(layout.routeFull), `${viewport.name}: full receipt should include OpenRouter evidence`);
-  assert(/Groq deploy needed/i.test(layout.routeFull), `${viewport.name}: full receipt should explain Groq node handoff without noisy setup errors`);
+  assert(/Groq live/i.test(layout.routeFull), `${viewport.name}: full receipt should name active Groq intelligence`);
   assert(/2 quiet/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve quiet provider count`);
   assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
   assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);

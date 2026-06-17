@@ -157,42 +157,39 @@ testApi.state.models.push(
   },
   {
     id: 'qwen/qwen3-32b',
-    label: 'Groq Candidate: qwen/qwen3-32b',
+    label: 'Groq: qwen/qwen3-32b',
     route: 'hosted',
     model: 'qwen/qwen3-32b',
     provider: 'Groq',
-    routeClass: 'external-candidate',
-    trustLevel: 'external-candidate',
-    routeType: 'external_candidate',
-    routeState: 'candidate_setup_needed',
-    availability: 'setup_needed',
-    executable: false,
-    selectable: false,
-    candidate: true,
-    missing_gates: ['gateway_provider_secret'],
-    nextAction: 'Use /connect llm groq for the standard mmir-node-groq autonomous node path.',
-    score: 25
+    routeClass: 'external-untrusted-free',
+    trustLevel: 'external-untrusted-free',
+    routeType: 'external_provider',
+    routeState: 'public_untrusted_free_available',
+    availability: 'available',
+    executable: true,
+    selectable: true,
+    score: 86
   }
 );
 testApi.state.routeInventory = {
-  activeRoutes: 4,
-  futureRoutes: 44,
+  activeRoutes: 5,
+  futureRoutes: 43,
   totalRoutes: 64,
-  activePublicProviderRoutes: 3,
+  activePublicProviderRoutes: 4,
   activeExternalNodeRoutes: 0,
-  visibleCandidateCount: 44
+  visibleCandidateCount: 43
 };
-assertIncludes(testApi.routeMicroStatus(hosted), '4 live routes', 'Route micro-status must surface connected route capacity in subtle green text.');
-assertIncludes(testApi.routeMicroStatus(hosted), '44 queued', 'Route micro-status must surface queued intelligence in subtle green text.');
+assertIncludes(testApi.routeMicroStatus(hosted), '5 live routes', 'Route micro-status must surface connected route capacity in subtle green text.');
+assertIncludes(testApi.routeMicroStatus(hosted), '43 queued', 'Route micro-status must surface queued intelligence in subtle green text.');
 assertIncludes(testApi.routeMicroStatus(hosted), '64 visible total', 'Route micro-status must surface total visible model inventory in subtle green text.');
 assertIncludes(testApi.routeMicroStatus(hosted), 'OpenRouter live', 'Route micro-status must name active OpenRouter intelligence.');
 assertIncludes(testApi.routeMicroStatus(hosted), 'NVIDIA live', 'Route micro-status must name active NVIDIA intelligence.');
 assertIncludes(testApi.routeMicroStatus(hosted), 'Google live', 'Route micro-status must name active Google intelligence.');
-assertIncludes(testApi.routeMicroStatus(hosted), 'Groq deploy needed', 'Route micro-status must distinguish Groq node deploy from generic setup/probe copy.');
+assertIncludes(testApi.routeMicroStatus(hosted), 'Groq live', 'Route micro-status must name active Groq intelligence.');
 const poolEl = fakeElement();
 testApi.renderMicroStatus(
   poolEl,
-  'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 3 live provider routes · OpenRouter live + NVIDIA live + Google live + Groq deploy needed · 44 queued · 64 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
+  'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 4 live provider routes · OpenRouter live + NVIDIA live + Google live + Groq live · 43 queued · 64 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
   'hosted'
 );
 assertIncludes(poolEl.innerHTML, '5 routes compared', 'Under-chat micro-status must keep compared route count visible as subtle text.');
@@ -200,9 +197,9 @@ assertIncludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must sho
 assertIncludes(poolEl.innerHTML, '2 quiet', 'Under-chat micro-status must show quiet throttled routes without noisy failure text.');
 assertIncludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof visible as subtle text.');
 assertIncludes(poolEl.innerHTML, 'No paid route', 'Under-chat micro-status must keep no-paid proof visible as subtle text.');
-assertIncludes(poolEl.attrs['aria-label'], '44 queued', 'Full gateway compare receipt must keep queued route data inspectable.');
+assertIncludes(poolEl.attrs['aria-label'], '43 queued', 'Full gateway compare receipt must keep queued route data inspectable.');
 assertIncludes(poolEl.attrs['aria-label'], '64 visible total', 'Full gateway compare receipt must keep visible route data inspectable.');
-assertIncludes(poolEl.attrs['aria-label'], 'Groq deploy needed', 'Full gateway compare receipt must preserve deploy handoff truth.');
+assertIncludes(poolEl.attrs['aria-label'], 'Groq live', 'Full gateway compare receipt must preserve active Groq truth.');
 assertExcludes(poolEl.innerHTML, 'demoted', 'Under-chat micro-status must avoid demoted/error language for hidden quiet routes.');
 assertExcludes(poolEl.innerHTML, 'Winner:', 'Under-chat micro-status must keep winner detail out of visible text.');
 assertIncludes(poolEl.attrs['aria-label'], 'Winner: Supergeni', 'Full gateway compare receipt must keep winner detail inspectable.');
