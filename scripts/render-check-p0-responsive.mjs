@@ -122,12 +122,13 @@ async function installApiFixtures(page) {
 }
 
 async function seedBrowserState(page) {
-  await page.addInitScript(history => {
+  await page.addInitScript(({ history, viewportName }) => {
     localStorage.clear();
     sessionStorage.clear();
-    sessionStorage.setItem('mmir-p0-chat-history-qa-session-schema', '20260603-clean-first-chat-v40');
-    sessionStorage.setItem('mmir-p0-chat-history-qa-session-v1', JSON.stringify(history));
-  }, seededHistory());
+    const scope = `responsive_guard-${String(viewportName || '').toLowerCase()}`;
+    sessionStorage.setItem(`mmir-p0-chat-history-qa-session-schema:${scope}`, '20260603-clean-first-chat-v40');
+    sessionStorage.setItem(`mmir-p0-chat-history-qa-session-v1:${scope}`, JSON.stringify(history));
+  }, { history: seededHistory(), viewportName: page.viewportSize()?.width === 390 ? 'mobile' : page.viewportSize()?.width === 768 ? 'tablet' : 'desktop' });
 }
 
 function overlap(a, b) {
@@ -268,14 +269,17 @@ async function checkViewport(browser, viewport) {
   const focusOpacity = Number(await lastActions.evaluate((el) => getComputedStyle(el).opacity));
   assert(focusOpacity > 0.6, `${viewport.name}: answer actions should reveal on keyboard/touch focus, opacity=${focusOpacity}`);
   const qaHistoryState = await page.evaluate(() => {
-    const sessionHistory = JSON.parse(sessionStorage.getItem('mmir-p0-chat-history-qa-session-v1') || '[]');
+    const sessionKey = window.__MimirP0HistorySessionKey || 'mmir-p0-chat-history-qa-session-v1';
+    const sessionHistory = JSON.parse(sessionStorage.getItem(sessionKey) || '[]');
     return {
+      sessionKey,
       localHistoryExists: localStorage.getItem('mmir-p0-chat-history-v1') !== null,
       sessionCount: sessionHistory.length,
       sessionHasAnswer: sessionHistory.some(message => /Responsive guard answer/.test(String(message.content || '')))
     };
   });
   assert(!qaHistoryState.localHistoryExists, `${viewport.name}: QA prompt must not persist into normal local history`);
+  assert(qaHistoryState.sessionKey.includes(`responsive_guard-${viewport.name}`), `${viewport.name}: responsive QA should use a URL-scoped session history key`);
   assert(qaHistoryState.sessionCount > 0 && qaHistoryState.sessionHasAnswer, `${viewport.name}: QA session history should keep test flow state inside sessionStorage`);
 
   layout = await collectLayout(page);

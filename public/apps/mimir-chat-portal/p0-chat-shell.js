@@ -65,7 +65,14 @@
   const writeStorageString=P0_STORAGE.writeString;
   const ensureStorageSchema=P0_STORAGE.ensureSchema;
   const historySessionMode=Boolean(typeof P0_HISTORY.qaSessionEnabled==='function'&&P0_HISTORY.qaSessionEnabled(window.location?.search||''));
+  const historySessionKeys=historySessionMode&&typeof P0_HISTORY.qaSessionStorageKeys==='function'
+    ? P0_HISTORY.qaSessionStorageKeys(window.location?.search||'',HISTORY_SESSION_KEY,HISTORY_SESSION_SCHEMA_KEY)
+    : {historyKey:HISTORY_SESSION_KEY,schemaKey:HISTORY_SESSION_SCHEMA_KEY,scope:''};
+  const activeHistorySessionKey=historySessionKeys.historyKey||HISTORY_SESSION_KEY;
+  const activeHistorySessionSchemaKey=historySessionKeys.schemaKey||HISTORY_SESSION_SCHEMA_KEY;
   window.__MimirP0HistorySessionMode=historySessionMode;
+  window.__MimirP0HistorySessionKey=historySessionMode?activeHistorySessionKey:'';
+  window.__MimirP0HistorySessionScope=historySessionMode?(historySessionKeys.scope||''):'';
   let legacyPromptBridgeBound=false;
   let legacyPromptSyncing=false;
   const DEFAULT_PROMPT_PRESETS=[
@@ -398,9 +405,9 @@
   function ensureHistorySchema(){
     if(!historySessionMode)return ensureStorageSchema(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA,[HISTORY_KEY]);
     try{
-      if(sessionStorage.getItem(HISTORY_SESSION_SCHEMA_KEY)===HISTORY_SCHEMA)return true;
-      removeSessionKey(HISTORY_SESSION_KEY);
-      writeSessionString(HISTORY_SESSION_SCHEMA_KEY,HISTORY_SCHEMA);
+      if(sessionStorage.getItem(activeHistorySessionSchemaKey)===HISTORY_SCHEMA)return true;
+      removeSessionKey(activeHistorySessionKey);
+      writeSessionString(activeHistorySessionSchemaKey,HISTORY_SCHEMA);
       return false;
     }catch(error){
       return false;
@@ -408,16 +415,16 @@
   }
 
   function readHistoryJson(){
-    return historySessionMode?readSessionJson(HISTORY_SESSION_KEY,[]):readJson(HISTORY_KEY,[]);
+    return historySessionMode?readSessionJson(activeHistorySessionKey,[]):readJson(HISTORY_KEY,[]);
   }
 
   function writeHistoryJson(messages){
-    return historySessionMode?writeSessionJson(HISTORY_SESSION_KEY,messages):writeJson(HISTORY_KEY,messages);
+    return historySessionMode?writeSessionJson(activeHistorySessionKey,messages):writeJson(HISTORY_KEY,messages);
   }
 
   function writeHistorySchema(){
     return historySessionMode
-      ? writeSessionString(HISTORY_SESSION_SCHEMA_KEY,HISTORY_SCHEMA)
+      ? writeSessionString(activeHistorySessionSchemaKey,HISTORY_SCHEMA)
       : writeStorageString(HISTORY_SCHEMA_KEY,HISTORY_SCHEMA);
   }
 

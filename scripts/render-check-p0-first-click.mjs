@@ -303,8 +303,10 @@ async function checkViewport(browser, viewport) {
   assertControls(layout, viewport, `${viewport.name} answer`);
   assert(layout.text.includes('First-click guard answer.'), `${viewport.name}: send control should produce a rendered answer`);
   const historyState = await page.evaluate(() => {
-    const sessionHistory = JSON.parse(sessionStorage.getItem('mmir-p0-chat-history-qa-session-v1') || '[]');
+    const sessionKey = window.__MimirP0HistorySessionKey || 'mmir-p0-chat-history-qa-session-v1';
+    const sessionHistory = JSON.parse(sessionStorage.getItem(sessionKey) || '[]');
     return {
+      sessionKey,
       localHistoryExists: localStorage.getItem('mmir-p0-chat-history-v1') !== null,
       sessionCount: sessionHistory.length,
       sessionHasPrompt: sessionHistory.some(message => /First click guard prompt/.test(String(message.content || ''))),
@@ -312,6 +314,7 @@ async function checkViewport(browser, viewport) {
     };
   });
   assert(!historyState.localHistoryExists, `${viewport.name}: first-click QA prompt must not persist into normal local history`);
+  assert(historyState.sessionKey.includes(`first_click_guard-${viewport.name}`), `${viewport.name}: first-click QA should use a URL-scoped session history key`);
   assert(historyState.sessionCount > 0 && historyState.sessionHasPrompt && historyState.sessionHasAnswer, `${viewport.name}: first-click QA should keep prompt/answer in session history only`);
   await screenshot(page, `${viewport.name}-answer`);
 
