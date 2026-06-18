@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 const root = resolve(new URL('..', import.meta.url).pathname);
 const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
 const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
+const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
 const errors = [];
@@ -223,6 +224,41 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackCaptureSummary(count=feedbackInboxItems().length)',
+  'P0 shell must summarize captured feedback visibly for user-testers.'
+);
+requireIncludes(
+  shell,
+  'function renderFeedbackCaptureStatus()',
+  'P0 shell must render captured-feedback state after local inbox changes.'
+);
+requireIncludes(
+  shell,
+  "function markFeedbackCaptured(source='feedback_capture')",
+  'P0 shell must mark captured feedback with an in-app confirmation.'
+);
+requireIncludes(
+  shell,
+  "id=\"p0-feedback-capture\"",
+  'P0 composer must include a subtle captured-feedback inbox affordance.'
+);
+requireIncludes(
+  shell,
+  "openFeedbackInbox('feedback_capture_pill')",
+  'Captured-feedback affordance must open Feedback Inbox directly.'
+);
+requireIncludes(
+  shell,
+  "composer.dataset.feedbackCaptured=summary?'true':'false'",
+  'P0 shell must mark the composer while captured-feedback status is visible.'
+);
+requireIncludes(
+  shell,
+  "function openFeedbackInbox(source='feedback_inbox')",
+  'P0 shell must centralize Feedback Inbox rendering for menu and captured-feedback entry points.'
+);
+requireIncludes(
+  shell,
   'function removeFeedbackInboxItem(id)',
   'P0 shell must replace pending implicit feedback drafts when server intake succeeds.'
 );
@@ -235,6 +271,61 @@ requireIncludes(
   shell,
   "routeStatus('Feedback signal captured · sanitized draft · no raw chat log','ready');",
   'P0 shell must confirm captured feedback in-app without asking the user to contact the owner.'
+);
+requireIncludes(
+  shell,
+  "markFeedbackCaptured('feedback_submitted')",
+  'Explicit feedback must refresh the captured-feedback inbox affordance after server intake.'
+);
+requireIncludes(
+  shell,
+  "status:'pending_server_intake'",
+  'Explicit feedback must be saved locally before waiting on the server.'
+);
+requireIncludes(
+  shell,
+  "markFeedbackCaptured('feedback_local_draft')",
+  'Explicit feedback must immediately confirm a local draft before the network call completes.'
+);
+requireIncludes(
+  shell,
+  'removeFeedbackInboxItem(localDraftId)',
+  'Successful feedback intake must replace the local pending draft with the server-shaped inbox item.'
+);
+requireIncludes(
+  shell,
+  "markFeedbackCaptured('implicit_feedback_detected')",
+  'Implicit user friction must refresh the captured-feedback inbox affordance immediately.'
+);
+requireIncludes(
+  shell,
+  "markFeedbackCaptured('feedback_failed_local_fallback')",
+  'Feedback endpoint failures must still save and confirm a local feedback draft.'
+);
+requireIncludes(
+  shell,
+  "Feedback fanget · ",
+  'Captured-feedback confirmation must be visible in Norwegian demo copy.'
+);
+requireIncludes(
+  shell,
+  "status:'local_fallback'",
+  'Feedback intake failures must create a local fallback draft instead of losing user input.'
+);
+requireIncludes(
+  css,
+  '.p0-feedback-capture',
+  'P0 shell CSS must style the captured-feedback affordance.'
+);
+requireIncludes(
+  css,
+  '.p0-feedback-capture[hidden]',
+  'Captured-feedback affordance must stay hidden until there are local drafts.'
+);
+requireIncludes(
+  css,
+  '.p0-composer[data-feedback-captured="true"] .p0-route',
+  'Captured-feedback affordance must not visually collide with route status text.'
 );
 requireIncludes(
   shell,
@@ -283,12 +374,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v4',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v5',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v4"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v5"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

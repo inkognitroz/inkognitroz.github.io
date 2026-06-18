@@ -455,6 +455,41 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   white-space: nowrap;
 }
 
+.p0-feedback-capture {
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px solid rgba(4, 120, 87, 0.18);
+  border-radius: 999px;
+  color: #047857;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  justify-self: start;
+  line-height: 1.2;
+  max-width: 100%;
+  min-height: 26px;
+  overflow: hidden;
+  padding: 4px 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p0-feedback-capture[hidden] {
+  display: none !important;
+}
+
+.p0-feedback-capture:hover,
+.p0-feedback-capture:focus-visible {
+  background: #d1fae5;
+  outline: none;
+}
+
+.p0-composer[data-feedback-captured="true"] .p0-route {
+  display: none;
+}
+
 .p0-toolbar {
   align-items: center;
   display: flex;
