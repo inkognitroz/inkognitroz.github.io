@@ -197,7 +197,8 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const route = document.getElementById('p0-route');
     const status = document.getElementById('p0-status');
-    return /Local node ready/i.test(route?.textContent || '') &&
+    return /Verifisert/i.test(route?.textContent || '') &&
+      /privat/i.test(route?.textContent || '') &&
       /Private local ready:/i.test(route?.getAttribute('aria-label') || '') &&
       !/Private local ready:|\d+\s+models?|Private/i.test(status?.textContent || '');
   });
@@ -223,12 +224,15 @@ async function checkViewport(browser, viewport) {
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('Supergeni says four.'), `${viewport.name}: hosted compare answer should render`);
   assert(text.includes('Local Gemma also says four.'), `${viewport.name}: local compare answer should render`);
-  assert(text.includes('Best answer'), `${viewport.name}: compact best-answer receipt should render`);
-  assert(text.includes('Winner: Supergeni'), `${viewport.name}: winner receipt should name Supergeni`);
-  assert(text.includes('No paid route'), `${viewport.name}: receipt must keep no-paid route visible`);
-  assert(text.includes('target 3.0s met'), `${viewport.name}: hosted compare receipt should show the compact latency target`);
-  assert(text.includes('target 9.0s met'), `${viewport.name}: local compare receipt should show the compact latency target`);
-  assert(text.includes('target 3.5s met'), `${viewport.name}: synthesis receipt should show the compact latency target`);
+  assert(text.includes('Best answer'), `${viewport.name}: best-answer content should render`);
+  assert(text.includes('Verifisert'), `${viewport.name}: compare receipts should show trust value first`);
+  assert(text.includes('privat'), `${viewport.name}: compare receipts should show privacy value first`);
+  assert(text.includes('Detaljer'), `${viewport.name}: compare receipts should keep raw telemetry inspectable`);
+  assert(!text.includes('Winner: Supergeni'), `${viewport.name}: winner receipt must stay behind Details`);
+  assert(!text.includes('No paid route'), `${viewport.name}: no-paid proof must stay behind Details`);
+  assert(!text.includes('target 3.0s met'), `${viewport.name}: hosted compare latency target must stay behind Details`);
+  assert(!text.includes('target 9.0s met'), `${viewport.name}: local compare latency target must stay behind Details`);
+  assert(!text.includes('target 3.5s met'), `${viewport.name}: synthesis latency target must stay behind Details`);
 
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,

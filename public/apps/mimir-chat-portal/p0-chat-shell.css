@@ -197,6 +197,9 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-message-receipt summary {
   cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
   list-style: none;
   width: fit-content;
 }
@@ -218,6 +221,22 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-message-compare .p0-message-receipt {
   color: #047857;
+}
+
+.p0-message-receipt-trust summary {
+  color: #047857;
+  font-weight: 680;
+}
+
+.p0-receipt-summary-main {
+  color: #047857;
+}
+
+.p0-receipt-details {
+  color: #6b7280;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .p0-message-user .p0-message-label {
