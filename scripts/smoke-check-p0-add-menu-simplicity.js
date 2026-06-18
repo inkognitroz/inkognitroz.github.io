@@ -101,8 +101,8 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
-  "menuButton('discuss-topic','Supergeni Council'",
-  '+ menu must expose Supergeni Council only through the truth-gated two-model section.'
+  "menuButton('discuss-topic','Debate models'",
+  '+ menu must expose Debate models only through the truth-gated two-model section.'
 );
 requireIncludes(
   renderPromptPresetMenu,
@@ -111,12 +111,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260618-feedback-intake-v1',
+  'p0-chat-shell.js?v=20260618-feedback-inbox-wow-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260618-feedback-intake-v1"',
+  '"p0-chat-shell.js": "20260618-feedback-inbox-wow-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

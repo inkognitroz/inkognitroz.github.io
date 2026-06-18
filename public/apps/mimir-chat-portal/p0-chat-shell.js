@@ -41,7 +41,9 @@
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
   const FEEDBACK_INTAKE_PATH='/feedback/intake';
+  const FEEDBACK_INBOX_PLAN_PATH='/feedback/inbox/plan';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
+  const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
@@ -353,9 +355,9 @@
     },
     {
       id:'discuss',
-      label:'Supergeni Council',
-      detail:'Lets active routes challenge each other, then converge.',
-      title:'Supergeni Council',
+      label:'Model Debate',
+      detail:'Lets active models challenge each other, then converge.',
+      title:'Model Debate',
       icon:ICON_BUBBLES||'<span aria-hidden="true">D</span>'
     },
     {
@@ -683,6 +685,107 @@
     return 'Takk - feedback er registrert som trygg forbedringsdraft for '+target+'.\n\nForeløpig rute: '+lane+'.\n\nVi lagrer ikke admin-koder eller provider-nøkler i chatten, og dette starter ingen betalte ruter.';
   }
 
+  function feedbackInboxItems(){
+    return readJson(FEEDBACK_INBOX_KEY,[])
+      .filter(item=>item&&typeof item==='object'&&item.suggestion)
+      .slice(-50)
+      .reverse();
+  }
+
+  function writeFeedbackInboxItems(items){
+    writeJson(FEEDBACK_INBOX_KEY,(items||[])
+      .filter(item=>item&&typeof item==='object'&&item.suggestion)
+      .slice(-80));
+  }
+
+  function saveFeedbackInboxItem(item){
+    if(!item||!item.suggestion)return false;
+    const current=readJson(FEEDBACK_INBOX_KEY,[]);
+    const next=current.filter(existing=>String(existing?.id||'')!==String(item.id||''));
+    next.push({
+      id:item.id||('fb_local_'+Date.now().toString(36)),
+      created_at:item.created_at||new Date().toISOString(),
+      target:item.target||'',
+      source:item.source||'mmir-chat-feedback',
+      status:item.status||'draft_ready',
+      priority:item.priority||'p5-triage',
+      title:item.title||'Feedback draft',
+      suggestion:redactOwnerSuggestionText(item.suggestion||''),
+      classification:item.classification||{},
+      no_paid_routes_started:true,
+      provider_called:false
+    });
+    writeFeedbackInboxItems(next);
+    return true;
+  }
+
+  function feedbackPriorityLabel(priority){
+    const value=String(priority||'p5-triage');
+    if(value==='p1-risk')return 'Risk';
+    if(value==='p2-bug')return 'Bug';
+    if(value==='p3-ux')return 'UX';
+    if(value==='p4-feature')return 'Feature';
+    return 'Triage';
+  }
+
+  function feedbackInboxAnswer(plan){
+    const items=Array.isArray(plan?.top_items)?plan.top_items:[];
+    const lines=[
+      'Feedback Inbox',
+      '',
+      plan?.item_count?String(plan.item_count)+' lokale drafts klare for triage.':'Ingen lokale drafts i denne nettleseren ennå.',
+      'Server: saniterte feedback-events logges i Cloudflare Worker logs.',
+      'Regel: offentlig feedback blir ikke automatisk GitHub issue.',
+      ''
+    ];
+    if(items.length){
+      lines.push('Topp prioritet:');
+      items.slice(0,8).forEach((item,index)=>{
+        const target=item.target?('@'+item.target):'@feedback';
+        const lane=item.classification?.lane||'triage';
+        lines.push(String(index+1)+'. '+feedbackPriorityLabel(item.priority)+' · '+target+' · '+lane+' · '+String(item.suggestion||'').replace(/\s+/g,' ').slice(0,140));
+      });
+    }
+    lines.push('', 'Neste steg: promoter bare owner-godkjente items til issue med acceptance proof.');
+    return lines.join('\n');
+  }
+
+  function modelHealthAnswer(){
+    const models=Array.isArray(state.models)?state.models:[];
+    const active=models.filter(model=>model&&model.executable!==false&&model.selectable!==false);
+    const hosted=active.filter(model=>model.route==='hosted');
+    const local=active.filter(model=>model.route==='local');
+    const future=models.filter(model=>model?.executable===false||model?.selectable===false||model?.candidate);
+    const providers=[...new Set(active.map(model=>model.provider||model.routeClass||model.route).filter(Boolean))]
+      .slice(0,8)
+      .map(providerLabel);
+    const top=rankedModels()
+      .filter(model=>model.executable!==false&&model.selectable!==false)
+      .slice(0,8)
+      .map((model,index)=>String(index+1)+'. '+model.label+' · '+(model.route==='local'?'Private local':'Hosted/free')+' · score '+effectiveModelScore(model));
+    return [
+      'Model Health',
+      '',
+      'Aktivt nå: '+active.length+' modeller · '+hosted.length+' hosted/free · '+local.length+' lokale/private.',
+      future.length?('Kandidater/fremtidige ruter: '+future.length+'.'):'',
+      providers.length?('Live providers: '+providers.join(', ')+'.'):'',
+      '',
+      'Beste ruter akkurat nå:',
+      ...(top.length?top:['Ingen modelliste lastet ennå. Trykk Refresh models.']),
+      '',
+      'Status betyr tilgjengelig rute, ikke garanti for sannhet. Viktige fakta bør fortsatt verifiseres.'
+    ].filter(Boolean).join('\n');
+  }
+
+  async function feedbackInboxPlan(){
+    return fetchJson(API_URL+FEEDBACK_INBOX_PLAN_PATH,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({items:feedbackInboxItems()}),
+      timeoutMs:10000
+    });
+  }
+
   async function submitOwnerSuggestionCommand(parsed){
     return fetchJson(API_URL+OWNER_SUGGESTION_PLAN_PATH,{
       method:'POST',
@@ -756,6 +859,7 @@
     routeStatus('Feedback intake · no secrets · no paid route','ready');
     try{
       const plan=await submitFeedbackMentionCommand(parsed);
+      if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
       const routeText=feedbackIntakeRouteText(plan);
       updateMessage(assistant,feedbackIntakeAnswer(plan),{receipt:routeText,actions:false});
       status('Feedback registered.','ready');
@@ -1064,7 +1168,7 @@
       /\bCompare answer\s+\d\/\d/i,
       /\bsigned receipts?\b/i,
       /\b(?:hosted route|private local|This Mac)\b/i,
-      /\b(?:Best answer|Intelligence boost|Ask all active|Supergeni Council)\b/i,
+      /\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b/i,
       /\b\d+(?:\.\d+)?(?:ms|s)\b/i
     ];
     return evidence.some(test=>test.test(text))&&!/^Local connector setup\b/i.test(text);
@@ -1075,7 +1179,7 @@
     if(!routeEvidenceReceipt(text))return '';
     const parts=receiptParts(text);
     const routeCount=receiptRouteCount(text,parts);
-    const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
+    const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
     if(isSwarm&&routeCount>1){
       return 'Spør '+routeCount+' AI - beste vinner · Verifisert · privat';
     }
@@ -1997,7 +2101,7 @@
     const visibleTotal=parts.find(part=>/^\d+\s+visible total$/i.test(part));
     const council=parts.find(part=>/^council ready$/i.test(part));
     const providers=gatewayProviderSummary(parts);
-    if(/^(Best answer|Intelligence boost|Ask all active|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
+    if(/^(Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
       return [parts[0],swarm,routeCount,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,winnerReason,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
@@ -2668,20 +2772,23 @@
         menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
         menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+pool.compareRouteLabel+' through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
         menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores live routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
+        menuButton('discuss-topic','Debate models',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
       '<div class="p0-menu-note p0-intelligence-map"><strong>Intelligence connected</strong><span>'+safeText(pool.scaleLine||pool.stateLabel)+'</span></div>'+
       menuButton('connect-local','Connect local model','Get the install command in this chat.')+
       menuButton('check-local','Refresh models','Use after the connector says ready.')+
+      menuButton('model-health','Model health','Show active hosted, local and candidate route status.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
       menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
       menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
       menuSection('Improve MMIR')+
+      '<div class="p0-menu-note">Feedback may be logged after sanitization to improve MMIR. Do not paste secrets.</div>'+
       menuButton('draft-feedback','Send feedback','Prefill @inkognitroz so you can report friction or suggest a feature.')+
+      menuButton('feedback-inbox','Feedback Inbox','Review local feedback drafts and server-safe triage status.')+
       menuSeparator()+
       menuSection('Local memory')+
       menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
@@ -2984,11 +3091,11 @@
     }
     if(!prompt){
       if(action==='discuss-topic'&&input){
-        input.value='Supergeni Council topic: ';
+        input.value='Debate topic: ';
         autosizeInput();
         closeMenus();
-        status('Add a topic, then send or choose Supergeni Council again.','ready');
-        routeStatus('Supergeni Council ready · two-model tool','ready');
+        status('Add a topic, then send or choose Debate models again.','ready');
+        routeStatus('Model Debate ready · active models challenge each other','ready');
         input.focus();
         return true;
       }
@@ -3009,7 +3116,7 @@
       }
       if(action==='discuss-topic'){
         compareGatewayRoutes(
-          'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+          'Model Debate: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
           {mode:'council'}
         );
         return true;
@@ -3408,6 +3515,23 @@
       input?.focus();
       return true;
     }
+    if(action==='feedback-inbox'){
+      closeMenus();
+      const assistant=append('assistant','Opening Feedback Inbox...','MMIR Feedback','Feedback Inbox · local drafts + sanitized server logs',{actions:false});
+      status('Loading Feedback Inbox.','loading');
+      routeStatus('Feedback Inbox · no provider call · no paid route','hosted');
+      feedbackInboxPlan().then(plan=>{
+        updateMessage(assistant,feedbackInboxAnswer(plan),{receipt:'Feedback Inbox · '+(plan?.item_count||0)+' local drafts · Cloudflare logs · no paid route',actions:false});
+        status('Feedback Inbox ready.','ready');
+        routeStatus('Feedback Inbox · review and promote intentionally','ready');
+      }).catch(()=>{
+        updateMessage(assistant,feedbackInboxAnswer({item_count:feedbackInboxItems().length,top_items:feedbackInboxItems()}),{receipt:'Feedback Inbox · local fallback · no provider call',actions:false});
+        status('Feedback Inbox server plan unavailable; showing local drafts.','ready');
+        routeStatus('Feedback Inbox · local fallback','hosted');
+      });
+      document.getElementById('p0-input')?.focus();
+      return true;
+    }
     if(String(action||'').startsWith('load-preset:')){
       loadPromptPreset(String(action).slice('load-preset:'.length));
       return true;
@@ -3421,6 +3545,14 @@
       routeStatus('Checking this Mac for local models...','hosted');
       closeMenus();
       checkLocalModels().catch(()=>{});
+      return true;
+    }
+    if(action==='model-health'){
+      closeMenus();
+      append('assistant',modelHealthAnswer(),'MMIR Model Health','Model health · route inventory · no provider call',{actions:false});
+      status('Model health ready.','ready');
+      routeStatus('Model health · active routes summarized','ready');
+      document.getElementById('p0-input')?.focus();
       return true;
     }
     if(action==='boost-answer-live'){
@@ -3548,6 +3680,7 @@
     if(!answerActionsAllowed(message))return '';
     const id=safeAttr(message.id||'');
     return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
+      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">Continue</button>':'')+
       '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
       '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
       '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'" aria-label="Copy safe share draft">Share safe</button>'+
@@ -3588,6 +3721,23 @@
     sendMessage();
   }
 
+  function continueTruncatedMessage(message){
+    if(state.busy){
+      setMessageActionStatus(message.id,'Wait for the current answer first.','error');
+      return;
+    }
+    const original=String(message.retryPrompt||previousUserMessageFor(message)?.content||'').trim();
+    const input=document.getElementById('p0-input');
+    if(!original||!input){
+      setMessageActionStatus(message.id,'No prompt to continue.','error');
+      return;
+    }
+    input.value='Continue the previous answer without repeating the beginning. Original prompt: '+original;
+    autosizeInput();
+    setMessageActionStatus(message.id,'Continuing...','ready');
+    sendMessage();
+  }
+
   async function shareSafeMessage(message){
     const user=previousUserMessageFor(message);
     const draft=[
@@ -3620,6 +3770,10 @@
     }
     if(action==='retry'){
       retryMessage(message);
+      return true;
+    }
+    if(action==='continue'){
+      continueTruncatedMessage(message);
       return true;
     }
     if(action==='share-safe'){
@@ -3754,6 +3908,48 @@
 
   function responseText(payload){
     return String(payload?.choices?.[0]?.message?.content||payload?.content||payload?.message||'').trim();
+  }
+
+  function responseFinishReason(payload){
+    return String(
+      payload?.choices?.[0]?.finish_reason||
+      payload?.finish_reason||
+      payload?.mmir?.receipt?.finish_reason||
+      payload?.mmir?.route_receipt?.finish_reason||
+      payload?.route_receipt?.finish_reason||
+      payload?.receipt?.finish_reason||
+      ''
+    );
+  }
+
+  function responseIsTruncated(payload){
+    const receipt=responseReceiptEnvelope(payload);
+    return Boolean(
+      payload?.answer_truncated||
+      payload?.completion_truncated||
+      payload?.mmir?.receipt?.completion_truncated||
+      payload?.mmir?.route_receipt?.completion_truncated||
+      payload?.route_receipt?.completion_truncated||
+      payload?.receipt?.completion_truncated||
+      receipt.completion_truncated||
+      /length|max[_-]?tokens?|token_limit|output_limit|truncated/i.test(responseFinishReason(payload))
+    );
+  }
+
+  function truncationGuardNote(){
+    return '\n\nSvarvakt: dette svaret stoppet ved token-/lengdegrensen. Trykk Continue for å fortsette uten å gjenta starten.';
+  }
+
+  function withTruncationGuard(answer,payload){
+    const text=String(answer||'').trim();
+    if(!responseIsTruncated(payload)||text.includes('Svarvakt:'))return text;
+    return text+truncationGuardNote();
+  }
+
+  function gatewayDataTruncated(data){
+    if(responseIsTruncated(data?.best_answer))return true;
+    if((Array.isArray(data?.data)?data.data:[]).some(responseIsTruncated))return true;
+    return (Array.isArray(data?.route_attempts)?data.route_attempts:[]).some(responseIsTruncated);
   }
 
   function hostedPayload(prompt,model=defaultHostedModel()){
@@ -4232,7 +4428,7 @@
     const swarmLabel=swarmReceiptLabel(data);
     const syncLimit=Number(data?.sync_route_limit)||Number(pool.sync_route_limit)||0;
     const arenaReady=data?.debate_plan?.consensus_ready===true||pool.arena_ready===true;
-    const councilReady=/council/i.test(label)&&arenaReady;
+    const councilReady=/(council|debate)/i.test(label)&&arenaReady;
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
@@ -4392,7 +4588,7 @@
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
     const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':(options.mode==='all'?'all':(options.mode==='council'?'council':'best-answer')));
-    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':(mode==='council'?'Supergeni Council':'Best Answer')));
+    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':(mode==='council'?'Model Debate':'Best Answer')));
     if(privateModeActive()){
       status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
       routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
@@ -4411,8 +4607,8 @@
       autosizeInput();
     }
     const routeCount=String(activeHostedCompareModels().length);
-    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
-    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
+    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Model Debate':'Supergeni · Best answer'));
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Model Debate':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     status(title+' is asking '+routeCount+' active routes...','ready');
       routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
@@ -4425,8 +4621,9 @@
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
         : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
-      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')));
-      updateMessage(assistant,content,{receipt});
+      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Model Debate':'Best answer')));
+      const truncated=gatewayDataTruncated(data);
+      updateMessage(assistant,withTruncationGuard(content,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
       renderToolbar();
@@ -4550,13 +4747,15 @@
       const answer=model.route==='local'
         ? await chatLocal(routePrompt,model,signal)
         : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
+      const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
       recordRouteBenchmark(model,measuredScore);
       const elapsed=formatDuration(elapsedMs);
       const connectGuide=responseConnectGuide(hostedData);
-      updateMessage(assistant,answer,{
-        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model),
+      updateMessage(assistant,withTruncationGuard(answer,hostedData),{
+        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
+        truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });
       renderModelMenu();
@@ -4594,14 +4793,16 @@
         try{
           const fallbackReceipt=routeReceipt(activeModel());
           const fallbackStarted=performance.now();
-          const fallbackAnswer=await chatHosted(routePrompt,signal);
+          const fallbackData=await chatHostedData(routePrompt,signal);
+          const fallbackAnswer=responseText(fallbackData)||((activeModel()?.label||'Hosted route')+' returned an empty response.');
+          const fallbackTruncated=responseIsTruncated(fallbackData);
           const fallbackElapsedMs=performance.now()-fallbackStarted;
           recordRouteBenchmark(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs));
           const fallbackElapsed=formatDuration(fallbackElapsedMs);
           updateMessage(
             assistant,
-            fallbackAnswer+'\n\nLocal model note: '+hint,
-            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)}
+            withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
+            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),truncated:fallbackTruncated}
           );
           status(answerStatus(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs),'Local fallback')+' · while local access waits for permission','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);

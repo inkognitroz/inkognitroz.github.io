@@ -642,8 +642,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('discuss-topic','Supergeni Council'",
-  "P0 + menu must expose Supergeni Council after two live routes are ready.",
+  "menuButton('discuss-topic','Debate models'",
+  "P0 + menu must expose Debate models after two live routes are ready.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

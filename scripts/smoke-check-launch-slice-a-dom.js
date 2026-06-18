@@ -184,7 +184,7 @@ requireIncludes(files.p0Runtime, 'function compareLiveRoutes(comparePrompt', 'P0
 requireIncludes(files.p0Runtime, 'pool.compareReady', 'P0 compare tools must be hidden until a second live route exists.');
 requireIncludes(files.p0Runtime, "menuButton('compare-live','Compare answers'", 'P0 compare must expose a gated + menu tool after local discovery.');
 requireIncludes(files.p0Runtime, "menuButton('best-answer-live','Best answer benchmark'", 'P0 Best Answer must expose a gated + menu tool after local discovery.');
-requireIncludes(files.p0Runtime, "menuButton('discuss-topic','Supergeni Council'", 'P0 Supergeni Council must expose a gated + menu tool after local discovery.');
+requireIncludes(files.p0Runtime, "menuButton('discuss-topic','Debate models'", 'P0 Model Debate must expose a gated + menu tool after local discovery.');
 requireIncludes(files.p0Runtime, 'scoreSummary(hostedScore)', 'P0 compare must show route score and response timing.');
 requireIncludes(files.p0Runtime, 'function scoreClassSummary(score)', 'P0 compare must show route answer/latency classes.');
 requireIncludes(files.p0Runtime, 'answer_class:found.answer_class', 'P0 compare must preserve API answer class metadata.');
