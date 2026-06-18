@@ -88,12 +88,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v2',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v3',
   'Public page must cache-bust the owner ping runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v2"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v3"',
   'Asset manifest must track the owner ping runtime version.'
 );
 
