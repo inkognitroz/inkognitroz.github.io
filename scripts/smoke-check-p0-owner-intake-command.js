@@ -33,8 +33,23 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "const TELEMETRY_EVENTS_PATH='/telemetry/events';",
+  'P0 shell must know the metadata-only interaction telemetry endpoint.'
+);
+requireIncludes(
+  shell,
   "const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';",
   'P0 shell must keep a local feedback inbox queue.'
+);
+requireIncludes(
+  shell,
+  "const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';",
+  'P0 shell must keep local interaction evidence for user-test triage.'
+);
+requireIncludes(
+  shell,
+  'const TELEMETRY_DENIED_FIELD_RE=',
+  'P0 shell must deny raw prompt/answer/content fields from interaction telemetry.'
 );
 requireIncludes(
   shell,
@@ -118,6 +133,41 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function captureInteraction(eventName,metadata={})',
+  'P0 shell must capture metadata-only user interactions for product learning.'
+);
+requireIncludes(
+  shell,
+  'function telemetryCaptureAllowed()',
+  'P0 shell must only send interaction telemetry from approved hosted origins.'
+);
+requireIncludes(
+  shell,
+  'if(!telemetryCaptureAllowed())return;',
+  'P0 shell must keep local/dev interaction telemetry local to avoid noisy CORS and accidental capture.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction('chat_send'",
+  'P0 shell must record regular chat send interactions without raw prompt text.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction('feedback_submitted'",
+  'P0 shell must record successful feedback intake for owner follow-up.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction('tool_used'",
+  'P0 shell must record high-value tool usage such as Boost, Debate and Model Health.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction(truncated?'truncation_seen'",
+  'P0 shell must record truncation events as first-class UX friction.'
+);
+requireIncludes(
+  shell,
   'data-p0-message-action="continue"',
   'P0 shell must expose Continue for truncated answers.'
 );
@@ -153,12 +203,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-feedback-inbox-wow-v1',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-feedback-inbox-wow-v1"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

@@ -42,8 +42,13 @@
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
   const FEEDBACK_INTAKE_PATH='/feedback/intake';
   const FEEDBACK_INBOX_PLAN_PATH='/feedback/inbox/plan';
+  const TELEMETRY_EVENTS_PATH='/telemetry/events';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
+  const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
+  const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
+  const P0_RUNTIME_VERSION='20260618-interaction-capture-v1';
+  const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
@@ -646,6 +651,138 @@
       .replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]');
   }
 
+  function cleanTelemetryKey(key){
+    return String(key||'')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_.:-]+/g,'_')
+      .replace(/_+/g,'_')
+      .replace(/^_+|_+$/g,'')
+      .slice(0,48);
+  }
+
+  function cleanTelemetryValue(value){
+    if(typeof value==='boolean')return value;
+    if(typeof value==='number'&&Number.isFinite(value))return Math.round(value*1000)/1000;
+    if(typeof value==='string'){
+      return redactOwnerSuggestionText(value).slice(0,180);
+    }
+    return null;
+  }
+
+  function sanitizeTelemetryMetadata(metadata){
+    const source=metadata&&typeof metadata==='object'?metadata:{};
+    const clean={};
+    Object.entries(source).forEach(([rawKey,rawValue])=>{
+      const key=cleanTelemetryKey(rawKey);
+      if(!key||TELEMETRY_DENIED_FIELD_RE.test(key))return;
+      if(Array.isArray(rawValue)){
+        const values=rawValue.map(cleanTelemetryValue).filter(value=>value!==null).slice(0,8);
+        if(values.length)clean[key]=values;
+        return;
+      }
+      const value=cleanTelemetryValue(rawValue);
+      if(value!==null)clean[key]=value;
+    });
+    return clean;
+  }
+
+  function interactionSessionId(){
+    let id=readStorageString(INTERACTION_SESSION_KEY,'');
+    if(!id){
+      id='sess_'+(window.crypto?.randomUUID?window.crypto.randomUUID():String(Date.now()).replace(/[^0-9]/g,''));
+      writeStorageString(INTERACTION_SESSION_KEY,id);
+    }
+    return id;
+  }
+
+  function telemetryEventId(){
+    if(window.crypto?.randomUUID)return 'evt_'+window.crypto.randomUUID();
+    const bytes=new Uint32Array(2);
+    if(window.crypto?.getRandomValues){
+      window.crypto.getRandomValues(bytes);
+      return 'evt_'+Date.now().toString(36)+'_'+Array.from(bytes).map(value=>value.toString(36)).join('');
+    }
+    return 'evt_'+Date.now().toString(36);
+  }
+
+  function interactionEventQueue(){
+    const events=readJson(INTERACTION_EVENTS_KEY,[]);
+    return Array.isArray(events)?events.filter(event=>event&&event.event_name).slice(-100):[];
+  }
+
+  function writeInteractionEventQueue(events){
+    writeJson(INTERACTION_EVENTS_KEY,(Array.isArray(events)?events:[])
+      .filter(event=>event&&event.event_name)
+      .slice(-100));
+  }
+
+  function interactionBaseMetadata(metadata){
+    const model=typeof activeModel==='function'?activeModel():null;
+    const pool=typeof intelligencePoolSummary==='function'?intelligencePoolSummary():{};
+    const base={
+      privacy_mode:typeof privacyMode==='function'?privacyMode():'public',
+      active_model_id:model?.id||'',
+      active_model_route:model?.route||'',
+      active_route_count:Number(state?.routeInventory?.activeRoutes)||0,
+      visible_model_count:Number(state?.routeInventory?.totalRoutes)||0,
+      future_route_count:Number(state?.routeInventory?.futureRoutes)||0,
+      active_provider_route_count:Number(state?.routeInventory?.activePublicProviderRoutes)||0,
+      active_external_node_count:Number(state?.routeInventory?.activeExternalNodeRoutes)||0,
+      compare_ready:Boolean(pool?.compareReady),
+      viewport_width:Number(window.innerWidth)||0,
+      viewport_height:Number(window.innerHeight)||0,
+      online:navigator.onLine!==false
+    };
+    return sanitizeTelemetryMetadata({...base,...metadata});
+  }
+
+  function telemetryCaptureAllowed(){
+    const origin=String(window.location?.origin||'');
+    return origin==='https://mmir.ai'||
+      origin==='https://www.mmir.ai'||
+      origin==='https://staging.mmir.ai'||
+      origin==='https://inkognitroz.github.io';
+  }
+
+  function sendInteractionEvents(events){
+    const cleanEvents=(Array.isArray(events)?events:[]).filter(event=>event&&event.event_name).slice(0,10);
+    if(!cleanEvents.length)return;
+    if(!telemetryCaptureAllowed())return;
+    const body=JSON.stringify({
+      source:'mmir-p0-chat',
+      page:'mmir.ai/mmir.html',
+      runtime_version:P0_RUNTIME_VERSION,
+      events:cleanEvents
+    });
+    const url=API_URL+TELEMETRY_EVENTS_PATH;
+    try{
+      if(navigator.sendBeacon){
+        const sent=navigator.sendBeacon(url,new Blob([body],{type:'application/json'}));
+        if(sent)return;
+      }
+    }catch(error){}
+    try{
+      fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{});
+    }catch(error){}
+  }
+
+  function captureInteraction(eventName,metadata={}){
+    const event={
+      id:telemetryEventId(),
+      event_name:cleanTelemetryKey(eventName)||'interaction',
+      created_at:new Date().toISOString(),
+      session_id:interactionSessionId(),
+      source:'mmir-p0-chat',
+      page:'mmir.ai/mmir.html',
+      runtime_version:P0_RUNTIME_VERSION,
+      metadata:interactionBaseMetadata(metadata)
+    };
+    writeInteractionEventQueue(interactionEventQueue().concat(event));
+    sendInteractionEvents([event]);
+    return event;
+  }
+
   function ownerSuggestionRouteText(plan){
     if(plan?.accepted&&plan?.submission?.issue_number){
       return 'Owner intake · issue #'+plan.submission.issue_number+' · Project Control';
@@ -860,11 +997,19 @@
     try{
       const plan=await submitFeedbackMentionCommand(parsed);
       if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
+      captureInteraction('feedback_submitted',{
+        target:parsed.target,
+        priority:plan?.inbox_item?.priority||'',
+        lane:plan?.draft?.classification?.lane||'',
+        accepted:Boolean(plan?.accepted),
+        local_feedback_count:feedbackInboxItems().length
+      });
       const routeText=feedbackIntakeRouteText(plan);
       updateMessage(assistant,feedbackIntakeAnswer(plan),{receipt:routeText,actions:false});
       status('Feedback registered.','ready');
       routeStatus(routeText,'ready');
     }catch(error){
+      captureInteraction('feedback_failed',{target:parsed.target,reason:'endpoint_unreachable'});
       updateMessage(assistant,'Feedback-endepunktet er utilgjengelig akkurat nå. Meldingen ble liggende lokalt i denne chatten.',{receipt:'Feedback intake · not filed · local transcript only',actions:false});
       status('Feedback intake unreachable.','error');
       routeStatus('Feedback unavailable · no issue created','error');
@@ -3084,6 +3229,7 @@
     const input=document.getElementById('p0-input');
     const prompt=String(input?.value||'').trim();
     if(!primary||!partner||primary.id===partner.id){
+      captureInteraction('tool_blocked',{tool:action,reason:'needs_second_model'});
       status('Refresh models first, then two-model tools can run.','error');
       routeStatus('Two-model tools need another active model','error');
       input?.focus();
@@ -3091,6 +3237,7 @@
     }
     if(!prompt){
       if(action==='discuss-topic'&&input){
+        captureInteraction('model_debate_prefill',{tool:'debate-models'});
         input.value='Debate topic: ';
         autosizeInput();
         closeMenus();
@@ -3100,6 +3247,7 @@
         return true;
       }
       status('Write a prompt first, then choose this two-model tool.','error');
+      captureInteraction('tool_blocked',{tool:action,reason:'missing_prompt'});
       routeStatus('Two-model tool needs a prompt','error');
       input?.focus();
       return true;
@@ -3107,14 +3255,17 @@
     closeMenus();
     if(gatewayComparePreferred()){
       if(action==='compare-live'){
+        captureInteraction('tool_used',{tool:'compare-answers',path:'gateway'});
         compareGatewayRoutes(prompt,{mode:'compare'});
         return true;
       }
       if(action==='best-answer-live'){
+        captureInteraction('tool_used',{tool:'best-answer-benchmark',path:'gateway'});
         compareGatewayRoutes(prompt,{mode:'best-answer'});
         return true;
       }
       if(action==='discuss-topic'){
+        captureInteraction('tool_used',{tool:'debate-models',path:'gateway'});
         compareGatewayRoutes(
           'Model Debate: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
           {mode:'council'}
@@ -3123,18 +3274,22 @@
       }
     }
     if(action==='compare-live'){
+      captureInteraction('tool_used',{tool:'compare-answers',path:'two-model'});
       compareLiveRoutes(prompt,partner,{mode:'compare'});
       return true;
     }
     if(action==='boost-answer-live'){
+      captureInteraction('tool_used',{tool:'boost-answer',path:'two-model'});
       compareLiveRoutes(prompt,partner,{mode:'boost'});
       return true;
     }
     if(action==='best-answer-live'){
+      captureInteraction('tool_used',{tool:'best-answer-benchmark',path:'two-model'});
       compareLiveRoutes(prompt,partner,{mode:'best-answer'});
       return true;
     }
     if(action==='discuss-topic'){
+      captureInteraction('tool_used',{tool:'debate-models',path:'two-model'});
       compareLiveRoutes(
         'Discuss this topic from two model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
         partner,
@@ -3322,10 +3477,12 @@
     if(!prompt){
       status('Write a prompt first, then Boost answer can run.','error');
       routeStatus('Boost needs a prompt','error');
+      captureInteraction('tool_blocked',{tool:'boost-answer',reason:'missing_prompt'});
       input?.focus();
       return true;
     }
     if(gatewayCompareAvailable()||comparePartnerModel()){
+      captureInteraction('tool_used',{tool:'boost-answer',path:gatewayCompareAvailable()?'gateway':'two-model'});
       compareLiveRoutes(prompt,comparePartnerModel(),{mode:'boost'});
       return true;
     }
@@ -3333,15 +3490,18 @@
     routeStatus('Boost checks route inventory · no paid route','hosted');
     refreshHostedModels().then(()=>{
       if(gatewayCompareAvailable()||comparePartnerModel()){
+        captureInteraction('tool_used',{tool:'boost-answer',path:gatewayCompareAvailable()?'gateway':'two-model',after_refresh:true});
         compareLiveRoutes(prompt,comparePartnerModel(),{mode:'boost'});
         return;
       }
       status('Boost needs at least two active routes.','ready');
       routeStatus('Boost waiting for another active route · connect local or provider node','hosted');
+      captureInteraction('tool_blocked',{tool:'boost-answer',reason:'needs_second_route'});
       input?.focus();
     }).catch(()=>{
       status('Boost route refresh failed.','error');
       routeStatus('Boost unavailable · route inventory unreachable','error');
+      captureInteraction('tool_failed',{tool:'boost-answer',reason:'route_inventory_unreachable'});
       input?.focus();
     });
     return true;
@@ -3354,10 +3514,12 @@
     if(!prompt){
       status('Write a prompt first, then Ask all active can run.','error');
       routeStatus('Ask all needs a prompt','error');
+      captureInteraction('tool_blocked',{tool:'ask-all-active',reason:'missing_prompt'});
       input?.focus();
       return true;
     }
     if(gatewayCompareAvailable()||comparePartnerModel()){
+      captureInteraction('tool_used',{tool:'ask-all-active',path:gatewayCompareAvailable()?'gateway':'two-model'});
       compareGatewayRoutes(prompt,{mode:'all'});
       return true;
     }
@@ -3365,15 +3527,18 @@
     routeStatus('Ask all checks route inventory · no paid route','hosted');
     refreshHostedModels().then(()=>{
       if(gatewayCompareAvailable()||comparePartnerModel()){
+        captureInteraction('tool_used',{tool:'ask-all-active',path:gatewayCompareAvailable()?'gateway':'two-model',after_refresh:true});
         compareGatewayRoutes(prompt,{mode:'all'});
         return;
       }
       status('Ask all needs at least two active routes.','ready');
       routeStatus('Ask all waiting for another active route · connect local or provider node','hosted');
+      captureInteraction('tool_blocked',{tool:'ask-all-active',reason:'needs_second_route'});
       input?.focus();
     }).catch(()=>{
       status('Ask all route refresh failed.','error');
       routeStatus('Ask all unavailable · route inventory unreachable','error');
+      captureInteraction('tool_failed',{tool:'ask-all-active',reason:'route_inventory_unreachable'});
       input?.focus();
     });
     return true;
@@ -3504,6 +3669,7 @@
       return true;
     }
     if(action==='draft-feedback'){
+      captureInteraction('feedback_draft_started',{surface:'add_menu'});
       const input=document.getElementById('p0-input');
       if(input){
         input.value='@inkognitroz ';
@@ -3517,14 +3683,17 @@
     }
     if(action==='feedback-inbox'){
       closeMenus();
+      captureInteraction('feedback_inbox_opened',{local_feedback_count:feedbackInboxItems().length});
       const assistant=append('assistant','Opening Feedback Inbox...','MMIR Feedback','Feedback Inbox · local drafts + sanitized server logs',{actions:false});
       status('Loading Feedback Inbox.','loading');
       routeStatus('Feedback Inbox · no provider call · no paid route','hosted');
       feedbackInboxPlan().then(plan=>{
+        captureInteraction('feedback_inbox_ready',{local_feedback_count:Number(plan?.item_count)||0});
         updateMessage(assistant,feedbackInboxAnswer(plan),{receipt:'Feedback Inbox · '+(plan?.item_count||0)+' local drafts · Cloudflare logs · no paid route',actions:false});
         status('Feedback Inbox ready.','ready');
         routeStatus('Feedback Inbox · review and promote intentionally','ready');
       }).catch(()=>{
+        captureInteraction('feedback_inbox_fallback',{local_feedback_count:feedbackInboxItems().length});
         updateMessage(assistant,feedbackInboxAnswer({item_count:feedbackInboxItems().length,top_items:feedbackInboxItems()}),{receipt:'Feedback Inbox · local fallback · no provider call',actions:false});
         status('Feedback Inbox server plan unavailable; showing local drafts.','ready');
         routeStatus('Feedback Inbox · local fallback','hosted');
@@ -3549,6 +3718,7 @@
     }
     if(action==='model-health'){
       closeMenus();
+      captureInteraction('tool_used',{tool:'model-health',path:'local-summary'});
       append('assistant',modelHealthAnswer(),'MMIR Model Health','Model health · route inventory · no provider call',{actions:false});
       status('Model health ready.','ready');
       routeStatus('Model health · active routes summarized','ready');
@@ -4592,14 +4762,17 @@
     if(privateModeActive()){
       status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
       routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
+      captureInteraction('tool_blocked',{tool:title,reason:'private_mode'});
       input?.focus();
       return;
     }
     if(!prompt){
       status('Write a prompt first, then '+title+' can run.','error');
+      captureInteraction('tool_blocked',{tool:title,reason:'missing_prompt'});
       input?.focus();
       return;
     }
+    captureInteraction('swarm_started',{tool:title,mode,hosted_route_count:Number(activeHostedCompareModels().length)||0});
     const signal=beginResponse();
     append('user',prompt,'You');
     if(input){
@@ -4624,6 +4797,14 @@
       const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Model Debate':'Best answer')));
       const truncated=gatewayDataTruncated(data);
       updateMessage(assistant,withTruncationGuard(content,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
+      captureInteraction(truncated?'truncation_seen':'swarm_completed',{
+        tool:title,
+        mode,
+        answered_count:Number(gatewayAnswerCount(data))||0,
+        route_count:Number(gatewayRouteCount(data))||0,
+        winner_provider:data.best_answer?.receipt?.provider||'',
+        truncated
+      });
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
       renderToolbar();
@@ -4633,10 +4814,12 @@
       routeStatus(receipt,'ready');
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
+        captureInteraction('swarm_stopped',{tool:title,mode});
         updateMessage(assistant,'Response stopped.',{receipt:'Best Answer · stopped'});
         status(title+' stopped.','idle');
         routeStatus('Stopped · compare routes cancelled','hosted');
       }else{
+        captureInteraction('swarm_failed',{tool:title,mode,reason:'gateway_unavailable'});
         updateMessage(assistant,'Best Answer is unavailable right now. Try normal chat or refresh models.',{receipt:'Best Answer · gateway compare failed'});
         status(title+' failed: '+(error?.message||'gateway unavailable'),'error');
         routeStatus('Best Answer unavailable · refresh routes','error');
@@ -4678,6 +4861,13 @@
     if(await handleOwnerSuggestionCommand(prompt,input))return;
     if(await handleFeedbackMentionCommand(prompt,input))return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
+    captureInteraction('chat_send',{
+      active_model_id:activeModel()?.id||'',
+      active_model_route:activeModel()?.route||'',
+      has_prompt:true,
+      answer_style:answerStyle(),
+      fast_answer_next:Boolean(state.fastAnswerOnce)
+    });
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
@@ -4686,6 +4876,7 @@
       return;
     }
     if(explicit?.mode==='missing-local'){
+      captureInteraction('chat_blocked',{reason:'missing_local_model'});
       status('Refresh models first, then use @supergeni @gemma for compare.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
@@ -4713,6 +4904,7 @@
       );
       status(modeLabel+' needs a local model.','error');
       routeStatus(modeNeed,'error');
+      captureInteraction('chat_blocked',{reason:'private_mode_needs_local',privacy_mode:privacyMode()});
       input?.focus();
       return;
     }
@@ -4729,6 +4921,7 @@
     if(!model||model.executable===false||model.selectable===false){
       status((model?.label||'Provider candidate')+' is future capacity. Active free routes are ready now.','ready');
       routeStatus('Future node · deploy handoff needed','hosted');
+      captureInteraction('chat_blocked',{reason:'future_route',selected_model_id:model?.id||''});
       input?.focus();
       return;
     }
@@ -4758,6 +4951,13 @@
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });
+      captureInteraction(hostedTruncated?'truncation_seen':'chat_answer_ready',{
+        active_model_id:model.id,
+        active_model_route:model.route,
+        latency_ms:Math.round(elapsedMs),
+        score:effectiveModelScore(model),
+        truncated:hostedTruncated
+      });
       renderModelMenu();
       if(connectGuide){
         const routeText=connectGuideRouteText(connectGuide);
@@ -4769,6 +4969,7 @@
       }
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
+        captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||''});
         updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
         status('Response stopped.','idle');
         routeStatus('Stopped · no failed first request','hosted');
@@ -4778,6 +4979,7 @@
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         const hint=localNetworkHint(error);
         if(!hostedFallbackAllowedForLocalFailure(prompt,routePrompt)){
+          captureInteraction('chat_failed_closed',{reason:'local_private_guard',active_model_id:model?.id||''});
           updateMessage(
             assistant,
             hint+'\n\nPrivacy guard: I did not send this local/private prompt to hosted Supergeni. Fix local access or choose Supergeni explicitly if you want a hosted answer.',
@@ -4804,10 +5006,18 @@
             withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
             {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),truncated:fallbackTruncated}
           );
+          captureInteraction(fallbackTruncated?'truncation_seen':'chat_fallback_ready',{
+            active_model_id:activeModel()?.id||'',
+            active_model_route:activeModel()?.route||'',
+            original_route:'local',
+            latency_ms:Math.round(fallbackElapsedMs),
+            truncated:fallbackTruncated
+          });
           status(answerStatus(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs),'Local fallback')+' · while local access waits for permission','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
         }catch(fallbackError){
           if(stopRequested||fallbackError?.name==='AbortError'){
+            captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||'',phase:'fallback'});
             updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
             status('Response stopped.','idle');
             routeStatus('Stopped · no failed first request','hosted');
@@ -4815,11 +5025,13 @@
           }
           updateMessage(assistant,hint+'\n\nSupergeni is still available from the model picker.');
           status('Chat failed: local node blocked/unavailable','error');
+          captureInteraction('chat_failed',{reason:'local_and_fallback_unavailable',active_model_id:model?.id||''});
         }
       }else{
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Please refresh and try again.');
         status('Chat failed: '+API_LABEL+' unreachable','error');
+        captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
     }finally{
       finishResponse();
