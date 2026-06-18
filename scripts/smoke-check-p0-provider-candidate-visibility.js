@@ -124,22 +124,22 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v4',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v5',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
   html,
-  'p0-chat-shell.css?v=20260618-feedback-intake-v1',
+  'p0-chat-shell.css?v=20260618-feedback-capture-status-v1',
   'Public page must cache-bust the visible provider candidate CSS.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v4"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v5"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.css": "20260618-feedback-intake-v1"',
+  '"p0-chat-shell.css": "20260618-feedback-capture-status-v1"',
   'Asset manifest must track the visible provider candidate CSS.'
 );
 requireNotIncludes(
