@@ -47,7 +47,7 @@
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
-  const P0_RUNTIME_VERSION='20260618-interaction-capture-v1';
+  const P0_RUNTIME_VERSION='20260618-interaction-capture-v2';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -757,13 +757,7 @@
     });
     const url=API_URL+TELEMETRY_EVENTS_PATH;
     try{
-      if(navigator.sendBeacon){
-        const sent=navigator.sendBeacon(url,new Blob([body],{type:'application/json'}));
-        if(sent)return;
-      }
-    }catch(error){}
-    try{
-      fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{});
+      fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,credentials:'omit'}).catch(()=>{});
     }catch(error){}
   }
 

@@ -148,6 +148,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "credentials:'omit'",
+  'P0 shell must send interaction telemetry without browser credentials for cross-origin CORS safety.'
+);
+requireIncludes(
+  shell,
   "captureInteraction('chat_send'",
   'P0 shell must record regular chat send interactions without raw prompt text.'
 );
@@ -203,12 +208,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v1',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v2',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v1"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v2"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
