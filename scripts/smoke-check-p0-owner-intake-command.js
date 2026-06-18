@@ -63,6 +63,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function promptFrictionSignal(prompt)',
+  'P0 shell must classify MMIR-related chat friction without relying on the owner as support.'
+);
+requireIncludes(
+  shell,
   'function redactOwnerSuggestionText(value)',
   'P0 shell must redact owner suggestions locally before display or API submission.'
 );
@@ -103,7 +108,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "source:'mmir-chat-feedback'",
+  "source:parsed.source||'mmir-chat-feedback'",
   'P0 shell must mark public feedback with the feedback source.'
 );
 requireIncludes(
@@ -163,6 +168,31 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "captureInteraction('chat_guidance_signal'",
+  'P0 shell must record MMIR guidance/friction signals from normal chat without raw prompt text.'
+);
+requireIncludes(
+  shell,
+  'function queueImplicitFeedbackFromChat(prompt,signal)',
+  'P0 shell must turn clear product friction in chat into a sanitized feedback draft.'
+);
+requireIncludes(
+  shell,
+  'function removeFeedbackInboxItem(id)',
+  'P0 shell must replace pending implicit feedback drafts when server intake succeeds.'
+);
+requireIncludes(
+  shell,
+  "source:'mmir-chat-implicit-feedback'",
+  'P0 shell must mark indirect chat feedback separately from explicit @feedback.'
+);
+requireIncludes(
+  shell,
+  "routeStatus('Feedback signal captured · sanitized draft · no raw chat log','ready');",
+  'P0 shell must confirm captured feedback in-app without asking the user to contact the owner.'
+);
+requireIncludes(
+  shell,
   "captureInteraction('tool_used'",
   'P0 shell must record high-value tool usage such as Boost, Debate and Model Health.'
 );
@@ -208,12 +238,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v2',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v3',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v2"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v3"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

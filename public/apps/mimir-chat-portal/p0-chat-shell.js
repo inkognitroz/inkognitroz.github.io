@@ -47,7 +47,7 @@
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
-  const P0_RUNTIME_VERSION='20260618-interaction-capture-v2';
+  const P0_RUNTIME_VERSION='20260618-interaction-capture-v3';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -642,6 +642,38 @@
     };
   }
 
+  function promptFrictionSignal(prompt){
+    const raw=String(prompt||'').trim();
+    const text=raw.toLowerCase();
+    if(!raw||raw.length<8)return null;
+    const productRelated=/\b(mmir|supergeni|boost|swarm|ask all|best answer|compare|debate|model health|model|models|modell|modeller|node|noder|local|lokal|connector|connect|koblet|koble|setup|install|knapp|meny|menu|toolbar|feedback|app|chatten|nettsiden|ui|ux|privacy|privat|route|rute)\b/i.test(raw);
+    const frictionLike=/\b(funker ikke|virker ikke|feil|bug|crash|trøbbel|stuck|skjønner ikke|forvirr|vanskelig|treg|slow|truncat|avkutt|mangler|missing|finner ikke|kan ikke|hvor er|hvordan|hjelp|guide|savner|ønsker|burde|bør|må være|skulle hatt|not working|confusing|hard to|where is|how do i|i miss|wish|should)\b/i.test(raw);
+    if(!productRelated&&!frictionLike)return null;
+    let surface='general_chat';
+    if(/\b(boost|ask all|swarm|compare|best answer|debate|diskusjon|debatt)\b/i.test(raw))surface='multi_model_tools';
+    else if(/\b(node|noder|local|lokal|connector|connect|koblet|koble|setup|install|ollama)\b/i.test(raw))surface='node_setup';
+    else if(/\b(model|models|modell|modeller|model health|picker|velg)\b/i.test(raw))surface='model_choice';
+    else if(/\b(knapp|meny|menu|toolbar|\+|button)\b/i.test(raw))surface='composer_tools';
+    else if(/\b(feedback|tilbakemelding|forslag|issue)\b/i.test(raw))surface='feedback_flow';
+    else if(/\b(truncat|avkutt|kortet|stoppet)\b/i.test(raw))surface='answer_quality';
+    else if(/\b(privat|privacy|secret|token|api key|sikkerhet)\b/i.test(raw))surface='trust_privacy';
+    let kind='question_or_guidance';
+    if(/\b(savner|ønsker|burde|bør|må være|skulle hatt|i miss|wish|should)\b/i.test(raw))kind='feature_or_ux_request';
+    if(/\b(funker ikke|virker ikke|feil|bug|crash|trøbbel|stuck|treg|slow|truncat|avkutt|not working|broken|failed)\b/i.test(raw))kind='bug_or_failure';
+    if(/\b(skjønner ikke|forvirr|vanskelig|confusing|hard to|hvor er|hvordan|where is|how do i)\b/i.test(raw))kind=kind==='question_or_guidance'?'confusion_or_guidance':kind;
+    const severity=kind==='bug_or_failure'?'p2-bug':(kind==='feature_or_ux_request'?'p3-ux':'p5-guidance');
+    const autoDraft=productRelated&&kind!=='question_or_guidance';
+    return {
+      kind,
+      surface,
+      severity,
+      auto_draft:autoDraft,
+      lang:/[æøå]|\b(ikke|jeg|hvor|hvordan|knapp|meny|noder|virker)\b/i.test(raw)?'no':'en',
+      chars:raw.length,
+      words:raw.split(/\s+/).filter(Boolean).length
+    };
+  }
+
   function redactOwnerSuggestionText(value){
     return String(value||'')
       .replace(/\s+/g,' ')
@@ -850,6 +882,14 @@
     return true;
   }
 
+  function removeFeedbackInboxItem(id){
+    const value=String(id||'');
+    if(!value)return false;
+    const current=readJson(FEEDBACK_INBOX_KEY,[]);
+    writeFeedbackInboxItems(current.filter(item=>String(item?.id||'')!==value));
+    return true;
+  }
+
   function feedbackPriorityLabel(priority){
     const value=String(priority||'p5-triage');
     if(value==='p1-risk')return 'Risk';
@@ -941,11 +981,70 @@
         command:'@'+parsed.target+' '+parsed.suggestion,
         target:parsed.target,
         suggestion:parsed.suggestion,
-        source:'mmir-chat-feedback',
+        source:parsed.source||'mmir-chat-feedback',
         public_feedback:true,
+        implicit_feedback:Boolean(parsed.implicit_feedback),
         submit:false
       }),
       timeoutMs:12000
+    });
+  }
+
+  function localImplicitFeedbackItem(prompt,signal){
+    const suggestion=redactOwnerSuggestionText(prompt);
+    if(!suggestion)return null;
+    return {
+      id:'fb_implicit_'+telemetryEventId().replace(/^evt_/,''),
+      created_at:new Date().toISOString(),
+      target:'feedback',
+      source:'mmir-chat-implicit-feedback',
+      status:'draft_ready',
+      priority:signal.severity||'p5-guidance',
+      title:'Implicit chat feedback · '+(signal.surface||'general_chat'),
+      suggestion,
+      classification:{lane:signal.surface||'general_chat',repo:'inkognitroz.github.io',backlog_hint:'user-test-friction'},
+      no_paid_routes_started:true,
+      provider_called:false
+    };
+  }
+
+  function queueImplicitFeedbackFromChat(prompt,signal){
+    const item=localImplicitFeedbackItem(prompt,signal);
+    const localId=item?.id||'';
+    if(item)saveFeedbackInboxItem(item);
+    captureInteraction('implicit_feedback_detected',{
+      feedback_kind:signal.kind,
+      surface:signal.surface,
+      severity:signal.severity,
+      auto_draft:Boolean(signal.auto_draft),
+      utterance_chars:signal.chars,
+      word_count:signal.words,
+      lang:signal.lang,
+      local_feedback_count:feedbackInboxItems().length
+    });
+    if(!signal.auto_draft)return;
+    submitFeedbackMentionCommand({
+      target:'feedback',
+      suggestion:redactOwnerSuggestionText(prompt),
+      source:'mmir-chat-implicit-feedback',
+      implicit_feedback:true
+    }).then(plan=>{
+      if(localId)removeFeedbackInboxItem(localId);
+      if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
+      captureInteraction('implicit_feedback_submitted',{
+        feedback_kind:signal.kind,
+        surface:signal.surface,
+        severity:plan?.inbox_item?.priority||signal.severity,
+        lane:plan?.draft?.classification?.lane||signal.surface,
+        local_feedback_count:feedbackInboxItems().length
+      });
+    }).catch(()=>{
+      captureInteraction('implicit_feedback_failed',{
+        feedback_kind:signal.kind,
+        surface:signal.surface,
+        reason:'endpoint_unreachable',
+        local_feedback_count:feedbackInboxItems().length
+      });
     });
   }
 
@@ -4855,6 +4954,23 @@
     if(await handleOwnerSuggestionCommand(prompt,input))return;
     if(await handleFeedbackMentionCommand(prompt,input))return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
+    const frictionSignal=promptFrictionSignal(prompt);
+    if(frictionSignal){
+      captureInteraction('chat_guidance_signal',{
+        feedback_kind:frictionSignal.kind,
+        surface:frictionSignal.surface,
+        severity:frictionSignal.severity,
+        auto_draft:Boolean(frictionSignal.auto_draft),
+        utterance_chars:frictionSignal.chars,
+        word_count:frictionSignal.words,
+        lang:frictionSignal.lang
+      });
+      if(frictionSignal.auto_draft){
+        queueImplicitFeedbackFromChat(prompt,frictionSignal);
+        status('Feedback signal captured.','ready');
+        routeStatus('Feedback signal captured · sanitized draft · no raw chat log','ready');
+      }
+    }
     captureInteraction('chat_send',{
       active_model_id:activeModel()?.id||'',
       active_model_route:activeModel()?.route||'',
