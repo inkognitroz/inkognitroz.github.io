@@ -1,47 +1,91 @@
 {
-  "id": "/",
-  "name": "MMIR.ai",
-  "short_name": "MMIR",
-  "description": "Trusted AI orchestration layer for local models, workflows, memory and connected runtimes.",
-  "start_url": "./mmir.html#mimir-instant-start",
-  "scope": "./",
-  "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "any",
-  "background_color": "#f8fafc",
-  "theme_color": "#0f172a",
-  "categories": ["productivity", "utilities", "developer"],
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "shortcuts": [
-    {
-      "name": "Chat",
-      "short_name": "Chat",
-      "description": "Open MMIR chat.",
-      "url": "./mmir.html#mimir-chat-runtime",
-      "icons": [{ "src": "./assets/mmir-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    "id": "/",
+    "name": "MMIR.ai",
+    "short_name": "MMIR",
+    "description": "Trusted AI orchestration layer for local models, workflows, memory and connected runtimes.",
+    "start_url": "./mmir.html#mimir-instant-start",
+    "scope": "./",
+    "display": "standalone",
+    "display_override": [
+        "window-controls-overlay",
+        "standalone",
+        "minimal-ui"
+    ],
+    "orientation": "any",
+    "background_color": "#f8fafc",
+    "theme_color": "#0f172a",
+    "categories": [
+        "productivity",
+        "utilities",
+        "developer"
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-existing"
     },
-    {
-      "name": "Connect Node",
-      "short_name": "Node",
-      "description": "Open local node setup.",
-      "url": "./mmir.html#local-connector",
-      "icons": [{ "src": "./assets/mmir-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    }
-  ],
-  "icons": [
-    {
-      "src": "./assets/mmir-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/mmir-maskable-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    }
-  ]
+    "shortcuts": [
+        {
+            "name": "Chat",
+            "short_name": "Chat",
+            "description": "Open MMIR chat.",
+            "url": "./mmir.html#mimir-chat-runtime",
+            "icons": [
+                {
+                    "src": "./assets/mmir-icon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        },
+        {
+            "name": "Connect Node",
+            "short_name": "Node",
+            "description": "Open local node setup.",
+            "url": "./mmir.html#local-connector",
+            "icons": [
+                {
+                    "src": "./assets/mmir-icon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        }
+    ],
+    "icons": [
+        {
+            "src": "./assets/mmir-icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "./assets/mmir-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "./assets/mmir-icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "./assets/mmir-icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "./assets/mmir-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "./assets/mmir-maskable-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        }
+    ]
 }
