@@ -28,6 +28,16 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "const FEEDBACK_INBOX_PLAN_PATH='/feedback/inbox/plan';",
+  'P0 shell must know the feedback inbox planning endpoint.'
+);
+requireIncludes(
+  shell,
+  "const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';",
+  'P0 shell must keep a local feedback inbox queue.'
+);
+requireIncludes(
+  shell,
   'function ownerSuggestionCommand(prompt)',
   'P0 shell must parse the /admin command before normal chat routing.'
 );
@@ -88,6 +98,31 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "menuButton('feedback-inbox','Feedback Inbox'",
+  'Add menu must expose a feedback inbox review affordance.'
+);
+requireIncludes(
+  shell,
+  "menuButton('model-health','Model health'",
+  'Add menu must expose a compact model/node health view.'
+);
+requireIncludes(
+  shell,
+  "menuButton('discuss-topic','Debate models'",
+  'Add menu must expose model debate with user-readable language.'
+);
+requireIncludes(
+  shell,
+  'function responseIsTruncated(payload)',
+  'P0 shell must detect provider truncation.'
+);
+requireIncludes(
+  shell,
+  'data-p0-message-action="continue"',
+  'P0 shell must expose Continue for truncated answers.'
+);
+requireIncludes(
+  shell,
   "if(await handleOwnerSuggestionCommand(prompt,input))return;",
   'P0 shell must short-circuit normal LLM chat for owner-intake commands.'
 );
@@ -118,12 +153,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-feedback-intake-v1',
+  'p0-chat-shell.js?v=20260618-feedback-inbox-wow-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-feedback-intake-v1"',
+  '"p0-chat-shell.js": "20260618-feedback-inbox-wow-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

@@ -50,7 +50,7 @@ requireIncludes(renderAddMenu, ".filter(tool=>tool.id!=='discuss'||pool.compareR
 requireIncludes(renderAddMenu, "pin-toolbar-tool:'", '+ menu must be able to pin optional toolbar tools.');
 requireIncludes(renderAddMenu, "unpin-toolbar-tool:'", '+ menu must be able to remove optional toolbar tools.');
 requireIncludes(shell, "id:'fresh-start'", '+ menu must include the fresh-start tool.');
-requireIncludes(shell, "id:'discuss'", '+ menu must include the Supergeni Council tool.');
+requireIncludes(shell, "id:'discuss'", '+ menu must include the Model Debate tool.');
 requireIncludes(shell, "id:'memory'", '+ menu must include the memory tool.');
 requireIncludes(shell, "id:'stop'", '+ menu must include the explicit stop tool.');
 requireIncludes(shell, "id:'fast-answer'", '+ menu must include the lightning fast-answer tool.');
@@ -82,10 +82,10 @@ requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion b
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
 requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260618-feedback-intake-v1', 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260618-feedback-inbox-wow-v1', 'Public page must cache-bust the toolbar runtime.');
 requireIncludes(html, 'p0-chat-shell.css?v=20260618-feedback-intake-v1', 'Public page must cache-bust the toolbar CSS.');
 requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260618-feedback-intake-v1"', 'Asset manifest must track toolbar runtime version.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260618-feedback-inbox-wow-v1"', 'Asset manifest must track toolbar runtime version.');
 requireIncludes(manifest, '"p0-chat-shell.css": "20260618-feedback-intake-v1"', 'Asset manifest must track toolbar CSS version.');
 requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
 

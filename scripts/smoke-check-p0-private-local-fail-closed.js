@@ -64,7 +64,7 @@ requireText(
 );
 requireOrder(
   'if(!hostedFallbackAllowedForLocalFailure(prompt,routePrompt)){',
-  'const fallbackAnswer=await chatHosted(routePrompt,signal);',
+  'const fallbackData=await chatHostedData(routePrompt,signal);',
   'P0 shell must run the private/local fail-closed guard before any hosted fallback request.',
 );
 requireScopedOrder(

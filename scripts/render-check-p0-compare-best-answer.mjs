@@ -191,7 +191,7 @@ async function checkViewport(browser, viewport) {
   let addMenu = await menuText(page);
   assert(addMenu.includes('Connect local model'), `${viewport.name}: add menu should keep Connect local model`);
   assert(addMenu.includes('Refresh models'), `${viewport.name}: add menu should keep Refresh models`);
-  assert(!/Compare answers|Best answer benchmark|Supergeni Council/i.test(addMenu), `${viewport.name}: add menu must not show two-model tools before local discovery`);
+  assert(!/Compare answers|Best answer benchmark|Debate models/i.test(addMenu), `${viewport.name}: add menu must not show two-model tools before local discovery`);
 
   await page.locator('[data-p0-action="check-local"]').click();
   await page.waitForFunction(() => {
@@ -209,7 +209,7 @@ async function checkViewport(browser, viewport) {
   assert(/Two models/i.test(addMenu), `${viewport.name}: add menu must group gated two-model tools after local discovery`);
   assert(/Compare answers/i.test(addMenu), `${viewport.name}: add menu must expose Compare answers after local discovery`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu must expose Best answer benchmark after local discovery`);
-  assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu must expose Supergeni Council after local discovery`);
+  assert(/Debate models/i.test(addMenu), `${viewport.name}: add menu must expose Debate models after local discovery`);
   await page.keyboard.press('Escape').catch(() => {});
   await page.waitForSelector('#p0-add-menu[hidden]', { timeout: 2000 }).catch(() => {});
 
