@@ -43,11 +43,12 @@
   const FEEDBACK_INTAKE_PATH='/feedback/intake';
   const FEEDBACK_INBOX_PLAN_PATH='/feedback/inbox/plan';
   const TELEMETRY_EVENTS_PATH='/telemetry/events';
+  const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
-  const P0_RUNTIME_VERSION='20260618-interaction-capture-v3';
+  const P0_RUNTIME_VERSION='20260618-interaction-capture-v4';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -63,6 +64,8 @@
   const ICON_SHIELD=P0_ICONS.shield||'';
   const ICON_MIC=P0_ICONS.mic||'';
   const ICON_FLAME=P0_ICONS.flame||'';
+  let demoTranscriptTimer=null;
+  let lastDemoTranscriptHash='';
   const ICON_BUBBLES=P0_ICONS.bubbles||'';
   const ICON_BRAIN=P0_ICONS.brain||'';
   const ICON_STOP=P0_ICONS.stop||'';
@@ -807,6 +810,93 @@
     writeInteractionEventQueue(interactionEventQueue().concat(event));
     sendInteractionEvents([event]);
     return event;
+  }
+
+  function demoTranscriptCaptureEnabled(){
+    if(superPrivateModeActive())return false;
+    const params=new URLSearchParams(window.location?.search||'');
+    if(params.get('demo_capture')==='0'||params.has('no_demo_capture'))return false;
+    const host=String(window.location?.hostname||'').toLowerCase();
+    const hostedDemo=host==='mmir.ai'||host==='www.mmir.ai'||host==='staging.mmir.ai';
+    const explicit=params.has('demo_capture')||
+      params.has('mmir_demo')||
+      params.has('user_test')||
+      params.has('mmir_qa_session')||
+      [...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key));
+    return hostedDemo||explicit;
+  }
+
+  function redactDemoTranscriptText(value){
+    return String(value||'')
+      .replace(/\r/g,'')
+      .replace(/\n{5,}/g,'\n\n\n\n')
+      .trim()
+      .slice(0,2000)
+      .replace(OWNER_SECRETISH_RE,'[redacted-secret-like-value]')
+      .replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]');
+  }
+
+  function demoTranscriptMessages(){
+    return state.messages
+      .filter(message=>message&&(message.role==='user'||message.role==='assistant'))
+      .slice(-12)
+      .map(message=>({
+        id:String(message.id||'').slice(0,96),
+        role:message.role,
+        label:String(message.label||'').slice(0,80),
+        created_at:String(message.createdAt||'').slice(0,80),
+        content:redactDemoTranscriptText(message.content||'')
+      }))
+      .filter(message=>message.content);
+  }
+
+  function demoTranscriptHash(messages){
+    return messages.map(message=>[
+      message.id,
+      message.role,
+      message.content.length,
+      message.content.slice(0,80),
+      message.content.slice(-80)
+    ].join(':')).join('|');
+  }
+
+  function sendDemoTranscript(reason='conversation_update',metadata={}){
+    if(!demoTranscriptCaptureEnabled())return;
+    const messages=demoTranscriptMessages();
+    if(!messages.length)return;
+    const hash=demoTranscriptHash(messages);
+    if(hash===lastDemoTranscriptHash)return;
+    lastDemoTranscriptHash=hash;
+    const body=JSON.stringify({
+      demo_mode:true,
+      consent:true,
+      capture_consent:'demo_transcript',
+      source:'mmir-chat-demo',
+      page:'mmir.ai/mmir.html',
+      runtime_version:P0_RUNTIME_VERSION,
+      session_id:interactionSessionId(),
+      metadata:sanitizeTelemetryMetadata({
+        reason,
+        message_count:messages.length,
+        privacy_mode:privacyMode(),
+        ...metadata
+      }),
+      messages
+    });
+    try{
+      fetch(API_URL+DEMO_TRANSCRIPT_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,credentials:'omit'}).catch(()=>{});
+      captureInteraction('demo_transcript_sent',{
+        reason,
+        message_count:messages.length,
+        demo_capture:true
+      });
+    }catch(error){}
+  }
+
+  function scheduleDemoTranscriptCapture(reason='conversation_update',metadata={}){
+    if(!demoTranscriptCaptureEnabled())return;
+    clearTimeout(demoTranscriptTimer);
+    demoTranscriptTimer=setTimeout(()=>sendDemoTranscript(reason,metadata),700);
   }
 
   function ownerSuggestionRouteText(plan){
@@ -4116,6 +4206,10 @@
     state.messages=state.messages.slice(-MAX_HISTORY);
     saveHistory();
     renderTranscript();
+    scheduleDemoTranscriptCapture('message_appended',{
+      role:message.role,
+      variant:message.variant||''
+    });
     return message;
   }
 
@@ -4124,10 +4218,17 @@
     Object.assign(message,updates);
     saveHistory();
     renderTranscript();
+    scheduleDemoTranscriptCapture('message_updated',{
+      role:message.role,
+      variant:message.variant||'',
+      truncated:Boolean(message.truncated)
+    });
   }
 
   function clearChat(){
     state.messages=[];
+    lastDemoTranscriptHash='';
+    clearTimeout(demoTranscriptTimer);
     saveHistory();
     renderTranscript();
     status('New chat ready.','ready');
