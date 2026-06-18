@@ -83,9 +83,10 @@ const hostedScore = testApi.routeScore(
   746
 );
 const topStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore), 6);
-assertIncludes(topStatus, 'Supergeni answered in 746ms', 'Top-right green status must keep answer latency visible.');
-assertIncludes(topStatus, 'hosted route', 'Top-right green status must keep the route class visible as subtle text.');
-assertIncludes(topStatus, 'Score ', 'Top-right green status must keep route score visible.');
+assertIncludes(topStatus, 'Verifisert', 'Top-right green status must show the trust value first.');
+assertIncludes(topStatus, 'privat', 'Top-right green status must show the privacy value first.');
+assertExcludes(topStatus, '746ms', 'Top-right green status must keep answer latency behind details.');
+assertExcludes(topStatus, 'Score ', 'Top-right green status must keep route score behind details.');
 assertExcludes(topStatus, 'Supergenious', 'Public status text must use Supergeni branding.');
 
 const bestAnswerEl = fakeElement();
@@ -94,9 +95,10 @@ testApi.renderMicroStatus(
   'Supergeni ready · hosted · Best answer synthesis · No paid route · api.mmir.ai/routing/score · Winner: Supergeni · API score 84 · complete answer · hosted default route · acceptable latency · 746ms',
   'hosted'
 );
-assertIncludes(bestAnswerEl.innerHTML, 'Supergeni', 'Under-chat green micro-status must keep the active route label.');
-assertIncludes(bestAnswerEl.innerHTML, 'API score 84', 'Under-chat green micro-status must keep score evidence.');
-assertIncludes(bestAnswerEl.innerHTML, '746ms', 'Under-chat green micro-status must keep answer latency evidence.');
+assertIncludes(bestAnswerEl.innerHTML, 'Verifisert', 'Under-chat green micro-status must show verified value, not raw telemetry.');
+assertIncludes(bestAnswerEl.innerHTML, 'privat', 'Under-chat green micro-status must show privacy value, not raw telemetry.');
+assertExcludes(bestAnswerEl.innerHTML, 'API score 84', 'Under-chat green micro-status must keep score evidence behind details.');
+assertExcludes(bestAnswerEl.innerHTML, '746ms', 'Under-chat green micro-status must keep answer latency evidence behind details.');
 assertExcludes(bestAnswerEl.innerHTML, 'api.mmir.ai', 'Under-chat green micro-status must keep API host in details, not visible first-user text.');
 assertExcludes(bestAnswerEl.innerHTML, 'Winner:', 'Under-chat green micro-status must not show winner clutter.');
 assertIncludes(bestAnswerEl.attrs['aria-label'], 'No paid route', 'Full route receipt must remain available through aria-label/title even when visible text is compact.');
@@ -108,11 +110,12 @@ testApi.renderMicroStatus(
   'Local node ready · 5 models · Private · This Mac · Score 82 · avg 650ms',
   'local'
 );
-assertIncludes(localEl.innerHTML, 'Local node ready', 'Local attach status must be condensed, not repeated as a large chip.');
-assertIncludes(localEl.innerHTML, '5 models', 'Local attach status must keep model count in subtle text.');
-assertIncludes(localEl.innerHTML, 'Private', 'Local attach status must keep privacy state in subtle text.');
-assertIncludes(localEl.innerHTML, 'Score 82', 'Local attach status must keep route score in subtle text.');
-assertIncludes(localEl.innerHTML, 'avg 650ms', 'Local attach status must keep measured latency in subtle text.');
+assertIncludes(localEl.innerHTML, 'Verifisert', 'Local attach status must show verified value.');
+assertIncludes(localEl.innerHTML, 'privat', 'Local attach status must show privacy value.');
+assertExcludes(localEl.innerHTML, 'Score 82', 'Local attach status must keep route score behind details.');
+assertExcludes(localEl.innerHTML, 'avg 650ms', 'Local attach status must keep measured latency behind details.');
+assertIncludes(localEl.attrs['aria-label'], '5 models', 'Full local route receipt must keep model count inspectable.');
+assertIncludes(localEl.attrs['aria-label'], 'avg 650ms', 'Full local route receipt must keep measured latency inspectable.');
 
 testApi.recordRouteBenchmark(hosted, { score: 84, elapsedMs: 746, answer_class: 'complete', latency_class: 'responsive' });
 assertIncludes(testApi.routeMicroStatus(hosted), 'Score ', 'Route micro-status helper must preserve effective score.');
@@ -192,11 +195,13 @@ testApi.renderMicroStatus(
   'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 4 live provider routes · OpenRouter live + NVIDIA live + Google live + Groq live · 43 queued · 64 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
   'hosted'
 );
-assertIncludes(poolEl.innerHTML, '5 routes compared', 'Under-chat micro-status must keep compared route count visible as subtle text.');
-assertIncludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must show successful provider answer count as subtle text.');
-assertIncludes(poolEl.innerHTML, '2 quiet', 'Under-chat micro-status must show quiet throttled routes without noisy failure text.');
-assertIncludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof visible as subtle text.');
-assertIncludes(poolEl.innerHTML, 'No paid route', 'Under-chat micro-status must keep no-paid proof visible as subtle text.');
+assertIncludes(poolEl.innerHTML, 'Spør 5 AI - beste vinner', 'Under-chat micro-status must show the swarm value in plain language.');
+assertIncludes(poolEl.innerHTML, 'Verifisert', 'Under-chat micro-status must show verified value.');
+assertIncludes(poolEl.innerHTML, 'privat', 'Under-chat micro-status must show privacy value.');
+assertExcludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must keep successful-provider count behind details.');
+assertExcludes(poolEl.innerHTML, '2 quiet', 'Under-chat micro-status must keep quiet throttled routes behind details.');
+assertExcludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof behind details.');
+assertExcludes(poolEl.innerHTML, 'No paid route', 'Under-chat micro-status must keep no-paid proof behind details.');
 assertIncludes(poolEl.attrs['aria-label'], '43 queued', 'Full gateway compare receipt must keep queued route data inspectable.');
 assertIncludes(poolEl.attrs['aria-label'], '64 visible total', 'Full gateway compare receipt must keep visible route data inspectable.');
 assertIncludes(poolEl.attrs['aria-label'], 'Groq live', 'Full gateway compare receipt must preserve active Groq truth.');

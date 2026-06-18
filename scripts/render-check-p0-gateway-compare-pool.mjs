@@ -440,7 +440,11 @@ async function checkViewport(browser, viewport) {
   });
   await page.goto(`${baseUrl}/mmir.html?gateway_compare_pool=${viewport.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
   await page.waitForSelector('#mmir-p0-app');
-  await page.waitForFunction(() => /live routes|model routes visible|Score 100/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.waitForFunction(() => {
+    const route = document.getElementById('p0-route');
+    return /Verifisert/i.test(route?.textContent || '') &&
+      /live routes|model routes visible|Score 100/i.test(route?.getAttribute('aria-label') || '');
+  });
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();
@@ -458,13 +462,14 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Intelligence boost/i.test(text) && /Swarm 472/i.test(routeFull) && /5 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Swarm 472/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
-  assert(/Intelligence boost/i.test(text), `${viewport.name}: boost receipt should render`);
-  assert(text.includes('5 routes compared'), `${viewport.name}: gateway compare receipt should show route count`);
+  assert(/Spør 5 AI - beste vinner/i.test(text), `${viewport.name}: boost receipt should show the user-value swarm line`);
+  assert(/Detaljer/i.test(text), `${viewport.name}: boost receipt should keep raw telemetry behind Details`);
+  assert(!text.includes('5 routes compared'), `${viewport.name}: gateway compare receipt should keep raw route telemetry behind Details`);
 
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,
@@ -478,14 +483,16 @@ async function checkViewport(browser, viewport) {
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare body must not overflow`);
   assert(/ready/i.test(layout.status), `${viewport.name}: boost compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
-  assert(/Intelligence boost/i.test(layout.route), `${viewport.name}: visible green route line should show boost mode subtly`);
-  assert(/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should show swarm scale subtly`);
-  assert(/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should show compared route count`);
-  assert(/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should show successful provider answer count`);
-  assert(/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should show quiet provider count without error clutter`);
+  assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
+  assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
+  assert(/privat/i.test(layout.route), `${viewport.name}: visible green route line should show privacy value`);
+  assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
+  assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
+  assert(!/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should keep successful provider count behind details`);
+  assert(!/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should keep quiet provider count behind details`);
   assert(!/demoted/i.test(layout.route), `${viewport.name}: quiet provider throttling should not render as demoted error text`);
-  assert(/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should show receipt proof subtly`);
-  assert(/Why: complete answer, fast/i.test(layout.route), `${viewport.name}: visible green route line should explain why the winner won`);
+  assert(!/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should keep receipt proof behind details`);
+  assert(!/Why: complete answer, fast/i.test(layout.route), `${viewport.name}: visible green route line should keep winner reason behind details`);
   assert(/sync 40/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve sync fanout limit`);
   assert(/arena ready/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve arena readiness`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
@@ -524,9 +531,11 @@ async function checkViewport(browser, viewport) {
     routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
-  assert(/Supergeni Council/i.test(councilLayout.route), `${viewport.name}: Council proof should stay in subtle green status`);
-  assert(/council ready/i.test(councilLayout.route), `${viewport.name}: Council status should show debate readiness subtly`);
-  assert(/signed receipts/i.test(councilLayout.route), `${viewport.name}: Council status should preserve signed receipt proof`);
+  assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Council proof should show swarm value in the green status`);
+  assert(/Verifisert/i.test(councilLayout.route), `${viewport.name}: Council status should show verified value`);
+  assert(/privat/i.test(councilLayout.route), `${viewport.name}: Council status should show privacy value`);
+  assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Council status should keep readiness detail behind details`);
+  assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Council status should keep receipt proof behind details`);
   assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Council proof should preserve no-paid route truth`);
   assert(councilLayout.toolbarButtons <= 6, `${viewport.name}: Council must not add extra visible toolbar buttons`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);

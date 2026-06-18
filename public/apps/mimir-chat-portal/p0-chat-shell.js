@@ -963,9 +963,62 @@
     return providers.join(' + ');
   }
 
+  function receiptParts(receipt){
+    return String(receipt||'')
+      .split('·')
+      .map(part=>part.trim())
+      .filter(Boolean);
+  }
+
+  function receiptRouteCount(full,parts=receiptParts(full)){
+    const text=String(full||'');
+    const matchers=[
+      /(\d+)\s+routes?\s+compared/i,
+      /(\d+)\s+active\s+hosted\s+routes/i,
+      /(\d+)\s+active\s+routes/i
+    ];
+    for(const matcher of matchers){
+      const match=text.match(matcher);
+      if(match&&Number(match[1])>1)return Number(match[1]);
+    }
+    const routePart=parts.find(part=>/^\d+\s+routes?$/i.test(part));
+    if(routePart)return Number(routePart.match(/\d+/)?.[0])||0;
+    return 0;
+  }
+
+  function routeEvidenceReceipt(full){
+    const text=String(full||'');
+    const evidence=[
+      /\b(?:API score|Score)\s+\d+/i,
+      /\d+\s+routes?\s+compared/i,
+      /\d+\s+active\s+hosted\s+routes/i,
+      /\bWinner:/i,
+      /\bWhy:/i,
+      /\bCompare answer\s+\d\/\d/i,
+      /\bsigned receipts?\b/i,
+      /\b(?:hosted route|private local|This Mac)\b/i,
+      /\b(?:Best answer|Intelligence boost|Ask all active|Supergeni Council)\b/i,
+      /\b\d+(?:\.\d+)?(?:ms|s)\b/i
+    ];
+    return evidence.some(test=>test.test(text))&&!/^Local connector setup\b/i.test(text);
+  }
+
+  function trustValueSummary(full){
+    const text=canonicalBrandText(full).trim();
+    if(!routeEvidenceReceipt(text))return '';
+    const parts=receiptParts(text);
+    const routeCount=receiptRouteCount(text,parts);
+    const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
+    if(isSwarm&&routeCount>1){
+      return 'Spør '+routeCount+' AI - beste vinner · Verifisert · privat';
+    }
+    return 'Verifisert · privat';
+  }
+
   function renderMicroStatus(el,message,stateValue='hosted'){
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
+    const trustSummary=stateValue==='error'?'':trustValueSummary(full);
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
     const compactLocalReady=/^(local node attached|private local ready:|local node connected)/i.test(full)
       ? 'Local node ready'
@@ -1013,10 +1066,11 @@
       .filter((part,index,all)=>part&&all.indexOf(part)===index)
       .slice(0,8)
       .join(' · ');
+    const visible=trustSummary||text;
     el.setAttribute('aria-label',full);
     el.title=full;
-    el.dataset.kind=microKind(text,stateValue);
-    el.innerHTML='<span class="p0-route-line">'+safeText(text)+'</span>';
+    el.dataset.kind=microKind(visible,stateValue);
+    el.innerHTML='<span class="p0-route-line">'+safeText(visible)+'</span>';
   }
 
   function compactStatusText(message,maxParts=5){
@@ -1032,17 +1086,12 @@
   }
 
   function answerStatus(model,score,prefix=''){
-    const label=routeDisplayName(model);
-    const elapsed=formatDuration(score?.elapsedMs||0);
     const parts=[
       prefix,
-      label+' answered in '+elapsed,
-      model?.route==='local'?'private local':'hosted route',
-      (score?.source==='api'?'API score ':'Score ')+(score?.score??effectiveModelScore(model)),
-      scoreClassSummary(score),
-      model?.route==='hosted'?'No paid route':''
+      'Verifisert',
+      'privat'
     ];
-    return parts.filter(Boolean).join(' · ')||receipt.text;
+    return parts.filter(Boolean).join(' · ');
   }
 
   function routeRankState(model){
@@ -1896,6 +1945,13 @@
   function renderReceipt(receipt){
     const full=canonicalBrandText(receipt).trim();
     if(!full)return '';
+    const trustSummary=trustValueSummary(full);
+    if(trustSummary){
+      return '<details class="p0-message-receipt p0-message-receipt-trust" title="'+safeAttr(full)+'">'+
+        '<summary><span class="p0-receipt-summary-main">'+safeText(trustSummary)+'</span><span class="p0-receipt-details">Detaljer</span></summary>'+
+        '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
+      '</details>';
+    }
     const compact=compactReceipt(full);
     if(compact===full){
       return '<div class="p0-message-receipt">'+safeText(full)+'</div>';
