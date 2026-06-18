@@ -23,8 +23,18 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "const FEEDBACK_INTAKE_PATH='/feedback/intake';",
+  'P0 shell must know the public feedback intake endpoint.'
+);
+requireIncludes(
+  shell,
   'function ownerSuggestionCommand(prompt)',
   'P0 shell must parse the /admin command before normal chat routing.'
+);
+requireIncludes(
+  shell,
+  'function feedbackMentionCommand(prompt)',
+  'P0 shell must parse @inkognitroz/@nilsk feedback before normal chat routing.'
 );
 requireIncludes(
   shell,
@@ -63,8 +73,28 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "command:'@'+parsed.target+' '+parsed.suggestion",
+  'P0 shell must send public feedback as a sanitized @target command.'
+);
+requireIncludes(
+  shell,
+  "source:'mmir-chat-feedback'",
+  'P0 shell must mark public feedback with the feedback source.'
+);
+requireIncludes(
+  shell,
+  "menuButton('draft-feedback','Send feedback'",
+  'Add menu must expose a simple Send feedback affordance.'
+);
+requireIncludes(
+  shell,
   "if(await handleOwnerSuggestionCommand(prompt,input))return;",
   'P0 shell must short-circuit normal LLM chat for owner-intake commands.'
+);
+requireIncludes(
+  shell,
+  "if(await handleFeedbackMentionCommand(prompt,input))return;",
+  'P0 shell must short-circuit normal LLM chat for public feedback mentions.'
 );
 requireIncludes(
   shell,
@@ -88,12 +118,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-clean-trust-summary-v1',
+  'p0-chat-shell.js?v=20260618-feedback-intake-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-clean-trust-summary-v1"',
+  '"p0-chat-shell.js": "20260618-feedback-intake-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
