@@ -38,6 +38,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';",
+  'P0 shell must know the demo transcript capture endpoint.'
+);
+requireIncludes(
+  shell,
   "const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';",
   'P0 shell must keep a local feedback inbox queue.'
 );
@@ -65,6 +70,46 @@ requireIncludes(
   shell,
   'function promptFrictionSignal(prompt)',
   'P0 shell must classify MMIR-related chat friction without relying on the owner as support.'
+);
+requireIncludes(
+  shell,
+  'function demoTranscriptCaptureEnabled()',
+  'P0 shell must gate demo transcript capture by demo/test mode and privacy mode.'
+);
+requireIncludes(
+  shell,
+  "function sendDemoTranscript(reason='conversation_update',metadata={})",
+  'P0 shell must send bounded demo/user-test transcript context for product learning.'
+);
+requireIncludes(
+  shell,
+  "function scheduleDemoTranscriptCapture(reason='conversation_update',metadata={})",
+  'P0 shell must debounce demo transcript capture after chat changes.'
+);
+requireIncludes(
+  shell,
+  "capture_consent:'demo_transcript'",
+  'P0 shell must mark demo transcript capture with explicit demo consent.'
+);
+requireIncludes(
+  shell,
+  "source:'mmir-chat-demo'",
+  'P0 shell must label raw demo transcript capture separately from metadata telemetry.'
+);
+requireIncludes(
+  shell,
+  "scheduleDemoTranscriptCapture('message_appended'",
+  'P0 shell must capture demo transcript context when users add chat messages.'
+);
+requireIncludes(
+  shell,
+  "scheduleDemoTranscriptCapture('message_updated'",
+  'P0 shell must capture demo transcript context when assistant answers update.'
+);
+requireIncludes(
+  shell,
+  "fetch(API_URL+DEMO_TRANSCRIPT_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,credentials:'omit'})",
+  'P0 shell must post demo transcript capture without browser credentials.'
 );
 requireIncludes(
   shell,
@@ -238,12 +283,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v3',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v4',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v3"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v4"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

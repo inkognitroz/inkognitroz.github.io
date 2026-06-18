@@ -111,12 +111,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v3',
+  'p0-chat-shell.js?v=20260618-interaction-capture-v4',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v3"',
+  '"p0-chat-shell.js": "20260618-interaction-capture-v4"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(
