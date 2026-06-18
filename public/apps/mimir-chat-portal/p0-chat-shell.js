@@ -4018,6 +4018,10 @@
 
   async function fetchGatewayFanout(prompt,mode,signal){
     const payload=compareApiPayload(prompt);
+    if(mode==='council'){
+      payload.mmir_mode='council';
+      payload.swarm_mode='council';
+    }
     const request={
       method:'POST',
       headers:{'Content-Type':'application/json'},
