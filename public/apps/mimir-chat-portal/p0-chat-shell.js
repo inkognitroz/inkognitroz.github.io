@@ -40,6 +40,7 @@
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
+  const FEEDBACK_INTAKE_PATH='/feedback/intake';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -623,6 +624,17 @@
     return {code:String(match[1]||'').trim(),suggestion};
   }
 
+  function feedbackMentionCommand(prompt){
+    const match=String(prompt||'').trim().match(/^@(inkognitroz|halvord|nilsk|mmir|feedback)\b\s+([\s\S]+)$/i);
+    if(!match)return null;
+    const suggestion=redactOwnerSuggestionText(match[2]);
+    if(!suggestion)return null;
+    return {
+      target:String(match[1]||'feedback').toLowerCase(),
+      suggestion
+    };
+  }
+
   function redactOwnerSuggestionText(value){
     return String(value||'')
       .replace(/\s+/g,' ')
@@ -659,6 +671,18 @@
     return 'Improvement draft ready for Project Control.';
   }
 
+  function feedbackIntakeRouteText(plan){
+    const target=plan?.target?('@'+plan.target):'@feedback';
+    const id=plan?.feedback_event_id?(' · '+plan.feedback_event_id):'';
+    return 'Feedback intake · '+target+' · sanitized draft'+id+' · no paid route';
+  }
+
+  function feedbackIntakeAnswer(plan){
+    const target=plan?.target?('@'+plan.target):'@feedback';
+    const lane=plan?.draft?.classification?.lane||'product triage';
+    return 'Takk - feedback er registrert som trygg forbedringsdraft for '+target+'.\n\nForeløpig rute: '+lane+'.\n\nVi lagrer ikke admin-koder eller provider-nøkler i chatten, og dette starter ingen betalte ruter.';
+  }
+
   async function submitOwnerSuggestionCommand(parsed){
     return fetchJson(API_URL+OWNER_SUGGESTION_PLAN_PATH,{
       method:'POST',
@@ -670,6 +694,22 @@
         suggestion:parsed.suggestion,
         source:'mmir-chat',
         submit:true
+      }),
+      timeoutMs:12000
+    });
+  }
+
+  async function submitFeedbackMentionCommand(parsed){
+    return fetchJson(API_URL+FEEDBACK_INTAKE_PATH,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        command:'@'+parsed.target+' '+parsed.suggestion,
+        target:parsed.target,
+        suggestion:parsed.suggestion,
+        source:'mmir-chat-feedback',
+        public_feedback:true,
+        submit:false
       }),
       timeoutMs:12000
     });
@@ -697,6 +737,33 @@
       updateMessage(assistant,'Owner intake is unreachable right now. The suggestion stayed local in this chat.',{receipt:'MMIR Project Control · not filed',actions:false});
       status('Owner intake unreachable.','error');
       routeStatus('Owner intake unavailable · no issue created','error');
+    }
+    input?.focus();
+    return true;
+  }
+
+  async function handleFeedbackMentionCommand(prompt,input){
+    const parsed=feedbackMentionCommand(prompt);
+    if(!parsed)return false;
+    closeMenus();
+    append('user','Feedback '+('@'+parsed.target)+': '+parsed.suggestion,'You','',{actions:false});
+    if(input){
+      input.value='';
+      autosizeInput();
+    }
+    const assistant=append('assistant','Registrerer feedback...','MMIR Feedback','Feedback intake · sanitized draft',{actions:false});
+    status('Feedback captured.','ready');
+    routeStatus('Feedback intake · no secrets · no paid route','ready');
+    try{
+      const plan=await submitFeedbackMentionCommand(parsed);
+      const routeText=feedbackIntakeRouteText(plan);
+      updateMessage(assistant,feedbackIntakeAnswer(plan),{receipt:routeText,actions:false});
+      status('Feedback registered.','ready');
+      routeStatus(routeText,'ready');
+    }catch(error){
+      updateMessage(assistant,'Feedback-endepunktet er utilgjengelig akkurat nå. Meldingen ble liggende lokalt i denne chatten.',{receipt:'Feedback intake · not filed · local transcript only',actions:false});
+      status('Feedback intake unreachable.','error');
+      routeStatus('Feedback unavailable · no issue created','error');
     }
     input?.focus();
     return true;
@@ -2613,6 +2680,9 @@
       menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
       menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
+      menuSection('Improve MMIR')+
+      menuButton('draft-feedback','Send feedback','Prefill @inkognitroz so you can report friction or suggest a feature.')+
+      menuSeparator()+
       menuSection('Local memory')+
       menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
       menuButton('show-local-memory','Show memory','Browser-only memory and document notes.')+
@@ -3323,6 +3393,18 @@
       closeMenus();
       status('Document note ready.','ready');
       routeStatus('Document note · browser only until sent','hosted');
+      input?.focus();
+      return true;
+    }
+    if(action==='draft-feedback'){
+      const input=document.getElementById('p0-input');
+      if(input){
+        input.value='@inkognitroz ';
+        autosizeInput();
+      }
+      closeMenus();
+      status('Feedback draft ready.','ready');
+      routeStatus('Feedback intake · write and send · no paid route','hosted');
       input?.focus();
       return true;
     }
@@ -4397,6 +4479,7 @@
     }
     if(await handleOwnerPingCommand(prompt,input))return;
     if(await handleOwnerSuggestionCommand(prompt,input))return;
+    if(await handleFeedbackMentionCommand(prompt,input))return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
