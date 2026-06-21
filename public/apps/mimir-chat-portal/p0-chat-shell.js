@@ -48,7 +48,10 @@
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
-  const P0_RUNTIME_VERSION='20260618-interaction-capture-v4';
+  const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
+  const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
+  const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
+  const P0_RUNTIME_VERSION='20260621-demo-consent-feedback-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -635,7 +638,7 @@
   }
 
   function feedbackMentionCommand(prompt){
-    const match=String(prompt||'').trim().match(/^@(inkognitroz|halvord|nilsk|mmir|feedback)\b\s+([\s\S]+)$/i);
+    const match=String(prompt||'').trim().match(/^@([a-z0-9][a-z0-9_.-]{1,39})\b\s+([\s\S]+)$/i);
     if(!match)return null;
     const suggestion=redactOwnerSuggestionText(match[2]);
     if(!suggestion)return null;
@@ -812,18 +815,73 @@
     return event;
   }
 
-  function demoTranscriptCaptureEnabled(){
-    if(superPrivateModeActive())return false;
-    const params=new URLSearchParams(window.location?.search||'');
-    if(params.get('demo_capture')==='0'||params.has('no_demo_capture'))return false;
+  function demoTranscriptParams(){
+    try{return new URLSearchParams(window.location?.search||'');}
+    catch(error){return new URLSearchParams('');}
+  }
+
+  function hostedDemoOrigin(){
     const host=String(window.location?.hostname||'').toLowerCase();
-    const hostedDemo=host==='mmir.ai'||host==='www.mmir.ai'||host==='staging.mmir.ai';
-    const explicit=params.has('demo_capture')||
+    return host==='mmir.ai'||host==='www.mmir.ai'||host==='staging.mmir.ai';
+  }
+
+  function demoTranscriptOptOut(params=demoTranscriptParams()){
+    return params.get('demo_capture')==='0'||params.has('no_demo_capture');
+  }
+
+  function demoTranscriptModeRequested(params=demoTranscriptParams()){
+    if(demoTranscriptOptOut(params))return false;
+    if(readStorageString(DEMO_GROWTH_MODE_KEY,'')==='true')return true;
+    if(params.has('demo_capture')||
       params.has('mmir_demo')||
       params.has('user_test')||
-      params.has('mmir_qa_session')||
-      [...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key));
-    return hostedDemo||explicit;
+      params.has('mmir_qa_session'))return true;
+    if([...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key)))return true;
+    return hostedDemoOrigin();
+  }
+
+  function demoTranscriptConsentActive(params=demoTranscriptParams()){
+    if(demoTranscriptOptOut(params)||!demoTranscriptModeRequested(params))return false;
+    if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='accepted')return true;
+    if(readStorageString(DEMO_GROWTH_MODE_KEY,'')==='true')return true;
+    if(params.get('demo_capture')==='1'||params.has('user_test')||params.has('mmir_qa_session'))return true;
+    if([...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key)))return true;
+    return false;
+  }
+
+  function ensureDemoTranscriptConsentNotice(source='conversation_update'){
+    if(superPrivateModeActive())return false;
+    const params=demoTranscriptParams();
+    if(!demoTranscriptModeRequested(params))return false;
+    writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'accepted');
+    if(readStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'')==='shown')return true;
+    writeStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'shown');
+    const notice={
+      id:'demo-consent-'+Date.now().toString(36),
+      role:'assistant',
+      content:'Demo-testmodus: MMIR kan lagre avgrensede og redigerte chatutdrag, klikk og feedback for å forbedre produktet. Ikke lim inn passord, API-nøkler eller sensitiv informasjon. Slå av med ?demo_capture=0 eller Superprivate mode.',
+      label:'MMIR Demo',
+      receipt:'Demo consent · product learning · redacted transcript',
+      variant:'notice',
+      actions:false,
+      createdAt:new Date().toISOString()
+    };
+    state.messages.push(notice);
+    state.messages=state.messages.slice(-MAX_HISTORY);
+    saveHistory();
+    renderTranscript();
+    captureInteraction('demo_transcript_consent_visible',{
+      source,
+      demo_capture:true,
+      hosted_demo:hostedDemoOrigin()
+    });
+    return true;
+  }
+
+  function demoTranscriptCaptureEnabled(){
+    if(superPrivateModeActive())return false;
+    const params=demoTranscriptParams();
+    return demoTranscriptConsentActive(params);
   }
 
   function redactDemoTranscriptText(value){
@@ -894,6 +952,8 @@
   }
 
   function scheduleDemoTranscriptCapture(reason='conversation_update',metadata={}){
+    if(superPrivateModeActive())return;
+    ensureDemoTranscriptConsentNotice(reason);
     if(!demoTranscriptCaptureEnabled())return;
     clearTimeout(demoTranscriptTimer);
     demoTranscriptTimer=setTimeout(()=>sendDemoTranscript(reason,metadata),700);
@@ -945,10 +1005,42 @@
       .reverse();
   }
 
+  function feedbackCaptureSummary(count=feedbackInboxItems().length){
+    const total=Number(count)||0;
+    if(total<=0)return '';
+    return 'Feedback fanget · '+total+' draft'+(total===1?'':'s')+' · Inbox';
+  }
+
+  function renderFeedbackCaptureStatus(){
+    const el=document.getElementById('p0-feedback-capture');
+    if(!el)return;
+    const count=feedbackInboxItems().length;
+    const summary=feedbackCaptureSummary(count);
+    el.hidden=!summary;
+    el.textContent=summary;
+    el.title=summary?'Åpne Feedback Inbox og se fangede forbedringsforslag.':'';
+    el.setAttribute('aria-label',summary||'Ingen fanget feedback ennå');
+    el.dataset.count=String(count);
+  }
+
+  function markFeedbackCaptured(source='feedback_capture'){
+    renderFeedbackCaptureStatus();
+    const summary=feedbackCaptureSummary();
+    if(summary){
+      status(summary,'ready');
+      routeStatus(summary+' · ingen betalt rute','ready');
+      captureInteraction('feedback_capture_visible',{
+        source,
+        local_feedback_count:feedbackInboxItems().length
+      });
+    }
+  }
+
   function writeFeedbackInboxItems(items){
     writeJson(FEEDBACK_INBOX_KEY,(items||[])
       .filter(item=>item&&typeof item==='object'&&item.suggestion)
       .slice(-80));
+    renderFeedbackCaptureStatus();
   }
 
   function saveFeedbackInboxItem(item){
@@ -969,6 +1061,7 @@
       provider_called:false
     });
     writeFeedbackInboxItems(next);
+    renderFeedbackCaptureStatus();
     return true;
   }
 
@@ -977,6 +1070,7 @@
     if(!value)return false;
     const current=readJson(FEEDBACK_INBOX_KEY,[]);
     writeFeedbackInboxItems(current.filter(item=>String(item?.id||'')!==value));
+    renderFeedbackCaptureStatus();
     return true;
   }
 
@@ -1047,6 +1141,29 @@
     });
   }
 
+  function openFeedbackInbox(source='feedback_inbox'){
+    closeMenus();
+    captureInteraction('feedback_inbox_opened',{surface:source,local_feedback_count:feedbackInboxItems().length});
+    const assistant=append('assistant','Opening Feedback Inbox...','MMIR Feedback','Feedback Inbox · local drafts + sanitized server logs',{actions:false});
+    status('Loading Feedback Inbox.','loading');
+    routeStatus('Feedback Inbox · no provider call · no paid route','hosted');
+    feedbackInboxPlan().then(plan=>{
+      captureInteraction('feedback_inbox_ready',{surface:source,local_feedback_count:Number(plan?.item_count)||0});
+      updateMessage(assistant,feedbackInboxAnswer(plan),{receipt:'Feedback Inbox · '+(plan?.item_count||0)+' local drafts · Cloudflare logs · no paid route',actions:false});
+      status('Feedback Inbox ready.','ready');
+      routeStatus('Feedback Inbox · review and promote intentionally','ready');
+      renderFeedbackCaptureStatus();
+    }).catch(()=>{
+      captureInteraction('feedback_inbox_fallback',{surface:source,local_feedback_count:feedbackInboxItems().length});
+      updateMessage(assistant,feedbackInboxAnswer({item_count:feedbackInboxItems().length,top_items:feedbackInboxItems()}),{receipt:'Feedback Inbox · local fallback · no provider call',actions:false});
+      status('Feedback Inbox server plan unavailable; showing local drafts.','ready');
+      routeStatus('Feedback Inbox · local fallback','hosted');
+      renderFeedbackCaptureStatus();
+    });
+    document.getElementById('p0-input')?.focus();
+    return true;
+  }
+
   async function submitOwnerSuggestionCommand(parsed){
     return fetchJson(API_URL+OWNER_SUGGESTION_PLAN_PATH,{
       method:'POST',
@@ -1102,6 +1219,7 @@
     const item=localImplicitFeedbackItem(prompt,signal);
     const localId=item?.id||'';
     if(item)saveFeedbackInboxItem(item);
+    markFeedbackCaptured('implicit_feedback_detected');
     captureInteraction('implicit_feedback_detected',{
       feedback_kind:signal.kind,
       surface:signal.surface,
@@ -1121,6 +1239,7 @@
     }).then(plan=>{
       if(localId)removeFeedbackInboxItem(localId);
       if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
+      markFeedbackCaptured('implicit_feedback_submitted');
       captureInteraction('implicit_feedback_submitted',{
         feedback_kind:signal.kind,
         surface:signal.surface,
@@ -1135,6 +1254,7 @@
         reason:'endpoint_unreachable',
         local_feedback_count:feedbackInboxItems().length
       });
+      markFeedbackCaptured('implicit_feedback_failed');
     });
   }
 
@@ -1180,6 +1300,7 @@
     try{
       const plan=await submitFeedbackMentionCommand(parsed);
       if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
+      markFeedbackCaptured('feedback_submitted');
       captureInteraction('feedback_submitted',{
         target:parsed.target,
         priority:plan?.inbox_item?.priority||'',
