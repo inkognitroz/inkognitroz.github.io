@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260621-demo-feedback-issue-gate-v1';
+  const P0_RUNTIME_VERSION='20260622-visible-ask-ai-cta-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1671,6 +1671,18 @@
     return 'Verifisert · privat';
   }
 
+  function routeActionButtonMarkup(full,stateValue='hosted'){
+    if(stateValue==='error'||state.busy||privateModeActive())return '';
+    const parts=receiptParts(full);
+    const receiptCount=receiptRouteCount(full,parts);
+    const summary=intelligencePoolSummary();
+    const routeCount=Math.max(receiptCount,summary.compareRouteTotal||0,summary.activeRouteTotal||0);
+    if(routeCount<2||!summary.compareReady)return '';
+    const label='Spør '+routeCount+' AI';
+    const title=label+' og la beste svar vinne';
+    return '<button class="p0-route-cta" type="button" data-p0-route-action="boost-answer-live" aria-label="'+safeAttr(title)+'" title="'+safeAttr(title)+'">'+safeText(label)+'</button>';
+  }
+
   function renderMicroStatus(el,message,stateValue='hosted'){
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
@@ -1726,7 +1738,9 @@
     el.setAttribute('aria-label',full);
     el.title=full;
     el.dataset.kind=microKind(visible,stateValue);
-    el.innerHTML='<span class="p0-route-line">'+safeText(visible)+'</span>';
+    const action=routeActionButtonMarkup(full,stateValue);
+    el.dataset.hasRouteAction=action?'true':'false';
+    el.innerHTML='<span class="p0-route-line">'+safeText(visible)+'</span>'+action;
   }
 
   function compactStatusText(message,maxParts=5){
@@ -3022,6 +3036,13 @@
         handleToolbarTool(toolbarTool.getAttribute('data-p0-toolbar-tool')||'');
         return;
       }
+      const routeAction=event.target.closest('[data-p0-route-action]');
+      if(routeAction){
+        event.preventDefault();
+        event.stopPropagation();
+        handleRouteAction(routeAction.getAttribute('data-p0-route-action')||'');
+        return;
+      }
       const actionButton=event.target.closest('[data-p0-action]');
       if(actionButton&&actionButton.closest('.p0-menu')){
         event.preventDefault();
@@ -3912,6 +3933,14 @@
     return false;
   }
 
+  function handleRouteAction(action){
+    if(action==='boost-answer-live'){
+      captureInteraction('tool_used',{tool:'route-ask-ai-cta',path:'composer'});
+      return boostAnswer();
+    }
+    return false;
+  }
+
   function handleMenuAction(action){
     const actionId=String(action||'');
     if(actionId.startsWith('pin-toolbar-tool:')||actionId.startsWith('unpin-toolbar-tool:')){
@@ -4402,6 +4431,8 @@
     state.busy=false;
     activeChatController=null;
     updateSendControl();
+    const route=document.getElementById('p0-route');
+    if(route)renderMicroStatus(route,route.getAttribute('aria-label')||route.title||route.textContent,route.dataset.state||'hosted');
   }
 
   function stopActiveResponse(){

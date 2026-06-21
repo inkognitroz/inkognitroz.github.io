@@ -196,6 +196,8 @@ testApi.renderMicroStatus(
   'hosted'
 );
 assertIncludes(poolEl.innerHTML, 'Spør 5 AI - beste vinner', 'Under-chat micro-status must show the swarm value in plain language.');
+assertIncludes(poolEl.innerHTML, 'data-p0-route-action="boost-answer-live"', 'Under-chat micro-status must expose one direct multi-AI composer action.');
+assertIncludes(poolEl.innerHTML, 'p0-route-cta', 'Under-chat micro-status must render the multi-AI action as a compact route CTA.');
 assertIncludes(poolEl.innerHTML, 'Verifisert', 'Under-chat micro-status must show verified value.');
 assertIncludes(poolEl.innerHTML, 'privat', 'Under-chat micro-status must show privacy value.');
 assertExcludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must keep successful-provider count behind details.');

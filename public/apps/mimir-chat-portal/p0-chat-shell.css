@@ -422,9 +422,12 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-route {
+  align-items: center;
   color: #047857;
+  display: inline-flex;
   font-size: 0.72rem;
   font-weight: 700;
+  gap: 6px;
   left: 22px;
   line-height: 1.2;
   max-width: calc(100% - 44px);
@@ -450,9 +453,41 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-route-line {
   display: block;
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
+  pointer-events: none;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.p0-route-cta {
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px solid rgba(4, 120, 87, 0.2);
+  border-radius: 999px;
+  color: #047857;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  height: 24px;
+  justify-content: center;
+  line-height: 1;
+  max-width: min(38vw, 132px);
+  overflow: hidden;
+  padding: 0 8px;
+  pointer-events: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p0-route-cta:hover,
+.p0-route-cta:focus-visible {
+  background: #d1fae5;
+  outline: none;
 }
 
 .p0-feedback-capture {
