@@ -445,6 +445,14 @@ async function checkViewport(browser, viewport) {
     return /Verifisert/i.test(route?.textContent || '') &&
       /live routes|model routes visible|Score 100/i.test(route?.getAttribute('aria-label') || '');
   });
+  const routeCta = page.locator('[data-p0-route-action="boost-answer-live"]');
+  const routeCtaCount = await routeCta.count();
+  assert(routeCtaCount === 1, `${viewport.name}: composer route status should expose exactly one direct Ask AI action`);
+  if (routeCtaCount === 1) {
+    const routeCtaText = await routeCta.innerText();
+    assert(/Spør 5 AI/i.test(routeCtaText), `${viewport.name}: composer Ask AI action should show active route count`);
+    assert(await routeCta.isVisible(), `${viewport.name}: composer Ask AI action should be visible`);
+  }
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();
@@ -457,8 +465,10 @@ async function checkViewport(browser, viewport) {
   assert(/Ask 5 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
   assert(/Debate models/i.test(addMenu), `${viewport.name}: add menu should expose Debate models without adding toolbar clutter`);
+  await page.locator('#p0-add').click();
+  await page.waitForFunction(() => document.getElementById('p0-add-menu')?.hidden === true);
 
-  await page.locator('[data-p0-action="boost-answer-live"]').click();
+  await routeCta.click();
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
@@ -477,6 +487,8 @@ async function checkViewport(browser, viewport) {
     status: document.getElementById('p0-status')?.textContent || '',
     route: document.getElementById('p0-route')?.textContent || '',
     routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
+    routeCta: document.querySelector('[data-p0-route-action="boost-answer-live"]')?.textContent || '',
+    routeCtaVisible: Boolean(document.querySelector('[data-p0-route-action="boost-answer-live"]')?.getClientRects().length),
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare must not create horizontal overflow`);
@@ -486,6 +498,8 @@ async function checkViewport(browser, viewport) {
   assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
   assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
   assert(/privat/i.test(layout.route), `${viewport.name}: visible green route line should show privacy value`);
+  assert(/Spør 5 AI/i.test(layout.routeCta), `${viewport.name}: composer Ask AI CTA should survive after Boost finishes`);
+  assert(layout.routeCtaVisible, `${viewport.name}: composer Ask AI CTA should remain visible after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
   assert(!/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should keep successful provider count behind details`);

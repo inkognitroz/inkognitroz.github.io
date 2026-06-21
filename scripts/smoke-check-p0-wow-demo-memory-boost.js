@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 
 const root = process.cwd();
 const shell = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'utf8');
+const css = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'utf8');
 const html = readFileSync(join(resolve(root, 'public'), 'mmir.html'), 'utf8');
 const manifest = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'asset-versions.json'), 'utf8');
 const failures = [];
@@ -49,6 +50,10 @@ requireIncludes(compareGatewayRoutes, "options.mode==='boost'", 'Gateway compare
 requireIncludes(compareGatewayRoutes, "options.mode==='all'", 'Gateway compare must have a dedicated Ask all active mode.');
 requireIncludes(shell, "const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview'", 'P0 runtime must know the swarm preview endpoint.');
 requireIncludes(shell, 'function fetchGatewayFanout(prompt,mode,signal)', 'Boost/Ask all must use the gateway fanout adapter.');
+requireIncludes(shell, 'data-p0-route-action="boost-answer-live"', 'Composer route status must expose a direct Ask AI action when multiple routes are ready.');
+requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-ask-ai-cta'", 'Composer Ask AI action must be captured for UX telemetry.');
+requireIncludes(css, '.p0-route-cta', 'Composer Ask AI action must use a compact route CTA style.');
+requireIncludes(css, 'pointer-events: auto;', 'Composer Ask AI CTA must be clickable while the rest of route status stays unobtrusive.');
 requireIncludes(shell, 'function modelInventorySummary(payload,models=[])', 'P0 runtime must turn /v1/models into a visible intelligence map.');
 requireIncludes(shell, 'normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH', 'Boost/Ask all must try swarm preview before legacy compare.');
 requireIncludes(shell, 'function swarmReceiptLabel(data)', 'Swarm status must stay in subtle route receipts.');
@@ -62,8 +67,8 @@ requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Boost answer must
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260621-demo-feedback-issue-gate-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260621-demo-feedback-issue-gate-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260622-visible-ask-ai-cta-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260622-visible-ask-ai-cta-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');
