@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260622-visible-ask-ai-cta-v1';
+  const P0_RUNTIME_VERSION='20260622-feedback-inbox-storage-truth-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1084,13 +1084,36 @@
     return 'Triage';
   }
 
+  function feedbackStorageStatusLines(plan){
+    const durable=Boolean(plan?.durable_binding_configured||plan?.kv_binding_configured);
+    const readable=Boolean(plan?.durable_store_readable);
+    const writable=Boolean(plan?.durable_store_writable);
+    if(durable&&readable&&writable){
+      return [
+        'Owner-lager: durable inbox er koblet og lesbar for autorisert eier.',
+        'Server: saniterte feedback-events lagres i owner-lesbart corpus.'
+      ];
+    }
+    if(durable){
+      return [
+        'Owner-lager: durable binding finnes, men er ikke fullt lesbar/skrivbar ennå.',
+        'Fallback: lokale drafts i denne nettleseren + saniterte Worker logs.'
+      ];
+    }
+    return [
+      'Owner-lager: ikke koblet ennå.',
+      'Fallback: lokale drafts i denne nettleseren + saniterte Cloudflare Worker logs.',
+      'Mangler for sentral analyse: MMIR_FEEDBACK_STORE-binding med owner-gated lesing.'
+    ];
+  }
+
   function feedbackInboxAnswer(plan){
     const items=Array.isArray(plan?.top_items)?plan.top_items:[];
     const lines=[
       'Feedback Inbox',
       '',
       plan?.item_count?String(plan.item_count)+' lokale drafts klare for triage.':'Ingen lokale drafts i denne nettleseren ennå.',
-      'Server: saniterte feedback-events logges i Cloudflare Worker logs.',
+      ...feedbackStorageStatusLines(plan),
       'Regel: offentlig feedback blir ikke automatisk GitHub issue.',
       ''
     ];
