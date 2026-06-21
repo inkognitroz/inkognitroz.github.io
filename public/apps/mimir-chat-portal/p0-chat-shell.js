@@ -1016,6 +1016,8 @@
     if(!el)return;
     const count=feedbackInboxItems().length;
     const summary=feedbackCaptureSummary(count);
+    const composer=document.getElementById('p0-composer');
+    if(composer)composer.dataset.feedbackCaptured=summary?'true':'false';
     el.hidden=!summary;
     el.textContent=summary;
     el.title=summary?'Åpne Feedback Inbox og se fangede forbedringsforslag.':'';
@@ -1026,14 +1028,13 @@
   function markFeedbackCaptured(source='feedback_capture'){
     renderFeedbackCaptureStatus();
     const summary=feedbackCaptureSummary();
-    if(summary){
-      status(summary,'ready');
-      routeStatus(summary+' · ingen betalt rute','ready');
-      captureInteraction('feedback_capture_visible',{
-        source,
-        local_feedback_count:feedbackInboxItems().length
-      });
-    }
+    if(!summary)return;
+    status(summary,'ready');
+    routeStatus(summary+' · ingen betalt rute','ready');
+    captureInteraction('feedback_capture_visible',{
+      source,
+      local_feedback_count:feedbackInboxItems().length
+    });
   }
 
   function writeFeedbackInboxItems(items){
@@ -1248,13 +1249,13 @@
         local_feedback_count:feedbackInboxItems().length
       });
     }).catch(()=>{
+      markFeedbackCaptured('implicit_feedback_failed');
       captureInteraction('implicit_feedback_failed',{
         feedback_kind:signal.kind,
         surface:signal.surface,
         reason:'endpoint_unreachable',
         local_feedback_count:feedbackInboxItems().length
       });
-      markFeedbackCaptured('implicit_feedback_failed');
     });
   }
 
@@ -1297,8 +1298,24 @@
     const assistant=append('assistant','Registrerer feedback...','MMIR Feedback','Feedback intake · sanitized draft',{actions:false});
     status('Feedback captured.','ready');
     routeStatus('Feedback intake · no secrets · no paid route','ready');
+    const localDraftId='fb_local_'+telemetryEventId().replace(/^evt_/,'');
+    saveFeedbackInboxItem({
+      id:localDraftId,
+      created_at:new Date().toISOString(),
+      target:parsed.target,
+      source:parsed.source||'mmir-chat-feedback',
+      status:'pending_server_intake',
+      priority:'p3-ux',
+      title:'Feedback pending server intake',
+      suggestion:parsed.suggestion,
+      classification:{lane:'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-pending'},
+      no_paid_routes_started:true,
+      provider_called:false
+    });
+    markFeedbackCaptured('feedback_local_draft');
     try{
       const plan=await submitFeedbackMentionCommand(parsed);
+      removeFeedbackInboxItem(localDraftId);
       if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
       markFeedbackCaptured('feedback_submitted');
       captureInteraction('feedback_submitted',{
@@ -1313,10 +1330,24 @@
       status('Feedback registered.','ready');
       routeStatus(routeText,'ready');
     }catch(error){
-      captureInteraction('feedback_failed',{target:parsed.target,reason:'endpoint_unreachable'});
-      updateMessage(assistant,'Feedback-endepunktet er utilgjengelig akkurat nå. Meldingen ble liggende lokalt i denne chatten.',{receipt:'Feedback intake · not filed · local transcript only',actions:false});
-      status('Feedback intake unreachable.','error');
-      routeStatus('Feedback unavailable · no issue created','error');
+      saveFeedbackInboxItem({
+        id:localDraftId,
+        created_at:new Date().toISOString(),
+        target:parsed.target,
+        source:parsed.source||'mmir-chat-feedback',
+        status:'local_fallback',
+        priority:'p3-ux',
+        title:'Feedback local fallback',
+        suggestion:parsed.suggestion,
+        classification:{lane:'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-offline'},
+        no_paid_routes_started:true,
+        provider_called:false
+      });
+      markFeedbackCaptured('feedback_failed_local_fallback');
+      captureInteraction('feedback_failed',{target:parsed.target,reason:'endpoint_unreachable',local_feedback_count:feedbackInboxItems().length});
+      updateMessage(assistant,'Feedback-endepunktet er utilgjengelig akkurat nå. Jeg lagret en lokal draft i Feedback Inbox, så den blir ikke borte.',{receipt:'Feedback intake · local fallback draft · no provider call',actions:false});
+      status('Feedback saved locally.','ready');
+      routeStatus('Feedback Inbox · local fallback · no issue created','ready');
     }
     input?.focus();
     return true;
@@ -2847,6 +2878,7 @@
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
+          '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="Ingen fanget feedback ennå"></button>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+
@@ -2920,6 +2952,7 @@
     document.getElementById('p0-add').addEventListener('click',(event)=>toggleMenu('add',event.currentTarget));
     document.getElementById('p0-model').addEventListener('click',(event)=>toggleMenu('model',event.currentTarget));
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
+    document.getElementById('p0-feedback-capture')?.addEventListener('click',()=>openFeedbackInbox('feedback_capture_pill'));
     const mic=document.getElementById('p0-mic');
     updateVoiceButtonState(mic);
     mic.addEventListener('click',startVoice);
@@ -3986,24 +4019,7 @@
       return true;
     }
     if(action==='feedback-inbox'){
-      closeMenus();
-      captureInteraction('feedback_inbox_opened',{local_feedback_count:feedbackInboxItems().length});
-      const assistant=append('assistant','Opening Feedback Inbox...','MMIR Feedback','Feedback Inbox · local drafts + sanitized server logs',{actions:false});
-      status('Loading Feedback Inbox.','loading');
-      routeStatus('Feedback Inbox · no provider call · no paid route','hosted');
-      feedbackInboxPlan().then(plan=>{
-        captureInteraction('feedback_inbox_ready',{local_feedback_count:Number(plan?.item_count)||0});
-        updateMessage(assistant,feedbackInboxAnswer(plan),{receipt:'Feedback Inbox · '+(plan?.item_count||0)+' local drafts · Cloudflare logs · no paid route',actions:false});
-        status('Feedback Inbox ready.','ready');
-        routeStatus('Feedback Inbox · review and promote intentionally','ready');
-      }).catch(()=>{
-        captureInteraction('feedback_inbox_fallback',{local_feedback_count:feedbackInboxItems().length});
-        updateMessage(assistant,feedbackInboxAnswer({item_count:feedbackInboxItems().length,top_items:feedbackInboxItems()}),{receipt:'Feedback Inbox · local fallback · no provider call',actions:false});
-        status('Feedback Inbox server plan unavailable; showing local drafts.','ready');
-        routeStatus('Feedback Inbox · local fallback','hosted');
-      });
-      document.getElementById('p0-input')?.focus();
-      return true;
+      return openFeedbackInbox('add_menu');
     }
     if(String(action||'').startsWith('load-preset:')){
       loadPromptPreset(String(action).slice('load-preset:'.length));
@@ -4282,6 +4298,7 @@
     renderToolbar();
     renderTranscript();
     renderModelMenu();
+    renderFeedbackCaptureStatus();
   }
 
   function status(message,stateValue='idle'){

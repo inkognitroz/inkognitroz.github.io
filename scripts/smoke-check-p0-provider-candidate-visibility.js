@@ -129,7 +129,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.css?v=20260618-feedback-intake-v1',
+  'p0-chat-shell.css?v=20260618-feedback-capture-status-v1',
   'Public page must cache-bust the visible provider candidate CSS.'
 );
 requireIncludes(
@@ -139,7 +139,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.css": "20260618-feedback-intake-v1"',
+  '"p0-chat-shell.css": "20260618-feedback-capture-status-v1"',
   'Asset manifest must track the visible provider candidate CSS.'
 );
 requireNotIncludes(
