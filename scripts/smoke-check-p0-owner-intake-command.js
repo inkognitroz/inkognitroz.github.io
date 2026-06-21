@@ -314,6 +314,21 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackStorageStatusLines(plan)',
+  'P0 shell must explain whether feedback is locally queued, log-only or owner-readable.'
+);
+requireIncludes(
+  shell,
+  'Owner-lager: ikke koblet ennå.',
+  'Feedback Inbox must be honest when durable owner-readable storage is not configured.'
+);
+requireIncludes(
+  shell,
+  'Mangler for sentral analyse: MMIR_FEEDBACK_STORE-binding med owner-gated lesing.',
+  'Feedback Inbox must name the missing durable-store binding needed for central analysis.'
+);
+requireIncludes(
+  shell,
   "source:'mmir-chat-implicit-feedback'",
   'P0 shell must mark indirect chat feedback separately from explicit @feedback.'
 );
@@ -424,12 +439,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-visible-ask-ai-cta-v1',
+  'p0-chat-shell.js?v=20260622-feedback-inbox-storage-truth-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-visible-ask-ai-cta-v1"',
+  '"p0-chat-shell.js": "20260622-feedback-inbox-storage-truth-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
