@@ -48,7 +48,10 @@
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
-  const P0_RUNTIME_VERSION='20260618-interaction-capture-v5';
+  const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
+  const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
+  const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
+  const P0_RUNTIME_VERSION='20260621-demo-consent-feedback-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -635,7 +638,7 @@
   }
 
   function feedbackMentionCommand(prompt){
-    const match=String(prompt||'').trim().match(/^@(inkognitroz|halvord|nilsk|mmir|feedback)\b\s+([\s\S]+)$/i);
+    const match=String(prompt||'').trim().match(/^@([a-z0-9][a-z0-9_.-]{1,39})\b\s+([\s\S]+)$/i);
     if(!match)return null;
     const suggestion=redactOwnerSuggestionText(match[2]);
     if(!suggestion)return null;
@@ -812,18 +815,73 @@
     return event;
   }
 
-  function demoTranscriptCaptureEnabled(){
-    if(superPrivateModeActive())return false;
-    const params=new URLSearchParams(window.location?.search||'');
-    if(params.get('demo_capture')==='0'||params.has('no_demo_capture'))return false;
+  function demoTranscriptParams(){
+    try{return new URLSearchParams(window.location?.search||'');}
+    catch(error){return new URLSearchParams('');}
+  }
+
+  function hostedDemoOrigin(){
     const host=String(window.location?.hostname||'').toLowerCase();
-    const hostedDemo=host==='mmir.ai'||host==='www.mmir.ai'||host==='staging.mmir.ai';
-    const explicit=params.has('demo_capture')||
+    return host==='mmir.ai'||host==='www.mmir.ai'||host==='staging.mmir.ai';
+  }
+
+  function demoTranscriptOptOut(params=demoTranscriptParams()){
+    return params.get('demo_capture')==='0'||params.has('no_demo_capture');
+  }
+
+  function demoTranscriptModeRequested(params=demoTranscriptParams()){
+    if(demoTranscriptOptOut(params))return false;
+    if(readStorageString(DEMO_GROWTH_MODE_KEY,'')==='true')return true;
+    if(params.has('demo_capture')||
       params.has('mmir_demo')||
       params.has('user_test')||
-      params.has('mmir_qa_session')||
-      [...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key));
-    return hostedDemo||explicit;
+      params.has('mmir_qa_session'))return true;
+    if([...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key)))return true;
+    return hostedDemoOrigin();
+  }
+
+  function demoTranscriptConsentActive(params=demoTranscriptParams()){
+    if(demoTranscriptOptOut(params)||!demoTranscriptModeRequested(params))return false;
+    if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='accepted')return true;
+    if(readStorageString(DEMO_GROWTH_MODE_KEY,'')==='true')return true;
+    if(params.get('demo_capture')==='1'||params.has('user_test')||params.has('mmir_qa_session'))return true;
+    if([...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key)))return true;
+    return false;
+  }
+
+  function ensureDemoTranscriptConsentNotice(source='conversation_update'){
+    if(superPrivateModeActive())return false;
+    const params=demoTranscriptParams();
+    if(!demoTranscriptModeRequested(params))return false;
+    writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'accepted');
+    if(readStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'')==='shown')return true;
+    writeStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'shown');
+    const notice={
+      id:'demo-consent-'+Date.now().toString(36),
+      role:'assistant',
+      content:'Demo-testmodus: MMIR kan lagre avgrensede og redigerte chatutdrag, klikk og feedback for å forbedre produktet. Ikke lim inn passord, API-nøkler eller sensitiv informasjon. Slå av med ?demo_capture=0 eller Superprivate mode.',
+      label:'MMIR Demo',
+      receipt:'Demo consent · product learning · redacted transcript',
+      variant:'notice',
+      actions:false,
+      createdAt:new Date().toISOString()
+    };
+    state.messages.push(notice);
+    state.messages=state.messages.slice(-MAX_HISTORY);
+    saveHistory();
+    renderTranscript();
+    captureInteraction('demo_transcript_consent_visible',{
+      source,
+      demo_capture:true,
+      hosted_demo:hostedDemoOrigin()
+    });
+    return true;
+  }
+
+  function demoTranscriptCaptureEnabled(){
+    if(superPrivateModeActive())return false;
+    const params=demoTranscriptParams();
+    return demoTranscriptConsentActive(params);
   }
 
   function redactDemoTranscriptText(value){
@@ -894,6 +952,8 @@
   }
 
   function scheduleDemoTranscriptCapture(reason='conversation_update',metadata={}){
+    if(superPrivateModeActive())return;
+    ensureDemoTranscriptConsentNotice(reason);
     if(!demoTranscriptCaptureEnabled())return;
     clearTimeout(demoTranscriptTimer);
     demoTranscriptTimer=setTimeout(()=>sendDemoTranscript(reason,metadata),700);

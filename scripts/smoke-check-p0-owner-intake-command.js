@@ -69,6 +69,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "match(/^@([a-z0-9][a-z0-9_.-]{1,39})\\b\\s+([\\s\\S]+)$/i)",
+  'P0 shell must accept free-form tester aliases such as @amanda for feedback capture.'
+);
+requireIncludes(
+  shell,
   'function promptFrictionSignal(prompt)',
   'P0 shell must classify MMIR-related chat friction without relying on the owner as support.'
 );
@@ -76,6 +81,36 @@ requireIncludes(
   shell,
   'function demoTranscriptCaptureEnabled()',
   'P0 shell must gate demo transcript capture by demo/test mode and privacy mode.'
+);
+requireIncludes(
+  shell,
+  "const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';",
+  'P0 shell must persist an explicit demo transcript consent marker.'
+);
+requireIncludes(
+  shell,
+  'function ensureDemoTranscriptConsentNotice',
+  'P0 shell must show a visible demo transcript consent notice before capture.'
+);
+requireIncludes(
+  shell,
+  'Demo-testmodus: MMIR kan lagre avgrensede og redigerte chatutdrag',
+  'P0 shell must explain demo transcript capture in the chat, not hide it in background telemetry.'
+);
+requireIncludes(
+  shell,
+  "writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'accepted')",
+  'P0 shell must mark consent only through the visible demo consent path.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction('demo_transcript_consent_visible'",
+  'P0 shell must record that demo consent was shown without raw transcript content.'
+);
+requireIncludes(
+  shell,
+  "params.get('demo_capture')==='0'||params.has('no_demo_capture')",
+  'P0 shell must provide a simple opt-out for demo transcript capture.'
 );
 requireIncludes(
   shell,
@@ -374,12 +409,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260618-interaction-capture-v5',
+  'p0-chat-shell.js?v=20260621-demo-consent-feedback-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260618-interaction-capture-v5"',
+  '"p0-chat-shell.js": "20260621-demo-consent-feedback-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
