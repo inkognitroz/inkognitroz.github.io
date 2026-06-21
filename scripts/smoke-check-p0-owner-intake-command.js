@@ -194,6 +194,21 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "submit:Boolean(explicitFeedback&&demoConsent)",
+  'Explicit demo feedback must be eligible for server-side issue creation when the gateway gates allow it.'
+);
+requireIncludes(
+  shell,
+  'demo_feedback_consent:Boolean(demoConsent)',
+  'Explicit feedback must carry the visible demo consent signal.'
+);
+requireIncludes(
+  shell,
+  "capture_consent:demoConsent?'demo_transcript':''",
+  'Feedback intake must use the same demo consent contract as transcript capture.'
+);
+requireIncludes(
+  shell,
   "menuButton('draft-feedback','Send feedback'",
   'Add menu must expose a simple Send feedback affordance.'
 );
@@ -409,12 +424,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260621-demo-consent-feedback-v1',
+  'p0-chat-shell.js?v=20260621-demo-feedback-issue-gate-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260621-demo-consent-feedback-v1"',
+  '"p0-chat-shell.js": "20260621-demo-feedback-issue-gate-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
