@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260622-swarm-progress-v1';
+  const P0_RUNTIME_VERSION='20260622-feedback-capture-truth-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1023,35 +1023,85 @@
       .reverse();
   }
 
-  function feedbackCaptureSummary(count=feedbackInboxItems().length){
-    const total=Number(count)||0;
+  function feedbackCaptureServerState(item){
+    const explicit=String(item?.server_state||'').trim().toLowerCase();
+    if(explicit==='pending'||explicit==='local_only'||explicit==='synced')return explicit;
+    const status=String(item?.status||'').trim().toLowerCase();
+    if(status==='pending_server_intake')return 'pending';
+    if(status==='local_fallback')return 'local_only';
+    if(status==='submitted'||status==='accepted'||status==='draft_synced')return 'synced';
+    return 'local_only';
+  }
+
+  function feedbackCaptureCounts(items=feedbackInboxItems()){
+    const source=Array.isArray(items)?items:[];
+    const counts={total:0,synced:0,pending:0,local_only:0,state:'idle'};
+    source.forEach(item=>{
+      const key=feedbackCaptureServerState(item);
+      counts.total+=1;
+      if(key==='synced')counts.synced+=1;
+      else if(key==='pending')counts.pending+=1;
+      else counts.local_only+=1;
+    });
+    if(!counts.total)return counts;
+    if((counts.synced&&counts.pending)||(counts.synced&&counts.local_only)||(counts.pending&&counts.local_only))counts.state='mixed';
+    else if(counts.pending)counts.state='pending';
+    else if(counts.synced)counts.state='synced';
+    else counts.state='local_only';
+    return counts;
+  }
+
+  function feedbackCaptureSummary(counts=feedbackCaptureCounts()){
+    const total=Number(counts?.total)||0;
     if(total<=0)return '';
-    return 'Feedback fanget · '+total+' draft'+(total===1?'':'s')+' · Inbox';
+    if(counts.state==='synced')return 'Feedback Inbox · '+total+' synced';
+    if(counts.state==='pending')return 'Feedback Inbox · '+total+' pending sync';
+    if(counts.state==='local_only')return 'Feedback Inbox · '+total+' local-only';
+    return 'Feedback Inbox · '+total+' mixed sync';
+  }
+
+  function feedbackCaptureDetail(counts=feedbackCaptureCounts()){
+    const total=Number(counts?.total)||0;
+    if(total<=0)return '';
+    const parts=[];
+    if(counts.synced)parts.push(String(counts.synced)+' synced');
+    if(counts.pending)parts.push(String(counts.pending)+' pending sync');
+    if(counts.local_only)parts.push(String(counts.local_only)+' local-only');
+    return parts.join(' · ');
   }
 
   function renderFeedbackCaptureStatus(){
     const el=document.getElementById('p0-feedback-capture');
     if(!el)return;
-    const count=feedbackInboxItems().length;
-    const summary=feedbackCaptureSummary(count);
+    const counts=feedbackCaptureCounts();
+    const summary=feedbackCaptureSummary(counts);
+    const detail=feedbackCaptureDetail(counts);
     const composer=document.getElementById('p0-composer');
     if(composer)composer.dataset.feedbackCaptured=summary?'true':'false';
+    if(composer)composer.dataset.feedbackCaptureState=counts.state||'idle';
     el.hidden=!summary;
     el.textContent=summary;
-    el.title=summary?'Åpne Feedback Inbox og se fangede forbedringsforslag.':'';
+    el.title=summary?('Open Feedback Inbox. '+detail+'. No paid route.'):'';
     el.setAttribute('aria-label',summary||'Ingen fanget feedback ennå');
-    el.dataset.count=String(count);
+    el.dataset.count=String(counts.total||0);
+    el.dataset.state=counts.state||'idle';
   }
 
   function markFeedbackCaptured(source='feedback_capture'){
     renderFeedbackCaptureStatus();
-    const summary=feedbackCaptureSummary();
+    const counts=feedbackCaptureCounts();
+    const summary=feedbackCaptureSummary(counts);
+    const detail=feedbackCaptureDetail(counts);
     if(!summary)return;
     status(summary,'ready');
-    routeStatus(summary+' · ingen betalt rute','ready');
+    routeStatus(summary+(detail?(' · '+detail):'')+' · ingen betalt rute','ready');
     captureInteraction('feedback_capture_visible',{
       source,
-      local_feedback_count:feedbackInboxItems().length
+      local_feedback_count:counts.total,
+      feedback_capture_state:counts.state,
+      feedback_synced_count:counts.synced,
+      feedback_pending_count:counts.pending,
+      feedback_local_only_count:counts.local_only
     });
   }
 
@@ -1077,7 +1127,8 @@
       suggestion:redactOwnerSuggestionText(item.suggestion||''),
       classification:item.classification||{},
       no_paid_routes_started:true,
-      provider_called:false
+      provider_called:false,
+      server_state:item.server_state||''
     });
     writeFeedbackInboxItems(next);
     renderFeedbackCaptureStatus();
@@ -1127,10 +1178,12 @@
 
   function feedbackInboxAnswer(plan){
     const items=Array.isArray(plan?.top_items)?plan.top_items:[];
+    const counts=feedbackCaptureCounts(items);
     const lines=[
       'Feedback Inbox',
       '',
       plan?.item_count?String(plan.item_count)+' lokale drafts klare for triage.':'Ingen lokale drafts i denne nettleseren ennå.',
+      counts.total?('Capture truth: '+feedbackCaptureDetail(counts)+'.'):'Capture truth: no local drafts yet.',
       ...feedbackStorageStatusLines(plan),
       'Regel: offentlig feedback blir ikke automatisk GitHub issue.',
       ''
@@ -1317,7 +1370,8 @@
       suggestion,
       classification:{lane:signal.surface||'general_chat',repo:'inkognitroz.github.io',backlog_hint:'user-test-friction'},
       no_paid_routes_started:true,
-      provider_called:false
+      provider_called:false,
+      server_state:signal.auto_draft?'pending':'local_only'
     };
   }
 
@@ -1344,7 +1398,20 @@
       implicit_feedback:true
     }).then(plan=>{
       if(localId)removeFeedbackInboxItem(localId);
-      if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
+      saveFeedbackInboxItem(plan?.inbox_item||{
+        id:localId||('fb_implicit_'+telemetryEventId().replace(/^evt_/,'')),
+        created_at:new Date().toISOString(),
+        target:'feedback',
+        source:'mmir-chat-implicit-feedback',
+        status:'submitted',
+        priority:signal.severity||'p5-guidance',
+        title:'Implicit feedback synced to intake',
+        suggestion:redactOwnerSuggestionText(prompt),
+        classification:{lane:plan?.draft?.classification?.lane||signal.surface||'general_chat',repo:'inkognitroz.github.io',backlog_hint:'user-test-friction'},
+        no_paid_routes_started:true,
+        provider_called:false,
+        server_state:'synced'
+      });
       markFeedbackCaptured('implicit_feedback_submitted');
       captureInteraction('implicit_feedback_submitted',{
         feedback_kind:signal.kind,
@@ -1354,6 +1421,7 @@
         local_feedback_count:feedbackInboxItems().length
       });
     }).catch(()=>{
+      if(localId)saveFeedbackInboxItem({...item,id:localId,server_state:'local_only'});
       markFeedbackCaptured('implicit_feedback_failed');
       captureInteraction('implicit_feedback_failed',{
         feedback_kind:signal.kind,
@@ -1415,13 +1483,27 @@
       suggestion:parsed.suggestion,
       classification:{lane:'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-pending'},
       no_paid_routes_started:true,
-      provider_called:false
+      provider_called:false,
+      server_state:'pending'
     });
     markFeedbackCaptured('feedback_local_draft');
     try{
       const plan=await submitFeedbackMentionCommand(parsed);
       removeFeedbackInboxItem(localDraftId);
-      if(plan?.inbox_item)saveFeedbackInboxItem(plan.inbox_item);
+      saveFeedbackInboxItem(plan?.inbox_item||{
+        id:'fb_synced_'+telemetryEventId().replace(/^evt_/,''),
+        created_at:new Date().toISOString(),
+        target:parsed.target,
+        source:parsed.source||'mmir-chat-feedback',
+        status:'submitted',
+        priority:'p3-ux',
+        title:'Feedback synced to intake',
+        suggestion:parsed.suggestion,
+        classification:{lane:plan?.draft?.classification?.lane||'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-synced'},
+        no_paid_routes_started:true,
+        provider_called:false,
+        server_state:'synced'
+      });
       markFeedbackCaptured('feedback_submitted');
       captureInteraction('feedback_submitted',{
         target:parsed.target,
@@ -1446,7 +1528,8 @@
         suggestion:parsed.suggestion,
         classification:{lane:'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-offline'},
         no_paid_routes_started:true,
-        provider_called:false
+        provider_called:false,
+        server_state:'local_only'
       });
       markFeedbackCaptured('feedback_failed_local_fallback');
       captureInteraction('feedback_failed',{target:parsed.target,reason:'endpoint_unreachable',local_feedback_count:feedbackInboxItems().length});

@@ -229,6 +229,31 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackCaptureCounts(items=feedbackInboxItems())',
+  'P0 shell must summarize feedback capture as synced, pending or local-only.'
+);
+requireIncludes(
+  shell,
+  "server_state:'pending'",
+  'P0 shell must mark newly captured feedback as pending sync before intake completes.'
+);
+requireIncludes(
+  shell,
+  "server_state:'synced'",
+  'P0 shell must keep a durable local proof item after feedback intake succeeds.'
+);
+requireIncludes(
+  shell,
+  "server_state:'local_only'",
+  'P0 shell must explicitly mark feedback that stayed local when intake is unavailable.'
+);
+requireIncludes(
+  shell,
+  'Capture truth: ',
+  'Feedback Inbox must explain whether drafts are synced, pending or local-only.'
+);
+requireIncludes(
+  shell,
   'function copyFeedbackTriagePack',
   'P0 shell must copy feedback triage packs without requiring central storage first.'
 );
@@ -299,7 +324,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'function feedbackCaptureSummary(count=feedbackInboxItems().length)',
+  'function feedbackCaptureSummary(counts=feedbackCaptureCounts())',
   'P0 shell must summarize captured feedback visibly for user-testers.'
 );
 requireIncludes(
@@ -404,8 +429,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "Feedback fanget · ",
-  'Captured-feedback confirmation must be visible in Norwegian demo copy.'
+  "Feedback Inbox · ",
+  'Captured-feedback confirmation must stay visible in the chat composer.'
 );
 requireIncludes(
   shell,
@@ -474,12 +499,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-swarm-progress-v1',
+  'p0-chat-shell.js?v=20260622-feedback-capture-truth-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-swarm-progress-v1"',
+  '"p0-chat-shell.js": "20260622-feedback-capture-truth-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
