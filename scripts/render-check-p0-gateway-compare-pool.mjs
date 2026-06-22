@@ -48,6 +48,10 @@ async function waitForServer(url) {
   throw new Error(`Server did not become ready at ${url}: ${lastError?.message || 'timeout'}`);
 }
 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function fulfillJson(route, body, status = 200) {
   await route.fulfill({
     status,
@@ -144,6 +148,7 @@ async function installFixtures(page) {
   });
 
   await page.route('https://api.mmir.ai/chat/swarm/preview', async route => {
+    await delay(1200);
     await fulfillJson(route, {
       object: 'chat.swarm.preview',
       status: 'first_round_ready',
@@ -471,6 +476,13 @@ async function checkViewport(browser, viewport) {
   await routeCta.click();
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
+    const status = document.getElementById('p0-status')?.textContent || '';
+    return /Intelligence Boost is running/i.test(text) &&
+      /Scoring answer quality/i.test(text) &&
+      /asking|ranking|synthesizing/i.test(status);
+  });
+  await page.waitForFunction(() => {
+    const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
     return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Swarm 472/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
@@ -524,6 +536,11 @@ async function checkViewport(browser, viewport) {
   await page.locator('[data-p0-action="ask-all-active"]').click();
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
+    return /Ask All Active is running/i.test(text) &&
+      /Keeping each answer separate/i.test(text);
+  });
+  await page.waitForFunction(() => {
+    const text = document.getElementById('p0-transcript')?.innerText || '';
     return /All active answers:/i.test(text) && /OpenRouter · Laguna XS/i.test(text);
   });
   const allText = await page.locator('#p0-transcript').innerText();
@@ -535,6 +552,11 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   await page.locator('[data-p0-action="discuss-topic"]').click();
+  await page.waitForFunction(() => {
+    const text = document.getElementById('p0-transcript')?.innerText || '';
+    return /Model Debate is running/i.test(text) &&
+      /Top routes challenge weak assumptions/i.test(text);
+  });
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
