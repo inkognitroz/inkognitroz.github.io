@@ -124,7 +124,7 @@ async function checkViewport(browser, viewport) {
   assert(menuText.includes('Add Fresh start'), `${viewport.name}: + menu must expose Fresh start pin`);
   assert(menuText.includes('Add Memory'), `${viewport.name}: + menu must expose Memory pin`);
   assert(menuText.includes('Add Stop'), `${viewport.name}: + menu must expose Stop pin`);
-  assert(!/Debate models|Model Debate/i.test(menuText), `${viewport.name}: Model Debate must wait for two routes`);
+  assert(!/Supergeni Council/i.test(menuText), `${viewport.name}: Supergeni Council must wait for two routes`);
 
   await page.locator('[data-p0-action="pin-toolbar-tool:fast-answer"]').click();
   await page.waitForTimeout(100);

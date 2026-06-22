@@ -469,7 +469,7 @@ async function checkViewport(browser, viewport) {
   assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
   assert(/Ask 5 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
-  assert(/Debate models/i.test(addMenu), `${viewport.name}: add menu should expose Debate models without adding toolbar clutter`);
+  assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
   await page.locator('#p0-add').click();
   await page.waitForFunction(() => document.getElementById('p0-add-menu')?.hidden === true);
 
@@ -555,27 +555,28 @@ async function checkViewport(browser, viewport) {
   await page.locator('[data-p0-action="discuss-topic"]').click();
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
-    return /Model Debate is running/i.test(text) &&
+    return /Supergeni Council is running/i.test(text) &&
+      /Now:/i.test(text) &&
       /Top routes challenge weak assumptions/i.test(text);
   });
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /Model Debate/i.test(text) && /council ready/i.test(routeFull) && /Swarm 472/i.test(routeFull) && /round 1\/3/i.test(routeFull);
+    return /Supergeni Council/i.test(text) && /council ready/i.test(routeFull) && /Swarm 472/i.test(routeFull) && /round 1\/3/i.test(routeFull);
   });
   const councilLayout = await page.evaluate(() => ({
     route: document.getElementById('p0-route')?.textContent || '',
     routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
-  assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Model Debate proof should show swarm value in the green status`);
-  assert(/Verifisert/i.test(councilLayout.route), `${viewport.name}: Model Debate status should show verified value`);
-  assert(/privat/i.test(councilLayout.route), `${viewport.name}: Model Debate status should show privacy value`);
-  assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Model Debate status should keep readiness detail behind details`);
-  assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Model Debate status should keep receipt proof behind details`);
-  assert(/round 1\/3/i.test(councilLayout.routeFull), `${viewport.name}: Model Debate proof should preserve swarm round truth`);
-  assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Model Debate proof should preserve no-paid route truth`);
-  assert(councilLayout.toolbarButtons <= 6, `${viewport.name}: Model Debate must not add extra visible toolbar buttons`);
+  assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Supergeni Council proof should show swarm value in the green status`);
+  assert(/Verifisert/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show verified value`);
+  assert(/privat/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show privacy value`);
+  assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep readiness detail behind details`);
+  assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep receipt proof behind details`);
+  assert(/round 1\/3/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve swarm round truth`);
+  assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve no-paid route truth`);
+  assert(councilLayout.toolbarButtons <= 6, `${viewport.name}: Supergeni Council must not add extra visible toolbar buttons`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
   assert(/2 quiet/i.test(allText), `${viewport.name}: Ask all should show quiet route count without noisy blocked lines`);
   assert(!/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should not show hidden throttled routes as visible failures`);

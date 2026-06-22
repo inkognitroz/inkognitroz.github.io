@@ -90,8 +90,8 @@ requireText(
 );
 requireText(
   addMenu,
-  "menuButton('discuss-topic','Debate models'",
-  'Add menu must expose Debate models through the proven compare/synthesis path'
+  "menuButton('discuss-topic','Supergeni Council'",
+  'Add menu must expose Supergeni Council through the proven compare/synthesis path'
 );
 forbidText(
   addMenu,
@@ -191,28 +191,28 @@ requireText(
 );
 requireText(
   runtime,
-  'Discuss this topic from two model perspectives',
-  'Model Debate must keep a structured local fallback over the proven synthesis path'
+  'Supergeni Council: compare two model perspectives',
+  'Supergeni Council must keep a structured local fallback over the proven synthesis path'
 );
 requireText(
   runtime,
-  'Model Debate: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion.',
-  'Model Debate must use a structured gateway prompt for route debate'
+  'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion.',
+  'Supergeni Council must use a structured gateway prompt for route debate'
 );
 requireText(
   runtime,
   "{mode:'council'}",
-  'Model Debate menu action must request the dedicated council mode'
+  'Supergeni Council menu action must request the dedicated council mode'
 );
 requireText(
   runtime,
   "mode==='boost'||mode==='all'||mode==='council'",
-  'Model Debate must prefer the swarm preview path when available'
+  'Supergeni Council must prefer the swarm preview path when available'
 );
 requireText(
   runtime,
   'council ready',
-  'Model Debate receipts must preserve debate readiness in subtle status'
+  'Supergeni Council receipts must preserve debate readiness in subtle status'
 );
 requireText(
   runtime,
