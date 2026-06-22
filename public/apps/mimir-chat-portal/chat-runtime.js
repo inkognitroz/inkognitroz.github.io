@@ -790,7 +790,10 @@
       if(!Array.isArray(value))return [];
       return value.filter(message=>{
         return (message?.role==='user'||message?.role==='assistant')&&typeof message.content==='string';
-      }).slice(-MAX_STORED_MESSAGES);
+      }).slice(-MAX_STORED_MESSAGES).map(message=>({
+        ...message,
+        truncated:Boolean(message?.truncated)
+      }));
     }catch(error){
       return [];
     }
@@ -831,7 +834,7 @@
     }
   }
   function publicMessage(message){
-    return {id:String(message?.id||''),role:message?.role==='user'?'user':'assistant',content:String(message?.content||''),meta:String(message?.meta||''),createdAt:String(message?.createdAt||new Date().toISOString()),retryPrompt:typeof message?.retryPrompt==='string'?message.retryPrompt:'',model:typeof message?.model==='string'?message.model:''};
+    return {id:String(message?.id||''),role:message?.role==='user'?'user':'assistant',content:String(message?.content||''),meta:String(message?.meta||''),createdAt:String(message?.createdAt||new Date().toISOString()),retryPrompt:typeof message?.retryPrompt==='string'?message.retryPrompt:'',model:typeof message?.model==='string'?message.model:'',truncated:Boolean(message?.truncated)};
   }
   function runtimeMessageSnapshot(){
     return messages.filter(message=>(message.role==='user'||message.role==='assistant')&&message.content&&message.content!=='Thinking...').map(publicMessage);
@@ -869,7 +872,8 @@
       createdAt:new Date().toISOString(),
       retryPrompt:typeof extra.retryPrompt==='string'?extra.retryPrompt:'',
       model:typeof extra.model==='string'?extra.model:'',
-      rolePreset:typeof extra.rolePreset==='string'?extra.rolePreset:''
+      rolePreset:typeof extra.rolePreset==='string'?extra.rolePreset:'',
+      truncated:Boolean(extra.truncated)
     };
   }
 
@@ -1037,6 +1041,9 @@
     if(message.retryPrompt){
       addAction('retry','Retry','Retry this prompt',()=>retryMessage(message));
     }
+    if(message.truncated){
+      addAction('continue','Continue','Continue truncated answer',()=>continueMessage(message));
+    }
     addAction('save','Save','Save this chat locally',()=>runDeferredMessageAction('save',message));
     addAction('fork','Fork','Fork the conversation at this answer',()=>runDeferredMessageAction('fork',message));
     addAction('share-safe','Share safe','Copy a redacted safe share for this answer',()=>runDeferredMessageAction('share-safe',message));
@@ -1048,7 +1055,7 @@
     note.setAttribute('role','status');
     note.setAttribute('aria-live','polite');
     actions.setAttribute('aria-describedby',note.id);
-    note.textContent='Local actions: copy, retry, save, fork, share, next.';
+    note.textContent=message.truncated?'Local actions: copy, retry, continue, save, fork, share, next.':'Local actions: copy, retry, save, fork, share, next.';
     bubble.append(actions,note);
   }
 
@@ -1152,11 +1159,12 @@
     return {message,body};
   }
 
-  function updateMessage(id,content,meta){
+  function updateMessage(id,content,meta,extra={}){
     const message=messages.find(item=>item.id===id);
     if(message){
       message.content=String(content||'');
       if(meta!==undefined)message.meta=String(meta||'');
+      if(Object.prototype.hasOwnProperty.call(extra,'truncated'))message.truncated=Boolean(extra.truncated);
       saveMessages();
     }
     const bubble=transcriptEl?.querySelector('[data-message-id="'+CSS.escape(id)+'"]');
@@ -1206,6 +1214,20 @@
     promptEl.focus();
     setMessageActionStatus(message.id,'Retrying with the same local/private routing rules.','loading');
     recordMessageAction('retry',message);
+    sendMessage();
+  }
+
+  function continueMessage(message){
+    if(busy||!promptEl)return;
+    const prompt=String(message.retryPrompt||'').trim();
+    if(!prompt){
+      setMessageActionStatus(message.id,'No original prompt to continue.','error');
+      return;
+    }
+    promptEl.value='Continue the previous answer without repeating the beginning. Original prompt: '+prompt;
+    promptEl.focus();
+    setMessageActionStatus(message.id,'Continuing truncated answer...','loading');
+    recordMessageAction('continue',message,{truncated:true});
     sendMessage();
   }
 
@@ -1706,11 +1728,37 @@
     return payload?.choices?.[0]?.delta?.content||payload?.choices?.[0]?.message?.content||payload?.content||'';
   }
 
+  function responseFinishReason(payload){
+    return String(
+      payload?.choices?.[0]?.finish_reason||
+      payload?.finish_reason||
+      payload?.mmir?.receipt?.finish_reason||
+      payload?.mmir?.route_receipt?.finish_reason||
+      payload?.route_receipt?.finish_reason||
+      payload?.receipt?.finish_reason||
+      ''
+    ).trim();
+  }
+
+  function responseLooksTruncated(payload){
+    return Boolean(
+      payload?.answer_truncated||
+      payload?.completion_truncated||
+      payload?.mmir?.receipt?.completion_truncated||
+      payload?.mmir?.route_receipt?.completion_truncated||
+      payload?.route_receipt?.completion_truncated||
+      payload?.receipt?.completion_truncated||
+      /length|max[_-]?tokens?|token_limit|output_limit|truncated/i.test(responseFinishReason(payload))
+    );
+  }
+
   async function readSse(response,onText){
     const reader=response.body.getReader();
     const decoder=new TextDecoder();
     let buffer='';
     let content='';
+    let completion_truncated=false;
+    let finish_reason='';
 
     while(true){
       const {value,done}=await reader.read();
@@ -1722,7 +1770,7 @@
         const dataLines=event.split('\n').filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trim());
         for(const data of dataLines){
           if(!data)continue;
-          if(data==='[DONE]')return content;
+          if(data==='[DONE]')return {content,completion_truncated,finish_reason};
           let parsed=null;
           try{parsed=JSON.parse(data);}catch(error){continue;}
           const delta=chunkContent(parsed);
@@ -1730,11 +1778,13 @@
             content+=delta;
             onText(content);
           }
+          completion_truncated=completion_truncated||responseLooksTruncated(parsed);
+          finish_reason=finish_reason||responseFinishReason(parsed);
         }
       }
     }
 
-    return content;
+    return {content,completion_truncated,finish_reason};
   }
 
   async function streamPath(url,path,headers,payload,signal,onText){
@@ -1764,7 +1814,7 @@
     const data=await response.json();
     const content=data?.choices?.[0]?.message?.content||data?.content||'';
     if(content)onText(content);
-    return content;
+    return {content,completion_truncated:responseLooksTruncated(data),finish_reason:responseFinishReason(data)};
   }
 
   const CHAT_PATHS=['/chat/completions','/v1/chat/completions','/chat'];
@@ -1794,7 +1844,11 @@
       }
     }
     if(!data&&lastError)throw lastError;
-    return data?.choices?.[0]?.message?.content||data?.content||'';
+    return {
+      content:data?.choices?.[0]?.message?.content||data?.content||'',
+      completion_truncated:responseLooksTruncated(data),
+      finish_reason:responseFinishReason(data)
+    };
   }
 
   async function chatWithBackend(url,headers,payload,signal,onText){
@@ -1802,9 +1856,9 @@
       return await streamChat(url,headers,payload,signal,onText);
     }catch(error){
       if(![400,406,501].includes(error.status))throw error;
-      const content=await jsonChat(url,headers,payload,signal);
-      if(content)onText(content);
-      return content;
+      const result=await jsonChat(url,headers,payload,signal);
+      if(result.content)onText(result.content);
+      return result;
     }
   }
 
@@ -1964,11 +2018,12 @@
     const assistant=appendMessage('assistant','Thinking...',meta,{retryPrompt:prompt,model:SUPERGENIUS_LABEL});
     setStatus(SUPERGENIUS_LABEL+' is answering...','loading');
     try{
-      const content=await managedSupergeniusContent(prompt,(partial)=>{
+      const result=await managedSupergeniusContent(prompt,(partial)=>{
         updateMessage(assistant.message.id,partial||'Thinking...',meta);
         setStatus('Streaming from '+SUPERGENIUS_LABEL+'...','loading');
       },currentAbortController.signal);
-      updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',meta);
+      const content=result?.content||'';
+      updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',meta,{truncated:result?.completion_truncated===true});
       writeActiveProfilePatch({health:'ready',liveness:'chat-probed',lastProofAt:new Date().toISOString(),lastProofModel:'mmir-supergenius'});
       uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{route_class:'free',cost_class:'free',provider_called:false,no_paid_routes_started:true});
       renderLiveProof(SUPERGENIUS_LABEL+' answered on the hosted free route. Local/private nodes can still take over after proof.', 'ready', baseProofItems('https://api.mmir.ai').concat([{label:'Chat response',state:'ready',detail:SUPERGENIUS_LABEL}]), proofRepairActions('answered'));
@@ -2018,7 +2073,7 @@
           setStatus('Streaming from browser model...','loading');
         }
       }
-      updateMessage(assistant.message.id,content||'Browser model returned an empty response.',starter.label);
+      updateMessage(assistant.message.id,content||'Browser model returned an empty response.',starter.label,{truncated:false});
       uReceipt(starter.label||starter.model||'browser WebGPU','browser-webgpu',prompt,content,browserNodeReceiptMetadata({model_id:String(starter?.model||''),starter_id:String(starter?.id||'')}));
       setStatus(stopRequested?'Browser generation stopped.':'Browser model response received.','ready');
     }catch(error){
@@ -2035,10 +2090,11 @@
       });
       try{
         setStatus('Browser Model unavailable. Switching to '+SUPERGENIUS_LABEL+'...','loading');
-        const content=await managedSupergeniusContent(prompt,(partial)=>{
+        const result=await managedSupergeniusContent(prompt,(partial)=>{
           updateMessage(assistant.message.id,partial||'Thinking...', SUPERGENIUS_LABEL);
         },currentAbortController.signal);
-        updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',SUPERGENIUS_LABEL);
+        const content=result?.content||'';
+        updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',SUPERGENIUS_LABEL,{truncated:result?.completion_truncated===true});
         uReceipt('mmir-supergenius','api.mmir.ai/free',prompt,content,{fallback_from:'browser-webgpu',route_class:'free',cost_class:'free',provider_called:false,no_paid_routes_started:true});
         setStatus('Browser Model was unavailable. '+SUPERGENIUS_LABEL+' answered instead.','ready');
       }catch(fallbackError){
@@ -2386,11 +2442,12 @@
       ]);
       const payloadMessages=contextMessages(prompt,backendMemory,backendKnowledge);
       const payload={model:selectedModel,messages:payloadMessages,...runtimePayload()};
-      const content=await chatWithBackend(url,headers,payload,currentAbortController.signal,(partial)=>{
+      const result=await chatWithBackend(url,headers,payload,currentAbortController.signal,(partial)=>{
         updateMessage(assistant.message.id,partial||'Thinking...',messageMeta);
         setStatus('Streaming response...','loading');
       });
-      updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta);
+      const content=result?.content||'';
+      updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta,{truncated:result?.completion_truncated===true});
       writeActiveProfilePatch({health:'ready'});
       uReceipt(selectedModel,profile.provider||profile.name||'backend',prompt,content);
       renderLiveProof('First verified chat answered. Save it or keep building.', 'ready', baseProofItems(url).concat([{label:'Chat response',state:'ready',detail:selectedModel}]), proofRepairActions('answered'));
