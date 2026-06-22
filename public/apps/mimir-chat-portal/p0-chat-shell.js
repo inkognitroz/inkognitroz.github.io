@@ -1002,12 +1002,12 @@
   function feedbackIntakeStorageLine(plan){
     const store=plan?.durable_feedback_store||{};
     if(store.persisted){
-      return 'Lagring: owner-lesbart corpus er koblet og denne draften ble lagret sentralt.';
+      return 'Storage: the owner-readable corpus is connected and this draft was saved centrally.';
     }
     if(store.durable_binding_configured){
-      return 'Lagring: lokal Feedback Inbox er trygg; owner-lager finnes, men serverlagring må sjekkes.';
+      return 'Storage: the local Feedback Inbox is safe; the owner store exists, but server persistence still needs verification.';
     }
-    return 'Lagring: lokal Feedback Inbox + sanitert Worker-logg. Sentralt owner-lager mangler fortsatt.';
+    return 'Storage: local Feedback Inbox + sanitized Worker log fallback. Central owner-readable storage is still not configured.';
   }
 
   function feedbackOwnerStoreReady(plan){
@@ -1021,7 +1021,7 @@
   function feedbackIntakeAnswer(plan){
     const target=plan?.target?('@'+plan.target):'@feedback';
     const lane=plan?.draft?.classification?.lane||'product triage';
-    return 'Takk - feedback er registrert som trygg forbedringsdraft for '+target+'.\n\nForeløpig rute: '+lane+'.\n'+feedbackIntakeStorageLine(plan)+'\n\nVi lagrer ikke admin-koder eller provider-nøkler i chatten, og dette starter ingen betalte ruter.';
+    return 'Thanks - feedback was captured as a safe improvement draft for '+target+'.\n\nCurrent lane: '+lane+'.\n'+feedbackIntakeStorageLine(plan)+'\n\nWe do not store admin codes or provider keys in chat, and this does not start any paid routes.';
   }
 
   function feedbackInboxItems(){
@@ -1090,7 +1090,7 @@
     el.hidden=!summary;
     el.textContent=summary;
     el.title=summary?('Open Feedback Inbox. '+detail+'. No paid route.'):'';
-    el.setAttribute('aria-label',summary||'Ingen fanget feedback ennå');
+    el.setAttribute('aria-label',summary||'No captured feedback yet');
     el.dataset.count=String(counts.total||0);
     el.dataset.state=counts.state||'idle';
   }
@@ -1102,7 +1102,7 @@
     const detail=feedbackCaptureDetail(counts);
     if(!summary)return;
     status(summary,'ready');
-    routeStatus(summary+(detail?(' · '+detail):'')+' · ingen betalt rute','ready');
+    routeStatus(summary+(detail?(' · '+detail):'')+' · no paid route','ready');
     captureInteraction('feedback_capture_visible',{
       source,
       local_feedback_count:counts.total,
@@ -1167,20 +1167,20 @@
     const writable=Boolean(plan?.durable_store_writable);
     if(durable&&readable&&writable){
       return [
-        'Owner-lager: owner-lesbart læringskorpus er koblet og klart for autorisert analyse.',
-        'Server: saniterte feedback-events lagres i durable store og kan grupperes til produktlæring.'
+        'Owner store: the owner-readable learning corpus is connected and ready for authorized analysis.',
+        'Server: sanitized feedback events are stored durably and can be grouped into product learning.'
       ];
     }
     if(durable){
       return [
-        'Owner-lager: durable binding finnes, men er ikke fullt lesbar/skrivbar ennå.',
-        'Fallback: lokale drafts i denne nettleseren + saniterte Worker logs.'
+        'Owner store: a durable binding exists, but it is not fully readable and writable yet.',
+        'Fallback: local drafts in this browser + sanitized Worker logs.'
       ];
     }
     return [
-      'Owner-lager: ikke koblet ennå.',
-      'Fallback: lokale drafts i denne nettleseren + saniterte Cloudflare Worker logs.',
-      'Mangler for sentral analyse: MMIR_FEEDBACK_STORE-binding med owner-gated lesing.'
+      'Owner store: not connected yet.',
+      'Fallback: local drafts in this browser + sanitized Cloudflare Worker logs.',
+      'Missing for central analysis: an MMIR_FEEDBACK_STORE binding with owner-gated read access.'
     ];
   }
 
@@ -1193,22 +1193,22 @@
     const lines=[
       'Feedback Inbox',
       '',
-      totalCount?String(totalCount)+' lokale drafts klare for triage.':'Ingen lokale drafts i denne nettleseren ennå.',
+      totalCount?String(totalCount)+' local drafts ready for triage.':'No local drafts in this browser yet.',
       counts.total?('Capture truth: '+feedbackCaptureDetail(counts)+'.'):'Capture truth: no local drafts yet.',
-      totalCount&&visibleCount&&visibleCount<totalCount?('Viser topp '+String(visibleCount)+' av '+String(totalCount)+' drafts for triage først.'):'',
+      totalCount&&visibleCount&&visibleCount<totalCount?('Showing the top '+String(visibleCount)+' of '+String(totalCount)+' drafts for triage first.'):'',
       ...feedbackStorageStatusLines(plan),
-      'Regel: offentlig feedback blir ikke automatisk GitHub issue.',
+      'Rule: public feedback does not become a GitHub issue automatically.',
       ''
     ];
     if(items.length){
-      lines.push('Topp prioritet:');
+      lines.push('Top priority:');
       items.slice(0,8).forEach((item,index)=>{
         const target=item.target?('@'+item.target):'@feedback';
         const lane=item.classification?.lane||'triage';
         lines.push(String(index+1)+'. '+feedbackPriorityLabel(item.priority)+' · '+target+' · '+lane+' · '+String(item.suggestion||'').replace(/\s+/g,' ').slice(0,140));
       });
     }
-    lines.push('', 'Neste steg: promoter bare owner-godkjente items til issue med acceptance proof.');
+    lines.push('', 'Next step: promote only owner-approved items to an issue with acceptance proof.');
     return lines.join('\n');
   }
 
@@ -1553,7 +1553,7 @@
       });
       markFeedbackCaptured('feedback_failed_local_fallback');
       captureInteraction('feedback_failed',{target:parsed.target,reason:'endpoint_unreachable',local_feedback_count:feedbackInboxItems().length});
-      updateMessage(assistant,'Feedback-endepunktet er utilgjengelig akkurat nå. Jeg lagret en lokal draft i Feedback Inbox, så den blir ikke borte.',{receipt:'Feedback intake · local fallback draft · no provider call',actions:false});
+      updateMessage(assistant,'The feedback endpoint is unavailable right now. I saved a local draft in Feedback Inbox so it is not lost.',{receipt:'Feedback intake · local fallback draft · no provider call',actions:false});
       status('Feedback saved locally.','ready');
       routeStatus('Feedback Inbox · local fallback · no issue created','ready');
     }
@@ -3100,7 +3100,7 @@
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
-          '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="Ingen fanget feedback ennå"></button>'+
+          '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="No captured feedback yet"></button>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+

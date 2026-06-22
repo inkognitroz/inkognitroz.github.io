@@ -259,7 +259,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "Viser topp '+String(visibleCount)+' av '+String(totalCount)+' drafts for triage først.",
+  "Showing the top '+String(visibleCount)+' of '+String(totalCount)+' drafts for triage first.",
   'Feedback Inbox must say when it is showing only the top triage subset.'
 );
 requireIncludes(
@@ -394,7 +394,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'Owner-lager: owner-lesbart læringskorpus er koblet og klart for autorisert analyse.',
+  'Owner store: the owner-readable learning corpus is connected and ready for authorized analysis.',
   'Feedback Inbox must show the owner-readable learning corpus when durable store is ready.'
 );
 requireIncludes(
@@ -404,18 +404,33 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'Lagring: lokal Feedback Inbox + sanitert Worker-logg. Sentralt owner-lager mangler fortsatt.',
+  'Storage: local Feedback Inbox + sanitized Worker log fallback. Central owner-readable storage is still not configured.',
   'Feedback intake confirmation must be honest when central owner-readable storage is not configured.'
 );
 requireIncludes(
   shell,
-  'Owner-lager: ikke koblet ennå.',
+  'Owner store: not connected yet.',
   'Feedback Inbox must be honest when durable owner-readable storage is not configured.'
 );
 requireIncludes(
   shell,
-  'Mangler for sentral analyse: MMIR_FEEDBACK_STORE-binding med owner-gated lesing.',
+  'Missing for central analysis: an MMIR_FEEDBACK_STORE binding with owner-gated read access.',
   'Feedback Inbox must name the missing durable-store binding needed for central analysis.'
+);
+requireNotIncludes(
+  shell,
+  'Ingen fanget feedback ennå',
+  'Feedback capture affordance should stay English on the public shell.'
+);
+requireNotIncludes(
+  shell,
+  'ingen betalt rute',
+  'Feedback capture route proof should stay English on the public shell.'
+);
+requireNotIncludes(
+  shell,
+  'Owner-lager:',
+  'Feedback Inbox should not regress to mixed-language owner-store copy.'
 );
 requireIncludes(
   shell,
