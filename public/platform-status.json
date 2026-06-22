@@ -2,7 +2,7 @@
   "version": 1,
   "updated_at": "2026-06-22T06:54:41Z",
   "description": "Public-safe status manifest for MMIR.ai. Internal QA, agent instructions and deploy reports stay in the private control repo; this browser payload contains only product-safe status copy.",
-  "latest_verified_commit": "f4477fa",
+  "latest_verified_commit": "eccdb8c",
   "domain_availability_watch": "./domain-availability-watch.json",
   "components": [
     {
@@ -16,7 +16,7 @@
       "id": "latest-deploy-verification",
       "label": "Latest deploy verification",
       "status": "online",
-      "route": "c140ad6 / GitHub Actions",
+      "route": "eccdb8c / GitHub Actions",
       "notes": "The public artifact is checked by GitHub Actions before deploy. Detailed QA evidence stays in the private control repo."
     },
     {
@@ -24,20 +24,20 @@
       "label": "Public URL health",
       "status": "watch",
       "route": "https://mmir.ai/",
-      "notes": "External web fetch sees MMIR content, while this local PowerShell network blocks mmir.ai as newly-registered-domain. Treat as network/domain-reputation watch until checked from another network."
+      "notes": "External checks have seen MMIR content, but some networks may still block or rate-limit a newly registered custom domain. Treat this as a network/domain-reputation watch until checked from another network."
     },
     {
       "id": "domain-availability-watch-refresh",
       "label": "Domain availability watch",
       "status": "watch",
-      "route": "f69d128 / mmir.ai",
-      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare, but this environment still returns 503 or connection failures for public URL fetches. See domain-availability-watch.json before treating this as a frontend or chat failure."
+      "route": "eccdb8c / mmir.ai",
+      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare, but some networks still return 503 or connection failures for mmir.ai. See domain-availability-watch.json before treating this as a frontend or chat failure."
     },
     {
       "id": "no-model-deploy-verification",
       "label": "No-model deploy proof",
       "status": "online",
-      "route": "c140ad6 / GitHub Pages artifact",
+      "route": "eccdb8c / GitHub Pages artifact",
       "notes": "The public chat shell includes a no-model fallback path and free route floor without exposing internal QA reports."
     },
     {
