@@ -374,6 +374,21 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackOwnerStoreReady(plan)',
+  'P0 shell must centralize owner-readable feedback store readiness truth.'
+);
+requireIncludes(
+  shell,
+  'Owner-lager: owner-lesbart læringskorpus er koblet og klart for autorisert analyse.',
+  'Feedback Inbox must show the owner-readable learning corpus when durable store is ready.'
+);
+requireIncludes(
+  shell,
+  'Feedback Inbox · owner-readable learning corpus · no paid route',
+  'Feedback Inbox receipt must stop calling the ready owner store only Cloudflare logs.'
+);
+requireIncludes(
+  shell,
   'Lagring: lokal Feedback Inbox + sanitert Worker-logg. Sentralt owner-lager mangler fortsatt.',
   'Feedback intake confirmation must be honest when central owner-readable storage is not configured.'
 );
@@ -499,12 +514,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-feedback-capture-truth-v1',
+  'p0-chat-shell.js?v=20260622-feedback-learning-rail-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-feedback-capture-truth-v1"',
+  '"p0-chat-shell.js": "20260622-feedback-learning-rail-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260622-feedback-capture-truth-v1';
+  const P0_RUNTIME_VERSION='20260622-feedback-learning-rail-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1010,6 +1010,14 @@
     return 'Lagring: lokal Feedback Inbox + sanitert Worker-logg. Sentralt owner-lager mangler fortsatt.';
   }
 
+  function feedbackOwnerStoreReady(plan){
+    return Boolean(
+      (plan?.durable_binding_configured||plan?.kv_binding_configured) &&
+      plan?.durable_store_readable &&
+      plan?.durable_store_writable
+    );
+  }
+
   function feedbackIntakeAnswer(plan){
     const target=plan?.target?('@'+plan.target):'@feedback';
     const lane=plan?.draft?.classification?.lane||'product triage';
@@ -1159,8 +1167,8 @@
     const writable=Boolean(plan?.durable_store_writable);
     if(durable&&readable&&writable){
       return [
-        'Owner-lager: durable inbox er koblet og lesbar for autorisert eier.',
-        'Server: saniterte feedback-events lagres i owner-lesbart corpus.'
+        'Owner-lager: owner-lesbart læringskorpus er koblet og klart for autorisert analyse.',
+        'Server: saniterte feedback-events lagres i durable store og kan grupperes til produktlæring.'
       ];
     }
     if(durable){
@@ -1210,7 +1218,7 @@
       '- Generated: '+new Date().toISOString(),
       '- Runtime: '+P0_RUNTIME_VERSION,
       '- Local drafts: '+String(localItems.length),
-      '- Durable owner store: '+(plan?.durable_binding_configured?'configured':'not configured'),
+      '- Durable owner store: '+(feedbackOwnerStoreReady(plan)?'owner-readable learning corpus ready':(plan?.durable_binding_configured?'configured, not fully readable/writable':'not configured')),
       '- Provider calls: none',
       '- Paid routes: none',
       ''
@@ -1275,17 +1283,23 @@
     });
   }
 
+  function feedbackInboxReceipt(plan){
+    if(feedbackOwnerStoreReady(plan))return 'Feedback Inbox · owner-readable learning corpus · no paid route';
+    if(plan?.durable_binding_configured||plan?.kv_binding_configured)return 'Feedback Inbox · local drafts + durable store needs check · no paid route';
+    return 'Feedback Inbox · local drafts + sanitized Worker logs · no paid route';
+  }
+
   function openFeedbackInbox(source='feedback_inbox'){
     closeMenus();
     captureInteraction('feedback_inbox_opened',{surface:source,local_feedback_count:feedbackInboxItems().length});
-    const assistant=append('assistant','Opening Feedback Inbox...','MMIR Feedback','Feedback Inbox · local drafts + sanitized server logs',{actions:false});
+    const assistant=append('assistant','Opening Feedback Inbox...','MMIR Feedback','Feedback Inbox · checking owner-readable learning rail',{actions:false});
     status('Loading Feedback Inbox.','loading');
     routeStatus('Feedback Inbox · no provider call · no paid route','hosted');
     feedbackInboxPlan().then(plan=>{
       captureInteraction('feedback_inbox_ready',{surface:source,local_feedback_count:Number(plan?.item_count)||0});
-      updateMessage(assistant,feedbackInboxAnswer(plan),{receipt:'Feedback Inbox · '+(plan?.item_count||0)+' local drafts · Cloudflare logs · no paid route',actions:false});
+      updateMessage(assistant,feedbackInboxAnswer(plan),{receipt:feedbackInboxReceipt(plan),actions:false});
       status('Feedback Inbox ready.','ready');
-      routeStatus('Feedback Inbox · review and promote intentionally','ready');
+      routeStatus(feedbackOwnerStoreReady(plan)?'Feedback Inbox · owner learning rail ready':'Feedback Inbox · review and promote intentionally','ready');
       renderFeedbackCaptureStatus();
     }).catch(()=>{
       captureInteraction('feedback_inbox_fallback',{surface:source,local_feedback_count:feedbackInboxItems().length});
