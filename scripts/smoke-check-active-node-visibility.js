@@ -30,6 +30,8 @@ requireIncludes(strip, 'browser candidates parked until proof', 'Active node str
 requireIncludes(strip, 'Next best step: connect the private local path so MMIR can upgrade from instant fallback to verified device-owned chat.', 'Fallback path must tell the user to connect the private local route next.');
 requireIncludes(strip, 'Send first local answer', 'Local-ready path must offer a direct first-answer CTA.');
 requireIncludes(strip, 'Install Local Node', 'Active node strip must offer a direct local-install CTA when private chat is not ready.');
+requireIncludes(strip, "secondary:{kind:'anchor',href:'#node-dashboard',label:'Open Node Dashboard'}", 'Local-install path must keep the node doctor one tap away.');
+requireIncludes(strip, 'mmir-active-node-next-step-actions', 'Next-step callout must support a compact multi-CTA action row.');
 requireIncludes(strip, 'function visibilityFooter(displayedCount,inventory)', 'Active node strip must explain when the compact strip is hiding extra visible routes.');
 requireIncludes(strip, "Showing '+safe(displayedCount)+' of '+safe(inventory.visible)+' visible routes here.", 'Active node strip must disclose when more visible routes exist than the strip renders.');
 requireIncludes(strip, 'Show all routes', 'Active node strip must offer a direct path to the full route library when extra visible routes are hidden.');
@@ -37,7 +39,7 @@ requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-descript
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-active-route-freshness-v1';
+const expectedVersion = '20260623-active-route-node-dashboard-cta-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
