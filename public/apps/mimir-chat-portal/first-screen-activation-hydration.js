@@ -156,7 +156,8 @@
     const after=events.filter((event)=>Number(event.at_ms||0)>=Number(selected.at_ms||0));
     const sameModel=(event)=>!selected.model||!event.model||event.model===selected.model;
     const install=after.find((event)=>event.type==='model-install'&&sameModel(event));
-    const proof=after.find((event)=>event.type==='live-proof'&&sameModel(event)&&(event.status==='ready'||event.status==='verified'||event.first_chat_ready));
+    const firstReady=after.find((event)=>event.type==='first-chat-ready'&&sameModel(event)&&(event.status==='ready'||event.first_chat_ready));
+    const proof=after.find((event)=>event.type==='live-proof'&&sameModel(event)&&(event.status==='ready'||event.status==='verified'||event.first_chat_ready))||firstReady;
     const chat=after.find((event)=>event.type==='first-chat-receipt'&&(event.status==='success'||event.first_chat_ready));
     const ready=Boolean(chat);
     const next=!install?'Install model':!proof?'Run free proof':!chat?'First answer':'Ready';
