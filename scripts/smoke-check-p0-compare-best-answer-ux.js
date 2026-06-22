@@ -126,6 +126,31 @@ requireText(
 );
 requireText(
   runtime,
+  'function gatewayConsensusConfidence(data)',
+  'Best Answer must surface the gateway consensus confidence signal'
+);
+requireText(
+  runtime,
+  'function withConsensusAnswerNotice(content,data)',
+  'Contested consensus must be visible in the answer, not hidden in route machinery'
+);
+requireText(
+  runtime,
+  'High confidence',
+  'Consensus confidence must have a compact high-confidence user label'
+);
+requireText(
+  runtime,
+  'Contested - models disagree',
+  'Consensus confidence must have a compact contested user label'
+);
+requireText(
+  runtime,
+  'Models disagree on this. Treat the answer as provisional and open Details for the route evidence.',
+  'Contested answers must warn users before presenting a best answer'
+);
+requireText(
+  runtime,
   'function compareAttemptIssueSummary(attempt)',
   'Gateway compare receipts must expose blocked/partial provider routes instead of hiding them'
 );
@@ -243,6 +268,11 @@ requireText(
   css,
   '.p0-message-compare',
   'Compare answers must have a distinguishable but non-dashboard message style'
+);
+requireText(
+  css,
+  '.p0-message-receipt-consensus-split',
+  'Contested consensus receipt state must have a visible amber trust style'
 );
 forbidText(
   css,

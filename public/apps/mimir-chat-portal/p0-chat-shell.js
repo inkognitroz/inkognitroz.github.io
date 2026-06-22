@@ -1867,11 +1867,21 @@
     if(!routeEvidenceReceipt(text))return '';
     const parts=receiptParts(text);
     const routeCount=receiptRouteCount(text,parts);
+    const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
     const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
     if(isSwarm&&routeCount>1){
-      return 'Spør '+routeCount+' AI - beste vinner · Verifisert · privat';
+      return ['Spør '+routeCount+' AI - beste vinner',consensus,'Verifisert','privat'].filter(Boolean).join(' · ');
     }
     return 'Verifisert · privat';
+  }
+
+  function receiptConsensusState(full){
+    const text=String(full||'');
+    if(/\bContested\b/i.test(text))return 'split';
+    if(/\bHigh confidence\b/i.test(text))return 'high';
+    if(/\bMedium confidence\b/i.test(text))return 'medium';
+    if(/\bConfidence pending\b/i.test(text))return 'pending';
+    return '';
   }
 
   function routeActionButtonMarkup(full,stateValue='hosted'){
@@ -2784,6 +2794,7 @@
     const full=String(receipt||'').trim();
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
     if(parts.length<=4)return full;
+    const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
     const winner=parts.find(part=>/^Winner:/i.test(part));
     const winnerReason=parts.find(part=>/^Why:/i.test(part));
     const score=parts.find(part=>/^(API score|Score)\s+\d+/i.test(part));
@@ -2804,7 +2815,7 @@
     const council=parts.find(part=>/^council ready$/i.test(part));
     const providers=gatewayProviderSummary(parts);
     if(/^(Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],swarm,routeCount,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,winnerReason,providers,score].filter(Boolean).join(' · ');
+      return [parts[0],swarm,routeCount,consensus,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,winnerReason,providers,score].filter(Boolean).join(' · ');
     }
     if(parts.some(part=>/Best answer synthesis/i.test(part))){
       return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
@@ -2820,7 +2831,9 @@
     if(!full)return '';
     const trustSummary=trustValueSummary(full);
     if(trustSummary){
-      return '<details class="p0-message-receipt p0-message-receipt-trust" title="'+safeAttr(full)+'">'+
+      const consensusState=receiptConsensusState(full);
+      const consensusClass=consensusState?' p0-message-receipt-consensus-'+safeAttr(consensusState):'';
+      return '<details class="p0-message-receipt p0-message-receipt-trust'+consensusClass+'" title="'+safeAttr(full)+'">'+
         '<summary><span class="p0-receipt-summary-main">'+safeText(trustSummary)+'</span><span class="p0-receipt-details">Detaljer</span></summary>'+
         '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
       '</details>';
@@ -5020,6 +5033,47 @@
     return Math.max(quiet,total-visible,0);
   }
 
+  function gatewayConsensusConfidence(data){
+    const best=data?.best_answer||{};
+    const consensus=data?.consensus_confidence||best?.consensus_confidence||data?.scoring?.consensus_confidence||null;
+    if(!consensus||consensus.object!=='mmir.consensus_confidence')return null;
+    const status=String(consensus.status||'').trim().toLowerCase();
+    const agreement=consensus.agreement||{};
+    const agree=Number(agreement.agree_count)||0;
+    const total=Number(agreement.total)||0;
+    const ratioText=agree&&total?(' - '+String(agree)+'/'+String(total)+' routes agree'):'';
+    const fallback=status==='high'
+      ? 'High confidence'+ratioText
+      : (status==='medium'
+        ? 'Medium confidence'+ratioText
+        : (status==='split'||consensus.contested===true
+          ? 'Contested - models disagree'
+          : 'Confidence pending'));
+    const label=String(consensus.public_ui_label||fallback)
+      .replace(/\s+/g,' ')
+      .trim()
+      .slice(0,90);
+    return {
+      status,
+      contested:status==='split'||consensus.contested===true,
+      label:label||fallback
+    };
+  }
+
+  function gatewayConsensusAnswerNotice(data){
+    const consensus=gatewayConsensusConfidence(data);
+    if(!consensus?.contested)return '';
+    return 'Models disagree on this. Treat the answer as provisional and open Details for the route evidence.';
+  }
+
+  function withConsensusAnswerNotice(content,data){
+    const notice=gatewayConsensusAnswerNotice(data);
+    const text=String(content||'').trim();
+    if(!notice)return text;
+    if(text.startsWith(notice))return text;
+    return notice+'\n\n'+text;
+  }
+
   function swarmReceiptLabel(data){
     if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview')return '';
     const target=Number(data?.target_route_count)||Number(data?.intelligence_pool?.target_route_count)||Number(data?.pool?.target_route_count)||0;
@@ -5190,6 +5244,7 @@
     const arenaReady=data?.debate_plan?.consensus_ready===true||pool.arena_ready===true;
     const councilReady=/(council|debate)/i.test(label)&&arenaReady;
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
+    const consensus=gatewayConsensusConfidence(data);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const providerReadiness=providerReadinessLine();
@@ -5198,6 +5253,7 @@
       swarmLabel,
       roundLabel,
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
+      consensus?.label||'',
       answeredLabel,
       demotedLabel,
       quietLabel,
@@ -5441,7 +5497,8 @@
         : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
       const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Model Debate':'Best answer')));
       const truncated=gatewayDataTruncated(data);
-      updateMessage(assistant,withTruncationGuard(content,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
+      const displayContent=withConsensusAnswerNotice(content,data);
+      updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
       captureInteraction(truncated?'truncation_seen':'swarm_completed',{
         tool:title,
         mode,
