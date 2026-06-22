@@ -50,6 +50,8 @@ requireIncludes(compareGatewayRoutes, "options.mode==='boost'", 'Gateway compare
 requireIncludes(compareGatewayRoutes, "options.mode==='all'", 'Gateway compare must have a dedicated Ask all active mode.');
 requireIncludes(shell, "const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview'", 'P0 runtime must know the swarm preview endpoint.');
 requireIncludes(shell, 'function fetchGatewayFanout(prompt,mode,signal)', 'Boost/Ask all must use the gateway fanout adapter.');
+requireIncludes(shell, "if(mode==='boost'||mode==='all'||mode==='council')", 'Boost/Ask all/Council must tell the gateway which swarm mode to run.');
+requireIncludes(shell, 'payload.swarm_mode=mode', 'Boost/Ask all/Council must send swarm_mode so the gateway can choose smart preselection or full fanout.');
 requireIncludes(shell, 'data-p0-route-action="boost-answer-live"', 'Composer route status must expose a direct Ask AI action when multiple routes are ready.');
 requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-ask-ai-cta'", 'Composer Ask AI action must be captured for UX telemetry.');
 requireIncludes(css, '.p0-route-cta', 'Composer Ask AI action must use a compact route CTA style.');
@@ -67,8 +69,8 @@ requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Boost answer must
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260622-feedback-triage-pack-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260622-feedback-triage-pack-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260622-smart-swarm-mode-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260622-smart-swarm-mode-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');
