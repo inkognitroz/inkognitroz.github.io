@@ -131,6 +131,16 @@ requireText(
 );
 requireText(
   runtime,
+  'function swarmRoundLabel(data)',
+  'Swarm receipts must preserve current round truth when swarm preview metadata is available'
+);
+requireText(
+  runtime,
+  "if(current&&planned)return 'round '+String(current)+'/'+String(planned);",
+  'Swarm receipts must expose current round over planned rounds in the hidden receipt'
+);
+requireText(
+  runtime,
   'function gatewayComparePreferred(preferredModel=null)',
   'Gateway compare must be preferred in public mode without stealing private/local compare flows'
 );

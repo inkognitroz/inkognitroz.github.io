@@ -484,7 +484,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Swarm 472/i.test(routeFull) && /5 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Swarm 472/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
@@ -519,6 +519,7 @@ async function checkViewport(browser, viewport) {
   assert(!/demoted/i.test(layout.route), `${viewport.name}: quiet provider throttling should not render as demoted error text`);
   assert(!/signed receipts/i.test(layout.route), `${viewport.name}: visible green route line should keep receipt proof behind details`);
   assert(!/Why: complete answer, fast/i.test(layout.route), `${viewport.name}: visible green route line should keep winner reason behind details`);
+  assert(/round 1\/3/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve current swarm round truth`);
   assert(/sync 40/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve sync fanout limit`);
   assert(/arena ready/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve arena readiness`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
@@ -560,7 +561,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /Model Debate/i.test(text) && /council ready/i.test(routeFull) && /Swarm 472/i.test(routeFull);
+    return /Model Debate/i.test(text) && /council ready/i.test(routeFull) && /Swarm 472/i.test(routeFull) && /round 1\/3/i.test(routeFull);
   });
   const councilLayout = await page.evaluate(() => ({
     route: document.getElementById('p0-route')?.textContent || '',
@@ -572,6 +573,7 @@ async function checkViewport(browser, viewport) {
   assert(/privat/i.test(councilLayout.route), `${viewport.name}: Model Debate status should show privacy value`);
   assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Model Debate status should keep readiness detail behind details`);
   assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Model Debate status should keep receipt proof behind details`);
+  assert(/round 1\/3/i.test(councilLayout.routeFull), `${viewport.name}: Model Debate proof should preserve swarm round truth`);
   assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Model Debate proof should preserve no-paid route truth`);
   assert(councilLayout.toolbarButtons <= 6, `${viewport.name}: Model Debate must not add extra visible toolbar buttons`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
