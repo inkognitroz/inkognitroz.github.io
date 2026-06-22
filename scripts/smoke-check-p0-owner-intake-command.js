@@ -219,6 +219,31 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "menuButton('copy-feedback-triage','Copy triage pack'",
+  'Add menu must expose a one-click sanitized feedback triage export.'
+);
+requireIncludes(
+  shell,
+  'function feedbackTriagePack(plan={})',
+  'P0 shell must build a sanitized Markdown triage pack from local feedback drafts.'
+);
+requireIncludes(
+  shell,
+  'function copyFeedbackTriagePack',
+  'P0 shell must copy feedback triage packs without requiring central storage first.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction(copied?'feedback_triage_pack_copied'",
+  'P0 shell must record successful feedback triage pack exports without raw provider calls.'
+);
+requireIncludes(
+  shell,
+  "redactShareText(lines.join('\\n'))",
+  'Feedback triage export must pass through safe-share redaction.'
+);
+requireIncludes(
+  shell,
   "menuButton('model-health','Model health'",
   'Add menu must expose a compact model/node health view.'
 );
@@ -439,12 +464,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-feedback-inbox-storage-truth-v1',
+  'p0-chat-shell.js?v=20260622-feedback-triage-pack-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-feedback-inbox-storage-truth-v1"',
+  '"p0-chat-shell.js": "20260622-feedback-triage-pack-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
