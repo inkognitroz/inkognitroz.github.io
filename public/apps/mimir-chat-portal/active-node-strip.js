@@ -51,6 +51,33 @@
     if(needsWebGpu(node))return webGpuReady()?'Browser Node: free, browser-local/private, starter quality, no provider key, no Cloudflare, no install.':webGpuMissingDetail();
     return 'Instant fallback; no key.';
   }
+  function visibleInventory(nodes){
+    const all=Array.isArray(nodes)?nodes.filter(Boolean):[];
+    return {
+      ready:all.filter(node=>nodeStatus(node)==='online').length,
+      visible:all.length,
+      local:all.filter(node=>node.id==='local-node'||isLocalAdapter(node)).length,
+      browserCandidates:all.filter(needsWebGpu).length
+    };
+  }
+  function routeChoiceReason(node){
+    if(!node)return 'MMIR picks the safest route with a live answer first.';
+    if(node.id==='local-node'&&localReady())return 'Chosen because a verified private local model is already live on this device.';
+    if(node?.route?.kind==='managed-api')return managedReady()?'Chosen because the free hosted route is verified live right now.':'Chosen because it can answer first while local/private routes are still being verified.';
+    if(isLocalAdapter(node))return 'Chosen because a free local adapter is available for direct chat.';
+    if(needsWebGpu(node))return webGpuReady()?'Chosen because this browser has verified Browser Node support.':'Browser Node is parked until this browser proves WebGPU/WASM support.';
+    return 'Chosen because it is the safest instant free route right now.';
+  }
+  function capacityLine(nodes){
+    const inventory=visibleInventory(nodes);
+    const parts=[
+      inventory.ready+' ready now',
+      inventory.visible+' visible routes'
+    ];
+    if(inventory.local)parts.push(inventory.local+' local/private paths');
+    if(inventory.browserCandidates)parts.push(inventory.browserCandidates+' browser candidates parked until proof');
+    return parts.join(' · ');
+  }
   function trustTag(node){
     const trust=String(node?.trust_level||'public-free').toLowerCase();
     const promotion=String(node?.promotion_state||'').toLowerCase();
@@ -108,7 +135,7 @@
     if(model.runtime==='webllm'&&!webGpuReady()){const fallback=starterModels.find(item=>item.id==='mmir-supergenius')||{id:'mmir-supergenius'};handoff({starter_id:fallback.id,action:'select',source:'active-node-starter-rail',fallback_for:model.id});const promptEl=q('#mimir-prompt');if(promptEl&&!String(promptEl.value||'').trim()){promptEl.value='Browser Model '+webGpuMissingLabel().toLowerCase()+' here. Use Supergeni now and show the private Local Model path.';promptEl.dispatchEvent(new Event('input',{bubbles:true}));promptEl.dispatchEvent(new Event('change',{bubbles:true}));}q('#primary-chat-link')?.click();return;}
     const action=starterAction(model);handoff({starter_id:model.id,action,source:'active-node-starter-rail'});const promptEl=q('#mimir-prompt');if(action==='install'&&!localReady()){openInstaller('active-node-starter-rail',model);return;}if(action!=='install'){if(promptEl&&!String(promptEl.value||'').trim()){promptEl.value='Chat with '+(model.label||model.id)+'.';promptEl.dispatchEvent(new Event('input',{bubbles:true}));promptEl.dispatchEvent(new Event('change',{bubbles:true}));}q('#primary-chat-link')?.click();}
   }
-  function render(){const composer=q('.mimir-composer');if(!composer)return;style();let bar=q('#mmir-active-nodes-bar');if(!bar){bar=d.createElement('section');bar.id='mmir-active-nodes-bar';bar.setAttribute('aria-label','Active chat routes');composer.parentNode.insertBefore(bar,composer.nextSibling);}const allNodes=manifestNodes.length?manifestNodes:[{id:'browser-guide',name:FALLBACK_LABEL,trust_level:'public-free',cost:{mode:'free'},route:{kind:'starter',starter_id:'mmir-supergenius'},models:[{name:FALLBACK_LABEL}]}];const nodes=publicFirstNodes(allNodes);const selected=selectedModel();const best=bestNode(nodes,selected);const state=nodeStatus(best),line=best.id==='local-node'&&localReady()?'Private local: '+nodeModel(best):'Ready now: '+(selected.label||FALLBACK_LABEL);bar.dataset.state=state;bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active route</span><strong>'+safe(best.name)+'</strong><small>'+safe(line)+'</small></div><div class="mmir-active-node-pill">'+safe(state==='online'?'Ready':'Setup')+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - chat now.');q('#active-chat-description')&&(q('#active-chat-description').textContent='Chat ready. Add local models anytime.');bar.querySelectorAll('[data-active-node-action]').forEach(button=>button.addEventListener('click',()=>activateNode(allNodes.find(node=>node.id===button.getAttribute('data-active-node-action'))||nodes.find(node=>node.id===button.getAttribute('data-active-node-action')))));bar.querySelectorAll('[data-active-starter-id]').forEach(button=>button.addEventListener('click',()=>activateStarter(starterModels.find(model=>model.id===button.getAttribute('data-active-starter-id')))));}
+  function render(){const composer=q('.mimir-composer');if(!composer)return;style();let bar=q('#mmir-active-nodes-bar');if(!bar){bar=d.createElement('section');bar.id='mmir-active-nodes-bar';bar.setAttribute('aria-label','Active chat routes');composer.parentNode.insertBefore(bar,composer.nextSibling);}const allNodes=manifestNodes.length?manifestNodes:[{id:'browser-guide',name:FALLBACK_LABEL,trust_level:'public-free',cost:{mode:'free'},route:{kind:'starter',starter_id:'mmir-supergenius'},models:[{name:FALLBACK_LABEL}]}];const nodes=publicFirstNodes(allNodes);const selected=selectedModel();const best=bestNode(nodes,selected);const state=nodeStatus(best),line=best.id==='local-node'&&localReady()?'Private local: '+nodeModel(best):'Ready now: '+(selected.label||FALLBACK_LABEL),inventory=visibleInventory(allNodes),choiceReason=routeChoiceReason(best),summary=capacityLine(allNodes);bar.dataset.state=state;bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active route</span><strong>'+safe(best.name)+'</strong><small>'+safe(line)+'</small><small>'+safe(choiceReason)+'</small><small class="mmir-active-node-capacity">'+safe(summary)+'</small></div><div class="mmir-active-node-pill">'+safe((state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible)+'</div></div>'+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>';q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'.');bar.querySelectorAll('[data-active-node-action]').forEach(button=>button.addEventListener('click',()=>activateNode(allNodes.find(node=>node.id===button.getAttribute('data-active-node-action'))||nodes.find(node=>node.id===button.getAttribute('data-active-node-action')))));bar.querySelectorAll('[data-active-starter-id]').forEach(button=>button.addEventListener('click',()=>activateStarter(starterModels.find(model=>model.id===button.getAttribute('data-active-starter-id')))));}
   function updateFromConnector(event){const detail=event?.detail||{};const models=Array.isArray(detail.models)?detail.models:[];liveModels=models.map(model=>({id:model.id||model.name||model.model||'',name:model.name||model.label||model.id||model.model||''})).filter(model=>model.id||model.name);localState={...localState,status:detail.status||detail.health||(liveModels[0]?'ready':localState.status||'checking'),url:detail.url||localState.url};render();}
   function init(){Promise.all([loadManifest(),loadStarterCatalog()]).then(render);render();}
   d.readyState==='loading'?d.addEventListener('DOMContentLoaded',init):init();
