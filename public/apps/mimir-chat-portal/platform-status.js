@@ -8,6 +8,11 @@
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function statusLabel(status){return String(status||'unknown').replaceAll('-',' ');}
   function clock(){return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});}
+  function formatAgeDays(days){
+    if(!Number.isFinite(days)||days<1)return 'today';
+    if(days<2)return '1 day ago';
+    return Math.floor(days)+' days ago';
+  }
 
   function setSummary(message,state){
     if(!summary)return;
@@ -29,6 +34,41 @@
 
   function render(components){
     grid.innerHTML=components.map(card).join('');
+  }
+
+  function manifestFreshnessComponent(platformManifest){
+    const updatedAt=platformManifest?.updated_at;
+    if(!updatedAt){
+      return {
+        id:'status-manifest-freshness',
+        label:'Status manifest freshness',
+        status:'watch',
+        route:'./platform-status.json',
+        notes:'No updated_at field is present, so this browser cannot tell when the public status copy was last reviewed.'
+      };
+    }
+    const parsed=Date.parse(updatedAt);
+    if(Number.isNaN(parsed)){
+      return {
+        id:'status-manifest-freshness',
+        label:'Status manifest freshness',
+        status:'watch',
+        route:'./platform-status.json',
+        notes:'The public status manifest has an unreadable updated_at value: '+updatedAt+'.'
+      };
+    }
+    const ageDays=(Date.now()-parsed)/86400000;
+    const status=ageDays>21?'degraded':(ageDays>7?'watch':'online');
+    const prefix=status==='degraded'
+      ? 'Status copy is stale for demo trust.'
+      : (status==='watch'?'Status copy is aging and should be refreshed soon.':'Status copy is current.');
+    return {
+      id:'status-manifest-freshness',
+      label:'Status manifest freshness',
+      status,
+      route:new Date(parsed).toLocaleString(),
+      notes:prefix+' Manifest updated '+formatAgeDays(ageDays)+'.'
+    };
   }
 
   function currentSessionComponent(){
@@ -145,6 +185,7 @@
       components=[{id:'status-manifest',label:'Status manifest',status:'degraded',route:'./platform-status.json',notes:'The public status manifest could not be loaded.'}];
     }
     components.unshift(currentSessionComponent());
+    if(manifest)components.push(manifestFreshnessComponent(manifest));
     components.push(...await publicDeployComponents(manifest));
     components.push(await activeBackendStatus());
     render(components);

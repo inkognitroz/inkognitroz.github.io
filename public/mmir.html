@@ -343,7 +343,7 @@
     "./apps/mimir-chat-portal/message-actions.js",
     "./apps/mimir-chat-portal/conversation-manager.js?v=20260607-b0-06-13-conversation-portability-v1",
     "./apps/mimir-chat-portal/model-catalog-ui.js?v=20260531-no-rag-v1",
-    "./apps/mimir-chat-portal/platform-status.js?v=20260524-status-static-v1",
+    "./apps/mimir-chat-portal/platform-status.js?v=20260622-status-manifest-freshness-v1",
     "./apps/mimir-chat-portal/node-dashboard.js?v=20260604-canonical-local-install-v1",
     "./apps/mimir-chat-portal/model-selection.js"
   ]</script>
@@ -377,8 +377,8 @@
       async function loadList(list){
         for(var i=0;i<list.length;i+=1)await loadScript(list[i]);
       }
-      async function loadDeferred(){
-        if(window.__MimirP0SimpleChat)return;
+      async function loadDeferred(force){
+        if(window.__MimirP0SimpleChat&&!force)return;
         if(started)return;
         started=true;
         await loadList(queue);
@@ -390,37 +390,37 @@
       }
       function schedule(){
         if(window.__MimirP0SimpleChat)return;
-        var run=function(){loadDeferred();};
+        var run=function(){loadDeferred(false);};
         if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:1600});
         else window.setTimeout(run,800);
       }
-      window.MimirLoadDeferred=loadDeferred;
+      window.MimirLoadDeferred=function(force){return loadDeferred(force!==false);};
       window.MimirLoadGrowth=loadGrowth;
       document.addEventListener('click',function(event){
         var demo=event.target.closest('#try-demo-mode');
         var growthTarget=event.target.closest('#try-demo-mode,#beta-signup-submit,[href="#beta-signup-form"]');
         if(growthTarget&&(!started||!growthStarted)){
           event.preventDefault();
-          Promise.all([loadDeferred(),loadGrowth()]).then(function(){
+          Promise.all([loadDeferred(true),loadGrowth()]).then(function(){
             growthTarget.click();
           });
           return;
         }
-        if(demo&&!started){event.preventDefault();loadDeferred().then(function(){demo.click();});return;}
-        if(event.target.closest('.mimir-topbar a,.mimir-nav-menu a,details>summary,[data-open-target]'))loadDeferred();
+        if(demo&&!started){event.preventDefault();loadDeferred(true).then(function(){demo.click();});return;}
+        if(event.target.closest('.mimir-topbar a,.mimir-nav-menu a,details>summary,[data-open-target]'))loadDeferred(true);
       },true);
       document.addEventListener('submit',function(event){
         var form=event.target;
         if(form&&form.id==='beta-signup-form'&&(!started||!growthStarted)){
           event.preventDefault();
-          Promise.all([loadDeferred(),loadGrowth()]).then(function(){
+          Promise.all([loadDeferred(true),loadGrowth()]).then(function(){
             if(form.requestSubmit)form.requestSubmit();
             else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
           });
         }
       },true);
       document.addEventListener('toggle',function(event){
-        if(event.target&&event.target.open)loadDeferred();
+        if(event.target&&event.target.open)loadDeferred(true);
       },true);
       if(document.readyState==='complete')schedule();
       else window.addEventListener('load',schedule,{once:true});
