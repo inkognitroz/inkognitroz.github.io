@@ -4923,6 +4923,18 @@
     return target?'Swarm '+String(target):'Swarm preview';
   }
 
+  function swarmRoundLabel(data){
+    const current=Number(data?.current_round)||0;
+    const planned=Math.max(
+      Number(data?.planned_debate_rounds)||0,
+      Array.isArray(data?.debate_plan?.planned_rounds)?data.debate_plan.planned_rounds.length:0
+    );
+    if(current&&planned)return 'round '+String(current)+'/'+String(planned);
+    if(current)return 'round '+String(current);
+    if(planned)return 'planned '+String(planned)+' rounds';
+    return '';
+  }
+
   function normalizeSwarmPreviewResponse(data){
     if(data?.object!=='chat.swarm.preview')return data;
     const first=data.first_round||{};
@@ -5070,6 +5082,7 @@
     const demotedLabel=demotedCount?String(demotedCount)+' demoted':'';
     const quietLabel=quietCount?String(quietCount)+' quiet':'';
     const swarmLabel=swarmReceiptLabel(data);
+    const roundLabel=swarmRoundLabel(data);
     const syncLimit=Number(data?.sync_route_limit)||Number(pool.sync_route_limit)||0;
     const arenaReady=data?.debate_plan?.consensus_ready===true||pool.arena_ready===true;
     const councilReady=/(council|debate)/i.test(label)&&arenaReady;
@@ -5080,6 +5093,7 @@
     const parts=[
       label,
       swarmLabel,
+      roundLabel,
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
       answeredLabel,
       demotedLabel,
