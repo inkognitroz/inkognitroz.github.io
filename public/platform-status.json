@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_at": "2026-05-23T20:02:32+02:00",
+  "updated_at": "2026-06-22T06:54:41Z",
   "description": "Public-safe status manifest for MMIR.ai. Internal QA, agent instructions and deploy reports stay in the private control repo; this browser payload contains only product-safe status copy.",
-  "latest_verified_commit": "public-pages-artifact",
+  "latest_verified_commit": "f4477fa",
   "domain_availability_watch": "./domain-availability-watch.json",
   "components": [
     {
