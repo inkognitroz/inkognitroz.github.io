@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260622-feedback-inbox-truth-v1';
+  const P0_RUNTIME_VERSION='20260623-council-progress-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -366,9 +366,9 @@
     },
     {
       id:'discuss',
-      label:'Model Debate',
-      detail:'Lets active models challenge each other, then converge.',
-      title:'Model Debate',
+      label:'Supergeni Council',
+      detail:'Lets approved models challenge each other, then converge.',
+      title:'Supergeni Council',
       icon:ICON_BUBBLES||'<span aria-hidden="true">D</span>'
     },
     {
@@ -3496,7 +3496,7 @@
         menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
         menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+pool.compareRouteLabel+' through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
         menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores live routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Debate models',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
+        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
       : '';
     menu.innerHTML=''+
       menuTitle('Tools')+
@@ -3817,12 +3817,12 @@
     }
     if(!prompt){
       if(action==='discuss-topic'&&input){
-        captureInteraction('model_debate_prefill',{tool:'debate-models'});
-        input.value='Debate topic: ';
+        captureInteraction('supergeni_council_prefill',{tool:'supergeni-council'});
+        input.value='Council topic: ';
         autosizeInput();
         closeMenus();
-        status('Add a topic, then send or choose Debate models again.','ready');
-        routeStatus('Model Debate ready · active models challenge each other','ready');
+        status('Add a topic, then send or choose Supergeni Council again.','ready');
+        routeStatus('Supergeni Council ready · active models challenge each other','ready');
         input.focus();
         return true;
       }
@@ -3845,9 +3845,9 @@
         return true;
       }
       if(action==='discuss-topic'){
-        captureInteraction('tool_used',{tool:'debate-models',path:'gateway'});
+        captureInteraction('tool_used',{tool:'supergeni-council',path:'gateway'});
         compareGatewayRoutes(
-          'Model Debate: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+          'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
           {mode:'council'}
         );
         return true;
@@ -3869,9 +3869,9 @@
       return true;
     }
     if(action==='discuss-topic'){
-      captureInteraction('tool_used',{tool:'debate-models',path:'two-model'});
+      captureInteraction('tool_used',{tool:'supergeni-council',path:'two-model'});
       compareLiveRoutes(
-        'Discuss this topic from two model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
+        'Supergeni Council: compare two model perspectives, challenge weak assumptions, then converge on one practical conclusion: '+prompt,
         partner,
         {mode:'best-answer'}
       );
@@ -5400,11 +5400,36 @@
     return merged;
   }
 
-  function gatewaySwarmProgressLines(mode,title,routeCount,elapsed){
+  function gatewaySwarmProgressStage(mode,elapsedMs){
+    const elapsed=Number(elapsedMs)||0;
+    if(mode==='council'){
+      if(elapsed<4500)return {line:'Independent answers are being collected.',status:'asking active routes'};
+      if(elapsed<9500)return {line:'Top routes are challenging weak assumptions.',status:'ranking and cross-checking'};
+      if(elapsed<16000)return {line:'Supergeni is synthesizing the strongest shared answer.',status:'synthesizing council answer'};
+      return {line:'Still working; final proof and quiet-route checks are being finalized.',status:'finalizing signed proof'};
+    }
+    if(mode==='all'){
+      if(elapsed<4500)return {line:'Active routes are answering in parallel.',status:'asking active routes'};
+      if(elapsed<9500)return {line:'Separate answers are being organized for inspection.',status:'organizing answers'};
+      return {line:'Signed proof and quiet-route status are being finalized.',status:'finalizing signed proof'};
+    }
+    if(mode==='boost'){
+      if(elapsed<4500)return {line:'Active routes are answering in parallel.',status:'asking active routes'};
+      if(elapsed<9500)return {line:'Answer quality, latency and route fit are being scored.',status:'ranking answers'};
+      return {line:'Supergeni is compressing the winning route into one clean answer.',status:'synthesizing best answer'};
+    }
+    if(elapsed<4500)return {line:'Active routes are answering in parallel.',status:'asking active routes'};
+    if(elapsed<9500)return {line:'Route fit, answer completeness and latency are being compared.',status:'ranking answers'};
+    return {line:'The final answer and signed receipt proof are being prepared.',status:'synthesizing best answer'};
+  }
+
+  function gatewaySwarmProgressLines(mode,title,routeCount,elapsed,elapsedMs){
     const count=String(routeCount||activeHostedCompareModels().length||'?');
+    const stage=gatewaySwarmProgressStage(mode,elapsedMs);
     if(mode==='council'){
       return [
         title+' is running.',
+        'Now: '+stage.line,
         '1. Asking '+count+' active routes for independent answers.',
         '2. Top routes challenge weak assumptions and compare strengths.',
         '3. Supergeni converges on one practical answer with signed proof.',
@@ -5414,6 +5439,7 @@
     if(mode==='all'){
       return [
         title+' is running.',
+        'Now: '+stage.line,
         '1. Asking '+count+' active routes.',
         '2. Keeping each answer separate so you can inspect the range.',
         '3. Signing route proof and marking any quiet or blocked routes.',
@@ -5423,6 +5449,7 @@
     if(mode==='boost'){
       return [
         title+' is running.',
+        'Now: '+stage.line,
         '1. Asking '+count+' active routes.',
         '2. Scoring answer quality, latency and route fit.',
         '3. Supergeni returns one clean answer with ranking proof.',
@@ -5431,6 +5458,7 @@
     }
     return [
       title+' is running.',
+      'Now: '+stage.line,
       '1. Asking '+count+' active routes.',
       '2. Comparing route fit, answer completeness and latency.',
       '3. Returning the best answer with signed receipt proof.',
@@ -5443,10 +5471,12 @@
     const receiptBase=title+' · '+String(routeCount||'?')+' active hosted routes · live progress · no paid route';
     const tick=()=>{
       if(!state.busy||stopRequested)return;
-      const elapsed=formatDuration(performance.now()-started);
-      updateMessage(assistant,gatewaySwarmProgressLines(mode,title,routeCount,elapsed).join('\n'),{receipt:receiptBase});
-      status(title+' running: asking, ranking, synthesizing...','ready');
-      routeStatus(title+' · live progress · signed proof pending','ready');
+      const elapsedMs=performance.now()-started;
+      const elapsed=formatDuration(elapsedMs);
+      const stage=gatewaySwarmProgressStage(mode,elapsedMs);
+      updateMessage(assistant,gatewaySwarmProgressLines(mode,title,routeCount,elapsed,elapsedMs).join('\n'),{receipt:receiptBase});
+      status(title+' running: '+stage.status+'...','ready');
+      routeStatus(title+' · '+stage.status+' · signed proof pending','ready');
     };
     tick();
     const timer=window.setInterval(tick,3800);
@@ -5458,7 +5488,7 @@
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
     const mode=options.mode==='compare'?'compare':(options.mode==='boost'?'boost':(options.mode==='all'?'all':(options.mode==='council'?'council':'best-answer')));
-    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':(mode==='council'?'Model Debate':'Best Answer')));
+    const title=mode==='compare'?'Compare':(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask All Active':(mode==='council'?'Supergeni Council':'Best Answer')));
     if(privateModeActive()){
       status(privacyModeLabel()+' blocks hosted compare. Use local mode or public mode.','error');
       routeStatus(privacyModeLabel()+' · hosted compare blocked','error');
@@ -5480,8 +5510,8 @@
       autosizeInput();
     }
     const routeCount=String(activeHostedCompareModels().length);
-    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Model Debate':'Supergeni · Best answer'));
-    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Model Debate':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
+    const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     const stopProgress=startGatewaySwarmProgress(assistant,{title,mode,routeCount});
     status(title+' is asking '+routeCount+' active routes...','ready');
@@ -5495,7 +5525,7 @@
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
         : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
-      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Model Debate':'Best answer')));
+      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')));
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
       updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});

@@ -289,7 +289,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "menuButton('discuss-topic','Debate models'",
+  "menuButton('discuss-topic','Supergeni Council'",
   'Add menu must expose model debate with user-readable language.'
 );
 requireIncludes(
@@ -544,12 +544,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-feedback-inbox-truth-v1',
+  'p0-chat-shell.js?v=20260623-council-progress-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-feedback-inbox-truth-v1"',
+  '"p0-chat-shell.js": "20260623-council-progress-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
