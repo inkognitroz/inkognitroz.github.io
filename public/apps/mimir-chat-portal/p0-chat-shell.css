@@ -232,6 +232,18 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   color: #047857;
 }
 
+.p0-message-receipt-consensus-split summary,
+.p0-message-receipt-consensus-split .p0-receipt-summary-main {
+  color: #b45309;
+}
+
+.p0-message-receipt-consensus-medium summary,
+.p0-message-receipt-consensus-medium .p0-receipt-summary-main,
+.p0-message-receipt-consensus-pending summary,
+.p0-message-receipt-consensus-pending .p0-receipt-summary-main {
+  color: #0f766e;
+}
+
 .p0-receipt-details {
   color: #6b7280;
   font-weight: 600;
