@@ -347,13 +347,21 @@
     "./apps/mimir-chat-portal/node-dashboard.js?v=20260604-canonical-local-install-v1",
     "./apps/mimir-chat-portal/model-selection.js"
   ]</script>
+  <script id="mimir-growth-scripts" type="application/json">[
+    "./apps/mimir-chat-portal/demo-growth.js?v=20260622-growth-entrypoint-loader-v1",
+    "./apps/mimir-chat-portal/beta-signup.js?v=20260622-growth-entrypoint-loader-v1"
+  ]</script>
   <script>
     (function(){
       var source=document.getElementById('mimir-deferred-scripts');
+      var growthSource=document.getElementById('mimir-growth-scripts');
       var queue=[];
+      var growthQueue=[];
       var started=false;
+      var growthStarted=false;
       var loaded=new Set();
       try{queue=JSON.parse(source&&source.textContent||'[]');}catch(error){queue=[];}
+      try{growthQueue=JSON.parse(growthSource&&growthSource.textContent||'[]');}catch(error){growthQueue=[];}
       function loadScript(src){
         return new Promise(function(resolve){
           if(loaded.has(src)){resolve();return;}
@@ -366,11 +374,19 @@
           document.body.appendChild(script);
         });
       }
+      async function loadList(list){
+        for(var i=0;i<list.length;i+=1)await loadScript(list[i]);
+      }
       async function loadDeferred(){
         if(window.__MimirP0SimpleChat)return;
         if(started)return;
         started=true;
-        for(var i=0;i<queue.length;i+=1)await loadScript(queue[i]);
+        await loadList(queue);
+      }
+      async function loadGrowth(){
+        if(growthStarted)return;
+        growthStarted=true;
+        await loadList(growthQueue);
       }
       function schedule(){
         if(window.__MimirP0SimpleChat)return;
@@ -379,10 +395,29 @@
         else window.setTimeout(run,800);
       }
       window.MimirLoadDeferred=loadDeferred;
+      window.MimirLoadGrowth=loadGrowth;
       document.addEventListener('click',function(event){
         var demo=event.target.closest('#try-demo-mode');
+        var growthTarget=event.target.closest('#try-demo-mode,#beta-signup-submit,[href="#beta-signup-form"]');
+        if(growthTarget&&(!started||!growthStarted)){
+          event.preventDefault();
+          Promise.all([loadDeferred(),loadGrowth()]).then(function(){
+            growthTarget.click();
+          });
+          return;
+        }
         if(demo&&!started){event.preventDefault();loadDeferred().then(function(){demo.click();});return;}
         if(event.target.closest('.mimir-topbar a,.mimir-nav-menu a,details>summary,[data-open-target]'))loadDeferred();
+      },true);
+      document.addEventListener('submit',function(event){
+        var form=event.target;
+        if(form&&form.id==='beta-signup-form'&&(!started||!growthStarted)){
+          event.preventDefault();
+          Promise.all([loadDeferred(),loadGrowth()]).then(function(){
+            if(form.requestSubmit)form.requestSubmit();
+            else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+          });
+        }
       },true);
       document.addEventListener('toggle',function(event){
         if(event.target&&event.target.open)loadDeferred();
