@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260622-feedback-inbox-storage-truth-v1';
+  const P0_RUNTIME_VERSION='20260622-feedback-triage-pack-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1129,6 +1129,45 @@
     return lines.join('\n');
   }
 
+  function feedbackTriagePack(plan={}){
+    const localItems=feedbackInboxItems();
+    const planItems=Array.isArray(plan?.top_items)?plan.top_items:[];
+    const items=(planItems.length?planItems:localItems).slice(0,50);
+    const lines=[
+      '# MMIR feedback triage pack',
+      '',
+      '- Generated: '+new Date().toISOString(),
+      '- Runtime: '+P0_RUNTIME_VERSION,
+      '- Local drafts: '+String(localItems.length),
+      '- Durable owner store: '+(plan?.durable_binding_configured?'configured':'not configured'),
+      '- Provider calls: none',
+      '- Paid routes: none',
+      ''
+    ];
+    if(plan?.summary?.by_priority){
+      lines.push('## Summary','','Priority: '+Object.entries(plan.summary.by_priority).map(([key,value])=>key+'='+value).join(', '),'');
+    }
+    if(!items.length){
+      lines.push('## Items','','No local feedback drafts in this browser yet.');
+      return redactShareText(lines.join('\n'));
+    }
+    lines.push('## Items','');
+    items.forEach((item,index)=>{
+      const target=item.target?('@'+item.target):'@feedback';
+      const lane=item.classification?.lane||'triage';
+      const repo=item.classification?.repo||'';
+      lines.push(
+        String(index+1)+'. ['+feedbackPriorityLabel(item.priority)+'] '+target,
+        '   - Status: '+(item.status||'draft_ready'),
+        '   - Lane: '+lane+(repo?' · '+repo:''),
+        '   - Suggestion: '+String(item.suggestion||'').replace(/\s+/g,' ').trim(),
+        ''
+      );
+    });
+    lines.push('## Control gates','','Promote only owner-approved items to GitHub issues with goal -> user story -> requirement -> acceptance proof.');
+    return redactShareText(lines.join('\n'));
+  }
+
   function modelHealthAnswer(){
     const models=Array.isArray(state.models)?state.models:[];
     const active=models.filter(model=>model&&model.executable!==false&&model.selectable!==false);
@@ -1184,6 +1223,26 @@
       routeStatus('Feedback Inbox · local fallback','hosted');
       renderFeedbackCaptureStatus();
     });
+    document.getElementById('p0-input')?.focus();
+    return true;
+  }
+
+  async function copyFeedbackTriagePack(source='feedback_triage_pack'){
+    closeMenus();
+    captureInteraction('feedback_triage_pack_copy_started',{surface:source,local_feedback_count:feedbackInboxItems().length});
+    let plan=null;
+    try{
+      plan=await feedbackInboxPlan();
+    }catch(error){
+      plan={item_count:feedbackInboxItems().length,top_items:feedbackInboxItems(),summary:{}};
+    }
+    const copied=await writeClipboard(feedbackTriagePack(plan));
+    captureInteraction(copied?'feedback_triage_pack_copied':'feedback_triage_pack_copy_blocked',{
+      surface:source,
+      local_feedback_count:feedbackInboxItems().length
+    });
+    status(copied?'Feedback triage pack copied.':'Copy blocked. Feedback drafts remain in Feedback Inbox.',copied?'ready':'error');
+    routeStatus(copied?'Feedback triage pack · sanitized copy · no paid route':'Feedback triage pack · copy blocked · local drafts safe',copied?'ready':'error');
     document.getElementById('p0-input')?.focus();
     return true;
   }
@@ -3320,6 +3379,7 @@
       '<div class="p0-menu-note">Feedback may be logged after sanitization to improve MMIR. Do not paste secrets.</div>'+
       menuButton('draft-feedback','Send feedback','Prefill @inkognitroz so you can report friction or suggest a feature.')+
       menuButton('feedback-inbox','Feedback Inbox','Review local feedback drafts and server-safe triage status.')+
+      menuButton('copy-feedback-triage','Copy triage pack','Copy sanitized local feedback drafts as a Markdown triage pack.')+
       menuSeparator()+
       menuSection('Local memory')+
       menuButton('local-memory-guide','Memory guide','Use /remember, /memory, /doc and /docs in this chat.')+
@@ -4077,6 +4137,9 @@
     }
     if(action==='feedback-inbox'){
       return openFeedbackInbox('add_menu');
+    }
+    if(action==='copy-feedback-triage'){
+      return copyFeedbackTriagePack('add_menu');
     }
     if(String(action||'').startsWith('load-preset:')){
       loadPromptPreset(String(action).slice('load-preset:'.length));
