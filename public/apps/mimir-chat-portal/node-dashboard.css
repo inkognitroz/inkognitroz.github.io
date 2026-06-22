@@ -87,6 +87,40 @@
   font-weight: 700;
 }
 
+.node-handoff-status {
+  display: grid;
+  gap: 8px;
+}
+
+.node-handoff-status article {
+  border: 1px solid rgba(15, 118, 110, 0.15);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.node-handoff-status article strong {
+  color: var(--mimir-text);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.node-handoff-status article small {
+  color: var(--mimir-muted);
+  display: block;
+  line-height: 1.4;
+}
+
+.node-handoff-status article[data-state="ready"] {
+  border-color: rgba(16, 163, 127, 0.28);
+  background: #f0fdf9;
+}
+
+.node-handoff-status article[data-state="error"] {
+  border-color: rgba(220, 38, 38, 0.28);
+  background: #fff7f7;
+}
+
 .node-handoff-rail {
   display: grid;
   gap: 6px;
@@ -125,6 +159,12 @@
 
 .node-handoff-card .node-dashboard-actions {
   grid-column: 1 / -1;
+}
+
+@media (max-width: 780px) {
+  .node-handoff-card {
+    grid-template-columns: 1fr;
+  }
 }
 
 .node-resume-banner {
