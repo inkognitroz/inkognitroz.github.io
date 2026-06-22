@@ -344,6 +344,16 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackIntakeStorageLine(plan)',
+  'P0 shell must explain storage truth immediately after feedback intake, not only inside Feedback Inbox.'
+);
+requireIncludes(
+  shell,
+  'Lagring: lokal Feedback Inbox + sanitert Worker-logg. Sentralt owner-lager mangler fortsatt.',
+  'Feedback intake confirmation must be honest when central owner-readable storage is not configured.'
+);
+requireIncludes(
+  shell,
   'Owner-lager: ikke koblet ennå.',
   'Feedback Inbox must be honest when durable owner-readable storage is not configured.'
 );
@@ -464,12 +474,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-smart-swarm-mode-v1',
+  'p0-chat-shell.js?v=20260622-feedback-storage-truth-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-smart-swarm-mode-v1"',
+  '"p0-chat-shell.js": "20260622-feedback-storage-truth-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
