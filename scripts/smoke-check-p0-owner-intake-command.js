@@ -254,6 +254,21 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'const localItems=feedbackInboxItems();',
+  'Feedback Inbox truth must be based on the full local inbox, not only top priority items.'
+);
+requireIncludes(
+  shell,
+  "Viser topp '+String(visibleCount)+' av '+String(totalCount)+' drafts for triage først.",
+  'Feedback Inbox must say when it is showing only the top triage subset.'
+);
+requireIncludes(
+  shell,
+  "'- Capture truth: '+(counts.total?feedbackCaptureDetail(counts):'no local drafts yet')",
+  'Feedback triage export must preserve sync-state truth from the full local inbox.'
+);
+requireIncludes(
+  shell,
   'function copyFeedbackTriagePack',
   'P0 shell must copy feedback triage packs without requiring central storage first.'
 );
@@ -514,12 +529,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260622-feedback-learning-rail-v1',
+  'p0-chat-shell.js?v=20260622-feedback-inbox-truth-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260622-feedback-learning-rail-v1"',
+  '"p0-chat-shell.js": "20260622-feedback-inbox-truth-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

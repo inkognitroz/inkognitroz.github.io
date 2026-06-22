@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260622-feedback-learning-rail-v1';
+  const P0_RUNTIME_VERSION='20260622-feedback-inbox-truth-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1186,12 +1186,16 @@
 
   function feedbackInboxAnswer(plan){
     const items=Array.isArray(plan?.top_items)?plan.top_items:[];
-    const counts=feedbackCaptureCounts(items);
+    const localItems=feedbackInboxItems();
+    const counts=feedbackCaptureCounts(localItems);
+    const visibleCount=items.length;
+    const totalCount=Math.max(Number(plan?.item_count)||0,localItems.length,visibleCount);
     const lines=[
       'Feedback Inbox',
       '',
-      plan?.item_count?String(plan.item_count)+' lokale drafts klare for triage.':'Ingen lokale drafts i denne nettleseren ennå.',
+      totalCount?String(totalCount)+' lokale drafts klare for triage.':'Ingen lokale drafts i denne nettleseren ennå.',
       counts.total?('Capture truth: '+feedbackCaptureDetail(counts)+'.'):'Capture truth: no local drafts yet.',
+      totalCount&&visibleCount&&visibleCount<totalCount?('Viser topp '+String(visibleCount)+' av '+String(totalCount)+' drafts for triage først.'):'',
       ...feedbackStorageStatusLines(plan),
       'Regel: offentlig feedback blir ikke automatisk GitHub issue.',
       ''
@@ -1210,6 +1214,7 @@
 
   function feedbackTriagePack(plan={}){
     const localItems=feedbackInboxItems();
+    const counts=feedbackCaptureCounts(localItems);
     const planItems=Array.isArray(plan?.top_items)?plan.top_items:[];
     const items=(planItems.length?planItems:localItems).slice(0,50);
     const lines=[
@@ -1218,6 +1223,7 @@
       '- Generated: '+new Date().toISOString(),
       '- Runtime: '+P0_RUNTIME_VERSION,
       '- Local drafts: '+String(localItems.length),
+      '- Capture truth: '+(counts.total?feedbackCaptureDetail(counts):'no local drafts yet'),
       '- Durable owner store: '+(feedbackOwnerStoreReady(plan)?'owner-readable learning corpus ready':(plan?.durable_binding_configured?'configured, not fully readable/writable':'not configured')),
       '- Provider calls: none',
       '- Paid routes: none',
