@@ -24,6 +24,9 @@ requireIncludes(strip, 'function routeChoiceReason(node)', 'Active node strip mu
 requireIncludes(strip, 'function capacityLine(nodes)', 'Active node strip must summarize ready/visible/local capacity.');
 requireIncludes(strip, 'function nextStepAction(best,nodes)', 'Active node strip must derive a single best next step from live route state.');
 requireIncludes(strip, 'function nextStepMarkup(action)', 'Active node strip must render the next-step callout.');
+requireIncludes(strip, 'function stripNodes(allNodes,best)', 'Active node strip must be able to keep the selected route visible alongside the public-first cards.');
+requireIncludes(strip, 'const best=bestNode(allNodes,selected);', 'Active node strip must derive the active route from the full manifest, not only the compact public-first subset.');
+requireIncludes(strip, 'if(best&&!result.some(node=>node.id===best.id))result.push(best);', 'Active node strip must add the selected active route back into the compact strip when it would otherwise be hidden.');
 requireIncludes(strip, 'Chosen because a verified private local model is already live on this device.', 'Local-ready path must explain why MMIR promoted the private route.');
 requireIncludes(strip, 'Chosen because it can answer first while local/private routes are still being verified.', 'Hosted fallback path must explain why it stays first.');
 requireIncludes(strip, 'browser candidates parked until proof', 'Active node strip must keep browser candidates visible without promoting them.');
@@ -50,7 +53,7 @@ requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-descript
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-active-route-refresh-status-v1';
+const expectedVersion = '20260623-active-route-selected-visibility-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
