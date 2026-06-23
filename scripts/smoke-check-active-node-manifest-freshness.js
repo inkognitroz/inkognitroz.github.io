@@ -31,12 +31,17 @@ if (!updatedAt) {
 requireIncludes(strip, 'function routeInventoryFreshness(updatedAt)', 'Active node strip must compute route inventory freshness.');
 requireIncludes(strip, "label:'Route inventory freshness unknown'", 'Active node strip must explain when route inventory freshness cannot be determined.');
 requireIncludes(strip, "label:'Route inventory current'", 'Active node strip must clearly mark fresh route inventory.');
+requireIncludes(strip, "label:'Route inventory refresh failed'", 'Active node strip must explain when an explicit route inventory refresh falls back.');
 requireIncludes(strip, 'Refresh before demo trust.', 'Active node strip must warn when route inventory is stale.');
+requireIncludes(strip, 'function withRefreshState(freshness)', 'Active node strip must decorate freshness copy with refresh outcomes.');
+requireIncludes(strip, "summary:freshness.summary+' Refreshing now.'", 'Active node strip must expose in-progress refresh state from the freshness badge.');
+requireIncludes(strip, "summary:'Using fallback route inventory. Retry before demo trust.'", 'Active node strip must explain when refresh falls back to the safe manifest subset.');
+requireIncludes(strip, "manifestRefreshState=await loadManifest(true)?'succeeded':'failed';", 'Explicit route refresh must record whether the manifest reload succeeded.');
 requireIncludes(strip, 'function refreshRouteInventory()', 'Active node strip must be able to re-fetch route inventory without a full page reload.');
 requireIncludes(strip, "fetch(MANIFEST_URL,{cache:force?'no-store':'default'})", 'Route inventory refresh must bypass stale browser cache when explicitly requested.');
 requireIncludes(strip, "manifestUpdatedAt=String(body?.updated_at||'');", 'Active node strip must load updated_at from the public node manifest.');
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
-const expectedVersion = '20260623-active-route-refresh-v1';
+const expectedVersion = '20260623-active-route-refresh-status-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }
