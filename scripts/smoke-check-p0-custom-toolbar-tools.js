@@ -44,6 +44,8 @@ requireIncludes(shell, "const ANSWER_STYLE_KEY='mmir-p0-answer-style-v1'", 'Answ
 requireIncludes(shell, "const ROLE_PROFILE_KEY='mmir-p0-role-profile-v1'", 'Role profiles must have a browser-local storage key.');
 requireIncludes(shell, "const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1'", 'Memory must have an explicit browser-local snapshot key.');
 requireIncludes(installShell, 'id="p0-toolbar-tools"', 'Default toolbar must include an empty pinned-tool slot.');
+requireIncludes(installShell, 'id="p0-superboost"', 'Default composer must expose the owner-approved Superboost CTA.');
+requireIncludes(installShell, 'data-p0-route-action="boost-answer-live"', 'Superboost CTA must reuse the proven route action handler.');
 forbidIncludes(installShell, 'data-p0-toolbar-tool', 'Default toolbar must not ship optional tools as visible buttons.');
 requireIncludes(renderAddMenu, "menuSection('Add to toolbar')", '+ menu must expose optional tools as add-to-toolbar choices.');
 requireIncludes(renderAddMenu, ".filter(tool=>tool.id!=='discuss'||pool.compareReady)", 'Discussion toolbar option must stay hidden until two routes are ready.');
@@ -75,18 +77,20 @@ requireIncludes(handleToolbarTool, 'stopActiveResponse();', 'Toolbar stop must r
 requireIncludes(shell, 'function fastAnswerPrompt(prompt)', 'Fast answer must keep a dedicated short-answer prompt wrapper.');
 requireIncludes(shell, 'state.fastAnswerOnce=false;', 'Fast answer must be a one-shot mode, not a hidden permanent setting.');
 requireIncludes(updateSendControl, 'updatePinnedToolbarToolStates();', 'Pinned stop state must track the active send/stop state.');
+requireIncludes(updateSendControl, 'renderSuperboostCta();', 'Superboost CTA must disable during active responses.');
 requireIncludes(css, '.p0-toolbar-tools', 'CSS must keep optional tools aligned in the composer toolbar.');
+requireIncludes(css, '.p0-superboost', 'CSS must style the visible Superboost CTA.');
 requireIncludes(css, '.p0-toolbar-tool:disabled', 'CSS must make inactive optional tools visibly subtle.');
 requireIncludes(icons, "const flame='", 'Icon helper must provide flame icon.');
 requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion bubbles icon.');
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
 requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260623-feedback-source-handoff-v1', 'Public page must cache-bust the toolbar runtime.');
-requireIncludes(html, 'p0-chat-shell.css?v=20260623-feedback-source-handoff-v1', 'Public page must cache-bust the toolbar CSS.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260623-feedback-source-superboost-v1', 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, 'p0-chat-shell.css?v=20260623-feedback-source-superboost-v1', 'Public page must cache-bust the toolbar CSS.');
 requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260623-feedback-source-handoff-v1"', 'Asset manifest must track toolbar runtime version.');
-requireIncludes(manifest, '"p0-chat-shell.css": "20260623-feedback-source-handoff-v1"', 'Asset manifest must track toolbar CSS version.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260623-feedback-source-superboost-v1"', 'Asset manifest must track toolbar runtime version.');
+requireIncludes(manifest, '"p0-chat-shell.css": "20260623-feedback-source-superboost-v1"', 'Asset manifest must track toolbar CSS version.');
 requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
 
 if (failures.length) {

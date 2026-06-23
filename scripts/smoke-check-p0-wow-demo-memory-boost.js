@@ -34,7 +34,11 @@ const compareGatewayRoutes = functionSource('compareGatewayRoutes', 'synthesizeC
 requireIncludes(shell, "const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1'", 'Local memory must have a browser-local storage key.');
 requireIncludes(shell, "const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1'", 'Local document notes must have a browser-local storage key.');
 requireIncludes(shell, "const TOOL_CONTEXT_KEY='mmir-p0-last-tool-context-v1'", 'Verified tool context must have a browser-local proof key.');
-requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Boost answer'", '+ menu must expose Boost answer without adding a visible toolbar button.');
+requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Boost answer'", '+ menu must keep Boost answer available behind Tools.');
+requireIncludes(shell, 'id="p0-superboost"', 'Composer must expose Superboost as the visible wow path.');
+requireIncludes(shell, 'function renderSuperboostCta()', 'Superboost CTA must update from live route inventory.');
+requireIncludes(shell, "label=visibleCount?'Superboost · '+String(visibleCount)+' AI':'Superboost'", 'Superboost CTA must show the live AI route count when available.');
+requireIncludes(shell, 'Supergeni answers now. Use Superboost for many AI routes, ranking and one best answer, or start with demo, source proof, local setup or feedback capture.', 'Empty state must point users to the scaled-intelligence wow path without dropping guided starters.');
 requireIncludes(renderAddMenu, "menuButton('ask-all-active','Ask all active'", '+ menu must expose Ask all active without adding a visible toolbar button.');
 requireIncludes(renderAddMenu, 'p0-intelligence-map', '+ menu must show one subtle green intelligence map line without adding toolbar buttons.');
 requireIncludes(renderAddMenu, "menuSection('Verified tools')", '+ menu must group verified no-key tools separately.');
@@ -74,6 +78,7 @@ requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-ask-ai-cta'"
 requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-connect-local-cta'", 'Single-route local setup CTA must be captured for UX telemetry.');
 requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-model-health-cta'", 'Single-route model health CTA must be captured for UX telemetry.');
 requireIncludes(css, '.p0-route-cta', 'Composer Ask AI action must use a compact route CTA style.');
+requireIncludes(css, '.p0-superboost', 'Visible Superboost action must have a dedicated compact composer style.');
 requireIncludes(css, 'pointer-events: auto;', 'Composer Ask AI CTA must be clickable while the rest of route status stays unobtrusive.');
 requireIncludes(shell, 'function modelInventorySummary(payload,models=[])', 'P0 runtime must turn /v1/models into a visible intelligence map.');
 requireIncludes(shell, 'normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH', 'Boost/Ask all must try swarm preview before legacy compare.');
@@ -92,8 +97,8 @@ requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemCon
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260623-feedback-source-handoff-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260623-feedback-source-handoff-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260623-feedback-source-superboost-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260623-feedback-source-superboost-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');

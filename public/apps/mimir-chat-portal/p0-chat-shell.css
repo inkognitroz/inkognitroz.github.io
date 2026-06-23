@@ -656,6 +656,33 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   width: 38px;
 }
 
+.p0-superboost {
+  background: #ecfdf5;
+  border-color: rgba(4, 120, 87, 0.24);
+  color: #047857;
+  font-weight: 800;
+  max-width: min(42vw, 172px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p0-superboost[data-state="setup"] {
+  background: #f8fafc;
+  border-color: rgba(100, 116, 139, 0.22);
+  color: #334155;
+}
+
+.p0-superboost:hover,
+.p0-superboost:focus-visible {
+  background: #d1fae5;
+}
+
+.p0-superboost:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
 .p0-icon {
   display: block;
   fill: none;
@@ -996,6 +1023,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
     max-width: 42vw;
   }
 
+  .p0-superboost {
+    max-width: 32vw;
+    padding: 0 10px;
+  }
+
   .p0-menu {
     bottom: 76px;
     left: 10px !important;
@@ -1013,6 +1045,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
   .p0-btn-icon {
     width: 36px;
+  }
+
+  .p0-superboost {
+    max-width: 30vw;
+    padding: 0 8px;
   }
 
   .p0-model-button {
