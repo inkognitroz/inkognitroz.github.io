@@ -317,8 +317,9 @@
     '</article>';
   }
 
-  function nextAction(checks){
+  function nextAction(checks,hardware){
     const first=blockingCheck(checks);
+    const device=detectDevice(hardware);
     if(!first){
       return {
         title:'Node path is ready',
@@ -328,19 +329,19 @@
       };
     }
     if(first.id==='connector'){
-      return {title:'Install or start MMIR Local Node',detail:'Use the free installer, then return here and refresh. The node should stay on 127.0.0.1 by default.',primary:'Open installer',target:'./downloads/mmir-local-connector-install.html'};
+      return {title:'Install or start MMIR Local Node',detail:device.note+' The node should stay on 127.0.0.1 by default.',primary:'Install on '+device.label,target:device.installer};
     }
     if(first.id==='pairing'){
       return {title:'Pair this browser with the local node',detail:'MMIR can request a local pairing token automatically. Refresh nodes to retry pairing.',primary:'Refresh nodes',target:'#node-dashboard'};
     }
     if(first.id==='ollama'){
-      return {title:'Start Ollama or reinstall local connector',detail:'The node is reachable, but the local model runtime needs attention.',primary:'Local connector',target:'#local-connector'};
+      return {title:'Start Ollama or reinstall local connector',detail:'The node is reachable, but the local model runtime needs attention. '+device.note,primary:'Local connector',target:'#local-connector'};
     }
     if(first.id==='model-pull'||first.id==='model_pull'){
-      return {title:'Repair model install',detail:first.detail||'The last model install did not complete. Retry the free model install from the model library.',primary:'Model library',target:'#model-library'};
+      return {title:'Repair model install',detail:first.detail||('The last model install did not complete. Retry the free '+device.model+' install from the model library.'),primary:'Model library',target:'#model-library'};
     }
     if(first.id==='model'){
-      return {title:'Install a free local model',detail:'Pick an installable-free Ollama model, run the installer path, then refresh until it becomes live.',primary:'Model library',target:'#model-library'};
+      return {title:'Install a free local model',detail:'Pick an installable-free Ollama model such as '+device.model+', run the installer path, then refresh until it becomes live.',primary:'Model library',target:'#model-library'};
     }
     if(first.id==='tunnel'){
       return {title:'Chat locally now; tunnel is optional',detail:'Local chat does not need a tunnel. Start an outbound tunnel only for another trusted device after pairing.',primary:'Chat now',target:'#mimir-prompt'};
@@ -361,7 +362,7 @@
       detail:String(report.next_action.detail||'Follow the safest next activation step.'),
       primary:String(report.next_action.primary||'Open'),
       target:String(report.next_action.target||'#local-connector')
-    }:nextAction(checks);
+    }:nextAction(checks,null);
     return {checks,action,status:String(report.status||'unknown')};
   }
 
@@ -511,7 +512,7 @@
       {id:'model-pull',state:'warn',label:'Model install',detail:'Model install jobs are checked after the connector is reachable.'},
       {id:'model',state:'warn',label:'Model availability',detail:'Live models appear after Ollama/local runtime is online.'}
     ];
-    const action=nextAction(checks);
+    const action=nextAction(checks,null);
     const guide=guidedDeviceRepair(checks,null,null);
     const plan=nodeHandoffPlan(checks,null,null,[]);
     root.innerHTML=
@@ -580,7 +581,7 @@
     ];
     const report=normalizedDoctor(doctorReport);
     const checks=report?.checks||fallbackChecks;
-    const action=report?.action||nextAction(checks);
+    const action=report?.action||nextAction(checks,hardware);
     const doctorSource=report?'Local Node Doctor':'Browser fallback doctor';
     const guide=guidedDeviceRepair(checks,hardware,tunnel);
     const plan=nodeHandoffPlan(checks,hardware,tunnel,models);
