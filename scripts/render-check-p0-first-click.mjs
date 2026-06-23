@@ -102,6 +102,41 @@ async function installApiFixtures(page) {
       })
     });
   });
+
+  await page.route('https://api.mmir.ai/feedback/intake', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        accepted: true,
+        target: 'inkognitroz',
+        draft: {
+          classification: {
+            lane: 'L1 Frontend UX',
+            repo: 'inkognitroz.github.io'
+          }
+        },
+        inbox_item: {
+          id: 'fb_synced_render_guard',
+          created_at: new Date().toISOString(),
+          target: 'inkognitroz',
+          source: 'mmir-chat-feedback',
+          status: 'submitted',
+          priority: 'p3-ux',
+          title: 'Feedback synced to intake',
+          suggestion: 'Keep route truth visible while feedback drafts exist.',
+          classification: {
+            lane: 'L1 Frontend UX',
+            repo: 'inkognitroz.github.io',
+            backlog_hint: 'feedback-intake-synced'
+          },
+          no_paid_routes_started: true,
+          provider_called: false,
+          server_state: 'synced'
+        }
+      })
+    });
+  });
 }
 
 async function installVoiceFixture(page) {
@@ -156,6 +191,8 @@ async function pageLayout(page) {
     const addMenu = document.getElementById('p0-add-menu');
     const modelMenu = document.getElementById('p0-model-menu');
     const privacyMenu = document.getElementById('p0-privacy-menu');
+    const route = document.getElementById('p0-route');
+    const feedback = document.getElementById('p0-feedback-capture');
     return {
       title: document.title,
       text: document.body.innerText,
@@ -165,6 +202,16 @@ async function pageLayout(page) {
       addMenu: addMenu && !addMenu.hidden ? addMenu.getBoundingClientRect().toJSON() : null,
       modelMenu: modelMenu && !modelMenu.hidden ? modelMenu.getBoundingClientRect().toJSON() : null,
       privacyMenu: privacyMenu && !privacyMenu.hidden ? privacyMenu.getBoundingClientRect().toJSON() : null,
+      route: route ? {
+        text: route.textContent || '',
+        hidden: route.offsetParent === null,
+        rect: route.getBoundingClientRect().toJSON()
+      } : null,
+      feedback: feedback ? {
+        text: feedback.textContent || '',
+        hidden: feedback.hidden || feedback.offsetParent === null,
+        rect: feedback.hidden ? null : feedback.getBoundingClientRect().toJSON()
+      } : null,
       rects
     };
   });
@@ -203,6 +250,17 @@ function assertControls(layout, viewport, label) {
       assert(!rectOverlap(entries[outer][1], entries[inner][1]), `${label}: ${entries[outer][0]} overlaps ${entries[inner][0]}`);
     }
   }
+}
+
+function assertFeedbackRail(layout, viewport, label) {
+  assert(Boolean(layout.route), `${label}: route line should exist`);
+  assert(Boolean(layout.feedback), `${label}: feedback capture pill should exist`);
+  assert(layout.route?.hidden === false, `${label}: route line must stay visible when feedback is captured`);
+  assert(layout.feedback?.hidden === false, `${label}: feedback pill must stay visible when drafts exist`);
+  assert(Boolean(String(layout.route?.text || '').trim()), `${label}: route line must keep status copy`);
+  assert(/Feedback Inbox/i.test(layout.feedback?.text || ''), `${label}: feedback pill should keep inbox summary`);
+  assert(layout.scrollWidth <= viewport.width + 1, `${label}: feedback rail must not create horizontal overflow`);
+  assert(!rectOverlap(layout.route?.rect, layout.feedback?.rect), `${label}: route line and feedback pill must not overlap`);
 }
 
 async function screenshot(page, name) {
@@ -317,6 +375,13 @@ async function checkViewport(browser, viewport) {
   assert(historyState.sessionKey.includes(`first_click_guard-${viewport.name}`), `${viewport.name}: first-click QA should use a URL-scoped session history key`);
   assert(historyState.sessionCount > 0 && historyState.sessionHasPrompt && historyState.sessionHasAnswer, `${viewport.name}: first-click QA should keep prompt/answer in session history only`);
   await screenshot(page, `${viewport.name}-answer`);
+
+  await page.locator('#p0-input').fill('@inkognitroz Keep route truth visible while feedback drafts exist.');
+  await page.locator('#p0-send').click();
+  await page.waitForFunction(() => /Feedback Inbox/i.test(document.getElementById('p0-feedback-capture')?.textContent || ''));
+  layout = await pageLayout(page);
+  assertFeedbackRail(layout, viewport, `${viewport.name} feedback rail`);
+  await screenshot(page, `${viewport.name}-feedback-rail`);
 
   const relevantLogs = logs.filter(message => !/favicon|Failed to load resource/i.test(message));
   assert(relevantLogs.length === 0, `${viewport.name}: console/page errors should stay clean, got ${relevantLogs.join(' | ')}`);
