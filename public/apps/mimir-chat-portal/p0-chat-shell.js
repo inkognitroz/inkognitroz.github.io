@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-feedback-inbox-discoverability-v1';
+  const P0_RUNTIME_VERSION='20260623-empty-state-starters-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3237,6 +3237,13 @@
       delete message.dataset.actionsOpen;
     });
     document.addEventListener('click',(event)=>{
+      const emptyStarter=event.target.closest('[data-p0-empty-action]');
+      if(emptyStarter){
+        event.preventDefault();
+        event.stopPropagation();
+        handleEmptyStarterAction(emptyStarter.getAttribute('data-p0-empty-action')||'');
+        return;
+      }
       const copyButton=event.target.closest('[data-p0-copy-command]');
       if(copyButton){
         event.preventDefault();
@@ -3293,6 +3300,39 @@
     input.style.height='auto';
     input.style.height=Math.min(180,Math.max(58,input.scrollHeight))+'px';
     syncLegacyPromptFromP0();
+  }
+
+  function setPromptDraft(value,statusText,routeText){
+    const input=document.getElementById('p0-input');
+    if(input){
+      input.value=String(value||'');
+      autosizeInput();
+      input.focus();
+    }
+    closeMenus();
+    if(statusText)status(statusText,'ready');
+    if(routeText)routeStatus(routeText,'hosted');
+    return true;
+  }
+
+  function handleEmptyStarterAction(action){
+    if(action==='starter-best-answer'){
+      captureInteraction('empty_starter_used',{starter:'best_answer'});
+      return setPromptDraft('@compare ','Best Answer starter ready.','Best Answer starter · compare active routes when you send');
+    }
+    if(action==='starter-private-local'){
+      captureInteraction('empty_starter_used',{starter:'private_local'});
+      return handleMenuAction('connect-local');
+    }
+    if(action==='starter-verified-source'){
+      captureInteraction('empty_starter_used',{starter:'verified_source'});
+      return handleMenuAction('verified-source');
+    }
+    if(action==='starter-feedback'){
+      captureInteraction('empty_starter_used',{starter:'feedback'});
+      return handleMenuAction('draft-feedback');
+    }
+    return false;
   }
 
   function legacyPromptInput(){
@@ -4710,7 +4750,17 @@
     const root=document.getElementById('p0-transcript');
     if(!root)return;
     if(!state.messages.length){
-      root.innerHTML='<div class="p0-empty"><h1>Ask anything.</h1><p>Supergeni answers now. Add private local models and compare routes from + when ready.</p></div>';
+      root.innerHTML=''+
+        '<div class="p0-empty">'+
+          '<h1>Ask anything.</h1>'+
+          '<p>Supergeni answers now. Start with a guided next step for demo, source proof, local setup or feedback capture.</p>'+
+          '<div class="p0-empty-starters" aria-label="Suggested first actions">'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-best-answer">Best Answer</button>'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-private-local">Private local</button>'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-verified-source">Verified source</button>'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-feedback">Send feedback</button>'+
+          '</div>'+
+        '</div>';
       return;
     }
     root.innerHTML=state.messages.map(message=>{
