@@ -11,6 +11,7 @@
   function memoryUseKey(){return MEMORY_USE_PREFIX+workspaceId();}
   function safe(value){return String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
   function selector(value){return window.CSS?.escape?CSS.escape(String(value||'')):String(value||'').replace(/[^a-zA-Z0-9_-]/g,'-');}
+  function displayApi(){return window.MimirRouteDisplay||{};}
   function receipts(){
     try{
       const value=JSON.parse(localStorage.getItem(key())||'[]');
@@ -88,8 +89,21 @@
   }
   function status(value){return String(value||'none').replace('+',' + ');}
   function row(label,value){return '<dt>'+safe(label)+'</dt><dd>'+safe(value||'none')+'</dd>';}
+  function routeLabel(receipt){
+    const display=displayApi();
+    if(display.receiptRouteLabel)return display.receiptRouteLabel(receipt,'Supergeni');
+    return String(receipt?.route||'browser');
+  }
+  function trustLabel(receipt){
+    const display=displayApi();
+    if(display.receiptTrustLabel)return display.receiptTrustLabel(receipt);
+    return 'policy required';
+  }
+  function summary(receipt){
+    return 'Context: '+safe(routeLabel(receipt))+' · '+safe(trustLabel(receipt))+' · memory '+safe(status(receipt.memory))+' / knowledge '+safe(status(receipt.knowledge));
+  }
   function writeHighlight(receipt,target){
-    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:receipt.route,memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,memory_sources:receipt.memory_sources||[],knowledge_use_ids:receipt.knowledge_use_ids||[],knowledge_use_count:receipt.knowledge_use_count||0,knowledge_sources:receipt.knowledge_sources||[],created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
+    const highlight={object:'mmir.answer_context_highlight',version:1,workspace_id:workspaceId(),message_id:receipt.message_id,target,model:receipt.model,route:routeLabel(receipt),memory:receipt.memory,knowledge:receipt.knowledge,history_messages:receipt.history_messages,memory_use_ids:receipt.memory_use_ids||[],memory_use_count:receipt.memory_use_count||0,memory_sources:receipt.memory_sources||[],knowledge_use_ids:receipt.knowledge_use_ids||[],knowledge_use_count:receipt.knowledge_use_count||0,knowledge_sources:receipt.knowledge_sources||[],created_at:new Date().toISOString(),local_only:true,no_paid_routes_started:true,provider_secrets_stored:false,raw_prompt_stored_in_highlight:false,raw_response_stored_in_highlight:false};
     try{localStorage.setItem(highlightKey(),JSON.stringify(highlight));}catch(error){}
     window.dispatchEvent(new CustomEvent('mmir-answer-context-highlight-updated',{detail:highlight}));
     return highlight;
@@ -109,7 +123,7 @@
     note.dataset.receiptHighlight=target;
     const memoryFilter=receipt.memory_use_count?(', memory matches '+receipt.memory_use_count+' '+((receipt.memory_sources||[]).join('/')||'local')):'';
     const knowledgeFilter=receipt.knowledge_use_count?(', knowledge matches '+receipt.knowledge_use_count+' '+((receipt.knowledge_sources||[]).join('/')||'local')):'';
-    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+(receipt.route||'browser')+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+memoryFilter+knowledgeFilter+'.';
+    note.textContent='Receipt context: model '+(receipt.model||'none')+', route '+routeLabel(receipt)+', trust '+trustLabel(receipt)+', memory '+status(receipt.memory)+', knowledge '+status(receipt.knowledge)+memoryFilter+knowledgeFilter+'.';
     const summary=el.matches('details')?el.querySelector('summary'):null;
     if(summary)summary.after(note);
     else el.prepend(note);
@@ -146,10 +160,11 @@
     el.className='runtime-answer-context-receipt';
     el.dataset.messageId=receipt.message_id;
     el.innerHTML=
-      '<summary>Context: memory '+safe(status(receipt.memory))+' / knowledge '+safe(status(receipt.knowledge))+'</summary>'+
+      '<summary>'+summary(receipt)+'</summary>'+
       '<dl>'+
       row('Model',receipt.model)+
-      row('Route',receipt.route)+
+      row('Route',routeLabel(receipt))+
+      row('Trust',trustLabel(receipt))+
       row('Node type',receipt.node_type||'route-dependent')+
       row('Boundary',receipt.execution_boundary||receipt.privacy_boundary||'configured route')+
       row('Prompt left device',receipt.prompt_left_device?'yes':'no')+

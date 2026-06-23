@@ -48,11 +48,37 @@
     const explicitTrust=String(profile?.trust_level||'').toLowerCase();
     const promotion=String(profile?.promotion_state||'').toLowerCase();
     const visibility=String(profile?.visibility||profile?.public_surface||'').toLowerCase();
+    if(explicitTrust==='device-local')return 'browser-local/private';
     if(/active-untrusted-free|untrusted|unverified/.test(explicitTrust)||promotion==='hidden_candidate'||visibility.includes('advanced'))return 'untrusted candidate';
     const summary=[profile?.provider,profile?.cost,profile?.url,profile?.name,profile?.id].join(' ').toLowerCase();
     if(isLocalProfile(profile))return 'local/private';
     if(/free|no paid|self-hosted|self hosted/.test(summary))return 'free/protected';
     return profile?'policy required':'browser/no secret';
+  }
+
+  function receiptRouteLabel(receipt,fallback=DEFAULT_LABEL){
+    const raw=text(receipt?.route_name||receipt?.route||'');
+    const nodeType=text(receipt?.node_type||'').toLowerCase();
+    if(!raw&&nodeType==='browser')return 'Browser Node';
+    if(!raw)return fallback;
+    if(nodeType==='browser'||/browser node|browser model|browser webgpu|webgpu/i.test(raw))return 'Browser Node';
+    if(nodeType==='local'||nodeType==='local-adapter'||/127\.0\.0\.1|localhost|private local|local node|local adapter|ollama|lm studio|llama\.cpp|vllm/i.test(raw))return 'MMIR Local Node';
+    if(/api\.mmir\.ai|hosted/i.test(raw))return 'api.mmir.ai free route';
+    return displayLabel(raw,fallback);
+  }
+
+  function receiptTrustLabel(receipt){
+    const explicit=text(receipt?.trust_label||'');
+    if(explicit)return explicit;
+    const trustClass=text(receipt?.trust_class||'').toLowerCase();
+    const nodeType=text(receipt?.node_type||'').toLowerCase();
+    const boundary=text(receipt?.execution_boundary||receipt?.privacy_boundary||'').toLowerCase();
+    const rawRoute=text(receipt?.route||'').toLowerCase();
+    if(/untrusted|unverified/.test(trustClass))return 'untrusted candidate';
+    if(trustClass==='device-local'||nodeType==='browser'||boundary==='current-browser-session')return 'browser-local/private';
+    if(/local/.test(trustClass)||nodeType==='local'||nodeType==='local-adapter'||/127\.0\.0\.1|localhost|private local|local node|ollama|lm studio|llama\.cpp|vllm/.test(rawRoute))return 'local/private';
+    if(/api\.mmir\.ai|hosted/.test(rawRoute)||receipt?.no_paid_routes_started!==false)return 'free/protected';
+    return 'policy required';
   }
 
   function freshnessLabel(score){
@@ -66,6 +92,6 @@
     return '';
   }
 
-  w.MimirRouteDisplay={DEFAULT_LABEL,displayLabel,clip,modelLabel,isLocalProfile,routeName,trustLabel,freshnessLabel};
+  w.MimirRouteDisplay={DEFAULT_LABEL,displayLabel,clip,modelLabel,isLocalProfile,routeName,trustLabel,receiptRouteLabel,receiptTrustLabel,freshnessLabel};
   w.dispatchEvent(new CustomEvent('mimir-route-display-ready',{detail:{ready:true,default_label:DEFAULT_LABEL,no_paid_routes_started:true}}));
 })();
