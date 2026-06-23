@@ -25,7 +25,7 @@ requireIncludes(dashboard, "primary:'Install on '+device.label,target:device.ins
 requireIncludes(dashboard, "detail:'Pick an installable-free Ollama model such as '+device.model+', run the installer path, then refresh until it becomes live.'", 'Model-install CTA must recommend a device-fit starter model.');
 requireIncludes(dashboard, 'const action=report?.action||nextAction(checks,hardware);', 'Ready-state next action must keep hardware-aware CTA decisions.');
 
-const expectedVersion = '20260623-node-handoff-resume-v1';
+const expectedVersion = '20260623-node-handoff-stale-refresh-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node-dashboard device-aware CTA update.');
 }

@@ -872,8 +872,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.css"),
-  ".p0-left {\n  flex: 0 0 auto;",
-  "P0 toolbar must prevent left controls from collapsing on mobile.",
+  ".p0-left {\n  flex: 1 1 auto;\n  overflow: hidden;",
+  "P0 toolbar must shrink and clip pinned tools before they overlap route controls.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
