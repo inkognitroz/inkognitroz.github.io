@@ -166,6 +166,15 @@
     return '<div class="mmir-active-node-next-step"><span>Next best step</span><p>'+safe(action.summary)+'</p><div class="mmir-active-node-next-step-actions">'+primary+secondary+'</div></div>';
   }
   function reportRouteIssue(best,freshness){
+    if(w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness),{
+      source:'active-route-strip',
+      target:'feedback',
+      title:'Active route strip issue',
+      priority:freshness?.state==='degraded'?'p2-bug':'p3-ux',
+      lane:'L1 Frontend UX',
+      backlogHint:'active-route-strip-feedback',
+      openInbox:true
+    }))return;
     const promptEl=q('#mimir-prompt');
     if(!promptEl)return;
     promptEl.value=feedbackDraft(best,freshness);

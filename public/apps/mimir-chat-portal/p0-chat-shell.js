@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-empty-state-starters-v1';
+  const P0_RUNTIME_VERSION='20260623-route-strip-feedback-capture-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1145,6 +1145,42 @@
     });
     writeFeedbackInboxItems(next);
     renderFeedbackCaptureStatus();
+    return true;
+  }
+
+  function saveFeedbackDraft(suggestion,options={}){
+    const cleaned=redactOwnerSuggestionText(suggestion);
+    if(!cleaned)return false;
+    const source=String(options.source||'feedback_draft').trim()||'feedback_draft';
+    const target=String(options.target||'feedback').trim().replace(/^@+/,'')||'feedback';
+    const priority=String(options.priority||'p3-ux').trim()||'p3-ux';
+    const lane=String(options.lane||'L1 Frontend UX').trim()||'L1 Frontend UX';
+    const repo=String(options.repo||'inkognitroz.github.io').trim()||'inkognitroz.github.io';
+    const title=String(options.title||'Feedback local draft').trim()||'Feedback local draft';
+    const backlogHint=String(options.backlogHint||'feedback-local-draft').trim()||'feedback-local-draft';
+    saveFeedbackInboxItem({
+      id:'fb_local_'+telemetryEventId().replace(/^evt_/,''),
+      created_at:new Date().toISOString(),
+      target,
+      source,
+      status:'draft_ready',
+      priority,
+      title,
+      suggestion:cleaned,
+      classification:{lane,repo,backlog_hint:backlogHint},
+      no_paid_routes_started:true,
+      provider_called:false,
+      server_state:'local_only'
+    });
+    markFeedbackCaptured(source);
+    captureInteraction('feedback_local_draft_saved',{
+      source,
+      target,
+      priority,
+      lane,
+      local_feedback_count:feedbackInboxItems().length
+    });
+    if(options.openInbox)openFeedbackInbox(source);
     return true;
   }
 
@@ -6182,6 +6218,10 @@
   }
 
   function boot(){
+    if(window.MimirChatRuntimeBridge){
+      window.MimirChatRuntimeBridge.openFeedbackInbox=openFeedbackInbox;
+      window.MimirChatRuntimeBridge.saveFeedbackDraft=saveFeedbackDraft;
+    }
     installShell();
     enforceShellStyles();
     status('Ready','ready');

@@ -14,7 +14,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedVersion = '20260623-empty-state-starters-v1';
+const expectedVersion = '20260623-route-strip-feedback-capture-v1';
 
 requireIncludes(
   shell,
@@ -39,6 +39,9 @@ requireIncludes(
 requireIncludes(shell,"return handleMenuAction('connect-local');",'Private local starter must reuse the existing connect-local flow.');
 requireIncludes(shell,"return handleMenuAction('verified-source');",'Verified source starter must reuse the verified-source flow.');
 requireIncludes(shell,"return handleMenuAction('draft-feedback');",'Feedback starter must reuse the existing feedback draft flow.');
+requireIncludes(shell,'function saveFeedbackDraft(suggestion,options={}){','P0 shell must centralize local feedback draft capture for reuse across surfaces.');
+requireIncludes(shell,"window.MimirChatRuntimeBridge.saveFeedbackDraft=saveFeedbackDraft;",'P0 shell must expose local feedback draft capture through the runtime bridge.');
+requireIncludes(shell,"window.MimirChatRuntimeBridge.openFeedbackInbox=openFeedbackInbox;",'P0 shell must expose Feedback Inbox opening through the runtime bridge.');
 requireIncludes(css,'.p0-empty-starters {','P0 shell CSS must style the empty-state starter group.');
 requireIncludes(css,'.p0-empty-starter {','P0 shell CSS must style each empty-state starter button.');
 
