@@ -32,6 +32,8 @@ requireIncludes(strip, 'if(best&&!result.some(node=>node.id===best.id))result.pu
 requireIncludes(strip, 'Chosen because a verified private local model is already live on this device.', 'Local-ready path must explain why MMIR promoted the private route.');
 requireIncludes(strip, 'Chosen because it can answer first while local/private routes are still being verified.', 'Hosted fallback path must explain why it stays first.');
 requireIncludes(strip, 'browser candidates parked until proof', 'Active node strip must keep browser candidates visible without promoting them.');
+requireIncludes(strip, 'function manifestTrustLine(updatedAt,inventory)', 'Active node strip must derive an accessible trust line from manifest timestamp and inventory count.');
+requireIncludes(strip, "count+' public route'+(count===1?'':'s')", 'Manifest trust line must expose the public route count.');
 requireIncludes(strip, "return 'Ready now: '+(best?.name||selected?.label||FALLBACK_LABEL);", 'Fallback route headline must prefer the actual active route label.');
 requireIncludes(strip, 'Next best step: connect the private local path so MMIR can upgrade from instant fallback to verified device-owned chat.', 'Fallback path must tell the user to connect the private local route next.');
 requireIncludes(strip, 'Send first local answer', 'Local-ready path must offer a direct first-answer CTA.');
@@ -59,7 +61,7 @@ requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-descript
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-feedback-draft-context-v1';
+const expectedVersion = '20260623-active-route-trust-label-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
