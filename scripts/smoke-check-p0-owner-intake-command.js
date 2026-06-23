@@ -354,6 +354,21 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "class=\"p0-status-rail\"",
+  'P0 composer must keep route truth and captured-feedback state in one compact status rail.'
+);
+requireIncludes(
+  css,
+  '.p0-status-rail',
+  'P0 shell CSS must lay out route truth and captured feedback together.'
+);
+requireIncludes(
+  css,
+  'flex-wrap: wrap;',
+  'Status rail must wrap on narrow screens instead of hiding route truth.'
+);
+requireIncludes(
+  shell,
   "id=\"p0-feedback-capture\"",
   'P0 composer must include a subtle captured-feedback inbox affordance.'
 );
@@ -494,8 +509,13 @@ requireIncludes(
 );
 requireIncludes(
   css,
+  'max-width: 100%;',
+  'Route truth must stay inside the shared status rail when feedback is visible.'
+);
+requireNotIncludes(
+  css,
   '.p0-composer[data-feedback-captured="true"] .p0-route',
-  'Captured-feedback affordance must not visually collide with route status text.'
+  'Captured-feedback state must not hide route truth anymore.'
 );
 requireIncludes(
   shell,

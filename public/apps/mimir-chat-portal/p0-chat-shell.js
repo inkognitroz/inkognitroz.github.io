@@ -3121,8 +3121,10 @@
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
-          '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
-          '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="No captured feedback yet"></button>'+
+          '<div class="p0-status-rail">'+
+            '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
+            '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="No captured feedback yet"></button>'+
+          '</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+

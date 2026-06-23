@@ -433,6 +433,15 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   color: #9ca3af;
 }
 
+.p0-status-rail {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 26px;
+  min-width: 0;
+}
+
 .p0-route {
   align-items: center;
   color: #047857;
@@ -440,14 +449,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   font-size: 0.72rem;
   font-weight: 700;
   gap: 6px;
-  left: 22px;
   line-height: 1.2;
-  max-width: calc(100% - 44px);
+  max-width: 100%;
   overflow: hidden;
   pointer-events: none;
-  position: absolute;
   text-overflow: ellipsis;
-  bottom: 58px;
   white-space: nowrap;
 }
 
@@ -531,10 +537,6 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 .p0-feedback-capture:focus-visible {
   background: #d1fae5;
   outline: none;
-}
-
-.p0-composer[data-feedback-captured="true"] .p0-route {
-  display: none;
 }
 
 .p0-toolbar {
@@ -920,7 +922,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   }
 
   .p0-route {
-    max-height: 27px;
+    max-width: 100%;
   }
 
   .p0-toolbar {
