@@ -113,7 +113,8 @@
   }
   function nodeHandoffIsStale(handoff){
     const at=new Date(String(handoff?.at||''));
-    return Number.isFinite(at.getTime())&&Date.now()-at.getTime()>NODE_HANDOFF_STALE_MS;
+    if(!Number.isFinite(at.getTime()))return true;
+    return Date.now()-at.getTime()>NODE_HANDOFF_STALE_MS;
   }
   function renderNodeHandoffResumeBanner(){
     const handoff=readNodeHandoff();
