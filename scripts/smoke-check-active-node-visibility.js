@@ -50,13 +50,16 @@ requireIncludes(strip, 'Refresh route inventory', 'Degraded route freshness must
 requireIncludes(strip, 'Refreshing route inventory...', 'Route strip must expose a visible in-progress label while the route manifest is refreshing.');
 requireIncludes(strip, 'aria-busy="', 'Route-refresh CTA must expose busy state for assistive tech and clearer demo feedback.');
 requireIncludes(strip, 'Report route issue', 'Route strip must offer a direct route-feedback CTA.');
+requireIncludes(strip, "w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness),{", 'Route-feedback CTA must save a local draft through the runtime bridge when available.');
+requireIncludes(strip, "source:'active-route-strip'", 'Route-feedback drafts must record the active-route strip as their source.');
+requireIncludes(strip, "openInbox:true", 'Route-feedback CTA must open Feedback Inbox after saving the local route draft.');
 requireIncludes(strip, "promptEl.value=feedbackDraft(best,freshness);", 'Route-feedback CTA must prefill a sanitized @feedback draft.');
 requireIncludes(strip, "bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));", 'Route-refresh CTA must re-run the route inventory load from the strip.');
 requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'.');", 'Hero description must reflect route-choice reasoning plus capacity summary.');
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-active-route-truth-line-v1';
+const expectedVersion = '20260623-route-strip-feedback-capture-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
