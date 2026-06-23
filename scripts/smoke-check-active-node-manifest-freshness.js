@@ -41,7 +41,7 @@ requireIncludes(strip, 'function refreshRouteInventory()', 'Active node strip mu
 requireIncludes(strip, "fetch(MANIFEST_URL,{cache:force?'no-store':'default'})", 'Route inventory refresh must bypass stale browser cache when explicitly requested.');
 requireIncludes(strip, "manifestUpdatedAt=String(body?.updated_at||'');", 'Active node strip must load updated_at from the public node manifest.');
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
-const expectedVersion = '20260623-active-route-selected-visibility-v1';
+const expectedVersion = '20260623-active-route-truth-line-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }
