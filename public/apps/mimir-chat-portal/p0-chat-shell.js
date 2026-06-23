@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-feedback-draft-context-v1';
+  const P0_RUNTIME_VERSION='20260623-feedback-source-handoff-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1202,6 +1202,17 @@
     return 'Triage';
   }
 
+  function feedbackSourceLabel(source){
+    const value=String(source||'feedback_draft').trim();
+    if(!value)return 'Feedback draft';
+    return value
+      .replace(/^mmir-/,'')
+      .replace(/^p0-/,'P0 ')
+      .replace(/[-_]+/g,' ')
+      .replace(/\b[a-z]/g,(match)=>match.toUpperCase())
+      .slice(0,60);
+  }
+
   function feedbackStorageStatusLines(plan){
     const durable=Boolean(plan?.durable_binding_configured||plan?.kv_binding_configured);
     const readable=Boolean(plan?.durable_store_readable);
@@ -1246,7 +1257,8 @@
       items.slice(0,8).forEach((item,index)=>{
         const target=item.target?('@'+item.target):'@feedback';
         const lane=item.classification?.lane||'triage';
-        lines.push(String(index+1)+'. '+feedbackPriorityLabel(item.priority)+' · '+target+' · '+lane+' · '+String(item.suggestion||'').replace(/\s+/g,' ').slice(0,140));
+        const source=feedbackSourceLabel(item.source);
+        lines.push(String(index+1)+'. '+feedbackPriorityLabel(item.priority)+' · '+target+' · '+lane+' · via '+source+' · '+String(item.suggestion||'').replace(/\s+/g,' ').slice(0,140));
       });
     }
     lines.push('', 'Next step: promote only owner-approved items to an issue with acceptance proof.');
@@ -1286,6 +1298,7 @@
         String(index+1)+'. ['+feedbackPriorityLabel(item.priority)+'] '+target,
         '   - Status: '+(item.status||'draft_ready'),
         '   - Lane: '+lane+(repo?' · '+repo:''),
+        '   - Source: '+feedbackSourceLabel(item.source)+(item.source?' · '+String(item.source):''),
         '   - Suggestion: '+String(item.suggestion||'').replace(/\s+/g,' ').trim(),
         ''
       );
