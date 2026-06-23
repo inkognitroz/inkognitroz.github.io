@@ -40,6 +40,7 @@ requireIncludes(renderAddMenu, 'p0-intelligence-map', '+ menu must show one subt
 requireIncludes(renderAddMenu, "menuSection('Verified tools')", '+ menu must group verified no-key tools separately.');
 requireIncludes(renderAddMenu, "menuButton('verified-calculator','Verified calculator'", '+ menu must expose the verified calculator without toolbar clutter.');
 requireIncludes(renderAddMenu, "menuButton('verified-time','Current time'", '+ menu must expose current time context without toolbar clutter.');
+requireIncludes(renderAddMenu, "menuButton('verified-source','Verified source'", '+ menu must expose manual source grounding without toolbar clutter.');
 requireIncludes(renderAddMenu, "menuSection('Local memory')", '+ menu must group local memory under a secondary section.');
 requireIncludes(renderAddMenu, "menuButton('local-memory-guide','Memory guide'", '+ menu must explain memory through chat-native commands.');
 requireIncludes(renderAddMenu, "menuButton('show-local-memory','Show memory'", '+ menu must let users inspect browser-local memory.');
@@ -48,6 +49,7 @@ requireIncludes(handleMenuAction, "action==='boost-answer-live'", 'Menu actions 
 requireIncludes(handleMenuAction, "action==='ask-all-active'", 'Menu actions must handle Ask all active.');
 requireIncludes(handleMenuAction, "action==='verified-calculator'", 'Menu actions must handle verified calculator.');
 requireIncludes(handleMenuAction, "action==='verified-time'", 'Menu actions must handle current time context.');
+requireIncludes(handleMenuAction, "action==='verified-source'", 'Menu actions must handle verified manual source context.');
 requireIncludes(handleMenuAction, "action==='local-memory-guide'", 'Menu actions must handle local memory guide.');
 requireIncludes(handleMenuAction, "action==='show-local-memory'", 'Menu actions must handle local memory display.');
 requireIncludes(handleMenuAction, "action==='add-document-note'", 'Menu actions must handle document note template.');
@@ -57,6 +59,8 @@ requireIncludes(compareGatewayRoutes, "options.mode==='all'", 'Gateway compare m
 requireIncludes(shell, "const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview'", 'P0 runtime must know the swarm preview endpoint.');
 requireIncludes(shell, "const NO_KEY_TOOL_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.noKeyToolPreviewPath||'/tools/no-key/preview'", 'P0 runtime must know the no-key tool preview endpoint.');
 requireIncludes(shell, 'function runVerifiedTool(tool)', 'Verified tools must run through a shared no-key preview flow.');
+requireIncludes(shell, "payload={\n        tool:'manual-source'", 'Verified source must send manual-source no-key payload.');
+requireIncludes(shell, 'source_text:sourceText', 'Verified source must pass pasted source text to the gateway.');
 requireIncludes(shell, 'previewNoKeyTool(payload)', 'Verified tools must call no-key preview before the swarm.');
 requireIncludes(shell, 'function fetchGatewayFanout(prompt,mode,signal,options={})', 'Boost/Ask all must use the gateway fanout adapter.');
 requireIncludes(shell, 'payload.system_context=systemContext', 'Tool context must be injected into the gateway swarm payload.');
@@ -88,8 +92,8 @@ requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemCon
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260623-tool-context-boost-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260623-tool-context-boost-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260623-source-context-boost-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260623-source-context-boost-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');
