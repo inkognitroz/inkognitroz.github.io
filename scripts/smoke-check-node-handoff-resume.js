@@ -37,7 +37,7 @@ requireIncludes(css, '.node-handoff-resume {', 'Node handoff resume banner must 
 requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff resume banner must style pending state.');
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 
-const expectedVersion = '20260623-node-handoff-invalid-timestamp-v1';
+const expectedVersion = '20260624-device-aware-doctor-action-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }

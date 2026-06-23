@@ -388,7 +388,7 @@
     return {title:'Review node health',detail:first.detail,primary:'Local connector',target:'#local-connector'};
   }
 
-  function normalizedDoctor(report){
+  function normalizedDoctor(report,hardware){
     if(!report||!Array.isArray(report.checks)||!report.checks.length)return null;
     const checks=report.checks.map(check=>({
       id:String(check.id||'doctor'),
@@ -396,12 +396,13 @@
       label:String(check.label||check.id||'Doctor check'),
       detail:String(check.detail||'Local doctor reported this gate.')
     }));
-    const action=report.next_action&&report.next_action.title?{
+    const fallbackAction=nextAction(checks,hardware);
+    const action=report.next_action&&report.next_action.title&&!['start-ollama','install-model','repair-model-pull','repair-model-install'].includes(String(report.next_action.id||''))?{
       title:String(report.next_action.title),
       detail:String(report.next_action.detail||'Follow the safest next activation step.'),
       primary:String(report.next_action.primary||'Open'),
       target:String(report.next_action.target||'#local-connector')
-    }:nextAction(checks,null);
+    }:fallbackAction;
     return {checks,action,status:String(report.status||'unknown')};
   }
 
@@ -633,7 +634,7 @@
       {id:'hardware',state:hardware?'ready':'warn',label:'Hardware profile',detail:hardware?hardwareSummary(hardware):'Hardware route did not return a profile.'},
       {id:'tunnel',state:tunnelReady?'ready':(tunnel?.control_enabled?'warn':'warn'),label:'Tunnel support',detail:tunnelSummary(tunnel)}
     ];
-    const report=normalizedDoctor(doctorReport);
+    const report=normalizedDoctor(doctorReport,hardware);
     const checks=report?.checks||fallbackChecks;
     const action=report?.action||nextAction(checks,hardware);
     const doctorSource=report?'Local Node Doctor':'Browser fallback doctor';
