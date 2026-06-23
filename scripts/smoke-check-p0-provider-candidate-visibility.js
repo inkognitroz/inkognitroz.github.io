@@ -124,22 +124,22 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260623-source-context-boost-v1',
+  'p0-chat-shell.js?v=20260623-feedback-inbox-discoverability-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
   html,
-  'p0-chat-shell.css?v=20260622-visible-ask-ai-cta-v1',
+  'p0-chat-shell.css?v=20260623-feedback-inbox-discoverability-v1',
   'Public page must cache-bust the visible provider candidate CSS.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260623-source-context-boost-v1"',
+  '"p0-chat-shell.js": "20260623-feedback-inbox-discoverability-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.css": "20260622-visible-ask-ai-cta-v1"',
+  '"p0-chat-shell.css": "20260623-feedback-inbox-discoverability-v1"',
   'Asset manifest must track the visible provider candidate CSS.'
 );
 requireNotIncludes(

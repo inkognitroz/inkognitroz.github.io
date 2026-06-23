@@ -384,6 +384,21 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "const label=summary||'Feedback Inbox'",
+  'Captured-feedback affordance must stay discoverable even before the first draft exists.'
+);
+requireIncludes(
+  shell,
+  'el.hidden=false;',
+  'Captured-feedback affordance should stay visible as an inbox entry point, not disappear when empty.'
+);
+requireIncludes(
+  shell,
+  "Open Feedback Inbox. No local drafts yet. No paid route.",
+  'Feedback Inbox affordance must explain the empty state without implying drafts already exist.'
+);
+requireIncludes(
+  shell,
   "function openFeedbackInbox(source='feedback_inbox')",
   'P0 shell must centralize Feedback Inbox rendering for menu and captured-feedback entry points.'
 );
@@ -504,8 +519,23 @@ requireIncludes(
 );
 requireIncludes(
   css,
+  '.p0-feedback-capture[data-state="idle"]',
+  'Captured-feedback affordance must show a neutral idle state before any feedback drafts exist.'
+);
+requireIncludes(
+  css,
+  '.p0-feedback-capture[data-state="pending"]',
+  'Captured-feedback affordance must show pending sync state without opening the inbox first.'
+);
+requireIncludes(
+  css,
+  '.p0-feedback-capture[data-state="local_only"]',
+  'Captured-feedback affordance must distinguish local-only drafts from fully synced feedback.'
+);
+requireIncludes(
+  css,
   '.p0-feedback-capture[hidden]',
-  'Captured-feedback affordance must stay hidden until there are local drafts.'
+  'Captured-feedback affordance must still support hidden fallback rendering if the runtime toggles it.'
 );
 requireIncludes(
   css,
@@ -564,12 +594,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260623-source-context-boost-v1',
+  'p0-chat-shell.js?v=20260623-feedback-inbox-discoverability-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260623-source-context-boost-v1"',
+  '"p0-chat-shell.js": "20260623-feedback-inbox-discoverability-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

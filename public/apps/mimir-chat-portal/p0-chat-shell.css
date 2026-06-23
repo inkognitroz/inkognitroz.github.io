@@ -529,6 +529,25 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   white-space: nowrap;
 }
 
+.p0-feedback-capture[data-state="idle"] {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.p0-feedback-capture[data-state="pending"] {
+  background: #fffbeb;
+  border-color: rgba(180, 83, 9, 0.2);
+  color: #b45309;
+}
+
+.p0-feedback-capture[data-state="local_only"],
+.p0-feedback-capture[data-state="mixed"] {
+  background: #f0fdfa;
+  border-color: rgba(13, 148, 136, 0.18);
+  color: #0f766e;
+}
+
 .p0-feedback-capture[hidden] {
   display: none !important;
 }
