@@ -23,6 +23,9 @@ function requireIncludes(source, needle, message) {
 
 requireIncludes(dashboard, 'function readNodeHandoff()', 'Node dashboard must read persisted handoff state.');
 requireIncludes(dashboard, 'function renderNodeHandoffResumeBanner()', 'Node dashboard must render a persisted handoff resume banner.');
+requireIncludes(dashboard, 'const NODE_HANDOFF_STALE_MS=15*60*1000;', 'Node handoff resume must define a short stale window for demo route trust.');
+requireIncludes(dashboard, 'function nodeHandoffIsStale(handoff)', 'Node handoff resume must classify old persisted handoffs.');
+requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
 requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
 requireIncludes(dashboard, 'provider_secrets_stored:false', 'Node handoff resume must keep security/cost proof visible.');
 requireIncludes(dashboard, 'node-handoff-resume-action', 'Node handoff resume action must be bindable.');
@@ -31,8 +34,9 @@ requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff res
 
 requireIncludes(css, '.node-handoff-resume {', 'Node handoff resume banner must have dedicated styles.');
 requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff resume banner must style pending state.');
+requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 
-const expectedVersion = '20260623-node-handoff-resume-v1';
+const expectedVersion = '20260623-node-handoff-stale-refresh-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }

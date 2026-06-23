@@ -209,6 +209,11 @@
   background: #fffbeb;
 }
 
+.node-handoff-resume[data-state="stale"] {
+  border-left-color: #b45309;
+  background: #fffbeb;
+}
+
 .node-handoff-resume[data-state="verified"] {
   border-left-color: #10a37f;
   background: #f0fdf9;

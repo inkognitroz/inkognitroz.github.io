@@ -8,6 +8,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const NODE_HANDOFF_PREFIX='mimir-node-handoff-v1:';
+  const NODE_HANDOFF_STALE_MS=15*60*1000;
   let remotePairingCode=null;
 
   if(!root||!api)return;
@@ -102,12 +103,17 @@
     const target=String(handoff?.target||'#node-dashboard');
     const device=String(handoff?.device||'device');
     const model=String(handoff?.model||'').trim();
+    if(nodeHandoffIsStale(handoff))return {state:'stale',title:'Handoff needs refresh',detail:'Last saved handoff is older than 15 minutes. Recheck node health before using this route.',primary:'Refresh node health',target:'#node-dashboard'};
     if(action==='chat-now')return {state:'verified',title:'Chat handoff selected',detail:'Last action moved '+device+' toward first verified chat'+(model?' with '+model:'')+'.',primary:'Return to chat',target:'#mimir-prompt'};
     if(action==='install-model'||action==='repair-model-install')return {state:'pending',title:'Model install handoff saved',detail:'MMIR kept the '+(model||'free starter')+' path selected for '+device+' after refresh.',primary:'Open model library',target:'#model-library'};
     if(action==='start-tunnel')return {state:'checking',title:'Tunnel handoff selected',detail:'Remote access remains outbound-only and paired; raw local runtimes stay private.',primary:'Refresh node health',target:'#node-dashboard'};
     if(action==='install-connector'||stage==='install-connector')return {state:'pending',title:'Node install handoff saved',detail:'Install path for '+device+' is remembered; no paid routes or secrets were started.',primary:'Continue install',target};
     if(action==='pair-browser')return {state:'checking',title:'Pairing handoff saved',detail:'This browser will retry local pairing before model proof or remote handoff.',primary:'Pair / refresh',target:'#node-dashboard'};
     return {state:'checking',title:'Node handoff saved',detail:'Last selected stage '+stage+' is preserved for this workspace without raw prompts or responses.',primary:'Refresh node health',target:'#node-dashboard'};
+  }
+  function nodeHandoffIsStale(handoff){
+    const at=new Date(String(handoff?.at||''));
+    return Number.isFinite(at.getTime())&&Date.now()-at.getTime()>NODE_HANDOFF_STALE_MS;
   }
   function renderNodeHandoffResumeBanner(){
     const handoff=readNodeHandoff();
