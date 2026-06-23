@@ -450,13 +450,13 @@ async function checkViewport(browser, viewport) {
     return /Verifisert/i.test(route?.textContent || '') &&
       /live routes|model routes visible|Score 100/i.test(route?.getAttribute('aria-label') || '');
   });
-  const routeCta = page.locator('[data-p0-route-action="boost-answer-live"]');
+  const routeCta = page.locator('#p0-superboost');
   const routeCtaCount = await routeCta.count();
-  assert(routeCtaCount === 1, `${viewport.name}: composer route status should expose exactly one direct Ask AI action`);
+  assert(routeCtaCount === 1, `${viewport.name}: composer should expose exactly one visible Superboost action`);
   if (routeCtaCount === 1) {
     const routeCtaText = await routeCta.innerText();
-    assert(/Spør 5 AI/i.test(routeCtaText), `${viewport.name}: composer Ask AI action should show active route count`);
-    assert(await routeCta.isVisible(), `${viewport.name}: composer Ask AI action should be visible`);
+    assert(/Superboost\s+·\s+5 AI/i.test(routeCtaText), `${viewport.name}: Superboost action should show active route count`);
+    assert(await routeCta.isVisible(), `${viewport.name}: Superboost action should be visible`);
   }
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
@@ -499,8 +499,8 @@ async function checkViewport(browser, viewport) {
     status: document.getElementById('p0-status')?.textContent || '',
     route: document.getElementById('p0-route')?.textContent || '',
     routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
-    routeCta: document.querySelector('[data-p0-route-action="boost-answer-live"]')?.textContent || '',
-    routeCtaVisible: Boolean(document.querySelector('[data-p0-route-action="boost-answer-live"]')?.getClientRects().length),
+    routeCta: document.querySelector('#p0-superboost')?.textContent || '',
+    routeCtaVisible: Boolean(document.querySelector('#p0-superboost')?.getClientRects().length),
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare must not create horizontal overflow`);
@@ -510,8 +510,8 @@ async function checkViewport(browser, viewport) {
   assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
   assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
   assert(/privat/i.test(layout.route), `${viewport.name}: visible green route line should show privacy value`);
-  assert(/Spør 5 AI/i.test(layout.routeCta), `${viewport.name}: composer Ask AI CTA should survive after Boost finishes`);
-  assert(layout.routeCtaVisible, `${viewport.name}: composer Ask AI CTA should remain visible after Boost finishes`);
+  assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost CTA should survive after Boost finishes`);
+  assert(layout.routeCtaVisible, `${viewport.name}: Superboost CTA should remain visible after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
   assert(!/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should keep successful provider count behind details`);
@@ -529,7 +529,7 @@ async function checkViewport(browser, viewport) {
   assert(/Groq live/i.test(layout.routeFull), `${viewport.name}: full receipt should name active Groq intelligence`);
   assert(/2 quiet/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve quiet provider count`);
   assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
-  assert(layout.toolbarButtons <= 6, `${viewport.name}: gateway compare must not add extra visible toolbar buttons`);
+  assert(layout.toolbarButtons <= 7, `${viewport.name}: gateway compare must keep visible toolbar actions tight`);
 
   await page.locator('#p0-input').fill('Say hello from every active model.');
   await page.locator('#p0-add').click();
@@ -576,7 +576,7 @@ async function checkViewport(browser, viewport) {
   assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep receipt proof behind details`);
   assert(/round 1\/3/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve swarm round truth`);
   assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve no-paid route truth`);
-  assert(councilLayout.toolbarButtons <= 6, `${viewport.name}: Supergeni Council must not add extra visible toolbar buttons`);
+  assert(councilLayout.toolbarButtons <= 7, `${viewport.name}: Supergeni Council must keep visible toolbar actions tight`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
   assert(/2 quiet/i.test(allText), `${viewport.name}: Ask all should show quiet route count without noisy blocked lines`);
   assert(!/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should not show hidden throttled routes as visible failures`);

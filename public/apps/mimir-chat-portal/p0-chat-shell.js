@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-feedback-source-handoff-v1';
+  const P0_RUNTIME_VERSION='20260623-feedback-source-superboost-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1945,6 +1945,7 @@
     const summary=intelligencePoolSummary();
     const routeCount=Math.max(receiptCount,summary.compareRouteTotal||0,summary.activeRouteTotal||0);
     if(routeCount>=2&&summary.compareReady){
+      if(typeof document!=='undefined'&&document.getElementById&&document.getElementById('p0-superboost'))return '';
       const label='Spør '+routeCount+' AI';
       const title=label+' og la beste svar vinne';
       return '<button class="p0-route-cta" type="button" data-p0-route-action="boost-answer-live" aria-label="'+safeAttr(title)+'" title="'+safeAttr(title)+'">'+safeText(label)+'</button>';
@@ -3183,6 +3184,7 @@
             '<div class="p0-left">'+
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
+              '<button id="p0-superboost" class="p0-btn p0-superboost" type="button" data-p0-route-action="boost-answer-live" data-state="setup" aria-label="Superboost: ask many AI and let the best answer win" title="Superboost · ask many AI">Superboost</button>'+
               '<span id="p0-toolbar-tools" class="p0-toolbar-tools" aria-label="Pinned chat tools"></span>'+
             '</div>'+
             '<div class="p0-right">'+
@@ -3901,6 +3903,24 @@
     updatePinnedToolbarToolStates();
   }
 
+  function renderSuperboostCta(){
+    const button=document.getElementById('p0-superboost');
+    if(!button)return;
+    const pool=intelligencePoolSummary();
+    const routeCount=Math.max(Number(pool.compareRouteTotal)||0,Number(pool.activeRouteTotal)||0,activeHostedCompareModels().length);
+    const ready=Boolean(!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
+    const visibleCount=routeCount>1?routeCount:0;
+    const label=visibleCount?'Superboost · '+String(visibleCount)+' AI':'Superboost';
+    const title=visibleCount
+      ? 'Superboost: ask '+String(visibleCount)+' live AI routes, rank them, then return one best answer'
+      : 'Superboost: write a prompt, then MMIR checks live free routes and uses the strongest available answer path';
+    button.textContent=label;
+    button.dataset.state=ready?'ready':'setup';
+    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()));
+    button.setAttribute('aria-label',title);
+    button.setAttribute('title',title);
+  }
+
   function updatePinnedToolbarToolStates(){
     document.querySelectorAll('[data-p0-toolbar-tool="stop"]').forEach(button=>{
       const enabled=Boolean(state.busy);
@@ -3920,6 +3940,7 @@
     if(label)label.textContent=displayModel.label;
     if(input)input.placeholder='Message '+displayModel.label+'...';
     renderShieldState(displayModel,local);
+    renderSuperboostCta();
     renderPinnedToolbarTools();
     if(privateModeActive()){
       const next=privacyModeRouteStatus();
@@ -4813,7 +4834,7 @@
       root.innerHTML=''+
         '<div class="p0-empty">'+
           '<h1>Ask anything.</h1>'+
-          '<p>Supergeni answers now. Start with a guided next step for demo, source proof, local setup or feedback capture.</p>'+
+          '<p>Supergeni answers now. Use Superboost for many AI routes, ranking and one best answer, or start with demo, source proof, local setup or feedback capture.</p>'+
           '<div class="p0-empty-starters" aria-label="Suggested first actions">'+
             '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-best-answer">Best Answer</button>'+
             '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-private-local">Private local</button>'+
@@ -4925,6 +4946,7 @@
     send.textContent=state.busy?'■':'↑';
     send.setAttribute('aria-label',state.busy?'Stop current response':'Send message');
     send.setAttribute('title',state.busy?'Stop':'Send');
+    renderSuperboostCta();
     updatePinnedToolbarToolStates();
   }
 
