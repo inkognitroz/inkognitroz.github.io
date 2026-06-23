@@ -92,6 +92,11 @@
     if(days<2)return '1 day ago';
     return Math.floor(days)+' days ago';
   }
+  function formatFutureAge(days){
+    if(!Number.isFinite(days)||days<1)return 'later today';
+    if(days<2)return 'tomorrow';
+    return 'in '+Math.ceil(days)+' days';
+  }
   function routeInventoryFreshness(updatedAt){
     if(!updatedAt){
       if(manifestRefreshState==='failed')return {state:'degraded',label:'Route inventory refresh failed',summary:'Using fallback route inventory. Retry before demo trust.'};
@@ -100,6 +105,7 @@
     const parsed=Date.parse(updatedAt);
     if(Number.isNaN(parsed))return withRefreshState({state:'watch',label:'Route inventory freshness unknown',summary:'The updated_at value is unreadable.'});
     const ageDays=(Date.now()-parsed)/86400000;
+    if(ageDays<-0.007)return withRefreshState({state:'watch',label:'Route inventory timestamp ahead',summary:'Manifest timestamp is '+formatFutureAge(Math.abs(ageDays))+'; recheck clock or manifest before demo trust.'});
     if(ageDays>21)return withRefreshState({state:'degraded',label:'Route inventory stale',summary:'Refresh before demo trust. Updated '+formatAgeDays(ageDays)+'.'});
     if(ageDays>7)return withRefreshState({state:'watch',label:'Route inventory aging',summary:'Refresh soon. Updated '+formatAgeDays(ageDays)+'.'});
     return withRefreshState({state:'online',label:'Route inventory current',summary:'Updated '+formatAgeDays(ageDays)+'.'});

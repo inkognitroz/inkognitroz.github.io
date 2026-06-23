@@ -34,6 +34,9 @@ requireIncludes(strip, 'Chosen because it can answer first while local/private r
 requireIncludes(strip, 'browser candidates parked until proof', 'Active node strip must keep browser candidates visible without promoting them.');
 requireIncludes(strip, 'function manifestTrustLine(updatedAt,inventory)', 'Active node strip must derive an accessible trust line from manifest timestamp and inventory count.');
 requireIncludes(strip, "count+' public route'+(count===1?'':'s')", 'Manifest trust line must expose the public route count.');
+requireIncludes(strip, 'function formatFutureAge(days)', 'Active node strip must have explicit copy for future manifest timestamps.');
+requireIncludes(strip, "if(ageDays<-0.007)return withRefreshState({state:'watch',label:'Route inventory timestamp ahead'", 'Future route manifest timestamps must not be treated as current.');
+requireIncludes(strip, 'recheck clock or manifest before demo trust', 'Future route manifest timestamps must tell the tester how to recover route trust.');
 requireIncludes(strip, "return 'Ready now: '+(best?.name||selected?.label||FALLBACK_LABEL);", 'Fallback route headline must prefer the actual active route label.');
 requireIncludes(strip, 'Next best step: connect the private local path so MMIR can upgrade from instant fallback to verified device-owned chat.', 'Fallback path must tell the user to connect the private local route next.');
 requireIncludes(strip, 'Send first local answer', 'Local-ready path must offer a direct first-answer CTA.');
@@ -61,7 +64,7 @@ requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-descript
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-active-route-trust-label-v1';
+const expectedVersion = '20260623-active-route-future-timestamp-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
