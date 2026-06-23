@@ -116,6 +116,17 @@ assertExcludes(localEl.innerHTML, 'Score 82', 'Local attach status must keep rou
 assertExcludes(localEl.innerHTML, 'avg 650ms', 'Local attach status must keep measured latency behind details.');
 assertIncludes(localEl.attrs['aria-label'], '5 models', 'Full local route receipt must keep model count inspectable.');
 assertIncludes(localEl.attrs['aria-label'], 'avg 650ms', 'Full local route receipt must keep measured latency inspectable.');
+assertIncludes(localEl.innerHTML, 'data-p0-route-action="model-health"', 'Local-ready route status must keep Model health one tap away.');
+assertIncludes(localEl.innerHTML, 'Model health', 'Local-ready route status must label the fallback CTA clearly.');
+
+const singleRouteEl = fakeElement();
+testApi.renderMicroStatus(
+  singleRouteEl,
+  'Supergeni ready · hosted default route · No paid route · complete answer',
+  'hosted'
+);
+assertIncludes(singleRouteEl.innerHTML, 'data-p0-route-action="connect-local"', 'Single-route hosted status must keep local setup one tap away.');
+assertIncludes(singleRouteEl.innerHTML, 'Connect local', 'Single-route hosted status must label the local setup CTA clearly.');
 
 testApi.recordRouteBenchmark(hosted, { score: 84, elapsedMs: 746, answer_class: 'complete', latency_class: 'responsive' });
 assertIncludes(testApi.routeMicroStatus(hosted), 'Score ', 'Route micro-status helper must preserve effective score.');
