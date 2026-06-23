@@ -124,7 +124,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260623-council-progress-v1',
+  'p0-chat-shell.js?v=20260623-single-route-cta-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -134,7 +134,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260623-council-progress-v1"',
+  '"p0-chat-shell.js": "20260623-single-route-cta-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(

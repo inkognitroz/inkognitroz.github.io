@@ -51,7 +51,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-council-progress-v1';
+  const P0_RUNTIME_VERSION='20260623-single-route-cta-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1890,10 +1890,19 @@
     const receiptCount=receiptRouteCount(full,parts);
     const summary=intelligencePoolSummary();
     const routeCount=Math.max(receiptCount,summary.compareRouteTotal||0,summary.activeRouteTotal||0);
-    if(routeCount<2||!summary.compareReady)return '';
-    const label='Spør '+routeCount+' AI';
-    const title=label+' og la beste svar vinne';
-    return '<button class="p0-route-cta" type="button" data-p0-route-action="boost-answer-live" aria-label="'+safeAttr(title)+'" title="'+safeAttr(title)+'">'+safeText(label)+'</button>';
+    if(routeCount>=2&&summary.compareReady){
+      const label='Spør '+routeCount+' AI';
+      const title=label+' og la beste svar vinne';
+      return '<button class="p0-route-cta" type="button" data-p0-route-action="boost-answer-live" aria-label="'+safeAttr(title)+'" title="'+safeAttr(title)+'">'+safeText(label)+'</button>';
+    }
+    if(stateValue==='local'||summary.localRoutes>0||activeModel()?.route==='local'){
+      const label='Model health';
+      const title='Open model health and route status';
+      return '<button class="p0-route-cta" type="button" data-p0-route-action="model-health" aria-label="'+safeAttr(title)+'" title="'+safeAttr(title)+'">'+safeText(label)+'</button>';
+    }
+    const label='Connect local';
+    const title='Connect a private local node from chat';
+    return '<button class="p0-route-cta" type="button" data-p0-route-action="connect-local" aria-label="'+safeAttr(title)+'" title="'+safeAttr(title)+'">'+safeText(label)+'</button>';
   }
 
   function renderMicroStatus(el,message,stateValue='hosted'){
@@ -4154,6 +4163,19 @@
     if(action==='boost-answer-live'){
       captureInteraction('tool_used',{tool:'route-ask-ai-cta',path:'composer'});
       return boostAnswer();
+    }
+    if(action==='connect-local'){
+      captureInteraction('tool_used',{tool:'route-connect-local-cta',path:'composer'});
+      startLocalInstallAssistant();
+      return true;
+    }
+    if(action==='model-health'){
+      captureInteraction('tool_used',{tool:'route-model-health-cta',path:'composer'});
+      append('assistant',modelHealthAnswer(),'MMIR Model Health','Model health · route inventory · no provider call',{actions:false});
+      status('Model health ready.','ready');
+      routeStatus('Model health · active routes summarized','ready');
+      document.getElementById('p0-input')?.focus();
+      return true;
     }
     return false;
   }
