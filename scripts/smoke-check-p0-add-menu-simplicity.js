@@ -90,6 +90,16 @@ requireIncludes(
   '+ menu must only reveal two-model tools after local discovery.'
 );
 requireIncludes(
+  p0Shell,
+  'id="p0-council"',
+  'Composer must expose Supergeni Council/Debate as a visible scaled-intelligence action.'
+);
+requireIncludes(
+  p0Shell,
+  'data-p0-route-action="supergeni-council-live"',
+  'Visible Council CTA must use the shared route-action dispatcher.'
+);
+requireIncludes(
   renderAddMenu,
   "menuButton('compare-live','Compare answers'",
   '+ menu must expose Compare answers only through the truth-gated two-model section.'
@@ -102,7 +112,7 @@ requireIncludes(
 requireIncludes(
   renderAddMenu,
   "menuButton('discuss-topic','Supergeni Council'",
-  '+ menu must expose Supergeni Council only through the truth-gated two-model section.'
+  '+ menu must still expose Supergeni Council in the advanced tools menu.'
 );
 requireIncludes(
   renderPromptPresetMenu,
@@ -111,12 +121,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260623-feedback-source-superboost-v1',
+  'p0-chat-shell.js?v=20260624-council-cta-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260623-feedback-source-superboost-v1"',
+  '"p0-chat-shell.js": "20260624-council-cta-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

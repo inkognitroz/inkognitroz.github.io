@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-feedback-source-superboost-v1';
+  const P0_RUNTIME_VERSION='20260624-council-cta-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3185,6 +3185,7 @@
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
               '<button id="p0-superboost" class="p0-btn p0-superboost" type="button" data-p0-route-action="boost-answer-live" data-state="setup" aria-label="Superboost: ask many AI and let the best answer win" title="Superboost · ask many AI">Superboost</button>'+
+              '<button id="p0-council" class="p0-btn p0-council" type="button" data-p0-route-action="supergeni-council-live" data-state="setup" aria-label="Debate: let active AI routes challenge each other and converge" title="Supergeni Council · model debate">Debate</button>'+
               '<span id="p0-toolbar-tools" class="p0-toolbar-tools" aria-label="Pinned chat tools"></span>'+
             '</div>'+
             '<div class="p0-right">'+
@@ -3921,6 +3922,24 @@
     button.setAttribute('title',title);
   }
 
+  function renderCouncilCta(){
+    const button=document.getElementById('p0-council');
+    if(!button)return;
+    const pool=intelligencePoolSummary();
+    const routeCount=Math.max(Number(pool.compareRouteTotal)||0,Number(pool.activeRouteTotal)||0,activeHostedCompareModels().length);
+    const ready=Boolean(!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
+    const visibleCount=routeCount>1?routeCount:0;
+    const label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate';
+    const title=visibleCount
+      ? 'Supergeni Council: ask '+String(visibleCount)+' live AI routes to answer, challenge weak assumptions, then converge'
+      : 'Supergeni Council: write a topic, then MMIR checks live routes for a model debate';
+    button.textContent=label;
+    button.dataset.state=ready?'ready':'setup';
+    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()));
+    button.setAttribute('aria-label',title);
+    button.setAttribute('title',title);
+  }
+
   function updatePinnedToolbarToolStates(){
     document.querySelectorAll('[data-p0-toolbar-tool="stop"]').forEach(button=>{
       const enabled=Boolean(state.busy);
@@ -3941,6 +3960,7 @@
     if(input)input.placeholder='Message '+displayModel.label+'...';
     renderShieldState(displayModel,local);
     renderSuperboostCta();
+    renderCouncilCta();
     renderPinnedToolbarTools();
     if(privateModeActive()){
       const next=privacyModeRouteStatus();
@@ -4407,6 +4427,53 @@
     return true;
   }
 
+  function supergeniCouncil(){
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    closeMenus();
+    if(!prompt){
+      captureInteraction('supergeni_council_prefill',{tool:'visible-council-cta'});
+      if(input){
+        input.value='Council topic: ';
+        autosizeInput();
+      }
+      status('Add a topic, then press Debate again.','ready');
+      routeStatus('Supergeni Council ready · active AI routes challenge each other','ready');
+      input?.focus();
+      return true;
+    }
+    if(gatewayCompareAvailable()||comparePartnerModel()){
+      captureInteraction('tool_used',{tool:'visible-supergeni-council',path:gatewayCompareAvailable()?'gateway':'two-model'});
+      compareGatewayRoutes(
+        'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+        {mode:'council'}
+      );
+      return true;
+    }
+    status('Checking active routes for Debate...','loading');
+    routeStatus('Debate checks route inventory · no paid route','hosted');
+    refreshHostedModels().then(()=>{
+      if(gatewayCompareAvailable()||comparePartnerModel()){
+        captureInteraction('tool_used',{tool:'visible-supergeni-council',path:gatewayCompareAvailable()?'gateway':'two-model',after_refresh:true});
+        compareGatewayRoutes(
+          'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+          {mode:'council'}
+        );
+        return;
+      }
+      status('Debate needs at least two active routes.','ready');
+      routeStatus('Debate waiting for another active route · connect a node or provider route','hosted');
+      captureInteraction('tool_blocked',{tool:'visible-supergeni-council',reason:'needs_second_route'});
+      input?.focus();
+    }).catch(()=>{
+      status('Debate route refresh failed.','error');
+      routeStatus('Debate unavailable · route inventory unreachable','error');
+      captureInteraction('tool_failed',{tool:'visible-supergeni-council',reason:'route_inventory_unreachable'});
+      input?.focus();
+    });
+    return true;
+  }
+
   function handleToolbarTool(id){
     const tool=toolbarToolById(id);
     if(!tool)return false;
@@ -4438,6 +4505,10 @@
       captureInteraction('tool_used',{tool:'route-ask-ai-cta',path:'composer'});
       return boostAnswer();
     }
+    if(action==='supergeni-council-live'){
+      captureInteraction('tool_used',{tool:'route-council-cta',path:'composer'});
+      return supergeniCouncil();
+    }
     if(action==='connect-local'){
       captureInteraction('tool_used',{tool:'route-connect-local-cta',path:'composer'});
       startLocalInstallAssistant();
@@ -4464,6 +4535,7 @@
       setToolbarToolPinned(id,pinned);
       renderToolbar();
       renderAddMenu();
+      closeMenus();
       status((pinned?'Added ':'Removed ')+tool.label.toLowerCase()+'.','ready');
       routeStatus((pinned?'Toolbar added':'Toolbar removed')+' · browser local','hosted');
       return true;
