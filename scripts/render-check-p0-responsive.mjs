@@ -1,10 +1,12 @@
 import { mkdir } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
+import { createServer as createNetServer } from 'node:net';
 import { chromium } from '@playwright/test';
 
-const port = Number(process.env.MMIR_RESPONSIVE_PORT || 8796);
 const host = '127.0.0.1';
-const baseUrl = `http://${host}:${port}`;
+const preferredPort = Number(process.env.MMIR_RESPONSIVE_PORT || 8796);
+let port = preferredPort;
+let baseUrl = `http://${host}:${port}`;
 const screenshotDir = process.env.MMIR_RESPONSIVE_SCREENSHOTS || 'test-results/p0-responsive';
 const failures = [];
 
@@ -20,6 +22,31 @@ function fail(message) {
 
 function assert(condition, message) {
   if (!condition) fail(message);
+}
+
+function canListen(candidatePort) {
+  return new Promise((resolve, reject) => {
+    const probe = createNetServer();
+    probe.once('error', error => {
+      if (error?.code === 'EADDRINUSE') {
+        resolve(false);
+        return;
+      }
+      reject(error);
+    });
+    probe.listen(candidatePort, host, () => {
+      probe.close(() => resolve(true));
+    });
+  });
+}
+
+async function resolveResponsivePort() {
+  const maxAttempts = Number(process.env.MMIR_RESPONSIVE_PORT_ATTEMPTS || 50);
+  for (let offset = 0; offset < maxAttempts; offset += 1) {
+    const candidate = preferredPort + offset;
+    if (await canListen(candidate)) return candidate;
+  }
+  throw new Error(`No available responsive QA port found from ${preferredPort} across ${maxAttempts} attempts`);
 }
 
 function seededHistory() {
@@ -290,6 +317,12 @@ async function checkViewport(browser, viewport) {
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
   await page.close();
+}
+
+port = await resolveResponsivePort();
+baseUrl = `http://${host}:${port}`;
+if (port !== preferredPort) {
+  console.log(`Responsive QA port ${preferredPort} busy; using ${port}.`);
 }
 
 const server = startServer();
