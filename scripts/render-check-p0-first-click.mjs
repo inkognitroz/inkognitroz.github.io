@@ -352,6 +352,14 @@ async function checkViewport(browser, viewport) {
   layout = await pageLayout(page);
   assert(layout.text.includes('Route details'), `${viewport.name}: route controls should expose receipt details`);
 
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="draft-feedback"]').click();
+  const feedbackDraft = await page.locator('#p0-input').inputValue();
+  assert(feedbackDraft.startsWith('@inkognitroz Feedback:'), `${viewport.name}: feedback action should prefill the explicit feedback template`);
+  assert(/What I tried:/i.test(feedbackDraft), `${viewport.name}: feedback draft should prompt for reproduction context`);
+  assert(/Context: .*Hosted route/i.test(feedbackDraft), `${viewport.name}: feedback draft should append safe active-route context`);
+
   await page.locator('#p0-mic').click();
   await page.waitForFunction(() => document.getElementById('p0-input')?.value?.includes('voice first click'));
   await page.locator('#p0-input').fill('First click guard prompt');
