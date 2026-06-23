@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-tool-context-boost-v1';
+  const P0_RUNTIME_VERSION='20260623-source-context-boost-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3523,6 +3523,7 @@
       menuSection('Verified tools')+
       menuButton('verified-calculator','Verified calculator','Calculate first, then ask active routes with proof.')+
       menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
+      menuButton('verified-source','Verified source','Use pasted facts as grounding before active routes answer.')+
       menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
       menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
@@ -4127,6 +4128,9 @@
       if(toolId==='calculator'&&input){
         input.value='What is 19*37?';
         autosizeInput();
+      }else if(toolId==='manual-source'&&input){
+        input.value='Use this source to answer: ';
+        autosizeInput();
       }else if(input){
         input.value='Use the current date and time to answer: ';
         autosizeInput();
@@ -4151,6 +4155,20 @@
       payload={tool:'calculator',expression};
     }else if(toolId==='current-date-time'){
       payload={tool:'current-date-time',now:new Date().toISOString()};
+    }else if(toolId==='manual-source'){
+      const sourceText=prompt.slice(0,4000);
+      if(sourceText.length<12){
+        status('Verified source needs pasted facts or a source excerpt.','error');
+        routeStatus('Verified source · source text too short','error');
+        captureInteraction('tool_context_blocked',{tool:toolId,reason:'source_text_too_short'});
+        input?.focus();
+        return true;
+      }
+      payload={
+        tool:'manual-source',
+        source_label:'composer-paste',
+        source_text:sourceText
+      };
     }
     closeMenus();
     status(label+' is preparing verified context...','loading');
@@ -4453,6 +4471,9 @@
     }
     if(action==='verified-time'){
       return runVerifiedTool('current-date-time');
+    }
+    if(action==='verified-source'){
+      return runVerifiedTool('manual-source');
     }
     if(action==='boost-answer-live'){
       return boostAnswer();
