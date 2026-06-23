@@ -32,9 +32,11 @@ requireIncludes(strip, 'function routeInventoryFreshness(updatedAt)', 'Active no
 requireIncludes(strip, "label:'Route inventory freshness unknown'", 'Active node strip must explain when route inventory freshness cannot be determined.');
 requireIncludes(strip, "label:'Route inventory current'", 'Active node strip must clearly mark fresh route inventory.');
 requireIncludes(strip, 'Refresh before demo trust.', 'Active node strip must warn when route inventory is stale.');
+requireIncludes(strip, 'function refreshRouteInventory()', 'Active node strip must be able to re-fetch route inventory without a full page reload.');
+requireIncludes(strip, "fetch(MANIFEST_URL,{cache:force?'no-store':'default'})", 'Route inventory refresh must bypass stale browser cache when explicitly requested.');
 requireIncludes(strip, "manifestUpdatedAt=String(body?.updated_at||'');", 'Active node strip must load updated_at from the public node manifest.');
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
-const expectedVersion = '20260623-active-route-feedback-handoff-v1';
+const expectedVersion = '20260623-active-route-refresh-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }

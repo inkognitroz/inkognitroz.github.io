@@ -38,13 +38,17 @@ requireIncludes(strip, 'Show all routes', 'Active node strip must offer a direct
 requireIncludes(strip, 'function feedbackDraft(best,freshness)', 'Active node strip must be able to draft route feedback from the live strip.');
 requireIncludes(strip, 'function feedbackFooter(best,freshness)', 'Active node strip must show a direct route-feedback handoff when freshness is not current.');
 requireIncludes(strip, 'Capture route friction from this exact surface so owner triage keeps the live demo path honest.', 'Route strip must explain why route feedback is being requested.');
+requireIncludes(strip, 'Recheck the public route manifest before escalating so demo trust can recover from this exact surface.', 'Route strip must offer a trust-recovery hint before escalation.');
+requireIncludes(strip, 'data-active-route-refresh', 'Route strip must expose a direct route-refresh action when freshness needs review.');
+requireIncludes(strip, 'Refresh route inventory', 'Degraded route freshness must expose a clear refresh CTA.');
 requireIncludes(strip, 'Report route issue', 'Route strip must offer a direct route-feedback CTA.');
 requireIncludes(strip, "promptEl.value=feedbackDraft(best,freshness);", 'Route-feedback CTA must prefill a sanitized @feedback draft.');
+requireIncludes(strip, "bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));", 'Route-refresh CTA must re-run the route inventory load from the strip.');
 requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'.');", 'Hero description must reflect route-choice reasoning plus capacity summary.');
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-active-route-feedback-handoff-v1';
+const expectedVersion = '20260623-active-route-refresh-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
