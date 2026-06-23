@@ -214,6 +214,16 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackDraftPrefill(){',
+  'P0 shell must centralize a structured feedback draft prefill for demo handoff.'
+);
+requireIncludes(
+  shell,
+  "return '@inkognitroz Feedback:\\nWhat I tried:\\nWhat felt wrong or confusing:\\nWhat I expected instead:\\nContext: '+feedbackDraftContextSummary();",
+  'Feedback drafts must prefill a lightweight product-triage template with safe route context.'
+);
+requireIncludes(
+  shell,
   "menuButton('feedback-inbox','Feedback Inbox'",
   'Add menu must expose a feedback inbox review affordance.'
 );
@@ -594,12 +604,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260623-route-strip-feedback-capture-v1',
+  'p0-chat-shell.js?v=20260623-feedback-draft-context-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260623-route-strip-feedback-capture-v1"',
+  '"p0-chat-shell.js": "20260623-feedback-draft-context-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

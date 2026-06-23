@@ -53,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-route-strip-feedback-capture-v1';
+  const P0_RUNTIME_VERSION='20260623-feedback-draft-context-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3351,6 +3351,22 @@
     return true;
   }
 
+  function feedbackDraftContextSummary(){
+    const model=activeModel();
+    const pool=intelligencePoolSummary();
+    const parts=[
+      model?.label||'Supergeni',
+      model?.route==='local'?'Private local route':'Hosted route',
+      pool?.compareReady?'Best Answer ready':'Single route now'
+    ];
+    if(model?.route==='local'&&pool?.localHardware)parts.push(pool.localHardware);
+    return parts.join(' · ');
+  }
+
+  function feedbackDraftPrefill(){
+    return '@inkognitroz Feedback:\nWhat I tried:\nWhat felt wrong or confusing:\nWhat I expected instead:\nContext: '+feedbackDraftContextSummary();
+  }
+
   function handleEmptyStarterAction(action){
     if(action==='starter-best-answer'){
       captureInteraction('empty_starter_used',{starter:'best_answer'});
@@ -4504,16 +4520,11 @@
     }
     if(action==='draft-feedback'){
       captureInteraction('feedback_draft_started',{surface:'add_menu'});
-      const input=document.getElementById('p0-input');
-      if(input){
-        input.value='@inkognitroz ';
-        autosizeInput();
-      }
-      closeMenus();
-      status('Feedback draft ready.','ready');
-      routeStatus('Feedback intake · write and send · no paid route','hosted');
-      input?.focus();
-      return true;
+      return setPromptDraft(
+        feedbackDraftPrefill(),
+        'Feedback draft ready with route context.',
+        'Feedback intake · edit and send · active route context included · no paid route'
+      );
     }
     if(action==='feedback-inbox'){
       return openFeedbackInbox('add_menu');
