@@ -9,6 +9,7 @@
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
+  const NO_KEY_TOOL_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.noKeyToolPreviewPath||'/tools/no-key/preview';
   const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
   const allowLocalProbes=P0_ROUTE_ADAPTERS.allowLocalProbes;
@@ -37,6 +38,7 @@
   const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
   const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1';
   const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1';
+  const TOOL_CONTEXT_KEY='mmir-p0-last-tool-context-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
   const OWNER_SUGGESTION_PLAN_PATH='/control-plane/owner/suggestions/plan';
@@ -51,7 +53,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260623-single-route-cta-v1';
+  const P0_RUNTIME_VERSION='20260623-tool-context-boost-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3504,7 +3506,7 @@
       }).join('');
     const twoModelTools=pool.compareReady
       ? menuSeparator()+
-        menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')+
+        menuSection(gatewayCompareAvailable()?'More answers':'Two models')+
         menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+pool.compareRouteLabel+' through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
         menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores live routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
         menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
@@ -3517,6 +3519,10 @@
       menuButton('model-health','Model health','Show active hosted, local and candidate route status.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
+      menuSeparator()+
+      menuSection('Verified tools')+
+      menuButton('verified-calculator','Verified calculator','Calculate first, then ask active routes with proof.')+
+      menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
       menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
       menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
@@ -4061,6 +4067,125 @@
     return true;
   }
 
+  function extractCalculatorExpression(prompt){
+    const raw=String(prompt||'').trim();
+    const compact=raw.replace(/\s+/g,' ');
+    if(/^[0-9\s.+\-*/()]+$/.test(compact)&&/\d/.test(compact))return compact.slice(0,180);
+    const matches=[...raw.matchAll(/-?\d[\d\s.+\-*/()]{1,140}\d/g)]
+      .map(match=>String(match[0]||'').replace(/\s+/g,' ').trim())
+      .filter(value=>/\d/.test(value)&&/[+\-*/]/.test(value));
+    return (matches[0]||'').slice(0,180);
+  }
+
+  function noKeyToolLabel(tool){
+    const value=String(tool||'').toLowerCase();
+    if(value==='calculator')return 'Verified calculator';
+    if(value==='current-date-time')return 'Current time';
+    if(value==='manual-source')return 'Verified source';
+    return 'Verified tool';
+  }
+
+  function noKeyToolResultText(data){
+    return String(
+      data?.result?.result_text||
+      data?.result_text||
+      data?.preview?.result_text||
+      ''
+    ).replace(/\s+/g,' ').trim().slice(0,120);
+  }
+
+  function noKeyToolContext(data){
+    return String(data?.system_context||data?.context||'').trim().slice(0,8000);
+  }
+
+  function noKeyToolReceipt(data){
+    const tool=data?.tool||data?.result?.tool||'tool';
+    const result=noKeyToolResultText(data);
+    return [noKeyToolLabel(tool),result?'Result '+result:'context ready','no paid route'].filter(Boolean).join(' · ');
+  }
+
+  async function previewNoKeyTool(payload,signal){
+    return fetchJson(API_URL+NO_KEY_TOOL_PREVIEW_PATH,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      timeoutMs:12000,
+      signal
+    });
+  }
+
+  async function runVerifiedTool(tool){
+    if(state.busy){
+      status('Wait for the current answer first.','error');
+      return true;
+    }
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    const toolId=String(tool||'').trim();
+    const label=noKeyToolLabel(toolId);
+    if(!prompt){
+      if(toolId==='calculator'&&input){
+        input.value='What is 19*37?';
+        autosizeInput();
+      }else if(input){
+        input.value='Use the current date and time to answer: ';
+        autosizeInput();
+      }
+      closeMenus();
+      status(label+' ready. Edit the prompt, then choose it again.','ready');
+      routeStatus(label+' · needs a prompt first','hosted');
+      input?.focus();
+      captureInteraction('tool_context_prefill',{tool:toolId,reason:'missing_prompt'});
+      return true;
+    }
+    let payload={tool:toolId};
+    if(toolId==='calculator'){
+      const expression=extractCalculatorExpression(prompt);
+      if(!expression){
+        status('Calculator needs a visible expression like 19*37.','error');
+        routeStatus('Verified calculator · no expression found','error');
+        captureInteraction('tool_context_blocked',{tool:toolId,reason:'missing_expression'});
+        input?.focus();
+        return true;
+      }
+      payload={tool:'calculator',expression};
+    }else if(toolId==='current-date-time'){
+      payload={tool:'current-date-time',now:new Date().toISOString()};
+    }
+    closeMenus();
+    status(label+' is preparing verified context...','loading');
+    routeStatus(label+' · no provider call · no paid route','hosted');
+    captureInteraction('tool_context_preview_started',{tool:toolId});
+    try{
+      const data=await previewNoKeyTool(payload);
+      const systemContext=noKeyToolContext(data);
+      if(!systemContext)throw new Error('empty tool context');
+      writeJson(TOOL_CONTEXT_KEY,{
+        savedAt:new Date().toISOString(),
+        tool:toolId,
+        receipt:noKeyToolReceipt(data),
+        no_paid_routes_started:true,
+        provider_called:false,
+        context_path:SWARM_PREVIEW_PATH
+      });
+      captureInteraction('tool_context_preview_ready',{
+        tool:toolId,
+        result:noKeyToolResultText(data),
+        context_path:SWARM_PREVIEW_PATH,
+        no_paid_routes_started:true
+      });
+      status(label+' ready. Asking active routes with verified context...','ready');
+      routeStatus(noKeyToolReceipt(data)+' · injected into swarm','ready');
+      compareGatewayRoutes(prompt,{mode:'boost',systemContext,toolContext:data});
+    }catch(error){
+      status(label+' unavailable right now. Try normal chat.','error');
+      routeStatus(label+' failed · no provider route started','error');
+      captureInteraction('tool_context_preview_failed',{tool:toolId,reason:'preview_unavailable'});
+      input?.focus();
+    }
+    return true;
+  }
+
   function boostAnswer(){
     const input=document.getElementById('p0-input');
     const prompt=String(input?.value||'').trim();
@@ -4322,6 +4447,12 @@
       routeStatus('Model health · active routes summarized','ready');
       document.getElementById('p0-input')?.focus();
       return true;
+    }
+    if(action==='verified-calculator'){
+      return runVerifiedTool('calculator');
+    }
+    if(action==='verified-time'){
+      return runVerifiedTool('current-date-time');
     }
     if(action==='boost-answer-live'){
       return boostAnswer();
@@ -5185,8 +5316,13 @@
     };
   }
 
-  async function fetchGatewayFanout(prompt,mode,signal){
+  async function fetchGatewayFanout(prompt,mode,signal,options={}){
     const payload=compareApiPayload(prompt);
+    const systemContext=String(options.systemContext||'').trim().slice(0,8000);
+    if(systemContext){
+      payload.system_context=systemContext;
+      payload.system_context_source='p0-no-key-tool-preview';
+    }
     if(mode==='boost'||mode==='all'||mode==='council'){
       payload.swarm_mode=mode;
     }
@@ -5526,7 +5662,16 @@
       input?.focus();
       return;
     }
-    captureInteraction('swarm_started',{tool:title,mode,hosted_route_count:Number(activeHostedCompareModels().length)||0});
+    const toolContext=options.toolContext||null;
+    const systemContext=String(options.systemContext||'').trim().slice(0,8000);
+    const toolReceipt=toolContext?noKeyToolReceipt(toolContext):'';
+    captureInteraction('swarm_started',{
+      tool:title,
+      mode,
+      hosted_route_count:Number(activeHostedCompareModels().length)||0,
+      system_context_injected:Boolean(systemContext),
+      tool_context:toolContext?.tool||''
+    });
     const signal=beginResponse();
     append('user',prompt,'You');
     if(input){
@@ -5535,13 +5680,13 @@
     }
     const routeCount=String(activeHostedCompareModels().length);
     const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
-    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route';
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route'+(toolReceipt?' · '+toolReceipt:'');
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     const stopProgress=startGatewaySwarmProgress(assistant,{title,mode,routeCount});
     status(title+' is asking '+routeCount+' active routes...','ready');
     routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
     try{
-      const gatewayPromise=fetchGatewayFanout(prompt,mode,signal);
+      const gatewayPromise=fetchGatewayFanout(prompt,mode,signal,{systemContext,toolContext});
       const localPromise=mode==='all'?localAllActiveRoutes(prompt,signal):Promise.resolve({responses:[],attempts:[],blocked:[]});
       const [gatewayData,localData]=await Promise.all([gatewayPromise,localPromise]);
       const data=mode==='all'?mergeLocalAllRoutes(gatewayData,localData):gatewayData;
@@ -5549,7 +5694,7 @@
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
         : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
-      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')));
+      const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')))+(toolReceipt?' · '+toolReceipt:'');
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
       updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
@@ -5559,7 +5704,9 @@
         answered_count:Number(gatewayAnswerCount(data))||0,
         route_count:Number(gatewayRouteCount(data))||0,
         winner_provider:data.best_answer?.receipt?.provider||'',
-        truncated
+        truncated,
+        system_context_injected:Boolean(systemContext),
+        tool_context:toolContext?.tool||''
       });
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();

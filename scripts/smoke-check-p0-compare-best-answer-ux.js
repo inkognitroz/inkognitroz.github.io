@@ -60,8 +60,8 @@ forbidText(
 );
 requireText(
   addMenu,
-  "gatewayCompareAvailable()?'Intelligence pool':'Two models'",
-  'Add menu may show a compact Intelligence pool section only when hosted compare routes are active'
+  "gatewayCompareAvailable()?'More answers':'Two models'",
+  'Add menu may show a compact More answers section only when hosted compare routes are active'
 );
 forbidText(
   addMenu,
@@ -75,8 +75,8 @@ requireText(
 );
 requireText(
   addMenu,
-  "menuSection(gatewayCompareAvailable()?'Intelligence pool':'Two models')",
-  'Add menu must group parallel tools only when the intelligence pool is ready'
+  "menuSection(gatewayCompareAvailable()?'More answers':'Two models')",
+  'Add menu must group parallel tools only when multiple answer routes are ready'
 );
 requireText(
   addMenu,

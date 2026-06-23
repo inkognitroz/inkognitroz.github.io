@@ -463,7 +463,7 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
-  assert(/Intelligence pool/i.test(addMenu), `${viewport.name}: add menu should expose compact Intelligence pool when hosted routes are active`);
+  assert(/More answers/i.test(addMenu), `${viewport.name}: add menu should expose compact More answers tools when hosted routes are active`);
   assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
   assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
   assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
