@@ -259,6 +259,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackSourceLabel(source){',
+  'P0 shell must normalize stored feedback capture sources into owner-readable labels.'
+);
+requireIncludes(
+  shell,
   'Capture truth: ',
   'Feedback Inbox must explain whether drafts are synced, pending or local-only.'
 );
@@ -271,6 +276,16 @@ requireIncludes(
   shell,
   "Showing the top '+String(visibleCount)+' of '+String(totalCount)+' drafts for triage first.",
   'Feedback Inbox must say when it is showing only the top triage subset.'
+);
+requireIncludes(
+  shell,
+  "' · via '+source+' · '",
+  'Feedback Inbox triage summary must preserve the capture surface for each draft.'
+);
+requireIncludes(
+  shell,
+  "'   - Source: '+feedbackSourceLabel(item.source)+(item.source?' · '+String(item.source):'')",
+  'Feedback triage export must preserve both human and raw capture-source context.'
 );
 requireIncludes(
   shell,
@@ -604,12 +619,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260623-feedback-draft-context-v1',
+  'p0-chat-shell.js?v=20260623-feedback-source-handoff-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260623-feedback-draft-context-v1"',
+  '"p0-chat-shell.js": "20260623-feedback-source-handoff-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
