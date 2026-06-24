@@ -14,7 +14,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedVersion = '20260623-feedback-source-superboost-v1';
+const expectedVersion = '20260624-compare-feedback-capture-v1';
 
 requireIncludes(
   shell,

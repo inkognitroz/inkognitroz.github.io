@@ -156,6 +156,31 @@ requireText(
 );
 requireText(
   runtime,
+  "data-p0-message-action=\"useful-compare\"",
+  'Compare and Best Answer messages must expose a local useful-feedback capture action'
+);
+requireText(
+  runtime,
+  'function captureCompareUsefulFeedback(message)',
+  'Compare useful feedback must be captured through a dedicated sanitized local draft helper'
+);
+requireText(
+  runtime,
+  "source:'p0-compare-useful-action'",
+  'Compare useful feedback drafts must record the exact active UI source'
+);
+requireText(
+  runtime,
+  "backlogHint:'compare-feedback-capture'",
+  'Compare useful feedback drafts must carry a triage backlog hint'
+);
+requireText(
+  css,
+  '.p0-message-compare .p0-message-actions button[data-p0-message-action="useful-compare"]',
+  'Compare useful feedback action must have scoped visual treatment'
+);
+requireText(
+  runtime,
   'function swarmRoundLabel(data)',
   'Swarm receipts must preserve current round truth when swarm preview metadata is available'
 );
