@@ -182,6 +182,26 @@ requireText(
 );
 requireText(
   runtime,
+  "const compareUsefulCaptured=Boolean(message.compareUsefulCaptured);",
+  'Compare useful feedback action must render from persisted per-message capture state'
+);
+requireText(
+  runtime,
+  "compareUsefulCaptured?'Useful saved':'Useful'",
+  'Compare useful feedback action must show when the signal is already captured'
+);
+requireText(
+  runtime,
+  "if(message.compareUsefulCaptured)",
+  'Compare useful feedback capture must be idempotent per answer message'
+);
+requireText(
+  runtime,
+  "message.compareUsefulCaptured=true;",
+  'Compare useful feedback capture must persist the captured state on the message'
+);
+requireText(
+  runtime,
   'function captureCompareUsefulFeedback(message)',
   'Compare useful feedback must be captured through a dedicated sanitized local draft helper'
 );
@@ -224,6 +244,11 @@ requireText(
   css,
   '.p0-message-compare .p0-message-actions button[data-p0-message-action="useful-compare"]',
   'Compare useful feedback action must have scoped visual treatment'
+);
+requireText(
+  css,
+  '.p0-message-compare .p0-message-actions button[data-p0-message-action="useful-compare"][data-captured="true"]',
+  'Captured compare useful feedback action must have scoped saved-state styling'
 );
 requireText(
   runtime,

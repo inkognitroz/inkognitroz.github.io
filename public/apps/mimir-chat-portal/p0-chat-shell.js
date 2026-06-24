@@ -4980,8 +4980,9 @@
     if(!answerActionsAllowed(message))return '';
     const id=safeAttr(message.id||'');
     const continuationLabel=safeText(String(message.continuationLabel||'Fortsett svaret').replace(/\s+/g,' ').trim().slice(0,44)||'Fortsett svaret');
+    const compareUsefulCaptured=Boolean(message.compareUsefulCaptured);
     return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
-      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="Mark compare answer useful">Useful</button>':'')+
+      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="'+(compareUsefulCaptured?'Compare useful signal already saved':'Mark compare answer useful')+'"'+(compareUsefulCaptured?' disabled data-captured="true"':'')+'>'+(compareUsefulCaptured?'Useful saved':'Useful')+'</button>':'')+
       (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">'+continuationLabel+'</button>':'')+
       '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
       '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
@@ -5102,6 +5103,10 @@
   }
 
   function captureCompareUsefulFeedback(message){
+    if(message.compareUsefulCaptured){
+      setMessageActionStatus(message.id,'Useful signal already saved.','ready');
+      return true;
+    }
     const user=previousUserMessageFor(message);
     const route=String(message.receipt||message.label||'compare route').replace(/\s+/g,' ').slice(0,420);
     const answer=String(message.content||'').replace(/\s+/g,' ').slice(0,700);
@@ -5124,7 +5129,14 @@
         backlogHint:'compare-feedback-capture'
       }
     );
-    setMessageActionStatus(message.id,saved?'Useful signal saved to Feedback Inbox.':'Could not save useful signal.',saved?'ready':'error');
+    if(saved){
+      message.compareUsefulCaptured=true;
+      saveHistory();
+      renderTranscript();
+      requestAnimationFrame(()=>setMessageActionStatus(message.id,'Useful signal saved to Feedback Inbox.','ready'));
+    }else{
+      setMessageActionStatus(message.id,'Could not save useful signal.','error');
+    }
     return saved;
   }
 
