@@ -14,7 +14,8 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedVersion = '20260624-continuation-action-v1';
+const expectedShellVersion = '20260624-intelligence-status-v1';
+const expectedCssVersion = '20260624-continuation-action-v1';
 
 requireIncludes(
   shell,
@@ -45,21 +46,21 @@ requireIncludes(shell,"window.MimirChatRuntimeBridge.openFeedbackInbox=openFeedb
 requireIncludes(css,'.p0-empty-starters {','P0 shell CSS must style the empty-state starter group.');
 requireIncludes(css,'.p0-empty-starter {','P0 shell CSS must style each empty-state starter button.');
 
-if (manifest.assets?.['p0-chat-shell.js'] !== expectedVersion) {
+if (manifest.assets?.['p0-chat-shell.js'] !== expectedShellVersion) {
   failures.push('Asset version manifest must track p0-chat-shell.js for the empty-state starter slice.');
 }
-if (manifest.assets?.['p0-chat-shell.css'] !== expectedVersion) {
+if (manifest.assets?.['p0-chat-shell.css'] !== expectedCssVersion) {
   failures.push('Asset version manifest must track p0-chat-shell.css for the empty-state starter slice.');
 }
 
 requireIncludes(
   html,
-  `"./apps/mimir-chat-portal/p0-chat-shell.css?v=${expectedVersion}"`,
+  `"./apps/mimir-chat-portal/p0-chat-shell.css?v=${expectedCssVersion}"`,
   'public/mmir.html must serve the starter-ready P0 shell CSS version.'
 );
 requireIncludes(
   html,
-  `"./apps/mimir-chat-portal/p0-chat-shell.js?v=${expectedVersion}"`,
+  `"./apps/mimir-chat-portal/p0-chat-shell.js?v=${expectedShellVersion}"`,
   'public/mmir.html must serve the starter-ready P0 shell JS version.'
 );
 requireIncludes(

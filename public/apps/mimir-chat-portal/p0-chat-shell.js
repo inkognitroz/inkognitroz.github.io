@@ -48,13 +48,14 @@
   const TELEMETRY_EVENTS_PATH='/telemetry/events';
   const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
+  const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-continuation-action-v1';
+  const P0_RUNTIME_VERSION='20260624-intelligence-status-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3691,6 +3692,7 @@
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
       menuSeparator()+
       menuSection('Many AI')+
+      menuButton('intelligence-status','Intelligence status','Show live connected routes, capacity and source mix. Read-only, no provider call.')+
       menuButton('boost-answer-live','Superboost',superboostDetail,{badge:gatewayCompareAvailable()?'Best wins':''})+
       menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuButton('supergeni-council-live','Debate',debateDetail,{badge:'Council'})+
@@ -4316,6 +4318,116 @@
     return [noKeyToolLabel(tool),result?'Result '+result:'context ready','no paid route'].filter(Boolean).join(' · ');
   }
 
+  function scorecardArray(value){
+    return Array.isArray(value)?value:[];
+  }
+
+  function scorecardNumber(value,digits=0){
+    const number=Number(value);
+    if(!Number.isFinite(number))return 0;
+    const factor=10**digits;
+    return Math.round(number*factor)/factor;
+  }
+
+  function scorecardSourceLabel(source){
+    const id=String(source?.source_id||source?.node_id||'source').trim();
+    return id
+      .replace(/^external-/,'')
+      .replace(/-candidate$/,'')
+      .replace(/-/g,' ')
+      .replace(/\b\w/g,char=>char.toUpperCase());
+  }
+
+  function intelligenceStatusAnswer(scorecard){
+    const summary=scorecard?.summary||{};
+    const measurement=scorecard?.measurement||{};
+    const raw=measurement.raw_model_capacity||{};
+    const formula=measurement.score_formula||{};
+    const sources=scorecardArray(scorecard?.connected_intelligence_by_source?.sources)
+      .slice()
+      .sort((a,b)=>scorecardNumber(b.executable_route_count)-scorecardNumber(a.executable_route_count))
+      .slice(0,8);
+    const callable=scorecardNumber(summary.currently_callable_routes||measurement.live_capacity?.currently_callable_route_count);
+    const visible=scorecardNumber(summary.visible_routes||measurement.live_capacity?.visible_route_count);
+    const target=scorecardNumber(summary.target_routes||measurement.live_capacity?.target_route_count);
+    const progress=target?scorecardNumber((callable/target)*100,1):0;
+    const knownParams=scorecardNumber(summary.executable_known_parameter_billion_sum||raw.executable_known_parameter_billion_sum,1);
+    const visibleParams=scorecardNumber(raw.visible_known_parameter_billion_sum||scorecard?.capacity_plan?.now?.visible_known_parameter_billion_lower_bound,1);
+    const unknownCallable=scorecardNumber(summary.executable_unknown_parameter_route_count||raw.executable_unknown_parameter_route_count);
+    const sourceLines=sources.length
+      ? sources.map(source=>'- '+scorecardSourceLabel(source)+': '+scorecardNumber(source.executable_route_count)+' callable / '+scorecardNumber(source.visible_route_count)+' visible · '+scorecardNumber(source.executable_known_parameter_billion_sum,1)+'B known parameters').join('\n')
+      : '- No source breakdown returned yet.';
+    const next24=scorecard?.capacity_plan?.growth_targets?.next_24h?.callable_route_goal||scorecard?.owner_summary?.next_24h_target||'not set';
+    const next7=scorecard?.capacity_plan?.growth_targets?.next_7d?.callable_route_goal||scorecard?.owner_summary?.next_7d_target||'not set';
+    return [
+      'Intelligence. Connected.',
+      '',
+      'Live connected intelligence now:',
+      '- '+callable+' callable routes / '+target+' target ('+progress+'%).',
+      '- '+visible+' visible routes in the pool.',
+      '- Known executable parameter lower bound: '+knownParams+'B, plus '+unknownCallable+' callable routes with unknown public parameter counts.',
+      '- Known visible parameter lower bound: '+visibleParams+'B.',
+      '- '+scorecardNumber(summary.live_connected_sources||scorecard?.connected_intelligence_by_source?.live_source_count)+' connected sources.',
+      '',
+      'Connected sources:',
+      sourceLines,
+      '',
+      'How MMIR measures intelligence:',
+      '- Primary score: '+(formula.primary||'verified_connection_lift_per_prompt')+'.',
+      '- Parameters are capacity metadata, not the final quality score.',
+      '- A route only counts as useful when it improves correctness, ranking, grounding, calibration or answer quality.',
+      '',
+      'Next capacity targets:',
+      '- Next 24h: '+next24+' callable routes without paid-provider enablement or Actions burn.',
+      '- Next 7d: '+next7+' callable routes plus measured connection-lift.',
+      '',
+      scorecard?.no_paid_routes_started===false?'Cost guard: paid routes may be active.':'Cost guard: no paid routes started.'
+    ].join('\n');
+  }
+
+  async function showIntelligenceStatus(){
+    if(state.busy){
+      status('Wait for the current answer first.','error');
+      return true;
+    }
+    closeMenus();
+    status('Checking connected intelligence...','loading');
+    routeStatus('Intelligence status · read-only · no provider call','hosted');
+    captureInteraction('intelligence_status_started',{path:INTELLIGENCE_SCORECARD_PATH});
+    try{
+      const scorecard=await fetchJson(API_URL+INTELLIGENCE_SCORECARD_PATH,{timeoutMs:9000});
+      const summary=scorecard?.summary||{};
+      append(
+        'assistant',
+        intelligenceStatusAnswer(scorecard),
+        'MMIR Intelligence Status',
+        [
+          'Intelligence status',
+          scorecardNumber(summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count)+' callable routes',
+          scorecardNumber(summary.executable_known_parameter_billion_sum||scorecard?.measurement?.raw_model_capacity?.executable_known_parameter_billion_sum,1)+'B known capacity',
+          'read-only',
+          'no provider call'
+        ].filter(Boolean).join(' · '),
+        {variant:'status',actions:false}
+      );
+      captureInteraction('intelligence_status_ready',{
+        callable_routes:scorecardNumber(summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count),
+        visible_routes:scorecardNumber(summary.visible_routes||scorecard?.measurement?.live_capacity?.visible_route_count),
+        connected_sources:scorecardNumber(summary.live_connected_sources||scorecard?.connected_intelligence_by_source?.live_source_count),
+        no_paid_routes_started:scorecard?.no_paid_routes_started!==false
+      });
+      status('Intelligence status ready.','ready');
+      routeStatus('Intelligence status · live fabric · no provider call','ready');
+    }catch(error){
+      captureInteraction('intelligence_status_failed',{reason:'scorecard_unavailable'});
+      append('assistant','I could not read the live intelligence scorecard right now. Chat and Superboost can still work; try again in a moment.','MMIR Intelligence Status','Scorecard unavailable · no provider call',{variant:'status',actions:false});
+      status('Intelligence status unavailable.','error');
+      routeStatus('Scorecard unavailable · no provider call','error');
+    }
+    document.getElementById('p0-input')?.focus();
+    return true;
+  }
+
   async function previewNoKeyTool(payload,signal){
     return fetchJson(API_URL+NO_KEY_TOOL_PREVIEW_PATH,{
       method:'POST',
@@ -4645,6 +4757,9 @@
     if(action==='add-menu-main'){
       renderAddMenu();
       return true;
+    }
+    if(action==='intelligence-status'){
+      return showIntelligenceStatus();
     }
     if(action==='prompt-presets'){
       renderPromptPresetMenu();
