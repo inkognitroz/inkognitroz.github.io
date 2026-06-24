@@ -141,7 +141,7 @@ async function checkViewport(browser, viewport) {
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: local memory body must not overflow`);
   assert(/Local memory shown/i.test(layout.status), `${viewport.name}: local memory should finish cleanly`);
   assert(/browser only/i.test(layout.route), `${viewport.name}: route line should preserve browser-only proof`);
-  assert(layout.toolbarButtons <= 6, `${viewport.name}: local memory must not add extra visible toolbar buttons`);
+  assert(layout.toolbarButtons <= 7, `${viewport.name}: local memory must not add extra visible toolbar buttons beyond Superboost/Debate`);
 
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });

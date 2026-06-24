@@ -147,18 +147,62 @@ async function installFixtures(page) {
     await fulfillJson(route, { object: 'list', data: [] });
   });
 
-  await page.route('https://api.mmir.ai/chat/swarm/preview', async route => {
+  await page.route(/https:\/\/api\.mmir\.ai\/chat\/(swarm|superboost)\/preview/, async route => {
+    const isSuperboost = route.request().url().includes('/chat/superboost/preview');
     await delay(1200);
     await fulfillJson(route, {
-      object: 'chat.swarm.preview',
-      status: 'first_round_ready',
-      mode: 'sync_swarm_preview',
+      object: isSuperboost ? 'chat.superboost.preview' : 'chat.swarm.preview',
+      status: isSuperboost ? 'superboost_ready' : 'first_round_ready',
+      mode: isSuperboost ? 'superboost' : 'sync_swarm_preview',
       vision: 'Intelligence. Connected.',
       default_meta_model: 'Supergeni',
+      route: isSuperboost ? '/chat/superboost/preview' : '/chat/swarm/preview',
+      underlying_route: isSuperboost ? '/chat/swarm/preview' : undefined,
       target_route_count: 472,
       sync_route_limit: 40,
       current_round: 1,
       planned_debate_rounds: 3,
+      superboost: isSuperboost ? {
+        label: 'Superboost',
+        promise: 'Ask many AI routes, cross-check the result, and return one clean answer.',
+        execution: 'round_2_cross_review_executed',
+        attempted_route_count: 5,
+        all_answer_count: 3,
+        council_review_count: 2,
+        async_472_route_plan_required: true,
+        continuation_ready: true,
+        continuation_display: true,
+        continuation: {
+          object: 'mmir.answer_continuation',
+          policy_version: '2026-06-24-continuation-v1',
+          needed: true,
+          display: true,
+          reason: 'best_answer_truncated',
+          user_action_label: 'Fortsett svaret',
+          suggested_user_message: 'Fortsett svaret fra der det stoppet. Ikke start på nytt; fullfør med samme kontekst.',
+          prompt_included_in_metadata: false,
+          answer_included_in_metadata: false,
+          provider_called: false,
+          provider_secrets_in_browser: false,
+          no_paid_routes_started: true
+        },
+        no_paid_routes_started: true,
+        provider_secrets_in_browser: false
+      } : undefined,
+      continuation: isSuperboost ? {
+        object: 'mmir.answer_continuation',
+        policy_version: '2026-06-24-continuation-v1',
+        needed: true,
+        display: true,
+        reason: 'best_answer_truncated',
+        user_action_label: 'Fortsett svaret',
+        suggested_user_message: 'Fortsett svaret fra der det stoppet. Ikke start på nytt; fullfør med samme kontekst.',
+        prompt_included_in_metadata: false,
+        answer_included_in_metadata: false,
+        provider_called: false,
+        provider_secrets_in_browser: false,
+        no_paid_routes_started: true
+      } : undefined,
       first_round: {
         object: 'chat.compare',
         compare_status: 'ready',
@@ -463,10 +507,12 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
+  assert(/Many AI/i.test(addMenu), `${viewport.name}: add menu should put scaled intelligence in its own first-class group`);
   assert(/More answers/i.test(addMenu), `${viewport.name}: add menu should expose compact More answers tools when hosted routes are active`);
-  assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
+  assert(/Superboost/i.test(addMenu), `${viewport.name}: add menu should expose Superboost without adding toolbar clutter`);
   assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
-  assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
+  assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Superboost should explain the active free route count`);
+  assert(/Debate/i.test(addMenu), `${viewport.name}: add menu should expose model debate without hiding it behind advanced wording`);
   assert(/Ask 5 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
   assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
@@ -484,12 +530,14 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Swarm 472/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Superboost/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
   assert(/Spør 5 AI - beste vinner/i.test(text), `${viewport.name}: boost receipt should show the user-value swarm line`);
+  assert(/Fortsett svaret/i.test(text), `${viewport.name}: truncated Superboost answer should expose the plain-language continuation action`);
+  assert(/Svarvakt/i.test(text), `${viewport.name}: truncated Superboost answer should explain why continuation is available`);
   assert(/Detaljer/i.test(text), `${viewport.name}: boost receipt should keep raw telemetry behind Details`);
   assert(!text.includes('5 routes compared'), `${viewport.name}: gateway compare receipt should keep raw route telemetry behind Details`);
 
@@ -513,6 +561,7 @@ async function checkViewport(browser, viewport) {
   assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost CTA should survive after Boost finishes`);
   assert(layout.routeCtaVisible, `${viewport.name}: Superboost CTA should remain visible after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
+  assert(/Superboost/i.test(layout.routeFull), `${viewport.name}: full boost receipt should identify the dedicated Superboost route`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
   assert(!/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should keep successful provider count behind details`);
   assert(!/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should keep quiet provider count behind details`);

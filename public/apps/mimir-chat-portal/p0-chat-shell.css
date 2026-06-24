@@ -503,6 +503,27 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   color: #b91c1c;
 }
 
+.p0-token-counter {
+  color: #047857;
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  max-width: min(26vw, 112px);
+  opacity: 0.68;
+  overflow: hidden;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.p0-token-counter[data-state="quiet"] {
+  color: #0f766e;
+  opacity: 0.48;
+}
+
 .p0-route-line {
   display: block;
   flex: 0 1 auto;
@@ -673,7 +694,24 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   white-space: nowrap;
 }
 
+.p0-council {
+  background: #eef2ff;
+  border-color: rgba(67, 56, 202, 0.24);
+  color: #4338ca;
+  font-weight: 800;
+  max-width: min(34vw, 142px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .p0-superboost[data-state="setup"] {
+  background: #f8fafc;
+  border-color: rgba(100, 116, 139, 0.22);
+  color: #334155;
+}
+
+.p0-council[data-state="setup"] {
   background: #f8fafc;
   border-color: rgba(100, 116, 139, 0.22);
   color: #334155;
@@ -684,7 +722,13 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   background: #d1fae5;
 }
 
-.p0-superboost:disabled {
+.p0-council:hover,
+.p0-council:focus-visible {
+  background: #e0e7ff;
+}
+
+.p0-superboost:disabled,
+.p0-council:disabled {
   cursor: default;
   opacity: 0.55;
 }
@@ -1017,6 +1061,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
   .p0-toolbar {
     gap: 6px;
+    flex-wrap: wrap;
   }
 
   .p0-left,
@@ -1025,18 +1070,42 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
     gap: 6px;
   }
 
+  .p0-left,
+  .p0-right {
+    flex: 1 1 100%;
+  }
+
+  .p0-left {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .p0-left::-webkit-scrollbar {
+    display: none;
+  }
+
+  .p0-right {
+    justify-content: flex-end;
+  }
+
   .p0-model-button {
     max-width: 42vw;
   }
 
   .p0-superboost {
-    max-width: 32vw;
+    max-width: 136px;
+    padding: 0 10px;
+  }
+
+  .p0-council {
+    max-width: 110px;
     padding: 0 10px;
   }
 
   .p0-menu {
-    bottom: 76px;
+    bottom: 150px;
     left: 10px !important;
+    max-height: min(58vh, calc(100vh - 188px));
     right: 10px;
     width: auto;
   }
@@ -1054,7 +1123,12 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   }
 
   .p0-superboost {
-    max-width: 30vw;
+    max-width: 126px;
+    padding: 0 8px;
+  }
+
+  .p0-council {
+    max-width: 100px;
     padding: 0 8px;
   }
 

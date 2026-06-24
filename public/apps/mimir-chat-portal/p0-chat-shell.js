@@ -9,6 +9,7 @@
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
+  const SUPERBOOST_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.superboostPreviewPath||'/chat/superboost/preview';
   const NO_KEY_TOOL_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.noKeyToolPreviewPath||'/tools/no-key/preview';
   const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
@@ -47,13 +48,14 @@
   const TELEMETRY_EVENTS_PATH='/telemetry/events';
   const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
+  const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-compare-feedback-capture-v1';
+  const P0_RUNTIME_VERSION='20260624-gateway-answer-text-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -340,6 +342,12 @@
         deployNeededLabels:[],
         probeQueuedLabels:[]
       }
+    },
+    tokenCounter:{
+      total:0,
+      last:0,
+      events:0,
+      source:''
     }
   };
   let activeChatController=null;
@@ -1637,6 +1645,51 @@
 
   function responseReceiptEnvelope(response){
     return response?.mmir?.receipt||response?.mmir?.route_receipt||{};
+  }
+
+  function usageTokenTotal(usage){
+    if(!usage||typeof usage!=='object')return 0;
+    const direct=Number(usage.total_tokens ?? usage.totalTokens ?? usage.tokens);
+    if(Number.isFinite(direct)&&direct>0)return Math.round(direct);
+    const prompt=Number(usage.prompt_tokens ?? usage.promptTokens ?? usage.input_tokens ?? usage.inputTokens)||0;
+    const completion=Number(usage.completion_tokens ?? usage.completionTokens ?? usage.output_tokens ?? usage.outputTokens)||0;
+    const total=prompt+completion;
+    return total>0?Math.round(total):0;
+  }
+
+  function responseTokenUsage(payload){
+    const direct=usageTokenTotal(payload?.usage)||usageTokenTotal(payload?.token_usage)||usageTokenTotal(payload?.best_answer?.usage);
+    if(direct>0)return direct;
+    const responses=Array.isArray(payload?.data)?payload.data:[];
+    const responseTotal=responses.reduce((sum,response)=>sum+usageTokenTotal(response?.usage),0);
+    if(responseTotal>0)return responseTotal;
+    const attempts=Array.isArray(payload?.route_attempts)?payload.route_attempts:[];
+    return attempts.reduce((sum,attempt)=>sum+usageTokenTotal(attempt?.usage||attempt?.receipt?.usage),0);
+  }
+
+  function recordTokenUsage(payload,source=''){
+    const tokens=responseTokenUsage(payload);
+    state.tokenCounter.last=tokens;
+    state.tokenCounter.source=String(source||'').slice(0,40);
+    if(tokens>0){
+      state.tokenCounter.total+=tokens;
+      state.tokenCounter.events+=1;
+    }
+    renderTokenCounter();
+    return tokens;
+  }
+
+  function renderTokenCounter(){
+    const el=document.getElementById('p0-token-counter');
+    if(!el)return;
+    const total=Number(state.tokenCounter.total)||0;
+    const last=Number(state.tokenCounter.last)||0;
+    el.textContent=total.toLocaleString('no-NO')+' tokens';
+    el.title=last>0
+      ? '+'+last.toLocaleString('no-NO')+' tokens siste svar'
+      : '0 tokens siste svar - nyttig helsesignal mot stub/regresjon';
+    el.dataset.state=last>0?'active':'quiet';
+    el.setAttribute('aria-label',el.title);
   }
 
   function ownerPingLine(response){
@@ -3178,6 +3231,7 @@
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<div class="p0-status-rail">'+
             '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
+            '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
             '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="No captured feedback yet"></button>'+
           '</div>'+
           '<div class="p0-toolbar">'+
@@ -3185,6 +3239,7 @@
               '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
               '<button id="p0-superboost" class="p0-btn p0-superboost" type="button" data-p0-route-action="boost-answer-live" data-state="setup" aria-label="Superboost: ask many AI and let the best answer win" title="Superboost · ask many AI">Superboost</button>'+
+              '<button id="p0-council" class="p0-btn p0-council" type="button" data-p0-route-action="supergeni-council-live" data-state="setup" aria-label="Debate: let active AI routes challenge each other and converge" title="Supergeni Council · model debate">Debate</button>'+
               '<span id="p0-toolbar-tools" class="p0-toolbar-tools" aria-label="Pinned chat tools"></span>'+
             '</div>'+
             '<div class="p0-right">'+
@@ -3603,6 +3658,12 @@
   function renderAddMenu(){
     const menu=menuEl('add');
     const pool=intelligencePoolSummary();
+    const superboostDetail=gatewayCompareAvailable()
+      ? 'Ask '+pool.boostRouteLabel+' - best answer wins. '+pool.scaleLine+'.'
+      : 'Write a prompt, then MMIR checks active free routes and uses the strongest available answer path.';
+    const debateDetail=gatewayCompareAvailable()
+      ? 'Let '+pool.boostRouteLabel+' challenge weak assumptions, rank, then converge. '+pool.scaleLine+'.'
+      : 'Write a topic, then MMIR checks active routes for a model debate.';
     const toolbarTools=TOOLBAR_TOOL_DEFINITIONS
       .filter(tool=>tool.id!=='discuss'||pool.compareReady)
       .map(tool=>{
@@ -3630,12 +3691,16 @@
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
       menuSeparator()+
+      menuSection('Many AI')+
+      menuButton('intelligence-status','Intelligence status','Show live connected routes, capacity and source mix. Read-only, no provider call.')+
+      menuButton('boost-answer-live','Superboost',superboostDetail,{badge:gatewayCompareAvailable()?'Best wins':''})+
+      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
+      menuButton('supergeni-council-live','Debate',debateDetail,{badge:'Council'})+
+      menuSeparator()+
       menuSection('Verified tools')+
       menuButton('verified-calculator','Verified calculator','Calculate first, then ask active routes with proof.')+
       menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
       menuButton('verified-source','Verified source','Use pasted facts as grounding before active routes answer.')+
-      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
-      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
       menuSection('Improve MMIR')+
       '<div class="p0-menu-note">Feedback may be logged after sanitization to improve MMIR. Do not paste secrets.</div>'+
@@ -3921,6 +3986,24 @@
     button.setAttribute('title',title);
   }
 
+  function renderCouncilCta(){
+    const button=document.getElementById('p0-council');
+    if(!button)return;
+    const pool=intelligencePoolSummary();
+    const routeCount=Math.max(Number(pool.compareRouteTotal)||0,Number(pool.activeRouteTotal)||0,activeHostedCompareModels().length);
+    const ready=Boolean(!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
+    const visibleCount=routeCount>1?routeCount:0;
+    const label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate';
+    const title=visibleCount
+      ? 'Supergeni Council: ask '+String(visibleCount)+' live AI routes to answer, challenge weak assumptions, then converge'
+      : 'Supergeni Council: write a topic, then MMIR checks live routes for a model debate';
+    button.textContent=label;
+    button.dataset.state=ready?'ready':'setup';
+    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()));
+    button.setAttribute('aria-label',title);
+    button.setAttribute('title',title);
+  }
+
   function updatePinnedToolbarToolStates(){
     document.querySelectorAll('[data-p0-toolbar-tool="stop"]').forEach(button=>{
       const enabled=Boolean(state.busy);
@@ -3941,6 +4024,7 @@
     if(input)input.placeholder='Message '+displayModel.label+'...';
     renderShieldState(displayModel,local);
     renderSuperboostCta();
+    renderCouncilCta();
     renderPinnedToolbarTools();
     if(privateModeActive()){
       const next=privacyModeRouteStatus();
@@ -4234,6 +4318,116 @@
     return [noKeyToolLabel(tool),result?'Result '+result:'context ready','no paid route'].filter(Boolean).join(' · ');
   }
 
+  function scorecardArray(value){
+    return Array.isArray(value)?value:[];
+  }
+
+  function scorecardNumber(value,digits=0){
+    const number=Number(value);
+    if(!Number.isFinite(number))return 0;
+    const factor=10**digits;
+    return Math.round(number*factor)/factor;
+  }
+
+  function scorecardSourceLabel(source){
+    const id=String(source?.source_id||source?.node_id||'source').trim();
+    return id
+      .replace(/^external-/,'')
+      .replace(/-candidate$/,'')
+      .replace(/-/g,' ')
+      .replace(/\b\w/g,char=>char.toUpperCase());
+  }
+
+  function intelligenceStatusAnswer(scorecard){
+    const summary=scorecard?.summary||{};
+    const measurement=scorecard?.measurement||{};
+    const raw=measurement.raw_model_capacity||{};
+    const formula=measurement.score_formula||{};
+    const sources=scorecardArray(scorecard?.connected_intelligence_by_source?.sources)
+      .slice()
+      .sort((a,b)=>scorecardNumber(b.executable_route_count)-scorecardNumber(a.executable_route_count))
+      .slice(0,8);
+    const callable=scorecardNumber(summary.currently_callable_routes||measurement.live_capacity?.currently_callable_route_count);
+    const visible=scorecardNumber(summary.visible_routes||measurement.live_capacity?.visible_route_count);
+    const target=scorecardNumber(summary.target_routes||measurement.live_capacity?.target_route_count);
+    const progress=target?scorecardNumber((callable/target)*100,1):0;
+    const knownParams=scorecardNumber(summary.executable_known_parameter_billion_sum||raw.executable_known_parameter_billion_sum,1);
+    const visibleParams=scorecardNumber(raw.visible_known_parameter_billion_sum||scorecard?.capacity_plan?.now?.visible_known_parameter_billion_lower_bound,1);
+    const unknownCallable=scorecardNumber(summary.executable_unknown_parameter_route_count||raw.executable_unknown_parameter_route_count);
+    const sourceLines=sources.length
+      ? sources.map(source=>'- '+scorecardSourceLabel(source)+': '+scorecardNumber(source.executable_route_count)+' callable / '+scorecardNumber(source.visible_route_count)+' visible · '+scorecardNumber(source.executable_known_parameter_billion_sum,1)+'B known parameters').join('\n')
+      : '- No source breakdown returned yet.';
+    const next24=scorecard?.capacity_plan?.growth_targets?.next_24h?.callable_route_goal||scorecard?.owner_summary?.next_24h_target||'not set';
+    const next7=scorecard?.capacity_plan?.growth_targets?.next_7d?.callable_route_goal||scorecard?.owner_summary?.next_7d_target||'not set';
+    return [
+      'Intelligence. Connected.',
+      '',
+      'Live connected intelligence now:',
+      '- '+callable+' callable routes / '+target+' target ('+progress+'%).',
+      '- '+visible+' visible routes in the pool.',
+      '- Known executable parameter lower bound: '+knownParams+'B, plus '+unknownCallable+' callable routes with unknown public parameter counts.',
+      '- Known visible parameter lower bound: '+visibleParams+'B.',
+      '- '+scorecardNumber(summary.live_connected_sources||scorecard?.connected_intelligence_by_source?.live_source_count)+' connected sources.',
+      '',
+      'Connected sources:',
+      sourceLines,
+      '',
+      'How MMIR measures intelligence:',
+      '- Primary score: '+(formula.primary||'verified_connection_lift_per_prompt')+'.',
+      '- Parameters are capacity metadata, not the final quality score.',
+      '- A route only counts as useful when it improves correctness, ranking, grounding, calibration or answer quality.',
+      '',
+      'Next capacity targets:',
+      '- Next 24h: '+next24+' callable routes without paid-provider enablement or Actions burn.',
+      '- Next 7d: '+next7+' callable routes plus measured connection-lift.',
+      '',
+      scorecard?.no_paid_routes_started===false?'Cost guard: paid routes may be active.':'Cost guard: no paid routes started.'
+    ].join('\n');
+  }
+
+  async function showIntelligenceStatus(){
+    if(state.busy){
+      status('Wait for the current answer first.','error');
+      return true;
+    }
+    closeMenus();
+    status('Checking connected intelligence...','loading');
+    routeStatus('Intelligence status · read-only · no provider call','hosted');
+    captureInteraction('intelligence_status_started',{path:INTELLIGENCE_SCORECARD_PATH});
+    try{
+      const scorecard=await fetchJson(API_URL+INTELLIGENCE_SCORECARD_PATH,{timeoutMs:9000});
+      const summary=scorecard?.summary||{};
+      append(
+        'assistant',
+        intelligenceStatusAnswer(scorecard),
+        'MMIR Intelligence Status',
+        [
+          'Intelligence status',
+          scorecardNumber(summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count)+' callable routes',
+          scorecardNumber(summary.executable_known_parameter_billion_sum||scorecard?.measurement?.raw_model_capacity?.executable_known_parameter_billion_sum,1)+'B known capacity',
+          'read-only',
+          'no provider call'
+        ].filter(Boolean).join(' · '),
+        {variant:'status',actions:false}
+      );
+      captureInteraction('intelligence_status_ready',{
+        callable_routes:scorecardNumber(summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count),
+        visible_routes:scorecardNumber(summary.visible_routes||scorecard?.measurement?.live_capacity?.visible_route_count),
+        connected_sources:scorecardNumber(summary.live_connected_sources||scorecard?.connected_intelligence_by_source?.live_source_count),
+        no_paid_routes_started:scorecard?.no_paid_routes_started!==false
+      });
+      status('Intelligence status ready.','ready');
+      routeStatus('Intelligence status · live fabric · no provider call','ready');
+    }catch(error){
+      captureInteraction('intelligence_status_failed',{reason:'scorecard_unavailable'});
+      append('assistant','I could not read the live intelligence scorecard right now. Chat and Superboost can still work; try again in a moment.','MMIR Intelligence Status','Scorecard unavailable · no provider call',{variant:'status',actions:false});
+      status('Intelligence status unavailable.','error');
+      routeStatus('Scorecard unavailable · no provider call','error');
+    }
+    document.getElementById('p0-input')?.focus();
+    return true;
+  }
+
   async function previewNoKeyTool(payload,signal){
     return fetchJson(API_URL+NO_KEY_TOOL_PREVIEW_PATH,{
       method:'POST',
@@ -4313,12 +4507,12 @@
         receipt:noKeyToolReceipt(data),
         no_paid_routes_started:true,
         provider_called:false,
-        context_path:SWARM_PREVIEW_PATH
+        context_path:SUPERBOOST_PREVIEW_PATH
       });
       captureInteraction('tool_context_preview_ready',{
         tool:toolId,
         result:noKeyToolResultText(data),
-        context_path:SWARM_PREVIEW_PATH,
+        context_path:SUPERBOOST_PREVIEW_PATH,
         no_paid_routes_started:true
       });
       status(label+' ready. Asking active routes with verified context...','ready');
@@ -4338,7 +4532,7 @@
     const prompt=String(input?.value||'').trim();
     closeMenus();
     if(!prompt){
-      status('Write a prompt first, then Boost answer can run.','error');
+      status('Write a prompt first, then Superboost can run.','error');
       routeStatus('Boost needs a prompt','error');
       captureInteraction('tool_blocked',{tool:'boost-answer',reason:'missing_prompt'});
       input?.focus();
@@ -4407,6 +4601,53 @@
     return true;
   }
 
+  function supergeniCouncil(){
+    const input=document.getElementById('p0-input');
+    const prompt=String(input?.value||'').trim();
+    closeMenus();
+    if(!prompt){
+      captureInteraction('supergeni_council_prefill',{tool:'visible-council-cta'});
+      if(input){
+        input.value='Council topic: ';
+        autosizeInput();
+      }
+      status('Add a topic, then press Debate again.','ready');
+      routeStatus('Supergeni Council ready · active AI routes challenge each other','ready');
+      input?.focus();
+      return true;
+    }
+    if(gatewayCompareAvailable()||comparePartnerModel()){
+      captureInteraction('tool_used',{tool:'visible-supergeni-council',path:gatewayCompareAvailable()?'gateway':'two-model'});
+      compareGatewayRoutes(
+        'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+        {mode:'council'}
+      );
+      return true;
+    }
+    status('Checking active routes for Debate...','loading');
+    routeStatus('Debate checks route inventory · no paid route','hosted');
+    refreshHostedModels().then(()=>{
+      if(gatewayCompareAvailable()||comparePartnerModel()){
+        captureInteraction('tool_used',{tool:'visible-supergeni-council',path:gatewayCompareAvailable()?'gateway':'two-model',after_refresh:true});
+        compareGatewayRoutes(
+          'Supergeni Council: Let approved active models answer, challenge weak assumptions, then converge on one practical conclusion. Topic: '+prompt,
+          {mode:'council'}
+        );
+        return;
+      }
+      status('Debate needs at least two active routes.','ready');
+      routeStatus('Debate waiting for another active route · connect a node or provider route','hosted');
+      captureInteraction('tool_blocked',{tool:'visible-supergeni-council',reason:'needs_second_route'});
+      input?.focus();
+    }).catch(()=>{
+      status('Debate route refresh failed.','error');
+      routeStatus('Debate unavailable · route inventory unreachable','error');
+      captureInteraction('tool_failed',{tool:'visible-supergeni-council',reason:'route_inventory_unreachable'});
+      input?.focus();
+    });
+    return true;
+  }
+
   function handleToolbarTool(id){
     const tool=toolbarToolById(id);
     if(!tool)return false;
@@ -4438,6 +4679,10 @@
       captureInteraction('tool_used',{tool:'route-ask-ai-cta',path:'composer'});
       return boostAnswer();
     }
+    if(action==='supergeni-council-live'){
+      captureInteraction('tool_used',{tool:'route-council-cta',path:'composer'});
+      return supergeniCouncil();
+    }
     if(action==='connect-local'){
       captureInteraction('tool_used',{tool:'route-connect-local-cta',path:'composer'});
       startLocalInstallAssistant();
@@ -4464,6 +4709,7 @@
       setToolbarToolPinned(id,pinned);
       renderToolbar();
       renderAddMenu();
+      closeMenus();
       status((pinned?'Added ':'Removed ')+tool.label.toLowerCase()+'.','ready');
       routeStatus((pinned?'Toolbar added':'Toolbar removed')+' · browser local','hosted');
       return true;
@@ -4511,6 +4757,9 @@
     if(action==='add-menu-main'){
       renderAddMenu();
       return true;
+    }
+    if(action==='intelligence-status'){
+      return showIntelligenceStatus();
     }
     if(action==='prompt-presets'){
       renderPromptPresetMenu();
@@ -4604,6 +4853,9 @@
     }
     if(action==='ask-all-active'){
       return askAllActive();
+    }
+    if(action==='supergeni-council-live'){
+      return supergeniCouncil();
     }
     if(action==='compare-live'||action==='best-answer-live'||action==='discuss-topic'){
       return runTwoModelTool(action);
@@ -4723,9 +4975,10 @@
   function renderMessageActions(message){
     if(!answerActionsAllowed(message))return '';
     const id=safeAttr(message.id||'');
+    const continuationLabel=safeText(String(message.continuationLabel||'Fortsett svaret').replace(/\s+/g,' ').trim().slice(0,44)||'Fortsett svaret');
     return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
       (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="Mark compare answer useful">Useful</button>':'')+
-      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">Continue</button>':'')+
+      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">'+continuationLabel+'</button>':'')+
       '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
       '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
       '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'" aria-label="Copy safe share draft">Share safe</button>'+
@@ -4766,6 +5019,13 @@
     sendMessage();
   }
 
+  function cleanContinuationPartialAnswer(content){
+    return String(content||'')
+      .replace(/\n\nSvarvakt:[\s\S]*$/,'')
+      .trim()
+      .slice(-3600);
+  }
+
   function continueTruncatedMessage(message){
     if(state.busy){
       setMessageActionStatus(message.id,'Wait for the current answer first.','error');
@@ -4777,9 +5037,20 @@
       setMessageActionStatus(message.id,'No prompt to continue.','error');
       return;
     }
-    input.value='Continue the previous answer without repeating the beginning. Original prompt: '+original;
+    const suggested=String(message.continuationSuggestedMessage||'Fortsett svaret fra der det stoppet. Ikke start på nytt; fullfør med samme kontekst.').trim();
+    const partial=cleanContinuationPartialAnswer(message.content);
+    input.value=[
+      suggested,
+      'Original prompt: '+original,
+      partial?'Previous partial answer to continue from:\n'+partial:''
+    ].filter(Boolean).join('\n\n').slice(0,12000);
     autosizeInput();
     setMessageActionStatus(message.id,'Continuing...','ready');
+    captureInteraction('continuation_requested',{
+      source:message.continuationSource||'message-action',
+      has_partial_answer:Boolean(partial),
+      suggested_message:Boolean(message.continuationSuggestedMessage)
+    });
     sendMessage();
   }
 
@@ -4906,6 +5177,7 @@
     renderToolbar();
     renderTranscript();
     renderModelMenu();
+    renderTokenCounter();
     renderFeedbackCaptureStatus();
   }
 
@@ -4946,6 +5218,9 @@
       showOsChoices:Boolean(meta.showOsChoices),
       actions:meta.actions===false?false:true,
       retryPrompt:meta.retryPrompt||'',
+      continuationLabel:meta.continuationLabel||'',
+      continuationSuggestedMessage:meta.continuationSuggestedMessage||'',
+      continuationSource:meta.continuationSource||'',
       createdAt:new Date().toISOString()
     };
     state.messages.push(message);
@@ -5038,6 +5313,8 @@
   function responseIsTruncated(payload){
     const receipt=responseReceiptEnvelope(payload);
     return Boolean(
+      payload?.continuation?.needed||
+      payload?.continuation?.display||
       payload?.answer_truncated||
       payload?.completion_truncated||
       payload?.mmir?.receipt?.completion_truncated||
@@ -5050,7 +5327,7 @@
   }
 
   function truncationGuardNote(){
-    return '\n\nSvarvakt: dette svaret stoppet ved token-/lengdegrensen. Trykk Continue for å fortsette uten å gjenta starten.';
+    return '\n\nSvarvakt: dette svaret stoppet ved token-/lengdegrensen. Trykk Fortsett svaret for å fortsette uten å gjenta starten.';
   }
 
   function withTruncationGuard(answer,payload){
@@ -5059,7 +5336,29 @@
     return text+truncationGuardNote();
   }
 
+  function gatewayContinuationContract(data){
+    const continuation=data?.continuation||data?.superboost?.continuation||data?.best_answer?.continuation||null;
+    if(!continuation||continuation.object!=='mmir.answer_continuation')return null;
+    return continuation;
+  }
+
+  function gatewayContinuationNeeded(data){
+    const continuation=gatewayContinuationContract(data);
+    return Boolean(continuation&&(continuation.needed===true||continuation.display===true));
+  }
+
+  function gatewayContinuationActionLabel(data){
+    const label=String(gatewayContinuationContract(data)?.user_action_label||'').replace(/\s+/g,' ').trim();
+    return (label||'Fortsett svaret').slice(0,44);
+  }
+
+  function gatewayContinuationSuggestedMessage(data){
+    const message=String(gatewayContinuationContract(data)?.suggested_user_message||'').trim();
+    return message.slice(0,500);
+  }
+
   function gatewayDataTruncated(data){
+    if(gatewayContinuationNeeded(data))return true;
     if(responseIsTruncated(data?.best_answer))return true;
     if((Array.isArray(data?.data)?data.data:[]).some(responseIsTruncated))return true;
     return (Array.isArray(data?.route_attempts)?data.route_attempts:[]).some(responseIsTruncated);
@@ -5429,8 +5728,24 @@
     return notice+'\n\n'+text;
   }
 
+  function gatewayPrimaryAnswerText(data){
+    const values=[
+      data?.answer,
+      data?.best_answer_text,
+      data?.best_answer?.content,
+      data?.synthesis
+    ];
+    for(const value of values){
+      if(typeof value!=='string')continue;
+      const text=value.trim();
+      if(text)return text;
+    }
+    return '';
+  }
+
   function swarmReceiptLabel(data){
-    if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview')return '';
+    if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview'&&data?.object!=='chat.superboost.preview')return '';
+    if(data?.object==='chat.superboost.preview'||data?.superboost)return 'Superboost';
     const target=Number(data?.target_route_count)||Number(data?.intelligence_pool?.target_route_count)||Number(data?.pool?.target_route_count)||0;
     return target?'Swarm '+String(target):'Swarm preview';
   }
@@ -5448,7 +5763,7 @@
   }
 
   function normalizeSwarmPreviewResponse(data){
-    if(data?.object!=='chat.swarm.preview')return data;
+    if(data?.object!=='chat.swarm.preview'&&data?.object!=='chat.superboost.preview')return data;
     const first=data.first_round||{};
     const routeAttempts=Array.isArray(data.route_attempts)?data.route_attempts:[];
     const responses=Array.isArray(data.data)?data.data:[];
@@ -5486,6 +5801,9 @@
       pool,
       swarm_preview:true,
       swarm_status:data.status||'first_round_ready',
+      superboost_preview:data?.object==='chat.superboost.preview'||Boolean(data?.superboost),
+      superboost:data?.superboost,
+      continuation:data?.continuation||data?.superboost?.continuation||null,
       target_route_count:Number(data.target_route_count)||Number(pool.target_route_count)||0,
       sync_route_limit:Number(data.sync_route_limit)||Number(pool.sync_route_limit)||0,
       current_round:Number(data.current_round)||1,
@@ -5539,7 +5857,8 @@
     let swarmData=null;
     if(mode==='boost'||mode==='all'||mode==='council'){
       try{
-        swarmData=normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH,request));
+        const previewPath=mode==='boost'?SUPERBOOST_PREVIEW_PATH:SWARM_PREVIEW_PATH;
+        swarmData=normalizeSwarmPreviewResponse(await fetchJson(API_URL+previewPath,request));
         if(swarmData?.object==='chat.compare'&&(mode!=='all'||Array.isArray(swarmData.data)&&swarmData.data.length)){
           return swarmData;
         }
@@ -5891,13 +6210,20 @@
       const [gatewayData,localData]=await Promise.all([gatewayPromise,localPromise]);
       const data=mode==='all'?mergeLocalAllRoutes(gatewayData,localData):gatewayData;
       if(data?.object!=='chat.compare')throw new Error('Gateway compare unavailable');
+      recordTokenUsage(data,'gateway-fanout');
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
-        : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
+        : (gatewayPrimaryAnswerText(data)||'Compare finished, but no best answer was returned.');
       const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')))+(toolReceipt?' · '+toolReceipt:'');
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
-      updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
+      updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{
+        receipt:receipt+(truncated?' · truncated guard':''),
+        truncated,
+        continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
+        continuationSuggestedMessage:truncated?gatewayContinuationSuggestedMessage(data):'',
+        continuationSource:truncated?(gatewayContinuationContract(data)?.policy_version||'gateway-continuation'):''
+      });
       captureInteraction(truncated?'truncation_seen':'swarm_completed',{
         tool:title,
         mode,
@@ -6061,6 +6387,7 @@
       const answer=model.route==='local'
         ? await chatLocal(routePrompt,model,signal)
         : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
+      if(hostedData)recordTokenUsage(hostedData,'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
