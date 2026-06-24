@@ -215,7 +215,7 @@ requireIncludes(files.p0Runtime, 'say that you may be outdated instead of guessi
 requireIncludes(files.p0Runtime, 'function normalizeLocalHardware(payload)', 'P0 model picker must normalize local node CPU/RAM capacity.');
 forbid(files.p0Runtime, /<strong>Local capacity<\/strong>/, 'P0 model picker must not render local capacity as dropdown clutter.');
 requireIncludes(files.p0Css, '@media (max-width: 380px)', 'P0 toolbar must have a narrow mobile hardening rule.');
-requireIncludes(files.p0Css, '.p0-left {\n  flex: 0 0 auto;', 'P0 toolbar must prevent left controls from collapsing on mobile.');
+requireIncludes(files.p0Css, '.p0-left {\n  flex: 1 1 auto;\n  overflow: hidden;', 'P0 toolbar must shrink and clip pinned tools before they overlap route controls.');
 requireIncludes(files.p0Runtime, 'Compare answer 1/2', 'P0 compare receipts must identify the hosted answer.');
 requireIncludes(files.p0Runtime, 'Compare answer 2/2', 'P0 compare receipts must identify the local answer.');
 requireIncludes(files.p0Css, '.p0-message-compare', 'P0 compare answers must be visually distinguishable without adding a dashboard.');

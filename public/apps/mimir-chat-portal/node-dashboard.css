@@ -17,6 +17,7 @@
 .node-model-manager,
 .node-model-card,
 .node-resume-banner,
+.node-handoff-resume,
 .node-handoff-card,
 .node-repair-card {
   border: 1px solid var(--mimir-line);
@@ -36,6 +37,7 @@
 .node-model-manager span,
 .node-model-card span,
 .node-resume-banner span,
+.node-handoff-resume span,
 .node-handoff-card span,
 .node-repair-card span {
   color: var(--mimir-muted);
@@ -56,6 +58,7 @@
 .node-next-action p,
 .node-model-manager p,
 .node-resume-banner p,
+.node-handoff-resume p,
 .node-handoff-card p,
 .node-repair-card p,
 .node-repair-card small {
@@ -174,6 +177,46 @@
   gap: 12px;
   border-left: 4px solid #0f766e;
   background: #f8fffc;
+}
+
+.node-handoff-resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-left: 4px solid #0f766e;
+  background: #f8fffc;
+}
+
+.node-handoff-resume strong {
+  display: block;
+  color: var(--mimir-text);
+  margin-top: 4px;
+}
+
+.node-handoff-resume p {
+  margin: 4px 0;
+}
+
+.node-handoff-resume small {
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.node-handoff-resume[data-state="pending"],
+.node-handoff-resume[data-state="checking"] {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.node-handoff-resume[data-state="stale"] {
+  border-left-color: #b45309;
+  background: #fffbeb;
+}
+
+.node-handoff-resume[data-state="verified"] {
+  border-left-color: #10a37f;
+  background: #f0fdf9;
 }
 
 .node-resume-banner strong {
@@ -377,6 +420,10 @@
   }
 
   .node-resume-banner {
+    display: grid;
+  }
+
+  .node-handoff-resume {
     display: grid;
   }
 

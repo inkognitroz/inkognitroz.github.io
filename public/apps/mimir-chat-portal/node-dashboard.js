@@ -8,6 +8,7 @@
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
   const NODE_HANDOFF_PREFIX='mimir-node-handoff-v1:';
+  const NODE_HANDOFF_STALE_MS=15*60*1000;
   let remotePairingCode=null;
 
   if(!root||!api)return;
@@ -21,6 +22,14 @@
   function readRepairResume(){
     try{
       const value=JSON.parse(localStorage.getItem(repairResumeKey())||'null');
+      return value&&typeof value==='object'?value:null;
+    }catch(error){
+      return null;
+    }
+  }
+  function readNodeHandoff(){
+    try{
+      const value=JSON.parse(localStorage.getItem(nodeHandoffKey())||'null');
       return value&&typeof value==='object'?value:null;
     }catch(error){
       return null;
@@ -86,6 +95,36 @@
     return '<article class="node-resume-banner" data-state="'+safe(copy.state)+'">'+
       '<div><span>Repair resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p></div>'+
       '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
+    '</article>';
+  }
+  function handoffResumeCopy(handoff){
+    const action=String(handoff?.action||'refresh');
+    const stage=String(handoff?.stage||'unknown');
+    const target=String(handoff?.target||'#node-dashboard');
+    const device=String(handoff?.device||'device');
+    const model=String(handoff?.model||'').trim();
+    if(nodeHandoffIsStale(handoff))return {state:'stale',title:'Handoff needs refresh',detail:'Last saved handoff is older than 15 minutes. Recheck node health before using this route.',primary:'Refresh node health',target:'#node-dashboard'};
+    if(action==='chat-now')return {state:'verified',title:'Chat handoff selected',detail:'Last action moved '+device+' toward first verified chat'+(model?' with '+model:'')+'.',primary:'Return to chat',target:'#mimir-prompt'};
+    if(action==='install-model'||action==='repair-model-install')return {state:'pending',title:'Model install handoff saved',detail:'MMIR kept the '+(model||'free starter')+' path selected for '+device+' after refresh.',primary:'Open model library',target:'#model-library'};
+    if(action==='start-tunnel')return {state:'checking',title:'Tunnel handoff selected',detail:'Remote access remains outbound-only and paired; raw local runtimes stay private.',primary:'Refresh node health',target:'#node-dashboard'};
+    if(action==='install-connector'||stage==='install-connector')return {state:'pending',title:'Node install handoff saved',detail:'Install path for '+device+' is remembered; no paid routes or secrets were started.',primary:'Continue install',target};
+    if(action==='pair-browser')return {state:'checking',title:'Pairing handoff saved',detail:'This browser will retry local pairing before model proof or remote handoff.',primary:'Pair / refresh',target:'#node-dashboard'};
+    return {state:'checking',title:'Node handoff saved',detail:'Last selected stage '+stage+' is preserved for this workspace without raw prompts or responses.',primary:'Refresh node health',target:'#node-dashboard'};
+  }
+  function nodeHandoffIsStale(handoff){
+    const at=new Date(String(handoff?.at||''));
+    if(!Number.isFinite(at.getTime()))return true;
+    return Date.now()-at.getTime()>NODE_HANDOFF_STALE_MS;
+  }
+  function renderNodeHandoffResumeBanner(){
+    const handoff=readNodeHandoff();
+    if(!handoff)return '';
+    const copy=handoffResumeCopy(handoff);
+    const target=copy.target||'#node-dashboard';
+    const isHash=target.startsWith('#');
+    return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
+      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
+      '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
   function cleanUrl(value){return api.cleanUrl(value);}
@@ -349,7 +388,7 @@
     return {title:'Review node health',detail:first.detail,primary:'Local connector',target:'#local-connector'};
   }
 
-  function normalizedDoctor(report){
+  function normalizedDoctor(report,hardware){
     if(!report||!Array.isArray(report.checks)||!report.checks.length)return null;
     const checks=report.checks.map(check=>({
       id:String(check.id||'doctor'),
@@ -357,12 +396,13 @@
       label:String(check.label||check.id||'Doctor check'),
       detail:String(check.detail||'Local doctor reported this gate.')
     }));
-    const action=report.next_action&&report.next_action.title?{
+    const fallbackAction=nextAction(checks,hardware);
+    const action=report.next_action&&report.next_action.title&&!['start-ollama','install-model','repair-model-pull','repair-model-install'].includes(String(report.next_action.id||''))?{
       title:String(report.next_action.title),
       detail:String(report.next_action.detail||'Follow the safest next activation step.'),
       primary:String(report.next_action.primary||'Open'),
       target:String(report.next_action.target||'#local-connector')
-    }:nextAction(checks,null);
+    }:fallbackAction;
     return {checks,action,status:String(report.status||'unknown')};
   }
 
@@ -437,6 +477,20 @@
           note:'Node Dashboard repair resume action selected.'
         });
         if((link.getAttribute('href')||'')==='#mimir-prompt'&&link.getAttribute('data-repair-resume-action')==='verified'){
+          document.getElementById('mimir-prompt')?.focus();
+          window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
+        }
+      });
+    });
+    root.querySelectorAll('[data-node-handoff-resume-action]').forEach(link=>{
+      link.addEventListener('click',()=>{
+        window.MimirActivationTelemetry?.record?.('node-handoff-resume-action',{
+          status:link.getAttribute('data-node-handoff-resume-action')||'selected',
+          route:link.getAttribute('href')||'#node-dashboard',
+          free:true,
+          note:'Node handoff resume action selected. no_paid_routes_started:true.'
+        });
+        if((link.getAttribute('href')||'')==='#mimir-prompt'){
           document.getElementById('mimir-prompt')?.focus();
           window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
         }
@@ -517,6 +571,7 @@
     const plan=nodeHandoffPlan(checks,null,null,[]);
     root.innerHTML=
       renderRepairResumeBanner()+
+      renderNodeHandoffResumeBanner()+
       '<div class="node-dashboard-grid">'+
         card('Browser client','ready','This page is loaded and can prepare the free local profile.')+
         card('Active node','offline',DEFAULT_LOCAL_URL)+
@@ -579,7 +634,7 @@
       {id:'hardware',state:hardware?'ready':'warn',label:'Hardware profile',detail:hardware?hardwareSummary(hardware):'Hardware route did not return a profile.'},
       {id:'tunnel',state:tunnelReady?'ready':(tunnel?.control_enabled?'warn':'warn'),label:'Tunnel support',detail:tunnelSummary(tunnel)}
     ];
-    const report=normalizedDoctor(doctorReport);
+    const report=normalizedDoctor(doctorReport,hardware);
     const checks=report?.checks||fallbackChecks;
     const action=report?.action||nextAction(checks,hardware);
     const doctorSource=report?'Local Node Doctor':'Browser fallback doctor';
@@ -588,6 +643,7 @@
     const canStartTunnel=Boolean(tunnel&&tunnel.control_enabled!==false&&!tunnel.public_url);
     root.innerHTML=
       renderRepairResumeBanner()+
+      renderNodeHandoffResumeBanner()+
       '<div class="node-dashboard-grid">'+
         card('Browser client','ready','Public frontend with local-first controls.')+
         card('Active node',nodeLabel(identity,status),nodeType(identity,status,hardware)+' / '+statusText(status?.status))+

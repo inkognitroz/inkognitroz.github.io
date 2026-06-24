@@ -605,11 +605,12 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-left {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .p0-right {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   justify-content: flex-end;
 }
 
@@ -618,6 +619,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   display: inline-flex;
   gap: 8px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .p0-btn,

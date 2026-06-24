@@ -1,0 +1,56 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const root = process.cwd();
+const dashboardPath = join(root, 'public', 'apps', 'mimir-chat-portal', 'node-dashboard.js');
+const cssPath = join(root, 'public', 'apps', 'mimir-chat-portal', 'node-dashboard.css');
+const htmlPath = join(root, 'public', 'mmir.html');
+const manifestPath = join(root, 'public', 'apps', 'mimir-chat-portal', 'asset-versions.json');
+
+const dashboard = readFileSync(dashboardPath, 'utf8');
+const css = readFileSync(cssPath, 'utf8');
+const html = readFileSync(htmlPath, 'utf8');
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const failures = [];
+
+function fail(message) {
+  failures.push(message);
+}
+
+function requireIncludes(source, needle, message) {
+  if (!source.includes(needle)) fail(message);
+}
+
+requireIncludes(dashboard, 'function readNodeHandoff()', 'Node dashboard must read persisted handoff state.');
+requireIncludes(dashboard, 'function renderNodeHandoffResumeBanner()', 'Node dashboard must render a persisted handoff resume banner.');
+requireIncludes(dashboard, 'const NODE_HANDOFF_STALE_MS=15*60*1000;', 'Node handoff resume must define a short stale window for demo route trust.');
+requireIncludes(dashboard, 'function nodeHandoffIsStale(handoff)', 'Node handoff resume must classify old persisted handoffs.');
+requireIncludes(dashboard, 'if(!Number.isFinite(at.getTime()))return true;', 'Node handoff resume must treat missing or corrupt timestamps as stale.');
+requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
+requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
+requireIncludes(dashboard, 'provider_secrets_stored:false', 'Node handoff resume must keep security/cost proof visible.');
+requireIncludes(dashboard, 'node-handoff-resume-action', 'Node handoff resume action must be bindable.');
+requireIncludes(dashboard, "record?.('node-handoff-resume-action'", 'Node handoff resume actions must be telemetry-visible.');
+requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff resume banner must render in dashboard states.');
+
+requireIncludes(css, '.node-handoff-resume {', 'Node handoff resume banner must have dedicated styles.');
+requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff resume banner must style pending state.');
+requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
+
+const expectedVersion = '20260624-device-aware-doctor-action-v1';
+if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
+  fail('Asset manifest must track the node handoff resume JavaScript update.');
+}
+if (manifest.assets?.['node-dashboard.css'] !== expectedVersion) {
+  fail('Asset manifest must track the node handoff resume CSS update.');
+}
+requireIncludes(html, `node-dashboard.css?v=${expectedVersion}`, 'mmir.html must cache-bust the node handoff resume CSS update.');
+requireIncludes(html, `node-dashboard.js?v=${expectedVersion}`, 'mmir.html must cache-bust the node handoff resume JavaScript update.');
+
+if (failures.length) {
+  console.error('Node handoff resume smoke failed:');
+  failures.forEach((failure) => console.error('- ' + failure));
+  process.exit(1);
+}
+
+console.log('Node handoff resume smoke passed.');

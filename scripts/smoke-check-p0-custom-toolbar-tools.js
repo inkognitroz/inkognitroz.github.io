@@ -79,6 +79,9 @@ requireIncludes(shell, 'state.fastAnswerOnce=false;', 'Fast answer must be a one
 requireIncludes(updateSendControl, 'updatePinnedToolbarToolStates();', 'Pinned stop state must track the active send/stop state.');
 requireIncludes(updateSendControl, 'renderSuperboostCta();', 'Superboost CTA must disable during active responses.');
 requireIncludes(css, '.p0-toolbar-tools', 'CSS must keep optional tools aligned in the composer toolbar.');
+requireIncludes(css, '.p0-left {\n  flex: 1 1 auto;\n  overflow: hidden;', 'Composer toolbar left rail must shrink instead of overlapping route controls.');
+requireIncludes(css, '.p0-right {\n  flex: 0 0 auto;', 'Composer toolbar route controls must keep a fixed hit target after tools are pinned.');
+requireIncludes(css, '.p0-toolbar-tools {\n  align-items: center;\n  display: inline-flex;\n  gap: 8px;\n  min-width: 0;\n  overflow: hidden;', 'Pinned toolbar tools must clip before they can overlap model controls.');
 requireIncludes(css, '.p0-superboost', 'CSS must style the visible Superboost CTA.');
 requireIncludes(css, '.p0-toolbar-tool:disabled', 'CSS must make inactive optional tools visibly subtle.');
 requireIncludes(icons, "const flame='", 'Icon helper must provide flame icon.');

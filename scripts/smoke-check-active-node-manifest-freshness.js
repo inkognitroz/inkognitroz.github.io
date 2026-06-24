@@ -31,6 +31,7 @@ if (!updatedAt) {
 requireIncludes(strip, 'function routeInventoryFreshness(updatedAt)', 'Active node strip must compute route inventory freshness.');
 requireIncludes(strip, "label:'Route inventory freshness unknown'", 'Active node strip must explain when route inventory freshness cannot be determined.');
 requireIncludes(strip, "label:'Route inventory current'", 'Active node strip must clearly mark fresh route inventory.');
+requireIncludes(strip, "label:'Route inventory timestamp ahead'", 'Active node strip must warn on future route inventory timestamps.');
 requireIncludes(strip, "label:'Route inventory refresh failed'", 'Active node strip must explain when an explicit route inventory refresh falls back.');
 requireIncludes(strip, 'Refresh before demo trust.', 'Active node strip must warn when route inventory is stale.');
 requireIncludes(strip, 'function withRefreshState(freshness)', 'Active node strip must decorate freshness copy with refresh outcomes.');
@@ -41,7 +42,9 @@ requireIncludes(strip, 'function refreshRouteInventory()', 'Active node strip mu
 requireIncludes(strip, "fetch(MANIFEST_URL,{cache:force?'no-store':'default'})", 'Route inventory refresh must bypass stale browser cache when explicitly requested.');
 requireIncludes(strip, "manifestUpdatedAt=String(body?.updated_at||'');", 'Active node strip must load updated_at from the public node manifest.');
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
-const expectedVersion = '20260623-feedback-draft-context-v1';
+requireIncludes(strip, 'trustLine=manifestTrustLine(manifestUpdatedAt,inventory)', 'Active node strip must bind manifest trust copy to the rendered freshness badge.');
+requireIncludes(strip, "aria-label=\"'+safe(trustLine", 'Active node strip freshness badge must expose route count and review date to assistive tech.');
+const expectedVersion = '20260623-active-route-storage-guard-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }
