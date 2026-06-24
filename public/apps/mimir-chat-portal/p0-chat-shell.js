@@ -55,7 +55,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-gateway-answer-text-v1';
+  const P0_RUNTIME_VERSION='20260624-fusion-proof-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -5720,6 +5720,36 @@
     return 'Models disagree on this. Treat the answer as provisional and open Details for the route evidence.';
   }
 
+  function gatewayFusionAnalysis(data){
+    const analysis=data?.fusion_analysis||data?.best_answer?.fusion_analysis||data?.mmir?.fusion_analysis||null;
+    return analysis&&analysis.object==='mmir.supergeni_fusion_analysis'?analysis:null;
+  }
+
+  function gatewayFusionReceiptLine(data){
+    const analysis=gatewayFusionAnalysis(data);
+    if(!analysis||analysis.status!=='analysis_ready')return '';
+    const pool=gatewayPool(data);
+    const lift=pool?.connection_lift||data?.connection_lift||null;
+    const support=Number(analysis?.consensus?.supporting_route_count)||0;
+    const independent=Number(analysis.independent_answer_count)||gatewayAnswerCount(data)||0;
+    const providers=Number(analysis.independent_provider_or_node_count)||0;
+    const unique=Array.isArray(analysis.unique_insight_routes)?analysis.unique_insight_routes.length:0;
+    const blind=Array.isArray(analysis.blind_spots)?analysis.blind_spots.length:0;
+    const blocked=Number(analysis?.partial_coverage?.blocked_candidate_count)||0;
+    const judge=String(analysis.judge||'').replace(/\s+/g,' ').trim();
+    const parts=[
+      'Fusion analysis',
+      support&&independent?('support '+String(support)+'/'+String(independent)):'',
+      providers?String(providers)+' sources':'',
+      lift?.measured&&typeof lift.lift_score==='number'?('connection lift '+(lift.lift_score>0?'+':'')+String(lift.lift_score)):'',
+      unique?String(unique)+' unique insight routes':'',
+      blind?String(blind)+' blind spots':'',
+      blocked?String(blocked)+' partial routes':'',
+      judge?('judge '+judge):''
+    ];
+    return parts.filter(Boolean).join(' ');
+  }
+
   function withConsensusAnswerNotice(content,data){
     const notice=gatewayConsensusAnswerNotice(data);
     const text=String(content||'').trim();
@@ -5829,6 +5859,8 @@
       current_round:swarmData.current_round,
       planned_debate_rounds:swarmData.planned_debate_rounds,
       debate_plan:swarmData.debate_plan,
+      fusion_analysis:swarmData.fusion_analysis,
+      measurement:swarmData.measurement,
       intelligence_pool:pool,
       pool
     };
@@ -5924,6 +5956,7 @@
     const councilReady=/(council|debate)/i.test(label)&&arenaReady;
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const consensus=gatewayConsensusConfidence(data);
+    const fusionLine=gatewayFusionReceiptLine(data);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const providerReadiness=providerReadinessLine();
@@ -5933,6 +5966,7 @@
       roundLabel,
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
       consensus?.label||'',
+      fusionLine,
       answeredLabel,
       demotedLabel,
       quietLabel,

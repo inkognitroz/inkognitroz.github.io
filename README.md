@@ -34,6 +34,14 @@ node scripts/ensure-mmir-public-branding.js --check
 node scripts/smoke-check-public-shell.js
 ```
 
+## Actions-free Preview
+
+When GitHub Actions minutes are exhausted, use the Wrangler preview lane instead of dispatching workflows:
+
+- [ACTIONS_FREE_WEB_PREVIEW_DEPLOY.md](ACTIONS_FREE_WEB_PREVIEW_DEPLOY.md)
+
+This deploys only to the separate `workers.dev` preview Worker. It does not update `mmir.ai`, bind a custom domain, change DNS or enable paid providers.
+
 ## Public Boundary
 
 Do not add these to this repository:

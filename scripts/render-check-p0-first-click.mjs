@@ -137,6 +137,18 @@ async function installApiFixtures(page) {
       })
     });
   });
+
+  await page.route('https://api.mmir.ai/telemetry/demo-transcript', async route => {
+    await route.fulfill({
+      status: 202,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        accepted: true,
+        source: 'first-click-render-guard',
+        no_paid_routes_started: true
+      })
+    });
+  });
 }
 
 async function installVoiceFixture(page) {

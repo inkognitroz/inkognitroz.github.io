@@ -237,7 +237,44 @@ async function installFixtures(page) {
           route_scoring: true,
           best_answer: true,
           capability_graph_ingest_candidate: true
+        },
+        connection_lift: {
+          object: 'mmir.connection_lift',
+          measured: true,
+          active_answer_count: 3,
+          baseline_score: 72,
+          best_connected_score: 96,
+          lift_score: 24,
+          lift_positive: true,
+          not_parameter_count: true
         }
+      },
+      fusion_analysis: {
+        object: 'mmir.supergeni_fusion_analysis',
+        status: 'analysis_ready',
+        judge: 'Supergeni Council cross-review',
+        independent_answer_count: 3,
+        independent_provider_or_node_count: 2,
+        consensus: {
+          status: 'high',
+          supporting_route_count: 2,
+          supporting_routes: [
+            { route: 'mmir · Supergeni', score: 96, latency_ms: 420 },
+            { route: 'openrouter · Laguna XS', score: 83, latency_ms: 1370 }
+          ]
+        },
+        partial_coverage: {
+          blocked_candidate_count: 2,
+          async_472_not_run_in_sync_preview: true
+        },
+        blind_spots: [
+          'No live-data grounding signal was active for this prompt.'
+        ],
+        unique_insight_routes: [
+          { route: 'openrouter · GPT OSS 20B', score: 81, value: 'Keep as specialist signal.' }
+        ],
+        no_paid_routes_started: true,
+        provider_secrets_in_browser: false
       },
       best_answer: {
         model_id: 'supergeni',
@@ -571,6 +608,10 @@ async function checkViewport(browser, viewport) {
   assert(/round 1\/3/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve current swarm round truth`);
   assert(/sync 40/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve sync fanout limit`);
   assert(/arena ready/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve arena readiness`);
+  assert(/Fusion analysis/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve Supergeni fusion analysis proof`);
+  assert(/support 2\/3/i.test(layout.routeFull), `${viewport.name}: full receipt should show how many routes supported the winning answer`);
+  assert(/connection lift \+24/i.test(layout.routeFull), `${viewport.name}: full receipt should show measured connection lift behind details`);
+  assert(/1 blind spots/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve known blind-spot count behind details`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);
   assert(/Why: complete answer, fast/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner reason proof`);
@@ -624,6 +665,8 @@ async function checkViewport(browser, viewport) {
   assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep readiness detail behind details`);
   assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep receipt proof behind details`);
   assert(/round 1\/3/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve swarm round truth`);
+  assert(/Fusion analysis/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve fusion analysis truth`);
+  assert(/connection lift \+24/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve measured lift truth`);
   assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve no-paid route truth`);
   assert(councilLayout.toolbarButtons <= 7, `${viewport.name}: Supergeni Council must keep visible toolbar actions tight`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
