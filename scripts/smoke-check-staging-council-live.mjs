@@ -55,9 +55,11 @@ try {
     const route = document.querySelector('#p0-route')?.textContent || '';
     const text = `${transcript} ${status} ${route}`;
     const stillRunning = /Council is asking|is running|Independent answers|live progress|synthesizing/i.test(text);
-    const hasFinal = /Intelligence\. Connected|selvforsterkende|kobler|beste svar|MMIR sin visjon er|Supergeni/i.test(transcript);
-    const hasProof = /Sp[øo]r\s+\d+\s+AI|routes compared|Verifisert|privat/i.test(route + transcript);
-    return !stillRunning && hasFinal && hasProof;
+    const blocked = /needs at least two active routes|waiting for another active route|unavailable|route inventory unreachable/i.test(text);
+    const ready = /Supergeni Council ready/i.test(status);
+    const hasFinal = /Intelligence\. Connected|selvforsterkende|kobler|beste svar|MMIR sin visjon er/i.test(transcript);
+    const hasProof = /Sp[øo]r\s+\d+\s+AI|routes compared/i.test(route + transcript) && /Verifisert|privat/i.test(route + transcript);
+    return !stillRunning && !blocked && ready && hasFinal && hasProof;
   }, null, { timeout: timeoutMs });
 
   const result = await page.evaluate(() => ({
@@ -70,8 +72,11 @@ try {
   await page.screenshot({ path: `${screenshotDir}/council-live.png`, fullPage: true });
 
   assert(!result.objectObject, 'Council response rendered [object Object].');
+  assert(browserErrors.length === 0, `Browser emitted errors during Council smoke: ${browserErrors.slice(0, 3).join(' | ')}`);
+  assert(/Supergeni Council ready/i.test(result.status), `Council did not reach ready state: ${result.status}`);
+  assert(!/needs at least two active routes|waiting for another active route|unavailable|route inventory unreachable/i.test(result.status + result.route + result.transcript), 'Council ended in a blocked route-inventory state.');
   assert(/Sp[øo]r\s+\d+\s+AI|routes compared|Verifisert|privat/i.test(result.route + result.transcript), 'Council proof did not expose route/value receipt.');
-  assert(/Intelligence\. Connected|selvforsterkende|kobler|beste svar|MMIR sin visjon er|Supergeni/i.test(result.transcript), 'Council did not render a final answer.');
+  assert(/Intelligence\. Connected|selvforsterkende|kobler|beste svar|MMIR sin visjon er/i.test(result.transcript), 'Council did not render a final answer.');
 
   console.log(JSON.stringify({
     ok: true,
