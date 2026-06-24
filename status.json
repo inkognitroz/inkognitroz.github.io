@@ -4,13 +4,13 @@
   "identity": "The orchestration layer for trusted AI",
   "frontend": "https://mmir.ai/mmir.html",
   "managed_api": "https://api.mmir.ai",
-  "managed_api_version": "2026-06-24-public-route-trust-v1",
+  "managed_api_version": "2026-06-24-council-fusion-proof-v1",
   "free_active_node": "browser-guide",
   "target": "World-class MMIR chat + active AI nodes + local/hosted model orchestration",
   "first_click_path": "Open mmir.ai -> chat through free active node -> connect local AI -> add own models",
   "no_paid_routes_started": true,
   "backend_health_url": "https://api.mmir.ai/status",
-  "message": "Public chat shell is online: first screen is chat-first, route policy is visible, feedback capture stays local/public-safe, and the free first chat path works without starting paid provider routes.",
+  "message": "Public chat shell is online: first screen is chat-first, Council fusion proof and route policy are visible, feedback capture stays local/public-safe, and the free first chat path works without starting paid provider routes.",
   "known_caveat": "Managed provider routing remains planned until auth, rate limits, audit logging and server-side provider secrets are in place. Local node health is user-controlled and localhost-first.",
-  "last_updated": "2026-06-24T01:56:28Z"
+  "last_updated": "2026-06-24T13:20:11Z"
 }
