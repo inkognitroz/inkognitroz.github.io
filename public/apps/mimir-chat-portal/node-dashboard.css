@@ -194,7 +194,17 @@
   margin-top: 4px;
 }
 
+.node-resume-banner strong {
+  display: block;
+  color: var(--mimir-text);
+  margin-top: 4px;
+}
+
 .node-handoff-resume p {
+  margin: 4px 0;
+}
+
+.node-resume-banner p {
   margin: 4px 0;
 }
 
@@ -210,6 +220,11 @@
 }
 
 .node-handoff-resume[data-state="stale"] {
+  border-left-color: #b45309;
+  background: #fffbeb;
+}
+
+.node-resume-banner[data-state="stale"] {
   border-left-color: #b45309;
   background: #fffbeb;
 }

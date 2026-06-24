@@ -7,6 +7,7 @@
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const REPAIR_RESUME_STALE_MS=15*60*1000;
   const NODE_HANDOFF_PREFIX='mimir-node-handoff-v1:';
   const NODE_HANDOFF_STALE_MS=15*60*1000;
   let remotePairingCode=null;
@@ -48,6 +49,11 @@
       }));
     }catch(error){}
   }
+  function repairResumeIsStale(resume){
+    const at=new Date(String(resume?.at||''));
+    if(!Number.isFinite(at.getTime()))return true;
+    return Date.now()-at.getTime()>REPAIR_RESUME_STALE_MS;
+  }
   function storeNodeHandoff(payload){
     try{
       localStorage.setItem(nodeHandoffKey(),JSON.stringify({
@@ -62,6 +68,7 @@
     }catch(error){}
   }
   function repairResumeCopy(resume){
+    if(repairResumeIsStale(resume))return {state:'stale',title:'Repair needs refresh',detail:'Last saved repair state is older than 15 minutes. Recheck node health before continuing this setup path.',primary:'Refresh node health',target:'#node-dashboard'};
     const status=String(resume?.status||'pending');
     const model=String(resume?.model||'').trim();
     if(status==='verified'){
