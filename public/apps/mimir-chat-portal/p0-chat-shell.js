@@ -54,7 +54,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-superboost-tools-v1';
+  const P0_RUNTIME_VERSION='20260624-continuation-action-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -4860,9 +4860,10 @@
   function renderMessageActions(message){
     if(!answerActionsAllowed(message))return '';
     const id=safeAttr(message.id||'');
+    const continuationLabel=safeText(String(message.continuationLabel||'Fortsett svaret').replace(/\s+/g,' ').trim().slice(0,44)||'Fortsett svaret');
     return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
       (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="Mark compare answer useful">Useful</button>':'')+
-      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">Continue</button>':'')+
+      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">'+continuationLabel+'</button>':'')+
       '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
       '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
       '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'" aria-label="Copy safe share draft">Share safe</button>'+
@@ -4903,6 +4904,13 @@
     sendMessage();
   }
 
+  function cleanContinuationPartialAnswer(content){
+    return String(content||'')
+      .replace(/\n\nSvarvakt:[\s\S]*$/,'')
+      .trim()
+      .slice(-3600);
+  }
+
   function continueTruncatedMessage(message){
     if(state.busy){
       setMessageActionStatus(message.id,'Wait for the current answer first.','error');
@@ -4914,9 +4922,20 @@
       setMessageActionStatus(message.id,'No prompt to continue.','error');
       return;
     }
-    input.value='Continue the previous answer without repeating the beginning. Original prompt: '+original;
+    const suggested=String(message.continuationSuggestedMessage||'Fortsett svaret fra der det stoppet. Ikke start på nytt; fullfør med samme kontekst.').trim();
+    const partial=cleanContinuationPartialAnswer(message.content);
+    input.value=[
+      suggested,
+      'Original prompt: '+original,
+      partial?'Previous partial answer to continue from:\n'+partial:''
+    ].filter(Boolean).join('\n\n').slice(0,12000);
     autosizeInput();
     setMessageActionStatus(message.id,'Continuing...','ready');
+    captureInteraction('continuation_requested',{
+      source:message.continuationSource||'message-action',
+      has_partial_answer:Boolean(partial),
+      suggested_message:Boolean(message.continuationSuggestedMessage)
+    });
     sendMessage();
   }
 
@@ -5084,6 +5103,9 @@
       showOsChoices:Boolean(meta.showOsChoices),
       actions:meta.actions===false?false:true,
       retryPrompt:meta.retryPrompt||'',
+      continuationLabel:meta.continuationLabel||'',
+      continuationSuggestedMessage:meta.continuationSuggestedMessage||'',
+      continuationSource:meta.continuationSource||'',
       createdAt:new Date().toISOString()
     };
     state.messages.push(message);
@@ -5176,6 +5198,8 @@
   function responseIsTruncated(payload){
     const receipt=responseReceiptEnvelope(payload);
     return Boolean(
+      payload?.continuation?.needed||
+      payload?.continuation?.display||
       payload?.answer_truncated||
       payload?.completion_truncated||
       payload?.mmir?.receipt?.completion_truncated||
@@ -5188,7 +5212,7 @@
   }
 
   function truncationGuardNote(){
-    return '\n\nSvarvakt: dette svaret stoppet ved token-/lengdegrensen. Trykk Continue for å fortsette uten å gjenta starten.';
+    return '\n\nSvarvakt: dette svaret stoppet ved token-/lengdegrensen. Trykk Fortsett svaret for å fortsette uten å gjenta starten.';
   }
 
   function withTruncationGuard(answer,payload){
@@ -5197,7 +5221,29 @@
     return text+truncationGuardNote();
   }
 
+  function gatewayContinuationContract(data){
+    const continuation=data?.continuation||data?.superboost?.continuation||data?.best_answer?.continuation||null;
+    if(!continuation||continuation.object!=='mmir.answer_continuation')return null;
+    return continuation;
+  }
+
+  function gatewayContinuationNeeded(data){
+    const continuation=gatewayContinuationContract(data);
+    return Boolean(continuation&&(continuation.needed===true||continuation.display===true));
+  }
+
+  function gatewayContinuationActionLabel(data){
+    const label=String(gatewayContinuationContract(data)?.user_action_label||'').replace(/\s+/g,' ').trim();
+    return (label||'Fortsett svaret').slice(0,44);
+  }
+
+  function gatewayContinuationSuggestedMessage(data){
+    const message=String(gatewayContinuationContract(data)?.suggested_user_message||'').trim();
+    return message.slice(0,500);
+  }
+
   function gatewayDataTruncated(data){
+    if(gatewayContinuationNeeded(data))return true;
     if(responseIsTruncated(data?.best_answer))return true;
     if((Array.isArray(data?.data)?data.data:[]).some(responseIsTruncated))return true;
     return (Array.isArray(data?.route_attempts)?data.route_attempts:[]).some(responseIsTruncated);
@@ -5627,6 +5673,7 @@
       swarm_status:data.status||'first_round_ready',
       superboost_preview:data?.object==='chat.superboost.preview'||Boolean(data?.superboost),
       superboost:data?.superboost,
+      continuation:data?.continuation||data?.superboost?.continuation||null,
       target_route_count:Number(data.target_route_count)||Number(pool.target_route_count)||0,
       sync_route_limit:Number(data.sync_route_limit)||Number(pool.sync_route_limit)||0,
       current_round:Number(data.current_round)||1,
@@ -6040,7 +6087,13 @@
       const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')))+(toolReceipt?' · '+toolReceipt:'');
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
-      updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{receipt:receipt+(truncated?' · truncated guard':''),truncated});
+      updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{
+        receipt:receipt+(truncated?' · truncated guard':''),
+        truncated,
+        continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
+        continuationSuggestedMessage:truncated?gatewayContinuationSuggestedMessage(data):'',
+        continuationSource:truncated?(gatewayContinuationContract(data)?.policy_version||'gateway-continuation'):''
+      });
       captureInteraction(truncated?'truncation_seen':'swarm_completed',{
         tool:title,
         mode,

@@ -170,8 +170,38 @@ async function installFixtures(page) {
         all_answer_count: 3,
         council_review_count: 2,
         async_472_route_plan_required: true,
+        continuation_ready: true,
+        continuation_display: true,
+        continuation: {
+          object: 'mmir.answer_continuation',
+          policy_version: '2026-06-24-continuation-v1',
+          needed: true,
+          display: true,
+          reason: 'best_answer_truncated',
+          user_action_label: 'Fortsett svaret',
+          suggested_user_message: 'Fortsett svaret fra der det stoppet. Ikke start på nytt; fullfør med samme kontekst.',
+          prompt_included_in_metadata: false,
+          answer_included_in_metadata: false,
+          provider_called: false,
+          provider_secrets_in_browser: false,
+          no_paid_routes_started: true
+        },
         no_paid_routes_started: true,
         provider_secrets_in_browser: false
+      } : undefined,
+      continuation: isSuperboost ? {
+        object: 'mmir.answer_continuation',
+        policy_version: '2026-06-24-continuation-v1',
+        needed: true,
+        display: true,
+        reason: 'best_answer_truncated',
+        user_action_label: 'Fortsett svaret',
+        suggested_user_message: 'Fortsett svaret fra der det stoppet. Ikke start på nytt; fullfør med samme kontekst.',
+        prompt_included_in_metadata: false,
+        answer_included_in_metadata: false,
+        provider_called: false,
+        provider_secrets_in_browser: false,
+        no_paid_routes_started: true
       } : undefined,
       first_round: {
         object: 'chat.compare',
@@ -506,6 +536,8 @@ async function checkViewport(browser, viewport) {
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
   assert(/Spør 5 AI - beste vinner/i.test(text), `${viewport.name}: boost receipt should show the user-value swarm line`);
+  assert(/Fortsett svaret/i.test(text), `${viewport.name}: truncated Superboost answer should expose the plain-language continuation action`);
+  assert(/Svarvakt/i.test(text), `${viewport.name}: truncated Superboost answer should explain why continuation is available`);
   assert(/Detaljer/i.test(text), `${viewport.name}: boost receipt should keep raw telemetry behind Details`);
   assert(!text.includes('5 routes compared'), `${viewport.name}: gateway compare receipt should keep raw route telemetry behind Details`);
 
