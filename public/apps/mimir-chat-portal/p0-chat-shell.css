@@ -320,7 +320,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 .p0-message[data-actions-open="true"] .p0-message-actions,
 .p0-message-actions[data-has-status="true"] {
   margin-top: 4px;
-  max-height: 34px;
+  max-height: 64px;
   opacity: 0.82;
   overflow: visible;
   pointer-events: auto;
@@ -347,6 +347,10 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   background: #f7f7f8;
   border-color: #e5e7eb;
   color: #111827;
+}
+
+.p0-message-compare .p0-message-actions button[data-p0-message-action="useful-compare"] {
+  color: #047857;
 }
 
 .p0-message-action-status {

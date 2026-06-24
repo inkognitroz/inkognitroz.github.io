@@ -54,7 +54,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-token-counter-v1';
+  const P0_RUNTIME_VERSION='20260624-council-feedback-token-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -4849,6 +4849,7 @@
     if(!answerActionsAllowed(message))return '';
     const id=safeAttr(message.id||'');
     return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
+      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="Mark compare answer useful">Useful</button>':'')+
       (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">Continue</button>':'')+
       '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
       '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
@@ -4927,6 +4928,31 @@
     setMessageActionStatus(message.id,ok?'Safe draft copied.':'Safe draft saved locally.',ok?'ready':'error');
   }
 
+  function captureCompareUsefulFeedback(message){
+    const user=previousUserMessageFor(message);
+    const route=String(message.receipt||message.label||'compare route').replace(/\s+/g,' ').slice(0,420);
+    const answer=String(message.content||'').replace(/\s+/g,' ').slice(0,700);
+    const prompt=String(user?.content||'').replace(/\s+/g,' ').slice(0,420);
+    const saved=saveFeedbackDraft(
+      [
+        'Compare answer marked useful.',
+        prompt?('Prompt: '+prompt):'Prompt: [not available]',
+        'Route evidence: '+route,
+        'Useful answer excerpt: '+answer
+      ].join('\n'),
+      {
+        source:'p0-compare-useful-action',
+        target:'compare',
+        priority:'p2-demo-learning',
+        lane:'L1 Frontend UX',
+        title:'Compare answer useful signal',
+        backlogHint:'compare-feedback-capture'
+      }
+    );
+    setMessageActionStatus(message.id,saved?'Useful signal saved to Feedback Inbox.':'Could not save useful signal.',saved?'ready':'error');
+    return saved;
+  }
+
   function handleMessageAction(action,id){
     const message=messageById(id);
     if(!message||!answerActionsAllowed(message)){
@@ -4947,6 +4973,10 @@
     }
     if(action==='share-safe'){
       shareSafeMessage(message);
+      return true;
+    }
+    if(action==='useful-compare'&&message.variant==='compare'){
+      captureCompareUsefulFeedback(message);
       return true;
     }
     return false;

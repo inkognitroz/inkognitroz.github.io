@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_at": "2026-06-22T06:54:41Z",
+  "updated_at": "2026-06-24T01:56:28Z",
   "description": "Public-safe status manifest for MMIR.ai. Internal QA, agent instructions and deploy reports stay in the private control repo; this browser payload contains only product-safe status copy.",
-  "latest_verified_commit": "eccdb8c",
+  "latest_verified_commit": "9e060379b5a3",
   "domain_availability_watch": "./domain-availability-watch.json",
   "components": [
     {
@@ -16,8 +16,8 @@
       "id": "latest-deploy-verification",
       "label": "Latest deploy verification",
       "status": "online",
-      "route": "eccdb8c / GitHub Actions",
-      "notes": "The public artifact is checked by GitHub Actions before deploy. Detailed QA evidence stays in the private control repo."
+      "route": "9e060379b5a3 / GitHub Actions",
+      "notes": "The public artifact is checked by GitHub Actions before deploy. Current public copy includes the active route policy strip and refreshed trust manifest so demo viewers can see local, hosted and fallback route boundaries."
     },
     {
       "id": "public-url-health",
@@ -30,15 +30,15 @@
       "id": "domain-availability-watch-refresh",
       "label": "Domain availability watch",
       "status": "watch",
-      "route": "eccdb8c / mmir.ai",
-      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare, but some networks still return 503 or connection failures for mmir.ai. See domain-availability-watch.json before treating this as a frontend or chat failure."
+      "route": "9e060379b5a3 / mmir.ai",
+      "notes": "Latest Pages deploy is green and DNS resolves through Cloudflare. Keep this watch generic and public-safe when diagnosing network/domain-reputation failures."
     },
     {
       "id": "no-model-deploy-verification",
       "label": "No-model deploy proof",
       "status": "online",
-      "route": "eccdb8c / GitHub Pages artifact",
-      "notes": "The public chat shell includes a no-model fallback path and free route floor without exposing internal QA reports."
+      "route": "9e060379b5a3 / GitHub Pages artifact",
+      "notes": "The public chat shell includes a no-model fallback path, free route floor, refreshed trust manifest and visible active-route policy without exposing internal QA reports."
     },
     {
       "id": "github-pages",
@@ -66,7 +66,7 @@
       "label": "Local node",
       "status": "user-controlled",
       "route": "http://127.0.0.1:3000",
-      "notes": "Local health is checked only when the user activates a local backend profile in this browser."
+      "notes": "Local health is checked only when the user activates a local backend profile in this browser; node handoff remains user-controlled and localhost-first."
     }
   ]
 }
