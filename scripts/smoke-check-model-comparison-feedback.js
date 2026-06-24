@@ -29,8 +29,13 @@ requireIncludes(js, "feedbackBtn.textContent='Useful synthesis';", 'New synthesi
 requireIncludes(js, "function resultSummary(){", 'Compare feedback must summarize selected model coverage.');
 requireIncludes(js, "Compared '+String(lastResults.length)+' model(s): '+models", 'Compare feedback must include compared model count and labels.');
 requireIncludes(js, "failed.length?'Failed responses: '+String(failed.length):'No failed responses'", 'Compare feedback must preserve failed response count.');
+requireIncludes(js, 'function promptPrivacySummary(){', 'Compare feedback must summarize prompt metadata without raw prompt text.');
+requireIncludes(js, 'raw prompt not stored in feedback draft', 'Compare feedback draft must explicitly avoid raw prompt storage.');
+requireIncludes(js, 'function synthesisPrivacySummary(){', 'Compare feedback must summarize synthesis metadata without raw answer text.');
+requireIncludes(js, 'raw synthesis not stored in feedback draft', 'Compare feedback draft must explicitly avoid raw synthesis storage.');
 requireIncludes(js, "function comparisonFeedbackDraft(){", 'Compare panel must build a sanitized local feedback draft.');
 requireIncludes(js, "'@feedback Compare Live Models useful synthesis", 'Compare feedback draft must be explicit and command-routable.');
+requireIncludes(js, 'raw prompt, raw model responses and raw synthesis are not stored in this feedback draft', 'Compare feedback draft must preserve the public-safe storage boundary.');
 requireIncludes(js, ".saveFeedbackDraft?.(draft,{", 'Compare panel must use the runtime Feedback Inbox bridge when available.');
 requireIncludes(js, "source:'model-comparison-panel'", 'Compare feedback drafts must record the exact UI source.');
 requireIncludes(js, "backlogHint:'compare-panel-useful-synthesis'", 'Compare feedback drafts must include a stable triage hint.');
@@ -42,7 +47,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
-const expectedVersion = '20260625-useful-synthesis-feedback-v1';
+const expectedVersion = '20260625-privacy-safe-compare-feedback-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
