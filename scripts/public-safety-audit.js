@@ -31,6 +31,20 @@ function fail(file, message) {
   failures.push(`${relative(root, file)}: ${message}`);
 }
 
+function hasBrowserBearerConstruction(text) {
+  browserBearerPattern.lastIndex = 0;
+  return browserBearerPattern.test(text);
+}
+
+function assertBrowserBearerPatternReset() {
+  const firstFixture = "headers['Authorization'] = 'Bearer ' + token;";
+  const secondFixture = "headers['Authorization'] = 'Bearer ' + apiKey;";
+
+  if (!hasBrowserBearerConstruction(firstFixture) || !hasBrowserBearerConstruction(secondFixture)) {
+    fail(resolve(root, 'scripts', 'public-safety-audit.js'), 'browser bearer detector must reset regex state between files');
+  }
+}
+
 function walk(path) {
   const full = resolve(root, path);
   if (!existsSync(full)) return [];
@@ -60,7 +74,7 @@ for (const file of filesToScan()) {
   secretAssignmentPattern.lastIndex = 0;
   if (secretAssignmentPattern.test(text)) fail(file, 'real-looking secret assignment found');
 
-  if (file.includes(`${join('public', 'apps')}`) && browserBearerPattern.test(text)) {
+  if (file.includes(`${join('public', 'apps')}`) && hasBrowserBearerConstruction(text)) {
     fail(file, 'public browser app must not construct Authorization: Bearer from user input');
   }
 
@@ -69,6 +83,8 @@ for (const file of filesToScan()) {
     fail(file, 'public frontend must not expose an enabled API key password field');
   }
 }
+
+assertBrowserBearerPatternReset();
 
 const openWebGui = resolve(root, 'public', 'apps', 'open-web-gui', 'open-web-gui.js');
 if (existsSync(openWebGui)) {
