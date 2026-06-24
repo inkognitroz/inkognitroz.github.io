@@ -23,6 +23,9 @@ function requireIncludes(source, needle, message) {
 
 requireIncludes(dashboard, 'function readNodeHandoff()', 'Node dashboard must read persisted handoff state.');
 requireIncludes(dashboard, 'function renderNodeHandoffResumeBanner()', 'Node dashboard must render a persisted handoff resume banner.');
+requireIncludes(dashboard, 'const REPAIR_RESUME_STALE_MS=15*60*1000;', 'Repair resume must define a short stale window for demo route trust.');
+requireIncludes(dashboard, 'function repairResumeIsStale(resume)', 'Repair resume must classify old persisted repair state.');
+requireIncludes(dashboard, 'Last saved repair state is older than 15 minutes.', 'Stale repair resume copy must require fresh node health before continuing.');
 requireIncludes(dashboard, 'const NODE_HANDOFF_STALE_MS=15*60*1000;', 'Node handoff resume must define a short stale window for demo route trust.');
 requireIncludes(dashboard, 'function nodeHandoffIsStale(handoff)', 'Node handoff resume must classify old persisted handoffs.');
 requireIncludes(dashboard, 'if(!Number.isFinite(at.getTime()))return true;', 'Node handoff resume must treat missing or corrupt timestamps as stale.');
@@ -36,8 +39,9 @@ requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff res
 requireIncludes(css, '.node-handoff-resume {', 'Node handoff resume banner must have dedicated styles.');
 requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff resume banner must style pending state.');
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
+requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260624-device-aware-doctor-action-v1';
+const expectedVersion = '20260624-stale-repair-resume-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }
