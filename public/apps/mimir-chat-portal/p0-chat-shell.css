@@ -499,6 +499,27 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   color: #b91c1c;
 }
 
+.p0-token-counter {
+  color: #047857;
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  max-width: min(26vw, 112px);
+  opacity: 0.68;
+  overflow: hidden;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.p0-token-counter[data-state="quiet"] {
+  color: #0f766e;
+  opacity: 0.48;
+}
+
 .p0-route-line {
   display: block;
   flex: 0 1 auto;

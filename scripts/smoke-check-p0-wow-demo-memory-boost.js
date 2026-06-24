@@ -38,6 +38,10 @@ requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Boost answer'", 
 requireIncludes(shell, 'id="p0-superboost"', 'Composer must expose Superboost as the visible wow path.');
 requireIncludes(shell, 'function renderSuperboostCta()', 'Superboost CTA must update from live route inventory.');
 requireIncludes(shell, "label=visibleCount?'Superboost · '+String(visibleCount)+' AI':'Superboost'", 'Superboost CTA must show the live AI route count when available.');
+requireIncludes(shell, 'id="p0-token-counter"', 'Status rail must expose a discreet token counter health signal.');
+requireIncludes(shell, 'function recordTokenUsage(payload,source', 'Runtime must record token usage after chat and swarm responses.');
+requireIncludes(shell, "recordTokenUsage(data,'gateway-fanout')", 'Gateway Superboost/Debate responses must update the token counter.');
+requireIncludes(shell, "recordTokenUsage(hostedData,'hosted-chat')", 'Hosted chat responses must update the token counter.');
 requireIncludes(shell, 'id="p0-council"', 'Composer must expose Debate/Supergeni Council as a visible scaled-intelligence path.');
 requireIncludes(shell, 'function renderCouncilCta()', 'Debate/Supergeni Council CTA must update from live route inventory.');
 requireIncludes(shell, "label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate'", 'Debate CTA must show the live AI route count when available.');
@@ -89,6 +93,7 @@ requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-model-health
 requireIncludes(css, '.p0-route-cta', 'Composer Ask AI action must use a compact route CTA style.');
 requireIncludes(css, '.p0-superboost', 'Visible Superboost action must have a dedicated compact composer style.');
 requireIncludes(css, '.p0-council', 'Visible Debate action must have a dedicated compact composer style.');
+requireIncludes(css, '.p0-token-counter', 'Token counter must have a dedicated discreet green style.');
 requireIncludes(css, 'pointer-events: auto;', 'Composer Ask AI CTA must be clickable while the rest of route status stays unobtrusive.');
 requireIncludes(shell, 'function modelInventorySummary(payload,models=[])', 'P0 runtime must turn /v1/models into a visible intelligence map.');
 requireIncludes(shell, "const previewPath=mode==='boost'?SUPERBOOST_PREVIEW_PATH:SWARM_PREVIEW_PATH", 'Boost must use the dedicated Superboost endpoint while Ask all/Council keep swarm preview.');
@@ -108,8 +113,8 @@ requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemCon
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260624-council-cta-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260624-council-cta-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260624-token-counter-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260624-token-counter-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');

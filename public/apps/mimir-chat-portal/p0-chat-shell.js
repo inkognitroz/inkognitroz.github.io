@@ -54,7 +54,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-council-cta-v1';
+  const P0_RUNTIME_VERSION='20260624-token-counter-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -341,6 +341,12 @@
         deployNeededLabels:[],
         probeQueuedLabels:[]
       }
+    },
+    tokenCounter:{
+      total:0,
+      last:0,
+      events:0,
+      source:''
     }
   };
   let activeChatController=null;
@@ -1638,6 +1644,51 @@
 
   function responseReceiptEnvelope(response){
     return response?.mmir?.receipt||response?.mmir?.route_receipt||{};
+  }
+
+  function usageTokenTotal(usage){
+    if(!usage||typeof usage!=='object')return 0;
+    const direct=Number(usage.total_tokens ?? usage.totalTokens ?? usage.tokens);
+    if(Number.isFinite(direct)&&direct>0)return Math.round(direct);
+    const prompt=Number(usage.prompt_tokens ?? usage.promptTokens ?? usage.input_tokens ?? usage.inputTokens)||0;
+    const completion=Number(usage.completion_tokens ?? usage.completionTokens ?? usage.output_tokens ?? usage.outputTokens)||0;
+    const total=prompt+completion;
+    return total>0?Math.round(total):0;
+  }
+
+  function responseTokenUsage(payload){
+    const direct=usageTokenTotal(payload?.usage)||usageTokenTotal(payload?.token_usage)||usageTokenTotal(payload?.best_answer?.usage);
+    if(direct>0)return direct;
+    const responses=Array.isArray(payload?.data)?payload.data:[];
+    const responseTotal=responses.reduce((sum,response)=>sum+usageTokenTotal(response?.usage),0);
+    if(responseTotal>0)return responseTotal;
+    const attempts=Array.isArray(payload?.route_attempts)?payload.route_attempts:[];
+    return attempts.reduce((sum,attempt)=>sum+usageTokenTotal(attempt?.usage||attempt?.receipt?.usage),0);
+  }
+
+  function recordTokenUsage(payload,source=''){
+    const tokens=responseTokenUsage(payload);
+    state.tokenCounter.last=tokens;
+    state.tokenCounter.source=String(source||'').slice(0,40);
+    if(tokens>0){
+      state.tokenCounter.total+=tokens;
+      state.tokenCounter.events+=1;
+    }
+    renderTokenCounter();
+    return tokens;
+  }
+
+  function renderTokenCounter(){
+    const el=document.getElementById('p0-token-counter');
+    if(!el)return;
+    const total=Number(state.tokenCounter.total)||0;
+    const last=Number(state.tokenCounter.last)||0;
+    el.textContent=total.toLocaleString('no-NO')+' tokens';
+    el.title=last>0
+      ? '+'+last.toLocaleString('no-NO')+' tokens siste svar'
+      : '0 tokens siste svar - nyttig helsesignal mot stub/regresjon';
+    el.dataset.state=last>0?'active':'quiet';
+    el.setAttribute('aria-label',el.title);
   }
 
   function ownerPingLine(response){
@@ -3179,6 +3230,7 @@
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<div class="p0-status-rail">'+
             '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
+            '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
             '<button id="p0-feedback-capture" class="p0-feedback-capture" type="button" hidden aria-label="No captured feedback yet"></button>'+
           '</div>'+
           '<div class="p0-toolbar">'+
@@ -4935,6 +4987,7 @@
     renderToolbar();
     renderTranscript();
     renderModelMenu();
+    renderTokenCounter();
     renderFeedbackCaptureStatus();
   }
 
@@ -5924,6 +5977,7 @@
       const [gatewayData,localData]=await Promise.all([gatewayPromise,localPromise]);
       const data=mode==='all'?mergeLocalAllRoutes(gatewayData,localData):gatewayData;
       if(data?.object!=='chat.compare')throw new Error('Gateway compare unavailable');
+      recordTokenUsage(data,'gateway-fanout');
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
         : (String(data?.best_answer?.content||data?.synthesis||'').trim()||'Compare finished, but no best answer was returned.');
@@ -6094,6 +6148,7 @@
       const answer=model.route==='local'
         ? await chatLocal(routePrompt,model,signal)
         : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
+      if(hostedData)recordTokenUsage(hostedData,'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
