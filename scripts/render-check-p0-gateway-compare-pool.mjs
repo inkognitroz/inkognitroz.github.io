@@ -477,10 +477,12 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
+  assert(/Many AI/i.test(addMenu), `${viewport.name}: add menu should put scaled intelligence in its own first-class group`);
   assert(/More answers/i.test(addMenu), `${viewport.name}: add menu should expose compact More answers tools when hosted routes are active`);
-  assert(/Boost answer/i.test(addMenu), `${viewport.name}: add menu should expose Boost answer without adding toolbar clutter`);
+  assert(/Superboost/i.test(addMenu), `${viewport.name}: add menu should expose Superboost without adding toolbar clutter`);
   assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
-  assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Boost answer should explain the active free route count`);
+  assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Superboost should explain the active free route count`);
+  assert(/Debate/i.test(addMenu), `${viewport.name}: add menu should expose model debate without hiding it behind advanced wording`);
   assert(/Ask 5 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
   assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);

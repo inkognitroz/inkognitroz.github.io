@@ -14,7 +14,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedVersion = '20260624-council-feedback-token-v1';
+const expectedVersion = '20260624-superboost-tools-v1';
 
 requireIncludes(
   shell,

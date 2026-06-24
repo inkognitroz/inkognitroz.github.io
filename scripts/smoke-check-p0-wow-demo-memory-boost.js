@@ -34,7 +34,9 @@ const compareGatewayRoutes = functionSource('compareGatewayRoutes', 'synthesizeC
 requireIncludes(shell, "const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1'", 'Local memory must have a browser-local storage key.');
 requireIncludes(shell, "const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1'", 'Local document notes must have a browser-local storage key.');
 requireIncludes(shell, "const TOOL_CONTEXT_KEY='mmir-p0-last-tool-context-v1'", 'Verified tool context must have a browser-local proof key.');
-requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Boost answer'", '+ menu must keep Boost answer available behind Tools.');
+requireIncludes(renderAddMenu, "menuSection('Many AI')", '+ menu must group scaled-intelligence actions before utility tools.');
+requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Superboost'", '+ menu must expose Superboost, not old Boost answer wording, behind Tools.');
+requireIncludes(renderAddMenu, "menuButton('supergeni-council-live','Debate'", '+ menu must expose Debate as a one-click council action behind Tools.');
 requireIncludes(shell, 'id="p0-superboost"', 'Composer must expose Superboost as the visible wow path.');
 requireIncludes(shell, 'function renderSuperboostCta()', 'Superboost CTA must update from live route inventory.');
 requireIncludes(shell, "label=visibleCount?'Superboost · '+String(visibleCount)+' AI':'Superboost'", 'Superboost CTA must show the live AI route count when available.');
@@ -58,8 +60,9 @@ requireIncludes(renderAddMenu, "menuSection('Local memory')", '+ menu must group
 requireIncludes(renderAddMenu, "menuButton('local-memory-guide','Memory guide'", '+ menu must explain memory through chat-native commands.');
 requireIncludes(renderAddMenu, "menuButton('show-local-memory','Show memory'", '+ menu must let users inspect browser-local memory.');
 requireIncludes(renderAddMenu, "menuButton('add-document-note','Add document note'", '+ menu must prepare browser-only document notes.');
-requireIncludes(handleMenuAction, "action==='boost-answer-live'", 'Menu actions must handle Boost answer.');
+requireIncludes(handleMenuAction, "action==='boost-answer-live'", 'Menu actions must handle Superboost.');
 requireIncludes(handleMenuAction, "action==='ask-all-active'", 'Menu actions must handle Ask all active.');
+requireIncludes(handleMenuAction, "action==='supergeni-council-live'", 'Menu actions must handle Debate/Supergeni Council.');
 requireIncludes(handleMenuAction, "action==='verified-calculator'", 'Menu actions must handle verified calculator.');
 requireIncludes(handleMenuAction, "action==='verified-time'", 'Menu actions must handle current time context.');
 requireIncludes(handleMenuAction, "action==='verified-source'", 'Menu actions must handle verified manual source context.');
@@ -67,7 +70,7 @@ requireIncludes(handleMenuAction, "action==='local-memory-guide'", 'Menu actions
 requireIncludes(handleMenuAction, "action==='show-local-memory'", 'Menu actions must handle local memory display.');
 requireIncludes(handleMenuAction, "action==='add-document-note'", 'Menu actions must handle document note template.');
 requireIncludes(sendMessage, 'handleLocalKnowledgeCommand(prompt,input)', 'Local memory commands must be handled before provider calls.');
-requireIncludes(compareGatewayRoutes, "options.mode==='boost'", 'Gateway compare must have a dedicated Boost answer mode.');
+requireIncludes(compareGatewayRoutes, "options.mode==='boost'", 'Gateway compare must have a dedicated Superboost mode.');
 requireIncludes(compareGatewayRoutes, "options.mode==='all'", 'Gateway compare must have a dedicated Ask all active mode.');
 requireIncludes(shell, "const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview'", 'P0 runtime must know the swarm preview endpoint.');
 requireIncludes(shell, "const SUPERBOOST_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.superboostPreviewPath||'/chat/superboost/preview'", 'P0 runtime must know the dedicated Superboost preview endpoint.');
@@ -108,13 +111,13 @@ requireIncludes(shell, 'function startGatewaySwarmProgress(assistant,{title,mode
 requireIncludes(shell, 'function gatewaySwarmProgressStage(mode,elapsedMs)', 'Swarm progress must advance through visible phases while routes answer.');
 requireIncludes(shell, "'Now: '+stage.line", 'Swarm progress must show the current work phase in user-readable terms.');
 requireIncludes(shell, 'function localAllActiveRoutes(prompt,signal)', 'Ask all active must include paired browser-local models when available.');
-requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Boost answer must use demo-friendly Intelligence Boost status text.');
+requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Superboost must use demo-friendly Intelligence Boost status text.');
 requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemContext)', 'Swarm telemetry must record injected verified context.');
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260624-council-feedback-token-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260624-council-feedback-token-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260624-superboost-tools-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260624-superboost-tools-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');

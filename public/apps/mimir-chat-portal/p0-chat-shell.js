@@ -54,7 +54,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-council-feedback-token-v1';
+  const P0_RUNTIME_VERSION='20260624-superboost-tools-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3657,6 +3657,12 @@
   function renderAddMenu(){
     const menu=menuEl('add');
     const pool=intelligencePoolSummary();
+    const superboostDetail=gatewayCompareAvailable()
+      ? 'Ask '+pool.boostRouteLabel+' - best answer wins. '+pool.scaleLine+'.'
+      : 'Write a prompt, then MMIR checks active free routes and uses the strongest available answer path.';
+    const debateDetail=gatewayCompareAvailable()
+      ? 'Let '+pool.boostRouteLabel+' challenge weak assumptions, rank, then converge. '+pool.scaleLine+'.'
+      : 'Write a topic, then MMIR checks active routes for a model debate.';
     const toolbarTools=TOOLBAR_TOOL_DEFINITIONS
       .filter(tool=>tool.id!=='discuss'||pool.compareReady)
       .map(tool=>{
@@ -3684,12 +3690,15 @@
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
       menuSeparator()+
+      menuSection('Many AI')+
+      menuButton('boost-answer-live','Superboost',superboostDetail,{badge:gatewayCompareAvailable()?'Best wins':''})+
+      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
+      menuButton('supergeni-council-live','Debate',debateDetail,{badge:'Council'})+
+      menuSeparator()+
       menuSection('Verified tools')+
       menuButton('verified-calculator','Verified calculator','Calculate first, then ask active routes with proof.')+
       menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
       menuButton('verified-source','Verified source','Use pasted facts as grounding before active routes answer.')+
-      menuButton('boost-answer-live','Boost answer',gatewayCompareAvailable()?('Ask '+pool.boostRouteLabel+', score them, then return one clean answer. '+pool.scaleLine+'.'):'Use active free routes when route inventory is ready.')+
-      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
       menuSeparator()+
       menuSection('Improve MMIR')+
       '<div class="p0-menu-note">Feedback may be logged after sanitization to improve MMIR. Do not paste secrets.</div>'+
@@ -4411,7 +4420,7 @@
     const prompt=String(input?.value||'').trim();
     closeMenus();
     if(!prompt){
-      status('Write a prompt first, then Boost answer can run.','error');
+      status('Write a prompt first, then Superboost can run.','error');
       routeStatus('Boost needs a prompt','error');
       captureInteraction('tool_blocked',{tool:'boost-answer',reason:'missing_prompt'});
       input?.focus();
@@ -4729,6 +4738,9 @@
     }
     if(action==='ask-all-active'){
       return askAllActive();
+    }
+    if(action==='supergeni-council-live'){
+      return supergeniCouncil();
     }
     if(action==='compare-live'||action==='best-answer-live'||action==='discuss-topic'){
       return runTwoModelTool(action);

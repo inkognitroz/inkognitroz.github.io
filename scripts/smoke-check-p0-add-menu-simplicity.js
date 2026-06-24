@@ -86,6 +86,21 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
+  "menuSection('Many AI')",
+  '+ menu must show scaled intelligence as a first-class group.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('boost-answer-live','Superboost'",
+  '+ menu must use Superboost language for the many-AI best-answer path.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('supergeni-council-live','Debate'",
+  '+ menu must expose Debate as an immediate model-discussion action.'
+);
+requireIncludes(
+  renderAddMenu,
   'pool.compareReady',
   '+ menu must only reveal two-model tools after local discovery.'
 );
@@ -121,12 +136,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260624-council-feedback-token-v1',
+  'p0-chat-shell.js?v=20260624-superboost-tools-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260624-council-feedback-token-v1"',
+  '"p0-chat-shell.js": "20260624-superboost-tools-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

@@ -1093,12 +1093,12 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   }
 
   .p0-superboost {
-    max-width: 74px;
+    max-width: 136px;
     padding: 0 10px;
   }
 
   .p0-council {
-    max-width: 66px;
+    max-width: 110px;
     padding: 0 10px;
   }
 
@@ -1123,12 +1123,12 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   }
 
   .p0-superboost {
-    max-width: 66px;
+    max-width: 126px;
     padding: 0 8px;
   }
 
   .p0-council {
-    max-width: 58px;
+    max-width: 100px;
     padding: 0 8px;
   }
 
