@@ -61,15 +61,18 @@ requireIncludes(strip, "label:'Route inventory refresh failed'", 'Active node st
 requireIncludes(strip, 'Refresh before demo trust.', 'Active node strip must warn when route inventory is stale.');
 requireIncludes(strip, 'function withRefreshState(freshness)', 'Active node strip must decorate freshness copy with refresh outcomes.');
 requireIncludes(strip, "summary:freshness.summary+' Refreshing now.'", 'Active node strip must expose in-progress refresh state from the freshness badge.');
-requireIncludes(strip, "summary:'Using fallback route inventory. Retry before demo trust.'", 'Active node strip must explain when refresh falls back to the safe manifest subset.');
+requireIncludes(strip, "summary:'Using safe route inventory. Retry before demo trust.'", 'Active node strip must explain when route inventory refresh fails safely.');
 requireIncludes(strip, "manifestRefreshState=await loadManifest(true)?'succeeded':'failed';", 'Explicit route refresh must record whether the manifest reload succeeded.');
 requireIncludes(strip, 'function refreshRouteInventory()', 'Active node strip must be able to re-fetch route inventory without a full page reload.');
 requireIncludes(strip, "fetch(MANIFEST_URL,{cache:force?'no-store':'default'})", 'Route inventory refresh must bypass stale browser cache when explicitly requested.');
 requireIncludes(strip, "manifestUpdatedAt=String(body?.updated_at||'');", 'Active node strip must load updated_at from the public node manifest.');
+requireIncludes(strip, 'function fallbackManifestNodes()', 'Active node strip must centralize the first-load fallback inventory.');
+requireIncludes(strip, 'if(manifestNodes.length&&manifestUpdatedAt){manifestLoaded=true;return false;}', 'Explicit route refresh failures must preserve the last good public inventory.');
+requireIncludes(strip, 'manifestNodes=fallbackManifestNodes();', 'Active node strip must use the fallback inventory only when no public manifest has loaded yet.');
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
 requireIncludes(strip, 'trustLine=manifestTrustLine(manifestUpdatedAt,inventory)', 'Active node strip must bind manifest trust copy to the rendered freshness badge.');
 requireIncludes(strip, "aria-label=\"'+safe(trustLine", 'Active node strip freshness badge must expose route count and review date to assistive tech.');
-const expectedVersion = '20260624-active-route-policy-line-v1';
+const expectedVersion = '20260624-active-route-refresh-recovery-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }
