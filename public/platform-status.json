@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_at": "2026-06-24T13:20:11Z",
+  "updated_at": "2026-06-24T16:36:06Z",
   "description": "Public-safe status manifest for MMIR.ai. Internal QA, agent instructions and deploy reports stay in the private control repo; this browser payload contains only product-safe status copy.",
-  "latest_verified_commit": "cd04b63ca354",
+  "latest_verified_commit": "5c3aa8e75dc2",
   "domain_availability_watch": "./domain-availability-watch.json",
   "components": [
     {
@@ -16,8 +16,8 @@
       "id": "latest-deploy-verification",
       "label": "Latest deploy verification",
       "status": "online",
-      "route": "cd04b63ca354 / GitHub Actions",
-      "notes": "The public artifact is checked by GitHub Actions before deploy. Current public copy includes the Council fusion proof, Actions-free preview deploy lane, active route policy strip and refreshed trust manifest so demo viewers can see local, hosted and fallback route boundaries."
+      "route": "5c3aa8e75dc2 / GitHub Actions",
+      "notes": "The public artifact is checked by GitHub Actions before deploy. Current public copy includes the Council fusion proof, Actions-free preview deploy lane, active route policy strip, route inventory refresh recovery and refreshed trust manifest so demo viewers can see local, hosted and fallback route boundaries."
     },
     {
       "id": "public-url-health",
@@ -30,15 +30,15 @@
       "id": "domain-availability-watch-refresh",
       "label": "Domain availability watch",
       "status": "watch",
-      "route": "cd04b63ca354 / mmir.ai",
+      "route": "5c3aa8e75dc2 / mmir.ai",
       "notes": "Latest Pages deploy is green for the verified baseline and DNS resolves through Cloudflare. Keep this watch generic and public-safe when diagnosing network/domain-reputation failures."
     },
     {
       "id": "no-model-deploy-verification",
       "label": "No-model deploy proof",
       "status": "online",
-      "route": "cd04b63ca354 / GitHub Pages artifact",
-      "notes": "The public chat shell includes a no-model fallback path, free route floor, Council fusion proof, refreshed trust manifest and visible active-route policy without exposing internal QA reports."
+      "route": "5c3aa8e75dc2 / GitHub Pages artifact",
+      "notes": "The public chat shell includes a no-model fallback path, free route floor, Council fusion proof, route inventory refresh recovery, refreshed trust manifest and visible active-route policy without exposing internal QA reports."
     },
     {
       "id": "github-pages",
