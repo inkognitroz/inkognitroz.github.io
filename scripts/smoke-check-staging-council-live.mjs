@@ -65,6 +65,7 @@ try {
   const result = await page.evaluate(() => ({
     status: document.querySelector('#p0-status')?.textContent?.trim() || '',
     route: document.querySelector('#p0-route')?.textContent?.trim() || '',
+    routeFull: document.querySelector('#p0-route')?.getAttribute('aria-label') || '',
     transcript: (document.querySelector('#p0-transcript')?.textContent || '').replace(/\s+/g, ' ').trim(),
     objectObject: document.body.textContent.includes('[object Object]')
   }));
@@ -76,6 +77,7 @@ try {
   assert(/Supergeni Council ready/i.test(result.status), `Council did not reach ready state: ${result.status}`);
   assert(!/needs at least two active routes|waiting for another active route|unavailable|route inventory unreachable/i.test(result.status + result.route + result.transcript), 'Council ended in a blocked route-inventory state.');
   assert(/Sp[øo]r\s+\d+\s+AI|routes compared|Verifisert|privat/i.test(result.route + result.transcript), 'Council proof did not expose route/value receipt.');
+  assert(/Fusion analysis|connection lift|support \d+\/\d+|blind spots/i.test(result.routeFull), `Council Details did not preserve fusion analysis proof: ${result.routeFull}`);
   assert(/Intelligence\. Connected|selvforsterkende|kobler|beste svar|MMIR sin visjon er/i.test(result.transcript), 'Council did not render a final answer.');
 
   console.log(JSON.stringify({
@@ -84,6 +86,7 @@ try {
     initial,
     status: result.status,
     route: result.route,
+    route_full_tail: result.routeFull.slice(-900),
     answer_tail: result.transcript.slice(-900),
     screenshot: `${screenshotDir}/council-live.png`,
     browser_errors: browserErrors.slice(0, 10)
