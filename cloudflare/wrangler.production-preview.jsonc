@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mmir-web-production-preview",
+  "main": "staging-web.worker.js",
+  "compatibility_date": "2026-06-04",
+  "workers_dev": true,
+  "assets": {
+    "directory": "../public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": false
+  }
+}
