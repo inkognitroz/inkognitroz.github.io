@@ -129,6 +129,16 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function demoTranscriptUploadAllowed()',
+  'P0 shell must separate local demo mode from hosted transcript upload permission.'
+);
+requireIncludes(
+  shell,
+  'return hostedDemoOrigin()&&demoTranscriptCaptureEnabled();',
+  'P0 shell must only upload demo transcripts from approved hosted origins.'
+);
+requireIncludes(
+  shell,
   "source:'mmir-chat-demo'",
   'P0 shell must label raw demo transcript capture separately from metadata telemetry.'
 );
@@ -141,6 +151,11 @@ requireIncludes(
   shell,
   "scheduleDemoTranscriptCapture('message_updated'",
   'P0 shell must capture demo transcript context when assistant answers update.'
+);
+requireIncludes(
+  shell,
+  "if(!demoTranscriptUploadAllowed())return;",
+  'P0 shell must keep local/dev demo transcript capture local to avoid noisy CORS and accidental capture.'
 );
 requireIncludes(
   shell,

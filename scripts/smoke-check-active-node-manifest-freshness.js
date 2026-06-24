@@ -21,12 +21,37 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) fail(message);
 }
 
+function requireLocalReceiptMetadata(node) {
+  const id = String(node?.id || 'unknown');
+  const meta = node?.receipt_metadata || {};
+  const cost = node?.cost || {};
+  const routeKind = String(node?.route?.kind || '');
+
+  if (cost.mode !== 'free-local') fail(`${id} must remain marked as a free local route.`);
+  if (cost.requires_approval !== false) fail(`${id} must not require paid-route approval.`);
+  if (meta.cost_class !== 'free-local') fail(`${id} must expose free-local receipt cost class.`);
+  if (meta.prompt_left_device !== false) fail(`${id} must explicitly keep prompts on the user device.`);
+  if (meta.provider_key_required !== false) fail(`${id} must explicitly avoid provider/API key requirements.`);
+  if (meta.cloudflare_required !== false) fail(`${id} must explicitly avoid Cloudflare requirements.`);
+  if (meta.install_required !== true) fail(`${id} must disclose the user-controlled install/server requirement.`);
+  if (!String(meta.execution_boundary || '').startsWith('localhost')) fail(`${id} must expose a localhost execution boundary.`);
+  if (node.id === 'local-node' && meta.node_type !== 'local-node') fail('local-node must expose local-node receipt type.');
+  if (node.id !== 'local-node' && meta.node_type !== 'local-adapter') fail(`${id} must expose local-adapter receipt type.`);
+  if (!['local-node', 'local-openai-compatible', 'ollama-direct'].includes(routeKind)) fail(`${id} must stay inside the known local route kinds.`);
+}
+
 const updatedAt = String(manifest.updated_at || '').trim();
 if (!updatedAt) {
   fail('Active chat node manifest must expose updated_at for freshness review.');
 } else if (Number.isNaN(Date.parse(updatedAt))) {
   fail('Active chat node manifest updated_at must be a readable date.');
 }
+
+const localNodes = Array.isArray(manifest.nodes)
+  ? manifest.nodes.filter((node) => node?.id === 'local-node' || node?.type === 'local-adapter')
+  : [];
+if (localNodes.length < 5) fail('Active chat node manifest must keep the Local Node and local adapter routes visible.');
+localNodes.forEach(requireLocalReceiptMetadata);
 
 requireIncludes(strip, 'function routeInventoryFreshness(updatedAt)', 'Active node strip must compute route inventory freshness.');
 requireIncludes(strip, "label:'Route inventory freshness unknown'", 'Active node strip must explain when route inventory freshness cannot be determined.');
