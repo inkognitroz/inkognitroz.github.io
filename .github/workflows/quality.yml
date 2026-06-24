@@ -12,10 +12,15 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+  group: static-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: Validate public site
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v5
