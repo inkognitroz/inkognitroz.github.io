@@ -29,7 +29,7 @@ requireIncludes(dashboard, 'const fallbackAction=nextAction(checks,hardware);', 
 requireIncludes(dashboard, "['start-ollama','install-model','repair-model-pull','repair-model-install']", 'Generic connector doctor actions must not hide device-aware repair/model CTAs.');
 requireIncludes(dashboard, 'const report=normalizedDoctor(doctorReport,hardware);', 'Ready render must pass hardware context into doctor normalization.');
 
-const expectedVersion = '20260624-device-aware-doctor-action-v1';
+const expectedVersion = '20260624-stale-repair-resume-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node-dashboard device-aware CTA update.');
 }
