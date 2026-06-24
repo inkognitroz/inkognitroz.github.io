@@ -166,6 +166,16 @@ requireText(
 );
 requireText(
   runtime,
+  'function compareUsefulFeedbackSummary(receipt)',
+  'Compare useful feedback drafts must summarize winner, score, route count and consensus from the receipt'
+);
+requireText(
+  runtime,
+  "summary?('Decision context: '+summary):'Decision context: [not available]'",
+  'Compare useful feedback drafts must carry actionable decision context for triage'
+);
+requireText(
+  runtime,
   "source:'p0-compare-useful-action'",
   'Compare useful feedback drafts must record the exact active UI source'
 );

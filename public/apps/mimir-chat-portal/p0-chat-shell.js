@@ -4803,15 +4803,29 @@
     setMessageActionStatus(message.id,ok?'Safe draft copied.':'Safe draft saved locally.',ok?'ready':'error');
   }
 
+  function compareUsefulFeedbackSummary(receipt){
+    const parts=receiptParts(receipt);
+    const pick=(test)=>parts.find(part=>test.test(part))||'';
+    return [
+      pick(/^Winner:/i),
+      pick(/^Score\s+\d+/i),
+      pick(/^\d+\s+routes? compared$/i),
+      pick(/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i),
+      pick(/^Why:/i)
+    ].filter(Boolean).join(' · ');
+  }
+
   function captureCompareUsefulFeedback(message){
     const user=previousUserMessageFor(message);
     const route=String(message.receipt||message.label||'compare route').replace(/\s+/g,' ').slice(0,420);
     const answer=String(message.content||'').replace(/\s+/g,' ').slice(0,700);
     const prompt=String(user?.content||'').replace(/\s+/g,' ').slice(0,420);
+    const summary=compareUsefulFeedbackSummary(message.receipt);
     const saved=saveFeedbackDraft(
       [
         'Compare answer marked useful.',
         prompt?('Prompt: '+prompt):'Prompt: [not available]',
+        summary?('Decision context: '+summary):'Decision context: [not available]',
         'Route evidence: '+route,
         'Useful answer excerpt: '+answer
       ].join('\n'),
