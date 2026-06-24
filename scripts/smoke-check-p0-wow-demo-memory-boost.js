@@ -66,6 +66,7 @@ requireIncludes(sendMessage, 'handleLocalKnowledgeCommand(prompt,input)', 'Local
 requireIncludes(compareGatewayRoutes, "options.mode==='boost'", 'Gateway compare must have a dedicated Boost answer mode.');
 requireIncludes(compareGatewayRoutes, "options.mode==='all'", 'Gateway compare must have a dedicated Ask all active mode.');
 requireIncludes(shell, "const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview'", 'P0 runtime must know the swarm preview endpoint.');
+requireIncludes(shell, "const SUPERBOOST_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.superboostPreviewPath||'/chat/superboost/preview'", 'P0 runtime must know the dedicated Superboost preview endpoint.');
 requireIncludes(shell, "const NO_KEY_TOOL_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.noKeyToolPreviewPath||'/tools/no-key/preview'", 'P0 runtime must know the no-key tool preview endpoint.');
 requireIncludes(shell, 'function runVerifiedTool(tool)', 'Verified tools must run through a shared no-key preview flow.');
 requireIncludes(shell, "payload={\n        tool:'manual-source'", 'Verified source must send manual-source no-key payload.');
@@ -90,7 +91,8 @@ requireIncludes(css, '.p0-superboost', 'Visible Superboost action must have a de
 requireIncludes(css, '.p0-council', 'Visible Debate action must have a dedicated compact composer style.');
 requireIncludes(css, 'pointer-events: auto;', 'Composer Ask AI CTA must be clickable while the rest of route status stays unobtrusive.');
 requireIncludes(shell, 'function modelInventorySummary(payload,models=[])', 'P0 runtime must turn /v1/models into a visible intelligence map.');
-requireIncludes(shell, 'normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH', 'Boost/Ask all must try swarm preview before legacy compare.');
+requireIncludes(shell, "const previewPath=mode==='boost'?SUPERBOOST_PREVIEW_PATH:SWARM_PREVIEW_PATH", 'Boost must use the dedicated Superboost endpoint while Ask all/Council keep swarm preview.');
+requireIncludes(shell, 'normalizeSwarmPreviewResponse(await fetchJson(API_URL+previewPath', 'Boost/Ask all/Council must try a live preview route before legacy compare.');
 requireIncludes(shell, 'function swarmReceiptLabel(data)', 'Swarm status must stay in subtle route receipts.');
 requireIncludes(shell, "queuedRouteCount?String(queuedRouteCount)+' queued'", 'Swarm/compare receipts must surface queued intelligence without noisy errors.');
 requireIncludes(shell, "visibleRouteCount?String(visibleRouteCount)+' visible total'", 'Swarm/compare receipts must surface total visible intelligence.');

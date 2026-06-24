@@ -147,18 +147,32 @@ async function installFixtures(page) {
     await fulfillJson(route, { object: 'list', data: [] });
   });
 
-  await page.route('https://api.mmir.ai/chat/swarm/preview', async route => {
+  await page.route(/https:\/\/api\.mmir\.ai\/chat\/(swarm|superboost)\/preview/, async route => {
+    const isSuperboost = route.request().url().includes('/chat/superboost/preview');
     await delay(1200);
     await fulfillJson(route, {
-      object: 'chat.swarm.preview',
-      status: 'first_round_ready',
-      mode: 'sync_swarm_preview',
+      object: isSuperboost ? 'chat.superboost.preview' : 'chat.swarm.preview',
+      status: isSuperboost ? 'superboost_ready' : 'first_round_ready',
+      mode: isSuperboost ? 'superboost' : 'sync_swarm_preview',
       vision: 'Intelligence. Connected.',
       default_meta_model: 'Supergeni',
+      route: isSuperboost ? '/chat/superboost/preview' : '/chat/swarm/preview',
+      underlying_route: isSuperboost ? '/chat/swarm/preview' : undefined,
       target_route_count: 472,
       sync_route_limit: 40,
       current_round: 1,
       planned_debate_rounds: 3,
+      superboost: isSuperboost ? {
+        label: 'Superboost',
+        promise: 'Ask many AI routes, cross-check the result, and return one clean answer.',
+        execution: 'round_2_cross_review_executed',
+        attempted_route_count: 5,
+        all_answer_count: 3,
+        council_review_count: 2,
+        async_472_route_plan_required: true,
+        no_paid_routes_started: true,
+        provider_secrets_in_browser: false
+      } : undefined,
       first_round: {
         object: 'chat.compare',
         compare_status: 'ready',
@@ -484,7 +498,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Swarm 472/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Superboost/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
@@ -513,6 +527,7 @@ async function checkViewport(browser, viewport) {
   assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost CTA should survive after Boost finishes`);
   assert(layout.routeCtaVisible, `${viewport.name}: Superboost CTA should remain visible after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
+  assert(/Superboost/i.test(layout.routeFull), `${viewport.name}: full boost receipt should identify the dedicated Superboost route`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
   assert(!/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should keep successful provider count behind details`);
   assert(!/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should keep quiet provider count behind details`);

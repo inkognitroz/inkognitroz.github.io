@@ -9,6 +9,7 @@
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
+  const SUPERBOOST_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.superboostPreviewPath||'/chat/superboost/preview';
   const NO_KEY_TOOL_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.noKeyToolPreviewPath||'/tools/no-key/preview';
   const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
@@ -4333,12 +4334,12 @@
         receipt:noKeyToolReceipt(data),
         no_paid_routes_started:true,
         provider_called:false,
-        context_path:SWARM_PREVIEW_PATH
+        context_path:SUPERBOOST_PREVIEW_PATH
       });
       captureInteraction('tool_context_preview_ready',{
         tool:toolId,
         result:noKeyToolResultText(data),
-        context_path:SWARM_PREVIEW_PATH,
+        context_path:SUPERBOOST_PREVIEW_PATH,
         no_paid_routes_started:true
       });
       status(label+' ready. Asking active routes with verified context...','ready');
@@ -5458,7 +5459,8 @@
   }
 
   function swarmReceiptLabel(data){
-    if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview')return '';
+    if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview'&&data?.object!=='chat.superboost.preview')return '';
+    if(data?.object==='chat.superboost.preview'||data?.superboost)return 'Superboost';
     const target=Number(data?.target_route_count)||Number(data?.intelligence_pool?.target_route_count)||Number(data?.pool?.target_route_count)||0;
     return target?'Swarm '+String(target):'Swarm preview';
   }
@@ -5476,7 +5478,7 @@
   }
 
   function normalizeSwarmPreviewResponse(data){
-    if(data?.object!=='chat.swarm.preview')return data;
+    if(data?.object!=='chat.swarm.preview'&&data?.object!=='chat.superboost.preview')return data;
     const first=data.first_round||{};
     const routeAttempts=Array.isArray(data.route_attempts)?data.route_attempts:[];
     const responses=Array.isArray(data.data)?data.data:[];
@@ -5514,6 +5516,8 @@
       pool,
       swarm_preview:true,
       swarm_status:data.status||'first_round_ready',
+      superboost_preview:data?.object==='chat.superboost.preview'||Boolean(data?.superboost),
+      superboost:data?.superboost,
       target_route_count:Number(data.target_route_count)||Number(pool.target_route_count)||0,
       sync_route_limit:Number(data.sync_route_limit)||Number(pool.sync_route_limit)||0,
       current_round:Number(data.current_round)||1,
@@ -5567,7 +5571,8 @@
     let swarmData=null;
     if(mode==='boost'||mode==='all'||mode==='council'){
       try{
-        swarmData=normalizeSwarmPreviewResponse(await fetchJson(API_URL+SWARM_PREVIEW_PATH,request));
+        const previewPath=mode==='boost'?SUPERBOOST_PREVIEW_PATH:SWARM_PREVIEW_PATH;
+        swarmData=normalizeSwarmPreviewResponse(await fetchJson(API_URL+previewPath,request));
         if(swarmData?.object==='chat.compare'&&(mode!=='all'||Array.isArray(swarmData.data)&&swarmData.data.length)){
           return swarmData;
         }
