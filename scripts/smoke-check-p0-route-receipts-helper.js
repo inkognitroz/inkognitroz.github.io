@@ -36,6 +36,18 @@ if (!shell.includes('P0_ROUTE_RECEIPTS.hostedRouteLabel(API_LABEL)')) {
 if (!shell.includes('P0_ROUTE_RECEIPTS.receipt(model,{apiLabel:API_LABEL})')) {
   fail('P0 shell route receipts must delegate to helper.');
 }
+if (!shell.includes('function defaultChatReceipt(response,model,baseReceipt')) {
+  fail('P0 shell must adapt default chat API council metadata into receipt copy.');
+}
+if (!shell.includes('scaled_intelligence_label') || !shell.includes("default_chat_mode||''")) {
+  fail('P0 shell default chat receipt must read scaled intelligence and default chat mode metadata.');
+}
+if (!shell.includes("'Supergeni Council'") || !shell.includes("' routes compared'")) {
+  fail('Default council receipt must use the existing receipt route-count pattern for Spør N AI visibility.');
+}
+if (!shell.includes('defaultChatReceipt(hostedData,model,receipt,routePrefix,elapsed,elapsedMs,hostedTruncated)')) {
+  fail('Default hosted chat updates must use defaultChatReceipt.');
+}
 if (!html.includes('p0-route-receipts.js?v=20260614-first-user-route-receipts-v1')) {
   fail('Public MMIR shell must load p0-route-receipts.js with a cache-busted version.');
 }

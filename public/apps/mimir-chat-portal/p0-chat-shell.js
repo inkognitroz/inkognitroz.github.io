@@ -1647,6 +1647,40 @@
     return response?.mmir?.receipt||response?.mmir?.route_receipt||{};
   }
 
+  function defaultChatReceipt(response,model,baseReceipt,routePrefix='',elapsed='',elapsedMs=0,truncated=false){
+    const mmir=response?.mmir||{};
+    const scaledLabel=String(mmir.scaled_intelligence_label||'').replace(/\s+/g,' ').trim();
+    const councilMode=String(mmir.default_chat_mode||'')==='supergeni_council'||Boolean(scaledLabel);
+    if(!councilMode){
+      return routePrefix+baseReceipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(truncated?' · truncated guard':'');
+    }
+    const best=mmir.best_answer||{};
+    const receipt=best.receipt||responseReceiptEnvelope(response)||{};
+    const aiCount=Number((scaledLabel.match(/\bSpør\s+(\d+)\s+AI\b/i)||[])[1])||0;
+    const winner=attemptProviderLabel({
+      provider:receipt.provider||best.provider,
+      model_display_name:best.model_display_name||receipt.model_display_name,
+      model_id:best.model_id||receipt.model_id
+    });
+    const score=Number(best.score);
+    const status=String(mmir.default_chat_status||'').replace(/[_-]+/g,' ').trim();
+    return [
+      'Supergeni Council',
+      aiCount?String(aiCount)+' routes compared':'',
+      status&&status!=='council ready'?status:'',
+      mmir.council_round_executed===true?'council ready':'',
+      receipt.receipt_signature?'signed receipts':'',
+      receipt.no_paid_routes_started===true||receipt.free===true||/free/i.test(String(receipt.cost_class||''))?'No paid route':'',
+      winner?'Winner: '+winner:'',
+      Number.isFinite(score)?'Score '+String(score):'',
+      elapsed,
+      latencyTargetReceipt(model,elapsedMs),
+      receipt.route_class?String(receipt.route_class).replace(/[_-]+/g,' '):'',
+      receipt.cost_class?String(receipt.cost_class).replace(/[_-]+/g,' '):'',
+      truncated?'truncated guard':''
+    ].filter(Boolean).join(' · ');
+  }
+
   function usageTokenTotal(usage){
     if(!usage||typeof usage!=='object')return 0;
     const direct=Number(usage.total_tokens ?? usage.totalTokens ?? usage.tokens);
@@ -6461,7 +6495,7 @@
       const elapsed=formatDuration(elapsedMs);
       const connectGuide=responseConnectGuide(hostedData);
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
-        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
+        receipt:defaultChatReceipt(hostedData,model,receipt,routePrefix,elapsed,elapsedMs,hostedTruncated),
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });
