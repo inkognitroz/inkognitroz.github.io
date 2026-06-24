@@ -37,6 +37,7 @@ function functionBody(source, name) {
 }
 
 const addMenu = functionBody(runtime, 'renderAddMenu');
+const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
 
 requireText(
   addMenu,
@@ -187,7 +188,22 @@ requireText(
 requireText(
   runtime,
   'function compareUsefulFeedbackSummary(receipt)',
-  'Compare useful feedback drafts must summarize winner, score, route count and consensus from the receipt'
+  'Compare useful feedback drafts must summarize winner, score, route coverage and consensus from the receipt'
+);
+requireText(
+  compareUsefulFeedbackSummary,
+  "const picks=(test)=>parts.filter(part=>test.test(part));",
+  'Compare useful feedback must be able to preserve repeated live-provider evidence from the receipt'
+);
+requireText(
+  compareUsefulFeedbackSummary,
+  "coverage.length?('Coverage: '+coverage.join(' / ')):''",
+  'Compare useful feedback must group compared, answered, quiet, queued and visible route counts into decision context'
+);
+requireText(
+  compareUsefulFeedbackSummary,
+  "...picks(/^(OpenRouter|NVIDIA|Google|Groq|MMIR|Supergeni)\\s+live$/i).slice(0,4)",
+  'Compare useful feedback must preserve active provider readiness evidence without dumping the full receipt'
 );
 requireText(
   runtime,

@@ -55,7 +55,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-fusion-proof-v1';
+  const P0_RUNTIME_VERSION='20260624-compare-feedback-coverage-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -5081,11 +5081,22 @@
   function compareUsefulFeedbackSummary(receipt){
     const parts=receiptParts(receipt);
     const pick=(test)=>parts.find(part=>test.test(part))||'';
+    const picks=(test)=>parts.filter(part=>test.test(part));
+    const coverage=[
+      pick(/^\d+\s+routes? compared$/i),
+      pick(/^\d+\s+answered$/i),
+      pick(/^\d+\s+quiet$/i),
+      pick(/^\d+\s+live provider routes$/i),
+      pick(/^\d+\s+live external nodes$/i),
+      pick(/^\d+\s+queued$/i),
+      pick(/^\d+\s+visible total$/i)
+    ].filter(Boolean);
     return [
       pick(/^Winner:/i),
       pick(/^Score\s+\d+/i),
-      pick(/^\d+\s+routes? compared$/i),
       pick(/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i),
+      coverage.length?('Coverage: '+coverage.join(' / ')):'',
+      ...picks(/^(OpenRouter|NVIDIA|Google|Groq|MMIR|Supergeni)\s+live$/i).slice(0,4),
       pick(/^Why:/i)
     ].filter(Boolean).join(' · ');
   }
