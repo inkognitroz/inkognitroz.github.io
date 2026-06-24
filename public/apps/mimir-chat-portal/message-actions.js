@@ -72,9 +72,10 @@
   }
   function redactHandoffTitle(value){
     return String(value||'Conversation')
-      .replace(/(?:sk|pk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_=-]{12,}/g,'[redacted token]')
-      .replace(/Bearer\s+[A-Za-z0-9._=-]{12,}/gi,'Bearer [redacted]')
-      .replace(/\b(api[_ -]?key|password|secret|token)\s*[:=]\s*["']?[^"'\s]{8,}/gi,'$1: [redacted]')
+      .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g,'[redacted private key]')
+      .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}\b/gi,'Bearer [redacted]')
+      .replace(/\b(?:sk|pk|or|ghp|github_pat|cf|xox[baprs]?|AKIA)[A-Za-z0-9_:=/-]{12,}\b/g,'[redacted token]')
+      .replace(/\b(api[_ -]?key|password|secret|token)\s*[:=]\s*["']?[^"',\s)]{8,}/gi,'$1: [redacted]')
       .slice(0,90);
   }
   function publishConversationHandoff(bridge,saved,action){
@@ -102,11 +103,11 @@
   }
   function redactShareText(value){
     return String(value||'')
-      .replace(/(?:sk|pk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_=-]{12,}/g,'[redacted token]')
-      .replace(/Bearer\s+[A-Za-z0-9._=-]{12,}/gi,'Bearer [redacted]')
-      .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,'[redacted private key]')
-      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[redacted email]')
-      .replace(/\b(api[_ -]?key|password|secret|token)\s*[:=]\s*["']?[^"'\s]{8,}/gi,'$1: [redacted]')
+      .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g,'[redacted private key]')
+      .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}\b/gi,'Bearer [redacted]')
+      .replace(/\b(?:sk|pk|or|ghp|github_pat|cf|xox[baprs]?|AKIA)[A-Za-z0-9_:=/-]{12,}\b/g,'[redacted token]')
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[redacted email]')
+      .replace(/\b(api[_ -]?key|password|secret|token)\s*[:=]\s*["']?[^"',\s)]{8,}/gi,'$1: [redacted]')
       .slice(0,16000);
   }
   function save(message,bridge){
