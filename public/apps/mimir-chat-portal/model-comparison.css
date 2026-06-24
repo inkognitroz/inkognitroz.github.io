@@ -46,6 +46,12 @@
   border-color: rgba(16, 163, 127, 0.72);
 }
 
+.comparison-actions button[data-captured="true"] {
+  border-color: rgba(16, 163, 127, 0.5);
+  background: #ecfdf5;
+  color: #047857;
+}
+
 .comparison-output {
   display: grid;
   gap: 10px;

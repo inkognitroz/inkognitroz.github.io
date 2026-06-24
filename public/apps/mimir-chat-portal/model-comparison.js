@@ -15,7 +15,9 @@
   let outputEl=null;
   let compareBtn=null;
   let synthBtn=null;
+  let feedbackBtn=null;
   let lastResults=[];
+  let lastSynthesis=null;
 
   if(!host)return;
 
@@ -134,6 +136,7 @@
         '<div class="comparison-actions">'+
           '<button id="compare-models" type="button">Compare models</button>'+
           '<button id="synthesize-models" type="button" disabled>Synthesize</button>'+
+          '<button id="capture-comparison-feedback" type="button" disabled>Useful synthesis</button>'+
         '</div>'+
         '<p id="comparison-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>'+
         '<div id="comparison-output" class="comparison-output" aria-live="polite"></div>'+
@@ -144,8 +147,10 @@
     outputEl=document.getElementById('comparison-output');
     compareBtn=document.getElementById('compare-models');
     synthBtn=document.getElementById('synthesize-models');
+    feedbackBtn=document.getElementById('capture-comparison-feedback');
     compareBtn.addEventListener('click',compareModels);
     synthBtn.addEventListener('click',synthesizeResults);
+    feedbackBtn.addEventListener('click',captureComparisonFeedback);
   }
 
   function renderModelChoices(){
@@ -249,6 +254,55 @@
     body.textContent=content||'No synthesis returned.';
     article.append(title,body);
     outputEl.prepend(article);
+    lastSynthesis={content:String(content||''),model};
+    if(feedbackBtn){
+      feedbackBtn.disabled=!lastSynthesis.content;
+      feedbackBtn.dataset.captured='false';
+      feedbackBtn.textContent='Useful synthesis';
+    }
+  }
+
+  function resultSummary(){
+    const usable=lastResults.filter(result=>!result.error&&result.content);
+    const failed=lastResults.filter(result=>result.error);
+    const models=lastResults.map(result=>result.model?.label||result.model?.id).filter(Boolean).slice(0,5).join(', ')||'not recorded';
+    return [
+      'Compared '+String(lastResults.length)+' model(s): '+models,
+      'Usable responses: '+String(usable.length),
+      failed.length?'Failed responses: '+String(failed.length):'No failed responses',
+      lastSynthesis?.model?('Synthesis model: '+(lastSynthesis.model.label||lastSynthesis.model.id)):'Synthesis model: not recorded'
+    ].join('\n');
+  }
+
+  function comparisonFeedbackDraft(){
+    const task=String(promptEl?.value||'').trim().slice(0,500)||'[no prompt text visible]';
+    const answer=String(lastSynthesis?.content||'').trim().slice(0,900)||'[no synthesis captured]';
+    return '@feedback Compare Live Models useful synthesis\nTask: '+task+'\n'+resultSummary()+'\nWhy useful: synthesized answer helped choose a best response.\nSynthesis preview: '+answer;
+  }
+
+  function captureComparisonFeedback(){
+    if(!lastSynthesis?.content){setStatus('Run synthesis before marking it useful.','error');return;}
+    const draft=comparisonFeedbackDraft();
+    const saved=window.MimirChatRuntimeBridge?.saveFeedbackDraft?.(draft,{
+      source:'model-comparison-panel',
+      target:'feedback',
+      title:'Useful compare synthesis',
+      priority:'p3-ux',
+      lane:'L1 Frontend UX',
+      backlogHint:'compare-panel-useful-synthesis',
+      openInbox:true
+    });
+    if(!saved&&promptEl){
+      promptEl.value=draft;
+      promptEl.dispatchEvent(new Event('input',{bubbles:true}));
+      promptEl.dispatchEvent(new Event('change',{bubbles:true}));
+      promptEl.focus();
+    }
+    if(feedbackBtn){
+      feedbackBtn.dataset.captured='true';
+      feedbackBtn.textContent='Useful saved';
+    }
+    setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.','ready');
   }
 
   async function compareModels(){
@@ -262,8 +316,14 @@
 
     compareBtn.disabled=true;
     synthBtn.disabled=true;
+    if(feedbackBtn){
+      feedbackBtn.disabled=true;
+      feedbackBtn.dataset.captured='false';
+      feedbackBtn.textContent='Useful synthesis';
+    }
     outputEl.innerHTML='';
     lastResults=[];
+    lastSynthesis=null;
     setStatus('Comparing '+String(models.length)+' model(s)...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
