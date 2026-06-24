@@ -13,7 +13,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260624-fusion-proof-v1';
+const expectedShellVersion = '20260624-compare-feedback-coverage-v1';
 
 requireIncludes(shell, "const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';", 'P0 shell must use the read-only intelligence scorecard endpoint.');
 requireIncludes(shell, "menuButton('intelligence-status','Intelligence status'", 'Tools menu must expose Intelligence status inside the existing chat UI.');
