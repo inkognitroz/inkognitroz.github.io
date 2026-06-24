@@ -274,10 +274,31 @@
     ].join('\n');
   }
 
+  function promptPrivacySummary(){
+    const value=String(promptEl?.value||'').trim();
+    const words=(value.match(/\S+/g)||[]).length;
+    return 'Prompt metadata: '+(value?'present':'empty')+'; '+String(words)+' word(s); raw prompt not stored in feedback draft.';
+  }
+
+  function synthesisPrivacySummary(){
+    const content=String(lastSynthesis?.content||'').trim();
+    const lower=content.toLowerCase();
+    const signals=[
+      /disagree|disagreement|different|conflict|tradeoff/.test(lower)?'mentions disagreement':'no disagreement marker',
+      /next step|next action|recommend|should|priority/.test(lower)?'mentions next action':'no next-action marker'
+    ];
+    return 'Synthesis metadata: '+(content?'present':'missing')+'; '+String(content.length)+' character(s); '+signals.join('; ')+'; raw synthesis not stored in feedback draft.';
+  }
+
   function comparisonFeedbackDraft(){
-    const task=String(promptEl?.value||'').trim().slice(0,500)||'[no prompt text visible]';
-    const answer=String(lastSynthesis?.content||'').trim().slice(0,900)||'[no synthesis captured]';
-    return '@feedback Compare Live Models useful synthesis\nTask: '+task+'\n'+resultSummary()+'\nWhy useful: synthesized answer helped choose a best response.\nSynthesis preview: '+answer;
+    return [
+      '@feedback Compare Live Models useful synthesis',
+      promptPrivacySummary(),
+      resultSummary(),
+      synthesisPrivacySummary(),
+      'Why useful: synthesized answer helped choose a best response.',
+      'Privacy: raw prompt, raw model responses and raw synthesis are not stored in this feedback draft.'
+    ].join('\n');
   }
 
   function captureComparisonFeedback(){
