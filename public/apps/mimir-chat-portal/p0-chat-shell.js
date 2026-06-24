@@ -49,13 +49,14 @@
   const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';
+  const SUPERGENI_QUALITY_PATH='/intelligence/supergeni/quality';
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
   const INTERACTION_SESSION_KEY='mmir-p0-interaction-session-v1';
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-compare-feedback-coverage-v1';
+  const P0_RUNTIME_VERSION='20260624-supergeni-quality-row-v2';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -2268,7 +2269,7 @@
     if(window.MimirRuntimeLabels?.canon)return window.MimirRuntimeLabels.canon(text);
     return text
       .replace(/\bmmir[-_\s]+supergeni(?:us|ous)?(?:\s+free)?\b/gi,'Supergeni')
-      .replace(/(^|[^A-Za-z])supergeni(?:us|ous)?(?:\s+free)?/gi,(match,prefix)=>prefix+'Supergeni')
+      .replace(/(^|[^A-Za-z/])supergeni(?:us|ous)?(?:\s+free)?/gi,(match,prefix)=>prefix+'Supergeni')
       .replace(/(?:MMIR\s+){2,}Supergeni(?:us|ous)?/gi,'Supergeni');
   }
 
@@ -4345,6 +4346,10 @@
   function intelligenceStatusAnswer(scorecard){
     const summary=scorecard?.summary||{};
     const measurement=scorecard?.measurement||{};
+    const quality=scorecard?.supergeni_quality||{};
+    const qualityGuards=quality.live_quality_guards||{};
+    const connectionLiftGuard=qualityGuards.connection_lift||{};
+    const chatQualityGuard=qualityGuards.chat_quality||{};
     const raw=measurement.raw_model_capacity||{};
     const formula=measurement.score_formula||{};
     const sources=scorecardArray(scorecard?.connected_intelligence_by_source?.sources)
@@ -4380,6 +4385,13 @@
       '- Primary score: '+(formula.primary||'verified_connection_lift_per_prompt')+'.',
       '- Parameters are capacity metadata, not the final quality score.',
       '- A route only counts as useful when it improves correctness, ranking, grounding, calibration or answer quality.',
+      '',
+      'Supergeni quality guard:',
+      '- '+(quality.status||'quality guard available through live scorecard')+'.',
+      '- Connection-lift: '+(connectionLiftGuard.probe_set_version||measurement.connection_lift_harness?.probe_set_version||'not reported')+'; catches weak connected-intelligence synthesis.',
+      '- Chat quality: '+(chatQualityGuard.probe_set_version||measurement.chat_quality_harness?.probe_set_version||'not reported')+'.',
+      '- Quality endpoint: '+SUPERGENI_QUALITY_PATH+'.',
+      '- Cheap quality row: no GitHub Actions, no KV writes, no paid routes.',
       '',
       'Next capacity targets:',
       '- Next 24h: '+next24+' callable routes without paid-provider enablement or Actions burn.',
