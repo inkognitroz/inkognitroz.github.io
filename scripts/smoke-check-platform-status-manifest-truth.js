@@ -5,6 +5,7 @@ const root = process.cwd();
 const manifestPath = join(root, 'public', 'platform-status.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const components = Array.isArray(manifest.components) ? manifest.components : [];
+const allowedStatuses = new Set(['online', 'watch', 'planned', 'user-controlled']);
 
 function fail(message) {
   throw new Error(message);
@@ -28,9 +29,33 @@ function forbidText(haystack, needle, message) {
   if (String(haystack || '').includes(needle)) fail(`${message}: found ${needle}`);
 }
 
+const updatedAt = String(manifest.updated_at || '').trim();
+const updatedAtMs = Date.parse(updatedAt);
+if (!updatedAt || Number.isNaN(updatedAtMs)) {
+  fail('updated_at must be an ISO timestamp for public status freshness.');
+}
+
+const futureSkewMs = 5 * 60 * 1000;
+if (updatedAtMs - Date.now() > futureSkewMs) {
+  fail('updated_at must not be future-dated beyond normal clock skew.');
+}
+
 const commit = String(manifest.latest_verified_commit || '').trim();
 if (!/^[0-9a-f]{7,40}$/i.test(commit)) {
   fail('latest_verified_commit must be a git commit hash.');
+}
+
+const seenComponentIds = new Set();
+for (const component of components) {
+  const id = String(component?.id || '').trim();
+  if (!id) fail('Every platform status component must expose a stable id.');
+  if (seenComponentIds.has(id)) fail(`Duplicate platform status component id: ${id}`);
+  seenComponentIds.add(id);
+
+  const status = String(component?.status || '').trim();
+  if (!allowedStatuses.has(status)) {
+    fail(`Platform status component ${id} uses unsupported public status: ${status}`);
+  }
 }
 
 const latestDeploy = requireComponent('latest-deploy-verification');
