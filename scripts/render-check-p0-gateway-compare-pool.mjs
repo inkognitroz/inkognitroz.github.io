@@ -169,6 +169,8 @@ async function installFixtures(page) {
         attempted_route_count: 5,
         all_answer_count: 3,
         council_review_count: 2,
+        connected_intelligence_score: 82,
+        known_parameter_billion_lower_bound: 140,
         async_472_route_plan_required: true,
         continuation_ready: true,
         continuation_display: true,
@@ -189,6 +191,29 @@ async function installFixtures(page) {
         no_paid_routes_started: true,
         provider_secrets_in_browser: false
       } : undefined,
+      connected_intelligence_scorecard: {
+        object: 'mmir.connected_intelligence.prompt_scorecard',
+        status: 'measured_prompt_connection',
+        score_0_to_100: 82,
+        active_answer_count: 3,
+        unique_answer_count: 3,
+        route_attempt_count: 5,
+        provider_or_node_diversity_count: 2,
+        successful_capability_tool_route_count: 1,
+        council_cross_review_executed: isSuperboost,
+        no_paid_routes_started: true,
+        connection_lift: {
+          measured: true,
+          baseline_score: 72,
+          best_connected_score: 96,
+          lift_score: 24
+        },
+        raw_model_capacity: {
+          callable_known_parameter_billion_lower_bound: 140,
+          callable_unknown_parameter_route_count: 1,
+          parameter_count_is_capacity_not_quality: true
+        }
+      },
       continuation: isSuperboost ? {
         object: 'mmir.answer_continuation',
         policy_version: '2026-06-24-continuation-v1',
@@ -599,6 +624,7 @@ async function checkViewport(browser, viewport) {
   assert(layout.routeCtaVisible, `${viewport.name}: Superboost CTA should remain visible after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
   assert(/Superboost/i.test(layout.routeFull), `${viewport.name}: full boost receipt should identify the dedicated Superboost route`);
+  assert(!/Connected score/i.test(layout.route), `${viewport.name}: visible green route line should keep connected score behind details`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
   assert(!/3 answered/i.test(layout.route), `${viewport.name}: visible green route line should keep successful provider count behind details`);
   assert(!/2 quiet/i.test(layout.route), `${viewport.name}: visible green route line should keep quiet provider count behind details`);
@@ -611,6 +637,12 @@ async function checkViewport(browser, viewport) {
   assert(/Fusion analysis/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve Supergeni fusion analysis proof`);
   assert(/support 2\/3/i.test(layout.routeFull), `${viewport.name}: full receipt should show how many routes supported the winning answer`);
   assert(/connection lift \+24/i.test(layout.routeFull), `${viewport.name}: full receipt should show measured connection lift behind details`);
+  assert(/Connected score 82/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve prompt-level connected intelligence score`);
+  assert(/3 answers/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve connected answer count`);
+  assert(/2 sources/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve connected source diversity`);
+  assert(/1 tools/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve capability tool contribution`);
+  assert(/140B capacity/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve connected model capacity proof`);
+  assert(/capacity, not IQ/i.test(layout.routeFull), `${viewport.name}: full receipt should explain parameter capacity is not raw quality`);
   assert(/1 blind spots/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve known blind-spot count behind details`);
   assert(/signed receipts/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve signed receipt proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve winner detail for inspection`);

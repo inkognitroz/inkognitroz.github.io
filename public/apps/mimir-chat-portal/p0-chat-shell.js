@@ -5725,6 +5725,34 @@
     return analysis&&analysis.object==='mmir.supergeni_fusion_analysis'?analysis:null;
   }
 
+  function gatewayConnectedScorecard(data){
+    const card=data?.connected_intelligence_scorecard
+      ||data?.superboost?.connected_intelligence_scorecard
+      ||data?.best_answer?.connected_intelligence_scorecard
+      ||data?.mmir?.connected_intelligence_scorecard
+      ||null;
+    return card&&card.object==='mmir.connected_intelligence.prompt_scorecard'?card:null;
+  }
+
+  function gatewayConnectedScorecardReceiptLine(data){
+    const card=gatewayConnectedScorecard(data);
+    if(!card)return '';
+    const raw=card.raw_model_capacity||{};
+    const knownParameters=Number(raw.callable_known_parameter_billion_lower_bound)||0;
+    const unknownRoutes=Number(raw.callable_unknown_parameter_route_count)||0;
+    const parts=[
+      typeof card.score_0_to_100==='number'?'Connected score '+String(scorecardNumber(card.score_0_to_100)):'',
+      Number(card.active_answer_count)?String(Number(card.active_answer_count))+' answers':'',
+      Number(card.provider_or_node_diversity_count)?String(Number(card.provider_or_node_diversity_count))+' sources':'',
+      Number(card.successful_capability_tool_route_count)?String(Number(card.successful_capability_tool_route_count))+' tools':'',
+      card.council_cross_review_executed===true?'Council verified':'',
+      knownParameters?String(scorecardNumber(knownParameters,1))+'B capacity':'',
+      unknownRoutes?String(unknownRoutes)+' unknown-size routes':'',
+      raw.parameter_count_is_capacity_not_quality===true?'capacity, not IQ':''
+    ];
+    return parts.filter(Boolean).join(' · ');
+  }
+
   function gatewayFusionReceiptLine(data){
     const analysis=gatewayFusionAnalysis(data);
     if(!analysis||analysis.status!=='analysis_ready')return '';
@@ -5833,6 +5861,7 @@
       swarm_status:data.status||'first_round_ready',
       superboost_preview:data?.object==='chat.superboost.preview'||Boolean(data?.superboost),
       superboost:data?.superboost,
+      connected_intelligence_scorecard:data?.connected_intelligence_scorecard||data?.superboost?.connected_intelligence_scorecard||null,
       continuation:data?.continuation||data?.superboost?.continuation||null,
       target_route_count:Number(data.target_route_count)||Number(pool.target_route_count)||0,
       sync_route_limit:Number(data.sync_route_limit)||Number(pool.sync_route_limit)||0,
@@ -5860,6 +5889,7 @@
       planned_debate_rounds:swarmData.planned_debate_rounds,
       debate_plan:swarmData.debate_plan,
       fusion_analysis:swarmData.fusion_analysis,
+      connected_intelligence_scorecard:swarmData.connected_intelligence_scorecard,
       measurement:swarmData.measurement,
       intelligence_pool:pool,
       pool
@@ -5957,6 +5987,7 @@
     const signedReceipts=pool?.signals_available?.signed_route_receipts===true||attempts.some(attempt=>attempt?.receipt?.receipt_signature);
     const consensus=gatewayConsensusConfidence(data);
     const fusionLine=gatewayFusionReceiptLine(data);
+    const connectedScoreLine=gatewayConnectedScorecardReceiptLine(data);
     const succeeded=succeededAttempts.map(compareAttemptSummary);
     const blocked=attempts.filter(attempt=>attempt?.status!=='succeeded').map(compareAttemptIssueSummary).slice(0,2);
     const providerReadiness=providerReadinessLine();
@@ -5967,6 +5998,7 @@
       poolRouteCount?String(poolRouteCount)+' routes compared':(attempts.length?String(attempts.length)+' routes':''),
       consensus?.label||'',
       fusionLine,
+      connectedScoreLine,
       answeredLabel,
       demotedLabel,
       quietLabel,
