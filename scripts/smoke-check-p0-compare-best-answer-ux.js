@@ -136,6 +136,26 @@ requireText(
 );
 requireText(
   runtime,
+  'function gatewayPrimaryAnswerText(data)',
+  'Gateway Swarm/Superboost rendering must prefer the plain user answer contract before metadata objects'
+);
+requireText(
+  runtime,
+  'data?.answer',
+  'Gateway primary answer helper must read the top-level answer string'
+);
+requireText(
+  runtime,
+  'data?.best_answer_text',
+  'Gateway primary answer helper must read the top-level best_answer_text string'
+);
+requireText(
+  runtime,
+  "gatewayPrimaryAnswerText(data)||'Compare finished, but no best answer was returned.'",
+  'Best Answer rendering must use the plain answer string instead of rendering metadata objects'
+);
+requireText(
+  runtime,
   'High confidence',
   'Consensus confidence must have a compact high-confidence user label'
 );
