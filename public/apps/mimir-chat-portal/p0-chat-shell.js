@@ -894,6 +894,10 @@
     return demoTranscriptConsentActive(params);
   }
 
+  function demoTranscriptUploadAllowed(){
+    return hostedDemoOrigin()&&demoTranscriptCaptureEnabled();
+  }
+
   function redactDemoTranscriptText(value){
     return String(value||'')
       .replace(/\r/g,'')
@@ -929,7 +933,7 @@
   }
 
   function sendDemoTranscript(reason='conversation_update',metadata={}){
-    if(!demoTranscriptCaptureEnabled())return;
+    if(!demoTranscriptUploadAllowed())return;
     const messages=demoTranscriptMessages();
     if(!messages.length)return;
     const hash=demoTranscriptHash(messages);

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-06-23T07:15:00Z",
+  "updated_at": "2026-06-24T14:35:00Z",
   "description": "Public-safe active chat routes that the static MMIR frontend can actually attach to. No provider secrets, raw prompts, paid routes or private node tokens belong here.",
   "nodes": [
     {
@@ -149,6 +149,7 @@
       "trust_level": "paired-local",
       "cost": { "mode": "free-local", "requires_approval": false },
       "route": { "kind": "local-node", "url": "http://127.0.0.1:3000" },
+      "receipt_metadata": { "node_type": "local-node", "trust_class": "paired-local", "cost_class": "free-local", "quality_tier": "user-installed", "execution_boundary": "localhost-private-node", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": true },
       "capabilities": ["health", "models", "openai.v1.models", "hardware", "chat.completions", "openai.v1.chat.completions", "models.pull", "tunnels.status"],
       "models": []
     },
@@ -160,6 +161,7 @@
       "trust_level": "local-openai-compatible",
       "cost": { "mode": "free-local", "requires_approval": false },
       "route": { "kind": "local-openai-compatible", "url": "http://127.0.0.1:1234", "models_path": "/v1/models", "chat_path": "/v1/chat/completions" },
+      "receipt_metadata": { "node_type": "local-adapter", "trust_class": "local-openai-compatible", "cost_class": "free-local", "quality_tier": "user-running-server", "execution_boundary": "localhost-openai-compatible-server", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": true },
       "capabilities": ["openai.v1.models", "openai.v1.chat.completions", "local.no-key"],
       "models": [
         { "id": "auto-discovered", "name": "LM Studio loaded model", "status": "available_when_server_running", "provider": "lm-studio", "source": "localhost" }
@@ -173,6 +175,7 @@
       "trust_level": "local-openai-compatible",
       "cost": { "mode": "free-local", "requires_approval": false },
       "route": { "kind": "local-openai-compatible", "url": "http://127.0.0.1:8080", "models_path": "/v1/models", "chat_path": "/v1/chat/completions" },
+      "receipt_metadata": { "node_type": "local-adapter", "trust_class": "local-openai-compatible", "cost_class": "free-local", "quality_tier": "user-running-server", "execution_boundary": "localhost-openai-compatible-server", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": true },
       "capabilities": ["openai.v1.models", "openai.v1.chat.completions", "local.no-key"],
       "models": [
         { "id": "auto-discovered", "name": "llama.cpp loaded GGUF", "status": "available_when_server_running", "provider": "llama.cpp", "source": "localhost" }
@@ -186,6 +189,7 @@
       "trust_level": "local-openai-compatible",
       "cost": { "mode": "free-local", "requires_approval": false },
       "route": { "kind": "local-openai-compatible", "url": "http://127.0.0.1:8000", "models_path": "/v1/models", "chat_path": "/v1/chat/completions" },
+      "receipt_metadata": { "node_type": "local-adapter", "trust_class": "local-openai-compatible", "cost_class": "free-local", "quality_tier": "user-running-server", "execution_boundary": "localhost-openai-compatible-server", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": true },
       "capabilities": ["openai.v1.models", "openai.v1.chat.completions", "local.no-key"],
       "models": [
         { "id": "auto-discovered", "name": "vLLM served model", "status": "available_when_server_running", "provider": "vllm", "source": "localhost" }
@@ -199,6 +203,7 @@
       "trust_level": "local-only",
       "cost": { "mode": "free-local", "requires_approval": false },
       "route": { "kind": "ollama-direct", "url": "http://127.0.0.1:11434", "models_path": "/api/tags", "chat_path": "/api/chat" },
+      "receipt_metadata": { "node_type": "local-adapter", "trust_class": "local-only", "cost_class": "free-local", "quality_tier": "user-running-server", "execution_boundary": "localhost-ollama-server", "prompt_left_device": false, "provider_key_required": false, "cloudflare_required": false, "install_required": true },
       "capabilities": ["ollama.tags", "ollama.chat", "local.no-key"],
       "models": [
         { "id": "auto-discovered", "name": "Ollama local model", "status": "available_when_server_running", "provider": "ollama", "source": "localhost" }
