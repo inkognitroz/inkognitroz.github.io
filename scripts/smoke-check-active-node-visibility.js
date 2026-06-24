@@ -24,6 +24,7 @@ requireIncludes(strip, 'function routeChoiceReason(node)', 'Active node strip mu
 requireIncludes(strip, 'function capacityLine(nodes)', 'Active node strip must summarize ready/visible/local capacity.');
 requireIncludes(strip, 'function nextStepAction(best,nodes)', 'Active node strip must derive a single best next step from live route state.');
 requireIncludes(strip, 'function activeRouteLine(best,selected)', 'Active node strip must derive the compact headline from the actual active route.');
+requireIncludes(strip, 'function routePolicyLine(node)', 'Active node strip must summarize active route trust, cost and boundary policy.');
 requireIncludes(strip, 'function nextStepMarkup(action)', 'Active node strip must render the next-step callout.');
 requireIncludes(strip, 'function stripNodes(allNodes,best)', 'Active node strip must be able to keep the selected route visible alongside the public-first cards.');
 requireIncludes(strip, "function storageGet(key,fallback='')", 'Active node strip must guard localStorage reads so blocked storage cannot break first paint.');
@@ -33,7 +34,13 @@ requireIncludes(strip, "return storageGet(WORKSPACE_KEY,'personal')||'personal';
 requireIncludes(strip, 'storageSet(repairResumeKey(),JSON.stringify(resume));', 'Local install resume storage must be best-effort rather than render-blocking.');
 requireIncludes(strip, "if(storageGet(ACTIVE_KEY,'')==='mmir-api-bootstrap')", 'Active-route selection must not read localStorage directly.');
 requireIncludes(strip, 'const best=bestNode(allNodes,selected);', 'Active node strip must derive the active route from the full manifest, not only the compact public-first subset.');
-requireIncludes(strip, 'const state=nodeStatus(best),line=activeRouteLine(best,selected),inventory=visibleInventory(allNodes)', 'Active node strip headline must use the active route helper instead of the selected-model label.');
+requireIncludes(strip, 'const state=nodeStatus(best),line=activeRouteLine(best,selected),policy=routePolicyLine(best),inventory=visibleInventory(allNodes)', 'Active node strip headline must use the active route helper and policy helper instead of selected-model-only labels.');
+requireIncludes(strip, "const costMode=String(node?.cost?.mode||meta.cost_class||'free').replace(/-/g,' ');", 'Active route policy line must expose route cost mode from manifest metadata.');
+requireIncludes(strip, "const boundary=meta.execution_boundary?String(meta.execution_boundary).replace(/-/g,' '):(isLocalAdapter(node)||node?.id==='local-node'?'localhost/private node':(needsWebGpu(node)?'current browser session':'public starter route'));", 'Active route policy line must expose execution boundary without inventing backend claims.');
+requireIncludes(strip, "const prompt=node?.id==='local-node'||isLocalAdapter(node)||meta.prompt_left_device===false?'prompt stays local':'no private prompt stored in browser';", 'Active route policy line must show whether the prompt stays local.');
+requireIncludes(strip, "const keys=meta.provider_key_required===true?'provider key required':'no provider key';", 'Active route policy line must expose provider key requirements.');
+requireIncludes(strip, "const approval=node?.cost?.requires_approval===true?'approval required':'no paid route started';", 'Active route policy line must keep paid-route approval status explicit.');
+requireIncludes(strip, "class=\"mmir-active-node-policy\" aria-label=\"Active route policy\"", 'Active route strip must render the active route policy line in the headline.');
 requireIncludes(strip, 'if(best&&!result.some(node=>node.id===best.id))result.push(best);', 'Active node strip must add the selected active route back into the compact strip when it would otherwise be hidden.');
 requireIncludes(strip, 'Chosen because a verified private local model is already live on this device.', 'Local-ready path must explain why MMIR promoted the private route.');
 requireIncludes(strip, 'Chosen because it can answer first while local/private routes are still being verified.', 'Hosted fallback path must explain why it stays first.');
@@ -66,11 +73,11 @@ requireIncludes(strip, "source:'active-route-strip'", 'Route-feedback drafts mus
 requireIncludes(strip, "openInbox:true", 'Route-feedback CTA must open Feedback Inbox after saving the local route draft.');
 requireIncludes(strip, "promptEl.value=feedbackDraft(best,freshness);", 'Route-feedback CTA must prefill a sanitized @feedback draft.');
 requireIncludes(strip, "bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));", 'Route-refresh CTA must re-run the route inventory load from the strip.');
-requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'.');", 'Hero description must reflect route-choice reasoning plus capacity summary.');
+requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'. '+policy+'.');", 'Hero description must reflect route-choice reasoning, capacity summary and route policy.');
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260623-active-route-storage-guard-v1';
+const expectedVersion = '20260624-active-route-policy-line-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
