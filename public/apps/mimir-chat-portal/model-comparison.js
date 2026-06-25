@@ -309,12 +309,16 @@
   }
 
   function routeSafetySummary(profile,url,modelCount){
-    const host=(()=>{try{return new URL(url).host||'not recorded';}catch(error){return 'not recorded';}})();
+    const routeHost=(()=>{try{const parsed=new URL(url);return {host:parsed.host||'not recorded',hostname:(parsed.hostname||'').toLowerCase()};}catch(error){return {host:'not recorded',hostname:''};}})();
+    const host=routeHost.host;
+    const hostname=routeHost.hostname;
     const provider=String(profile?.provider||'openai-compatible').replace(/\s+/g,' ').trim()||'openai-compatible';
     const profileName=String(profile?.name||profile?.id||'active backend').replace(/\s+/g,' ').trim();
     const cost=String(profile?.cost||profile?.cost_mode||'not recorded').replace(/\s+/g,' ').trim();
     const keyRef=keyReferenceSummary(profile);
-    const routeClass=/localhost|127\.0\.0\.1|\.local(?::|$)/i.test(host)?'local/private backend':(/api\.mmir\.ai/i.test(host)?'MMIR free hosted route':'active backend route');
+    const localRoute=hostname==='localhost'||hostname==='127.0.0.1'||hostname==='::1'||hostname.endsWith('.local');
+    const mmirHostedRoute=hostname==='api.mmir.ai';
+    const routeClass=localRoute?'local/private backend':(mmirHostedRoute?'MMIR free hosted route':'active backend route');
     return 'Route safety: '+profileName+' via '+routeClass+' ('+provider+'); host: '+host+'; compared '+String(modelCount||0)+' selected model(s); cost boundary: '+cost+'; key reference: '+keyRef+'; no provider secrets or paid-route credentials stored in feedback draft.';
   }
 

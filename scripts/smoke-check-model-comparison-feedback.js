@@ -44,7 +44,14 @@ requireIncludes(js, 'Best-answer signal: ', 'Compare feedback draft must label t
 requireIncludes(js, "usable.length>=2?'best-answer candidate needs owner review':'insufficient compare evidence'", 'Compare feedback must distinguish candidate-quality evidence from insufficient comparisons.');
 requireIncludes(js, 'raw answers not stored', 'Compare feedback best-answer signal must preserve raw answer privacy.');
 requireIncludes(js, 'function routeSafetySummary(profile,url,modelCount){', 'Compare feedback must summarize route safety from comparison-time backend state.');
-requireIncludes(js, "const routeClass=/localhost|127\\.0\\.0\\.1|\\.local(?::|$)/i.test(host)?'local/private backend':(/api\\.mmir\\.ai/i.test(host)?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
+requireIncludes(js, "const routeHost=(()=>{try{const parsed=new URL(url);return {host:parsed.host||'not recorded',hostname:(parsed.hostname||'').toLowerCase()};}catch(error){return {host:'not recorded',hostname:''};}})();", 'Compare feedback route summary must preserve display host while using the parsed exact hostname for route safety.');
+requireIncludes(js, 'const hostname=routeHost.hostname;', 'Compare feedback route summary must classify routes from the parsed exact hostname.');
+requireIncludes(js, "const localRoute=hostname==='localhost'||hostname==='127.0.0.1'||hostname==='::1'||hostname.endsWith('.local');", 'Compare feedback route summary must classify only exact localhost, loopback and .local hosts as local/private.');
+requireIncludes(js, "const mmirHostedRoute=hostname==='api.mmir.ai';", 'Compare feedback route summary must classify only the exact API host as the MMIR hosted route.');
+requireIncludes(js, "const routeClass=localRoute?'local/private backend':(mmirHostedRoute?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
+if (/api\\\.mmir\\\.ai/.test(js) || /\/localhost\|127\\\.0\\\.0\\\.1/.test(js)) {
+  fail('Compare feedback route summary must not classify trusted routes by broad substring regexes.');
+}
 requireIncludes(js, 'function keyReferenceSummary(profile){', 'Compare feedback must summarize key-reference presence without storing the raw value.');
 requireIncludes(js, "return raw?'configured in active backend profile; raw key reference not stored in feedback draft':'not stored in feedback draft';", 'Compare feedback must redact backend key-reference values even when a profile has one.');
 requireIncludes(js, 'no provider secrets or paid-route credentials stored in feedback draft', 'Compare feedback route summary must keep secret and paid-route boundaries explicit.');
@@ -86,7 +93,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-feedback-capacity-v1';
+const expectedJsVersion = '20260625-compare-feedback-host-class-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
