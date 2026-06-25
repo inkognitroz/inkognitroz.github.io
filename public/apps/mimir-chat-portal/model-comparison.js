@@ -297,6 +297,15 @@
     return 'Synthesis metadata: '+(content?'present':'missing')+'; '+String(content.length)+' character(s); '+signals.join('; ')+'; raw synthesis not stored in feedback draft.';
   }
 
+  function bestAnswerSignal(){
+    const usable=lastResults.filter(result=>!result.error&&result.content);
+    const failed=lastResults.filter(result=>result.error);
+    const synthesisModel=lastSynthesis?.model?.label||lastSynthesis?.model?.id||'not recorded';
+    const responseModels=usable.map(result=>result.model?.label||result.model?.id).filter(Boolean).slice(0,5).join(', ')||'none';
+    const reviewState=usable.length>=2?'best-answer candidate needs owner review':'insufficient compare evidence';
+    return 'Best-answer signal: '+reviewState+'; synthesis route: '+synthesisModel+'; usable response routes: '+responseModels+'; failed routes: '+String(failed.length)+'; raw answers not stored.';
+  }
+
   function routeSafetySummary(profile,url,modelCount){
     const host=(()=>{try{return new URL(url).host||'not recorded';}catch(error){return 'not recorded';}})();
     const provider=String(profile?.provider||'openai-compatible').replace(/\s+/g,' ').trim()||'openai-compatible';
@@ -343,6 +352,7 @@
       evidenceSummary(),
       promptPrivacySummary(),
       compareRouteSafetySummary(),
+      bestAnswerSignal(),
       resultSummary(),
       synthesisPrivacySummary(),
       'Why useful: synthesized answer helped choose a best response.',
