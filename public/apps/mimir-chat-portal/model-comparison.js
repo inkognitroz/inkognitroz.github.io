@@ -20,6 +20,7 @@
   let lastSynthesis=null;
   let lastPromptMetadata=null;
   let lastRouteMetadata=null;
+  let lastEvidenceId=null;
 
   if(!host)return;
 
@@ -310,9 +311,36 @@
     return lastRouteMetadata||'Route safety: comparison route not recorded; no provider secrets or paid-route credentials stored in feedback draft.';
   }
 
+  function stableFingerprint(value){
+    value=String(value||'');
+    let hash=2166136261;
+    for(let i=0;i<value.length;i+=1){
+      hash^=value.charCodeAt(i);
+      hash=Math.imul(hash,16777619);
+    }
+    return (hash>>>0).toString(36).padStart(7,'0').slice(0,7);
+  }
+
+  function evidenceSnapshot(prompt,profile,url,models){
+    const host=(()=>{try{return new URL(url).host||'not-recorded';}catch(error){return 'not-recorded';}})();
+    const modelIds=Array.isArray(models)?models.map(model=>model.id||model.label).filter(Boolean).join('|'):'';
+    return [
+      'prompt:'+stableFingerprint(prompt),
+      'words:'+String((String(prompt||'').match(/\S+/g)||[]).length),
+      'route:'+host,
+      'provider:'+String(profile?.provider||'openai-compatible'),
+      'models:'+modelIds
+    ].join(';');
+  }
+
+  function evidenceSummary(){
+    return 'Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'; local fingerprint only, raw prompt, responses and synthesis not stored.';
+  }
+
   function comparisonFeedbackDraft(){
     return [
       '@feedback Compare Live Models useful synthesis',
+      evidenceSummary(),
       promptPrivacySummary(),
       compareRouteSafetySummary(),
       resultSummary(),
@@ -370,6 +398,7 @@
     lastSynthesis=null;
     lastPromptMetadata=promptPrivacySummaryFor(prompt);
     lastRouteMetadata=routeSafetySummary(profile,url,models.length);
+    lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));
     setStatus('Comparing '+String(models.length)+' model(s)...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
