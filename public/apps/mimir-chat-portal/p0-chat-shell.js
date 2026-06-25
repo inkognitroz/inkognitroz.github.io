@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260624-supergeni-quality-row-v2';
+  const P0_RUNTIME_VERSION='20260625-compare-useful-redaction-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -5114,6 +5114,12 @@
     ].filter(Boolean).join(' · ');
   }
 
+  function compareUsefulFeedbackTextMetadata(label,value,privacyNote){
+    const text=String(value||'').trim();
+    const words=(text.match(/\S+/g)||[]).length;
+    return label+' metadata: '+(text?'present':'missing')+'; '+String(words)+' word(s); '+String(text.length)+' character(s); '+privacyNote;
+  }
+
   function captureCompareUsefulFeedback(message){
     if(message.compareUsefulCaptured){
       setMessageActionStatus(message.id,'Useful signal already saved.','ready');
@@ -5121,16 +5127,17 @@
     }
     const user=previousUserMessageFor(message);
     const route=String(message.receipt||message.label||'compare route').replace(/\s+/g,' ').slice(0,420);
-    const answer=String(message.content||'').replace(/\s+/g,' ').slice(0,700);
-    const prompt=String(user?.content||'').replace(/\s+/g,' ').slice(0,420);
+    const answer=String(message.content||'');
+    const prompt=String(user?.content||'');
     const summary=compareUsefulFeedbackSummary(message.receipt);
     const saved=saveFeedbackDraft(
       [
         'Compare answer marked useful.',
-        prompt?('Prompt: '+prompt):'Prompt: [not available]',
+        compareUsefulFeedbackTextMetadata('Prompt',prompt,'raw prompt not stored in feedback draft.'),
         summary?('Decision context: '+summary):'Decision context: [not available]',
         'Route evidence: '+route,
-        'Useful answer excerpt: '+answer
+        compareUsefulFeedbackTextMetadata('Useful answer',answer,'raw useful answer not stored in feedback draft.'),
+        'Privacy: raw prompt and useful answer content are not stored in this feedback draft.'
       ].join('\n'),
       {
         source:'p0-compare-useful-action',
