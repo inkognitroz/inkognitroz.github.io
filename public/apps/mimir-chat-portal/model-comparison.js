@@ -303,6 +303,7 @@
 
   function captureComparisonFeedback(){
     if(!lastSynthesis?.content){setStatus('Run synthesis before marking it useful.','error');return;}
+    if(feedbackBtn?.dataset?.captured==='true'){setStatus('Useful synthesis already saved. Run a new synthesis to capture another signal.','ready');return;}
     const draft=comparisonFeedbackDraft();
     const saved=window.MimirChatRuntimeBridge?.saveFeedbackDraft?.(draft,{
       source:'model-comparison-panel',
@@ -321,6 +322,7 @@
     }
     if(feedbackBtn){
       feedbackBtn.dataset.captured='true';
+      feedbackBtn.disabled=true;
       feedbackBtn.textContent='Useful saved';
     }
     setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.','ready');
