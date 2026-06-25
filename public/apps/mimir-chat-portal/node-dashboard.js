@@ -123,14 +123,27 @@
     if(!Number.isFinite(at.getTime()))return true;
     return Date.now()-at.getTime()>NODE_HANDOFF_STALE_MS;
   }
+  function nodeHandoffSavedAge(handoff){
+    const at=new Date(String(handoff?.at||''));
+    if(!Number.isFinite(at.getTime()))return 'saved time unknown';
+    const elapsed=Math.max(0,Date.now()-at.getTime());
+    const minutes=Math.floor(elapsed/60000);
+    if(minutes<1)return 'saved just now';
+    if(minutes<60)return 'saved '+String(minutes)+' minute'+(minutes===1?'':'s')+' ago';
+    const hours=Math.floor(minutes/60);
+    if(hours<24)return 'saved '+String(hours)+' hour'+(hours===1?'':'s')+' ago';
+    const days=Math.floor(hours/24);
+    return 'saved '+String(days)+' day'+(days===1?'':'s')+' ago';
+  }
   function renderNodeHandoffResumeBanner(){
     const handoff=readNodeHandoff();
     if(!handoff)return '';
     const copy=handoffResumeCopy(handoff);
     const target=copy.target||'#node-dashboard';
     const isHash=target.startsWith('#');
+    const freshness=nodeHandoffSavedAge(handoff);
     return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
-      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
+      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>'+safe(freshness)+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
       '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
