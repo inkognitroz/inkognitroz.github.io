@@ -327,11 +327,17 @@
     return lastRouteMetadata||'Route safety: comparison route not recorded; no provider secrets or paid-route credentials stored in feedback draft.';
   }
 
+  function routeLabelSummary(models){
+    const selectedLabels=(Array.isArray(models)?models:[]).map(model=>String(model?.label||model?.id||'').replace(/\s+/g,' ').trim()).filter(Boolean).slice(0,5).join(', ')||'none';
+    const visibleLabels=liveModels().map(model=>String(model.label||model.id||'').replace(/\s+/g,' ').trim()).filter(Boolean).slice(0,8).join(', ')||'none';
+    return 'selected routes: '+selectedLabels+'; visible routes: '+visibleLabels;
+  }
+
   function routeCoverageSummary(models){
     const selected=Array.isArray(models)?models.length:lastResults.length;
     const available=liveModels().length;
     const coverage=available?Math.round((selected/available)*100):0;
-    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; route labels only, raw prompts and answers not stored.';
+    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
   }
 
   function compareRouteCoverageSummary(){
