@@ -279,6 +279,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackItemIdLabel(item){',
+  'P0 shell must normalize feedback item IDs for review and export.'
+);
+requireIncludes(
+  shell,
   'Capture truth: ',
   'Feedback Inbox must explain whether drafts are synced, pending or local-only.'
 );
@@ -296,6 +301,16 @@ requireIncludes(
   shell,
   "' · via '+source+' · '",
   'Feedback Inbox triage summary must preserve the capture surface for each draft.'
+);
+requireIncludes(
+  shell,
+  "' · '+feedbackItemIdLabel(item)+' · '",
+  'Feedback Inbox triage summary must expose a traceable feedback item ID.'
+);
+requireIncludes(
+  shell,
+  "'   - Feedback ID: '+feedbackItemIdLabel(item)",
+  'Feedback triage export must include a stable feedback item ID for owner follow-up.'
 );
 requireIncludes(
   shell,

@@ -1226,6 +1226,11 @@
       .slice(0,60);
   }
 
+  function feedbackItemIdLabel(item){
+    const value=String(item?.id||item?.feedback_event_id||'').trim();
+    return value?('ID '+value.replace(/\s+/g,'').slice(0,48)):'ID local-draft';
+  }
+
   function feedbackStorageStatusLines(plan){
     const durable=Boolean(plan?.durable_binding_configured||plan?.kv_binding_configured);
     const readable=Boolean(plan?.durable_store_readable);
@@ -1271,7 +1276,7 @@
         const target=item.target?('@'+item.target):'@feedback';
         const lane=item.classification?.lane||'triage';
         const source=feedbackSourceLabel(item.source);
-        lines.push(String(index+1)+'. '+feedbackPriorityLabel(item.priority)+' · '+target+' · '+lane+' · via '+source+' · '+String(item.suggestion||'').replace(/\s+/g,' ').slice(0,140));
+        lines.push(String(index+1)+'. '+feedbackPriorityLabel(item.priority)+' · '+feedbackItemIdLabel(item)+' · '+target+' · '+lane+' · via '+source+' · '+String(item.suggestion||'').replace(/\s+/g,' ').slice(0,140));
       });
     }
     lines.push('', 'Next step: promote only owner-approved items to an issue with acceptance proof.');
@@ -1309,6 +1314,7 @@
       const repo=item.classification?.repo||'';
       lines.push(
         String(index+1)+'. ['+feedbackPriorityLabel(item.priority)+'] '+target,
+        '   - Feedback ID: '+feedbackItemIdLabel(item),
         '   - Status: '+(item.status||'draft_ready'),
         '   - Lane: '+lane+(repo?' · '+repo:''),
         '   - Source: '+feedbackSourceLabel(item.source)+(item.source?' · '+String(item.source):''),
