@@ -53,6 +53,11 @@ if (js.includes("String(profile?.keyRef||profile?.key_ref||'not stored in feedba
 }
 requireIncludes(js, 'compareRouteSafetySummary(),', 'Compare feedback draft must include the route-safety summary before model-result evidence.');
 requireIncludes(js, 'lastRouteMetadata=routeSafetySummary(profile,url,models.length);', 'Compare feedback must preserve route safety metadata from the comparison run.');
+requireIncludes(js, 'let lastCoverageMetadata=null;', 'Compare feedback must track route coverage from the comparison run.');
+requireIncludes(js, 'function routeCoverageSummary(models){', 'Compare feedback must summarize selected route coverage without raw prompt or answer content.');
+requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must be metadata-only and demo-triageable.');
+requireIncludes(js, 'compareRouteCoverageSummary(),', 'Compare feedback draft must include selected-versus-visible route coverage before best-answer evidence.');
+requireIncludes(js, 'lastCoverageMetadata=routeCoverageSummary(models);', 'Compare feedback must snapshot route coverage at comparison time.');
 requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a stable local evidence ID per comparison run.');
 requireIncludes(js, 'function stableFingerprint(value){', 'Compare feedback must derive a short local fingerprint without storing raw prompt text.');
 requireIncludes(js, 'function evidenceSnapshot(prompt,profile,url,models){', 'Compare feedback must build evidence IDs from comparison-time prompt, route and model metadata.');
@@ -78,7 +83,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-keyref-redaction-v1';
+const expectedJsVersion = '20260625-compare-route-coverage-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }

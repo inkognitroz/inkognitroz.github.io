@@ -21,6 +21,7 @@
   let lastComparisonPrompt='';
   let lastPromptMetadata=null;
   let lastRouteMetadata=null;
+  let lastCoverageMetadata=null;
   let lastEvidenceId=null;
 
   if(!host)return;
@@ -326,6 +327,17 @@
     return lastRouteMetadata||'Route safety: comparison route not recorded; no provider secrets or paid-route credentials stored in feedback draft.';
   }
 
+  function routeCoverageSummary(models){
+    const selected=Array.isArray(models)?models.length:lastResults.length;
+    const available=liveModels().length;
+    const coverage=available?Math.round((selected/available)*100):0;
+    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; route labels only, raw prompts and answers not stored.';
+  }
+
+  function compareRouteCoverageSummary(){
+    return lastCoverageMetadata||'Route coverage: comparison coverage not recorded; route labels only, raw prompts and answers not stored.';
+  }
+
   function stableFingerprint(value){
     value=String(value||'');
     let hash=2166136261;
@@ -358,6 +370,7 @@
       evidenceSummary(),
       promptPrivacySummary(),
       compareRouteSafetySummary(),
+      compareRouteCoverageSummary(),
       bestAnswerSignal(),
       resultSummary(),
       synthesisPrivacySummary(),
@@ -415,6 +428,7 @@
     lastComparisonPrompt=prompt;
     lastPromptMetadata=promptPrivacySummaryFor(prompt);
     lastRouteMetadata=routeSafetySummary(profile,url,models.length);
+    lastCoverageMetadata=routeCoverageSummary(models);
     lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));
     setStatus('Comparing '+String(models.length)+' model(s)...','loading');
     try{
