@@ -542,6 +542,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   white-space: nowrap;
 }
 
+.p0-route-action-separator {
+  color: rgba(4, 120, 87, 0.55);
+  flex: 0 0 auto;
+}
+
 .p0-route-cta {
   align-items: center;
   background: #ecfdf5;

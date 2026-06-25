@@ -127,6 +127,8 @@ testApi.renderMicroStatus(
 );
 assertIncludes(singleRouteEl.innerHTML, 'data-p0-route-action="connect-local"', 'Single-route hosted status must keep local setup one tap away.');
 assertIncludes(singleRouteEl.innerHTML, 'Connect local', 'Single-route hosted status must label the local setup CTA clearly.');
+assertIncludes(singleRouteEl.innerHTML, 'p0-route-action-separator', 'Single-route hosted status must visually separate value text from the CTA.');
+assertExcludes(singleRouteEl.innerHTML, 'privat</span><button', 'Single-route hosted status markup must not concatenate privacy value and CTA label.');
 
 testApi.recordRouteBenchmark(hosted, { score: 84, elapsedMs: 746, answer_class: 'complete', latency_class: 'responsive' });
 assertIncludes(testApi.routeMicroStatus(hosted), 'Score ', 'Route micro-status helper must preserve effective score.');
