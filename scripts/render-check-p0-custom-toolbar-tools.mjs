@@ -60,7 +60,7 @@ async function checkViewport(browser, viewport) {
     if (['warning', 'error'].includes(message.type())) logs.push(`${message.type()}: ${message.text()}`);
   });
   page.on('pageerror', error => logs.push(`pageerror: ${error.message}`));
-  await page.route('https://api.mmir.ai/v1/models', async route => {
+  await page.route('https://api.mmir.ai/v1/models**', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

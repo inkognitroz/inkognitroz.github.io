@@ -634,12 +634,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260625-route-cta-separator-v1',
+  'p0-chat-shell.js?v=20260625-compact-models-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260625-route-cta-separator-v1"',
+  '"p0-chat-shell.js": "20260625-compact-models-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

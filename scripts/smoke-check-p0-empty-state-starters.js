@@ -14,8 +14,8 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260625-route-cta-separator-v1';
-const expectedCssVersion = '20260625-route-cta-separator-v1';
+const expectedShellVersion = '20260625-compact-models-v1';
+const expectedCssVersion = '20260625-compact-models-v1';
 
 requireIncludes(
   shell,
