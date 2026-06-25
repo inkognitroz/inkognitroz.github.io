@@ -37,6 +37,7 @@ function functionBody(source, name) {
 }
 
 const addMenu = functionBody(runtime, 'renderAddMenu');
+const trustValueSummary = functionBody(runtime, 'trustValueSummary');
 const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
 const captureCompareUsefulFeedback = functionBody(runtime, 'captureCompareUsefulFeedback');
 
@@ -223,6 +224,21 @@ requireText(
 );
 requireText(
   runtime,
+  'function receiptConnectionLiftSummary(full)',
+  'Compare receipts must extract measured connection-lift when gateway provides it'
+);
+requireText(
+  trustValueSummary,
+  'const lift=receiptConnectionLiftSummary(text);',
+  'Trust line must surface connection-lift as user value when measured'
+);
+requireText(
+  trustValueSummary,
+  "return ['Spør '+routeCount+' AI - beste vinner',lift,consensus,'Verifisert','privat'].filter(Boolean).join(' · ');",
+  'Many-AI trust summary must show measured lift before raw details'
+);
+requireText(
+  runtime,
   'function compareUsefulFeedbackTextMetadata(label,value,privacyNote)',
   'Compare useful feedback must summarize prompt and answer metadata without storing raw text'
 );
@@ -235,6 +251,11 @@ requireText(
   compareUsefulFeedbackSummary,
   "coverage.length?('Coverage: '+coverage.join(' / ')):''",
   'Compare useful feedback must group compared, answered, quiet, queued and visible route counts into decision context'
+);
+requireText(
+  compareUsefulFeedbackSummary,
+  'pick(/^connection lift\\s+[+-]?\\d+(?:\\.\\d+)?$/i)',
+  'Compare useful feedback must preserve measured connection-lift without raw payload storage'
 );
 requireText(
   compareUsefulFeedbackSummary,

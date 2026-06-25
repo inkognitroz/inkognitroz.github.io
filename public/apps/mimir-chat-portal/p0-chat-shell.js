@@ -1973,6 +1973,16 @@
     return 0;
   }
 
+  function receiptConnectionLiftSummary(full){
+    const match=String(full||'').match(/\bconnection lift\s+([+-]?\d+(?:\.\d+)?)\b/i);
+    if(!match)return '';
+    const value=Number(match[1]);
+    if(!Number.isFinite(value))return '';
+    if(value>0)return 'Løft +'+String(value);
+    if(value<0)return 'Løft '+String(value);
+    return 'Løft målt';
+  }
+
   function routeEvidenceReceipt(full){
     const text=String(full||'');
     const evidence=[
@@ -1995,12 +2005,13 @@
     if(!routeEvidenceReceipt(text))return '';
     const parts=receiptParts(text);
     const routeCount=receiptRouteCount(text,parts);
+    const lift=receiptConnectionLiftSummary(text);
     const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
     const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
     if(isSwarm&&routeCount>1){
-      return ['Spør '+routeCount+' AI - beste vinner',consensus,'Verifisert','privat'].filter(Boolean).join(' · ');
+      return ['Spør '+routeCount+' AI - beste vinner',lift,consensus,'Verifisert','privat'].filter(Boolean).join(' · ');
     }
-    return 'Verifisert · privat';
+    return [lift,'Verifisert','privat'].filter(Boolean).join(' · ');
   }
 
   function receiptConsensusState(full){
@@ -5123,6 +5134,7 @@
     return [
       pick(/^Winner:/i),
       pick(/^Score\s+\d+/i),
+      pick(/^connection lift\s+[+-]?\d+(?:\.\d+)?$/i),
       pick(/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i),
       coverage.length?('Coverage: '+coverage.join(' / ')):'',
       ...picks(/^(OpenRouter|NVIDIA|Google|Groq|MMIR|Supergeni)\s+live$/i).slice(0,4),
