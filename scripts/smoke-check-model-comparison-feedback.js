@@ -41,8 +41,15 @@ requireIncludes(js, "const routeClass=/localhost|127\\.0\\.0\\.1|\\.local(?::|$)
 requireIncludes(js, 'no provider secrets or paid-route credentials stored in feedback draft', 'Compare feedback route summary must keep secret and paid-route boundaries explicit.');
 requireIncludes(js, 'compareRouteSafetySummary(),', 'Compare feedback draft must include the route-safety summary before model-result evidence.');
 requireIncludes(js, 'lastRouteMetadata=routeSafetySummary(profile,url,models.length);', 'Compare feedback must preserve route safety metadata from the comparison run.');
+requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a stable local evidence ID per comparison run.');
+requireIncludes(js, 'function stableFingerprint(value){', 'Compare feedback must derive a short local fingerprint without storing raw prompt text.');
+requireIncludes(js, 'function evidenceSnapshot(prompt,profile,url,models){', 'Compare feedback must build evidence IDs from comparison-time prompt, route and model metadata.');
+requireIncludes(js, "lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));", 'Compare feedback must preserve the evidence ID from the comparison run.');
+requireIncludes(js, 'function evidenceSummary(){', 'Compare feedback draft must expose a local evidence summary.');
+requireIncludes(js, 'local fingerprint only, raw prompt, responses and synthesis not stored', 'Compare feedback evidence summary must keep privacy boundaries explicit.');
 requireIncludes(js, "function comparisonFeedbackDraft(){", 'Compare panel must build a sanitized local feedback draft.');
 requireIncludes(js, "'@feedback Compare Live Models useful synthesis", 'Compare feedback draft must be explicit and command-routable.');
+requireIncludes(js, 'evidenceSummary(),', 'Compare feedback draft must include the evidence ID before prompt and route metadata.');
 requireIncludes(js, 'raw prompt, raw model responses and raw synthesis are not stored in this feedback draft', 'Compare feedback draft must preserve the public-safe storage boundary.');
 requireIncludes(js, ".saveFeedbackDraft?.(draft,{", 'Compare panel must use the runtime Feedback Inbox bridge when available.');
 requireIncludes(js, "source:'model-comparison-panel'", 'Compare feedback drafts must record the exact UI source.');
@@ -58,7 +65,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-feedback-route-safety-v1';
+const expectedJsVersion = '20260625-compare-feedback-evidence-id-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
