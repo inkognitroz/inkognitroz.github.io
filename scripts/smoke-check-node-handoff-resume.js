@@ -29,6 +29,10 @@ requireIncludes(dashboard, 'Last saved repair state is older than 15 minutes.', 
 requireIncludes(dashboard, 'const NODE_HANDOFF_STALE_MS=15*60*1000;', 'Node handoff resume must define a short stale window for demo route trust.');
 requireIncludes(dashboard, 'function nodeHandoffIsStale(handoff)', 'Node handoff resume must classify old persisted handoffs.');
 requireIncludes(dashboard, 'if(!Number.isFinite(at.getTime()))return true;', 'Node handoff resume must treat missing or corrupt timestamps as stale.');
+requireIncludes(dashboard, 'function nodeHandoffSavedAge(handoff)', 'Node handoff resume must show when the local handoff was saved.');
+requireIncludes(dashboard, "return 'saved just now';", 'Fresh handoff resume copy must classify just-saved handoffs.');
+requireIncludes(dashboard, "' minute'+(minutes===1?'':'s')+' ago'", 'Handoff resume freshness must be readable at minute granularity.');
+requireIncludes(dashboard, "safe(freshness)+' / no_paid_routes_started:true", 'Handoff resume security proof must include local freshness before safety flags.');
 requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
 requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
 requireIncludes(dashboard, 'provider_secrets_stored:false', 'Node handoff resume must keep security/cost proof visible.');
@@ -41,7 +45,7 @@ requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260624-stale-repair-resume-v1';
+const expectedVersion = '20260625-node-handoff-freshness-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }
