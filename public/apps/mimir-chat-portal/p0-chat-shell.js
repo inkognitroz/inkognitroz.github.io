@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260625-compare-useful-redaction-v1';
+  const P0_RUNTIME_VERSION='20260625-compare-useful-evidence-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -753,6 +753,16 @@
       return 'evt_'+Date.now().toString(36)+'_'+Array.from(bytes).map(value=>value.toString(36)).join('');
     }
     return 'evt_'+Date.now().toString(36);
+  }
+
+  function stableLocalFingerprint(value){
+    value=String(value||'');
+    let hash=2166136261;
+    for(let index=0;index<value.length;index+=1){
+      hash^=value.charCodeAt(index);
+      hash=Math.imul(hash,16777619);
+    }
+    return (hash>>>0).toString(36).padStart(7,'0').slice(0,7);
   }
 
   function interactionEventQueue(){
@@ -5126,6 +5136,17 @@
     return label+' metadata: '+(text?'present':'missing')+'; '+String(words)+' word(s); '+String(text.length)+' character(s); '+privacyNote;
   }
 
+  function compareUsefulEvidenceId(prompt,answer,receipt){
+    const snapshot=[
+      'prompt:'+stableLocalFingerprint(prompt),
+      'prompt_words:'+String((String(prompt||'').match(/\S+/g)||[]).length),
+      'answer:'+stableLocalFingerprint(answer),
+      'answer_chars:'+String(String(answer||'').length),
+      'route:'+stableLocalFingerprint(receipt)
+    ].join(';');
+    return 'cmp-useful-'+stableLocalFingerprint(snapshot);
+  }
+
   function captureCompareUsefulFeedback(message){
     if(message.compareUsefulCaptured){
       setMessageActionStatus(message.id,'Useful signal already saved.','ready');
@@ -5136,9 +5157,11 @@
     const answer=String(message.content||'');
     const prompt=String(user?.content||'');
     const summary=compareUsefulFeedbackSummary(message.receipt);
+    const evidenceId=compareUsefulEvidenceId(prompt,answer,message.receipt);
     const saved=saveFeedbackDraft(
       [
         'Compare answer marked useful.',
+        'Evidence ID: '+evidenceId+'; local fingerprint only, raw prompt, answer and route payload not stored.',
         compareUsefulFeedbackTextMetadata('Prompt',prompt,'raw prompt not stored in feedback draft.'),
         summary?('Decision context: '+summary):'Decision context: [not available]',
         'Route evidence: '+route,

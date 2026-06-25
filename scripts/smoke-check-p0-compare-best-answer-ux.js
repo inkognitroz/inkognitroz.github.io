@@ -203,6 +203,16 @@ requireText(
 );
 requireText(
   runtime,
+  'function stableLocalFingerprint(value)',
+  'Compare useful feedback must derive local fingerprints without storing raw prompt or answer text'
+);
+requireText(
+  runtime,
+  'function compareUsefulEvidenceId(prompt,answer,receipt)',
+  'Compare useful feedback drafts must include a stable metadata-only evidence ID'
+);
+requireText(
+  runtime,
   'function captureCompareUsefulFeedback(message)',
   'Compare useful feedback must be captured through a dedicated sanitized local draft helper'
 );
@@ -235,6 +245,11 @@ requireText(
   runtime,
   "summary?('Decision context: '+summary):'Decision context: [not available]'",
   'Compare useful feedback drafts must carry actionable decision context for triage'
+);
+requireText(
+  captureCompareUsefulFeedback,
+  "'Evidence ID: '+evidenceId+'; local fingerprint only, raw prompt, answer and route payload not stored.'",
+  'Compare useful feedback drafts must expose a local evidence ID without raw payload storage'
 );
 requireText(
   captureCompareUsefulFeedback,
