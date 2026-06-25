@@ -312,9 +312,14 @@
     const provider=String(profile?.provider||'openai-compatible').replace(/\s+/g,' ').trim()||'openai-compatible';
     const profileName=String(profile?.name||profile?.id||'active backend').replace(/\s+/g,' ').trim();
     const cost=String(profile?.cost||profile?.cost_mode||'not recorded').replace(/\s+/g,' ').trim();
-    const keyRef=String(profile?.keyRef||profile?.key_ref||'not stored in feedback draft').replace(/\s+/g,' ').trim();
+    const keyRef=keyReferenceSummary(profile);
     const routeClass=/localhost|127\.0\.0\.1|\.local(?::|$)/i.test(host)?'local/private backend':(/api\.mmir\.ai/i.test(host)?'MMIR free hosted route':'active backend route');
     return 'Route safety: '+profileName+' via '+routeClass+' ('+provider+'); host: '+host+'; compared '+String(modelCount||0)+' selected model(s); cost boundary: '+cost+'; key reference: '+keyRef+'; no provider secrets or paid-route credentials stored in feedback draft.';
+  }
+
+  function keyReferenceSummary(profile){
+    const raw=String(profile?.keyRef||profile?.key_ref||'').trim();
+    return raw?'configured in active backend profile; raw key reference not stored in feedback draft':'not stored in feedback draft';
   }
 
   function compareRouteSafetySummary(){
