@@ -38,6 +38,7 @@ function functionBody(source, name) {
 
 const addMenu = functionBody(runtime, 'renderAddMenu');
 const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
+const captureCompareUsefulFeedback = functionBody(runtime, 'captureCompareUsefulFeedback');
 
 requireText(
   addMenu,
@@ -211,6 +212,11 @@ requireText(
   'Compare useful feedback drafts must summarize winner, score, route coverage and consensus from the receipt'
 );
 requireText(
+  runtime,
+  'function compareUsefulFeedbackTextMetadata(label,value,privacyNote)',
+  'Compare useful feedback must summarize prompt and answer metadata without storing raw text'
+);
+requireText(
   compareUsefulFeedbackSummary,
   "const picks=(test)=>parts.filter(part=>test.test(part));",
   'Compare useful feedback must be able to preserve repeated live-provider evidence from the receipt'
@@ -229,6 +235,31 @@ requireText(
   runtime,
   "summary?('Decision context: '+summary):'Decision context: [not available]'",
   'Compare useful feedback drafts must carry actionable decision context for triage'
+);
+requireText(
+  captureCompareUsefulFeedback,
+  "compareUsefulFeedbackTextMetadata('Prompt',prompt,'raw prompt not stored in feedback draft.')",
+  'Compare useful feedback drafts must store prompt metadata instead of raw prompt text'
+);
+requireText(
+  captureCompareUsefulFeedback,
+  "compareUsefulFeedbackTextMetadata('Useful answer',answer,'raw useful answer not stored in feedback draft.')",
+  'Compare useful feedback drafts must store answer metadata instead of raw answer text'
+);
+requireText(
+  captureCompareUsefulFeedback,
+  'Privacy: raw prompt and useful answer content are not stored in this feedback draft.',
+  'Compare useful feedback drafts must declare the privacy boundary'
+);
+forbidText(
+  captureCompareUsefulFeedback,
+  "prompt?('Prompt: '+prompt):'Prompt: [not available]'",
+  'Compare useful feedback must not store raw prompt excerpts'
+);
+forbidText(
+  captureCompareUsefulFeedback,
+  "'Useful answer excerpt: '+answer",
+  'Compare useful feedback must not store raw useful answer excerpts'
 );
 requireText(
   runtime,

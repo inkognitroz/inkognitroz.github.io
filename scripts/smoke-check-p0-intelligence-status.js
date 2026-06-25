@@ -13,7 +13,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260624-supergeni-quality-row-v2';
+const expectedShellVersion = '20260625-compare-useful-redaction-v1';
 
 requireIncludes(shell, "const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';", 'P0 shell must use the read-only intelligence scorecard endpoint.');
 requireIncludes(shell, "const SUPERGENI_QUALITY_PATH='/intelligence/supergeni/quality';", 'P0 shell must name the Supergeni quality surface for owner-readable status.');
