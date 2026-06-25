@@ -95,7 +95,7 @@ function startServer() {
 }
 
 async function installApiFixtures(page) {
-  await page.route('https://api.mmir.ai/v1/models', async route => {
+  await page.route('https://api.mmir.ai/v1/models**', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

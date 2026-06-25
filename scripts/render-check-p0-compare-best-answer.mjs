@@ -72,7 +72,7 @@ async function fulfillJson(route, body, status = 200) {
 }
 
 async function installFixtures(page) {
-  await page.route('https://api.mmir.ai/v1/models', async route => {
+  await page.route('https://api.mmir.ai/v1/models**', async route => {
     await fulfillJson(route, {
         object: 'list',
         data: [{
