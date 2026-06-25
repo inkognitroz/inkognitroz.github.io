@@ -45,7 +45,12 @@ requireIncludes(js, "usable.length>=2?'best-answer candidate needs owner review'
 requireIncludes(js, 'raw answers not stored', 'Compare feedback best-answer signal must preserve raw answer privacy.');
 requireIncludes(js, 'function routeSafetySummary(profile,url,modelCount){', 'Compare feedback must summarize route safety from comparison-time backend state.');
 requireIncludes(js, "const routeClass=/localhost|127\\.0\\.0\\.1|\\.local(?::|$)/i.test(host)?'local/private backend':(/api\\.mmir\\.ai/i.test(host)?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
+requireIncludes(js, 'function keyReferenceSummary(profile){', 'Compare feedback must summarize key-reference presence without storing the raw value.');
+requireIncludes(js, "return raw?'configured in active backend profile; raw key reference not stored in feedback draft':'not stored in feedback draft';", 'Compare feedback must redact backend key-reference values even when a profile has one.');
 requireIncludes(js, 'no provider secrets or paid-route credentials stored in feedback draft', 'Compare feedback route summary must keep secret and paid-route boundaries explicit.');
+if (js.includes("String(profile?.keyRef||profile?.key_ref||'not stored in feedback draft')")) {
+  fail('Compare feedback route summary must not copy profile keyRef or key_ref values into local drafts.');
+}
 requireIncludes(js, 'compareRouteSafetySummary(),', 'Compare feedback draft must include the route-safety summary before model-result evidence.');
 requireIncludes(js, 'lastRouteMetadata=routeSafetySummary(profile,url,models.length);', 'Compare feedback must preserve route safety metadata from the comparison run.');
 requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a stable local evidence ID per comparison run.');
@@ -73,7 +78,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-prompt-snapshot-v1';
+const expectedJsVersion = '20260625-compare-keyref-redaction-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
