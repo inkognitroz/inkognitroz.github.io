@@ -18,6 +18,7 @@
   let feedbackBtn=null;
   let lastResults=[];
   let lastSynthesis=null;
+  let lastComparisonPrompt='';
   let lastPromptMetadata=null;
   let lastRouteMetadata=null;
   let lastEvidenceId=null;
@@ -406,6 +407,7 @@
     outputEl.innerHTML='';
     lastResults=[];
     lastSynthesis=null;
+    lastComparisonPrompt=prompt;
     lastPromptMetadata=promptPrivacySummaryFor(prompt);
     lastRouteMetadata=routeSafetySummary(profile,url,models.length);
     lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));
@@ -435,7 +437,7 @@
     const usable=lastResults.filter(result=>!result.error&&result.content);
     if(!profile||!url||usable.length<2){setStatus('Run a comparison with at least two usable responses first.','error');return;}
     const model=usable[0].model;
-    const original=String(promptEl?.value||'').trim();
+    const original=String(lastComparisonPrompt||promptEl?.value||'').trim();
     const prompt='Original task:\n'+original+'\n\nModel responses:\n'+usable.map(result=>'['+(result.model.label||result.model.id)+']\n'+result.content).join('\n\n')+'\n\nCreate one concise synthesized answer. Mention meaningful disagreements and the best next action.';
     synthBtn.disabled=true;
     setStatus('Synthesizing comparison...','loading');
