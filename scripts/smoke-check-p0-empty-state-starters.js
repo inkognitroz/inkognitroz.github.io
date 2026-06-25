@@ -14,7 +14,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260625-compare-useful-redaction-v1';
+const expectedShellVersion = '20260625-connected-intelligence-progress-v1';
 const expectedCssVersion = '20260624-continuation-action-v1';
 
 requireIncludes(

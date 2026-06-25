@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260625-compare-useful-redaction-v1';
+  const P0_RUNTIME_VERSION='20260625-connected-intelligence-progress-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1944,6 +1944,7 @@
   function receiptRouteCount(full,parts=receiptParts(full)){
     const text=String(full||'');
     const matchers=[
+      /Spør\s+(\d+)\s+AI/i,
       /(\d+)\s+routes?\s+compared/i,
       /(\d+)\s+active\s+hosted\s+routes/i,
       /(\d+)\s+active\s+routes/i
@@ -6182,14 +6183,24 @@
     return {line:'The final answer and signed receipt proof are being prepared.',status:'synthesizing best answer'};
   }
 
+  function connectedIntelligenceValueLine(mode,routeCount){
+    const count=Number(routeCount)||Number(activeHostedCompareModels().length)||0;
+    if(count<=1)return 'Supergeni answers now.';
+    if(mode==='all')return 'Koblet intelligens: spør '+String(count)+' AI og viser alle svar.';
+    if(mode==='council')return 'Koblet intelligens: '+String(count)+' AI utfordrer hverandre og samler én konklusjon.';
+    return 'Koblet intelligens: spør '+String(count)+' AI - beste vinner.';
+  }
+
   function gatewaySwarmProgressLines(mode,title,routeCount,elapsed,elapsedMs){
     const count=String(routeCount||activeHostedCompareModels().length||'?');
     const stage=gatewaySwarmProgressStage(mode,elapsedMs);
+    const valueLine=connectedIntelligenceValueLine(mode,routeCount);
     if(mode==='council'){
       return [
         title+' is running.',
+        valueLine,
         'Now: '+stage.line,
-        '1. Asking '+count+' active routes for independent answers.',
+        '1. Asking '+count+' AI for independent answers.',
         '2. Top routes challenge weak assumptions and compare strengths.',
         '3. Supergeni converges on one practical answer with signed proof.',
         'Elapsed: '+elapsed
@@ -6198,8 +6209,9 @@
     if(mode==='all'){
       return [
         title+' is running.',
+        valueLine,
         'Now: '+stage.line,
-        '1. Asking '+count+' active routes.',
+        '1. Asking '+count+' AI.',
         '2. Keeping each answer separate so you can inspect the range.',
         '3. Signing route proof and marking any quiet or blocked routes.',
         'Elapsed: '+elapsed
@@ -6208,8 +6220,9 @@
     if(mode==='boost'){
       return [
         title+' is running.',
+        valueLine,
         'Now: '+stage.line,
-        '1. Asking '+count+' active routes.',
+        '1. Asking '+count+' AI.',
         '2. Scoring answer quality, latency and route fit.',
         '3. Supergeni returns one clean answer with ranking proof.',
         'Elapsed: '+elapsed
@@ -6217,8 +6230,9 @@
     }
     return [
       title+' is running.',
+      valueLine,
       'Now: '+stage.line,
-      '1. Asking '+count+' active routes.',
+      '1. Asking '+count+' AI.',
       '2. Comparing route fit, answer completeness and latency.',
       '3. Returning the best answer with signed receipt proof.',
       'Elapsed: '+elapsed
@@ -6227,7 +6241,7 @@
 
   function startGatewaySwarmProgress(assistant,{title,mode,routeCount}){
     const started=performance.now();
-    const receiptBase=title+' · '+String(routeCount||'?')+' active hosted routes · live progress · no paid route';
+    const receiptBase=title+' · '+connectedIntelligenceValueLine(mode,routeCount).replace(/^Koblet intelligens:\s*/,'')+' · live progress · no paid route';
     const tick=()=>{
       if(!state.busy||stopRequested)return;
       const elapsedMs=performance.now()-started;
@@ -6279,7 +6293,7 @@
     }
     const routeCount=String(activeHostedCompareModels().length);
     const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
-    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route'+(toolReceipt?' · '+toolReceipt:'');
+    const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+connectedIntelligenceValueLine(mode,routeCount).replace(/^Koblet intelligens:\s*/,'')+' · signed receipt check · no paid route'+(toolReceipt?' · '+toolReceipt:'');
     const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     const stopProgress=startGatewaySwarmProgress(assistant,{title,mode,routeCount});
     status(title+' is asking '+routeCount+' active routes...','ready');

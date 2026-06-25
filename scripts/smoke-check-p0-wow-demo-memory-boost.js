@@ -109,15 +109,19 @@ requireIncludes(shell, 'function gatewayWinnerReason(data,best)', 'Swarm scoreca
 requireIncludes(shell, "winnerReason?'Why: '+winnerReason", 'Swarm scorecards must include why the winning route won in green receipt/status proof.');
 requireIncludes(shell, 'function startGatewaySwarmProgress(assistant,{title,mode,routeCount})', 'Deep Boost/Council runs must show live progress while routes answer.');
 requireIncludes(shell, 'function gatewaySwarmProgressStage(mode,elapsedMs)', 'Swarm progress must advance through visible phases while routes answer.');
+requireIncludes(shell, 'function connectedIntelligenceValueLine(mode,routeCount)', 'Swarm progress must turn route count into a user-value connected-intelligence line.');
+requireIncludes(shell, "Koblet intelligens: spør '+String(count)+' AI - beste vinner.", 'Superboost progress must show many-AI best-wins value while it runs.');
+requireIncludes(shell, "Koblet intelligens: '+String(count)+' AI utfordrer hverandre og samler én konklusjon.", 'Council progress must show model debate value while it runs.');
 requireIncludes(shell, "'Now: '+stage.line", 'Swarm progress must show the current work phase in user-readable terms.');
+requireIncludes(compareGatewayRoutes, "connectedIntelligenceValueLine(mode,routeCount).replace(/^Koblet intelligens:\\s*/,'')", 'Initial Superboost receipt must use the connected-intelligence value line before raw route details.');
 requireIncludes(shell, 'function localAllActiveRoutes(prompt,signal)', 'Ask all active must include paired browser-local models when available.');
 requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Superboost must use demo-friendly Intelligence Boost status text.');
 requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemContext)', 'Swarm telemetry must record injected verified context.');
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260625-compare-useful-redaction-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260625-compare-useful-redaction-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260625-connected-intelligence-progress-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260625-connected-intelligence-progress-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');
