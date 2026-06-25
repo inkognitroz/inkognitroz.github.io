@@ -149,7 +149,7 @@ async function installFixtures(page) {
 
   await page.route(/https:\/\/api\.mmir\.ai\/chat\/(swarm|superboost)\/preview/, async route => {
     const isSuperboost = route.request().url().includes('/chat/superboost/preview');
-    await delay(1200);
+    await delay(5200);
     await fulfillJson(route, {
       object: isSuperboost ? 'chat.superboost.preview' : 'chat.swarm.preview',
       status: isSuperboost ? 'superboost_ready' : 'first_round_ready',
@@ -561,8 +561,9 @@ async function checkViewport(browser, viewport) {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const status = document.getElementById('p0-status')?.textContent || '';
     return /Intelligence Boost is running/i.test(text) &&
-      /Scoring answer quality/i.test(text) &&
-      /asking|ranking|synthesizing/i.test(status);
+      /Kobler 5 AI-ruter/i.test(text) &&
+      /Rangerer kvalitet, fart og relevans/i.test(text) &&
+      /kobler|rangerer|syntetiserer/i.test(status);
   });
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
@@ -628,7 +629,7 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     return /Ask All Active is running/i.test(text) &&
-      /Keeping each answer separate/i.test(text);
+      /Holder hvert svar adskilt/i.test(text);
   });
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
@@ -646,8 +647,8 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     return /Supergeni Council is running/i.test(text) &&
-      /Now:/i.test(text) &&
-      /Top routes challenge weak assumptions/i.test(text);
+      /Nå:/i.test(text) &&
+      /Kobler 5 AI-ruter|Top routes challenge weak assumptions/i.test(text);
   });
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';

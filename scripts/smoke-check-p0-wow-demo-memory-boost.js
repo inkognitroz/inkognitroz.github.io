@@ -112,7 +112,7 @@ requireIncludes(shell, 'function gatewaySwarmProgressStage(mode,elapsedMs)', 'Sw
 requireIncludes(shell, 'function connectedIntelligenceValueLine(mode,routeCount)', 'Swarm progress must turn route count into a user-value connected-intelligence line.');
 requireIncludes(shell, "Koblet intelligens: spør '+String(count)+' AI - beste vinner.", 'Superboost progress must show many-AI best-wins value while it runs.');
 requireIncludes(shell, "Koblet intelligens: '+String(count)+' AI utfordrer hverandre og samler én konklusjon.", 'Council progress must show model debate value while it runs.');
-requireIncludes(shell, "'Now: '+stage.line", 'Swarm progress must show the current work phase in user-readable terms.');
+requireIncludes(shell, "'Nå: '+stage.line", 'Swarm progress must show the current work phase in user-readable terms.');
 requireIncludes(compareGatewayRoutes, "connectedIntelligenceValueLine(mode,routeCount).replace(/^Koblet intelligens:\\s*/,'')", 'Initial Superboost receipt must use the connected-intelligence value line before raw route details.');
 requireIncludes(shell, 'function localAllActiveRoutes(prompt,signal)', 'Ask all active must include paired browser-local models when available.');
 requireIncludes(compareGatewayRoutes, "'Intelligence Boost'", 'Superboost must use demo-friendly Intelligence Boost status text.');

@@ -6164,24 +6164,24 @@
   function gatewaySwarmProgressStage(mode,elapsedMs){
     const elapsed=Number(elapsedMs)||0;
     if(mode==='council'){
-      if(elapsed<4500)return {line:'Independent answers are being collected.',status:'asking active routes'};
-      if(elapsed<9500)return {line:'Top routes are challenging weak assumptions.',status:'ranking and cross-checking'};
-      if(elapsed<16000)return {line:'Supergeni is synthesizing the strongest shared answer.',status:'synthesizing council answer'};
-      return {line:'Still working; final proof and quiet-route checks are being finalized.',status:'finalizing signed proof'};
+      if(elapsed<4500)return {line:'Kobler AI-rutene og henter uavhengige svar.',status:'kobler AI-ruter'};
+      if(elapsed<9500)return {line:'Top routes challenge weak assumptions og rangerer styrker/svakheter.',status:'rangerer og kryssjekker'};
+      if(elapsed<16000)return {line:'Supergeni syntetiserer den sterkeste felles konklusjonen.',status:'syntetiserer rådsvar'};
+      return {line:'Fullfører kvittering, stille ruter og bevis bak Detaljer.',status:'fullfører signert bevis'};
     }
     if(mode==='all'){
-      if(elapsed<4500)return {line:'Active routes are answering in parallel.',status:'asking active routes'};
-      if(elapsed<9500)return {line:'Separate answers are being organized for inspection.',status:'organizing answers'};
-      return {line:'Signed proof and quiet-route status are being finalized.',status:'finalizing signed proof'};
+      if(elapsed<4500)return {line:'Kobler AI-rutene og henter svar i parallell.',status:'kobler AI-ruter'};
+      if(elapsed<9500)return {line:'Holder hvert svar adskilt slik at bredden kan inspiseres.',status:'organiserer svar'};
+      return {line:'Fullfører kvittering og markerer stille ruter bak Detaljer.',status:'fullfører signert bevis'};
     }
     if(mode==='boost'){
-      if(elapsed<4500)return {line:'Active routes are answering in parallel.',status:'asking active routes'};
-      if(elapsed<9500)return {line:'Answer quality, latency and route fit are being scored.',status:'ranking answers'};
-      return {line:'Supergeni is compressing the winning route into one clean answer.',status:'synthesizing best answer'};
+      if(elapsed<4500)return {line:'Kobler AI-rutene og henter uavhengige svar.',status:'kobler AI-ruter'};
+      if(elapsed<9500)return {line:'Rangerer svarene på kvalitet, fart og relevans.',status:'rangerer svar'};
+      return {line:'Supergeni syntetiserer vinneren til ett rent svar.',status:'syntetiserer beste svar'};
     }
-    if(elapsed<4500)return {line:'Active routes are answering in parallel.',status:'asking active routes'};
-    if(elapsed<9500)return {line:'Route fit, answer completeness and latency are being compared.',status:'ranking answers'};
-    return {line:'The final answer and signed receipt proof are being prepared.',status:'synthesizing best answer'};
+    if(elapsed<4500)return {line:'Kobler AI-rutene og henter svar i parallell.',status:'kobler AI-ruter'};
+    if(elapsed<9500)return {line:'Sammenligner route-fit, fullstendighet og fart.',status:'rangerer svar'};
+    return {line:'Forbereder beste svar og signert kvittering.',status:'syntetiserer beste svar'};
   }
 
   function connectedIntelligenceValueLine(mode,routeCount){
@@ -6200,10 +6200,10 @@
       return [
         title+' is running.',
         valueLine,
-        'Now: '+stage.line,
-        '1. Asking '+count+' AI for independent answers.',
-        '2. Top routes challenge weak assumptions and compare strengths.',
-        '3. Supergeni converges on one practical answer with signed proof.',
+        'Nå: '+stage.line,
+        '1. Kobler '+count+' AI-ruter for uavhengige svar.',
+        '2. Modellene utfordrer svake antakelser og sammenligner styrker.',
+        '3. Supergeni samler én praktisk konklusjon med bevis under Detaljer.',
         'Elapsed: '+elapsed
       ];
     }
@@ -6211,10 +6211,10 @@
       return [
         title+' is running.',
         valueLine,
-        'Now: '+stage.line,
-        '1. Asking '+count+' AI.',
-        '2. Keeping each answer separate so you can inspect the range.',
-        '3. Signing route proof and marking any quiet or blocked routes.',
+        'Nå: '+stage.line,
+        '1. Kobler '+count+' AI-ruter.',
+        '2. Holder hvert svar adskilt slik at du kan se bredden.',
+        '3. Signerer route-bevis og legger stille/blokkerte ruter bak Detaljer.',
         'Elapsed: '+elapsed
       ];
     }
@@ -6222,20 +6222,20 @@
       return [
         title+' is running.',
         valueLine,
-        'Now: '+stage.line,
-        '1. Asking '+count+' AI.',
-        '2. Scoring answer quality, latency and route fit.',
-        '3. Supergeni returns one clean answer with ranking proof.',
+        'Nå: '+stage.line,
+        '1. Kobler '+count+' AI-ruter og henter uavhengige svar.',
+        '2. Rangerer kvalitet, fart og relevans.',
+        '3. Supergeni velger vinneren og viser kvittering under Detaljer.',
         'Elapsed: '+elapsed
       ];
     }
     return [
       title+' is running.',
       valueLine,
-      'Now: '+stage.line,
-      '1. Asking '+count+' AI.',
-      '2. Comparing route fit, answer completeness and latency.',
-      '3. Returning the best answer with signed receipt proof.',
+      'Nå: '+stage.line,
+      '1. Kobler '+count+' AI-ruter.',
+      '2. Sammenligner relevans, fullstendighet og fart.',
+      '3. Returnerer beste svar med signert bevis under Detaljer.',
       'Elapsed: '+elapsed
     ];
   }
@@ -6249,8 +6249,8 @@
       const elapsed=formatDuration(elapsedMs);
       const stage=gatewaySwarmProgressStage(mode,elapsedMs);
       updateMessage(assistant,gatewaySwarmProgressLines(mode,title,routeCount,elapsed,elapsedMs).join('\n'),{receipt:receiptBase});
-      status(title+' running: '+stage.status+'...','ready');
-      routeStatus(title+' · '+stage.status+' · signed proof pending','ready');
+      status(title+' · '+stage.status+'...','ready');
+      routeStatus(connectedIntelligenceValueLine(mode,routeCount).replace(/^Koblet intelligens:\s*/,'')+' · Verifisert · privat','ready');
     };
     tick();
     const timer=window.setInterval(tick,3800);
@@ -6295,7 +6295,7 @@
     const routeCount=String(activeHostedCompareModels().length);
     const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
     const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+connectedIntelligenceValueLine(mode,routeCount).replace(/^Koblet intelligens:\s*/,'')+' · signed receipt check · no paid route'+(toolReceipt?' · '+toolReceipt:'');
-    const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
+    const assistant=append('assistant',gatewaySwarmProgressLines(mode,title,routeCount,'0s',0).join('\n'),assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     const stopProgress=startGatewaySwarmProgress(assistant,{title,mode,routeCount});
     status(title+' is asking '+routeCount+' active routes...','ready');
     routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
