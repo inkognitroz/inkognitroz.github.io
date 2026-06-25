@@ -337,7 +337,8 @@
     const selected=Array.isArray(models)?models.length:lastResults.length;
     const available=liveModels().length;
     const coverage=available?Math.round((selected/available)*100):0;
-    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
+    const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);
+    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
   }
 
   function compareRouteCoverageSummary(){
