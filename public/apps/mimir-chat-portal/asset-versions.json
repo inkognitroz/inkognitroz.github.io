@@ -27,7 +27,7 @@
     "mimir-chat-portal.js": "20260524-chat-first-v1",
     "model-catalog-ui.js": "20260531-no-rag-v1",
     "model-comparison.css": "20260625-compare-feedback-dedupe-v1",
-    "model-comparison.js": "20260625-compare-feedback-dedupe-v1",
+    "model-comparison.js": "20260625-compare-feedback-prompt-metadata-v1",
     "node-dashboard.css": "20260624-stale-repair-resume-v1",
     "node-dashboard.js": "20260624-stale-repair-resume-v1",
     "p0-chat-shell.css": "20260624-continuation-action-v1",
