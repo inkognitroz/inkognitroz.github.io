@@ -18,6 +18,7 @@
   let feedbackBtn=null;
   let lastResults=[];
   let lastSynthesis=null;
+  let lastPromptMetadata=null;
 
   if(!host)return;
 
@@ -274,10 +275,14 @@
     ].join('\n');
   }
 
-  function promptPrivacySummary(){
-    const value=String(promptEl?.value||'').trim();
+  function promptPrivacySummaryFor(value){
+    value=String(value||'').trim();
     const words=(value.match(/\S+/g)||[]).length;
     return 'Prompt metadata: '+(value?'present':'empty')+'; '+String(words)+' word(s); raw prompt not stored in feedback draft.';
+  }
+
+  function promptPrivacySummary(){
+    return lastPromptMetadata||promptPrivacySummaryFor(promptEl?.value);
   }
 
   function synthesisPrivacySummary(){
@@ -347,6 +352,7 @@
     outputEl.innerHTML='';
     lastResults=[];
     lastSynthesis=null;
+    lastPromptMetadata=promptPrivacySummaryFor(prompt);
     setStatus('Comparing '+String(models.length)+' model(s)...','loading');
     try{
       const token=await pairIfNeeded(profile,url);
