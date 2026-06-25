@@ -16,6 +16,7 @@
   let localState={status:'checking',url:DEFAULT_LOCAL_URL};
   let manifestLoaded=false;
   let catalogLoaded=false;
+  let lastActiveRouteFeedbackKey='';
 
   function fallbackLabel(value){
     if(displayApi.displayLabel)return displayApi.displayLabel(value,FALLBACK_LABEL);
@@ -168,6 +169,9 @@
     const policy=routePolicyLine(best);
     return '@feedback Active route issue: '+route+' shows '+readiness+' while "'+freshnessText+'" is visible. '+summary+' Policy: '+policy+'. Please review the route strip and next-step guidance.';
   }
+  function activeRouteFeedbackKey(best,freshness){
+    return [best?.id||best?.name||FALLBACK_LABEL,nodeStatus(best),freshness?.state||'unknown',freshness?.label||'unknown',freshness?.summary||''].map(value=>String(value||'').replace(/\s+/g,' ').trim()).join('|');
+  }
   function refreshLabel(freshness){
     return freshness?.state==='degraded'?'Refresh route inventory':'Recheck route inventory';
   }
@@ -176,7 +180,8 @@
   }
   function feedbackFooter(best,freshness){
     if(!freshness||freshness.state==='online')return '';
-    return '<div class="mmir-active-node-overflow" data-route-feedback-state="'+safe(freshness.state)+'"><p>Capture route friction from this exact surface so owner triage keeps the live demo path honest. Recheck the public route manifest before escalating so demo trust can recover from this exact surface.</p><div class="mmir-active-node-overflow-actions"><button type="button" class="secondary" data-active-route-refresh aria-busy="'+safe(manifestRefreshState==='refreshing'?'true':'false')+'">'+safe(refreshButtonLabel(freshness))+'</button><button type="button" data-active-route-feedback>'+safe('Report route issue')+'</button></div></div>';
+    const captured=lastActiveRouteFeedbackKey===activeRouteFeedbackKey(best,freshness);
+    return '<div class="mmir-active-node-overflow" data-route-feedback-state="'+safe(freshness.state)+'" data-route-feedback-captured="'+safe(captured?'true':'false')+'"><p>Capture route friction from this exact surface so owner triage keeps the live demo path honest. Recheck the public route manifest before escalating so demo trust can recover from this exact surface.</p><div class="mmir-active-node-overflow-actions"><button type="button" class="secondary" data-active-route-refresh aria-busy="'+safe(manifestRefreshState==='refreshing'?'true':'false')+'">'+safe(refreshButtonLabel(freshness))+'</button><button type="button" data-active-route-feedback data-captured="'+safe(captured?'true':'false')+'" '+(captured?'disabled aria-disabled="true"':'')+'>'+safe(captured?'Route issue saved':'Report route issue')+'</button></div><small class="mmir-active-route-feedback-status">'+safe(captured?'Saved to Feedback Inbox for this route state. Recheck inventory before creating another route issue.':'No route feedback saved for this visible state yet.')+'</small></div>';
   }
   function nextStepMarkup(action){
     if(!action)return '';
@@ -191,6 +196,8 @@
     return '<div class="mmir-active-node-next-step"><span>Next best step</span><p>'+safe(action.summary)+'</p><div class="mmir-active-node-next-step-actions">'+primary+secondary+'</div></div>';
   }
   function reportRouteIssue(best,freshness){
+    const key=activeRouteFeedbackKey(best,freshness);
+    if(lastActiveRouteFeedbackKey===key)return true;
     if(w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness),{
       source:'active-route-strip',
       target:'feedback',
@@ -199,14 +206,17 @@
       lane:'L1 Frontend UX',
       backlogHint:'active-route-strip-feedback',
       openInbox:true
-    }))return;
+    })){lastActiveRouteFeedbackKey=key;render();return true;}
     const promptEl=q('#mimir-prompt');
-    if(!promptEl)return;
+    if(!promptEl)return false;
     promptEl.value=feedbackDraft(best,freshness);
     promptEl.dispatchEvent(new Event('input',{bubbles:true}));
     promptEl.dispatchEvent(new Event('change',{bubbles:true}));
     promptEl.focus();
     promptEl.scrollIntoView({block:'center',behavior:'smooth'});
+    lastActiveRouteFeedbackKey=key;
+    render();
+    return true;
   }
   async function refreshRouteInventory(){
     const bar=q('#mmir-active-nodes-bar');
@@ -220,7 +230,7 @@
   async function loadManifest(force=false){if(manifestLoaded&&!force)return true;try{const res=await fetch(MANIFEST_URL,{cache:force?'no-store':'default'});if(!res.ok)throw new Error('manifest unavailable');const body=await res.json();manifestUpdatedAt=String(body?.updated_at||'');manifestNodes=Array.isArray(body.nodes)?body.nodes.filter(node=>node?.id).map(normalizeNode):[];manifestLoaded=true;return true;}catch(error){if(manifestNodes.length&&manifestUpdatedAt){manifestLoaded=true;return false;}manifestUpdatedAt='';manifestNodes=fallbackManifestNodes();manifestLoaded=true;return false;}}
   function fallbackStarters(){return [{id:'mmir-supergenius',label:FALLBACK_LABEL,runtime:'auto',model:'mmir-supergenius'},{id:'ollama-qwen3-06b',label:'Qwen3 0.6B',runtime:'ollama',model:'qwen3:0.6b'}];}
   async function loadStarterCatalog(){if(catalogLoaded)return;try{const res=await fetch(STARTER_CATALOG,{cache:'default'});if(!res.ok)throw new Error('starter catalog unavailable');const body=await res.json();starterModels=Array.isArray(body.models)?body.models.filter(model=>model?.id&&model?.label).map(normalizeStarter):[];}catch(error){starterModels=fallbackStarters();}if(!starterModels.length)starterModels=fallbackStarters();catalogLoaded=true;}
-  function style(){if(q('#mmir-active-node-strip-style'))return;const el=d.createElement('style');el.id='mmir-active-node-strip-style';el.textContent=`#mmir-active-nodes-bar{border:1px solid #10a37f38;border-radius:18px;padding:.56rem;margin:.35rem 0;display:grid;gap:.42rem}.mmir-active-node-head,.mmir-active-starter-rail,.mmir-active-node-grid{display:flex;gap:.42rem;overflow:auto}.mmir-active-node-head{align-items:flex-start;justify-content:space-between}.mmir-active-node-freshness{display:inline-flex;align-items:center;gap:.35rem;width:max-content;padding:.14rem .55rem;border-radius:999px;border:1px solid #10a37f2e;background:#ecfdf5;color:#065f46}.mmir-active-node-freshness[data-state="watch"]{border-color:#f59e0b42;background:#fffbeb;color:#92400e}.mmir-active-node-freshness[data-state="degraded"]{border-color:#ef444442;background:#fef2f2;color:#991b1b}.mmir-active-node-next-step{border:1px solid #10a37f26;background:#f8fffc;border-radius:16px;padding:.55rem .7rem;display:grid;gap:.2rem;min-width:min(280px,100%)}.mmir-active-node-next-step span{font-size:.7rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#047857}.mmir-active-node-next-step p{margin:0;color:#0f172a;font-size:.78rem;line-height:1.35}.mmir-active-node-next-step-actions,.mmir-active-node-overflow-actions{display:flex;gap:.42rem;flex-wrap:wrap}.mmir-active-node-next-step button,.mmir-active-node-next-step a,.mmir-active-node-overflow button,.mmir-active-node-overflow a{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 .8rem;border-radius:999px;border:1px solid #10a37f42;background:#ecfdf5;color:#047857;font-size:.76rem;font-weight:800;text-decoration:none;white-space:nowrap;width:max-content}.mmir-active-node-next-step .secondary,.mmir-active-node-overflow .secondary{border-color:#94a3b838;background:#fff;color:#0f172a}.mmir-active-node-card{min-width:min(260px,82vw);border:1px solid #94a3b838;border-radius:999px;padding:.43rem .5rem}.mmir-active-node-card dl{display:none}.mmir-active-starter-rail button,.mmir-active-node-card button,.mmir-active-node-overflow a,.mmir-active-node-overflow button{border-radius:999px}.mmir-active-node-overflow{display:flex;align-items:center;justify-content:space-between;gap:.65rem;flex-wrap:wrap;border:1px solid #10a37f26;background:#f8fffc;border-radius:16px;padding:.55rem .7rem}.mmir-active-node-overflow[data-route-feedback-state="watch"]{border-color:#f59e0b42;background:#fffbeb}.mmir-active-node-overflow[data-route-feedback-state="degraded"]{border-color:#ef444442;background:#fef2f2}.mmir-active-node-overflow p{margin:0;color:#0f172a;font-size:.78rem;line-height:1.35;flex:1 1 320px}.mmir-active-node-overflow button{cursor:pointer}#mmir-active-nodes-bar[data-refreshing="true"] .mmir-active-node-freshness{opacity:.72}#mmir-active-nodes-bar[data-refreshing="true"] [data-active-route-refresh]{opacity:.7;pointer-events:none}@media(max-width:760px){.mmir-active-node-head{flex-direction:column}.mmir-active-node-next-step{min-width:0;width:100%}}`;d.head.appendChild(el);}
+  function style(){if(q('#mmir-active-node-strip-style'))return;const el=d.createElement('style');el.id='mmir-active-node-strip-style';el.textContent=`#mmir-active-nodes-bar{border:1px solid #10a37f38;border-radius:18px;padding:.56rem;margin:.35rem 0;display:grid;gap:.42rem}.mmir-active-node-head,.mmir-active-starter-rail,.mmir-active-node-grid{display:flex;gap:.42rem;overflow:auto}.mmir-active-node-head{align-items:flex-start;justify-content:space-between}.mmir-active-node-freshness{display:inline-flex;align-items:center;gap:.35rem;width:max-content;padding:.14rem .55rem;border-radius:999px;border:1px solid #10a37f2e;background:#ecfdf5;color:#065f46}.mmir-active-node-freshness[data-state="watch"]{border-color:#f59e0b42;background:#fffbeb;color:#92400e}.mmir-active-node-freshness[data-state="degraded"]{border-color:#ef444442;background:#fef2f2;color:#991b1b}.mmir-active-node-next-step{border:1px solid #10a37f26;background:#f8fffc;border-radius:16px;padding:.55rem .7rem;display:grid;gap:.2rem;min-width:min(280px,100%)}.mmir-active-node-next-step span{font-size:.7rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#047857}.mmir-active-node-next-step p{margin:0;color:#0f172a;font-size:.78rem;line-height:1.35}.mmir-active-node-next-step-actions,.mmir-active-node-overflow-actions{display:flex;gap:.42rem;flex-wrap:wrap}.mmir-active-node-next-step button,.mmir-active-node-next-step a,.mmir-active-node-overflow button,.mmir-active-node-overflow a{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 .8rem;border-radius:999px;border:1px solid #10a37f42;background:#ecfdf5;color:#047857;font-size:.76rem;font-weight:800;text-decoration:none;white-space:nowrap;width:max-content}.mmir-active-node-next-step .secondary,.mmir-active-node-overflow .secondary{border-color:#94a3b838;background:#fff;color:#0f172a}.mmir-active-node-card{min-width:min(260px,82vw);border:1px solid #94a3b838;border-radius:999px;padding:.43rem .5rem}.mmir-active-node-card dl{display:none}.mmir-active-starter-rail button,.mmir-active-node-card button,.mmir-active-node-overflow a,.mmir-active-node-overflow button{border-radius:999px}.mmir-active-node-overflow{display:flex;align-items:center;justify-content:space-between;gap:.65rem;flex-wrap:wrap;border:1px solid #10a37f26;background:#f8fffc;border-radius:16px;padding:.55rem .7rem}.mmir-active-node-overflow[data-route-feedback-state="watch"]{border-color:#f59e0b42;background:#fffbeb}.mmir-active-node-overflow[data-route-feedback-state="degraded"]{border-color:#ef444442;background:#fef2f2}.mmir-active-node-overflow p{margin:0;color:#0f172a;font-size:.78rem;line-height:1.35;flex:1 1 320px}.mmir-active-node-overflow button{cursor:pointer}.mmir-active-node-overflow button[data-captured="true"]{cursor:default;border-color:#10a37f38;background:#ecfdf5;color:#065f46}.mmir-active-route-feedback-status{flex:1 1 100%;color:#475569;font-size:.72rem;line-height:1.35}#mmir-active-nodes-bar[data-refreshing="true"] .mmir-active-node-freshness{opacity:.72}#mmir-active-nodes-bar[data-refreshing="true"] [data-active-route-refresh]{opacity:.7;pointer-events:none}@media(max-width:760px){.mmir-active-node-head{flex-direction:column}.mmir-active-node-next-step{min-width:0;width:100%}}`;d.head.appendChild(el);}
   function handoff(detail){w.dispatchEvent(new CustomEvent('mmir-runtime-starter-handoff',{detail:{free:true,no_paid_routes_started:true,...detail}}));}
   function selectStarter(node,prompt){const id=starterId(node);if(id)handoff({starter_id:id,action:'select',source:'active-node-strip'});const promptEl=q('#mimir-prompt');if(promptEl&&prompt){promptEl.value=String(prompt||'').trim();promptEl.dispatchEvent(new Event('input',{bubbles:true}));promptEl.dispatchEvent(new Event('change',{bubbles:true}));}q('#primary-chat-link')?.click();}
   function activeWorkspaceId(){return storageGet(WORKSPACE_KEY,'personal')||'personal';}
