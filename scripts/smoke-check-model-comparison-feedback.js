@@ -31,8 +31,11 @@ requireIncludes(js, "Compared '+String(lastResults.length)+' model(s): '+models"
 requireIncludes(js, "failed.length?'Failed responses: '+String(failed.length):'No failed responses'", 'Compare feedback must preserve failed response count.');
 requireIncludes(js, 'function promptPrivacySummary(){', 'Compare feedback must summarize prompt metadata without raw prompt text.');
 requireIncludes(js, 'function promptPrivacySummaryFor(value){', 'Compare feedback must compute sanitized prompt metadata from an explicit prompt snapshot.');
+requireIncludes(js, "let lastComparisonPrompt='';", 'Compare synthesis must preserve the comparison-time prompt separately from later chat-box edits.');
+requireIncludes(js, 'lastComparisonPrompt=prompt;', 'Compare synthesis must snapshot the prompt that produced the compared answers.');
 requireIncludes(js, 'lastPromptMetadata=promptPrivacySummaryFor(prompt);', 'Compare feedback must preserve prompt metadata from the comparison run, not later chat-box edits.');
 requireIncludes(js, 'return lastPromptMetadata||promptPrivacySummaryFor(promptEl?.value);', 'Compare feedback may fall back to the live prompt only before a comparison snapshot exists.');
+requireIncludes(js, "const original=String(lastComparisonPrompt||promptEl?.value||'').trim();", 'Compare synthesis must use the comparison-time prompt rather than a later chat-box edit.');
 requireIncludes(js, 'raw prompt not stored in feedback draft', 'Compare feedback draft must explicitly avoid raw prompt storage.');
 requireIncludes(js, 'function synthesisPrivacySummary(){', 'Compare feedback must summarize synthesis metadata without raw answer text.');
 requireIncludes(js, 'raw synthesis not stored in feedback draft', 'Compare feedback draft must explicitly avoid raw synthesis storage.');
@@ -70,7 +73,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-best-answer-signal-v1';
+const expectedJsVersion = '20260625-compare-prompt-snapshot-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
