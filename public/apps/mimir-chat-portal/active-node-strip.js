@@ -165,7 +165,8 @@
     const readiness=nodeStatus(best)==='online'?'ready':'setup';
     const freshnessText=freshness?.label||'Route inventory needs review';
     const summary=freshness?.summary||'No route freshness summary is visible.';
-    return '@feedback Active route issue: '+route+' shows '+readiness+' while "'+freshnessText+'" is visible. '+summary+' Please review the route strip and next-step guidance.';
+    const policy=routePolicyLine(best);
+    return '@feedback Active route issue: '+route+' shows '+readiness+' while "'+freshnessText+'" is visible. '+summary+' Policy: '+policy+'. Please review the route strip and next-step guidance.';
   }
   function refreshLabel(freshness){
     return freshness?.state==='degraded'?'Refresh route inventory':'Recheck route inventory';
