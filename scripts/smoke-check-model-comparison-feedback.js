@@ -64,6 +64,11 @@ requireIncludes(js, 'lastCoverageMetadata=routeCoverageSummary(models);', 'Compa
 requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a stable local evidence ID per comparison run.');
 requireIncludes(js, 'function stableFingerprint(value){', 'Compare feedback must derive a short local fingerprint without storing raw prompt text.');
 requireIncludes(js, 'function evidenceSnapshot(prompt,profile,url,models){', 'Compare feedback must build evidence IDs from comparison-time prompt, route and model metadata.');
+requireIncludes(js, "const promptPresent=String(prompt||'').trim()?'present':'empty';", 'Compare feedback evidence IDs must derive from prompt metadata, not raw prompt text.');
+requireIncludes(js, "'prompt:'+promptPresent", 'Compare feedback evidence snapshots must not fingerprint raw prompt text.');
+if (js.includes("'prompt:'+stableFingerprint(prompt)")) {
+  fail('Compare feedback evidence snapshots must not hash raw prompt text directly.');
+}
 requireIncludes(js, "lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));", 'Compare feedback must preserve the evidence ID from the comparison run.');
 requireIncludes(js, 'function evidenceSummary(){', 'Compare feedback draft must expose a local evidence summary.');
 requireIncludes(js, 'local fingerprint only, raw prompt, responses and synthesis not stored', 'Compare feedback evidence summary must keep privacy boundaries explicit.');
@@ -86,7 +91,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-feedback-capacity-v1';
+const expectedJsVersion = '20260626-compare-feedback-metadata-evidence-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }

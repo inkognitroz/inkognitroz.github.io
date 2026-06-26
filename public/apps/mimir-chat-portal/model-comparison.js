@@ -358,9 +358,11 @@
   function evidenceSnapshot(prompt,profile,url,models){
     const host=(()=>{try{return new URL(url).host||'not-recorded';}catch(error){return 'not-recorded';}})();
     const modelIds=Array.isArray(models)?models.map(model=>model.id||model.label).filter(Boolean).join('|'):'';
+    const promptWords=(String(prompt||'').match(/\S+/g)||[]).length;
+    const promptPresent=String(prompt||'').trim()?'present':'empty';
     return [
-      'prompt:'+stableFingerprint(prompt),
-      'words:'+String((String(prompt||'').match(/\S+/g)||[]).length),
+      'prompt:'+promptPresent,
+      'words:'+String(promptWords),
       'route:'+host,
       'provider:'+String(profile?.provider||'openai-compatible'),
       'models:'+modelIds
