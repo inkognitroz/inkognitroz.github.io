@@ -4404,6 +4404,30 @@
     return kind || 'capacity';
   }
 
+  function nodeInventorySummary(nodesInventory){
+    const explicit=nodesInventory?.intelligence_summary;
+    if(explicit&&typeof explicit==='object')return explicit;
+    const nodes=scorecardArray(nodesInventory?.data);
+    if(!nodes.length)return null;
+    const liveNodes=nodes.filter(node=>node?.intelligence?.counts_as_live_intelligence_now||node?.counts_as_live_intelligence_now);
+    return {
+      node_count:nodes.length,
+      live_connected_sources:liveNodes.length,
+      callable_intelligence_routes:liveNodes.reduce((sum,node)=>sum+nodeInventoryCallableRoutes(node),0),
+      callable_model_routes:liveNodes
+        .filter(node=>String(node?.type||'').indexOf('capability')===-1)
+        .reduce((sum,node)=>sum+nodeInventoryCallableRoutes(node),0),
+      callable_capability_routes:liveNodes
+        .filter(node=>String(node?.type||'').indexOf('capability')!==-1)
+        .reduce((sum,node)=>sum+nodeInventoryCallableRoutes(node),0),
+      known_parameter_billion_lower_bound:liveNodes.reduce((sum,node)=>sum+nodeInventoryKnownParams(node),0),
+      unknown_parameter_callable_route_count:liveNodes.reduce((sum,node)=>{
+        const unknown=scorecardNumber(node?.intelligence?.unknown_parameter_callable_route_count||0);
+        return sum+unknown;
+      },0)
+    };
+  }
+
   function nodeInventoryLines(nodesInventory){
     const nodes=scorecardArray(nodesInventory?.data)
       .filter(node=>node?.intelligence?.counts_as_live_intelligence_now||node?.counts_as_live_intelligence_now)
@@ -4422,13 +4446,13 @@
   }
 
   function nodeInventoryStatusLines(nodesInventory){
-    if(!nodesInventory?.intelligence_summary){
+    const summary=nodeInventorySummary(nodesInventory);
+    if(!summary){
       return [
         'Node inventory now:',
         '- /nodes?compact=1 unavailable; using scorecard only.'
       ];
     }
-    const summary=nodesInventory.intelligence_summary||{};
     const nodeCount=nodeInventoryNumber(summary.node_count||scorecardArray(nodesInventory.data).length);
     const liveSources=nodeInventoryNumber(summary.live_connected_sources);
     const callable=nodeInventoryNumber(summary.callable_intelligence_routes);
@@ -4525,7 +4549,7 @@
         fetchJson(API_URL+NODES_COMPACT_PATH,{timeoutMs:9000}).catch(()=>null)
       ]);
       const summary=scorecard?.summary||{};
-      const nodeSummary=nodesInventory?.intelligence_summary||{};
+      const nodeSummary=nodeInventorySummary(nodesInventory)||{};
       append(
         'assistant',
         intelligenceStatusAnswer(scorecard,nodesInventory),
