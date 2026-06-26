@@ -49,6 +49,7 @@
   const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';
+  const NODES_COMPACT_PATH='/nodes?compact=1';
   const SUPERGENI_QUALITY_PATH='/intelligence/supergeni/quality';
   const FEEDBACK_INBOX_KEY='mmir-p0-feedback-inbox-v1';
   const INTERACTION_EVENTS_KEY='mmir-p0-interaction-events-v1';
@@ -56,7 +57,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260625-compact-models-v2';
+  const P0_RUNTIME_VERSION='20260626-node-intelligence-status-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -4370,7 +4371,86 @@
       .replace(/\b\w/g,char=>char.toUpperCase());
   }
 
-  function intelligenceStatusAnswer(scorecard){
+  function nodeInventoryNumber(value,digits=0){
+    return scorecardNumber(value,digits);
+  }
+
+  function nodeInventoryName(node){
+    return String(node?.display_name||node?.name||node?.node_id||node?.id||'Node').trim();
+  }
+
+  function nodeInventoryCallableRoutes(node){
+    const intelligence=node?.intelligence||{};
+    return nodeInventoryNumber(
+      intelligence.callable_route_count||
+      node?.callable_route_count||
+      node?.executable_model_count
+    );
+  }
+
+  function nodeInventoryKnownParams(node){
+    const intelligence=node?.intelligence||{};
+    return nodeInventoryNumber(
+      intelligence.known_parameter_billion_lower_bound||
+      node?.known_parameter_billion_lower_bound||
+      node?.live_model_well_known_parameter_billion_sum,
+      1
+    );
+  }
+
+  function nodeInventoryKind(node){
+    const intelligence=node?.intelligence||{};
+    const kind=String(intelligence.kind||node?.type||'capacity').replaceAll('_',' ');
+    return kind || 'capacity';
+  }
+
+  function nodeInventoryLines(nodesInventory){
+    const nodes=scorecardArray(nodesInventory?.data)
+      .filter(node=>node?.intelligence?.counts_as_live_intelligence_now||node?.counts_as_live_intelligence_now)
+      .slice()
+      .sort((a,b)=>
+        nodeInventoryKnownParams(b)-nodeInventoryKnownParams(a)||
+        nodeInventoryCallableRoutes(b)-nodeInventoryCallableRoutes(a)
+      )
+      .slice(0,6);
+    if(!nodes.length)return '- No live node breakdown returned yet.';
+    return nodes.map(node=>{
+      const modelWell=nodeInventoryNumber(node?.active_model_well_route_count);
+      const modelWellText=modelWell?(' · model-well '+modelWell):'';
+      return '- '+nodeInventoryName(node)+': '+nodeInventoryCallableRoutes(node)+' callable routes · '+nodeInventoryKnownParams(node)+'B known lower-bound · '+nodeInventoryKind(node)+modelWellText;
+    }).join('\n');
+  }
+
+  function nodeInventoryStatusLines(nodesInventory){
+    if(!nodesInventory?.intelligence_summary){
+      return [
+        'Node inventory now:',
+        '- /nodes?compact=1 unavailable; using scorecard only.'
+      ];
+    }
+    const summary=nodesInventory.intelligence_summary||{};
+    const nodeCount=nodeInventoryNumber(summary.node_count||scorecardArray(nodesInventory.data).length);
+    const liveSources=nodeInventoryNumber(summary.live_connected_sources);
+    const callable=nodeInventoryNumber(summary.callable_intelligence_routes);
+    const modelRoutes=nodeInventoryNumber(summary.callable_model_routes);
+    const capabilityRoutes=nodeInventoryNumber(summary.callable_capability_routes);
+    const knownParams=nodeInventoryNumber(summary.known_parameter_billion_lower_bound,1);
+    const unknown=nodeInventoryNumber(summary.unknown_parameter_callable_route_count);
+    const modelWellRoutes=nodeInventoryNumber(nodesInventory.active_model_well_route_count);
+    const modelWellParams=nodeInventoryNumber(nodesInventory.live_model_well_known_parameter_billion_sum,1);
+    return [
+      'Node inventory now:',
+      '- '+nodeCount+' nodes · '+liveSources+' live connected sources.',
+      '- '+callable+' callable intelligence routes: '+modelRoutes+' model routes + '+capabilityRoutes+' tool routes.',
+      '- Known node capacity lower bound: '+knownParams+'B, plus '+unknown+' callable routes with unknown public parameter counts.',
+      '- Model-well public routes: '+modelWellRoutes+' · '+modelWellParams+'B promoted capacity.',
+      '- Node inventory route: '+NODES_COMPACT_PATH+'.',
+      'Top live nodes:',
+      nodeInventoryLines(nodesInventory)
+    ];
+  }
+
+  function intelligenceStatusAnswer(scorecard,nodesInventory=null){
     const summary=scorecard?.summary||{};
     const measurement=scorecard?.measurement||{};
     const quality=scorecard?.supergeni_quality||{};
@@ -4405,6 +4485,8 @@
       '- Known visible parameter lower bound: '+visibleParams+'B.',
       '- '+scorecardNumber(summary.live_connected_sources||scorecard?.connected_intelligence_by_source?.live_source_count)+' connected sources.',
       '',
+      ...nodeInventoryStatusLines(nodesInventory),
+      '',
       'Connected sources:',
       sourceLines,
       '',
@@ -4438,16 +4520,20 @@
     routeStatus('Intelligence status · read-only · no provider call','hosted');
     captureInteraction('intelligence_status_started',{path:INTELLIGENCE_SCORECARD_PATH});
     try{
-      const scorecard=await fetchJson(API_URL+INTELLIGENCE_SCORECARD_PATH,{timeoutMs:9000});
+      const [scorecard,nodesInventory]=await Promise.all([
+        fetchJson(API_URL+INTELLIGENCE_SCORECARD_PATH,{timeoutMs:9000}),
+        fetchJson(API_URL+NODES_COMPACT_PATH,{timeoutMs:9000}).catch(()=>null)
+      ]);
       const summary=scorecard?.summary||{};
+      const nodeSummary=nodesInventory?.intelligence_summary||{};
       append(
         'assistant',
-        intelligenceStatusAnswer(scorecard),
+        intelligenceStatusAnswer(scorecard,nodesInventory),
         'MMIR Intelligence Status',
         [
           'Intelligence status',
-          scorecardNumber(summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count)+' callable routes',
-          scorecardNumber(summary.executable_known_parameter_billion_sum||scorecard?.measurement?.raw_model_capacity?.executable_known_parameter_billion_sum,1)+'B known capacity',
+          scorecardNumber(nodeSummary.callable_intelligence_routes||summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count)+' callable routes',
+          scorecardNumber(nodeSummary.known_parameter_billion_lower_bound||summary.executable_known_parameter_billion_sum||scorecard?.measurement?.raw_model_capacity?.executable_known_parameter_billion_sum,1)+'B known capacity',
           'read-only',
           'no provider call'
         ].filter(Boolean).join(' · '),
@@ -4457,6 +4543,10 @@
         callable_routes:scorecardNumber(summary.currently_callable_routes||scorecard?.measurement?.live_capacity?.currently_callable_route_count),
         visible_routes:scorecardNumber(summary.visible_routes||scorecard?.measurement?.live_capacity?.visible_route_count),
         connected_sources:scorecardNumber(summary.live_connected_sources||scorecard?.connected_intelligence_by_source?.live_source_count),
+        node_inventory_ready:Boolean(nodesInventory?.intelligence_summary),
+        node_count:scorecardNumber(nodeSummary.node_count),
+        node_callable_routes:scorecardNumber(nodeSummary.callable_intelligence_routes),
+        model_well_routes:scorecardNumber(nodesInventory?.active_model_well_route_count),
         no_paid_routes_started:scorecard?.no_paid_routes_started!==false
       });
       status('Intelligence status ready.','ready');

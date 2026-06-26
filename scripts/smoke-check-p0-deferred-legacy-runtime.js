@@ -42,7 +42,7 @@ const webgpuIndex = deferred.findIndex((ref) => ref.includes('runtime-controls-w
 
 requireIncludes(
   html,
-  './apps/mimir-chat-portal/p0-chat-shell.js?v=20260625-compact-models-v2',
+  './apps/mimir-chat-portal/p0-chat-shell.js?v=20260626-node-intelligence-status-v1',
   'P0 chat shell must stay on the direct first-paint path.'
 );
 if (hasDirect) {
