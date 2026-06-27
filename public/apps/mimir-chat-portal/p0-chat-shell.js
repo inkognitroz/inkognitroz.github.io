@@ -2007,7 +2007,7 @@
     const parts=receiptParts(text);
     const routeCount=receiptRouteCount(text,parts);
     const lift=receiptConnectionLiftSummary(text);
-    const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
+    const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending|Høy tillit|Middels tillit|Delt svar|Ikke nok ruter)\b/i.test(part));
     const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
     if(isSwarm&&routeCount>1){
       return ['Spør '+routeCount+' AI - beste vinner',lift,consensus,'Verifisert','privat'].filter(Boolean).join(' · ');
@@ -2017,10 +2017,10 @@
 
   function receiptConsensusState(full){
     const text=String(full||'');
-    if(/\bContested\b/i.test(text))return 'split';
-    if(/\bHigh confidence\b/i.test(text))return 'high';
-    if(/\bMedium confidence\b/i.test(text))return 'medium';
-    if(/\bConfidence pending\b/i.test(text))return 'pending';
+    if(/\b(?:Contested|Delt svar)\b/i.test(text))return 'split';
+    if(/\b(?:High confidence|Høy tillit)\b/i.test(text))return 'high';
+    if(/\b(?:Medium confidence|Middels tillit)\b/i.test(text))return 'medium';
+    if(/\b(?:Confidence pending|Ikke nok ruter)\b/i.test(text))return 'pending';
     return '';
   }
 
@@ -5890,7 +5890,8 @@
 
   function gatewayConsensusConfidence(data){
     const best=data?.best_answer||{};
-    const consensus=data?.consensus_confidence||best?.consensus_confidence||data?.scoring?.consensus_confidence||null;
+    const consensus=data?.consensus_confidence||data?.mmir?.consensus_confidence||best?.consensus_confidence||data?.mmir?.best_answer?.consensus_confidence||data?.scoring?.consensus_confidence||null;
+    const badge=data?.consensus_badge||data?.mmir?.consensus_badge||null;
     if(!consensus||consensus.object!=='mmir.consensus_confidence')return null;
     const status=String(consensus.status||'').trim().toLowerCase();
     const agreement=consensus.agreement||{};
@@ -5904,7 +5905,7 @@
         : (status==='split'||consensus.contested===true
           ? 'Contested - models disagree'
           : 'Confidence pending'));
-    const label=String(consensus.public_ui_label||fallback)
+    const label=String(consensus.public_ui_label||badge?.label||fallback)
       .replace(/\s+/g,' ')
       .trim()
       .slice(0,90);
@@ -5918,7 +5919,7 @@
   function gatewayConsensusAnswerNotice(data){
     const consensus=gatewayConsensusConfidence(data);
     if(!consensus?.contested)return '';
-    return 'Models disagree on this. Treat the answer as provisional and open Details for the route evidence.';
+    return 'Modellene er uenige. Behandle svaret som foreløpig, og åpne Detaljer for rutegrunnlaget.';
   }
 
   function gatewayFusionAnalysis(data){
@@ -6629,8 +6630,10 @@
       recordRouteBenchmark(model,measuredScore);
       const elapsed=formatDuration(elapsedMs);
       const connectGuide=responseConnectGuide(hostedData);
-      updateMessage(assistant,withTruncationGuard(answer,hostedData),{
-        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
+      const consensus=gatewayConsensusConfidence(hostedData);
+      const consensusLine=consensus?.label||'';
+      updateMessage(assistant,withTruncationGuard(withConsensusAnswerNotice(answer,hostedData),hostedData),{
+        receipt:routePrefix+receipt.text+' · '+[consensusLine,elapsed,latencyTargetReceipt(model,elapsedMs),'Score '+effectiveModelScore(model),hostedTruncated?'truncated guard':''].filter(Boolean).join(' · '),
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });

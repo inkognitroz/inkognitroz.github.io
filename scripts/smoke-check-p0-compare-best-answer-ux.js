@@ -169,8 +169,18 @@ requireText(
 );
 requireText(
   runtime,
-  'Models disagree on this. Treat the answer as provisional and open Details for the route evidence.',
-  'Contested answers must warn users before presenting a best answer'
+  'data?.mmir?.consensus_confidence',
+  'Consensus confidence helper must read the default-chat mmir consensus contract'
+);
+requireText(
+  runtime,
+  'Delt svar',
+  'Consensus confidence must support the Norwegian gateway label used in production'
+);
+requireText(
+  runtime,
+  'Modellene er uenige. Behandle svaret som foreløpig, og åpne Detaljer for rutegrunnlaget.',
+  'Contested answers must warn users in Norwegian before presenting a best answer'
 );
 requireText(
   runtime,
