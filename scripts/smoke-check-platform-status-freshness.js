@@ -33,6 +33,31 @@ requireText(
 );
 requireText(
   runtime,
+  'function hasComponent(components,id)',
+  'Platform status panel must detect already-rendered manifest cards before appending fallbacks'
+);
+requireText(
+  runtime,
+  'publicDeployComponents(platformManifest,existingComponents=[])',
+  'Platform status deploy fallbacks must receive the current component list'
+);
+requireText(
+  runtime,
+  "if(!hasComponent(existingComponents,'latest-deploy-verification'))",
+  'Platform status panel must not duplicate manifest-provided deploy verification cards'
+);
+requireText(
+  runtime,
+  "if(!hasComponent(existingComponents,'github-pages'))",
+  'Platform status panel must not duplicate manifest-provided GitHub Pages cards'
+);
+requireText(
+  runtime,
+  'publicDeployComponents(manifest,components)',
+  'Platform status init must pass rendered cards into deploy fallback merging'
+);
+requireText(
+  runtime,
   'Status copy is stale for demo trust.',
   'Platform status panel must warn when the manifest is too old for launch confidence'
 );
@@ -53,13 +78,13 @@ requireText(
 );
 requireText(
   mmirHtml,
-  'platform-status.js?v=20260622-status-manifest-freshness-v1',
-  'MMIR shell must cache-bust the platform status runtime for manifest freshness'
+  'platform-status.js?v=20260627-status-card-dedupe-v1',
+  'MMIR shell must cache-bust the platform status runtime for deduped status cards'
 );
 requireText(
   manifest,
-  '"platform-status.js": "20260622-status-manifest-freshness-v1"',
-  'Asset manifest must track the platform status freshness runtime version'
+  '"platform-status.js": "20260627-status-card-dedupe-v1"',
+  'Asset manifest must track the platform status card dedupe runtime version'
 );
 
 console.log('Platform status freshness smoke passed.');
