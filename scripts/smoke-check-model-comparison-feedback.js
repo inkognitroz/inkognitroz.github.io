@@ -43,6 +43,9 @@ requireIncludes(js, 'function bestAnswerSignal(){', 'Compare feedback must summa
 requireIncludes(js, 'Best-answer signal: ', 'Compare feedback draft must label the best-answer signal for triage.');
 requireIncludes(js, "usable.length>=2?'best-answer candidate needs owner review':'insufficient compare evidence'", 'Compare feedback must distinguish candidate-quality evidence from insufficient comparisons.');
 requireIncludes(js, 'raw answers not stored', 'Compare feedback best-answer signal must preserve raw answer privacy.');
+requireIncludes(js, 'function responseShapeSummary(){', 'Compare feedback must summarize answer shape without raw model responses.');
+requireIncludes(js, "const band=result.error?'failed':(words>=240?'long':(words>=80?'medium':(words>0?'short':'empty')));", 'Compare feedback response shape must classify failed, empty, short, medium and long answers.');
+requireIncludes(js, "return 'Response shape: '+(items.length?items.join('; '):'not recorded')+'; metadata only, raw model responses not stored.';", 'Compare feedback response shape must preserve raw response privacy.');
 requireIncludes(js, 'function routeSafetySummary(profile,url,modelCount){', 'Compare feedback must summarize route safety from comparison-time backend state.');
 requireIncludes(js, "const routeClass=/localhost|127\\.0\\.0\\.1|\\.local(?::|$)/i.test(host)?'local/private backend':(/api\\.mmir\\.ai/i.test(host)?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
 requireIncludes(js, 'function keyReferenceSummary(profile){', 'Compare feedback must summarize key-reference presence without storing the raw value.');
@@ -71,6 +74,7 @@ requireIncludes(js, "function comparisonFeedbackDraft(){", 'Compare panel must b
 requireIncludes(js, "'@feedback Compare Live Models useful synthesis", 'Compare feedback draft must be explicit and command-routable.');
 requireIncludes(js, 'evidenceSummary(),', 'Compare feedback draft must include the evidence ID before prompt and route metadata.');
 requireIncludes(js, 'bestAnswerSignal(),', 'Compare feedback draft must include best-answer evidence before raw-free result metadata.');
+requireIncludes(js, 'responseShapeSummary(),', 'Compare feedback draft must include response-shape metadata for owner triage.');
 requireIncludes(js, 'raw prompt, raw model responses and raw synthesis are not stored in this feedback draft', 'Compare feedback draft must preserve the public-safe storage boundary.');
 requireIncludes(js, ".saveFeedbackDraft?.(draft,{", 'Compare panel must use the runtime Feedback Inbox bridge when available.');
 requireIncludes(js, "source:'model-comparison-panel'", 'Compare feedback drafts must record the exact UI source.');
@@ -86,7 +90,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-feedback-capacity-v1';
+const expectedJsVersion = '20260627-compare-feedback-shape-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }

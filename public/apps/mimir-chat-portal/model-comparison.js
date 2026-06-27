@@ -279,6 +279,17 @@
     ].join('\n');
   }
 
+  function responseShapeSummary(){
+    const items=lastResults.map(result=>{
+      const label=String(result.model?.label||result.model?.id||'route').replace(/\s+/g,' ').trim();
+      const content=String(result.content||'').trim();
+      const words=(content.match(/\S+/g)||[]).length;
+      const band=result.error?'failed':(words>=240?'long':(words>=80?'medium':(words>0?'short':'empty')));
+      return label+': '+band+' response, '+String(words)+' word(s)';
+    }).slice(0,5);
+    return 'Response shape: '+(items.length?items.join('; '):'not recorded')+'; metadata only, raw model responses not stored.';
+  }
+
   function promptPrivacySummaryFor(value){
     value=String(value||'').trim();
     const words=(value.match(/\S+/g)||[]).length;
@@ -380,6 +391,7 @@
       compareRouteCoverageSummary(),
       bestAnswerSignal(),
       resultSummary(),
+      responseShapeSummary(),
       synthesisPrivacySummary(),
       'Why useful: synthesized answer helped choose a best response.',
       'Privacy: raw prompt, raw model responses and raw synthesis are not stored in this feedback draft.'
