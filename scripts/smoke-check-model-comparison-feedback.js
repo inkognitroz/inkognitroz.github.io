@@ -59,6 +59,7 @@ requireIncludes(js, "return 'selected routes: '+selectedLabels+'; visible routes
 requireIncludes(js, 'function routeCoverageSummary(models){', 'Compare feedback must summarize selected route coverage without raw prompt or answer content.');
 requireIncludes(js, "const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);", 'Compare feedback route coverage must record whether the max useful selected set was used.');
 requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must include selection capacity and labels while staying metadata-only and demo-triageable.');
+// UI cap must match runner cap; otherwise testers think they selected routes the runner silently drops.
 requireIncludes(js, 'function syncModelSelectionLimit(changedInput=null){', 'Compare route picker must enforce the model cap in the UI instead of silently truncating selected routes.');
 requireIncludes(js, "Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.", 'Compare route picker must explain the selection cap when a tester tries to exceed it.');
 requireIncludes(js, 'input.disabled=!input.checked&&atLimit;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
