@@ -62,7 +62,10 @@ requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+
 // UI cap must match runner cap; otherwise testers think they selected routes the runner silently drops.
 requireIncludes(js, 'function syncModelSelectionLimit(changedInput=null){', 'Compare route picker must enforce the model cap in the UI instead of silently truncating selected routes.');
 requireIncludes(js, "Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.", 'Compare route picker must explain the selection cap when a tester tries to exceed it.');
-requireIncludes(js, 'input.disabled=!input.checked&&atLimit;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
+requireIncludes(js, 'input.disabled=locked;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
+requireIncludes(js, '<p id="comparison-selection-note" class="comparison-selection-note">Choose up to \'+String(MAX_COMPARE_MODELS)+\' live routes for each comparison.</p>', 'Compare route picker must show the selection cap before testers hit it.');
+requireIncludes(js, "input.setAttribute('aria-describedby','comparison-selection-note comparison-status');", 'Compare route picker choices must expose cap and status text to assistive tech.');
+requireIncludes(js, "input.closest('.comparison-model-choice')?.classList.toggle('comparison-model-choice-locked',locked);", 'Compare route picker must visually mark routes locked by the selection cap.');
 requireIncludes(js, "input.addEventListener('change',handleModelChoiceChange)", 'Compare route picker must resync the selection cap after checkbox changes.');
 requireIncludes(js, 'compareRouteCoverageSummary(),', 'Compare feedback draft must include selected-versus-visible route coverage before best-answer evidence.');
 requireIncludes(js, 'lastCoverageMetadata=routeCoverageSummary(models);', 'Compare feedback must snapshot route coverage at comparison time.');
@@ -89,9 +92,11 @@ requireIncludes(js, "setStatus(saved?'Useful synthesis saved to Feedback Inbox.'
 requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale synthesis feedback context.');
 
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
+requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap note must have scoped styling.');
+requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
-const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260628-compare-selection-cap-v1';
+const expectedCssVersion = '20260629-compare-selection-note-v1';
+const expectedJsVersion = '20260629-compare-selection-note-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }

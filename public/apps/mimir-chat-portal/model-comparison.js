@@ -141,7 +141,9 @@
     }
     const atLimit=checkedModelInputs().length>=MAX_COMPARE_MODELS;
     Array.from(modelList?.querySelectorAll('input[type="checkbox"]')||[]).forEach(input=>{
-      input.disabled=!input.checked&&atLimit;
+      const locked=!input.checked&&atLimit;
+      input.disabled=locked;
+      input.closest('.comparison-model-choice')?.classList.toggle('comparison-model-choice-locked',locked);
     });
   }
 
@@ -158,6 +160,7 @@
       '<summary>+ Compare Live Models</summary>'+
       '<div class="comparison-body">'+
         '<div id="comparison-model-list" class="comparison-model-list" aria-live="polite"></div>'+
+        '<p id="comparison-selection-note" class="comparison-selection-note">Choose up to '+String(MAX_COMPARE_MODELS)+' live routes for each comparison.</p>'+
         '<div class="comparison-actions">'+
           '<button id="compare-models" type="button">Compare models</button>'+
           '<button id="synthesize-models" type="button" disabled>Synthesize</button>'+
@@ -195,6 +198,7 @@
       input.type='checkbox';
       input.value=model.id;
       input.dataset.label=model.label||model.id;
+      input.setAttribute('aria-describedby','comparison-selection-note comparison-status');
       input.checked=index<Math.min(2,models.length);
       const span=document.createElement('span');
       span.textContent=model.label||model.id;
