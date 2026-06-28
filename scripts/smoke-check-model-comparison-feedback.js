@@ -59,6 +59,10 @@ requireIncludes(js, "return 'selected routes: '+selectedLabels+'; visible routes
 requireIncludes(js, 'function routeCoverageSummary(models){', 'Compare feedback must summarize selected route coverage without raw prompt or answer content.');
 requireIncludes(js, "const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);", 'Compare feedback route coverage must record whether the max useful selected set was used.');
 requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must include selection capacity and labels while staying metadata-only and demo-triageable.');
+requireIncludes(js, 'function syncModelSelectionLimit(changedInput=null){', 'Compare route picker must enforce the model cap in the UI instead of silently truncating selected routes.');
+requireIncludes(js, "Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.", 'Compare route picker must explain the selection cap when a tester tries to exceed it.');
+requireIncludes(js, 'input.disabled=!input.checked&&atLimit;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
+requireIncludes(js, "input.addEventListener('change',handleModelChoiceChange)", 'Compare route picker must resync the selection cap after checkbox changes.');
 requireIncludes(js, 'compareRouteCoverageSummary(),', 'Compare feedback draft must include selected-versus-visible route coverage before best-answer evidence.');
 requireIncludes(js, 'lastCoverageMetadata=routeCoverageSummary(models);', 'Compare feedback must snapshot route coverage at comparison time.');
 requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a stable local evidence ID per comparison run.');
@@ -86,7 +90,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260625-compare-feedback-capacity-v1';
+const expectedJsVersion = '20260628-compare-selection-cap-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
