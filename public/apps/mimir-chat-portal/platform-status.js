@@ -112,27 +112,35 @@
     };
   }
 
-  async function publicDeployComponents(platformManifest){
+  function hasComponent(components,id){
+    return components.some(component=>component?.id===id);
+  }
+
+  async function publicDeployComponents(platformManifest,existingComponents=[]){
     const components=Array.isArray(platformManifest?.components)?platformManifest.components:[];
     const commit=platformManifest?.latest_verified_commit||'current public artifact';
     const latest=components.find(component=>component?.id==='latest-deploy-verification');
     const pages=components.find(component=>component?.id==='github-pages');
-    return [
-      latest||{
+    const missing=[];
+    if(!hasComponent(existingComponents,'latest-deploy-verification')){
+      missing.push(latest||{
         id:'latest-public-artifact',
         label:'Latest public artifact',
         status:'watch',
         route:String(commit),
         notes:'Public-safe manifest loaded. CI details stay in GitHub/control repos, not in this public browser payload.'
-      },
-      pages||{
+      });
+    }
+    if(!hasComponent(existingComponents,'github-pages')){
+      missing.push(pages||{
         id:'github-pages',
         label:'GitHub Pages origin',
         status:'online',
         route:'inkognitroz.github.io -> mmir.ai',
         notes:'The static Pages artifact is public; internal QA reports stay out of the public repo.'
-      }
-    ];
+      });
+    }
+    return missing;
   }
 
   function activeBackendComponent(profile,status,notes){
@@ -186,7 +194,7 @@
     }
     components.unshift(currentSessionComponent());
     if(manifest)components.push(manifestFreshnessComponent(manifest));
-    components.push(...await publicDeployComponents(manifest));
+    components.push(...await publicDeployComponents(manifest,components));
     components.push(await activeBackendStatus());
     render(components);
     const hasProblem=components.some(component=>['offline','degraded'].includes(component.status));
