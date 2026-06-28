@@ -123,10 +123,30 @@
     }catch(error){return [];}
   }
 
+  function checkedModelInputs(){
+    return Array.from(modelList?.querySelectorAll('input[type="checkbox"]:checked')||[]);
+  }
+
   function selectedModels(){
-    return Array.from(modelList?.querySelectorAll('input[type="checkbox"]:checked')||[])
+    return checkedModelInputs()
       .map(input=>({id:input.value,label:input.dataset.label||input.value}))
       .slice(0,MAX_COMPARE_MODELS);
+  }
+
+  function syncModelSelectionLimit(changedInput=null){
+    const checked=checkedModelInputs();
+    if(checked.length>MAX_COMPARE_MODELS&&changedInput){
+      changedInput.checked=false;
+      setStatus('Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.','ready');
+    }
+    const atLimit=checkedModelInputs().length>=MAX_COMPARE_MODELS;
+    Array.from(modelList?.querySelectorAll('input[type="checkbox"]')||[]).forEach(input=>{
+      input.disabled=!input.checked&&atLimit;
+    });
+  }
+
+  function handleModelChoiceChange(event){
+    syncModelSelectionLimit(event?.target);
   }
 
   function installUi(){
@@ -181,6 +201,8 @@
       label.append(input,span);
       modelList.appendChild(label);
     });
+    modelList.querySelectorAll('input[type="checkbox"]').forEach(input=>input.addEventListener('change',handleModelChoiceChange));
+    syncModelSelectionLimit();
     if(compareBtn)compareBtn.disabled=false;
   }
 
