@@ -55,9 +55,11 @@
     return Date.now()-at.getTime()>REPAIR_RESUME_STALE_MS;
   }
   function storeNodeHandoff(payload){
+    const evidenceId='nh-'+stableHandoffFingerprint(nodeHandoffEvidenceSnapshot(payload));
     try{
       localStorage.setItem(nodeHandoffKey(),JSON.stringify({
         ...payload,
+        evidence_id:evidenceId,
         at:new Date().toISOString(),
         no_paid_routes_started:true,
         provider_secrets_stored:false,
@@ -135,6 +137,32 @@
     const days=Math.floor(hours/24);
     return 'saved '+String(days)+' day'+(days===1?'':'s')+' ago';
   }
+  function stableHandoffFingerprint(value){
+    const text=String(value||'');
+    let hash=2166136261;
+    for(let i=0;i<text.length;i+=1){
+      hash^=text.charCodeAt(i);
+      hash=Math.imul(hash,16777619);
+    }
+    return (hash>>>0).toString(36).slice(0,8);
+  }
+  function nodeHandoffEvidenceSnapshot(payload){
+    return [
+      'workspace:'+activeWorkspaceId(),
+      'action:'+String(payload?.action||'refresh'),
+      'stage:'+String(payload?.stage||'unknown'),
+      'target:'+String(payload?.target||'#node-dashboard'),
+      'device:'+String(payload?.device||'device'),
+      'model:'+String(payload?.model||''),
+      'no_paid_routes_started:true',
+      'raw_prompt_stored:false',
+      'raw_response_stored:false'
+    ].join('|');
+  }
+  function nodeHandoffEvidenceSummary(handoff){
+    const id=String(handoff?.evidence_id||'');
+    return (id||'nh-'+stableHandoffFingerprint(nodeHandoffEvidenceSnapshot(handoff)))+' / local metadata fingerprint only / raw prompts, responses and secrets not stored';
+  }
   function renderNodeHandoffResumeBanner(){
     const handoff=readNodeHandoff();
     if(!handoff)return '';
@@ -143,7 +171,7 @@
     const isHash=target.startsWith('#');
     const freshness=nodeHandoffSavedAge(handoff);
     return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
-      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>'+safe(freshness)+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
+      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>'+safe(freshness)+' / '+safe(nodeHandoffEvidenceSummary(handoff))+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
       '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
@@ -508,7 +536,7 @@
           status:link.getAttribute('data-node-handoff-resume-action')||'selected',
           route:link.getAttribute('href')||'#node-dashboard',
           free:true,
-          note:'Node handoff resume action selected. no_paid_routes_started:true.'
+          note:'Node handoff resume action selected. '+nodeHandoffEvidenceSummary(readNodeHandoff())+'. no_paid_routes_started:true.'
         });
         if((link.getAttribute('href')||'')==='#mimir-prompt'){
           document.getElementById('mimir-prompt')?.focus();
@@ -533,7 +561,7 @@
           model:payload.model,
           route:payload.device,
           free:true,
-          note:'Node handoff selected: '+action+' -> '+target+'. no_paid_routes_started:true.'
+          note:'Node handoff selected: '+action+' -> '+target+'. evidence_id:nh-'+stableHandoffFingerprint(nodeHandoffEvidenceSnapshot(payload))+'. no_paid_routes_started:true.'
         });
         if(action==='refresh'||action==='pair-browser'||action==='review-health'){
           event.preventDefault();

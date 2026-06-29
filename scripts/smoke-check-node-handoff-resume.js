@@ -32,12 +32,20 @@ requireIncludes(dashboard, 'if(!Number.isFinite(at.getTime()))return true;', 'No
 requireIncludes(dashboard, 'function nodeHandoffSavedAge(handoff)', 'Node handoff resume must show when the local handoff was saved.');
 requireIncludes(dashboard, "return 'saved just now';", 'Fresh handoff resume copy must classify just-saved handoffs.');
 requireIncludes(dashboard, "' minute'+(minutes===1?'':'s')+' ago'", 'Handoff resume freshness must be readable at minute granularity.');
-requireIncludes(dashboard, "safe(freshness)+' / no_paid_routes_started:true", 'Handoff resume security proof must include local freshness before safety flags.');
+requireIncludes(dashboard, "const evidenceId='nh-'+stableHandoffFingerprint(nodeHandoffEvidenceSnapshot(payload));", 'Stored node handoffs must include a stable local evidence ID.');
+requireIncludes(dashboard, 'function stableHandoffFingerprint(value)', 'Node handoff evidence IDs must use a local metadata fingerprint.');
+requireIncludes(dashboard, 'function nodeHandoffEvidenceSnapshot(payload)', 'Node handoff evidence must derive from route metadata only.');
+requireIncludes(dashboard, "'raw_prompt_stored:false'", 'Node handoff evidence snapshot must explicitly avoid raw prompt storage.');
+requireIncludes(dashboard, "'raw_response_stored:false'", 'Node handoff evidence snapshot must explicitly avoid raw response storage.');
+requireIncludes(dashboard, 'function nodeHandoffEvidenceSummary(handoff)', 'Node handoff resume must summarize the local evidence ID.');
+requireIncludes(dashboard, 'local metadata fingerprint only / raw prompts, responses and secrets not stored', 'Node handoff evidence summary must keep privacy boundaries explicit.');
+requireIncludes(dashboard, "safe(freshness)+' / '+safe(nodeHandoffEvidenceSummary(handoff))", 'Handoff resume security proof must include freshness and evidence ID before safety flags.');
 requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
 requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
 requireIncludes(dashboard, 'provider_secrets_stored:false', 'Node handoff resume must keep security/cost proof visible.');
 requireIncludes(dashboard, 'node-handoff-resume-action', 'Node handoff resume action must be bindable.');
 requireIncludes(dashboard, "record?.('node-handoff-resume-action'", 'Node handoff resume actions must be telemetry-visible.');
+requireIncludes(dashboard, 'evidence_id:nh-', 'Node handoff selection telemetry must expose the local evidence ID without raw data.');
 requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff resume banner must render in dashboard states.');
 
 requireIncludes(css, '.node-handoff-resume {', 'Node handoff resume banner must have dedicated styles.');
@@ -45,7 +53,7 @@ requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260625-node-handoff-freshness-v1';
+const expectedVersion = '20260630-node-handoff-evidence-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }
