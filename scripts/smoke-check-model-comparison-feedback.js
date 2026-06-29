@@ -22,10 +22,14 @@ function requireIncludes(source, needle, message) {
 }
 
 requireIncludes(js, 'let feedbackBtn=null;', 'Compare panel must track a useful-synthesis feedback button.');
+requireIncludes(js, 'let reviewBtn=null;', 'Compare panel must track a needs-review feedback button.');
 requireIncludes(js, '<button id="capture-comparison-feedback" type="button" disabled>Useful synthesis</button>', 'Compare panel must render a disabled useful-synthesis capture action.');
+requireIncludes(js, '<button id="capture-comparison-review" type="button" disabled>Needs review</button>', 'Compare panel must render a disabled needs-review capture action.');
 requireIncludes(js, "feedbackBtn.addEventListener('click',captureComparisonFeedback);", 'Useful-synthesis action must be wired to the capture helper.');
+requireIncludes(js, "reviewBtn.addEventListener('click',captureComparisonReview);", 'Needs-review action must be wired to the capture helper.');
 requireIncludes(js, 'lastSynthesis={content:String(content||\'\'),model};', 'Compare panel must preserve the latest synthesis and model context.');
 requireIncludes(js, "feedbackBtn.textContent='Useful synthesis';", 'New synthesis runs must reset the feedback button label.');
+requireIncludes(js, "reviewBtn.textContent='Needs review';", 'New synthesis runs must reset the needs-review button label.');
 requireIncludes(js, "function resultSummary(){", 'Compare feedback must summarize selected model coverage.');
 requireIncludes(js, "Compared '+String(lastResults.length)+' model(s): '+models", 'Compare feedback must include compared model count and labels.');
 requireIncludes(js, "failed.length?'Failed responses: '+String(failed.length):'No failed responses'", 'Compare feedback must preserve failed response count.');
@@ -74,24 +78,32 @@ requireIncludes(js, 'function evidenceSummary(){', 'Compare feedback draft must 
 requireIncludes(js, 'local fingerprint only, raw prompt, responses and synthesis not stored', 'Compare feedback evidence summary must keep privacy boundaries explicit.');
 requireIncludes(js, "function comparisonFeedbackDraft(){", 'Compare panel must build a sanitized local feedback draft.');
 requireIncludes(js, "'@feedback Compare Live Models useful synthesis", 'Compare feedback draft must be explicit and command-routable.');
+requireIncludes(js, "function comparisonReviewDraft(){", 'Compare panel must build a sanitized needs-review feedback draft.');
+requireIncludes(js, "'@feedback Compare Live Models synthesis needs review", 'Compare review draft must be explicit and command-routable.');
+requireIncludes(js, 'Why review: synthesized answer was incomplete, contested or not ready to present as best answer.', 'Compare review draft must capture why a synthesis needs owner review without raw answers.');
 requireIncludes(js, 'evidenceSummary(),', 'Compare feedback draft must include the evidence ID before prompt and route metadata.');
 requireIncludes(js, 'bestAnswerSignal(),', 'Compare feedback draft must include best-answer evidence before raw-free result metadata.');
 requireIncludes(js, 'raw prompt, raw model responses and raw synthesis are not stored in this feedback draft', 'Compare feedback draft must preserve the public-safe storage boundary.');
 requireIncludes(js, ".saveFeedbackDraft?.(draft,{", 'Compare panel must use the runtime Feedback Inbox bridge when available.');
 requireIncludes(js, "source:'model-comparison-panel'", 'Compare feedback drafts must record the exact UI source.');
 requireIncludes(js, "backlogHint:'compare-panel-useful-synthesis'", 'Compare feedback drafts must include a stable triage hint.');
+requireIncludes(js, "backlogHint:'compare-panel-synthesis-needs-review'", 'Compare review drafts must include a stable triage hint.');
 requireIncludes(js, "openInbox:true", 'Useful-synthesis capture must open Feedback Inbox after saving.');
 requireIncludes(js, "if(feedbackBtn?.dataset?.captured==='true'){setStatus('Useful synthesis already saved. Run a new synthesis to capture another signal.','ready');return;}", 'Useful-synthesis capture must avoid duplicate local drafts for the same synthesis.');
+requireIncludes(js, "if(reviewBtn?.dataset?.captured==='true'){setStatus('Review signal already saved. Run a new synthesis to capture another signal.','ready');return;}", 'Needs-review capture must avoid duplicate local drafts for the same synthesis.');
 requireIncludes(js, 'promptEl.value=draft;', 'Compare feedback must fall back to prefilled chat draft when the bridge is absent.');
 requireIncludes(js, "feedbackBtn.dataset.captured='true';", 'Useful-synthesis capture must expose saved state in the UI.');
 requireIncludes(js, 'feedbackBtn.disabled=true;', 'Useful-synthesis capture must disable the saved button until another synthesis is generated.');
+requireIncludes(js, "reviewBtn.dataset.captured='true';", 'Needs-review capture must expose saved state in the UI.');
+requireIncludes(js, 'reviewBtn.disabled=true;', 'Needs-review capture must disable the saved button until another synthesis is generated.');
 requireIncludes(js, "setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.'", 'Useful-synthesis capture must show local storage truth.');
+requireIncludes(js, "setStatus(saved?'Review signal saved to Feedback Inbox.':'Review signal draft added to the chat box.'", 'Needs-review capture must show local storage truth.');
 requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale synthesis feedback context.');
 
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260628-compare-selection-cap-v1';
+const expectedJsVersion = '20260629-compare-review-feedback-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
