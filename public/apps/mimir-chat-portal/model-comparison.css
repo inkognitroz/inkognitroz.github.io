@@ -33,6 +33,18 @@
   gap: 8px;
 }
 
+.comparison-selection-status {
+  margin: -2px 0 0;
+}
+
+.comparison-selection-status[data-state="limit"] {
+  color: #047857;
+}
+
+.comparison-selection-status[data-state="empty"] {
+  color: var(--mimir-muted, #6b7280);
+}
+
 .comparison-actions button {
   min-height: 36px;
   padding: 0 12px;

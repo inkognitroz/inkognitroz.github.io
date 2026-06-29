@@ -11,6 +11,7 @@
   const host=document.querySelector('#multi-model-workspace .mimir-dashboard');
   const promptEl=document.getElementById('mimir-prompt');
   let modelList=null;
+  let selectionStatusEl=null;
   let statusEl=null;
   let outputEl=null;
   let compareBtn=null;
@@ -143,6 +144,21 @@
     Array.from(modelList?.querySelectorAll('input[type="checkbox"]')||[]).forEach(input=>{
       input.disabled=!input.checked&&atLimit;
     });
+    updateSelectionStatus();
+  }
+
+  function updateSelectionStatus(models=null){
+    if(!selectionStatusEl)return;
+    const visible=Array.isArray(models)?models.length:liveModels().length;
+    const selected=checkedModelInputs().length;
+    const max=Math.min(visible,MAX_COMPARE_MODELS);
+    if(!visible){
+      selectionStatusEl.textContent='No live routes visible yet. Connect or refresh a backend before comparing answers.';
+      selectionStatusEl.dataset.state='empty';
+      return;
+    }
+    selectionStatusEl.textContent=String(selected)+' selected of '+String(visible)+' visible route(s); compare up to '+String(max)+' at once.';
+    selectionStatusEl.dataset.state=selected>=max?'limit':'ready';
   }
 
   function handleModelChoiceChange(event){
@@ -158,6 +174,7 @@
       '<summary>+ Compare Live Models</summary>'+
       '<div class="comparison-body">'+
         '<div id="comparison-model-list" class="comparison-model-list" aria-live="polite"></div>'+
+        '<p id="comparison-selection-status" class="dashboard-note comparison-selection-status" data-state="empty" aria-live="polite"></p>'+
         '<div class="comparison-actions">'+
           '<button id="compare-models" type="button">Compare models</button>'+
           '<button id="synthesize-models" type="button" disabled>Synthesize</button>'+
@@ -168,6 +185,7 @@
       '</div>';
     host.appendChild(details);
     modelList=document.getElementById('comparison-model-list');
+    selectionStatusEl=document.getElementById('comparison-selection-status');
     statusEl=document.getElementById('comparison-status');
     outputEl=document.getElementById('comparison-output');
     compareBtn=document.getElementById('compare-models');
@@ -184,6 +202,7 @@
     modelList.innerHTML='';
     if(!models.length){
       modelList.innerHTML='<p class="empty-backends">Connect a backend and refresh live models first.</p>';
+      updateSelectionStatus(models);
       if(compareBtn)compareBtn.disabled=true;
       if(synthBtn)synthBtn.disabled=true;
       return;
