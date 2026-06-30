@@ -63,6 +63,7 @@
         provider_secrets_stored:false,
         raw_prompt_stored:false,
         raw_response_stored:false,
+        tunnel_status:String(payload?.tunnel_status||'not_checked'),
         tunnel_policy:'outbound_only_explicit_start'
       }));
     }catch(error){}
@@ -118,6 +119,13 @@
     if(action==='pair-browser')return {state:'checking',title:'Pairing handoff saved',detail:'This browser will retry local pairing before model proof or remote handoff.',primary:'Pair / refresh',target:'#node-dashboard'};
     return {state:'checking',title:'Node handoff saved',detail:'Last selected stage '+stage+' is preserved for this workspace without raw prompts or responses.',primary:'Refresh node health',target:'#node-dashboard'};
   }
+  function nodeHandoffTunnelProof(handoff){
+    const status=String(handoff?.tunnel_status||'not_checked');
+    if(status==='online')return 'tunnel_status:online';
+    if(status==='closed')return 'tunnel_status:closed_until_explicit_start';
+    if(status==='disabled')return 'tunnel_status:disabled_by_local_policy';
+    return 'tunnel_status:not_checked';
+  }
   function nodeHandoffIsStale(handoff){
     const at=new Date(String(handoff?.at||''));
     if(!Number.isFinite(at.getTime()))return true;
@@ -143,7 +151,7 @@
     const isHash=target.startsWith('#');
     const freshness=nodeHandoffSavedAge(handoff);
     return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
-      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>'+safe(freshness)+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
+      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>'+safe(freshness)+' / '+safe(nodeHandoffTunnelProof(handoff))+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
       '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
@@ -345,7 +353,8 @@
   function renderNodeHandoff(plan,tunnel){
     const target=plan.target||'#node-dashboard';
     const isHash=target.startsWith('#');
-    const actionAttrs=' data-node-handoff-action="'+safe(plan.action)+'" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="'+safe(target)+'" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'"';
+    const tunnelStatus=tunnel?.public_url?'online':(tunnel?.control_enabled===false?'disabled':'closed');
+    const actionAttrs=' data-node-handoff-action="'+safe(plan.action)+'" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="'+safe(target)+'" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'" data-node-handoff-tunnel="'+safe(tunnelStatus)+'"';
     const access=tunnelAccessSummary(plan,tunnel);
     const pairing=remotePairingSummary();
     const primary=isHash
@@ -525,7 +534,8 @@
           stage:control.getAttribute('data-node-handoff-stage')||'unknown',
           target,
           device:control.getAttribute('data-node-handoff-device')||'device',
-          model:control.getAttribute('data-node-handoff-model')||''
+          model:control.getAttribute('data-node-handoff-model')||'',
+          tunnel_status:control.getAttribute('data-node-handoff-tunnel')||'not_checked'
         };
         storeNodeHandoff(payload);
         window.MimirActivationTelemetry?.record?.('node-handoff-action',{
