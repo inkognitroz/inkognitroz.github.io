@@ -356,11 +356,12 @@
   }
 
   function routeCoverageSummary(models){
-    const selected=Array.isArray(models)?models.length:lastResults.length;
+    const requested=Array.isArray(models)?models.length:lastResults.length;
     const available=liveModels().length;
+    const selected=available?Math.min(requested,available):requested;
     const coverage=available?Math.round((selected/available)*100):0;
     const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);
-    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
+    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; requested routes: '+String(requested)+'; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
   }
 
   function compareRouteCoverageSummary(){

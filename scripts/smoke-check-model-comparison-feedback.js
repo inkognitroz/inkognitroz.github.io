@@ -57,8 +57,10 @@ requireIncludes(js, 'let lastCoverageMetadata=null;', 'Compare feedback must tra
 requireIncludes(js, 'function routeLabelSummary(models){', 'Compare feedback must summarize selected and visible route labels without raw prompt or answer content.');
 requireIncludes(js, "return 'selected routes: '+selectedLabels+'; visible routes: '+visibleLabels;", 'Compare feedback route label summary must preserve route labels only.');
 requireIncludes(js, 'function routeCoverageSummary(models){', 'Compare feedback must summarize selected route coverage without raw prompt or answer content.');
+requireIncludes(js, 'const requested=Array.isArray(models)?models.length:lastResults.length;', 'Compare feedback route coverage must preserve the requested route count for diagnostics.');
+requireIncludes(js, 'const selected=available?Math.min(requested,available):requested;', 'Compare feedback route coverage must clamp selected count to visible routes before computing coverage.');
 requireIncludes(js, "const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);", 'Compare feedback route coverage must record whether the max useful selected set was used.');
-requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must include selection capacity and labels while staying metadata-only and demo-triageable.');
+requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; requested routes: '+String(requested)+'; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must include bounded coverage, requested capacity and labels while staying metadata-only and demo-triageable.');
 // UI cap must match runner cap; otherwise testers think they selected routes the runner silently drops.
 requireIncludes(js, 'function syncModelSelectionLimit(changedInput=null){', 'Compare route picker must enforce the model cap in the UI instead of silently truncating selected routes.');
 requireIncludes(js, "Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.", 'Compare route picker must explain the selection cap when a tester tries to exceed it.');
@@ -91,7 +93,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260628-compare-selection-cap-v1';
+const expectedJsVersion = '20260701-compare-coverage-clamp-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
