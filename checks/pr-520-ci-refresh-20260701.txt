@@ -1,0 +1,5 @@
+PR #520 CI refresh.
+
+Scope: non-runtime marker only.
+Reason: prior PR commit intentionally used skip-ci; this marker triggers required GitHub checks without changing frontend runtime behavior.
+Safety: no app code, no assets, no deploy config, no DNS, no secrets.
