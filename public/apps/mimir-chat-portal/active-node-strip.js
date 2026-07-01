@@ -7,6 +7,7 @@
   const ACTIVE_KEY='mimir-chat-active-backend';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const REPAIR_RESUME_PREFIX='mimir-repair-resume-v1:';
+  const ACTIVE_ROUTE_FEEDBACK_PREFIX='mimir-active-route-feedback-v1:';
   const FALLBACK_LABEL=displayApi.DEFAULT_LABEL||'Supergeni';
   let manifestNodes=[];
   let manifestUpdatedAt='';
@@ -172,6 +173,9 @@
   function activeRouteFeedbackKey(best,freshness){
     return [best?.id||best?.name||FALLBACK_LABEL,nodeStatus(best),freshness?.state||'unknown',freshness?.label||'unknown',freshness?.summary||''].map(value=>String(value||'').replace(/\s+/g,' ').trim()).join('|');
   }
+  function activeRouteFeedbackStorageKey(){return ACTIVE_ROUTE_FEEDBACK_PREFIX+activeWorkspaceId();}
+  function readCapturedActiveRouteFeedbackKey(){return storageGet(activeRouteFeedbackStorageKey(),'');}
+  function rememberActiveRouteFeedbackKey(key){lastActiveRouteFeedbackKey=key;storageSet(activeRouteFeedbackStorageKey(),key);}
   function refreshLabel(freshness){
     return freshness?.state==='degraded'?'Refresh route inventory':'Recheck route inventory';
   }
@@ -180,7 +184,8 @@
   }
   function feedbackFooter(best,freshness){
     if(!freshness||freshness.state==='online')return '';
-    const captured=lastActiveRouteFeedbackKey===activeRouteFeedbackKey(best,freshness);
+    const key=activeRouteFeedbackKey(best,freshness);
+    const captured=lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key;
     return '<div class="mmir-active-node-overflow" data-route-feedback-state="'+safe(freshness.state)+'" data-route-feedback-captured="'+safe(captured?'true':'false')+'"><p>Capture route friction from this exact surface so owner triage keeps the live demo path honest. Recheck the public route manifest before escalating so demo trust can recover from this exact surface.</p><div class="mmir-active-node-overflow-actions"><button type="button" class="secondary" data-active-route-refresh aria-busy="'+safe(manifestRefreshState==='refreshing'?'true':'false')+'">'+safe(refreshButtonLabel(freshness))+'</button><button type="button" data-active-route-feedback data-captured="'+safe(captured?'true':'false')+'" '+(captured?'disabled aria-disabled="true"':'')+'>'+safe(captured?'Route issue saved':'Report route issue')+'</button></div><small class="mmir-active-route-feedback-status">'+safe(captured?'Saved to Feedback Inbox for this route state. Recheck inventory before creating another route issue.':'No route feedback saved for this visible state yet.')+'</small></div>';
   }
   function nextStepMarkup(action){
@@ -197,7 +202,7 @@
   }
   function reportRouteIssue(best,freshness){
     const key=activeRouteFeedbackKey(best,freshness);
-    if(lastActiveRouteFeedbackKey===key)return true;
+    if(lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key)return true;
     if(w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness),{
       source:'active-route-strip',
       target:'feedback',
@@ -206,7 +211,7 @@
       lane:'L1 Frontend UX',
       backlogHint:'active-route-strip-feedback',
       openInbox:true
-    })){lastActiveRouteFeedbackKey=key;render();return true;}
+    })){rememberActiveRouteFeedbackKey(key);render();return true;}
     const promptEl=q('#mimir-prompt');
     if(!promptEl)return false;
     promptEl.value=feedbackDraft(best,freshness);
@@ -214,7 +219,7 @@
     promptEl.dispatchEvent(new Event('change',{bubbles:true}));
     promptEl.focus();
     promptEl.scrollIntoView({block:'center',behavior:'smooth'});
-    lastActiveRouteFeedbackKey=key;
+    rememberActiveRouteFeedbackKey(key);
     render();
     return true;
   }
