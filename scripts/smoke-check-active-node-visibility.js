@@ -63,7 +63,11 @@ requireIncludes(strip, 'function feedbackDraft(best,freshness)', 'Active node st
 requireIncludes(strip, 'const policy=routePolicyLine(best);', 'Active route feedback drafts must preserve the visible cost/privacy route policy.');
 requireIncludes(strip, "' Policy: '+policy+'. Please review the route strip and next-step guidance.'", 'Active route feedback drafts must carry policy evidence into triage.');
 requireIncludes(strip, 'let lastActiveRouteFeedbackKey=\'\';', 'Active route feedback must remember the last captured route state in-session.');
+requireIncludes(strip, "const ACTIVE_ROUTE_FEEDBACK_PREFIX='mimir-active-route-feedback-v1:';", 'Active route feedback dedupe must persist per workspace.');
 requireIncludes(strip, 'function activeRouteFeedbackKey(best,freshness)', 'Active route feedback must derive an idempotency key from visible route state.');
+requireIncludes(strip, 'function activeRouteFeedbackStorageKey()', 'Active route feedback must use a workspace-scoped storage key.');
+requireIncludes(strip, 'function readCapturedActiveRouteFeedbackKey()', 'Active route feedback must read persisted capture state before showing another draft action.');
+requireIncludes(strip, 'function rememberActiveRouteFeedbackKey(key)', 'Active route feedback must persist captured route state after saving a draft.');
 requireIncludes(strip, 'function feedbackFooter(best,freshness)', 'Active node strip must show a direct route-feedback handoff when freshness is not current.');
 requireIncludes(strip, 'Capture route friction from this exact surface so owner triage keeps the live demo path honest.', 'Route strip must explain why route feedback is being requested.');
 requireIncludes(strip, 'Recheck the public route manifest before escalating so demo trust can recover from this exact surface.', 'Route strip must offer a trust-recovery hint before escalation.');
@@ -75,7 +79,10 @@ requireIncludes(strip, 'Report route issue', 'Route strip must offer a direct ro
 requireIncludes(strip, 'Route issue saved', 'Route strip must show when this route issue has already been captured.');
 requireIncludes(strip, 'data-route-feedback-captured="', 'Route feedback footer must expose captured state for scoped styling and inspection.');
 requireIncludes(strip, 'Saved to Feedback Inbox for this route state. Recheck inventory before creating another route issue.', 'Captured route feedback status must explain how to recover before filing another issue.');
-requireIncludes(strip, 'if(lastActiveRouteFeedbackKey===key)return true;', 'Route-feedback capture must avoid duplicate drafts for the same visible route state.');
+requireIncludes(strip, 'const captured=lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key;', 'Route-feedback UI must stay captured after reload for the same workspace and route state.');
+requireIncludes(strip, 'if(lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key)return true;', 'Route-feedback capture must avoid duplicate drafts for the same visible route state across reloads.');
+requireIncludes(strip, 'rememberActiveRouteFeedbackKey(key);render();return true;', 'Runtime-bridge route-feedback saves must persist the dedupe key.');
+requireIncludes(strip, 'rememberActiveRouteFeedbackKey(key);', 'Fallback route-feedback drafts must persist the dedupe key.');
 requireIncludes(strip, '.mmir-active-node-overflow button[data-captured="true"]', 'Captured route feedback buttons must have scoped saved-state styling.');
 requireIncludes(strip, "w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness),{", 'Route-feedback CTA must save a local draft through the runtime bridge when available.');
 requireIncludes(strip, "source:'active-route-strip'", 'Route-feedback drafts must record the active-route strip as their source.');
@@ -86,7 +93,7 @@ requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-descript
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260625-active-route-feedback-idempotent-v1';
+const expectedVersion = '20260701-active-route-feedback-persist-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
