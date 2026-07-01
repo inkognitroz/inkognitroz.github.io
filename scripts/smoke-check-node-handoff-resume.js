@@ -45,7 +45,7 @@ requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260625-node-handoff-freshness-v1';
+const expectedVersion = '20260702-node-model-proof-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }

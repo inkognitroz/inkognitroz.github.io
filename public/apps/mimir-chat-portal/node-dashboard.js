@@ -342,12 +342,28 @@
     return {label:'Remote access pending',detail:'Finish local install, pairing and model proof first. MMIR keeps the remote path closed until the node is ready.',state:'next'};
   }
 
-  function renderNodeHandoff(plan,tunnel){
+  function modelProofSummary(plan,models){
+    const count=Array.isArray(models)?models.length:0;
+    if(count){
+      return {
+        label:String(count)+' model'+(count===1?'':'s')+' visible',
+        detail:'First-chat proof can use '+modelSummary(models)+' on this private node.',
+        state:'ready'
+      };
+    }
+    if(['install-model','repair-model-install'].includes(plan.stage)){
+      return {label:'Model proof blocked',detail:'Install or repair the free '+plan.model+' starter before MMIR can prove local chat.',state:'error'};
+    }
+    return {label:'Model proof pending',detail:'Live model inventory appears here after connector, pairing and runtime checks finish.',state:'next'};
+  }
+
+  function renderNodeHandoff(plan,tunnel,models){
     const target=plan.target||'#node-dashboard';
     const isHash=target.startsWith('#');
     const actionAttrs=' data-node-handoff-action="'+safe(plan.action)+'" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="'+safe(target)+'" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'"';
     const access=tunnelAccessSummary(plan,tunnel);
     const pairing=remotePairingSummary();
+    const proof=modelProofSummary(plan,models);
     const primary=isHash
       ? '<a href="'+safe(target)+'" data-open-target'+actionAttrs+'>'+safe(plan.primary)+'</a>'
       : '<a href="'+safe(target)+'"'+actionAttrs+'>'+safe(plan.primary)+'</a>';
@@ -359,6 +375,7 @@
       '<div class="node-handoff-status" aria-label="Remote handoff state">'+
         '<article data-state="'+safe(access.state)+'"><strong>'+safe(access.label)+'</strong><small>'+safe(access.detail)+'</small></article>'+
         '<article data-state="'+safe(pairing.state)+'" id="node-handoff-pairing-summary"><strong>'+safe(pairing.label)+'</strong><small>'+safe(pairing.detail)+'</small></article>'+
+        '<article data-state="'+safe(proof.state)+'" id="node-handoff-model-proof"><strong>'+safe(proof.label)+'</strong><small>'+safe(proof.detail)+'</small></article>'+
       '</div>'+
       '<div class="node-handoff-rail">'+plan.steps.map(step=>'<em data-state="'+(step.ready?'ready':'next')+'">'+safe(step.label)+'</em>').join('')+'</div>'+
       '<div class="node-handoff-devices">'+plan.badges.map(badge=>'<strong>'+safe(badge)+'</strong>').join('')+'</div>'+
@@ -597,7 +614,7 @@
         card('Active node','offline',DEFAULT_LOCAL_URL)+
         card('Models','free route','Install a local model when the node is running.')+
       '</div>'+
-      renderNodeHandoff(plan,null)+
+      renderNodeHandoff(plan,null,[])+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
       renderDeviceRepair(guide)+
       renderAction(action,false,false);
@@ -673,7 +690,7 @@
         card('Tunnel',statusText(tunnel?.status),tunnelSummary(tunnel))+
         card('Doctor source',doctorSource,report?'Status: '+statusText(report.status):'Connector does not expose /doctor yet')+
       '</div>'+
-      renderNodeHandoff(plan,tunnel)+
+      renderNodeHandoff(plan,tunnel,models)+
       '<div class="node-doctor-grid">'+checks.map(check=>doctor(check.label,check.state,check.detail)).join('')+'</div>'+
       renderDeviceRepair(guide)+
       renderModelManager(models)+
