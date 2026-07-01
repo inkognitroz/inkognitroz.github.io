@@ -1,0 +1,6 @@
+MMIR CI refresh for PR #519.
+
+Scope: non-runtime check trigger only.
+Reason: original PR used local validation but no workflow run was associated with the head SHA; this file gives branch protection a fresh head to validate without changing public runtime behavior.
+
+Safety: no provider calls, no route activation, no deploy, no secrets, no DNS, no Terraform, no paid routes.
