@@ -549,7 +549,9 @@
         if(action==='install-model'||action==='repair-model-install'){
           const library=document.getElementById('model-library');
           if(library&&'open' in library)library.open=true;
-          window.dispatchEvent(new CustomEvent('mmir-model-library-focus-recommended',{detail:{source:'node-handoff',no_paid_routes_started:true}}));
+          const starter={model:payload.model,device:payload.device,label:payload.model||'free starter'};
+          window.MimirActivationTelemetry?.record?.('recommended-starter',{...starter,source:'node-handoff',free:true});
+          window.dispatchEvent(new CustomEvent('mmir-model-library-focus-recommended',{detail:{starter,source:'node-handoff',no_paid_routes_started:true}}));
         }
         if(action==='chat-now'){
           document.getElementById('mimir-prompt')?.focus();

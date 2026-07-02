@@ -31,15 +31,16 @@ requireIncludes(dashboard, 'syncPairingSummary(message,state);', 'Pairing-code a
 requireIncludes(css, '.node-handoff-status {', 'Node handoff remote-state block must have dedicated layout styles.');
 requireIncludes(css, '.node-handoff-status article[data-state="ready"] {', 'Node handoff remote-state block must style ready state.');
 
-const expectedVersion = '20260625-node-handoff-freshness-v1';
-if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
+const expectedJsVersion = '20260702-node-handoff-starter-focus-v1';
+const expectedCssVersion = '20260625-node-handoff-freshness-v1';
+if (manifest.assets?.['node-dashboard.js'] !== expectedJsVersion) {
   fail('Asset manifest must track the node-dashboard remote-state JavaScript update.');
 }
-if (manifest.assets?.['node-dashboard.css'] !== expectedVersion) {
+if (manifest.assets?.['node-dashboard.css'] !== expectedCssVersion) {
   fail('Asset manifest must track the node-dashboard remote-state CSS update.');
 }
-requireIncludes(html, `node-dashboard.css?v=${expectedVersion}`, 'mmir.html must cache-bust the node-dashboard remote-state CSS update.');
-requireIncludes(html, `node-dashboard.js?v=${expectedVersion}`, 'mmir.html must cache-bust the node-dashboard remote-state JavaScript update.');
+requireIncludes(html, `node-dashboard.css?v=${expectedCssVersion}`, 'mmir.html must cache-bust the node-dashboard remote-state CSS update.');
+requireIncludes(html, `node-dashboard.js?v=${expectedJsVersion}`, 'mmir.html must cache-bust the node-dashboard remote-state JavaScript update.');
 
 if (failures.length) {
   console.error('Node handoff remote-state smoke failed:');
