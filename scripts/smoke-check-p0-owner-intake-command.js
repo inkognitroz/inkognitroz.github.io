@@ -94,6 +94,11 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "ensureDemoTranscriptConsentNotice('chat_boot')",
+  'P0 shell must show the hosted demo transcript notice at chat boot, before the first tester message.'
+);
+requireIncludes(
+  shell,
   'Demo-testmodus: MMIR kan lagre avgrensede og redigerte chatutdrag',
   'P0 shell must explain demo transcript capture in the chat, not hide it in background telemetry.'
 );
@@ -649,12 +654,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260626-node-intelligence-status-v1',
+  'p0-chat-shell.js?v=20260702-demo-consent-boot-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260626-node-intelligence-status-v1"',
+  '"p0-chat-shell.js": "20260702-demo-consent-boot-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
