@@ -77,6 +77,9 @@ requireIncludes(strip, 'Refreshing route inventory...', 'Route strip must expose
 requireIncludes(strip, 'aria-busy="', 'Route-refresh CTA must expose busy state for assistive tech and clearer demo feedback.');
 requireIncludes(strip, 'Report route issue', 'Route strip must offer a direct route-feedback CTA.');
 requireIncludes(strip, 'Route issue saved', 'Route strip must show when this route issue has already been captured.');
+requireIncludes(strip, "const canReport=freshness.state==='degraded'||manifestRefreshState==='failed';", 'Route strip must gate feedback capture until freshness is degraded or refresh failed.');
+requireIncludes(strip, 'data-route-feedback-action="', 'Route feedback footer must expose whether the current state is reportable or refresh-first.');
+requireIncludes(strip, 'Recheck route inventory first; create feedback only if refresh fails or the route is degraded.', 'Route watch states must prompt recheck before feedback capture.');
 requireIncludes(strip, 'data-route-feedback-captured="', 'Route feedback footer must expose captured state for scoped styling and inspection.');
 requireIncludes(strip, 'Saved to Feedback Inbox for this route state. Recheck inventory before creating another route issue.', 'Captured route feedback status must explain how to recover before filing another issue.');
 requireIncludes(strip, 'const captured=lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key;', 'Route-feedback UI must stay captured after reload for the same workspace and route state.');
@@ -93,7 +96,7 @@ requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-descript
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260701-active-route-feedback-persist-v1';
+const expectedVersion = '20260703-refresh-first-route-feedback-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }

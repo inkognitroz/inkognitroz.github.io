@@ -59,6 +59,8 @@ requireIncludes(strip, "label:'Route inventory current'", 'Active node strip mus
 requireIncludes(strip, "label:'Route inventory timestamp ahead'", 'Active node strip must warn on future route inventory timestamps.');
 requireIncludes(strip, "label:'Route inventory refresh failed'", 'Active node strip must explain when an explicit route inventory refresh falls back.');
 requireIncludes(strip, 'Refresh before demo trust.', 'Active node strip must warn when route inventory is stale.');
+requireIncludes(strip, "const canReport=freshness.state==='degraded'||manifestRefreshState==='failed';", 'Active node strip must prefer refresh before route feedback while freshness is only watch-level.');
+requireIncludes(strip, 'Recheck route inventory first; create feedback only if refresh fails or the route is degraded.', 'Active node strip must reserve feedback creation for failed refreshes or degraded inventory.');
 requireIncludes(strip, 'function withRefreshState(freshness)', 'Active node strip must decorate freshness copy with refresh outcomes.');
 requireIncludes(strip, "summary:freshness.summary+' Refreshing now.'", 'Active node strip must expose in-progress refresh state from the freshness badge.');
 requireIncludes(strip, "summary:'Using safe route inventory. Retry before demo trust.'", 'Active node strip must explain when route inventory refresh fails safely.');
@@ -72,7 +74,7 @@ requireIncludes(strip, 'manifestNodes=fallbackManifestNodes();', 'Active node st
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
 requireIncludes(strip, 'trustLine=manifestTrustLine(manifestUpdatedAt,inventory)', 'Active node strip must bind manifest trust copy to the rendered freshness badge.');
 requireIncludes(strip, "aria-label=\"'+safe(trustLine", 'Active node strip freshness badge must expose route count and review date to assistive tech.');
-const expectedVersion = '20260625-active-route-feedback-idempotent-v1';
+const expectedVersion = '20260703-refresh-first-route-feedback-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }
