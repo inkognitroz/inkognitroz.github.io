@@ -1,0 +1,5 @@
+PR #518 CI refresh.
+
+Scope: non-runtime marker only.
+Reason: trigger static quality gates for public trust manifest refresh after the original PR commit used [skip ci].
+Safety: no app code, no route/policy/provider changes, no DNS, no secrets, no deploy config.
