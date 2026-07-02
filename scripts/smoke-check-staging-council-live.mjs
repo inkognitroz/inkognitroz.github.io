@@ -1,5 +1,4 @@
 import { mkdir } from 'node:fs/promises';
-import { chromium } from '@playwright/test';
 
 const url = process.env.MMIR_STAGING_COUNCIL_URL || 'https://staging.mmir.ai/mmir.html';
 const prompt = process.env.MMIR_STAGING_COUNCIL_PROMPT || 'Hva er MMIR sin visjon? Svar konkret og overbevisende pa norsk.';
@@ -17,8 +16,21 @@ function uniqueUrl(base) {
   return parsed.toString();
 }
 
+async function loadChromium() {
+  try {
+    const playwright = await import('@playwright/test');
+    return playwright.chromium;
+  } catch (error) {
+    throw new Error(
+      'Staging council live smoke requires @playwright/test. Run `npm install` in this repo before this smoke. ' +
+        `Original error: ${error.message}`
+    );
+  }
+}
+
 await mkdir(screenshotDir, { recursive: true });
 
+const chromium = await loadChromium();
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
 const browserErrors = [];

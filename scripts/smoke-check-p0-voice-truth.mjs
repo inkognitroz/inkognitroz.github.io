@@ -1,5 +1,4 @@
 import { spawn } from 'node:child_process';
-import { chromium } from '@playwright/test';
 
 const port = Number(process.env.MMIR_VOICE_TRUTH_PORT || 8798);
 const host = '127.0.0.1';
@@ -62,6 +61,18 @@ async function installApiFixtures(page) {
       })
     });
   });
+}
+
+async function loadChromium() {
+  try {
+    const playwright = await import('@playwright/test');
+    return playwright.chromium;
+  } catch (error) {
+    throw new Error(
+      'P0 voice truth smoke requires @playwright/test. Run `npm install` in this repo before this smoke. ' +
+        `Original error: ${error.message}`
+    );
+  }
 }
 
 async function preparePage(page, suffix) {
@@ -148,6 +159,7 @@ async function main() {
   const server = startServer();
   try {
     await waitForServer(`${baseUrl}/mmir.html`);
+    const chromium = await loadChromium();
     const browser = await chromium.launch();
     try {
       await checkUnsupported(browser);
