@@ -176,6 +176,26 @@
   function activeRouteFeedbackStorageKey(){return ACTIVE_ROUTE_FEEDBACK_PREFIX+activeWorkspaceId();}
   function readCapturedActiveRouteFeedbackKey(){return storageGet(activeRouteFeedbackStorageKey(),'');}
   function rememberActiveRouteFeedbackKey(key){lastActiveRouteFeedbackKey=key;storageSet(activeRouteFeedbackStorageKey(),key);}
+  function emitActiveRouteFeedbackCaptured(best,freshness,key,channel){
+    const detail={
+      source:'active-route-strip',
+      channel:channel||'unknown',
+      route_id:String(best?.id||''),
+      route_label:String(best?.name||FALLBACK_LABEL),
+      route_state:nodeStatus(best),
+      freshness_state:String(freshness?.state||'unknown'),
+      freshness_label:String(freshness?.label||'Route inventory needs review'),
+      freshness_summary:String(freshness?.summary||''),
+      route_policy:routePolicyLine(best),
+      feedback_key:key,
+      no_paid_routes_started:true,
+      provider_secrets_stored:false,
+      raw_prompt_stored:false,
+      raw_response_stored:false
+    };
+    w.__MimirLastActiveRouteFeedback=detail;
+    w.dispatchEvent(new CustomEvent('mmir-active-route-feedback-captured',{detail}));
+  }
   function refreshLabel(freshness){
     return freshness?.state==='degraded'?'Refresh route inventory':'Recheck route inventory';
   }
@@ -211,7 +231,7 @@
       lane:'L1 Frontend UX',
       backlogHint:'active-route-strip-feedback',
       openInbox:true
-    })){rememberActiveRouteFeedbackKey(key);render();return true;}
+    })){rememberActiveRouteFeedbackKey(key);emitActiveRouteFeedbackCaptured(best,freshness,key,'runtime-bridge');render();return true;}
     const promptEl=q('#mimir-prompt');
     if(!promptEl)return false;
     promptEl.value=feedbackDraft(best,freshness);
@@ -220,6 +240,7 @@
     promptEl.focus();
     promptEl.scrollIntoView({block:'center',behavior:'smooth'});
     rememberActiveRouteFeedbackKey(key);
+    emitActiveRouteFeedbackCaptured(best,freshness,key,'prompt-prefill');
     render();
     return true;
   }
