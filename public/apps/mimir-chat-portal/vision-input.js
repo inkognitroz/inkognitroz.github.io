@@ -1,5 +1,6 @@
 (function(){
-  const main=document.querySelector('.mimir-chat-main');
+  const p0Transcript=document.getElementById('p0-transcript');
+  const main=p0Transcript||document.querySelector('.mimir-chat-main');
   let fileEl=null;
   let questionEl=null;
   let previewEl=null;
@@ -14,7 +15,8 @@
   function setStatus(message,state){if(statusEl){statusEl.textContent=message||'';statusEl.dataset.state=state||'idle';}}
   function selectedModelLabel(){
     const select=document.getElementById('runtime-model');
-    return clean(select?.selectedOptions?.[0]?.textContent||select?.value||'',200);
+    const p0Model=document.querySelector('.p0-model-name');
+    return clean(select?.selectedOptions?.[0]?.textContent||select?.value||p0Model?.textContent||'',200);
   }
   function selectedModelRuntime(){
     const select=document.getElementById('runtime-model');
@@ -117,7 +119,7 @@
   }
   function sendMetadataToChat(){
     const plan=routePlan();
-    const prompt=document.getElementById('mimir-prompt');
+    const prompt=document.getElementById('p0-input')||document.getElementById('mimir-prompt');
     const question=clean(questionEl?.value,1000);
     if(!prompt)return;
     if(!plan.image){setStatus('Choose or paste an image first.','error');return;}
@@ -147,7 +149,7 @@
     if(document.getElementById('vision-input'))return;
     const details=document.createElement('details');
     details.id='vision-input';
-    details.className='mimir-provider-drawer vision-input';
+    details.className='mimir-provider-drawer vision-input'+(p0Transcript?' p0-vision-input':'');
     details.innerHTML=''+
       '<summary>+ Vision / Screenshots</summary>'+
       '<section class="mimir-dashboard" aria-labelledby="vision-input-title">'+
@@ -168,7 +170,8 @@
         '</div>'+
       '</section>';
     const settings=document.getElementById('backend-settings');
-    main.insertBefore(details,settings||null);
+    if(p0Transcript)main.prepend(details);
+    else main.insertBefore(details,settings||null);
     fileEl=document.getElementById('vision-image-file');
     questionEl=document.getElementById('vision-question');
     previewEl=document.getElementById('vision-preview');

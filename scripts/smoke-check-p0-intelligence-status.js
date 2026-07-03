@@ -13,7 +13,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260702-demo-consent-boot-v1';
+const expectedShellVersion = '20260702-screenshot-context-v2';
 
 requireIncludes(shell, "const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';", 'P0 shell must use the read-only intelligence scorecard endpoint.');
 requireIncludes(shell, "const NODES_COMPACT_PATH='/nodes?compact=1';", 'P0 shell must use the compact node inventory endpoint for connected intelligence counts.');

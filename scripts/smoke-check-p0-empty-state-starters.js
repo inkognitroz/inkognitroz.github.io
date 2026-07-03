@@ -14,7 +14,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260702-demo-consent-boot-v1';
+const expectedShellVersion = '20260702-screenshot-context-v2';
 const expectedCssVersion = '20260624-continuation-action-v1';
 
 requireIncludes(

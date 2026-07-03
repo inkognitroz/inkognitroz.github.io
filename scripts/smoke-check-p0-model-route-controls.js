@@ -235,7 +235,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260702-demo-consent-boot-v1',
+  'p0-chat-shell.js?v=20260702-screenshot-context-v2',
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
 requireIncludes(
@@ -245,7 +245,7 @@ requireIncludes(
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260702-demo-consent-boot-v1"',
+  '"p0-chat-shell.js": "20260702-screenshot-context-v2"',
   'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(

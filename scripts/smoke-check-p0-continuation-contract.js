@@ -23,7 +23,7 @@ requireIncludes(shell, "captureInteraction('continuation_requested'", 'Continue 
 requireIncludes(shell, 'continuationSource:truncated?(gatewayContinuationContract(data)?.policy_version||', 'Updated swarm messages must preserve continuation source metadata.');
 requireIncludes(shell, 'Trykk Fortsett svaret', 'Visible truncation guard must point users to the plain-language continue action.');
 
-const expectedShellVersion = '20260702-demo-consent-boot-v1';
+const expectedShellVersion = '20260702-screenshot-context-v2';
 const expectedCssVersion = '20260624-continuation-action-v1';
 requireIncludes(shell, `const P0_RUNTIME_VERSION='${expectedShellVersion}'`, 'P0 runtime version must stay cache-busted after continuation and intelligence-status changes.');
 requireIncludes(html, `p0-chat-shell.js?v=${expectedShellVersion}`, 'Public page must cache-bust the P0 runtime after continuation action changes.');

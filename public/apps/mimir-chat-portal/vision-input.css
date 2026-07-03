@@ -3,6 +3,62 @@
   gap: 10px;
 }
 
+#p0-transcript .p0-vision-input {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 0 16px;
+  border: 1px solid rgba(16, 163, 127, 0.22);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+#p0-transcript .p0-vision-input > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+#p0-transcript .p0-vision-input > summary::-webkit-details-marker {
+  display: none;
+}
+
+#p0-transcript .p0-vision-input .mimir-dashboard {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-top: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+#p0-transcript .p0-vision-input .dashboard-heading,
+#p0-transcript .p0-vision-input .workflow-builder-row,
+#p0-transcript .p0-vision-input .workflow-builder-actions {
+  display: grid;
+  gap: 10px;
+}
+
+#p0-transcript .p0-vision-input .workflow-builder-actions {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+#p0-transcript .p0-vision-input .eyebrow {
+  margin: 0 0 4px;
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#p0-transcript .p0-vision-input h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
 .vision-input-body label {
   display: grid;
   gap: 5px;

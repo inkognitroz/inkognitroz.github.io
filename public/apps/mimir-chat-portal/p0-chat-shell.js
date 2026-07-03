@@ -57,7 +57,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260702-demo-consent-boot-v1';
+  const P0_RUNTIME_VERSION='20260702-screenshot-context-v2';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3734,6 +3734,7 @@
       menuButton('verified-calculator','Verified calculator','Calculate first, then ask active routes with proof.')+
       menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
       menuButton('verified-source','Verified source','Use pasted facts as grounding before active routes answer.')+
+      menuButton('screenshot-context','Add screenshot','Attach image metadata locally; raw image stays in this browser until a trusted multimodal route is proven.')+
       menuSeparator()+
       menuSection('Improve MMIR')+
       '<div class="p0-menu-note">Feedback may be logged after sanitization to improve MMIR. Do not paste secrets.</div>'+
@@ -4856,6 +4857,57 @@
     return false;
   }
 
+  function loadPortalStyleOnce(id,href){
+    if(document.getElementById(id))return;
+    const link=document.createElement('link');
+    link.id=id;
+    link.rel='stylesheet';
+    link.href=href;
+    document.head.appendChild(link);
+  }
+
+  function loadPortalScriptOnce(id,src){
+    return new Promise(resolve=>{
+      const existing=document.getElementById(id);
+      if(existing){
+        if(existing.dataset.loaded==='true')resolve();
+        else existing.addEventListener('load',()=>resolve(),{once:true});
+        return;
+      }
+      const script=document.createElement('script');
+      script.id=id;
+      script.src=src;
+      script.async=false;
+      script.onload=()=>{script.dataset.loaded='true';resolve();};
+      script.onerror=()=>resolve();
+      document.body.appendChild(script);
+    });
+  }
+
+  function openScreenshotContext(){
+    closeMenus();
+    status('Opening screenshot context...','loading');
+    routeStatus('Screenshot context · local preview only · raw image not sent','hosted');
+    loadPortalStyleOnce('mmir-vision-input-css','./apps/mimir-chat-portal/vision-input.css?v=20260702-screenshot-context-v2');
+    loadPortalScriptOnce('mmir-vision-input-js','./apps/mimir-chat-portal/vision-input.js?v=20260702-screenshot-context-v2').then(()=>{
+      const panel=document.getElementById('vision-input');
+      if(panel){
+        panel.open=true;
+        if(location.hash!=='#vision-input'){
+          location.hash='vision-input';
+        }
+        panel.scrollIntoView({block:'nearest'});
+        status('Screenshot context ready.','ready');
+        routeStatus('Screenshot context · metadata-only until trusted multimodal route is proven','hosted');
+        document.getElementById('vision-question')?.focus();
+        return;
+      }
+      status('Screenshot context unavailable.','error');
+      routeStatus('Screenshot context failed to load','error');
+    });
+    return true;
+  }
+
   function handleMenuAction(action){
     const actionId=String(action||'');
     if(actionId.startsWith('pin-toolbar-tool:')||actionId.startsWith('unpin-toolbar-tool:')){
@@ -5004,6 +5056,9 @@
     }
     if(action==='verified-source'){
       return runVerifiedTool('manual-source');
+    }
+    if(action==='screenshot-context'){
+      return openScreenshotContext();
     }
     if(action==='boost-answer-live'){
       return boostAnswer();
