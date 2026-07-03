@@ -292,8 +292,8 @@ if (managedNode?.status === "online")
 
 requireText(
   indexPath,
-  "Trusted AI Control Plane",
-  "Homepage must state the MMIR control-plane category.",
+  "Chat-first Supergeni entry",
+  "Homepage must state the public chat-first entry category.",
 );
 requireText(
   indexPath,
