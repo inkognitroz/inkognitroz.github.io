@@ -81,6 +81,21 @@ requireIncludes(
 );
 requireIncludes(
   renderAddMenu,
+  "menuSection('Bilde')",
+  '+ menu must expose the photo/library entrypoint as a compact section.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('take-photo-local','Ta bilde'",
+  '+ menu must expose camera capture without a visible toolbar button.'
+);
+requireIncludes(
+  renderAddMenu,
+  "menuButton('choose-photo-local','Velg fra bibliotek'",
+  '+ menu must expose device photo library without a visible toolbar button.'
+);
+requireIncludes(
+  renderAddMenu,
   "menuButton('ask-all-active','Ask all active'",
   '+ menu must expose Ask all active without adding a toolbar button.'
 );
@@ -136,12 +151,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260625-compare-useful-evidence-v1',
+  'p0-chat-shell.js?v=20260703-media-picker-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260625-compare-useful-evidence-v1"',
+  '"p0-chat-shell.js": "20260703-media-picker-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

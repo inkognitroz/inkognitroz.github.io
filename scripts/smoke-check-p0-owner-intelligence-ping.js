@@ -88,12 +88,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260625-compare-useful-evidence-v1',
+  'p0-chat-shell.js?v=20260703-media-picker-v1',
   'Public page must cache-bust the owner ping runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260625-compare-useful-evidence-v1"',
+  '"p0-chat-shell.js": "20260703-media-picker-v1"',
   'Asset manifest must track the owner ping runtime version.'
 );
 

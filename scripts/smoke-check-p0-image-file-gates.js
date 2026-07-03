@@ -39,6 +39,52 @@ for (const label of p0ForbiddenLabels) {
   forbidIncludes(p0Runtime, label, `P0 plus/model toolbar must not expose unproven media capability: ${label}`);
 }
 
+requireIncludes(
+  p0Runtime,
+  "menuSection('Bilde')",
+  '+ menu must expose the requested photo entrypoint as a guarded local media section.'
+);
+requireIncludes(
+  p0Runtime,
+  "menuButton('take-photo-local','Ta bilde'",
+  '+ menu must let mobile users open camera capture from the plus menu.'
+);
+requireIncludes(
+  p0Runtime,
+  "menuButton('choose-photo-local','Velg fra bibliotek'",
+  '+ menu must let users choose an image from the device library.'
+);
+requireIncludes(
+  p0Runtime,
+  'id="p0-photo-camera"',
+  'P0 shell must include a guarded camera file input.'
+);
+requireIncludes(
+  p0Runtime,
+  'capture="environment"',
+  'Camera picker should hint rear camera capture on mobile.'
+);
+requireIncludes(
+  p0Runtime,
+  'id="p0-photo-library"',
+  'P0 shell must include a guarded library file input.'
+);
+requireIncludes(
+  p0Runtime,
+  'raw_image_sent:false',
+  'P0 photo picker must record that raw images are not sent by the public shell.'
+);
+requireIncludes(
+  p0Runtime,
+  'no_server_upload:true',
+  'P0 photo picker must keep the selected image browser-local until a protected route exists.'
+);
+requireIncludes(
+  p0Runtime,
+  "append(\n      'assistant',\n      'Bildet er valgt fra '",
+  'P0 photo picker must acknowledge local selection in chat instead of silently doing nothing.'
+);
+
 forbidIncludes(
   html,
   './apps/mimir-chat-portal/image-boundary.js',
