@@ -67,10 +67,13 @@ requireIncludes(js, "input.addEventListener('change',handleModelChoiceChange)", 
 requireIncludes(js, 'compareRouteCoverageSummary(),', 'Compare feedback draft must include selected-versus-visible route coverage before best-answer evidence.');
 requireIncludes(js, 'lastCoverageMetadata=routeCoverageSummary(models);', 'Compare feedback must snapshot route coverage at comparison time.');
 requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a stable local evidence ID per comparison run.');
+requireIncludes(js, "let lastEvidenceCapturedAt='';", 'Compare feedback must track when comparison evidence was generated.');
 requireIncludes(js, 'function stableFingerprint(value){', 'Compare feedback must derive a short local fingerprint without storing raw prompt text.');
 requireIncludes(js, 'function evidenceSnapshot(prompt,profile,url,models){', 'Compare feedback must build evidence IDs from comparison-time prompt, route and model metadata.');
 requireIncludes(js, "lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));", 'Compare feedback must preserve the evidence ID from the comparison run.');
+requireIncludes(js, 'lastEvidenceCapturedAt=new Date().toISOString();', 'Compare feedback must preserve a comparison-time timestamp for demo triage.');
 requireIncludes(js, 'function evidenceSummary(){', 'Compare feedback draft must expose a local evidence summary.');
+requireIncludes(js, "compared at: '+(lastEvidenceCapturedAt||'not recorded')", 'Compare feedback evidence summary must include the comparison-time timestamp.');
 requireIncludes(js, 'local fingerprint only, raw prompt, responses and synthesis not stored', 'Compare feedback evidence summary must keep privacy boundaries explicit.');
 requireIncludes(js, "function comparisonFeedbackDraft(){", 'Compare panel must build a sanitized local feedback draft.');
 requireIncludes(js, "'@feedback Compare Live Models useful synthesis", 'Compare feedback draft must be explicit and command-routable.');
@@ -91,7 +94,7 @@ requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale syn
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
 
 const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260628-compare-selection-cap-v1';
+const expectedJsVersion = '20260703-compare-feedback-timestamp-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
