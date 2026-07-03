@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260625-compare-useful-evidence-v1';
+  const P0_RUNTIME_VERSION='20260703-media-picker-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -330,6 +330,7 @@
     factGuard:readBooleanPreference(FACT_GUARD_KEY,true),
     answerStyle:readAnswerStyle(),
     roleProfileId:readRoleProfileId(),
+    pendingMedia:null,
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{}),
     routeInventory:{
       activeRoutes:1,
@@ -3250,6 +3251,8 @@
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
           '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
+          '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
+          '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
           '<div class="p0-status-rail">'+
             '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
             '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
@@ -3330,6 +3333,8 @@
     document.getElementById('p0-add').addEventListener('click',(event)=>toggleMenu('add',event.currentTarget));
     document.getElementById('p0-model').addEventListener('click',(event)=>toggleMenu('model',event.currentTarget));
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
+    document.getElementById('p0-photo-camera')?.addEventListener('change',(event)=>handlePhotoPicked(event,'camera'));
+    document.getElementById('p0-photo-library')?.addEventListener('change',(event)=>handlePhotoPicked(event,'library'));
     document.getElementById('p0-feedback-capture')?.addEventListener('click',()=>openFeedbackInbox('feedback_capture_pill'));
     const mic=document.getElementById('p0-mic');
     updateVoiceButtonState(mic);
@@ -3456,6 +3461,84 @@
 
   function feedbackDraftPrefill(){
     return '@inkognitroz Feedback:\nWhat I tried:\nWhat felt wrong or confusing:\nWhat I expected instead:\nContext: '+feedbackDraftContextSummary();
+  }
+
+  function mediaSourceLabel(source){
+    return source==='camera'?'kamera':'bibliotek';
+  }
+
+  function formatFileSize(bytes){
+    const size=Number(bytes)||0;
+    if(size>=1048576)return (size/1048576).toFixed(size>=10485760?0:1)+' MB';
+    if(size>=1024)return Math.max(1,Math.round(size/1024))+' KB';
+    return size+' B';
+  }
+
+  function triggerPhotoPicker(source){
+    const input=document.getElementById(source==='camera'?'p0-photo-camera':'p0-photo-library');
+    if(!input){
+      status('Bildevalg er ikke tilgjengelig i denne nettleseren.','error');
+      routeStatus('Bildevalg utilgjengelig · ingen opplasting startet','error');
+      return false;
+    }
+    captureInteraction('media_picker_started',{source,raw_image_sent:false,no_server_upload:true});
+    input.value='';
+    closeMenus();
+    input.click();
+    status(source==='camera'?'Kamera åpnes...':'Bildefiler åpnes...','ready');
+    routeStatus('Bildevalg · lokalt i nettleseren · ikke sendt','hosted');
+    return true;
+  }
+
+  function handlePhotoPicked(event,source){
+    const input=event?.target;
+    const file=input?.files?.[0];
+    if(!file)return false;
+    if(!/^image\//i.test(file.type||'')){
+      status('Velg et bilde.','error');
+      routeStatus('Bilde avvist · feil filtype','error');
+      return false;
+    }
+    const maxBytes=12*1024*1024;
+    if(file.size>maxBytes){
+      status('Bildet er for stort for trygg demo. Velg et mindre bilde.','error');
+      routeStatus('Bilde avvist · maks 12 MB · ikke sendt','error');
+      return false;
+    }
+    const media={
+      source,
+      name:String(file.name||'bilde').slice(0,120),
+      type:String(file.type||'image/*').slice(0,80),
+      size_bytes:file.size,
+      size_label:formatFileSize(file.size),
+      raw_image_sent:false,
+      no_server_upload:true,
+      selected_at:new Date().toISOString()
+    };
+    state.pendingMedia=media;
+    captureInteraction('media_attachment_selected',{
+      source,
+      type:media.type,
+      size_bytes:media.size_bytes,
+      raw_image_sent:false,
+      no_server_upload:true
+    });
+    const inputEl=document.getElementById('p0-input');
+    if(inputEl&&!String(inputEl.value||'').trim()){
+      inputEl.value='Jeg har valgt et bilde fra '+mediaSourceLabel(source)+'. Hva kan du hjelpe meg å gjøre med bildet?';
+      autosizeInput();
+    }
+    append(
+      'assistant',
+      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nRåbildet er fortsatt bare lokalt i nettleseren og er ikke sendt til MMIR. Skriv hva du vil gjøre med bildet. Supergeni kan foreløpig bruke trygg metadata/brief, og sender først råbilde når en beskyttet vision-route er aktiv.',
+      'MMIR bildevalg',
+      'Bilde valgt · lokalt i nettleseren · raw_image_sent:false',
+      {variant:'media',actions:false}
+    );
+    status('Bilde valgt lokalt.','ready');
+    routeStatus('Bilde klart · lokalt · ikke sendt','hosted');
+    inputEl?.focus();
+    return true;
   }
 
   function handleEmptyStarterAction(action){
@@ -3711,6 +3794,10 @@
       menuButton('model-health','Model health','Show active hosted, local and candidate route status.')+
       menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
       menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
+      menuSeparator()+
+      menuSection('Bilde')+
+      menuButton('take-photo-local','Ta bilde','Åpner kamera eller bildevelger. Råbildet blir lokalt til trygg vision-route er aktiv.',{badge:'Lokal'})+
+      menuButton('choose-photo-local','Velg fra bibliotek','Velg et bilde fra enheten. Ingen opplasting starter automatisk.',{badge:'Lokal'})+
       menuSeparator()+
       menuSection('Many AI')+
       menuButton('intelligence-status','Intelligence status','Show live connected routes, capacity and source mix. Read-only, no provider call.')+
@@ -4761,6 +4848,12 @@
     if(action==='role-profile-menu'){
       renderRoleProfileMenu();
       return true;
+    }
+    if(action==='take-photo-local'){
+      return triggerPhotoPicker('camera');
+    }
+    if(action==='choose-photo-local'){
+      return triggerPhotoPicker('library');
     }
     if(actionId.startsWith('set-role-profile:')){
       setRoleProfile(actionId.slice('set-role-profile:'.length));

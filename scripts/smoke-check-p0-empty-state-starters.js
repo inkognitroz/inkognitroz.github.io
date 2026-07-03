@@ -14,8 +14,8 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260625-compare-useful-evidence-v1';
-const expectedCssVersion = '20260624-continuation-action-v1';
+const expectedShellVersion = '20260703-media-picker-v1';
+const expectedCssVersion = '20260703-media-picker-v1';
 
 requireIncludes(
   shell,

@@ -827,6 +827,10 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   opacity: 0.65;
 }
 
+.p0-file-input-hidden {
+  display: none !important;
+}
+
 .p0-menu {
   background: #ffffff;
   border: 1px solid #e5e7eb;
