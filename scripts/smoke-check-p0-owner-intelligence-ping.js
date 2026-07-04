@@ -88,12 +88,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-route-context-feedback-v1',
+  'p0-chat-shell.js?v=20260704-demo-learning-wide-v1',
   'Public page must cache-bust the owner ping runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-route-context-feedback-v1"',
+  '"p0-chat-shell.js": "20260704-demo-learning-wide-v1"',
   'Asset manifest must track the owner ping runtime version.'
 );
 

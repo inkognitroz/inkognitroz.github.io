@@ -94,8 +94,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'Demo-testmodus: MMIR kan lagre avgrensede og redigerte chatutdrag',
-  'P0 shell must explain demo transcript capture in the chat, not hide it in background telemetry.'
+  'DEMO: MMIR samler inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst',
+  'P0 shell must explain wide demo learning capture in the chat, not hide it in background telemetry.'
 );
 requireIncludes(
   shell,
@@ -116,6 +116,31 @@ requireIncludes(
   shell,
   "function sendDemoTranscript(reason='conversation_update',metadata={})",
   'P0 shell must send bounded demo/user-test transcript context for product learning.'
+);
+requireIncludes(
+  shell,
+  'function demoLearningClientContext()',
+  'P0 shell must attach bounded browser/device context to demo transcript capture for diagnosis.'
+);
+requireIncludes(
+  shell,
+  "capture_scope:['conversation','feedback','clicks','route_receipts','sources','latency','browser_context','device_context']",
+  'P0 shell must declare the visible demo learning capture scope.'
+);
+requireIncludes(
+  shell,
+  '.slice(-40)',
+  'P0 shell must send the full bounded demo conversation window, not only the last few messages.'
+);
+requireIncludes(
+  shell,
+  "const receipt=redactDemoTranscriptText(message.receipt||'',1200);",
+  'P0 shell must include redacted route receipts in demo learning so failures can be diagnosed.'
+);
+requireIncludes(
+  shell,
+  ".replace(DEMO_EMAIL_RE,'[redacted-epost]')",
+  'P0 shell must redact common PII before demo transcript upload.'
 );
 requireIncludes(
   shell,
@@ -674,12 +699,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-route-context-feedback-v1',
+  'p0-chat-shell.js?v=20260704-demo-learning-wide-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-route-context-feedback-v1"',
+  '"p0-chat-shell.js": "20260704-demo-learning-wide-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
