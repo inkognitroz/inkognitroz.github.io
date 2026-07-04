@@ -27,6 +27,23 @@
   accent-color: var(--mimir-accent, #10a37f);
 }
 
+.comparison-model-choice-locked {
+  opacity: 0.62;
+}
+
+.comparison-model-choice-locked span::after {
+  content: " · limit reached";
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+.comparison-selection-note {
+  margin: -2px 0 0;
+  color: var(--mimir-muted, #6b7280);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .comparison-actions {
   display: flex;
   flex-wrap: wrap;
