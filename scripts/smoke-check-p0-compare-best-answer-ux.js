@@ -203,6 +203,26 @@ requireText(
 );
 requireText(
   runtime,
+  "message.compareUsefulEvidenceId=evidenceId;",
+  'Compare useful feedback capture must persist the local evidence ID on the answer message'
+);
+requireText(
+  runtime,
+  "data-evidence-id=\"'+safeAttr(compareUsefulEvidence)+'\"",
+  'Saved compare useful actions must expose the metadata-only evidence ID for demo reconciliation'
+);
+requireText(
+  runtime,
+  "Useful signal saved. Evidence ID: '+compareUsefulEvidence+'. Raw prompt and answer not stored.",
+  'Saved compare useful actions must describe the evidence ID without exposing raw prompt or answer content'
+);
+requireText(
+  runtime,
+  "'Useful signal saved to Feedback Inbox. Evidence ID: '+evidenceId+'.'",
+  'Compare useful feedback status must surface the same local evidence ID after capture'
+);
+requireText(
+  runtime,
   'function stableLocalFingerprint(value)',
   'Compare useful feedback must derive local fingerprints without storing raw prompt or answer text'
 );
