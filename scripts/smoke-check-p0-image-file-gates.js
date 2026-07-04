@@ -71,13 +71,23 @@ requireIncludes(
 );
 requireIncludes(
   p0Runtime,
-  'raw_image_sent:false',
-  'P0 photo picker must record that raw images are not sent by the public shell.'
+  'raw_image_sent_to_gateway:false',
+  'P0 photo picker must record that raw images are not sent until the user submits the chat message.'
 );
 requireIncludes(
   p0Runtime,
-  'no_server_upload:true',
-  'P0 photo picker must keep the selected image browser-local until a protected route exists.'
+  'provider_called:false',
+  'P0 photo picker must keep provider calls blocked until a protected vision node is live.'
+);
+requireIncludes(
+  p0Runtime,
+  'function mediaChatContent(prompt,media)',
+  'P0 photo picker must convert selected images into a multimodal chat payload for the protected gateway boundary.'
+);
+requireIncludes(
+  p0Runtime,
+  "{type:'image_url',image_url:{url:media.data_url}}",
+  'P0 photo picker must send selected images as image_url content only through the chat payload boundary.'
 );
 requireIncludes(
   p0Runtime,
@@ -101,13 +111,13 @@ requireIncludes(
 );
 requireIncludes(
   p0Runtime,
-  'Bildeanalyse er ikke aktivert ennå.',
-  'P0 photo picker must tell users that real image analysis is not active before a protected vision route exists.'
+  'protected vision-boundary',
+  'P0 photo picker must tell users that selected images go through the protected vision-boundary.'
 );
 requireIncludes(
   p0Runtime,
   'Do not claim that you can see, analyze, edit, inspect, or describe the image.',
-  'P0 chat runtime must guard hosted prompts against false image-analysis claims when raw_image_sent:false.'
+  'P0 chat runtime must guard hosted prompts against false image-analysis claims before a vision node is promoted.'
 );
 forbidIncludes(
   p0Runtime,

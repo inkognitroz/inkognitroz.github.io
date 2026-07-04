@@ -14,7 +14,7 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260704-followup-context-v1';
+const expectedShellVersion = '20260704-image-attachment-boundary-v1';
 const expectedCssVersion = '20260704-image-feedback-v1';
 
 requireIncludes(
