@@ -32,6 +32,11 @@ requireIncludes(dashboard, 'if(!Number.isFinite(at.getTime()))return true;', 'No
 requireIncludes(dashboard, 'function nodeHandoffSavedAge(handoff)', 'Node handoff resume must show when the local handoff was saved.');
 requireIncludes(dashboard, "return 'saved just now';", 'Fresh handoff resume copy must classify just-saved handoffs.');
 requireIncludes(dashboard, "' minute'+(minutes===1?'':'s')+' ago'", 'Handoff resume freshness must be readable at minute granularity.');
+requireIncludes(dashboard, 'function handoffResumeGate(handoff)', 'Node handoff resume must render the saved blocking health gate.');
+requireIncludes(dashboard, "gate_label:String(payload?.gate_label||'').slice(0,80)", 'Persisted handoff gate labels must be length bounded.');
+requireIncludes(dashboard, "gate_detail:String(payload?.gate_detail||'').slice(0,180)", 'Persisted handoff gate details must be length bounded.');
+requireIncludes(dashboard, 'data-node-handoff-gate', 'Handoff actions must persist the next health gate.');
+requireIncludes(dashboard, 'data-node-handoff-detail', 'Handoff actions must persist the gate explanation.');
 requireIncludes(dashboard, "safe(freshness)+' / no_paid_routes_started:true", 'Handoff resume security proof must include local freshness before safety flags.');
 requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
 requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
@@ -41,11 +46,12 @@ requireIncludes(dashboard, "record?.('node-handoff-resume-action'", 'Node handof
 requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff resume banner must render in dashboard states.');
 
 requireIncludes(css, '.node-handoff-resume {', 'Node handoff resume banner must have dedicated styles.');
+requireIncludes(css, '.node-handoff-gate {', 'Node handoff resume gate proof must have dedicated styles.');
 requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff resume banner must style pending state.');
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260625-node-handoff-freshness-v1';
+const expectedVersion = '20260704-node-handoff-gate-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }

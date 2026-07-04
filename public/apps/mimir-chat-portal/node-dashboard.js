@@ -58,6 +58,8 @@
     try{
       localStorage.setItem(nodeHandoffKey(),JSON.stringify({
         ...payload,
+        gate_label:String(payload?.gate_label||'').slice(0,80),
+        gate_detail:String(payload?.gate_detail||'').slice(0,180),
         at:new Date().toISOString(),
         no_paid_routes_started:true,
         provider_secrets_stored:false,
@@ -118,6 +120,12 @@
     if(action==='pair-browser')return {state:'checking',title:'Pairing handoff saved',detail:'This browser will retry local pairing before model proof or remote handoff.',primary:'Pair / refresh',target:'#node-dashboard'};
     return {state:'checking',title:'Node handoff saved',detail:'Last selected stage '+stage+' is preserved for this workspace without raw prompts or responses.',primary:'Refresh node health',target:'#node-dashboard'};
   }
+  function handoffResumeGate(handoff){
+    const label=String(handoff?.gate_label||'').trim();
+    const detail=String(handoff?.gate_detail||'').trim();
+    if(!label&&!detail)return '';
+    return '<p class="node-handoff-gate"><strong>'+safe(label||'Saved health gate')+'</strong><small>'+safe(detail||'Refresh node health to verify this saved step before continuing.')+'</small></p>';
+  }
   function nodeHandoffIsStale(handoff){
     const at=new Date(String(handoff?.at||''));
     if(!Number.isFinite(at.getTime()))return true;
@@ -143,7 +151,7 @@
     const isHash=target.startsWith('#');
     const freshness=nodeHandoffSavedAge(handoff);
     return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
-      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p><small>'+safe(freshness)+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
+      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p>'+handoffResumeGate(handoff)+'<small>'+safe(freshness)+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
       '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
@@ -345,7 +353,8 @@
   function renderNodeHandoff(plan,tunnel){
     const target=plan.target||'#node-dashboard';
     const isHash=target.startsWith('#');
-    const actionAttrs=' data-node-handoff-action="'+safe(plan.action)+'" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="'+safe(target)+'" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'"';
+    const gate=plan.steps.find(step=>!step.ready)||{label:'Proof/chat'};
+    const actionAttrs=' data-node-handoff-action="'+safe(plan.action)+'" data-node-handoff-stage="'+safe(plan.stage)+'" data-node-handoff-target="'+safe(target)+'" data-node-handoff-device="'+safe(plan.device.label)+'" data-node-handoff-model="'+safe(plan.model)+'" data-node-handoff-gate="'+safe(gate.label)+'" data-node-handoff-detail="'+safe(plan.detail)+'"';
     const access=tunnelAccessSummary(plan,tunnel);
     const pairing=remotePairingSummary();
     const primary=isHash
@@ -525,7 +534,9 @@
           stage:control.getAttribute('data-node-handoff-stage')||'unknown',
           target,
           device:control.getAttribute('data-node-handoff-device')||'device',
-          model:control.getAttribute('data-node-handoff-model')||''
+          model:control.getAttribute('data-node-handoff-model')||'',
+          gate_label:control.getAttribute('data-node-handoff-gate')||'',
+          gate_detail:control.getAttribute('data-node-handoff-detail')||''
         };
         storeNodeHandoff(payload);
         window.MimirActivationTelemetry?.record?.('node-handoff-action',{

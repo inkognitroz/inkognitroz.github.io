@@ -204,6 +204,16 @@
   margin: 4px 0;
 }
 
+.node-handoff-gate {
+  border-left: 3px solid rgba(15, 118, 110, 0.35);
+  padding-left: 8px;
+}
+
+.node-handoff-gate strong,
+.node-handoff-gate small {
+  display: block;
+}
+
 .node-resume-banner p {
   margin: 4px 0;
 }
