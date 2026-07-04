@@ -629,6 +629,31 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function feedbackPreviousTurnContext()',
+  'Implicit and explicit feedback must link complaints to the previous user/assistant turn.'
+);
+requireIncludes(
+  shell,
+  'linked_previous_turn:Boolean(context)',
+  'Feedback inbox items must expose whether a previous turn was linked.'
+);
+requireIncludes(
+  shell,
+  'function hostedConversationMessages(prompt,systemPrompt)',
+  'Hosted chat payloads must carry bounded conversation context instead of only the latest prompt.'
+);
+requireIncludes(
+  shell,
+  'messages:hostedConversationMessages(prompt,systemPrompt)',
+  'Hosted and compare payloads must use the bounded conversation-history helper.'
+);
+requireIncludes(
+  shell,
+  'dette\\s+er\\s+for\\s+dårlig',
+  'P0 shell must detect plain Norwegian answer-quality complaints as feedback.'
+);
+requireIncludes(
+  shell,
   "routeStatus('Owner intake · code not stored · no paid route','ready');",
   'P0 shell must use subtle green status for owner intake instead of adding visible controls.'
 );
@@ -649,12 +674,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-compare-useful-evidence-id-v1',
+  'p0-chat-shell.js?v=20260704-route-context-feedback-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-compare-useful-evidence-id-v1"',
+  '"p0-chat-shell.js": "20260704-route-context-feedback-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

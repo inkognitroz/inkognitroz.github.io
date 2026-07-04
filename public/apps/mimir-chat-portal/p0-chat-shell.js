@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-compare-useful-evidence-id-v1';
+  const P0_RUNTIME_VERSION='20260704-route-context-feedback-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -665,7 +665,8 @@
     const text=raw.toLowerCase();
     if(!raw||raw.length<8)return null;
     const productRelated=/\b(mmir|supergeni|boost|swarm|ask all|best answer|compare|debate|model health|model|models|modell|modeller|node|noder|local|lokal|connector|connect|koblet|koble|setup|install|knapp|meny|menu|toolbar|feedback|app|chatten|nettsiden|ui|ux|privacy|privat|route|rute)\b/i.test(raw);
-    const frictionLike=/\b(funker ikke|virker ikke|feil|bug|crash|trøbbel|stuck|skjønner ikke|forvirr|vanskelig|treg|slow|truncat|avkutt|mangler|missing|finner ikke|kan ikke|hvor er|hvordan|hjelp|guide|savner|ønsker|burde|bør|må være|skulle hatt|not working|confusing|hard to|where is|how do i|i miss|wish|should)\b/i.test(raw);
+    const answerQualityComplaint=/\b(dette\s+er\s+for\s+dårlig|for\s+dårlig|dårlig\s+svar|ikke\s+bra\s+nok|helt\s+feil|bommet|latterlig|unyttig|svaret\s+er\s+feil|bad\s+answer|poor\s+answer|wrong\s+answer|not\s+good\s+enough)\b/i.test(raw);
+    const frictionLike=/\b(funker ikke|virker ikke|feil|bug|crash|trøbbel|stuck|skjønner ikke|forvirr|vanskelig|treg|slow|truncat|avkutt|mangler|missing|finner ikke|kan ikke|hvor er|hvordan|hjelp|guide|savner|ønsker|burde|bør|må være|skulle hatt|not working|confusing|hard to|where is|how do i|i miss|wish|should)\b/i.test(raw)||answerQualityComplaint;
     if(!productRelated&&!frictionLike)return null;
     let surface='general_chat';
     if(/\b(boost|ask all|swarm|compare|best answer|debate|diskusjon|debatt)\b/i.test(raw))surface='multi_model_tools';
@@ -673,14 +674,14 @@
     else if(/\b(model|models|modell|modeller|model health|picker|velg)\b/i.test(raw))surface='model_choice';
     else if(/\b(knapp|meny|menu|toolbar|\+|button)\b/i.test(raw))surface='composer_tools';
     else if(/\b(feedback|tilbakemelding|forslag|issue)\b/i.test(raw))surface='feedback_flow';
-    else if(/\b(truncat|avkutt|kortet|stoppet)\b/i.test(raw))surface='answer_quality';
+    else if(/\b(truncat|avkutt|kortet|stoppet|dårlig|feil svar|ikke bra nok|bommet|latterlig|bad answer|wrong answer|poor answer)\b/i.test(raw))surface='answer_quality';
     else if(/\b(privat|privacy|secret|token|api key|sikkerhet)\b/i.test(raw))surface='trust_privacy';
     let kind='question_or_guidance';
     if(/\b(savner|ønsker|burde|bør|må være|skulle hatt|i miss|wish|should)\b/i.test(raw))kind='feature_or_ux_request';
-    if(/\b(funker ikke|virker ikke|feil|bug|crash|trøbbel|stuck|treg|slow|truncat|avkutt|not working|broken|failed)\b/i.test(raw))kind='bug_or_failure';
+    if(/\b(funker ikke|virker ikke|feil|bug|crash|trøbbel|stuck|treg|slow|truncat|avkutt|dårlig|ikke bra nok|bommet|latterlig|not working|broken|failed|bad answer|wrong answer|poor answer)\b/i.test(raw))kind='bug_or_failure';
     if(/\b(skjønner ikke|forvirr|vanskelig|confusing|hard to|hvor er|hvordan|where is|how do i)\b/i.test(raw))kind=kind==='question_or_guidance'?'confusion_or_guidance':kind;
     const severity=kind==='bug_or_failure'?'p2-bug':(kind==='feature_or_ux_request'?'p3-ux':'p5-guidance');
-    const autoDraft=productRelated&&kind!=='question_or_guidance';
+    const autoDraft=(productRelated||answerQualityComplaint)&&kind!=='question_or_guidance';
     return {
       kind,
       surface,
@@ -699,6 +700,35 @@
       .slice(0,1600)
       .replace(OWNER_SECRETISH_RE,'[redacted-secret-like-value]')
       .replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]');
+  }
+
+  function feedbackPreviousTurnContext(){
+    const messages=Array.isArray(state.messages)?state.messages:[];
+    const prior=[...messages].reverse();
+    const previousAssistant=prior.find(message=>message&&message.role==='assistant'&&String(message.content||'').trim()&&!/^(Thinking|Comparing active routes|Synthesizing best answer|Response stopped)/i.test(String(message.content||'')))||null;
+    const previousUser=prior.find(message=>message&&message.role==='user'&&String(message.content||'').trim())||null;
+    if(!previousAssistant&&!previousUser)return null;
+    return {
+      previous_user: previousUser ? redactOwnerSuggestionText(previousUser.content).slice(0,700) : '',
+      previous_assistant: previousAssistant ? redactOwnerSuggestionText(previousAssistant.content).slice(0,900) : '',
+      previous_assistant_label: previousAssistant ? String(previousAssistant.label||'').slice(0,80) : '',
+      previous_receipt: previousAssistant ? redactOwnerSuggestionText(previousAssistant.receipt||'').slice(0,500) : ''
+    };
+  }
+
+  function feedbackSuggestionWithContext(suggestion,context=feedbackPreviousTurnContext()){
+    const base=redactOwnerSuggestionText(suggestion);
+    if(!base||!context)return base;
+    const lines=[
+      base,
+      '',
+      '[linked previous turn]',
+      context.previous_user?('previous_user: '+context.previous_user):'',
+      context.previous_assistant?('previous_assistant: '+context.previous_assistant):'',
+      context.previous_assistant_label?('previous_assistant_label: '+context.previous_assistant_label):'',
+      context.previous_receipt?('previous_receipt: '+context.previous_receipt):''
+    ].filter(Boolean);
+    return redactOwnerSuggestionText(lines.join('\n'));
   }
 
   function cleanTelemetryKey(key){
@@ -1461,7 +1491,8 @@
   }
 
   function localImplicitFeedbackItem(prompt,signal){
-    const suggestion=redactOwnerSuggestionText(prompt);
+    const context=feedbackPreviousTurnContext();
+    const suggestion=feedbackSuggestionWithContext(prompt,context);
     if(!suggestion)return null;
     return {
       id:'fb_implicit_'+telemetryEventId().replace(/^evt_/,''),
@@ -1472,6 +1503,8 @@
       priority:signal.severity||'p5-guidance',
       title:'Implicit chat feedback · '+(signal.surface||'general_chat'),
       suggestion,
+      linked_previous_turn:Boolean(context),
+      previous_turn:context||undefined,
       classification:{lane:signal.surface||'general_chat',repo:'inkognitroz.github.io',backlog_hint:'user-test-friction'},
       no_paid_routes_started:true,
       provider_called:false,
@@ -1480,6 +1513,7 @@
   }
 
   function queueImplicitFeedbackFromChat(prompt,signal){
+    const context=feedbackPreviousTurnContext();
     const item=localImplicitFeedbackItem(prompt,signal);
     const localId=item?.id||'';
     if(item)saveFeedbackInboxItem(item);
@@ -1492,12 +1526,13 @@
       utterance_chars:signal.chars,
       word_count:signal.words,
       lang:signal.lang,
+      linked_previous_turn:Boolean(context),
       local_feedback_count:feedbackInboxItems().length
     });
     if(!signal.auto_draft)return;
     submitFeedbackMentionCommand({
       target:'feedback',
-      suggestion:redactOwnerSuggestionText(prompt),
+      suggestion:feedbackSuggestionWithContext(prompt,context),
       source:'mmir-chat-implicit-feedback',
       implicit_feedback:true
     }).then(plan=>{
@@ -1510,7 +1545,9 @@
         status:'submitted',
         priority:signal.severity||'p5-guidance',
         title:'Implicit feedback synced to intake',
-        suggestion:redactOwnerSuggestionText(prompt),
+        suggestion:feedbackSuggestionWithContext(prompt,context),
+        linked_previous_turn:Boolean(context),
+        previous_turn:context||undefined,
         classification:{lane:plan?.draft?.classification?.lane||signal.surface||'general_chat',repo:'inkognitroz.github.io',backlog_hint:'user-test-friction'},
         no_paid_routes_started:true,
         provider_called:false,
@@ -1630,6 +1667,9 @@
   async function handleFeedbackMentionCommand(prompt,input){
     const parsed=feedbackMentionCommand(prompt);
     if(!parsed)return false;
+    const context=feedbackPreviousTurnContext();
+    const intakeSuggestion=feedbackSuggestionWithContext(parsed.suggestion,context);
+    const intakeParsed={...parsed,suggestion:intakeSuggestion};
     closeMenus();
     append('user','Feedback '+('@'+parsed.target)+': '+parsed.suggestion,'You','',{actions:false});
     if(input){
@@ -1648,7 +1688,9 @@
       status:'pending_server_intake',
       priority:'p3-ux',
       title:'Feedback pending server intake',
-      suggestion:parsed.suggestion,
+      suggestion:intakeSuggestion,
+      linked_previous_turn:Boolean(context),
+      previous_turn:context||undefined,
       classification:{lane:'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-pending'},
       no_paid_routes_started:true,
       provider_called:false,
@@ -1656,7 +1698,7 @@
     });
     markFeedbackCaptured('feedback_local_draft');
     try{
-      const plan=await submitFeedbackMentionCommand(parsed);
+      const plan=await submitFeedbackMentionCommand(intakeParsed);
       removeFeedbackInboxItem(localDraftId);
       saveFeedbackInboxItem(plan?.inbox_item||{
         id:'fb_synced_'+telemetryEventId().replace(/^evt_/,''),
@@ -1666,7 +1708,9 @@
         status:'submitted',
         priority:'p3-ux',
         title:'Feedback synced to intake',
-        suggestion:parsed.suggestion,
+        suggestion:intakeSuggestion,
+        linked_previous_turn:Boolean(context),
+        previous_turn:context||undefined,
         classification:{lane:plan?.draft?.classification?.lane||'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-synced'},
         no_paid_routes_started:true,
         provider_called:false,
@@ -1693,7 +1737,9 @@
         status:'local_fallback',
         priority:'p3-ux',
         title:'Feedback local fallback',
-        suggestion:parsed.suggestion,
+        suggestion:intakeSuggestion,
+        linked_previous_turn:Boolean(context),
+        previous_turn:context||undefined,
         classification:{lane:'L1 Frontend UX',repo:'inkognitroz.github.io',backlog_hint:'feedback-intake-offline'},
         no_paid_routes_started:true,
         provider_called:false,
@@ -5616,6 +5662,37 @@
     return (Array.isArray(data?.route_attempts)?data.route_attempts:[]).some(responseIsTruncated);
   }
 
+  function chatPayloadContent(value,max=1800){
+    return String(value||'')
+      .replace(/\r/g,'')
+      .replace(/\n{4,}/g,'\n\n\n')
+      .trim()
+      .slice(0,max);
+  }
+
+  function hostedConversationMessages(prompt,systemPrompt){
+    const history=(Array.isArray(state.messages)?state.messages:[])
+      .filter(message=>message&&(message.role==='user'||message.role==='assistant'))
+      .filter(message=>!message.command&&!message.showOsChoices&&message.variant!=='install')
+      .filter(message=>{
+        const content=String(message.content||'').trim();
+        if(!content)return false;
+        if(message.role==='assistant'&&/^(Thinking|Comparing active routes|Synthesizing best answer|Opening Feedback Inbox|Registrerer feedback|Response stopped)/i.test(content))return false;
+        return true;
+      })
+      .map(message=>({
+        role:message.role,
+        content:chatPayloadContent(message.content,message.role==='assistant'?1600:1100)
+      }));
+    const lastUserIndex=history.map(message=>message.role).lastIndexOf('user');
+    if(lastUserIndex>=0)history.splice(lastUserIndex,1);
+    return [
+      {role:'system',content:systemPrompt},
+      ...history.slice(-8),
+      {role:'user',content:chatPayloadContent(prompt,1800)}
+    ];
+  }
+
   function hostedPayload(prompt,model=defaultHostedModel()){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
@@ -5627,10 +5704,7 @@
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.';
     return {
       model:modelId,
-      messages:[
-        {role:'system',content:systemPrompt},
-        {role:'user',content:prompt}
-      ],
+      messages:hostedConversationMessages(prompt,systemPrompt),
       stream:false,
       temperature:0.7,
       max_tokens:answerTokenBudget()
@@ -5781,12 +5855,10 @@
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, prefer the verified/fresher route and say when verification is needed.'
       : '';
+    const systemPrompt='You are Supergeni inside MMIR Best Answer. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Keep route/source/privacy proof in receipts/status, not in the main answer unless asked.';
     return {
       model:'supergeni',
-      messages:[
-        {role:'system',content:'You are Supergeni inside MMIR Best Answer. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Keep route/source/privacy proof in receipts/status, not in the main answer unless asked.'},
-        {role:'user',content:prompt}
-      ],
+      messages:hostedConversationMessages(prompt,systemPrompt),
       stream:false,
       temperature:0.4,
       max_tokens:answerTokenBudget()
