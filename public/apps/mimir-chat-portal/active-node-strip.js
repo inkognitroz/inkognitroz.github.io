@@ -162,16 +162,21 @@
     const hidden=inventory.visible-displayedCount;
     return '<div class="mmir-active-node-overflow"><p>Showing '+safe(displayedCount)+' of '+safe(inventory.visible)+' visible routes here. '+safe(hidden)+' more route'+(hidden===1?' is':'s are')+' available in the full library.</p><a href="#model-library" data-open-target>Show all routes</a></div>';
   }
-  function feedbackDraft(best,freshness){
+  function manifestEvidenceLine(trustLine){
+    const reviewed=String(trustLine||manifestTrustLine(manifestUpdatedAt,visibleInventory(manifestNodes))).replace(/\s+/g,' ').trim();
+    const updated=manifestUpdatedAt?String(manifestUpdatedAt).replace(/\s+/g,' ').trim():'missing updated_at';
+    return 'Route manifest evidence: '+(reviewed||'public route inventory needs review')+'; updated_at: '+updated+'.';
+  }
+  function feedbackDraft(best,freshness,trustLine){
     const route=String(best?.name||FALLBACK_LABEL).replace(/\s+/g,' ').trim()||FALLBACK_LABEL;
     const readiness=nodeStatus(best)==='online'?'ready':'setup';
     const freshnessText=freshness?.label||'Route inventory needs review';
     const summary=freshness?.summary||'No route freshness summary is visible.';
     const policy=routePolicyLine(best);
-    return '@feedback Active route issue: '+route+' shows '+readiness+' while "'+freshnessText+'" is visible. '+summary+' Policy: '+policy+'. Please review the route strip and next-step guidance.';
+    return '@feedback Active route issue: '+route+' shows '+readiness+' while "'+freshnessText+'" is visible. '+summary+' '+manifestEvidenceLine(trustLine)+' Policy: '+policy+'. Please review the route strip and next-step guidance.';
   }
-  function activeRouteFeedbackKey(best,freshness){
-    return [best?.id||best?.name||FALLBACK_LABEL,nodeStatus(best),freshness?.state||'unknown',freshness?.label||'unknown',freshness?.summary||''].map(value=>String(value||'').replace(/\s+/g,' ').trim()).join('|');
+  function activeRouteFeedbackKey(best,freshness,trustLine){
+    return [best?.id||best?.name||FALLBACK_LABEL,nodeStatus(best),freshness?.state||'unknown',freshness?.label||'unknown',freshness?.summary||'',manifestEvidenceLine(trustLine)].map(value=>String(value||'').replace(/\s+/g,' ').trim()).join('|');
   }
   function activeRouteFeedbackStorageKey(){return ACTIVE_ROUTE_FEEDBACK_PREFIX+activeWorkspaceId();}
   function readCapturedActiveRouteFeedbackKey(){return storageGet(activeRouteFeedbackStorageKey(),'');}
@@ -182,9 +187,9 @@
   function refreshButtonLabel(freshness){
     return manifestRefreshState==='refreshing'?'Refreshing route inventory...':refreshLabel(freshness);
   }
-  function feedbackFooter(best,freshness){
+  function feedbackFooter(best,freshness,trustLine){
     if(!freshness||freshness.state==='online')return '';
-    const key=activeRouteFeedbackKey(best,freshness);
+    const key=activeRouteFeedbackKey(best,freshness,trustLine);
     const captured=lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key;
     return '<div class="mmir-active-node-overflow" data-route-feedback-state="'+safe(freshness.state)+'" data-route-feedback-captured="'+safe(captured?'true':'false')+'"><p>Capture route friction from this exact surface so owner triage keeps the live demo path honest. Recheck the public route manifest before escalating so demo trust can recover from this exact surface.</p><div class="mmir-active-node-overflow-actions"><button type="button" class="secondary" data-active-route-refresh aria-busy="'+safe(manifestRefreshState==='refreshing'?'true':'false')+'">'+safe(refreshButtonLabel(freshness))+'</button><button type="button" data-active-route-feedback data-captured="'+safe(captured?'true':'false')+'" '+(captured?'disabled aria-disabled="true"':'')+'>'+safe(captured?'Route issue saved':'Report route issue')+'</button></div><small class="mmir-active-route-feedback-status">'+safe(captured?'Saved to Feedback Inbox for this route state. Recheck inventory before creating another route issue.':'No route feedback saved for this visible state yet.')+'</small></div>';
   }
@@ -200,10 +205,10 @@
       : '';
     return '<div class="mmir-active-node-next-step"><span>Next best step</span><p>'+safe(action.summary)+'</p><div class="mmir-active-node-next-step-actions">'+primary+secondary+'</div></div>';
   }
-  function reportRouteIssue(best,freshness){
-    const key=activeRouteFeedbackKey(best,freshness);
+  function reportRouteIssue(best,freshness,trustLine){
+    const key=activeRouteFeedbackKey(best,freshness,trustLine);
     if(lastActiveRouteFeedbackKey===key||readCapturedActiveRouteFeedbackKey()===key)return true;
-    if(w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness),{
+    if(w.MimirChatRuntimeBridge?.saveFeedbackDraft?.(feedbackDraft(best,freshness,trustLine),{
       source:'active-route-strip',
       target:'feedback',
       title:'Active route strip issue',
@@ -214,7 +219,7 @@
     })){rememberActiveRouteFeedbackKey(key);render();return true;}
     const promptEl=q('#mimir-prompt');
     if(!promptEl)return false;
-    promptEl.value=feedbackDraft(best,freshness);
+    promptEl.value=feedbackDraft(best,freshness,trustLine);
     promptEl.dispatchEvent(new Event('input',{bubbles:true}));
     promptEl.dispatchEvent(new Event('change',{bubbles:true}));
     promptEl.focus();
@@ -285,7 +290,7 @@
     if(model.runtime==='webllm'&&!webGpuReady()){const fallback=starterModels.find(item=>item.id==='mmir-supergenius')||{id:'mmir-supergenius'};handoff({starter_id:fallback.id,action:'select',source:'active-node-starter-rail',fallback_for:model.id});const promptEl=q('#mimir-prompt');if(promptEl&&!String(promptEl.value||'').trim()){promptEl.value='Browser Model '+webGpuMissingLabel().toLowerCase()+' here. Use Supergeni now and show the private Local Model path.';promptEl.dispatchEvent(new Event('input',{bubbles:true}));promptEl.dispatchEvent(new Event('change',{bubbles:true}));}q('#primary-chat-link')?.click();return;}
     const action=starterAction(model);handoff({starter_id:model.id,action,source:'active-node-starter-rail'});const promptEl=q('#mimir-prompt');if(action==='install'&&!localReady()){openInstaller('active-node-starter-rail',model);return;}if(action!=='install'){if(promptEl&&!String(promptEl.value||'').trim()){promptEl.value='Chat with '+(model.label||model.id)+'.';promptEl.dispatchEvent(new Event('input',{bubbles:true}));promptEl.dispatchEvent(new Event('change',{bubbles:true}));}q('#primary-chat-link')?.click();}
   }
-  function render(){const composer=q('.mimir-composer');if(!composer)return;style();let bar=q('#mmir-active-nodes-bar');if(!bar){bar=d.createElement('section');bar.id='mmir-active-nodes-bar';bar.setAttribute('aria-label','Active chat routes');composer.parentNode.insertBefore(bar,composer.nextSibling);}const allNodes=manifestNodes.length?manifestNodes:[{id:'browser-guide',name:FALLBACK_LABEL,trust_level:'public-free',cost:{mode:'free'},route:{kind:'starter',starter_id:'mmir-supergenius'},models:[{name:FALLBACK_LABEL}]}];const selected=selectedModel();const best=bestNode(allNodes,selected);const nodes=stripNodes(allNodes,best);const state=nodeStatus(best),line=activeRouteLine(best,selected),policy=routePolicyLine(best),inventory=visibleInventory(allNodes),choiceReason=routeChoiceReason(best),summary=capacityLine(allNodes),freshness=routeInventoryFreshness(manifestUpdatedAt),trustLine=manifestTrustLine(manifestUpdatedAt,inventory),nextStep=nextStepAction(best,allNodes);bar.dataset.state=state;bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active route</span><strong>'+safe(best.name)+'</strong><small>'+safe(line)+'</small><small>'+safe(choiceReason)+'</small><small class="mmir-active-node-policy" aria-label="Active route policy">'+safe(policy)+'</small><small class="mmir-active-node-capacity">'+safe(summary)+'</small><small class="mmir-active-node-freshness" data-state="'+safe(freshness.state)+'" aria-label="'+safe(trustLine+' - '+freshness.label+'. '+freshness.summary)+'">'+safe(freshness.label)+' · '+safe(freshness.summary)+'</small></div><div class="mmir-active-node-pill">'+safe((state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible)+'</div></div>'+nextStepMarkup(nextStep)+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>'+feedbackFooter(best,freshness)+visibilityFooter(nodes.length,inventory);q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'. '+policy+'.');bar.querySelectorAll('[data-active-node-action]').forEach(button=>button.addEventListener('click',()=>activateNode(allNodes.find(node=>node.id===button.getAttribute('data-active-node-action'))||nodes.find(node=>node.id===button.getAttribute('data-active-node-action')))));bar.querySelectorAll('[data-active-starter-id]').forEach(button=>button.addEventListener('click',()=>activateStarter(starterModels.find(model=>model.id===button.getAttribute('data-active-starter-id')))));bar.querySelectorAll('[data-active-route-feedback]').forEach(button=>button.addEventListener('click',()=>reportRouteIssue(best,freshness)));bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));}
+  function render(){const composer=q('.mimir-composer');if(!composer)return;style();let bar=q('#mmir-active-nodes-bar');if(!bar){bar=d.createElement('section');bar.id='mmir-active-nodes-bar';bar.setAttribute('aria-label','Active chat routes');composer.parentNode.insertBefore(bar,composer.nextSibling);}const allNodes=manifestNodes.length?manifestNodes:[{id:'browser-guide',name:FALLBACK_LABEL,trust_level:'public-free',cost:{mode:'free'},route:{kind:'starter',starter_id:'mmir-supergenius'},models:[{name:FALLBACK_LABEL}]}];const selected=selectedModel();const best=bestNode(allNodes,selected);const nodes=stripNodes(allNodes,best);const state=nodeStatus(best),line=activeRouteLine(best,selected),policy=routePolicyLine(best),inventory=visibleInventory(allNodes),choiceReason=routeChoiceReason(best),summary=capacityLine(allNodes),freshness=routeInventoryFreshness(manifestUpdatedAt),trustLine=manifestTrustLine(manifestUpdatedAt,inventory),nextStep=nextStepAction(best,allNodes);bar.dataset.state=state;bar.innerHTML='<div class="mmir-active-node-head"><div class="mmir-active-node-title"><span>Active route</span><strong>'+safe(best.name)+'</strong><small>'+safe(line)+'</small><small>'+safe(choiceReason)+'</small><small class="mmir-active-node-policy" aria-label="Active route policy">'+safe(policy)+'</small><small class="mmir-active-node-capacity">'+safe(summary)+'</small><small class="mmir-active-node-freshness" data-state="'+safe(freshness.state)+'" aria-label="'+safe(trustLine+' - '+freshness.label+'. '+freshness.summary)+'">'+safe(freshness.label)+' · '+safe(freshness.summary)+'</small></div><div class="mmir-active-node-pill">'+safe((state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible)+'</div></div>'+nextStepMarkup(nextStep)+starterRail()+'<div class="mmir-active-node-grid">'+nodes.map(card).join('')+'</div>'+feedbackFooter(best,freshness,trustLine)+visibilityFooter(nodes.length,inventory);q('#active-badge')&&(q('#active-badge').textContent='Active: '+best.name);q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'. '+policy+'.');bar.querySelectorAll('[data-active-node-action]').forEach(button=>button.addEventListener('click',()=>activateNode(allNodes.find(node=>node.id===button.getAttribute('data-active-node-action'))||nodes.find(node=>node.id===button.getAttribute('data-active-node-action')))));bar.querySelectorAll('[data-active-starter-id]').forEach(button=>button.addEventListener('click',()=>activateStarter(starterModels.find(model=>model.id===button.getAttribute('data-active-starter-id')))));bar.querySelectorAll('[data-active-route-feedback]').forEach(button=>button.addEventListener('click',()=>reportRouteIssue(best,freshness,trustLine)));bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));}
   function updateFromConnector(event){const detail=event?.detail||{};const models=Array.isArray(detail.models)?detail.models:[];liveModels=models.map(model=>({id:model.id||model.name||model.model||'',name:model.name||model.label||model.id||model.model||''})).filter(model=>model.id||model.name);localState={...localState,status:detail.status||detail.health||(liveModels[0]?'ready':localState.status||'checking'),url:detail.url||localState.url};render();}
   function init(){Promise.all([loadManifest(),loadStarterCatalog()]).then(render);render();}
   d.readyState==='loading'?d.addEventListener('DOMContentLoaded',init):init();
