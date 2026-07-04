@@ -81,6 +81,21 @@ requireIncludes(
 );
 requireIncludes(
   p0Runtime,
+  'queueMediaCapabilityFeedback(media);',
+  'P0 photo picker must capture image-selection demand as a feedback/backlog signal.'
+);
+requireIncludes(
+  p0Runtime,
+  "source:'mmir-chat-media-boundary'",
+  'P0 photo feedback must be labeled as the media boundary lane for owner analysis.'
+);
+requireIncludes(
+  p0Runtime,
+  "backlog_hint:'protected-vision-route'",
+  'P0 photo feedback must point backlog triage toward the protected vision route.'
+);
+requireIncludes(
+  p0Runtime,
   "append(\n      'assistant',\n      'Bildet er valgt fra '",
   'P0 photo picker must acknowledge local selection in chat instead of silently doing nothing.'
 );
