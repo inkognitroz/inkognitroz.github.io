@@ -84,8 +84,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'function hostedPayload(prompt,model=defaultHostedModel())',
-  'Hosted payload must accept the selected hosted model.'
+  'function hostedPayload(prompt,model=defaultHostedModel(),media=null)',
+  'Hosted payload must accept the selected hosted model and optional media attachment.'
 );
 requireIncludes(
   shell,
@@ -94,12 +94,12 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'await chatHostedData(routePrompt,signal,model)',
-  'Sending a selected hosted route must call chatHostedData with that model.'
+  'await chatHostedData(routePrompt,signal,model,pendingMedia)',
+  'Sending a selected hosted route must call chatHostedData with that model and any pending media boundary payload.'
 );
 requireIncludes(
   shell,
-  'responseText((hostedData=await chatHostedData(routePrompt,signal,model)))',
+  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,pendingMedia)))',
   'Selected hosted route responses must preserve API metadata before extracting answer text.'
 );
 requireIncludes(
@@ -124,7 +124,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-followup-context-v1',
+  'p0-chat-shell.js?v=20260704-image-attachment-boundary-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -134,7 +134,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-followup-context-v1"',
+  '"p0-chat-shell.js": "20260704-image-attachment-boundary-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(

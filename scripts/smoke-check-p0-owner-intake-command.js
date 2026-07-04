@@ -664,7 +664,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'function hostedConversationMessages(prompt,systemPrompt)',
+  'function hostedConversationMessages(prompt,systemPrompt,media=null)',
   'Hosted chat payloads must carry bounded conversation context instead of only the latest prompt.'
 );
 requireIncludes(
@@ -689,7 +689,7 @@ requireNotIncludes(
 );
 requireIncludes(
   shell,
-  'messages:hostedConversationMessages(prompt,systemPrompt)',
+  'messages:hostedConversationMessages(prompt,systemPrompt,media)',
   'Hosted and compare payloads must use the bounded conversation-history helper.'
 );
 requireIncludes(
@@ -719,12 +719,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-followup-context-v1',
+  'p0-chat-shell.js?v=20260704-image-attachment-boundary-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-followup-context-v1"',
+  '"p0-chat-shell.js": "20260704-image-attachment-boundary-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-followup-context-v1';
+  const P0_RUNTIME_VERSION='20260704-image-attachment-boundary-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1629,7 +1629,7 @@
       'Image/media capability gap from public chat.',
       'A tester selected an image from '+source+' ('+type+', '+size+'), but protected image analysis is not live.',
       'Expected product behavior: camera/library image can be analyzed through a protected vision node with consent, size limits, log redaction, signed receipt and rollback.',
-      'No raw image was uploaded, stored or sent to a provider from the browser.'
+      'Raw image should only be sent to the protected gateway boundary, never logged or sent to a provider before vision-node promotion.'
     ].join('\n');
     const item={
       id:'fb_media_'+telemetryEventId().replace(/^evt_/,''),
@@ -3638,13 +3638,22 @@
     const safeSize=String(media.size_label||formatFileSize(media.size_bytes)).slice(0,40);
     return [
       'MMIR media boundary:',
-      'A user selected an image locally in the browser, but the raw image was not uploaded or sent to the model.',
-      'raw_image_sent:false',
-      'no_server_upload:true',
+      'A user selected an image in the browser and explicitly sent it with this chat message.',
+      'raw_image_sent_to_gateway:true',
+      'provider_called:false_until_protected_vision_route:true',
       'Image metadata only: '+safeName+' · '+safeType+' · '+safeSize+'.',
       'Do not claim that you can see, analyze, edit, inspect, or describe the image.',
-      'If the user asks about the image, say briefly in Norwegian that image analysis is not active yet, ask them to describe the image, and say MMIR can route real vision when a protected vision node is active.'
+      'If the gateway returns a vision boundary, explain briefly in Norwegian that the protected vision route is not active yet and ask the user to describe the image.'
     ].join('\n');
+  }
+
+  function readFileAsDataUrl(file){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result||''));
+      reader.onerror=()=>reject(reader.error||new Error('file_read_failed'));
+      reader.readAsDataURL(file);
+    });
   }
 
   function triggerPhotoPicker(source){
@@ -3663,7 +3672,7 @@
     return true;
   }
 
-  function handlePhotoPicked(event,source){
+  async function handlePhotoPicked(event,source){
     const input=event?.target;
     const file=input?.files?.[0];
     if(!file)return false;
@@ -3672,10 +3681,23 @@
       routeStatus('Bilde avvist · feil filtype','error');
       return false;
     }
-    const maxBytes=12*1024*1024;
+    const maxBytes=4*1024*1024;
     if(file.size>maxBytes){
       status('Bildet er for stort for trygg demo. Velg et mindre bilde.','error');
-      routeStatus('Bilde avvist · maks 12 MB · ikke sendt','error');
+      routeStatus('Bilde avvist · maks 4 MB · ikke sendt','error');
+      return false;
+    }
+    let dataUrl='';
+    try{
+      dataUrl=await readFileAsDataUrl(file);
+    }catch{
+      status('Kunne ikke lese bildet i nettleseren. Prøv et annet bilde.','error');
+      routeStatus('Bilde avvist · lesing feilet · ikke sendt','error');
+      return false;
+    }
+    if(!/^data:image\//i.test(dataUrl)){
+      status('Kunne ikke klargjøre bildet trygt. Prøv et annet bilde.','error');
+      routeStatus('Bilde avvist · ugyldig data-url','error');
       return false;
     }
     const media={
@@ -3684,33 +3706,35 @@
       type:String(file.type||'image/*').slice(0,80),
       size_bytes:file.size,
       size_label:formatFileSize(file.size),
-      raw_image_sent:false,
-      no_server_upload:true,
+      data_url:dataUrl,
+      raw_image_sent_to_gateway:false,
+      no_provider_upload:true,
       selected_at:new Date().toISOString()
     };
     state.pendingMedia=media;
+    closeMenus();
     captureInteraction('media_attachment_selected',{
       source,
       type:media.type,
       size_bytes:media.size_bytes,
-      raw_image_sent:false,
-      no_server_upload:true
+      raw_image_sent_to_gateway:false,
+      provider_called:false
     });
     queueMediaCapabilityFeedback(media);
     const inputEl=document.getElementById('p0-input');
     if(inputEl&&!String(inputEl.value||'').trim()){
-      inputEl.value='Bildet er valgt lokalt, men råbildet er ikke sendt. Bildeanalyse er ikke aktivert ennå. Jeg beskriver bildet selv: ';
+      inputEl.value='Hva kan du se i bildet?';
       autosizeInput();
     }
     append(
       'assistant',
-      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nRåbildet er fortsatt bare lokalt i nettleseren og er ikke sendt til MMIR. Bildeanalyse og redigering er ikke aktivert ennå. Beskriv bildet med tekst, eller vent til en beskyttet vision-route er aktiv.',
+      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nTrykk send for å sende bildet til MMIRs beskyttede vision-boundary. Bildet sendes ikke videre til modell/provider før en verifisert vision-node er aktiv.',
       'MMIR bildevalg',
-      'Bilde valgt · lokalt i nettleseren · raw_image_sent:false',
+      'Bilde valgt · klart for protected vision-boundary · provider_called:false',
       {variant:'media',actions:false}
     );
     status('Bilde valgt lokalt.','ready');
-    routeStatus('Bilde klart · lokalt · ikke sendt','hosted');
+    routeStatus('Bilde klart · sendes til protected boundary ved neste melding','hosted');
     inputEl?.focus();
     return true;
   }
@@ -5745,7 +5769,16 @@
     ].filter(Boolean).join('\n');
   }
 
-  function hostedConversationMessages(prompt,systemPrompt){
+  function mediaChatContent(prompt,media){
+    const text=chatPayloadContent(prompt,1800)||'Hva kan du se i bildet?';
+    if(!media?.data_url)return text;
+    return [
+      {type:'text',text},
+      {type:'image_url',image_url:{url:media.data_url}}
+    ];
+  }
+
+  function hostedConversationMessages(prompt,systemPrompt,media=null){
     const currentUserContent=chatPayloadContent(prompt,1800);
     const history=hostedConversationHistory();
     if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===currentUserContent)history.pop();
@@ -5753,11 +5786,11 @@
     return [
       {role:'system',content:[systemPrompt,memoryContext].filter(Boolean).join('\n\n')},
       ...history.slice(-10),
-      {role:'user',content:currentUserContent}
+      {role:'user',content:mediaChatContent(currentUserContent,media)}
     ];
   }
 
-  function hostedPayload(prompt,model=defaultHostedModel()){
+  function hostedPayload(prompt,model=defaultHostedModel(),media=null){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
@@ -5768,7 +5801,7 @@
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.';
     return {
       model:modelId,
-      messages:hostedConversationMessages(prompt,systemPrompt),
+      messages:hostedConversationMessages(prompt,systemPrompt,media),
       stream:false,
       temperature:0.7,
       max_tokens:answerTokenBudget()
@@ -5848,8 +5881,8 @@
       .trim();
   }
 
-  async function chatHostedData(prompt,signal,model=defaultHostedModel()){
-    const payload=hostedPayload(prompt,model);
+  async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null){
+    const payload=hostedPayload(prompt,model,media);
     return fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -6737,7 +6770,8 @@
       answer_style:answerStyle(),
       fast_answer_next:Boolean(state.fastAnswerOnce),
       pending_media_local:Boolean(state.pendingMedia),
-      raw_image_sent:false
+      raw_image_sent_to_gateway:false,
+      provider_called:false
     });
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
@@ -6783,6 +6817,10 @@
       compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
       return;
     }
+    const pendingMedia=state.pendingMedia;
+    if(pendingMedia&&smart.mode==='single'&&smart.model?.route==='local'&&!privateModeActive()){
+      smart={...smart,model:defaultHostedModel(),reason:'Protected vision boundary'};
+    }
     closeMenus();
     const signal=beginResponse();
     append('user',prompt,'You');
@@ -6796,7 +6834,7 @@
       input?.focus();
       return;
     }
-    const mediaGuard=selectedMediaPromptGuard(state.pendingMedia);
+    const mediaGuard=selectedMediaPromptGuard(pendingMedia);
     const baseRoutePrompt=smart.prompt||prompt;
     const guardedRoutePrompt=mediaGuard?mediaGuard+'\n\nUser text:\n'+baseRoutePrompt:baseRoutePrompt;
     state.pendingMedia=null;
@@ -6813,7 +6851,7 @@
       let hostedData=null;
       const answer=model.route==='local'
         ? await chatLocal(routePrompt,model,signal)
-        : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
+        : responseText((hostedData=await chatHostedData(routePrompt,signal,model,pendingMedia)))||((model?.label||'Hosted route')+' returned an empty response.');
       if(hostedData)recordTokenUsage(hostedData,'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
@@ -6831,7 +6869,9 @@
         active_model_route:model.route,
         latency_ms:Math.round(elapsedMs),
         score:effectiveModelScore(model),
-        truncated:hostedTruncated
+        truncated:hostedTruncated,
+        raw_image_sent_to_gateway:Boolean(pendingMedia),
+        provider_called:Boolean(hostedData?.mmir?.provider_called||hostedData?.provider_called)
       });
       renderModelMenu();
       if(connectGuide){
