@@ -145,18 +145,43 @@ requireIncludes(
   '+ menu must still expose Supergeni Council in the advanced tools menu.'
 );
 requireIncludes(
+  renderAddMenu,
+  "menuButton('share-location','Del posisjon'",
+  '+ menu must expose explicit browser-location opt-in for route/weather prompts.'
+);
+requireIncludes(
+  p0Shell,
+  'navigator.geolocation.getCurrentPosition',
+  'P0 location sharing must use the browser permission prompt, not hidden location capture.'
+);
+requireIncludes(
+  p0Shell,
+  'sharedLocationContextForPrompt(prompt)',
+  'P0 chat sends shared location only when the prompt needs route/weather/near-me context.'
+);
+requireIncludes(
+  p0Shell,
+  'origin_lat:',
+  'P0 location context must use the gateway-recognized origin_lat field.'
+);
+requireIncludes(
+  p0Shell,
+  'origin_lon:',
+  'P0 location context must use the gateway-recognized origin_lon field.'
+);
+requireIncludes(
   renderPromptPresetMenu,
   "menuButton('add-menu-main','Back','Return to Add.')",
   'Prompt preset submenu must return to the compact Add menu.'
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260704-protected-vision-route-v1',
+  'p0-chat-shell.js?v=20260704-location-context-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260704-protected-vision-route-v1"',
+  '"p0-chat-shell.js": "20260704-location-context-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

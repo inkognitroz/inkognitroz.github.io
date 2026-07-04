@@ -39,6 +39,7 @@
   const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1';
   const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1';
   const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1';
+  const SHARED_LOCATION_KEY='mmir-p0-shared-location-v1';
   const TOOL_CONTEXT_KEY='mmir-p0-last-tool-context-v1';
   const PROMPT_PRESETS_PATH='/prompts/presets';
   const PROMPT_SAVE_PLAN_PATH='/prompts/save/plan';
@@ -57,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-protected-vision-route-v1';
+  const P0_RUNTIME_VERSION='20260704-location-context-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3632,6 +3633,104 @@
     return size+' B';
   }
 
+  function readSharedLocation(){
+    const value=readJson(SHARED_LOCATION_KEY,null);
+    const lat=Number(value?.lat);
+    const lon=Number(value?.lon);
+    if(!Number.isFinite(lat)||!Number.isFinite(lon))return null;
+    if(lat<-90||lat>90||lon<-180||lon>180)return null;
+    return {
+      lat,
+      lon,
+      accuracy_m:Number(value?.accuracy_m)||0,
+      label:String(value?.label||'delt posisjon').slice(0,80),
+      shared_at:String(value?.shared_at||'').slice(0,40)
+    };
+  }
+
+  function writeSharedLocation(location){
+    localStorage.setItem(SHARED_LOCATION_KEY,JSON.stringify(location));
+  }
+
+  function promptNeedsSharedLocation(prompt=''){
+    const text=String(prompt||'').toLowerCase();
+    return /\b(veien\s+til|vei\s+til|rute\s+til|kjøre\s+til|reise\s+til|dra\s+til|hvor\s+lang\s+tid\s+tar|hvor\s+langt|avstand|nær\s+meg|i\s+nærheten|været|vær|weather|directions?|route\s+to|travel\s+time)\b/i.test(text);
+  }
+
+  function sharedLocationContextForPrompt(prompt=''){
+    const location=readSharedLocation();
+    if(!location||!promptNeedsSharedLocation(prompt))return '';
+    const lat=location.lat.toFixed(5);
+    const lon=location.lon.toFixed(5);
+    const accuracy=location.accuracy_m?Math.round(location.accuracy_m):0;
+    return [
+      'MMIR location context:',
+      'user_shared_location:true;',
+      'origin_label:'+location.label+';',
+      'origin_lat:'+lat+';',
+      'origin_lon:'+lon+';',
+      accuracy?('origin_accuracy_m:'+String(accuracy)+';'):'',
+      'Use this only as approximate origin for travel/weather/near-me questions. Do not expose precise coordinates unless needed for the answer.'
+    ].filter(Boolean).join(' ');
+  }
+
+  async function reverseGeocodeSharedLocation(lat,lon){
+    try{
+      const url='https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=0&accept-language=no&lat='+encodeURIComponent(String(lat))+'&lon='+encodeURIComponent(String(lon));
+      const response=await fetch(url,{headers:{accept:'application/json'},redirect:'follow'});
+      if(!response.ok)return '';
+      const data=await response.json();
+      return String(data?.display_name||'').split(',').slice(0,2).join(', ').trim();
+    }catch{
+      return '';
+    }
+  }
+
+  function requestSharedLocation(){
+    if(!navigator.geolocation){
+      status('Posisjon er ikke tilgjengelig i denne nettleseren.','error');
+      routeStatus('Posisjon utilgjengelig','error');
+      return false;
+    }
+    closeMenus();
+    status('Ber nettleseren om posisjon...','ready');
+    routeStatus('Del posisjon · venter på nettlesersamtykke','hosted');
+    captureInteraction('location_share_started',{browser_prompt:true,stored_local_only:true});
+    navigator.geolocation.getCurrentPosition(async(position)=>{
+      const coords=position.coords||{};
+      const lat=Number(coords.latitude);
+      const lon=Number(coords.longitude);
+      if(!Number.isFinite(lat)||!Number.isFinite(lon)){
+        status('Kunne ikke lese posisjonen.','error');
+        routeStatus('Posisjon feilet · ingen data lagret','error');
+        return;
+      }
+      const label=await reverseGeocodeSharedLocation(lat,lon)||'delt posisjon';
+      const location={
+        lat,
+        lon,
+        accuracy_m:Number(coords.accuracy)||0,
+        label,
+        shared_at:new Date().toISOString()
+      };
+      writeSharedLocation(location);
+      captureInteraction('location_shared',{
+        accuracy_m:Math.round(location.accuracy_m||0),
+        label,
+        stored_local_only:true
+      });
+      append('assistant','Posisjon er delt for denne nettleseren: '+label+'. Jeg bruker den bare som omtrentlig startsted når spørsmålet trenger sted, for eksempel rute, avstand, vær eller nær meg.','MMIR posisjon','Posisjon delt · browser opt-in · brukes kun ved behov',{actions:false});
+      status('Posisjon delt.','ready');
+      routeStatus('Posisjon klar · brukes ved relevante spørsmål','ready');
+      document.getElementById('p0-input')?.focus();
+    },()=>{
+      captureInteraction('location_share_denied',{browser_prompt:true});
+      status('Posisjon ble ikke delt.','error');
+      routeStatus('Posisjon ikke delt · spør med startsted','error');
+    },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+    return true;
+  }
+
   function readFileAsDataUrl(file){
     return new Promise((resolve,reject)=>{
       const reader=new FileReader();
@@ -3981,6 +4080,7 @@
       menuSection('Bilde')+
       menuButton('take-photo-local','Ta bilde','Åpner kamera eller bildevelger. Råbildet blir lokalt til trygg vision-route er aktiv.',{badge:'Lokal'})+
       menuButton('choose-photo-local','Velg fra bibliotek','Velg et bilde fra enheten. Ingen opplasting starter automatisk.',{badge:'Lokal'})+
+      menuButton('share-location','Del posisjon','Bruk nettleserens posisjon som omtrentlig startsted for rute, avstand, vær og nær meg.',{badge:readSharedLocation()?'På':'Opt-in'})+
       menuSeparator()+
       menuSection('Many AI')+
       menuButton('intelligence-status','Intelligence status','Show live connected routes, capacity and source mix. Read-only, no provider call.')+
@@ -5037,6 +5137,9 @@
     }
     if(action==='choose-photo-local'){
       return triggerPhotoPicker('library');
+    }
+    if(action==='share-location'){
+      return requestSharedLocation();
     }
     if(actionId.startsWith('set-role-profile:')){
       setRoleProfile(actionId.slice('set-role-profile:'.length));
@@ -6769,6 +6872,8 @@
       active_model_id:activeModel()?.id||'',
       active_model_route:activeModel()?.route||'',
       has_prompt:true,
+      shared_location_available:Boolean(readSharedLocation()),
+      shared_location_used:Boolean(sharedLocationContextForPrompt(prompt)),
       answer_style:answerStyle(),
       fast_answer_next:Boolean(state.fastAnswerOnce),
       pending_media_local:Boolean(state.pendingMedia),
@@ -6836,7 +6941,8 @@
       input?.focus();
       return;
     }
-    const guardedRoutePrompt=smart.prompt||prompt;
+    const locationContext=sharedLocationContextForPrompt(prompt);
+    const guardedRoutePrompt=locationContext?locationContext+'\n\nUser text:\n'+(smart.prompt||prompt):(smart.prompt||prompt);
     state.pendingMedia=null;
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);

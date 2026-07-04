@@ -719,12 +719,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-protected-vision-route-v1',
+  'p0-chat-shell.js?v=20260704-location-context-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-protected-vision-route-v1"',
+  '"p0-chat-shell.js": "20260704-location-context-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
