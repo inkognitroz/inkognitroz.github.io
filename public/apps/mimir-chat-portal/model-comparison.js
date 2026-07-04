@@ -23,6 +23,7 @@
   let lastRouteMetadata=null;
   let lastCoverageMetadata=null;
   let lastEvidenceId=null;
+  let lastEvidenceCapturedAt='';
 
   if(!host)return;
 
@@ -390,7 +391,7 @@
   }
 
   function evidenceSummary(){
-    return 'Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'; local fingerprint only, raw prompt, responses and synthesis not stored.';
+    return 'Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'; compared at: '+(lastEvidenceCapturedAt||'not recorded')+'; local fingerprint only, raw prompt, responses and synthesis not stored.';
   }
 
   function comparisonFeedbackDraft(){
@@ -459,6 +460,7 @@
     lastRouteMetadata=routeSafetySummary(profile,url,models.length);
     lastCoverageMetadata=routeCoverageSummary(models);
     lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));
+    lastEvidenceCapturedAt=new Date().toISOString();
     setStatus('Comparing '+String(models.length)+' model(s)...','loading');
     try{
       const token=await pairIfNeeded(profile,url);

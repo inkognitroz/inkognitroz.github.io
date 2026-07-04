@@ -2,7 +2,7 @@
   "scope": "public/mmir.html launch-critical chat assets",
   "updated": "2026-06-23",
   "assets": {
-    "active-node-strip.js": "20260701-active-route-feedback-persist-v1",
+    "active-node-strip.js": "20260704-route-refresh-first-feedback-v1",
     "activation-telemetry.js": "20260622-first-screen-starter-progress-v1",
     "api-client.js": "20260531-local-loopback-v1",
     "backend-profiles-critical.js": "20260531-supergeni-v1",
@@ -27,7 +27,7 @@
     "mimir-chat-portal.js": "20260524-chat-first-v1",
     "model-catalog-ui.js": "20260531-no-rag-v1",
     "model-comparison.css": "20260625-compare-feedback-dedupe-v1",
-    "model-comparison.js": "20260628-compare-selection-cap-v1",
+    "model-comparison.js": "20260704-compare-feedback-timestamp-v1",
     "node-dashboard.css": "20260625-node-handoff-freshness-v1",
     "node-dashboard.js": "20260625-node-handoff-freshness-v1",
     "p0-chat-shell.css": "20260704-image-feedback-v1",
