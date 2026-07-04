@@ -27,11 +27,26 @@ Open mmir.ai
 
 ## Local Checks
 
+Browser-based smoke checks (`smoke-check-p0-voice-truth.mjs`, `smoke-check-staging-council-live.mjs` and others that render/screenshot the shell) use Playwright and fail with `ERR_MODULE_NOT_FOUND` on a fresh clone until dependencies are installed:
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+Then the basic checks:
+
 ```bash
 node scripts/check-public-boundary.js
 node scripts/public-safety-audit.js
 node scripts/ensure-mmir-public-branding.js --check
 node scripts/smoke-check-public-shell.js
+```
+
+Run the full smoke battery (same checks CI runs) with:
+
+```bash
+npm run check
 ```
 
 ## Actions-free Preview
