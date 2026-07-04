@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-image-feedback-v1';
+  const P0_RUNTIME_VERSION='20260704-compare-useful-evidence-id-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -5183,8 +5183,10 @@
     const id=safeAttr(message.id||'');
     const continuationLabel=safeText(String(message.continuationLabel||'Fortsett svaret').replace(/\s+/g,' ').trim().slice(0,44)||'Fortsett svaret');
     const compareUsefulCaptured=Boolean(message.compareUsefulCaptured);
+    const compareUsefulEvidence=String(message.compareUsefulEvidenceId||'').replace(/\s+/g,' ').trim();
+    const compareUsefulTitle=compareUsefulCaptured&&compareUsefulEvidence?('Useful signal saved. Evidence ID: '+compareUsefulEvidence+'. Raw prompt and answer not stored.'):'';
     return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
-      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="'+(compareUsefulCaptured?'Compare useful signal already saved':'Mark compare answer useful')+'"'+(compareUsefulCaptured?' disabled data-captured="true"':'')+'>'+(compareUsefulCaptured?'Useful saved':'Useful')+'</button>':'')+
+      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="'+(compareUsefulCaptured?'Compare useful signal already saved':'Mark compare answer useful')+'"'+(compareUsefulCaptured?' disabled data-captured="true" data-evidence-id="'+safeAttr(compareUsefulEvidence)+'" title="'+safeAttr(compareUsefulTitle)+'"':'')+'>'+(compareUsefulCaptured?'Useful saved':'Useful')+'</button>':'')+
       (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">'+continuationLabel+'</button>':'')+
       '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
       '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
@@ -5353,9 +5355,10 @@
     );
     if(saved){
       message.compareUsefulCaptured=true;
+      message.compareUsefulEvidenceId=evidenceId;
       saveHistory();
       renderTranscript();
-      requestAnimationFrame(()=>setMessageActionStatus(message.id,'Useful signal saved to Feedback Inbox.','ready'));
+      requestAnimationFrame(()=>setMessageActionStatus(message.id,'Useful signal saved to Feedback Inbox. Evidence ID: '+evidenceId+'.','ready'));
     }else{
       setMessageActionStatus(message.id,'Could not save useful signal.','error');
     }
