@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-demo-learning-wide-v1';
+  const P0_RUNTIME_VERSION='20260704-followup-context-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -5717,8 +5717,8 @@
       .slice(0,max);
   }
 
-  function hostedConversationMessages(prompt,systemPrompt){
-    const history=(Array.isArray(state.messages)?state.messages:[])
+  function hostedConversationHistory(){
+    return (Array.isArray(state.messages)?state.messages:[])
       .filter(message=>message&&(message.role==='user'||message.role==='assistant'))
       .filter(message=>!message.command&&!message.showOsChoices&&message.variant!=='install')
       .filter(message=>{
@@ -5731,12 +5731,29 @@
         role:message.role,
         content:chatPayloadContent(message.content,message.role==='assistant'?1600:1100)
       }));
-    const lastUserIndex=history.map(message=>message.role).lastIndexOf('user');
-    if(lastUserIndex>=0)history.splice(lastUserIndex,1);
+  }
+
+  function hostedConversationMemoryContext(history){
+    const prior=[...history].reverse();
+    const previousUser=prior.find(message=>message.role==='user'&&String(message.content||'').trim())||null;
+    const previousAssistant=prior.find(message=>message.role==='assistant'&&String(message.content||'').trim())||null;
+    if(!previousUser&&!previousAssistant)return '';
     return [
-      {role:'system',content:systemPrompt},
-      ...history.slice(-8),
-      {role:'user',content:chatPayloadContent(prompt,1800)}
+      'Conversation memory: The user may ask short follow-up questions. Resolve pronouns and phrases like "det", "den", "dette", "hva med", "hvor lang tid", "hvor langt", "tilbake" and "samme" from the previous turn when safe. If context is ambiguous, say what you are using as context before answering.',
+      previousUser?('Previous user question: '+chatPayloadContent(previousUser.content,800)):'',
+      previousAssistant?('Previous assistant answer: '+chatPayloadContent(previousAssistant.content,1000)):''
+    ].filter(Boolean).join('\n');
+  }
+
+  function hostedConversationMessages(prompt,systemPrompt){
+    const currentUserContent=chatPayloadContent(prompt,1800);
+    const history=hostedConversationHistory();
+    if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===currentUserContent)history.pop();
+    const memoryContext=hostedConversationMemoryContext(history);
+    return [
+      {role:'system',content:[systemPrompt,memoryContext].filter(Boolean).join('\n\n')},
+      ...history.slice(-10),
+      {role:'user',content:currentUserContent}
     ];
   }
 

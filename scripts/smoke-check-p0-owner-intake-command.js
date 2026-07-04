@@ -669,6 +669,26 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  'function hostedConversationMemoryContext(history)',
+  'Hosted chat payloads must add explicit previous-turn memory for follow-up questions.'
+);
+requireIncludes(
+  shell,
+  'Conversation memory: The user may ask short follow-up questions.',
+  'Hosted chat payloads must instruct Supergeni to resolve short follow-up questions from previous turns.'
+);
+requireIncludes(
+  shell,
+  "if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===currentUserContent)history.pop();",
+  'Hosted chat payloads must remove only the current duplicated user prompt, not the previous question.'
+);
+requireNotIncludes(
+  shell,
+  "lastIndexOf('user')",
+  'Hosted chat payloads must not blindly remove the last user message because that can drop follow-up context.'
+);
+requireIncludes(
+  shell,
   'messages:hostedConversationMessages(prompt,systemPrompt)',
   'Hosted and compare payloads must use the bounded conversation-history helper.'
 );
@@ -699,12 +719,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-demo-learning-wide-v1',
+  'p0-chat-shell.js?v=20260704-followup-context-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-demo-learning-wide-v1"',
+  '"p0-chat-shell.js": "20260704-followup-context-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
