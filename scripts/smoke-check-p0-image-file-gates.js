@@ -81,6 +81,41 @@ requireIncludes(
 );
 requireIncludes(
   p0Runtime,
+  'function pendingMediaPromptContext(prompt)',
+  'P0 chat sends must add safe selected-image metadata context without raw file transfer.'
+);
+requireIncludes(
+  p0Runtime,
+  'You cannot see image pixels yet.',
+  'P0 selected-image context must prevent the assistant from pretending it can see raw pixels.'
+);
+requireIncludes(
+  p0Runtime,
+  'raw_image_sent:false',
+  'P0 selected-image context must preserve raw_image_sent:false in the routed prompt metadata.'
+);
+requireIncludes(
+  p0Runtime,
+  'no_server_upload:true',
+  'P0 selected-image context must preserve no_server_upload:true in the routed prompt metadata.'
+);
+requireIncludes(
+  p0Runtime,
+  'const routePrompt=pendingMediaPromptContext(fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt);',
+  'Normal chat sends must route selected-image metadata to the model instead of dropping pending media.'
+);
+forbidIncludes(
+  p0Runtime,
+  'file.arrayBuffer(',
+  'P0 photo picker must not read raw image bytes in the public shell.'
+);
+forbidIncludes(
+  p0Runtime,
+  'URL.createObjectURL(file)',
+  'P0 photo picker must not create raw image previews before a protected vision route exists.'
+);
+requireIncludes(
+  p0Runtime,
   "append(\n      'assistant',\n      'Bildet er valgt fra '",
   'P0 photo picker must acknowledge local selection in chat instead of silently doing nothing.'
 );

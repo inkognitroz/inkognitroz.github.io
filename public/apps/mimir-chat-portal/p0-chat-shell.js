@@ -3474,6 +3474,20 @@
     return size+' B';
   }
 
+  function pendingMediaPromptContext(prompt){
+    const media=state.pendingMedia;
+    if(!media)return String(prompt||'');
+    const parts=[
+      'Selected image metadata only:',
+      'source='+String(media.source||'unknown'),
+      'type='+String(media.type||'image/*'),
+      'size='+String(media.size_label||formatFileSize(media.size_bytes)),
+      'raw_image_sent:false',
+      'no_server_upload:true'
+    ];
+    return String(prompt||'')+'\n\nMMIR media boundary: '+parts.join('; ')+'. You cannot see image pixels yet. Answer using only the user request and this safe metadata, and ask for a text description if visual details are needed.';
+  }
+
   function triggerPhotoPicker(source){
     const input=document.getElementById(source==='camera'?'p0-photo-camera':'p0-photo-library');
     if(!input){
@@ -6575,7 +6589,7 @@
       return;
     }
     const baseRoutePrompt=smart.prompt||prompt;
-    const routePrompt=fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt;
+    const routePrompt=pendingMediaPromptContext(fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt);
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
     const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
