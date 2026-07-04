@@ -44,7 +44,14 @@ requireIncludes(js, 'Best-answer signal: ', 'Compare feedback draft must label t
 requireIncludes(js, "usable.length>=2?'best-answer candidate needs owner review':'insufficient compare evidence'", 'Compare feedback must distinguish candidate-quality evidence from insufficient comparisons.');
 requireIncludes(js, 'raw answers not stored', 'Compare feedback best-answer signal must preserve raw answer privacy.');
 requireIncludes(js, 'function routeSafetySummary(profile,url,modelCount){', 'Compare feedback must summarize route safety from comparison-time backend state.');
-requireIncludes(js, "const routeClass=/localhost|127\\.0\\.0\\.1|\\.local(?::|$)/i.test(host)?'local/private backend':(/api\\.mmir\\.ai/i.test(host)?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
+requireIncludes(js, "const routeHost=(()=>{try{const parsed=new URL(url);return {host:parsed.host||'not recorded',hostname:(parsed.hostname||'').toLowerCase()};}catch(error){return {host:'not recorded',hostname:''};}})();", 'Compare feedback route summary must preserve display host while using the parsed exact hostname for route safety.');
+requireIncludes(js, 'const hostname=routeHost.hostname;', 'Compare feedback route summary must classify routes from the parsed exact hostname.');
+requireIncludes(js, "const localRoute=hostname==='localhost'||hostname==='127.0.0.1'||hostname==='::1'||hostname.endsWith('.local');", 'Compare feedback route summary must classify only exact localhost, loopback and .local hosts as local/private.');
+requireIncludes(js, "const mmirHostedRoute=hostname==='api.mmir.ai';", 'Compare feedback route summary must classify only the exact API host as the MMIR hosted route.');
+requireIncludes(js, "const routeClass=localRoute?'local/private backend':(mmirHostedRoute?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
+if (/api\\\.mmir\\\.ai/.test(js) || /\/localhost\|127\\\.0\\\.0\\\.1/.test(js)) {
+  fail('Compare feedback route summary must not classify trusted routes by broad substring regexes.');
+}
 requireIncludes(js, 'function keyReferenceSummary(profile){', 'Compare feedback must summarize key-reference presence without storing the raw value.');
 requireIncludes(js, "return raw?'configured in active backend profile; raw key reference not stored in feedback draft':'not stored in feedback draft';", 'Compare feedback must redact backend key-reference values even when a profile has one.');
 requireIncludes(js, 'no provider secrets or paid-route credentials stored in feedback draft', 'Compare feedback route summary must keep secret and paid-route boundaries explicit.');
@@ -57,12 +64,17 @@ requireIncludes(js, 'let lastCoverageMetadata=null;', 'Compare feedback must tra
 requireIncludes(js, 'function routeLabelSummary(models){', 'Compare feedback must summarize selected and visible route labels without raw prompt or answer content.');
 requireIncludes(js, "return 'selected routes: '+selectedLabels+'; visible routes: '+visibleLabels;", 'Compare feedback route label summary must preserve route labels only.');
 requireIncludes(js, 'function routeCoverageSummary(models){', 'Compare feedback must summarize selected route coverage without raw prompt or answer content.');
+requireIncludes(js, 'const requested=Array.isArray(models)?models.length:lastResults.length;', 'Compare feedback route coverage must preserve the requested route count for diagnostics.');
+requireIncludes(js, 'const selected=available?Math.min(requested,available):requested;', 'Compare feedback route coverage must clamp selected count to visible routes before computing coverage.');
 requireIncludes(js, "const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);", 'Compare feedback route coverage must record whether the max useful selected set was used.');
-requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must include selection capacity and labels while staying metadata-only and demo-triageable.');
+requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; requested routes: '+String(requested)+'; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';", 'Compare feedback route coverage must include bounded coverage, requested capacity and labels while staying metadata-only and demo-triageable.');
 // UI cap must match runner cap; otherwise testers think they selected routes the runner silently drops.
 requireIncludes(js, 'function syncModelSelectionLimit(changedInput=null){', 'Compare route picker must enforce the model cap in the UI instead of silently truncating selected routes.');
 requireIncludes(js, "Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.", 'Compare route picker must explain the selection cap when a tester tries to exceed it.');
-requireIncludes(js, 'input.disabled=!input.checked&&atLimit;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
+requireIncludes(js, 'input.disabled=locked;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
+requireIncludes(js, '<p id="comparison-selection-note" class="comparison-selection-note">Choose up to \'+String(MAX_COMPARE_MODELS)+\' live routes for each comparison.</p>', 'Compare route picker must show the selection cap before testers hit it.');
+requireIncludes(js, "input.setAttribute('aria-describedby','comparison-selection-note comparison-status');", 'Compare route picker choices must expose cap and status text to assistive tech.');
+requireIncludes(js, "input.closest('.comparison-model-choice')?.classList.toggle('comparison-model-choice-locked',locked);", 'Compare route picker must visually mark routes locked by the selection cap.');
 requireIncludes(js, "input.addEventListener('change',handleModelChoiceChange)", 'Compare route picker must resync the selection cap after checkbox changes.');
 requireIncludes(js, 'compareRouteCoverageSummary(),', 'Compare feedback draft must include selected-versus-visible route coverage before best-answer evidence.');
 requireIncludes(js, 'lastCoverageMetadata=routeCoverageSummary(models);', 'Compare feedback must snapshot route coverage at comparison time.');
@@ -70,6 +82,11 @@ requireIncludes(js, 'let lastEvidenceId=null;', 'Compare feedback must track a s
 requireIncludes(js, "let lastEvidenceCapturedAt='';", 'Compare feedback must track when comparison evidence was generated.');
 requireIncludes(js, 'function stableFingerprint(value){', 'Compare feedback must derive a short local fingerprint without storing raw prompt text.');
 requireIncludes(js, 'function evidenceSnapshot(prompt,profile,url,models){', 'Compare feedback must build evidence IDs from comparison-time prompt, route and model metadata.');
+requireIncludes(js, "const promptPresent=String(prompt||'').trim()?'present':'empty';", 'Compare feedback evidence IDs must derive from prompt metadata, not raw prompt text.');
+requireIncludes(js, "'prompt:'+promptPresent", 'Compare feedback evidence snapshots must not fingerprint raw prompt text.');
+if (js.includes("'prompt:'+stableFingerprint(prompt)")) {
+  fail('Compare feedback evidence snapshots must not hash raw prompt text directly.');
+}
 requireIncludes(js, "lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));", 'Compare feedback must preserve the evidence ID from the comparison run.');
 requireIncludes(js, 'lastEvidenceCapturedAt=new Date().toISOString();', 'Compare feedback must preserve a comparison-time timestamp for demo triage.');
 requireIncludes(js, 'function evidenceSummary(){', 'Compare feedback draft must expose a local evidence summary.');
@@ -92,9 +109,11 @@ requireIncludes(js, "setStatus(saved?'Useful synthesis saved to Feedback Inbox.'
 requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale synthesis feedback context.');
 
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
+requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap note must have scoped styling.');
+requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
-const expectedCssVersion = '20260625-compare-feedback-dedupe-v1';
-const expectedJsVersion = '20260704-compare-feedback-timestamp-v1';
+const expectedCssVersion = '20260704-compare-integrity-v1';
+const expectedJsVersion = '20260704-compare-integrity-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }

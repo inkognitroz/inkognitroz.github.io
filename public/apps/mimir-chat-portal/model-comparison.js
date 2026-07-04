@@ -142,7 +142,9 @@
     }
     const atLimit=checkedModelInputs().length>=MAX_COMPARE_MODELS;
     Array.from(modelList?.querySelectorAll('input[type="checkbox"]')||[]).forEach(input=>{
-      input.disabled=!input.checked&&atLimit;
+      const locked=!input.checked&&atLimit;
+      input.disabled=locked;
+      input.closest('.comparison-model-choice')?.classList.toggle('comparison-model-choice-locked',locked);
     });
   }
 
@@ -159,6 +161,7 @@
       '<summary>+ Compare Live Models</summary>'+
       '<div class="comparison-body">'+
         '<div id="comparison-model-list" class="comparison-model-list" aria-live="polite"></div>'+
+        '<p id="comparison-selection-note" class="comparison-selection-note">Choose up to '+String(MAX_COMPARE_MODELS)+' live routes for each comparison.</p>'+
         '<div class="comparison-actions">'+
           '<button id="compare-models" type="button">Compare models</button>'+
           '<button id="synthesize-models" type="button" disabled>Synthesize</button>'+
@@ -196,6 +199,7 @@
       input.type='checkbox';
       input.value=model.id;
       input.dataset.label=model.label||model.id;
+      input.setAttribute('aria-describedby','comparison-selection-note comparison-status');
       input.checked=index<Math.min(2,models.length);
       const span=document.createElement('span');
       span.textContent=model.label||model.id;
@@ -332,12 +336,16 @@
   }
 
   function routeSafetySummary(profile,url,modelCount){
-    const host=(()=>{try{return new URL(url).host||'not recorded';}catch(error){return 'not recorded';}})();
+    const routeHost=(()=>{try{const parsed=new URL(url);return {host:parsed.host||'not recorded',hostname:(parsed.hostname||'').toLowerCase()};}catch(error){return {host:'not recorded',hostname:''};}})();
+    const host=routeHost.host;
+    const hostname=routeHost.hostname;
     const provider=String(profile?.provider||'openai-compatible').replace(/\s+/g,' ').trim()||'openai-compatible';
     const profileName=String(profile?.name||profile?.id||'active backend').replace(/\s+/g,' ').trim();
     const cost=String(profile?.cost||profile?.cost_mode||'not recorded').replace(/\s+/g,' ').trim();
     const keyRef=keyReferenceSummary(profile);
-    const routeClass=/localhost|127\.0\.0\.1|\.local(?::|$)/i.test(host)?'local/private backend':(/api\.mmir\.ai/i.test(host)?'MMIR free hosted route':'active backend route');
+    const localRoute=hostname==='localhost'||hostname==='127.0.0.1'||hostname==='::1'||hostname.endsWith('.local');
+    const mmirHostedRoute=hostname==='api.mmir.ai';
+    const routeClass=localRoute?'local/private backend':(mmirHostedRoute?'MMIR free hosted route':'active backend route');
     return 'Route safety: '+profileName+' via '+routeClass+' ('+provider+'); host: '+host+'; compared '+String(modelCount||0)+' selected model(s); cost boundary: '+cost+'; key reference: '+keyRef+'; no provider secrets or paid-route credentials stored in feedback draft.';
   }
 
@@ -357,11 +365,12 @@
   }
 
   function routeCoverageSummary(models){
-    const selected=Array.isArray(models)?models.length:lastResults.length;
+    const requested=Array.isArray(models)?models.length:lastResults.length;
     const available=liveModels().length;
+    const selected=available?Math.min(requested,available):requested;
     const coverage=available?Math.round((selected/available)*100):0;
     const fullSet=selected>=Math.min(available,MAX_COMPARE_MODELS);
-    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
+    return 'Route coverage: '+String(selected)+' selected of '+String(available)+' visible live route(s) at compare time; '+String(coverage)+'% coverage; requested routes: '+String(requested)+'; selection cap: '+String(MAX_COMPARE_MODELS)+' model(s); full selected set: '+(fullSet?'yes':'no')+'; '+routeLabelSummary(models)+'; route labels only, raw prompts and answers not stored.';
   }
 
   function compareRouteCoverageSummary(){
@@ -381,9 +390,11 @@
   function evidenceSnapshot(prompt,profile,url,models){
     const host=(()=>{try{return new URL(url).host||'not-recorded';}catch(error){return 'not-recorded';}})();
     const modelIds=Array.isArray(models)?models.map(model=>model.id||model.label).filter(Boolean).join('|'):'';
+    const promptWords=(String(prompt||'').match(/\S+/g)||[]).length;
+    const promptPresent=String(prompt||'').trim()?'present':'empty';
     return [
-      'prompt:'+stableFingerprint(prompt),
-      'words:'+String((String(prompt||'').match(/\S+/g)||[]).length),
+      'prompt:'+promptPresent,
+      'words:'+String(promptWords),
       'route:'+host,
       'provider:'+String(profile?.provider||'openai-compatible'),
       'models:'+modelIds
