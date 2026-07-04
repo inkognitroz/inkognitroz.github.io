@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-image-truth-v1';
+  const P0_RUNTIME_VERSION='20260704-image-feedback-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1534,6 +1534,70 @@
         local_feedback_count:feedbackInboxItems().length
       });
     });
+  }
+
+  function queueMediaCapabilityFeedback(media){
+    if(!media)return false;
+    const source=mediaSourceLabel(media.source);
+    const type=String(media.type||'image/*').slice(0,80);
+    const size=String(media.size_label||formatFileSize(media.size_bytes)).slice(0,40);
+    const suggestion=[
+      'Image/media capability gap from public chat.',
+      'A tester selected an image from '+source+' ('+type+', '+size+'), but protected image analysis is not live.',
+      'Expected product behavior: camera/library image can be analyzed through a protected vision node with consent, size limits, log redaction, signed receipt and rollback.',
+      'No raw image was uploaded, stored or sent to a provider from the browser.'
+    ].join('\n');
+    const item={
+      id:'fb_media_'+telemetryEventId().replace(/^evt_/,''),
+      created_at:new Date().toISOString(),
+      target:'feedback',
+      source:'mmir-chat-media-boundary',
+      status:'draft_ready',
+      priority:'p1-demo-vision',
+      title:'Image selected but protected vision route is not live',
+      suggestion,
+      classification:{lane:'L1 Frontend UX / L2 protected media node',repo:'inkognitroz.github.io + mmir-api-gateway',backlog_hint:'protected-vision-route'},
+      no_paid_routes_started:true,
+      provider_called:false,
+      server_state:'pending'
+    };
+    saveFeedbackInboxItem(item);
+    markFeedbackCaptured('media_capability_gap');
+    captureInteraction('media_capability_gap_captured',{
+      source:media.source||'',
+      type,
+      size_bytes:Number(media.size_bytes)||0,
+      raw_image_sent:false,
+      no_server_upload:true,
+      local_feedback_count:feedbackInboxItems().length
+    });
+    submitFeedbackMentionCommand({
+      target:'feedback',
+      suggestion,
+      source:'mmir-chat-media-boundary',
+      implicit_feedback:true
+    }).then(plan=>{
+      removeFeedbackInboxItem(item.id);
+      saveFeedbackInboxItem(plan?.inbox_item||{
+        ...item,
+        status:'submitted',
+        server_state:'synced'
+      });
+      markFeedbackCaptured('media_capability_gap_synced');
+      captureInteraction('media_capability_gap_synced',{
+        source:media.source||'',
+        local_feedback_count:feedbackInboxItems().length
+      });
+    }).catch(()=>{
+      saveFeedbackInboxItem({...item,server_state:'local_only'});
+      markFeedbackCaptured('media_capability_gap_local_only');
+      captureInteraction('media_capability_gap_sync_failed',{
+        source:media.source||'',
+        reason:'endpoint_unreachable',
+        local_feedback_count:feedbackInboxItems().length
+      });
+    });
+    return true;
   }
 
   async function handleOwnerSuggestionCommand(prompt,input){
@@ -3539,6 +3603,7 @@
       raw_image_sent:false,
       no_server_upload:true
     });
+    queueMediaCapabilityFeedback(media);
     const inputEl=document.getElementById('p0-input');
     if(inputEl&&!String(inputEl.value||'').trim()){
       inputEl.value='Bildet er valgt lokalt, men råbildet er ikke sendt. Bildeanalyse er ikke aktivert ennå. Jeg beskriver bildet selv: ';
