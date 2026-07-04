@@ -43,7 +43,7 @@ requireIncludes(shell, "label=visibleCount?'Superboost · '+String(visibleCount)
 requireIncludes(shell, 'id="p0-token-counter"', 'Status rail must expose a discreet token counter health signal.');
 requireIncludes(shell, 'function recordTokenUsage(payload,source', 'Runtime must record token usage after chat and swarm responses.');
 requireIncludes(shell, "recordTokenUsage(data,'gateway-fanout')", 'Gateway Superboost/Debate responses must update the token counter.');
-requireIncludes(shell, "recordTokenUsage(hostedData,'hosted-chat')", 'Hosted chat responses must update the token counter.');
+requireIncludes(shell, "recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat')", 'Hosted and protected-vision chat responses must update the token counter.');
 requireIncludes(shell, 'id="p0-council"', 'Composer must expose Debate/Supergeni Council as a visible scaled-intelligence path.');
 requireIncludes(shell, 'function renderCouncilCta()', 'Debate/Supergeni Council CTA must update from live route inventory.');
 requireIncludes(shell, "label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate'", 'Debate CTA must show the live AI route count when available.');
@@ -116,8 +116,8 @@ requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemCon
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260704-image-attachment-boundary-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260704-image-attachment-boundary-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260704-protected-vision-route-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260704-protected-vision-route-v1"', 'Asset manifest must track the swarm WOW runtime version.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');

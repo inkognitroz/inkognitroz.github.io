@@ -47,6 +47,7 @@
   const FEEDBACK_INBOX_PLAN_PATH='/feedback/inbox/plan';
   const TELEMETRY_EVENTS_PATH='/telemetry/events';
   const DEMO_TRANSCRIPT_PATH='/telemetry/demo-transcript';
+  const VISION_PREVIEW_PATH='/chat/vision/preview';
   const OWNER_INTELLIGENCE_PING_PATH='/owner/intelligence/ping';
   const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';
   const SUPERGENI_QUALITY_PATH='/intelligence/supergeni/quality';
@@ -56,7 +57,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-image-attachment-boundary-v1';
+  const P0_RUNTIME_VERSION='20260704-protected-vision-route-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -1626,10 +1627,10 @@
     const type=String(media.type||'image/*').slice(0,80);
     const size=String(media.size_label||formatFileSize(media.size_bytes)).slice(0,40);
     const suggestion=[
-      'Image/media capability gap from public chat.',
-      'A tester selected an image from '+source+' ('+type+', '+size+'), but protected image analysis is not live.',
-      'Expected product behavior: camera/library image can be analyzed through a protected vision node with consent, size limits, log redaction, signed receipt and rollback.',
-      'Raw image should only be sent to the protected gateway boundary, never logged or sent to a provider before vision-node promotion.'
+      'Image/media usage signal from public chat.',
+      'A tester selected an image from '+source+' ('+type+', '+size+') and expects MMIR to analyze it.',
+      'Expected product behavior: camera/library image is analyzed through the protected vision route with consent, size limits, log redaction, signed receipt and rollback.',
+      'Raw image should only be sent to /chat/vision/preview after the user explicitly sends the message; never log or echo raw bytes.'
     ].join('\n');
     const item={
       id:'fb_media_'+telemetryEventId().replace(/^evt_/,''),
@@ -1638,7 +1639,7 @@
       source:'mmir-chat-media-boundary',
       status:'draft_ready',
       priority:'p1-demo-vision',
-      title:'Image selected but protected vision route is not live',
+      title:'Image selected for protected vision analysis',
       suggestion,
       classification:{lane:'L1 Frontend UX / L2 protected media node',repo:'inkognitroz.github.io + mmir-api-gateway',backlog_hint:'protected-vision-route'},
       no_paid_routes_started:true,
@@ -1646,13 +1647,13 @@
       server_state:'pending'
     };
     saveFeedbackInboxItem(item);
-    markFeedbackCaptured('media_capability_gap');
-    captureInteraction('media_capability_gap_captured',{
+    markFeedbackCaptured('media_vision_usage');
+    captureInteraction('media_vision_usage_captured',{
       source:media.source||'',
       type,
       size_bytes:Number(media.size_bytes)||0,
-      raw_image_sent:false,
-      no_server_upload:true,
+      raw_image_sent_to_gateway:false,
+      provider_called:false,
       local_feedback_count:feedbackInboxItems().length
     });
     submitFeedbackMentionCommand({
@@ -1667,15 +1668,15 @@
         status:'submitted',
         server_state:'synced'
       });
-      markFeedbackCaptured('media_capability_gap_synced');
-      captureInteraction('media_capability_gap_synced',{
+      markFeedbackCaptured('media_vision_usage_synced');
+      captureInteraction('media_vision_usage_synced',{
         source:media.source||'',
         local_feedback_count:feedbackInboxItems().length
       });
     }).catch(()=>{
       saveFeedbackInboxItem({...item,server_state:'local_only'});
-      markFeedbackCaptured('media_capability_gap_local_only');
-      captureInteraction('media_capability_gap_sync_failed',{
+      markFeedbackCaptured('media_vision_usage_local_only');
+      captureInteraction('media_vision_usage_sync_failed',{
         source:media.source||'',
         reason:'endpoint_unreachable',
         local_feedback_count:feedbackInboxItems().length
@@ -3631,22 +3632,6 @@
     return size+' B';
   }
 
-  function selectedMediaPromptGuard(media){
-    if(!media)return '';
-    const safeName=String(media.name||'bilde').slice(0,120);
-    const safeType=String(media.type||'image/*').slice(0,80);
-    const safeSize=String(media.size_label||formatFileSize(media.size_bytes)).slice(0,40);
-    return [
-      'MMIR media boundary:',
-      'A user selected an image in the browser and explicitly sent it with this chat message.',
-      'raw_image_sent_to_gateway:true',
-      'provider_called:false_until_protected_vision_route:true',
-      'Image metadata only: '+safeName+' · '+safeType+' · '+safeSize+'.',
-      'Do not claim that you can see, analyze, edit, inspect, or describe the image.',
-      'If the gateway returns a vision boundary, explain briefly in Norwegian that the protected vision route is not active yet and ask the user to describe the image.'
-    ].join('\n');
-  }
-
   function readFileAsDataUrl(file){
     return new Promise((resolve,reject)=>{
       const reader=new FileReader();
@@ -3663,7 +3648,7 @@
       routeStatus('Bildevalg utilgjengelig · ingen opplasting startet','error');
       return false;
     }
-    captureInteraction('media_picker_started',{source,raw_image_sent:false,no_server_upload:true});
+    captureInteraction('media_picker_started',{source,raw_image_sent_to_gateway:false,provider_called:false});
     input.value='';
     closeMenus();
     input.click();
@@ -3728,13 +3713,13 @@
     }
     append(
       'assistant',
-      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nTrykk send for å sende bildet til MMIRs beskyttede vision-boundary. Bildet sendes ikke videre til modell/provider før en verifisert vision-node er aktiv.',
+      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nTrykk send for å analysere bildet via MMIRs beskyttede vision-route. Råbildet skal ikke logges eller vises tilbake; kvitteringen viser hvilken vision-modell som ble brukt.',
       'MMIR bildevalg',
-      'Bilde valgt · klart for protected vision-boundary · provider_called:false',
+      'Bilde valgt · klart for protected vision-route',
       {variant:'media',actions:false}
     );
     status('Bilde valgt lokalt.','ready');
-    routeStatus('Bilde klart · sendes til protected boundary ved neste melding','hosted');
+    routeStatus('Bilde klart · sendes til protected vision-route ved neste melding','hosted');
     inputEl?.focus();
     return true;
   }
@@ -5892,6 +5877,23 @@
     });
   }
 
+  async function chatVisionPreviewData(prompt,signal,media){
+    const systemPrompt='You are Supergeni using MMIR protected vision. Answer in Norwegian. Be concrete about what the image shows, but say when visual details are uncertain. Never reveal raw image bytes.';
+    const payload={
+      vision_consent:true,
+      messages:hostedConversationMessages(prompt,systemPrompt,media),
+      max_tokens:answerTokenBudget(),
+      temperature:0.2
+    };
+    return fetchJson(API_URL+VISION_PREVIEW_PATH,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      timeoutMs:80000,
+      signal
+    });
+  }
+
   async function chatHosted(prompt,signal,model=defaultHostedModel()){
     const data=await chatHostedData(prompt,signal,model);
     return responseText(data)||((model?.label||'Hosted route')+' returned an empty response.');
@@ -6834,9 +6836,7 @@
       input?.focus();
       return;
     }
-    const mediaGuard=selectedMediaPromptGuard(pendingMedia);
-    const baseRoutePrompt=smart.prompt||prompt;
-    const guardedRoutePrompt=mediaGuard?mediaGuard+'\n\nUser text:\n'+baseRoutePrompt:baseRoutePrompt;
+    const guardedRoutePrompt=smart.prompt||prompt;
     state.pendingMedia=null;
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
@@ -6851,8 +6851,10 @@
       let hostedData=null;
       const answer=model.route==='local'
         ? await chatLocal(routePrompt,model,signal)
-        : responseText((hostedData=await chatHostedData(routePrompt,signal,model,pendingMedia)))||((model?.label||'Hosted route')+' returned an empty response.');
-      if(hostedData)recordTokenUsage(hostedData,'hosted-chat');
+        : pendingMedia
+          ? responseText((hostedData=await chatVisionPreviewData(routePrompt,signal,pendingMedia)))||'Vision-ruten svarte tomt. Prøv igjen med et tydeligere bilde eller en kortere forespørsel.'
+          : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
+      if(hostedData)recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
