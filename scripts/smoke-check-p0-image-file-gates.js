@@ -31,8 +31,7 @@ const p0ForbiddenLabels = [
   'Upload image',
   'Create image',
   'Generate image',
-  'Analyze image',
-  'Vision'
+  'Analyze image'
 ];
 
 for (const label of p0ForbiddenLabels) {
@@ -77,17 +76,32 @@ requireIncludes(
 requireIncludes(
   p0Runtime,
   'provider_called:false',
-  'P0 photo picker must keep provider calls blocked until a protected vision node is live.'
+  'P0 photo picker must record that no provider is called at selection time.'
 );
 requireIncludes(
   p0Runtime,
   'function mediaChatContent(prompt,media)',
-  'P0 photo picker must convert selected images into a multimodal chat payload for the protected gateway boundary.'
+  'P0 photo picker must convert selected images into a multimodal chat payload for the protected vision route.'
 );
 requireIncludes(
   p0Runtime,
   "{type:'image_url',image_url:{url:media.data_url}}",
-  'P0 photo picker must send selected images as image_url content only through the chat payload boundary.'
+  'P0 photo picker must send selected images as image_url content only through the protected vision route.'
+);
+requireIncludes(
+  p0Runtime,
+  "const VISION_PREVIEW_PATH='/chat/vision/preview'",
+  'P0 photo picker must call the live protected vision preview route after image selection.'
+);
+requireIncludes(
+  p0Runtime,
+  'vision_consent:true',
+  'P0 photo picker must send explicit consent with the user-triggered vision request.'
+);
+requireIncludes(
+  p0Runtime,
+  'chatVisionPreviewData(routePrompt,signal,pendingMedia)',
+  'P0 photo picker must route image prompts to the protected vision preview endpoint, not the text-only chat endpoint.'
 );
 requireIncludes(
   p0Runtime,
@@ -111,13 +125,13 @@ requireIncludes(
 );
 requireIncludes(
   p0Runtime,
-  'protected vision-boundary',
-  'P0 photo picker must tell users that selected images go through the protected vision-boundary.'
+  'protected vision-route',
+  'P0 photo picker must tell users that selected images go through the protected vision route.'
 );
-requireIncludes(
+forbidIncludes(
   p0Runtime,
   'Do not claim that you can see, analyze, edit, inspect, or describe the image.',
-  'P0 chat runtime must guard hosted prompts against false image-analysis claims before a vision node is promoted.'
+  'P0 chat runtime must not keep the obsolete no-analysis guard after a live protected vision route is wired.'
 );
 forbidIncludes(
   p0Runtime,

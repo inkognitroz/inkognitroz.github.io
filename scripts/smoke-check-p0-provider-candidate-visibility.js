@@ -94,13 +94,13 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'await chatHostedData(routePrompt,signal,model,pendingMedia)',
-  'Sending a selected hosted route must call chatHostedData with that model and any pending media boundary payload.'
+  'chatVisionPreviewData(routePrompt,signal,pendingMedia)',
+  'Sending an image attachment must call the protected vision preview route instead of text-only hosted chat.'
 );
 requireIncludes(
   shell,
-  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,pendingMedia)))',
-  'Selected hosted route responses must preserve API metadata before extracting answer text.'
+  'responseText((hostedData=await chatHostedData(routePrompt,signal,model)))',
+  'Selected hosted route text responses must preserve API metadata before extracting answer text.'
 );
 requireIncludes(
   shell,
@@ -124,7 +124,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-image-attachment-boundary-v1',
+  'p0-chat-shell.js?v=20260704-protected-vision-route-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -134,7 +134,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-image-attachment-boundary-v1"',
+  '"p0-chat-shell.js": "20260704-protected-vision-route-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
