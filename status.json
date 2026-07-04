@@ -1,16 +1,16 @@
 {
   "service": "MMIR AI Control Plane",
-  "status": "public_chat_shell_and_route_trust_online",
+  "status": "chat_first_supergeni_demo_online",
   "identity": "The orchestration layer for trusted AI",
   "frontend": "https://mmir.ai/mmir.html",
   "managed_api": "https://api.mmir.ai",
-  "managed_api_version": "2026-06-24-route-inventory-recovery-v1",
-  "free_active_node": "browser-guide",
+  "managed_api_version": "connected-intelligence-ready",
+  "free_active_node": "supergeni-connected",
   "target": "World-class MMIR chat + active AI nodes + local/hosted model orchestration",
   "first_click_path": "Open mmir.ai -> chat through free active node -> connect local AI -> add own models",
   "no_paid_routes_started": true,
   "backend_health_url": "https://api.mmir.ai/status",
-  "message": "Public chat shell is online: first screen is chat-first, Council fusion proof and route policy are visible, route inventory refresh failures preserve the last safe public inventory, feedback capture stays local/public-safe, and the free first chat path works without starting paid provider routes.",
-  "known_caveat": "Managed provider routing remains planned until auth, rate limits, audit logging and server-side provider secrets are in place. Local node health is user-controlled and localhost-first.",
-  "last_updated": "2026-06-24T16:36:06Z"
+  "message": "Public chat shell is online: first screen is chat-first, Supergeni routes live-data, tools, skills and verified provider/node routes through the managed API, photo/library selection is guarded and feedback capture is active without sending raw images or starting paid provider routes.",
+  "known_caveat": "Actual image analysis is intentionally blocked until a protected vision node is live with consent, size limits, redaction, signed receipt and rollback. Free-quota provider routes may be temporarily degraded and fail closed.",
+  "last_updated": "2026-07-04T16:05:41Z"
 }
