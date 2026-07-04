@@ -84,6 +84,21 @@ requireIncludes(
   "append(\n      'assistant',\n      'Bildet er valgt fra '",
   'P0 photo picker must acknowledge local selection in chat instead of silently doing nothing.'
 );
+requireIncludes(
+  p0Runtime,
+  'Bildeanalyse er ikke aktivert ennå.',
+  'P0 photo picker must tell users that real image analysis is not active before a protected vision route exists.'
+);
+requireIncludes(
+  p0Runtime,
+  'Do not claim that you can see, analyze, edit, inspect, or describe the image.',
+  'P0 chat runtime must guard hosted prompts against false image-analysis claims when raw_image_sent:false.'
+);
+forbidIncludes(
+  p0Runtime,
+  'Hva kan du hjelpe meg å gjøre med bildet?',
+  'P0 photo picker must not prefill an open-ended prompt that makes unsupported image analysis feel available.'
+);
 
 forbidIncludes(
   html,

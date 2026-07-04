@@ -649,12 +649,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260703-media-picker-v1',
+  'p0-chat-shell.js?v=20260704-image-truth-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260703-media-picker-v1"',
+  '"p0-chat-shell.js": "20260704-image-truth-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

@@ -56,7 +56,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260703-media-picker-v1';
+  const P0_RUNTIME_VERSION='20260704-image-truth-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3474,6 +3474,22 @@
     return size+' B';
   }
 
+  function selectedMediaPromptGuard(media){
+    if(!media)return '';
+    const safeName=String(media.name||'bilde').slice(0,120);
+    const safeType=String(media.type||'image/*').slice(0,80);
+    const safeSize=String(media.size_label||formatFileSize(media.size_bytes)).slice(0,40);
+    return [
+      'MMIR media boundary:',
+      'A user selected an image locally in the browser, but the raw image was not uploaded or sent to the model.',
+      'raw_image_sent:false',
+      'no_server_upload:true',
+      'Image metadata only: '+safeName+' · '+safeType+' · '+safeSize+'.',
+      'Do not claim that you can see, analyze, edit, inspect, or describe the image.',
+      'If the user asks about the image, say briefly in Norwegian that image analysis is not active yet, ask them to describe the image, and say MMIR can route real vision when a protected vision node is active.'
+    ].join('\n');
+  }
+
   function triggerPhotoPicker(source){
     const input=document.getElementById(source==='camera'?'p0-photo-camera':'p0-photo-library');
     if(!input){
@@ -3525,12 +3541,12 @@
     });
     const inputEl=document.getElementById('p0-input');
     if(inputEl&&!String(inputEl.value||'').trim()){
-      inputEl.value='Jeg har valgt et bilde fra '+mediaSourceLabel(source)+'. Hva kan du hjelpe meg å gjøre med bildet?';
+      inputEl.value='Bildet er valgt lokalt, men råbildet er ikke sendt. Bildeanalyse er ikke aktivert ennå. Jeg beskriver bildet selv: ';
       autosizeInput();
     }
     append(
       'assistant',
-      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nRåbildet er fortsatt bare lokalt i nettleseren og er ikke sendt til MMIR. Skriv hva du vil gjøre med bildet. Supergeni kan foreløpig bruke trygg metadata/brief, og sender først råbilde når en beskyttet vision-route er aktiv.',
+      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nRåbildet er fortsatt bare lokalt i nettleseren og er ikke sendt til MMIR. Bildeanalyse og redigering er ikke aktivert ennå. Beskriv bildet med tekst, eller vent til en beskyttet vision-route er aktiv.',
       'MMIR bildevalg',
       'Bilde valgt · lokalt i nettleseren · raw_image_sent:false',
       {variant:'media',actions:false}
@@ -6515,7 +6531,9 @@
       active_model_route:activeModel()?.route||'',
       has_prompt:true,
       answer_style:answerStyle(),
-      fast_answer_next:Boolean(state.fastAnswerOnce)
+      fast_answer_next:Boolean(state.fastAnswerOnce),
+      pending_media_local:Boolean(state.pendingMedia),
+      raw_image_sent:false
     });
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
@@ -6574,8 +6592,11 @@
       input?.focus();
       return;
     }
+    const mediaGuard=selectedMediaPromptGuard(state.pendingMedia);
     const baseRoutePrompt=smart.prompt||prompt;
-    const routePrompt=fastAnswer?fastAnswerPrompt(baseRoutePrompt):baseRoutePrompt;
+    const guardedRoutePrompt=mediaGuard?mediaGuard+'\n\nUser text:\n'+baseRoutePrompt:baseRoutePrompt;
+    state.pendingMedia=null;
+    const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
     const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
