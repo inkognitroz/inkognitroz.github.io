@@ -56,10 +56,14 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-route-context-feedback-v1';
+  const P0_RUNTIME_VERSION='20260704-demo-learning-wide-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
+  const DEMO_EMAIL_RE=/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+  const DEMO_NORWEGIAN_FNR_RE=/\b\d{6}[ .-]?\d{5}\b/g;
+  const DEMO_NORWEGIAN_ACCOUNT_RE=/\b\d{4}[ .]?\d{2}[ .]?\d{5}\b/g;
+  const DEMO_PHONE_RE=/\b(?:\+?47[\s.-]?)?(?:\d[\s.-]?){8}\b/g;
   const LOCAL_INSTALL_COMMANDS=window.MimirLocalInstallCommands||{};
   const P0_TEXT=window.MimirP0Text||{};
   const P0_CLIPBOARD=window.MimirP0Clipboard||{};
@@ -911,9 +915,9 @@
     const notice={
       id:'demo-consent-'+Date.now().toString(36),
       role:'assistant',
-      content:'Demo-testmodus: MMIR kan lagre avgrensede og redigerte chatutdrag, klikk og feedback for å forbedre produktet. Ikke lim inn passord, API-nøkler eller sensitiv informasjon. Slå av med ?demo_capture=0 eller Superprivate mode.',
+      content:'DEMO: MMIR samler inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst for å lære raskere i testfasen. Ikke lim inn passord, API-nøkler eller sensitiv informasjon. Slå av med ?demo_capture=0 eller Superprivate mode.',
       label:'MMIR Demo',
-      receipt:'Demo consent · product learning · redacted transcript',
+      receipt:'Visible demo learning · conversation + feedback + route evidence · redacted',
       variant:'notice',
       actions:false,
       createdAt:new Date().toISOString()
@@ -940,28 +944,70 @@
     return hostedDemoOrigin()&&demoTranscriptCaptureEnabled();
   }
 
-  function redactDemoTranscriptText(value){
+  function redactDemoTranscriptText(value,limit=4000){
     return String(value||'')
       .replace(/\r/g,'')
       .replace(/\n{5,}/g,'\n\n\n\n')
       .trim()
-      .slice(0,2000)
+      .slice(0,limit)
       .replace(OWNER_SECRETISH_RE,'[redacted-secret-like-value]')
-      .replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]');
+      .replace(OWNER_PROVIDER_KEY_RE,'[redacted-provider-key]')
+      .replace(DEMO_NORWEGIAN_FNR_RE,'[redacted-fnr]')
+      .replace(DEMO_EMAIL_RE,'[redacted-epost]')
+      .replace(DEMO_NORWEGIAN_ACCOUNT_RE,'[redacted-kontonr]')
+      .replace(DEMO_PHONE_RE,'[redacted-tlf]');
   }
 
   function demoTranscriptMessages(){
     return state.messages
       .filter(message=>message&&(message.role==='user'||message.role==='assistant'))
-      .slice(-12)
-      .map(message=>({
-        id:String(message.id||'').slice(0,96),
-        role:message.role,
-        label:String(message.label||'').slice(0,80),
-        created_at:String(message.createdAt||'').slice(0,80),
-        content:redactDemoTranscriptText(message.content||'')
-      }))
+      .slice(-40)
+      .map(message=>{
+        const content=redactDemoTranscriptText(message.content||'');
+        const receipt=redactDemoTranscriptText(message.receipt||'',1200);
+        const item={
+          id:String(message.id||'').slice(0,96),
+          role:message.role,
+          label:String(message.label||'').slice(0,80),
+          variant:String(message.variant||'').slice(0,80),
+          created_at:String(message.createdAt||'').slice(0,80),
+          content,
+          truncated:Boolean(message.truncated),
+          continuation_needed:Boolean(message.truncated||message.continuationLabel||message.continuationSuggestedMessage),
+          actions_available:message.actions!==false
+        };
+        if(receipt)item.receipt=receipt;
+        if(message.command)item.command=String(message.command||'').slice(0,80);
+        if(message.commandLabel)item.command_label=String(message.commandLabel||'').slice(0,120);
+        return item;
+      })
       .filter(message=>message.content);
+  }
+
+  function demoLearningClientContext(){
+    const params=demoTranscriptParams();
+    const resolvedTimezone=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(error){return '';}})();
+    const storageWritable=(()=>{try{window.sessionStorage.setItem('mmir-demo-storage-probe','1');window.sessionStorage.removeItem('mmir-demo-storage-probe');return true;}catch(error){return false;}})();
+    return {
+      demo_learning_scope:'wide_visible_demo',
+      capture_scope:['conversation','feedback','clicks','route_receipts','sources','latency','browser_context','device_context'],
+      notice_visible:readStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'')==='shown',
+      hosted_demo:hostedDemoOrigin(),
+      browser_language:String(navigator.language||'').slice(0,32),
+      browser_languages:Array.isArray(navigator.languages)?navigator.languages.slice(0,5).join(','):'',
+      timezone:resolvedTimezone,
+      user_agent_family:String(navigator.userAgent||'').slice(0,180),
+      platform:String(navigator.platform||'').slice(0,80),
+      viewport_width:Number(window.innerWidth)||0,
+      viewport_height:Number(window.innerHeight)||0,
+      screen_width:Number(window.screen?.width)||0,
+      screen_height:Number(window.screen?.height)||0,
+      color_depth:Number(window.screen?.colorDepth)||0,
+      device_pixel_ratio:Number(window.devicePixelRatio)||1,
+      online:navigator.onLine!==false,
+      browser_storage_available:storageWritable,
+      query_flags:[...params.keys()].slice(0,12)
+    };
   }
 
   function demoTranscriptHash(messages){
@@ -990,6 +1036,7 @@
       runtime_version:P0_RUNTIME_VERSION,
       session_id:interactionSessionId(),
       metadata:sanitizeTelemetryMetadata({
+        ...demoLearningClientContext(),
         reason,
         message_count:messages.length,
         privacy_mode:privacyMode(),
