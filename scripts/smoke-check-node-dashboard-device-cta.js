@@ -28,8 +28,11 @@ requireIncludes(dashboard, 'function normalizedDoctor(report,hardware)', 'Doctor
 requireIncludes(dashboard, 'const fallbackAction=nextAction(checks,hardware);', 'Doctor fallback actions must use device-aware CTA decisions.');
 requireIncludes(dashboard, "['start-ollama','install-model','repair-model-pull','repair-model-install']", 'Generic connector doctor actions must not hide device-aware repair/model CTAs.');
 requireIncludes(dashboard, 'const report=normalizedDoctor(doctorReport,hardware);', 'Ready render must pass hardware context into doctor normalization.');
+requireIncludes(dashboard, "const starter={model:payload.model,device:payload.device,label:payload.model||'free starter'};", 'Node handoff model actions must preserve the device-fit starter for model library focus.');
+requireIncludes(dashboard, "record?.('recommended-starter',{...starter,source:'node-handoff',free:true});", 'Node handoff model actions must mark the device-fit starter as recommended.');
+requireIncludes(dashboard, "detail:{starter,source:'node-handoff',no_paid_routes_started:true}", 'Node handoff model actions must pass the chosen starter into model library focus.');
 
-const expectedVersion = '20260625-node-handoff-freshness-v1';
+const expectedVersion = '20260705-node-handoff-proof-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node-dashboard device-aware CTA update.');
 }
