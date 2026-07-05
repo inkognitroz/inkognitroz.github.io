@@ -19,6 +19,21 @@ function requireNotIncludes(source, needle, message) {
 
 requireIncludes(
   shell,
+  "function hostedModelsPath()",
+  'P0 hosted-model refresh must centralize the public compact/local fallback endpoint choice.'
+);
+requireIncludes(
+  shell,
+  "host==='mmir.ai'||host==='www.mmir.ai'?'/v1/models?view=compact':'/v1/models'",
+  'P0 hosted-model refresh must use compact inventory on the public origin without breaking local render tests.'
+);
+requireIncludes(
+  shell,
+  "fetchJson(API_URL+hostedModelsPath(),{timeoutMs:9000})",
+  'P0 hosted-model refresh must use the hosted models path helper.'
+);
+requireIncludes(
+  shell,
   'function visibleHostedModel(model)',
   'P0 shell must keep provider candidates visible even when they are not executable.'
 );
@@ -124,7 +139,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260705-fast-answer-route-v1',
+  'p0-chat-shell.js?v=20260705-fast-answer-compact-models-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -134,7 +149,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260705-fast-answer-route-v1"',
+  '"p0-chat-shell.js": "20260705-fast-answer-compact-models-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(
