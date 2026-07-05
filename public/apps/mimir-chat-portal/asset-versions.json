@@ -52,6 +52,8 @@
     "runtime-fact-answer-guard.js": "20260605-fact-answer-guard-v1",
     "runtime-label-normalizer.js": "20260617-demo-quality-v1",
     "runtime-legacy-installer-guard.js": "20260531-mac-installer-v1",
-    "runtime-mobile-anchors.js": "20260605-mobile-anchors-v1"
+    "runtime-mobile-anchors.js": "20260605-mobile-anchors-v1",
+    "user-journeys.css": "20260705-public-journey-map-v1",
+    "user-journeys.js": "20260705-public-journey-map-v1"
   }
 }
