@@ -84,7 +84,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'function hostedPayload(prompt,model=defaultHostedModel(),media=null)',
+  "function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='')",
   'Hosted payload must accept the selected hosted model and optional media attachment.'
 );
 requireIncludes(
@@ -99,7 +99,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'responseText((hostedData=await chatHostedData(routePrompt,signal,model)))',
+  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt)))',
   'Selected hosted route text responses must preserve API metadata before extracting answer text.'
 );
 requireIncludes(
@@ -124,7 +124,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-location-context-v1',
+  'p0-chat-shell.js?v=20260705-fast-answer-route-v1',
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
@@ -134,7 +134,7 @@ requireIncludes(
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-location-context-v1"',
+  '"p0-chat-shell.js": "20260705-fast-answer-route-v1"',
   'Asset manifest must track the visible provider candidate runtime.'
 );
 requireIncludes(

@@ -76,6 +76,9 @@ requireIncludes(handleToolbarTool, 'saveMemorySnapshot();', 'Toolbar brain must 
 requireIncludes(handleToolbarTool, 'stopActiveResponse();', 'Toolbar stop must reuse the active abort path.');
 requireIncludes(shell, 'function fastAnswerPrompt(prompt)', 'Fast answer must keep a dedicated short-answer prompt wrapper.');
 requireIncludes(shell, 'state.fastAnswerOnce=false;', 'Fast answer must be a one-shot mode, not a hidden permanent setting.');
+requireIncludes(shell, "function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt='')", 'Hosted payloads must know the clean display prompt separately from wrapped route prompts.');
+requireIncludes(shell, "history[history.length-1].content===currentUserContent||history[history.length-1].content===displayUserContent", 'Wrapped fast-answer prompts must drop the just-submitted raw display prompt from route history.');
+requireIncludes(shell, 'chatHostedData(routePrompt,signal,model,null,prompt)', 'Fast-answer hosted sends must pass the clean display prompt for history de-dupe.');
 requireIncludes(updateSendControl, 'updatePinnedToolbarToolStates();', 'Pinned stop state must track the active send/stop state.');
 requireIncludes(updateSendControl, 'renderSuperboostCta();', 'Superboost CTA must disable during active responses.');
 requireIncludes(css, '.p0-toolbar-tools', 'CSS must keep optional tools aligned in the composer toolbar.');
@@ -89,10 +92,10 @@ requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion b
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
 requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260704-location-context-v1', 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260705-fast-answer-route-v1', 'Public page must cache-bust the toolbar runtime.');
 requireIncludes(html, 'p0-chat-shell.css?v=20260704-image-feedback-v1', 'Public page must cache-bust the toolbar CSS.');
 requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260704-location-context-v1"', 'Asset manifest must track toolbar runtime version.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260705-fast-answer-route-v1"', 'Asset manifest must track toolbar runtime version.');
 requireIncludes(manifest, '"p0-chat-shell.css": "20260704-image-feedback-v1"', 'Asset manifest must track toolbar CSS version.');
 requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
 

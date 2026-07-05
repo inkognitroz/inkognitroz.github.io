@@ -291,6 +291,8 @@
       feedbackBtn.disabled=!lastSynthesis.content;
       feedbackBtn.dataset.captured='false';
       feedbackBtn.textContent='Useful synthesis';
+      feedbackBtn.removeAttribute('aria-label');
+      feedbackBtn.removeAttribute('title');
     }
   }
 
@@ -443,6 +445,8 @@
       feedbackBtn.dataset.captured='true';
       feedbackBtn.disabled=true;
       feedbackBtn.textContent='Useful saved';
+      feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Run a new synthesis to capture another signal.');
+      feedbackBtn.title='Useful synthesis saved. Run a new synthesis to capture another signal.';
     }
     setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.','ready');
   }
@@ -462,6 +466,8 @@
       feedbackBtn.disabled=true;
       feedbackBtn.dataset.captured='false';
       feedbackBtn.textContent='Useful synthesis';
+      feedbackBtn.removeAttribute('aria-label');
+      feedbackBtn.removeAttribute('title');
     }
     outputEl.innerHTML='';
     lastResults=[];

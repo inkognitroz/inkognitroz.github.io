@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260704-location-context-v1';
+  const P0_RUNTIME_VERSION='20260705-fast-answer-route-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -5883,10 +5883,11 @@
     ];
   }
 
-  function hostedConversationMessages(prompt,systemPrompt,media=null){
+  function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt=''){
     const currentUserContent=chatPayloadContent(prompt,1800);
+    const displayUserContent=chatPayloadContent(displayPrompt,1800);
     const history=hostedConversationHistory();
-    if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===currentUserContent)history.pop();
+    if(history.length&&history[history.length-1].role==='user'&&(history[history.length-1].content===currentUserContent||history[history.length-1].content===displayUserContent))history.pop();
     const memoryContext=hostedConversationMemoryContext(history);
     return [
       {role:'system',content:[systemPrompt,memoryContext].filter(Boolean).join('\n\n')},
@@ -5895,7 +5896,7 @@
     ];
   }
 
-  function hostedPayload(prompt,model=defaultHostedModel(),media=null){
+  function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt=''){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
@@ -5906,7 +5907,7 @@
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.';
     return {
       model:modelId,
-      messages:hostedConversationMessages(prompt,systemPrompt,media),
+      messages:hostedConversationMessages(prompt,systemPrompt,media,displayPrompt),
       stream:false,
       temperature:0.7,
       max_tokens:answerTokenBudget()
@@ -5986,8 +5987,8 @@
       .trim();
   }
 
-  async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null){
-    const payload=hostedPayload(prompt,model,media);
+  async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null,displayPrompt=''){
+    const payload=hostedPayload(prompt,model,media,displayPrompt);
     return fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -6976,7 +6977,7 @@
         ? await chatLocal(routePrompt,model,signal)
         : pendingMedia
           ? responseText((hostedData=await chatVisionPreviewData(routePrompt,signal,pendingMedia)))||'Vision-ruten svarte tomt. Prøv igjen med et tydeligere bilde eller en kortere forespørsel.'
-          : responseText((hostedData=await chatHostedData(routePrompt,signal,model)))||((model?.label||'Hosted route')+' returned an empty response.');
+          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt)))||((model?.label||'Hosted route')+' returned an empty response.');
       if(hostedData)recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
@@ -7035,7 +7036,7 @@
         try{
           const fallbackReceipt=routeReceipt(activeModel());
           const fallbackStarted=performance.now();
-          const fallbackData=await chatHostedData(routePrompt,signal);
+          const fallbackData=await chatHostedData(routePrompt,signal,defaultHostedModel(),null,prompt);
           const fallbackAnswer=responseText(fallbackData)||((activeModel()?.label||'Hosted route')+' returned an empty response.');
           const fallbackTruncated=responseIsTruncated(fallbackData);
           const fallbackElapsedMs=performance.now()-fallbackStarted;

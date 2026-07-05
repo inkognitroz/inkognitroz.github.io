@@ -674,7 +674,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'function hostedConversationMessages(prompt,systemPrompt,media=null)',
+  "function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt='')",
   'Hosted chat payloads must carry bounded conversation context instead of only the latest prompt.'
 );
 requireIncludes(
@@ -689,8 +689,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===currentUserContent)history.pop();",
-  'Hosted chat payloads must remove only the current duplicated user prompt, not the previous question.'
+  "if(history.length&&history[history.length-1].role==='user'&&(history[history.length-1].content===currentUserContent||history[history.length-1].content===displayUserContent))history.pop();",
+  'Hosted chat payloads must remove only the current duplicated or wrapped display user prompt, not the previous question.'
 );
 requireNotIncludes(
   shell,
@@ -699,7 +699,7 @@ requireNotIncludes(
 );
 requireIncludes(
   shell,
-  'messages:hostedConversationMessages(prompt,systemPrompt,media)',
+  'messages:hostedConversationMessages(prompt,systemPrompt,media,displayPrompt)',
   'Hosted and compare payloads must use the bounded conversation-history helper.'
 );
 requireIncludes(
@@ -729,12 +729,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260704-location-context-v1',
+  'p0-chat-shell.js?v=20260705-fast-answer-route-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260704-location-context-v1"',
+  '"p0-chat-shell.js": "20260705-fast-answer-route-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 
