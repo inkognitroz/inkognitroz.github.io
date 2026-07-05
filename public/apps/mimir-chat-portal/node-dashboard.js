@@ -96,15 +96,21 @@
     }
     return {state:'pending',title:'Repair path selected',detail:'Return after the installer or repair action; MMIR will resume this path and verify it automatically.',primary:'Resume repair',target:String(resume?.target||'#node-dashboard')};
   }
+  function resumeRefreshAttr(copy){
+    const state=String(copy?.state||'');
+    const target=String(copy?.target||'');
+    return (state==='stale'||state==='checking'||target==='#node-dashboard')?' data-node-dashboard-refresh="true"':'';
+  }
   function renderRepairResumeBanner(){
     const resume=readRepairResume();
     if(!resume)return '';
     const copy=repairResumeCopy(resume);
     const target=copy.target||'#node-dashboard';
     const isHash=target.startsWith('#');
+    const refreshAttr=resumeRefreshAttr(copy);
     return '<article class="node-resume-banner" data-state="'+safe(copy.state)+'">'+
       '<div><span>Repair resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p></div>'+
-      '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-repair-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
+      '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-repair-resume-action="'+safe(copy.state)+'"'+refreshAttr+'>'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-repair-resume-action="'+safe(copy.state)+'"'+refreshAttr+'>'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
   function handoffResumeCopy(handoff){
@@ -158,9 +164,10 @@
     const target=copy.target||'#node-dashboard';
     const isHash=target.startsWith('#');
     const freshness=nodeHandoffSavedAge(handoff);
+    const refreshAttr=resumeRefreshAttr(copy);
     return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
       '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p>'+handoffResumeGate(handoff)+'<small>'+safe(freshness)+' / '+safe(nodeHandoffTunnelProof(handoff))+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
-      '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
+      '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'"'+refreshAttr+'>'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'"'+refreshAttr+'>'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
   function cleanUrl(value){return api.cleanUrl(value);}
@@ -507,13 +514,18 @@
       });
     });
     root.querySelectorAll('[data-repair-resume-action]').forEach(link=>{
-      link.addEventListener('click',()=>{
+      link.addEventListener('click',(event)=>{
         window.MimirActivationTelemetry?.record?.('repair-resume-action',{
           status:link.getAttribute('data-repair-resume-action')||'selected',
           route:link.getAttribute('href')||'#node-dashboard',
           free:true,
           note:'Node Dashboard repair resume action selected.'
         });
+        if(link.getAttribute('data-node-dashboard-refresh')==='true'){
+          event.preventDefault();
+          load();
+          return;
+        }
         if((link.getAttribute('href')||'')==='#mimir-prompt'&&link.getAttribute('data-repair-resume-action')==='verified'){
           document.getElementById('mimir-prompt')?.focus();
           window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);
@@ -521,13 +533,18 @@
       });
     });
     root.querySelectorAll('[data-node-handoff-resume-action]').forEach(link=>{
-      link.addEventListener('click',()=>{
+      link.addEventListener('click',(event)=>{
         window.MimirActivationTelemetry?.record?.('node-handoff-resume-action',{
           status:link.getAttribute('data-node-handoff-resume-action')||'selected',
           route:link.getAttribute('href')||'#node-dashboard',
           free:true,
           note:'Node handoff resume action selected. no_paid_routes_started:true.'
         });
+        if(link.getAttribute('data-node-dashboard-refresh')==='true'){
+          event.preventDefault();
+          load();
+          return;
+        }
         if((link.getAttribute('href')||'')==='#mimir-prompt'){
           document.getElementById('mimir-prompt')?.focus();
           window.setTimeout(()=>document.getElementById('primary-chat-link')?.click(),40);

@@ -46,6 +46,9 @@ requireIncludes(dashboard, "safe(freshness)+' / '+safe(nodeHandoffTunnelProof(ha
 requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
 requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
 requireIncludes(dashboard, 'provider_secrets_stored:false', 'Node handoff resume must keep security/cost proof visible.');
+requireIncludes(dashboard, 'function resumeRefreshAttr(copy)', 'Resume banners must derive which saved states should refresh node health directly.');
+requireIncludes(dashboard, 'data-node-dashboard-refresh="true"', 'Stale/checking resume CTAs must expose direct dashboard refresh intent.');
+requireIncludes(dashboard, "if(link.getAttribute('data-node-dashboard-refresh')==='true')", 'Resume CTA handlers must intercept refresh actions.');
 requireIncludes(dashboard, 'node-handoff-resume-action', 'Node handoff resume action must be bindable.');
 requireIncludes(dashboard, "record?.('node-handoff-resume-action'", 'Node handoff resume actions must be telemetry-visible.');
 requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff resume banner must render in dashboard states.');
@@ -56,7 +59,7 @@ requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260705-node-handoff-proof-v1';
+const expectedVersion = '20260705-resume-refresh-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }
