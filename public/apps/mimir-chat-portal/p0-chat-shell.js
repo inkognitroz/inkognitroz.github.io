@@ -1047,12 +1047,29 @@
       messages
     });
     try{
-      fetch(API_URL+DEMO_TRANSCRIPT_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,credentials:'omit'}).catch(()=>{});
-      captureInteraction('demo_transcript_sent',{
-        reason,
-        message_count:messages.length,
-        demo_capture:true
-      });
+      fetch(API_URL+DEMO_TRANSCRIPT_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,credentials:'omit'})
+        .then(async response=>{
+          let result={};
+          try{result=await response.json();}catch(error){}
+          const persisted=Boolean(result?.durable_transcript_persisted);
+          captureInteraction(persisted?'demo_transcript_persisted':'demo_transcript_not_persisted',{
+            reason,
+            message_count:messages.length,
+            demo_capture:true,
+            transcript_status:response.ok?'server_response':'http_error',
+            transcript_persisted:persisted,
+            store_reason:String(result?.durable_feedback_store?.reason||result?.durable_feedback_store?.persistence_reason||result?.reason||'').slice(0,80)
+          });
+        })
+        .catch(()=>{
+          captureInteraction('demo_transcript_failed',{
+            reason,
+            message_count:messages.length,
+            demo_capture:true,
+            transcript_status:'network_error',
+            transcript_persisted:false
+          });
+        });
     }catch(error){}
   }
 

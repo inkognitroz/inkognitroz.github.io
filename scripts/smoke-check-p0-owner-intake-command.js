@@ -169,6 +169,16 @@ requireIncludes(
 );
 requireIncludes(
   shell,
+  "captureInteraction(persisted?'demo_transcript_persisted':'demo_transcript_not_persisted'",
+  'P0 shell must report actual demo transcript persistence, not just that an upload was attempted.'
+);
+requireIncludes(
+  shell,
+  "captureInteraction('demo_transcript_failed'",
+  'P0 shell must surface failed demo transcript uploads as owner-visible learning telemetry.'
+);
+requireIncludes(
+  shell,
   "scheduleDemoTranscriptCapture('message_appended'",
   'P0 shell must capture demo transcript context when users add chat messages.'
 );
