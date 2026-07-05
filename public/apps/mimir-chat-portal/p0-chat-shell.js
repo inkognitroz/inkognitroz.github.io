@@ -5888,6 +5888,10 @@
     const displayUserContent=chatPayloadContent(displayPrompt,1800);
     const history=hostedConversationHistory();
     if(history.length&&history[history.length-1].role==='user'&&(history[history.length-1].content===currentUserContent||history[history.length-1].content===displayUserContent))history.pop();
+    if(history.length&&history[history.length-1].role==='user'){
+      const previousUserContent=String(history[history.length-1].content||'').trim();
+      if(currentUserContent.startsWith('Answer fast. ')&&currentUserContent.endsWith('User request: '+previousUserContent))history.pop();
+    }
     const memoryContext=hostedConversationMemoryContext(history);
     return [
       {role:'system',content:[systemPrompt,memoryContext].filter(Boolean).join('\n\n')},
