@@ -74,7 +74,7 @@ requireIncludes(strip, 'manifestNodes=fallbackManifestNodes();', 'Active node st
 requireIncludes(strip, 'class="mmir-active-node-freshness"', 'Active node strip must render a visible route inventory freshness badge.');
 requireIncludes(strip, 'trustLine=manifestTrustLine(manifestUpdatedAt,inventory)', 'Active node strip must bind manifest trust copy to the rendered freshness badge.');
 requireIncludes(strip, "aria-label=\"'+safe(trustLine", 'Active node strip freshness badge must expose route count and review date to assistive tech.');
-const expectedVersion = '20260704-route-refresh-first-feedback-v1';
+const expectedVersion = '20260705-active-route-feedback-handoff-v1';
 if (assetManifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node route freshness update.');
 }
