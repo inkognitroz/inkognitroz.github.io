@@ -159,7 +159,7 @@
     const isHash=target.startsWith('#');
     const freshness=nodeHandoffSavedAge(handoff);
     return '<article class="node-handoff-resume" data-state="'+safe(copy.state)+'">'+
-      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p>'+handoffResumeGate(handoff)+'<small>'+safe(freshness)+' / '+safe(nodeHandoffTunnelProof(handoff))+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false</small></div>'+
+      '<div><span>Handoff resume</span><strong>'+safe(copy.title)+'</strong><p>'+safe(copy.detail)+'</p>'+handoffResumeGate(handoff)+'<small>'+safe(freshness)+' / '+safe(nodeHandoffTunnelProof(handoff))+' / no_paid_routes_started:true / provider_secrets_stored:false / raw_prompt_stored:false / raw_response_stored:false</small></div>'+
       '<div class="node-dashboard-actions">'+(isHash?'<a href="'+safe(target)+'" data-open-target data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>':'<a href="'+safe(target)+'" data-node-handoff-resume-action="'+safe(copy.state)+'">'+safe(copy.primary)+'</a>')+'</div>'+
     '</article>';
   }
