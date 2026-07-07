@@ -112,6 +112,8 @@ requireIncludes(js, "review?'Why review: synthesized answer needs owner inspecti
 requireIncludes(js, 'raw prompt, raw model responses and raw synthesis are not stored in this feedback draft', 'Compare feedback draft must preserve the public-safe storage boundary.');
 requireIncludes(js, ".saveFeedbackDraft?.(draft,{", 'Compare panel must use the runtime Feedback Inbox bridge when available.');
 requireIncludes(js, "source:'model-comparison-panel'", 'Compare feedback drafts must record the exact UI source.');
+requireIncludes(js, "title:review?'Compare synthesis needs review':'Useful compare synthesis'", 'Compare feedback drafts must use distinct titles for useful and review signals.');
+requireIncludes(js, "priority:review?'p2-demo-learning':'p3-ux'", 'Compare review feedback must use higher demo-learning priority than useful synthesis feedback.');
 requireIncludes(js, "backlogHint:review?'compare-panel-synthesis-review':'compare-panel-useful-synthesis'", 'Compare review drafts must include a distinct triage hint.');
 requireIncludes(js, "openInbox:true", 'Useful-synthesis capture must open Feedback Inbox after saving.');
 requireIncludes(js, "if(comparisonFeedbackButtons().some(button=>button.dataset?.captured==='true')){setStatus('Compare synthesis feedback already saved. Run a new synthesis to capture another signal.','ready');return;}", 'Compare feedback capture must avoid duplicate local drafts for the same synthesis.');
