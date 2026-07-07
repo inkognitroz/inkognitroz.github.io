@@ -51,7 +51,7 @@ requireIncludes(js, 'const hostname=routeHost.hostname;', 'Compare feedback rout
 requireIncludes(js, "const localRoute=hostname==='localhost'||hostname==='127.0.0.1'||hostname==='::1'||hostname.endsWith('.local');", 'Compare feedback route summary must classify only exact localhost, loopback and .local hosts as local/private.');
 requireIncludes(js, "const mmirHostedRoute=hostname==='api.mmir.ai';", 'Compare feedback route summary must classify only the exact API host as the MMIR hosted route.');
 requireIncludes(js, "const routeClass=localRoute?'local/private backend':(mmirHostedRoute?'MMIR free hosted route':'active backend route');", 'Compare feedback route summary must classify local/private, MMIR hosted and other active backend routes without raw credentials.');
-if (/api\\\.mmir\\\.ai/.test(js) || /\/localhost\|127\\\.0\\\.0\\\.1/.test(js)) {
+if (/api\\.mmir\\.ai/.test(js) || /\/localhost\|127\\.0\\.0\\.1/.test(js)) {
   fail('Compare feedback route summary must not classify trusted routes by broad substring regexes.');
 }
 requireIncludes(js, 'function keyReferenceSummary(profile){', 'Compare feedback must summarize key-reference presence without storing the raw value.');
@@ -74,7 +74,7 @@ requireIncludes(js, "return 'Route coverage: '+String(selected)+' selected of '+
 requireIncludes(js, 'function syncModelSelectionLimit(changedInput=null){', 'Compare route picker must enforce the model cap in the UI instead of silently truncating selected routes.');
 requireIncludes(js, "Compare up to '+String(MAX_COMPARE_MODELS)+' live routes at once. Uncheck one route to choose another.", 'Compare route picker must explain the selection cap when a tester tries to exceed it.');
 requireIncludes(js, 'input.disabled=locked;', 'Compare route picker must disable unchecked routes while the selection cap is reached.');
-requireIncludes(js, '<p id="comparison-selection-note" class="comparison-selection-note">Choose up to \'+String(MAX_COMPARE_MODELS)+\' live routes for each comparison.</p>', 'Compare route picker must show the selection cap before testers hit it.');
+requireIncludes(js, '<p id="comparison-selection-note" class="comparison-selection-note">Choose up to '+String(MAX_COMPARE_MODELS)+' live routes for each comparison.</p>', 'Compare route picker must show the selection cap before testers hit it.');
 requireIncludes(js, "input.setAttribute('aria-describedby','comparison-selection-note comparison-status');", 'Compare route picker choices must expose cap and status text to assistive tech.');
 requireIncludes(js, "input.closest('.comparison-model-choice')?.classList.toggle('comparison-model-choice-locked',locked);", 'Compare route picker must visually mark routes locked by the selection cap.');
 requireIncludes(js, "input.addEventListener('change',handleModelChoiceChange)", 'Compare route picker must resync the selection cap after checkbox changes.');
@@ -108,6 +108,9 @@ requireIncludes(js, 'promptEl.value=draft;', 'Compare feedback must fall back to
 requireIncludes(js, "feedbackBtn.dataset.captured='true';", 'Useful-synthesis capture must expose saved state in the UI.');
 requireIncludes(js, 'feedbackBtn.disabled=true;', 'Useful-synthesis capture must disable the saved button until another synthesis is generated.');
 requireIncludes(js, "const evidenceLabel=lastEvidenceId||'comparison-not-recorded';", 'Useful-synthesis capture must derive the saved evidence label from the comparison run.');
+if (js.includes('feedbackBtn.dataset.evidenceId=lastEvidenceId;')) {
+  fail('Useful-synthesis capture must never write a null evidence ID into the saved control.');
+}
 requireIncludes(js, 'feedbackBtn.dataset.evidenceId=evidenceLabel;', 'Useful-synthesis capture must expose the metadata-only evidence ID on the saved control.');
 requireIncludes(js, "feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.');", 'Useful-synthesis capture must expose the evidence ID to assistive tech.');
 requireIncludes(js, "feedbackBtn.title='Useful synthesis saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.';", 'Useful-synthesis capture must expose the evidence ID as a visible hover hint.');
