@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260705-fast-answer-compact-models-v1';
+  const P0_RUNTIME_VERSION='20260707-one-window-shell-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -204,12 +204,12 @@
     return 'Short';
   }
 
-  function answerStyleDetail(style=answerStyle()){
-    const value=normalizeAnswerStyle(style);
-    if(value==='precise')return 'Only necessary facts, compact wording, no route/source boilerplate in the answer.';
-    if(value==='detailed')return 'More complete answers when useful, with route/source proof still kept in status and receipts.';
-    return '1-3 useful sentences by default. Route, source and privacy proof stays in subtle green status.';
-  }
+	  function answerStyleDetail(style=answerStyle()){
+	    const value=normalizeAnswerStyle(style);
+	    if(value==='precise')return 'Only necessary facts, compact wording, no technical proof boilerplate in the answer.';
+	    if(value==='detailed')return 'More complete answers when useful, with source proof kept in quiet receipts.';
+	    return '1-3 useful sentences by default. Source and privacy proof stays in the quiet receipt.';
+	  }
 
   function answerStyleInstruction(style=answerStyle()){
     const value=normalizeAnswerStyle(style);
@@ -1454,7 +1454,7 @@
       providers.length?('Live providers: '+providers.join(', ')+'.'):'',
       '',
       'Beste ruter akkurat nå:',
-      ...(top.length?top:['Ingen modelliste lastet ennå. Trykk Refresh models.']),
+      ...(top.length?top:['Ingen modelliste lastet ennå. Trykk Oppdater AI.']),
       '',
       'Status betyr tilgjengelig rute, ikke garanti for sannhet. Viktige fakta bør fortsatt verifiseres.'
     ].filter(Boolean).join('\n');
@@ -2376,7 +2376,7 @@
   }
 
   function localInstallReturnInstruction(){
-    return LOCAL_INSTALL_COMMANDS.returnInstruction?.()||'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models. If the browser asks, allow Local Network Access for mmir.ai.';
+	    return LOCAL_INSTALL_COMMANDS.returnInstruction?.()||'After it says "MMIR Local Connector is ready", return here and press ⚙ -> Oppdater AI. If the browser asks, allow Local Network Access for mmir.ai.';
   }
 
   function startLocalInstallAssistant(forcedOs=''){
@@ -2803,23 +2803,23 @@
     const activeProviderRoutes=Number(inventory.activePublicProviderRoutes)||Math.max(0,hosted.length-1);
     const activeExternalNodeRoutes=Number(inventory.activeExternalNodeRoutes)||0;
     const compareRouteTotal=activeHostedCompareModels().length;
-    const compareRouteLabel=compareRouteTotal===activeRouteTotal
-      ? String(compareRouteTotal)+' live routes'
-      : String(compareRouteTotal)+' routes now ('+String(activeRouteTotal)+' live total)';
-    const boostRouteLabel=compareRouteTotal===activeRouteTotal
-      ? String(compareRouteTotal)+' free live routes'
-      : String(compareRouteTotal)+' free routes now ('+String(activeRouteTotal)+' live total)';
+	    const compareRouteLabel=compareRouteTotal===activeRouteTotal
+	      ? String(compareRouteTotal)+' AI-kilder'
+	      : String(compareRouteTotal)+' AI-kilder nå ('+String(activeRouteTotal)+' live totalt)';
+	    const boostRouteLabel=compareRouteTotal===activeRouteTotal
+	      ? String(compareRouteTotal)+' gratis AI-kilder'
+	      : String(compareRouteTotal)+' gratis AI-kilder nå ('+String(activeRouteTotal)+' live totalt)';
     const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
-    const scaleLine=[
-      activeRouteTotal+' live',
-      futureRoutes?futureRoutes+' queued':'',
-      visibleRoutes&&visibleRoutes!==activeRouteTotal?visibleRoutes+' visible':'',
-      activeExternalNodeRoutes?activeExternalNodeRoutes+' live external nodes':''
-    ].filter(Boolean).join(' / ');
-    const details=compareReady
-      ? 'Best Answer can ask '+(activeProviderRoutes?String(activeProviderRoutes)+' provider routes':(hosted.length>1?String(hosted.length)+' hosted routes':(primary.label+' and '+partner.label)))+' in parallel, then synthesize one answer.'
-      : 'Supergeni is ready now. Connect another route to unlock parallel Best Answer.';
+	    const scaleLine=[
+	      activeRouteTotal+' live AI',
+	      futureRoutes?futureRoutes+' i kø':'',
+	      visibleRoutes&&visibleRoutes!==activeRouteTotal?visibleRoutes+' synlige':'',
+	      activeExternalNodeRoutes?activeExternalNodeRoutes+' eksterne':''
+	    ].filter(Boolean).join(' / ');
+	    const details=compareReady
+	      ? 'Best Answer can ask '+(activeProviderRoutes?String(activeProviderRoutes)+' providers':(hosted.length>1?String(hosted.length)+' hosted AI':(primary.label+' and '+partner.label)))+' in parallel, then synthesize one answer.'
+	      : 'Supergeni is ready now. Connect another AI source to unlock parallel Best Answer.';
     return {
       liveRoutes,
       hostedRoutes:hosted.length,
@@ -2834,7 +2834,7 @@
       boostRouteLabel,
       scaleLine,
       compareReady,
-      stateLabel:compareReady?'Best Answer ready':'Single route now',
+	      stateLabel:compareReady?'Best Answer ready':'Single AI source now',
       primaryLabel:primary?.label||'Supergeni',
       partnerLabel:partner?.label||'',
       partnerModel:partner||null,
@@ -3407,7 +3407,7 @@
       renderToolbar();
       if(!quiet){
         status(state.localError,'error');
-        routeStatus('Local access blocked · Allow Local Network Access, then Refresh models','error');
+	        routeStatus('Local access blocked · Allow Local Network Access, then Oppdater AI','error');
       }
       throw error;
     }
@@ -3417,6 +3417,7 @@
     if(document.getElementById('mmir-p0-app'))return;
     const app=document.createElement('section');
     app.id='mmir-p0-app';
+    app.className='p0-launch-shell';
     app.setAttribute('aria-label','MMIR chat');
     app.innerHTML=''+
       '<header class="p0-topbar">'+
@@ -3431,7 +3432,7 @@
       '</main>'+
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Message Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
+          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Spør Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
           '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
           '<div class="p0-status-rail">'+
@@ -3441,7 +3442,7 @@
           '</div>'+
           '<div class="p0-toolbar">'+
             '<div class="p0-left">'+
-              '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Tools" title="Tools" aria-expanded="false">+</button>'+
+              '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Innstillinger og verktøy" title="Innstillinger og verktøy" aria-expanded="false">&#9881;</button>'+
               '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
               '<button id="p0-superboost" class="p0-btn p0-superboost" type="button" data-p0-route-action="boost-answer-live" data-state="setup" aria-label="Superboost: ask many AI and let the best answer win" title="Superboost · ask many AI">Superboost</button>'+
               '<button id="p0-council" class="p0-btn p0-council" type="button" data-p0-route-action="supergeni-council-live" data-state="setup" aria-label="Debate: let active AI routes challenge each other and converge" title="Supergeni Council · model debate">Debate</button>'+
@@ -3461,11 +3462,12 @@
     document.body.appendChild(app);
     document.body.classList.remove('mimir-p0-ready');
     document.body.classList.add('mmir-p0-ready');
-    enforceShellStyles();
-    bindShell();
-    renderAll();
-    maybeAutoCheckLocal();
-  }
+	    enforceShellStyles();
+	    bindShell();
+	    renderAll();
+	    requestAnimationFrame(()=>document.getElementById('p0-input')?.focus({preventScroll:true}));
+	    maybeAutoCheckLocal();
+	  }
 
   function enforceShellStyles(){
     const app=document.getElementById('mmir-p0-app');
@@ -3480,6 +3482,13 @@
     });
     app.style.removeProperty('display');
     app.removeAttribute('aria-hidden');
+  }
+
+  function updateDraftState(){
+    const app=document.getElementById('mmir-p0-app');
+    const input=document.getElementById('p0-input');
+    if(!app||!input)return;
+    app.classList.toggle('p0-has-draft',Boolean(String(input.value||'').trim()));
   }
 
   function bindShell(){
@@ -3612,6 +3621,7 @@
     if(!input)return;
     input.style.height='auto';
     input.style.height=Math.min(180,Math.max(58,input.scrollHeight))+'px';
+    updateDraftState();
     syncLegacyPromptFromP0();
   }
 
@@ -3741,7 +3751,7 @@
         label,
         stored_local_only:true
       });
-      append('assistant','Posisjon er delt for denne nettleseren: '+label+'. Jeg bruker den bare som omtrentlig startsted når spørsmålet trenger sted, for eksempel rute, avstand, vær eller nær meg.','MMIR posisjon','Posisjon delt · browser opt-in · brukes kun ved behov',{actions:false});
+	      append('assistant','Posisjon er delt for denne nettleseren: '+label+'. Jeg bruker den bare som omtrentlig startsted når spørsmålet trenger sted, for eksempel avstand, vær eller nær meg.','MMIR posisjon','Posisjon delt · browser opt-in · brukes kun ved behov',{actions:false});
       status('Posisjon delt.','ready');
       routeStatus('Posisjon klar · brukes ved relevante spørsmål','ready');
       document.getElementById('p0-input')?.focus();
@@ -3834,18 +3844,30 @@
     }
     append(
       'assistant',
-      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nTrykk send for å analysere bildet via MMIRs beskyttede vision-route. Råbildet skal ikke logges eller vises tilbake; kvitteringen viser hvilken vision-modell som ble brukt.',
+	      'Bildet er valgt fra '+mediaSourceLabel(source)+': '+media.name+' ('+media.size_label+').\n\nTrykk send for å analysere bildet via MMIRs beskyttede bildeanalyse. Råbildet skal ikke logges eller vises tilbake; kvitteringen viser hvilken vision-modell som ble brukt.',
       'MMIR bildevalg',
-      'Bilde valgt · klart for protected vision-route',
+	      'Bilde valgt · klart for beskyttet bildeanalyse',
       {variant:'media',actions:false}
     );
     status('Bilde valgt lokalt.','ready');
-    routeStatus('Bilde klart · sendes til protected vision-route ved neste melding','hosted');
+	    routeStatus('Bilde klart · sendes til beskyttet bildeanalyse ved neste melding','hosted');
     inputEl?.focus();
     return true;
   }
 
   function handleEmptyStarterAction(action){
+    if(action==='starter-current-electricity'){
+      captureInteraction('empty_starter_used',{starter:'current_electricity'});
+      return setPromptDraft('Hva er strømprisen der jeg er i dag?','Klar.','Kildebevis vises når svaret er klart');
+    }
+    if(action==='starter-football-world-cup'){
+      captureInteraction('empty_starter_used',{starter:'football_world_cup'});
+      return setPromptDraft('Hvem vinner VM, og hva er Norges neste kamp?','Klar.','Kildebevis vises når svaret er klart');
+    }
+    if(action==='starter-currency'){
+      captureInteraction('empty_starter_used',{starter:'currency'});
+      return setPromptDraft('Hvor mye er 200 CHF i NOK i dag?','Klar.','Kildebevis vises når svaret er klart');
+    }
     if(action==='starter-best-answer'){
       captureInteraction('empty_starter_used',{starter:'best_answer'});
       return setPromptDraft('@compare ','Best Answer starter ready.','Best Answer starter · compare active routes when you send');
@@ -4064,14 +4086,14 @@
   }
 
   function renderAddMenu(){
-    const menu=menuEl('add');
-    const pool=intelligencePoolSummary();
-    const superboostDetail=gatewayCompareAvailable()
-      ? 'Ask '+pool.boostRouteLabel+' - best answer wins. '+pool.scaleLine+'.'
-      : 'Write a prompt, then MMIR checks active free routes and uses the strongest available answer path.';
-    const debateDetail=gatewayCompareAvailable()
-      ? 'Let '+pool.boostRouteLabel+' challenge weak assumptions, rank, then converge. '+pool.scaleLine+'.'
-      : 'Write a topic, then MMIR checks active routes for a model debate.';
+	    const menu=menuEl('add');
+	    const pool=intelligencePoolSummary();
+	    const superboostDetail=gatewayCompareAvailable()
+	      ? 'Spør '+pool.boostRouteLabel+' - beste svar vinner. '+pool.scaleLine+'.'
+	      : 'Skriv først, så bruker MMIR sterkeste tilgjengelige svarvei.';
+	    const debateDetail=gatewayCompareAvailable()
+	      ? 'La '+pool.boostRouteLabel+' utfordre svake antakelser og samle seg om ett svar. '+pool.scaleLine+'.'
+	      : 'Skriv et tema, så lar MMIR flere AI utfordre hverandre.';
     const toolbarTools=TOOLBAR_TOOL_DEFINITIONS
       .filter(tool=>tool.id!=='discuss'||pool.compareReady)
       .map(tool=>{
@@ -4083,37 +4105,40 @@
           {badge:pinned?'On toolbar':''}
         );
       }).join('');
-    const twoModelTools=pool.compareReady
-      ? menuSeparator()+
-        menuSection(gatewayCompareAvailable()?'More answers':'Two models')+
-        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Ask '+pool.compareRouteLabel+' through MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
-        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Scores live routes, then returns one answer. '+pool.scaleLine+'.'):'Scores both routes, then synthesizes.')+
-        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live routes challenge each other, rank, then converge. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
-      : '';
-    menu.innerHTML=''+
-      menuTitle('Tools')+
-      '<div class="p0-menu-note p0-intelligence-map"><strong>Intelligence connected</strong><span>'+safeText(pool.scaleLine||pool.stateLabel)+'</span></div>'+
-      menuButton('connect-local','Connect local model','Get the install command in this chat.')+
-      menuButton('check-local','Refresh models','Use after the connector says ready.')+
-      menuButton('model-health','Model health','Show active hosted, local and candidate route status.')+
-      menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())+
-      menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())+
-      menuSeparator()+
-      menuSection('Bilde')+
-      menuButton('take-photo-local','Ta bilde','Åpner kamera eller bildevelger. Råbildet blir lokalt til trygg vision-route er aktiv.',{badge:'Lokal'})+
-      menuButton('choose-photo-local','Velg fra bibliotek','Velg et bilde fra enheten. Ingen opplasting starter automatisk.',{badge:'Lokal'})+
-      menuButton('share-location','Del posisjon','Bruk nettleserens posisjon som omtrentlig startsted for rute, avstand, vær og nær meg.',{badge:readSharedLocation()?'På':'Opt-in'})+
-      menuSeparator()+
-      menuSection('Many AI')+
-      menuButton('intelligence-status','Intelligence status','Show live connected routes, capacity and source mix. Read-only, no provider call.')+
-      menuButton('boost-answer-live','Superboost',superboostDetail,{badge:gatewayCompareAvailable()?'Best wins':''})+
-      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Show every live route answer in one chat response. '+pool.scaleLine+'.'):('Use /all after route inventory finds at least two live routes.'))+
-      menuButton('supergeni-council-live','Debate',debateDetail,{badge:'Council'})+
-      menuSeparator()+
-      menuSection('Verified tools')+
-      menuButton('verified-calculator','Verified calculator','Calculate first, then ask active routes with proof.')+
-      menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
-      menuButton('verified-source','Verified source','Use pasted facts as grounding before active routes answer.')+
+	    const twoModelTools=pool.compareReady
+	      ? menuSeparator()+
+	        menuSection(gatewayCompareAvailable()?'More answers':'Two models')+
+	        menuButton('compare-live','Compare answers',gatewayCompareAvailable()?('Spør '+pool.compareRouteLabel+' gjennom MMIR. '+pool.scaleLine+'.'):('Ask '+pool.primaryLabel+' + '+pool.partnerLabel+'.'))+
+	        menuButton('best-answer-live','Best answer benchmark',gatewayCompareAvailable()?('Sammenligner live AI og returnerer ett svar. '+pool.scaleLine+'.'):'Scores both answers, then synthesizes.')+
+	        menuButton('discuss-topic','Supergeni Council',gatewayCompareAvailable()?('Live AI utfordrer hverandre og samles om ett svar. '+pool.scaleLine+'.'):'Two perspectives, one conclusion.')
+	      : '';
+	    menu.innerHTML=''+
+	      menuTitle('Valg')+
+	      '<div class="p0-menu-note p0-intelligence-map"><strong>Intelligence connected</strong><span>'+safeText(pool.scaleLine||pool.stateLabel)+'</span></div>'+
+	      menuButton('connect-local','Koble til lokal AI','Vis install-kommandoen i chatten.')+
+	      menuButton('check-local','Oppdater AI','Bruk etter at en ny kobling sier klar.')+
+	      menuButton('model-health','Status','Vis hvilke AI-kilder som er klare.')+
+	      menuButton('model-menu','Velg AI','Bytt svarvei når du trenger mer kontroll.')+
+	      menuButton('privacy-menu','Personvern','Privat modus, faktavakt og kostnadsgrense.')+
+	      menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel(),answerStyleDetail())+
+	      menuButton('role-profile-menu','Rolleprofil: '+roleProfileLabel(),roleProfileDetail())+
+	      menuSeparator()+
+	      menuSection('Inndata')+
+	      menuButton('voice-input','Snakk','Bruk nettleserens tale til tekst i dette feltet.',{badge:speechSupported()?'Lokal':'Ikke støttet'})+
+	      menuButton('take-photo-local','Ta bilde','Åpner kamera eller bildevelger. Råbildet blir lokalt til trygg bildeanalyse er aktiv.',{badge:'Lokal'})+
+	      menuButton('choose-photo-local','Velg fra bibliotek','Velg et bilde fra enheten. Ingen opplasting starter automatisk.',{badge:'Lokal'})+
+	      menuButton('share-location','Del posisjon','Bruk nettleserens posisjon som omtrentlig startsted for avstand, vær og nær meg.',{badge:readSharedLocation()?'På':'Opt-in'})+
+	      menuSeparator()+
+	      menuSection('Mange AI')+
+	      menuButton('intelligence-status','Intelligence status','Vis tilkoblet kapasitet og kildemiks. Lesing, ingen leverandørkall.')+
+	      menuButton('boost-answer-live','Superboost',superboostDetail,{badge:gatewayCompareAvailable()?'Best wins':''})+
+	      menuButton('ask-all-active','Ask all active',gatewayCompareAvailable()?('Vis alle live AI-svar i ett chatsvar. '+pool.scaleLine+'.'):('Bruk /all når minst to AI-kilder er klare.'))+
+	      menuButton('supergeni-council-live','Debate',debateDetail,{badge:'Council'})+
+	      menuSeparator()+
+	      menuSection('Verified tools')+
+	      menuButton('verified-calculator','Verified calculator','Regn ut først, så svarer Supergeni med bevis.')+
+	      menuButton('verified-time','Current time','Attach current date/time before Supergeni answers.')+
+	      menuButton('verified-source','Verified source','Bruk innlimte fakta som grunnlag før Supergeni svarer.')+
       menuSeparator()+
       menuSection('Improve MMIR')+
       '<div class="p0-menu-note">Feedback may be logged after sanitization to improve MMIR. Do not paste secrets.</div>'+
@@ -4210,7 +4235,7 @@
     const filterHint=(hostedActiveModels.length||hostedFutureModels.length||localModels.length)?'':
       '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
     const localHint=state.models.some(model=>model.route==='local')?'':
-      '<div class="p0-menu-note">Press + -> Connect local model to connect this computer.</div>';
+	      '<div class="p0-menu-note">Trykk ⚙ -> Koble til lokal AI for å koble denne maskinen.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
     const scoreHint='<div class="p0-menu-note">Score means route fit for this request, not truth percentage.</div>';
     const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, filter models and inspect route/score details.');
@@ -4371,15 +4396,16 @@
   function renderPinnedToolbarTools(){
     const target=document.getElementById('p0-toolbar-tools');
     if(!target)return;
-    target.innerHTML=pinnedToolbarToolIds()
-      .map(id=>toolbarToolById(id))
-      .filter(Boolean)
-      .map(tool=>
-        '<button class="p0-btn p0-btn-icon p0-toolbar-tool" type="button" data-p0-toolbar-tool="'+safeAttr(tool.id)+'" aria-label="'+safeAttr(tool.title)+'" title="'+safeAttr(tool.title)+'">'+tool.icon+'</button>'
-      )
-      .join('');
-    updatePinnedToolbarToolStates();
-  }
+	    target.innerHTML=pinnedToolbarToolIds()
+	      .map(id=>toolbarToolById(id))
+	      .filter(Boolean)
+	      .map(tool=>
+	        '<button class="p0-btn p0-btn-icon p0-toolbar-tool" type="button" data-p0-toolbar-tool="'+safeAttr(tool.id)+'" aria-label="'+safeAttr(tool.title)+'" title="'+safeAttr(tool.title)+'">'+tool.icon+'</button>'
+	      )
+	      .join('');
+	    document.getElementById('mmir-p0-app')?.classList.toggle('p0-has-toolbar-tools',Boolean(target.children.length));
+	    updatePinnedToolbarToolStates();
+	  }
 
   function renderSuperboostCta(){
     const button=document.getElementById('p0-superboost');
@@ -4434,7 +4460,7 @@
     const label=document.querySelector('#p0-model .p0-model-name');
     const input=document.getElementById('p0-input');
     if(label)label.textContent=displayModel.label;
-    if(input)input.placeholder='Message '+displayModel.label+'...';
+    if(input)input.placeholder='Spør '+displayModel.label+'...';
     renderShieldState(displayModel,local);
     renderSuperboostCta();
     renderCouncilCta();
@@ -4454,7 +4480,7 @@
     const prompt=String(input?.value||'').trim();
     if(!primary||!partner||primary.id===partner.id){
       captureInteraction('tool_blocked',{tool:action,reason:'needs_second_model'});
-      status('Refresh models first, then two-model tools can run.','error');
+      status('Oppdater AI først, så kan to AI-kilder brukes sammen.','error');
       routeStatus('Two-model tools need another active model','error');
       input?.focus();
       return true;
@@ -5138,13 +5164,21 @@
       routeStatus((pinned?'Toolbar added':'Toolbar removed')+' · browser local','hosted');
       return true;
     }
-    if(actionId.startsWith('set-privacy-mode:')){
-      setPrivacyMode(actionId.split(':')[1]);
-      return true;
-    }
-    if(action==='toggle-fact-guard'){
-      setFactGuard(!factGuardActive());
-      return true;
+	    if(actionId.startsWith('set-privacy-mode:')){
+	      setPrivacyMode(actionId.split(':')[1]);
+	      return true;
+	    }
+	    if(action==='model-menu'){
+	      toggleMenu('model',document.getElementById('p0-add')||document.getElementById('p0-model'));
+	      return true;
+	    }
+	    if(action==='privacy-menu'){
+	      toggleMenu('privacy',document.getElementById('p0-add')||document.getElementById('p0-privacy'));
+	      return true;
+	    }
+	    if(action==='toggle-fact-guard'){
+	      setFactGuard(!factGuardActive());
+	      return true;
     }
     if(action==='cycle-answer-style'){
       cycleAnswerStyle();
@@ -5160,9 +5194,12 @@
     if(action==='choose-photo-local'){
       return triggerPhotoPicker('library');
     }
-    if(action==='share-location'){
-      return requestSharedLocation();
-    }
+	    if(action==='share-location'){
+	      return requestSharedLocation();
+	    }
+	    if(action==='voice-input'){
+	      return startVoice();
+	    }
     if(actionId.startsWith('set-role-profile:')){
       setRoleProfile(actionId.slice('set-role-profile:'.length));
       return true;
@@ -5323,7 +5360,7 @@
     state.answerStyle=next;
     writeAnswerStyle(next);
     renderAddMenu();
-    status('Answer style: '+answerStyleLabel(next)+'.','ready');
+    status('Svarstil: '+answerStyleLabel(next)+'.','ready');
     routeStatus(answerStyleLabel(next)+' answers · browser local preference','hosted');
   }
 
@@ -5332,7 +5369,7 @@
     state.roleProfileId=next;
     writeRoleProfileId(next);
     renderRoleProfileMenu();
-    status('Role profile: '+roleProfileLabel(next)+'.','ready');
+    status('Rolleprofil: '+roleProfileLabel(next)+'.','ready');
     routeStatus('Role profile · '+roleProfileLabel(next)+' · browser local preference','hosted');
   }
 
@@ -5627,13 +5664,12 @@
     if(!state.messages.length){
       root.innerHTML=''+
         '<div class="p0-empty">'+
-          '<h1>Ask anything.</h1>'+
-          '<p>Supergeni answers now. Use Superboost for many AI routes, ranking and one best answer, or start with demo, source proof, local setup or feedback capture.</p>'+
-          '<div class="p0-empty-starters" aria-label="Suggested first actions">'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-best-answer">Best Answer</button>'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-private-local">Private local</button>'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-verified-source">Verified source</button>'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-feedback">Send feedback</button>'+
+          '<h1>Hva vil du vite?</h1>'+
+          '<p>Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.</p>'+
+          '<div class="p0-empty-starters" aria-label="Forslag til første spørsmål">'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-current-electricity">Hva er strømprisen?</button>'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-football-world-cup">Hvem vinner VM?</button>'+
+            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-currency">200 CHF i NOK</button>'+
           '</div>'+
         '</div>';
       return;
@@ -5658,6 +5694,7 @@
     renderModelMenu();
     renderTokenCounter();
     renderFeedbackCaptureStatus();
+    updateDraftState();
   }
 
   function status(message,stateValue='idle'){
@@ -6916,7 +6953,7 @@
     }
     if(explicit?.mode==='missing-local'){
       captureInteraction('chat_blocked',{reason:'missing_local_model'});
-      status('Refresh models first, then use @supergeni @gemma for compare.','error');
+      status('Oppdater AI først, så kan @supergeni @gemma sammenlignes.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
       return;
@@ -6937,7 +6974,7 @@
       autosizeInput();
       append(
         'assistant',
-        modeLabel+' is on, but no local model is connected yet. Press + -> Connect local model, install the local connector, then press + -> Refresh models.',
+        modeLabel+' is on, but no local model is connected yet. Press ⚙ -> Koble til lokal AI, install the local connector, then press ⚙ -> Oppdater AI.',
         'MMIR privacy guard',
         modeLabel+' · hosted route blocked'
       );
@@ -7101,7 +7138,7 @@
     const input=document.getElementById('p0-input');
     const prompt=String(comparePrompt||input?.value||'').trim();
     if(!localModel){
-      status('Refresh models first, then '+title+' can use two routes.','error');
+      status('Oppdater AI først, så kan '+title+' bruke to AI-kilder.','error');
       input?.focus();
       return;
     }
@@ -7116,7 +7153,7 @@
     autosizeInput();
     const hostedModel=defaultHostedModel();
     if(hostedModel&&localModel&&hostedModel.id===localModel.id){
-      status('Refresh models first, then '+title+' can use two routes.','error');
+      status('Oppdater AI først, så kan '+title+' bruke to AI-kilder.','error');
       routeStatus('Two-model tools need another active model','error');
       finishResponse();
       input?.focus();

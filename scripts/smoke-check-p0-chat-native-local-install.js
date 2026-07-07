@@ -70,27 +70,27 @@ requireIncludes(
   'Mac onboarding must stay plain-language, helper-owned and chat-native.'
 );
 requireIncludes(
-  p0Shell,
-  'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models.',
-  'Install instructions must tell the user exactly how to return to model discovery.'
-);
+	  p0Shell,
+	  'After it says "MMIR Local Connector is ready", return here and press ⚙ -> Oppdater AI.',
+	  'Install instructions must tell the user exactly how to return to model discovery.'
+	);
 
 requireIncludes(
   handleMenuSource,
   "if(action==='connect-local')",
-  '+ -> Connect local model must remain a first-class menu action.'
+	  'Koble til lokal AI must remain a first-class menu action.'
 );
 requireOrder(
   handleMenuSource,
   "if(action==='connect-local')",
   'startLocalInstallAssistant();',
-  '+ -> Connect local model must call the chat-native install assistant.'
+	  'Koble til lokal AI must call the chat-native install assistant.'
 );
 requireOrder(
   handleMenuSource,
   "if(action==='check-local')",
   'checkLocalModels().catch(()=>{});',
-  '+ -> Refresh models must stay a separate explicit discovery step after install.'
+	  'Oppdater AI must stay a separate explicit discovery step after install.'
 );
 forbidPattern(
   handleMenuSource,

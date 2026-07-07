@@ -38,16 +38,27 @@ try {
   await page.waitForSelector('#p0-input', { timeout: 20000 });
   await page.waitForSelector('#p0-council', { timeout: 20000 });
 
-  const initial = await page.evaluate(() => ({
-    route: document.querySelector('#p0-route')?.textContent?.trim() || '',
-    councilText: document.querySelector('#p0-council')?.textContent?.trim() || '',
-    councilState: document.querySelector('#p0-council')?.getAttribute('data-state') || ''
-  }));
+  const initial = await page.evaluate(() => {
+    const council = document.querySelector('#p0-council');
+    const style = council ? getComputedStyle(council) : null;
+    return {
+      route: document.querySelector('#p0-route')?.textContent?.trim() || '',
+      councilText: council?.textContent?.trim() || '',
+      councilVisible: Boolean(council?.getClientRects().length) && style?.display !== 'none' && style?.visibility !== 'hidden',
+      councilState: council?.getAttribute('data-state') || ''
+    };
+  });
 
-  assert(/Debate/i.test(initial.councilText), 'Expected visible Debate / Supergeni Council button.');
+  assert(/Debate/i.test(initial.councilText), 'Expected Debate / Supergeni Council action to exist.');
 
   await page.fill('#p0-input', prompt);
-  await page.click('#p0-council');
+  if (initial.councilVisible) {
+    await page.click('#p0-council');
+  } else {
+    await page.click('#p0-add');
+    await page.waitForSelector('#p0-add-menu:not([hidden])');
+    await page.click('#p0-add-menu [data-p0-action="supergeni-council-live"]');
+  }
 
   await page.waitForFunction(() => {
     const transcript = document.querySelector('#p0-transcript')?.textContent || '';

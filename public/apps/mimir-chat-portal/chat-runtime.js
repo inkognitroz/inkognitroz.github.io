@@ -2123,7 +2123,7 @@
       parts.push('Best free model path: Gemma 3 270M or SmolLM2 on weak devices; Llama 3.2 1B/3B or Phi-4 Mini on laptops.');
     }
     if(helperId==='mmir-setup-coach'||wantsConnect||emptyPrompt){
-      parts.push('Setup path: + Add model, pick free Ollama, run Local Node for Mac/Windows/Linux/Pi/VM, then verify health, models and chat on 127.0.0.1:3000.');
+      parts.push('Setup path: open ⚙, choose Koble til lokal AI, run Local Node for Mac/Windows/Linux/Pi/VM, then verify health, models and chat on 127.0.0.1:3000.');
     }
     if(helperId==='mmir-security-coach'){
       parts.push('Security rule: public frontend stays secret-free. Local models use 127.0.0.1 plus pairing; paid routes need backend auth, limits, audit and cost policy.');
@@ -2131,7 +2131,7 @@
     if(helperId==='mmir-growth-coach'||wantsBusiness){
       parts.push('Growth ladder: free useful chat first; later sell managed nodes, premium routing, team governance, marketplace and evals.');
     }
-    const primary=wantsBusiness?'Open progress; keep free local chat green before premium routes.':(wantsConnect||emptyPrompt?'Press + Add model and run the free Local Node installer.':'Choose a free starter model.');
+    const primary=wantsBusiness?'Open progress; keep free local chat green before premium routes.':(wantsConnect||emptyPrompt?'Open ⚙ -> Koble til lokal AI and run the free Local Node installer.':'Choose a free starter model.');
     parts.push('Primary next action: '+primary);
     parts.push('No paid route starts here. SaaS/provider keys belong behind a protected backend, never in this public page.');
     return parts.join('\n\n');

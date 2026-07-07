@@ -374,7 +374,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "menuButton('model-health','Model health'",
+  "menuButton('model-health','Status'",
   'Add menu must expose a compact model/node health view.'
 );
 requireIncludes(
@@ -729,12 +729,12 @@ requireNotIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260705-fast-answer-compact-models-v1',
+  'p0-chat-shell.js?v=20260707-one-window-shell-v1',
   'Public page must cache-bust the owner-intake runtime.'
 );
 requireIncludes(
   manifest,
-  '"p0-chat-shell.js": "20260705-fast-answer-compact-models-v1"',
+  '"p0-chat-shell.js": "20260707-one-window-shell-v1"',
   'Asset manifest must track the owner-intake runtime version.'
 );
 

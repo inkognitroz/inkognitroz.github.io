@@ -23,7 +23,7 @@ function forbidPattern(source, pattern, message) {
   if (pattern.test(source)) fail(message);
 }
 
-requireIncludes(helper, "version='20260611-b0-06-21-active-local-attach-v1'", 'P0 route adapter helper version must be explicit.');
+requireIncludes(helper, "version='20260707-one-window-shell-v1'", 'P0 route adapter helper version must be explicit.');
 requireIncludes(helper, 'window.MimirP0RouteAdapters', 'P0 route adapter helper must expose a stable public helper object.');
 requireIncludes(helper, 'targetAddressSpace=\'loopback\'', 'P0 route adapter helper must own Local Network Access loopback hints.');
 requireIncludes(helper, 'provider_secrets_in_browser:false', 'P0 route adapter helper must publish no-secret evidence.');
@@ -41,13 +41,13 @@ forbidPattern(shell, /function localHeaders\s*\(/, 'P0 shell must not own local 
 forbidPattern(shell, /function localNetworkHint\s*\(/, 'P0 shell must not own local network error copy.');
 forbidPattern(shell, /function allowLocalProbes\s*\(/, 'P0 shell must not own local probe gating.');
 forbidPattern(shell, /function hasLocalPairingToken\s*\(/, 'P0 shell must not own local pairing-token storage checks.');
-requireIncludes(html, 'p0-route-adapters.js?v=20260611-b0-06-21-active-local-attach-v1', 'mmir.html must load the route adapter helper with cache busting.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260705-fast-answer-compact-models-v1', 'mmir.html must cache-bust the P0 shell for the adapter-boundary slice.');
-if (html.indexOf('p0-route-adapters.js?v=20260611-b0-06-21-active-local-attach-v1') > html.indexOf('p0-chat-shell.js?v=')) {
+requireIncludes(html, 'p0-route-adapters.js?v=20260707-one-window-shell-v1', 'mmir.html must load the route adapter helper with cache busting.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260707-one-window-shell-v1', 'mmir.html must cache-bust the P0 shell for the adapter-boundary slice.');
+if (html.indexOf('p0-route-adapters.js?v=20260707-one-window-shell-v1') > html.indexOf('p0-chat-shell.js?v=')) {
   fail('P0 route adapter helper must load before the P0 shell.');
 }
-requireIncludes(manifest, '"p0-route-adapters.js": "20260611-b0-06-21-active-local-attach-v1"', 'Asset manifest must track p0-route-adapters.js.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260705-fast-answer-compact-models-v1"', 'Asset manifest must track the P0 shell adapter-boundary version.');
+requireIncludes(manifest, '"p0-route-adapters.js": "20260707-one-window-shell-v1"', 'Asset manifest must track p0-route-adapters.js.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260707-one-window-shell-v1"', 'Asset manifest must track the P0 shell adapter-boundary version.');
 requireIncludes(String(packageJson.scripts?.check || ''), 'smoke-check-p0-route-adapters-boundary.js', 'npm run check must include the P0 route adapter boundary smoke.');
 forbidPattern(helper + shell, /OPENROUTER_API_KEY|CLOUDFLARE_API_TOKEN|BEGIN PRIVATE KEY|cash[- ]?out|token trading/i, 'Public route adapter boundary must not expose secrets or economic claims.');
 
@@ -96,7 +96,7 @@ vm.createContext(context);
 vm.runInContext(helper, context, { filename: 'p0-route-adapters.js' });
 
 const api = context.window.MimirP0RouteAdapters;
-if (!api || api.version !== '20260611-b0-06-21-active-local-attach-v1') fail('P0 route adapter helper must register on window.');
+if (!api || api.version !== '20260707-one-window-shell-v1') fail('P0 route adapter helper must register on window.');
 if (events[0]?.type !== 'mimir-p0-route-adapters-ready') fail('P0 route adapter helper must emit readiness evidence.');
 if (api.config().apiUrl !== 'https://api-staging.mmir.ai') fail('P0 route adapter helper must select staging API on staging.mmir.ai.');
 if (api.fetchOptions('http://127.0.0.1:3000/health', {}).targetAddressSpace !== 'loopback') fail('P0 route adapter helper must mark loopback fetches.');

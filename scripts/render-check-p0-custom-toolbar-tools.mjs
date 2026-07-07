@@ -163,7 +163,9 @@ async function checkViewport(browser, viewport) {
   await page.waitForTimeout(100);
   assert(/Memory saved locally/i.test(await page.locator('#p0-status').innerText()), `${viewport.name}: Memory must save locally`);
 
-  await page.locator('#p0-privacy').click();
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="privacy-menu"]').click();
   await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   const shieldText = await page.locator('#p0-privacy-menu').innerText();
   assert(/Public/.test(shieldText) && /Private/.test(shieldText) && /Superprivate/.test(shieldText), `${viewport.name}: Shield must expose privacy modes`);

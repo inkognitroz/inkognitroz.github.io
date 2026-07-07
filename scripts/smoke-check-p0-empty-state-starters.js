@@ -14,18 +14,24 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260705-fast-answer-compact-models-v1';
-const expectedCssVersion = '20260704-image-feedback-v1';
+function forbidIncludes(source, needle, message) {
+  if (source.includes(needle)) failures.push(message);
+}
+
+const expectedShellVersion = '20260707-one-window-shell-v1';
+const expectedCssVersion = '20260707-one-window-shell-v1';
 
 requireIncludes(
   shell,
-  '<div class="p0-empty-starters" aria-label="Suggested first actions">',
+  '<div class="p0-empty-starters" aria-label="Forslag til første spørsmål">',
   'P0 empty state must expose starter actions instead of a dead-end blank state.'
 );
-requireIncludes(shell,'data-p0-empty-action="starter-best-answer"','P0 empty state must expose a Best Answer starter.');
-requireIncludes(shell,'data-p0-empty-action="starter-private-local"','P0 empty state must expose a private local starter.');
-requireIncludes(shell,'data-p0-empty-action="starter-verified-source"','P0 empty state must expose a verified source starter.');
-requireIncludes(shell,'data-p0-empty-action="starter-feedback"','P0 empty state must expose a feedback starter.');
+requireIncludes(shell,'data-p0-empty-action="starter-current-electricity"','P0 empty state must expose a normal current-facts starter.');
+requireIncludes(shell,'data-p0-empty-action="starter-football-world-cup"','P0 empty state must expose a Norway/world-cup starter.');
+requireIncludes(shell,'data-p0-empty-action="starter-currency"','P0 empty state must expose a currency starter.');
+requireIncludes(shell,'Hva vil du vite?','P0 empty state must be a simple chat-first invitation.');
+requireIncludes(shell,'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.','P0 empty state must explain the product without exposing machinery.');
+forbidIncludes(shell,'Supergeni answers now. Use Superboost for many AI routes, ranking and one best answer, or start with demo, source proof, local setup or feedback capture.','P0 empty state must not expose demo/tooling copy on launch.');
 requireIncludes(
   shell,
   "const emptyStarter=event.target.closest('[data-p0-empty-action]');",
@@ -34,17 +40,17 @@ requireIncludes(
 requireIncludes(shell,'function handleEmptyStarterAction(action){','P0 shell must centralize empty-state starter behavior.');
 requireIncludes(
   shell,
-  "return setPromptDraft('@compare ','Best Answer starter ready.','Best Answer starter · compare active routes when you send');",
-  'Best Answer starter must prime compare mode before the first message.'
+  "return setPromptDraft('Hvem vinner VM, og hva er Norges neste kamp?'",
+  'World-cup starter must prime a normal user question, not a mode command.'
 );
-requireIncludes(shell,"return handleMenuAction('connect-local');",'Private local starter must reuse the existing connect-local flow.');
-requireIncludes(shell,"return handleMenuAction('verified-source');",'Verified source starter must reuse the verified-source flow.');
-requireIncludes(shell,"return handleMenuAction('draft-feedback');",'Feedback starter must reuse the existing feedback draft flow.');
 requireIncludes(shell,'function saveFeedbackDraft(suggestion,options={}){','P0 shell must centralize local feedback draft capture for reuse across surfaces.');
 requireIncludes(shell,"window.MimirChatRuntimeBridge.saveFeedbackDraft=saveFeedbackDraft;",'P0 shell must expose local feedback draft capture through the runtime bridge.');
 requireIncludes(shell,"window.MimirChatRuntimeBridge.openFeedbackInbox=openFeedbackInbox;",'P0 shell must expose Feedback Inbox opening through the runtime bridge.');
 requireIncludes(css,'.p0-empty-starters {','P0 shell CSS must style the empty-state starter group.');
 requireIncludes(css,'.p0-empty-starter {','P0 shell CSS must style each empty-state starter button.');
+requireIncludes(css,'#mmir-p0-app.p0-launch-shell.p0-has-draft .p0-empty-starters','P0 empty-state starters must disappear on the first keystroke.');
+requireIncludes(shell,'function updateDraftState(){','P0 shell must track draft state for first-keystroke cleanup.');
+requireIncludes(shell,"document.getElementById('p0-input')?.focus({preventScroll:true})",'P0 launch shell must focus the single chat input after install.');
 
 if (manifest.assets?.['p0-chat-shell.js'] !== expectedShellVersion) {
   failures.push('Asset version manifest must track p0-chat-shell.js for the empty-state starter slice.');
