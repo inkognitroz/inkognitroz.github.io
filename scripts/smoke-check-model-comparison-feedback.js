@@ -107,9 +107,11 @@ requireIncludes(js, "if(feedbackBtn?.dataset?.captured==='true'){setStatus('Usef
 requireIncludes(js, 'promptEl.value=draft;', 'Compare feedback must fall back to prefilled chat draft when the bridge is absent.');
 requireIncludes(js, "feedbackBtn.dataset.captured='true';", 'Useful-synthesis capture must expose saved state in the UI.');
 requireIncludes(js, 'feedbackBtn.disabled=true;', 'Useful-synthesis capture must disable the saved button until another synthesis is generated.');
-requireIncludes(js, "feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Run a new synthesis to capture another signal.');", 'Useful-synthesis capture must expose the saved state to assistive tech.');
-requireIncludes(js, "feedbackBtn.title='Useful synthesis saved. Run a new synthesis to capture another signal.';", 'Useful-synthesis capture must expose the saved state as a visible hover hint.');
-requireIncludes(js, "setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.'", 'Useful-synthesis capture must show local storage truth.');
+requireIncludes(js, "const evidenceLabel=lastEvidenceId||'comparison-not-recorded';", 'Useful-synthesis capture must derive the saved evidence label from the comparison run.');
+requireIncludes(js, 'feedbackBtn.dataset.evidenceId=evidenceLabel;', 'Useful-synthesis capture must expose the metadata-only evidence ID on the saved control.');
+requireIncludes(js, "feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.');", 'Useful-synthesis capture must expose the evidence ID to assistive tech.');
+requireIncludes(js, "feedbackBtn.title='Useful synthesis saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.';", 'Useful-synthesis capture must expose the evidence ID as a visible hover hint.');
+requireIncludes(js, "setStatus((saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.')+' Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'.'", 'Useful-synthesis capture must show local storage truth with the same evidence ID.');
 requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale synthesis feedback context.');
 
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
@@ -117,7 +119,7 @@ requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap not
 requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
 const expectedCssVersion = '20260704-compare-integrity-v1';
-const expectedJsVersion = '20260705-compare-feedback-a11y-v1';
+const expectedJsVersion = '20260707-compare-feedback-evidence-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }

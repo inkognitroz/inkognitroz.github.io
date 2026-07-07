@@ -445,10 +445,12 @@
       feedbackBtn.dataset.captured='true';
       feedbackBtn.disabled=true;
       feedbackBtn.textContent='Useful saved';
-      feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Run a new synthesis to capture another signal.');
-      feedbackBtn.title='Useful synthesis saved. Run a new synthesis to capture another signal.';
+      const evidenceLabel=lastEvidenceId||'comparison-not-recorded';
+      feedbackBtn.dataset.evidenceId=evidenceLabel;
+      feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.');
+      feedbackBtn.title='Useful synthesis saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.';
     }
-    setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.','ready');
+    setStatus((saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.')+' Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'.','ready');
   }
 
   async function compareModels(){
