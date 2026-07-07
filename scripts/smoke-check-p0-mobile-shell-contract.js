@@ -69,7 +69,7 @@ for (const marker of [
 
 for (const marker of [
   'aria-label="Message Supergeni"',
-  'aria-label="Tools"',
+  'aria-label="Innstillinger og verktøy"',
   'aria-label="Security and privacy status: public mode"',
   'aria-label="Choose model"',
   'aria-label="Voice input"',
@@ -79,9 +79,9 @@ for (const marker of [
 }
 
 for (const marker of [
-  'Connect local model',
-  'Get the install command in this chat.',
-  'Refresh models',
+  'Koble til lokal AI',
+  'Vis install-kommandoen i chatten.',
+  'Oppdater AI',
   'New chat',
   'LOCAL_INSTALL_COMMANDS.commandFor?.(os)'
 ]) {

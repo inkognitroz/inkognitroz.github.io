@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="./apps/mimir-chat-portal/model-comparison.css?v=20260704-compare-integrity-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/user-journeys.css?v=20260705-public-journey-map-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/conversation-manager.css?v=20260607-b0-06-13-conversation-portability-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/p0-chat-shell.css?v=20260704-image-feedback-v1" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/p0-chat-shell.css?v=20260707-one-window-shell-v1" />
 </head>
 <body class="mimir-public-chat mimir-chat-first mmir-p0-ready">
   <header class="mimir-topbar">
@@ -62,16 +62,16 @@
       </section>
 
       <form class="mimir-composer" aria-label="MMIR chat composer" onsubmit="return false;">
-        <textarea id="mimir-prompt" rows="2" placeholder="Message Supergeni..." aria-label="Message MMIR"></textarea>
+        <textarea id="mimir-prompt" rows="2" placeholder="Spør Supergeni..." aria-label="Message MMIR"></textarea>
         <div class="composer-bar">
           <div class="composer-context"><span id="active-chat-title">Supergeni active.</span></div>
-          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary" aria-label="Tools" title="Tools">+</button><button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to the active route" title="Send" onclick="window.__MimirEarlySend=1">&#8593;</button></div>
+          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary" aria-label="Innstillinger og verktøy" title="Innstillinger og verktøy">&#9881;</button><button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to Supergeni" title="Send" onclick="window.__MimirEarlySend=1">&#8593;</button></div>
         </div>
       </form>
 
       <div id="mmir-quick-suggestions" class="quick-suggestions" aria-label="Quick actions" hidden data-mimir-capability-state="advanced">
         <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="free-chat" data-prompt="Start with Supergeni. Tell me what model is active and one useful thing I can connect next.">Start free chat</button>
-        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Show the easiest way to connect a private local model to MMIR on this device.">Connect local model</button>
+        <button type="button" data-prompt-action data-growth-event="instant_prompt_click" data-growth-target="setup-plan" data-prompt="Show the easiest way to connect a private local model to MMIR on this device.">Koble til lokal AI</button>
         <a href="#model-library">Models</a>
         <a href="#pwa-install">Install node</a>
       </div>
@@ -300,7 +300,7 @@
   </main>
   <script data-mimir-quiet-first-paint>!function(){const w=window,d=document,k='__MimirLocalProbeAllowedUntil',ri=()=>{const p=new URLSearchParams(location.search),h=String(location.hash).toLowerCase();return p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready')},lb=i=>{try{const u=new URL(String(typeof i==='string'?i:i&&i.url||''),location.href);if(u.origin===location.origin)return false;const h=u.hostname;return h==='127.0.0.1'||h==='localhost'||h==='::1'}catch(e){return false}},li=(i,n)=>{if(!lb(i))return n;const x={...(n||{})};x.targetAddressSpace||(x.targetAddressSpace='loopback');return x},allow=(r='manual',m=3e4)=>{w[k]=Math.max(+w[k]||0,Date.now()+m);w.dispatchEvent(new CustomEvent('mmir-local-probe-allowed',{detail:{reason:r,expires_at:new Date(w[k]).toISOString()}}))};w.MimirAllowLocalProbes||(w.MimirAllowLocalProbes=allow);ri()||(w[k]=0);try{if(!ri()){const ak='mimir-chat-active-backend',id=localStorage.getItem(ak)||'',ps=JSON.parse(localStorage.getItem('mimir-chat-backend-profiles')||'[]'),p=Array.isArray(ps)&&ps.find(x=>x&&x.id===id),h=String(p&&p.health||'unknown').toLowerCase();p&&p.provider==='local-node'&&['unknown','offline','checking',''].includes(h)&&(localStorage.removeItem(ak),w.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated',{detail:{passive_local_deactivated:true}})))}}catch(e){}const f=w.fetch;if(f&&!w.__MimirQuietFirstPaintFetchGuard){w.__MimirQuietFirstPaintFetchGuard=1;w.fetch=function(i,n){if(lb(i)&&Date.now()>+w[k]&&!ri()){const e=new Error('local_probe_deferred');e.code='local_probe_deferred';return Promise.reject(e)}return f.call(this,i,li(i,n))}}d.addEventListener('click',e=>{e.target?.closest?.('#runtime-refresh,#refresh-node-dashboard,#refresh-platform-status,#progress-activation-autopilot,[data-local-action="refresh"],[data-local-action="tunnel"],[data-local-action="stop-tunnel"],[data-proof-action="retry"]')&&allow('user-click')},!0);try{const x='mimir-activation-events-v1:'+(localStorage.getItem('mimir-active-workspace-v1')||'personal'),a=JSON.parse(localStorage.getItem(x)||'[]');Array.isArray(a)&&!a.some(e=>e&&e.type==='recommended-starter')&&(a.push({type:'recommended-starter',status:'idle',model:'Supergeni',route:'api.mmir.ai/free',at:new Date().toISOString(),note:'no_paid_routes_started:true'}),localStorage.setItem(x,JSON.stringify(a.slice(-80))))}catch(e){}let n=0,t=setInterval(()=>{const c=w.MimirBackendClient,a=c&&c.allowLocalProbes;if(c&&!c.__runtimeNoSendProbePatch&&typeof a==='function'){c.allowLocalProbes=function(r='manual',m=3e4){if(r==='chat-runtime-send'&&!ri())return;return a.call(this,r,m)};c.__runtimeNoSendProbePatch=1;clearInterval(t)}else if(++n>30)clearInterval(t)},500);ri()&&allow('installer-return',6e4)}()</script>
   <script src="./apps/mimir-chat-portal/route-display.js?v=20260623-receipt-route-truth-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/local-install-commands.js?v=20260606-b1-06-local-install-commands-v2" defer></script>
+  <script src="./apps/mimir-chat-portal/local-install-commands.js?v=20260707-one-window-shell-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-text.js?v=20260606-b1-06-p0-text-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-clipboard.js?v=20260606-b1-06-p0-clipboard-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-icons.js?v=20260611-lightning-toolbar-icons-v1" defer></script>
@@ -309,8 +309,8 @@
   <script src="./apps/mimir-chat-portal/p0-route-benchmarks.js?v=20260611-b0-06-27-demotion-receipts-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-history.js?v=20260618-qa-history-scoped-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-menu.js?v=20260606-b1-06-p0-menu-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/p0-route-adapters.js?v=20260611-b0-06-21-active-local-attach-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/p0-chat-shell.js?v=20260705-fast-answer-compact-models-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/p0-route-adapters.js?v=20260707-one-window-shell-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/p0-chat-shell.js?v=20260707-one-window-shell-v1" defer></script>
   <script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>
   <script src="./apps/mimir-chat-portal/public-launch-guard.js?v=20260604-hidden-capability-inert-v1" defer></script>
   <script src="./apps/mimir-chat-portal/backend-profiles-critical.js?v=20260531-supergeni-v1" defer></script>
@@ -318,11 +318,11 @@
   <script src="./apps/mimir-chat-portal/active-node-strip.js?v=20260705-active-route-feedback-handoff-v1" defer></script>
   <script src="./apps/mimir-chat-portal/first-impression.js?v=20260604-shared-route-display-v1" defer></script>
   <script id="mimir-deferred-scripts" type="application/json">[
-    "./apps/mimir-chat-portal/chat-runtime.js?v=20260622-runtime-truncation-recovery-v1",
+    "./apps/mimir-chat-portal/chat-runtime.js?v=20260707-one-window-shell-v1",
     "./apps/mimir-chat-portal/runtime-controls-webgpu-truth.js?v=20260531-webgpu-truth-v2",
     "./apps/mimir-chat-portal/quiet-first-paint-hotfix.js?v=20260531-local-loopback-v1",
     "./apps/mimir-chat-portal/runtime-legacy-installer-guard.js?v=20260531-mac-installer-v1",
-    "./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260524-chat-first-v1",
+    "./apps/mimir-chat-portal/mimir-chat-portal.js?v=20260707-one-window-shell-v1",
     "./apps/mimir-chat-portal/composer-autosize.js",
     "./apps/mimir-chat-portal/composer-stop-handoff.js",
     "./apps/mimir-chat-portal/transcript-scroll-guard.js",

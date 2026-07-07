@@ -40,8 +40,8 @@ for (const label of p0ForbiddenLabels) {
 
 requireIncludes(
   p0Runtime,
-  "menuSection('Bilde')",
-  '+ menu must expose the requested photo entrypoint as a guarded local media section.'
+  "menuSection('Inndata')",
+  '+ menu must expose the requested media entrypoints as a guarded local input section.'
 );
 requireIncludes(
   p0Runtime,
@@ -120,13 +120,13 @@ requireIncludes(
 );
 requireIncludes(
   p0Runtime,
-  "append(\n      'assistant',\n      'Bildet er valgt fra '",
+  "'Bildet er valgt fra '+mediaSourceLabel(source)",
   'P0 photo picker must acknowledge local selection in chat instead of silently doing nothing.'
 );
 requireIncludes(
   p0Runtime,
-  'protected vision-route',
-  'P0 photo picker must tell users that selected images go through the protected vision route.'
+  'beskyttede bildeanalyse',
+  'P0 photo picker must tell users that selected images go through protected image analysis.'
 );
 forbidIncludes(
   p0Runtime,

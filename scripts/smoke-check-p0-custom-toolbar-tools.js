@@ -56,8 +56,8 @@ requireIncludes(shell, "id:'discuss'", '+ menu must include the Supergeni Counci
 requireIncludes(shell, "id:'memory'", '+ menu must include the memory tool.');
 requireIncludes(shell, "id:'stop'", '+ menu must include the explicit stop tool.');
 requireIncludes(shell, "id:'fast-answer'", '+ menu must include the lightning fast-answer tool.');
-requireIncludes(renderAddMenu, "menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())", '+ menu must expose answer style without adding a toolbar button.');
-requireIncludes(renderAddMenu, "menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())", '+ menu must expose role profiles without adding a toolbar button.');
+requireIncludes(renderAddMenu, "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel(),answerStyleDetail())", '+ menu must expose answer style without adding a toolbar button.');
+requireIncludes(renderAddMenu, "menuButton('role-profile-menu','Rolleprofil: '+roleProfileLabel(),roleProfileDetail())", '+ menu must expose role profiles without adding a toolbar button.');
 requireIncludes(handleMenuAction, "action==='cycle-answer-style'", 'Menu actions must handle answer style cycling.');
 requireIncludes(handleMenuAction, "action==='role-profile-menu'", 'Menu actions must open role profile selection.');
 requireIncludes(handleMenuAction, "actionId.startsWith('set-role-profile:')", 'Menu actions must handle role profile selection.');
@@ -92,11 +92,11 @@ requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion b
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
 requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260705-fast-answer-compact-models-v1', 'Public page must cache-bust the toolbar runtime.');
-requireIncludes(html, 'p0-chat-shell.css?v=20260704-image-feedback-v1', 'Public page must cache-bust the toolbar CSS.');
+requireIncludes(html, 'p0-chat-shell.js?v=20260707-one-window-shell-v1', 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, 'p0-chat-shell.css?v=20260707-one-window-shell-v1', 'Public page must cache-bust the toolbar CSS.');
 requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260705-fast-answer-compact-models-v1"', 'Asset manifest must track toolbar runtime version.');
-requireIncludes(manifest, '"p0-chat-shell.css": "20260704-image-feedback-v1"', 'Asset manifest must track toolbar CSS version.');
+requireIncludes(manifest, '"p0-chat-shell.js": "20260707-one-window-shell-v1"', 'Asset manifest must track toolbar runtime version.');
+requireIncludes(manifest, '"p0-chat-shell.css": "20260707-one-window-shell-v1"', 'Asset manifest must track toolbar CSS version.');
 requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
 
 if (failures.length) {

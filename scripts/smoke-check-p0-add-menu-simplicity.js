@@ -55,34 +55,39 @@ requireIncludes(
   'P0 menuTitle wrapper must delegate rendering to the shared P0 menu helper.'
 );
 requireIncludes(
+	  renderAddMenu,
+	  "menuTitle('Valg')",
+	  '+ menu title must stay short and match the expected chat toolbar pattern.'
+	);
+	requireIncludes(
+	  renderAddMenu,
+	  "menuButton('connect-local','Koble til lokal AI','Vis install-kommandoen i chatten.')",
+	  '+ menu must keep local onboarding as one plain connect-local action with chat-native wording.'
+	);
+	requireIncludes(
+	  renderAddMenu,
+	  "menuButton('check-local','Oppdater AI','Bruk etter at en ny kobling sier klar.')",
+	  '+ menu must keep post-install discovery short and explicit.'
+	);
+	requireIncludes(
+	  renderAddMenu,
+	  "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel(),answerStyleDetail())",
+	  '+ menu must expose answer style without adding a toolbar button.'
+	);
+	requireIncludes(
+	  renderAddMenu,
+	  "menuButton('role-profile-menu','Rolleprofil: '+roleProfileLabel(),roleProfileDetail())",
+	  '+ menu must expose role profiles without adding a toolbar button.'
+	);
+requireIncludes(
   renderAddMenu,
-  "menuTitle('Tools')",
-  '+ menu title must stay short and match the expected chat toolbar pattern.'
+  "menuSection('Inndata')",
+  '+ menu must expose input entrypoints as a compact section.'
 );
 requireIncludes(
   renderAddMenu,
-  "menuButton('connect-local','Connect local model','Get the install command in this chat.')",
-  '+ menu must keep local onboarding as one plain connect-local action with chat-native wording.'
-);
-requireIncludes(
-  renderAddMenu,
-  "menuButton('check-local','Refresh models','Use after the connector says ready.')",
-  '+ menu must keep post-install discovery short and explicit.'
-);
-requireIncludes(
-  renderAddMenu,
-  "menuButton('cycle-answer-style','Answer style: '+answerStyleLabel(),answerStyleDetail())",
-  '+ menu must expose answer style without adding a toolbar button.'
-);
-requireIncludes(
-  renderAddMenu,
-  "menuButton('role-profile-menu','Role profile: '+roleProfileLabel(),roleProfileDetail())",
-  '+ menu must expose role profiles without adding a toolbar button.'
-);
-requireIncludes(
-  renderAddMenu,
-  "menuSection('Bilde')",
-  '+ menu must expose the photo/library entrypoint as a compact section.'
+  "menuButton('voice-input','Snakk'",
+  '+ menu must expose voice input without adding a visible toolbar button.'
 );
 requireIncludes(
   renderAddMenu,
@@ -100,10 +105,10 @@ requireIncludes(
   '+ menu must expose Ask all active without adding a toolbar button.'
 );
 requireIncludes(
-  renderAddMenu,
-  "menuSection('Many AI')",
-  '+ menu must show scaled intelligence as a first-class group.'
-);
+	  renderAddMenu,
+	  "menuSection('Mange AI')",
+	  '+ menu must show scaled intelligence as a first-class group.'
+	);
 requireIncludes(
   renderAddMenu,
   "menuButton('boost-answer-live','Superboost'",
@@ -176,12 +181,12 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260705-fast-answer-compact-models-v1',
+  'p0-chat-shell.js?v=20260707-one-window-shell-v1',
   'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
 );
 requireIncludes(
   assetVersions,
-  '"p0-chat-shell.js": "20260705-fast-answer-compact-models-v1"',
+  '"p0-chat-shell.js": "20260707-one-window-shell-v1"',
   'Asset manifest must track the P0 menu-helper runtime version.'
 );
 forbidPattern(

@@ -78,7 +78,13 @@ async function preparePage(page, suffix) {
     waitUntil: 'networkidle'
   });
   await page.waitForSelector('#mmir-p0-app');
-  await page.waitForSelector('#p0-mic');
+  await page.waitForSelector('#p0-mic', { state: 'attached' });
+}
+
+async function clickVoiceInput(page) {
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="voice-input"]').click();
 }
 
 async function checkUnsupported(browser) {
@@ -88,7 +94,7 @@ async function checkUnsupported(browser) {
     try { delete window.webkitSpeechRecognition; } catch (error) { window.webkitSpeechRecognition = undefined; }
   });
   await preparePage(page, 'unsupported');
-  await page.locator('#p0-mic').click();
+  await clickVoiceInput(page);
   await page.waitForFunction(() => document.getElementById('p0-status')?.textContent?.includes('Voice input unavailable'));
   const state = await page.evaluate(() => ({
     buttonState: document.getElementById('p0-mic')?.dataset.voiceState,
@@ -128,7 +134,7 @@ async function checkSupported(browser) {
     window.webkitSpeechRecognition = FakeSpeechRecognition;
   });
   await preparePage(page, 'supported');
-  await page.locator('#p0-mic').click();
+  await clickVoiceInput(page);
   await page.waitForFunction(() => document.getElementById('p0-input')?.value?.includes('hello voice route'));
   const state = await page.evaluate(() => ({
     buttonState: document.getElementById('p0-mic')?.dataset.voiceState,

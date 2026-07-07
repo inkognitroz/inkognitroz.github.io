@@ -21,20 +21,20 @@ function forbid(source, pattern, message) {
 }
 
 requireIncludes(
-  p0Shell,
-  'Supergeni answers now.',
-  'Empty state must explain immediate chat plus the intelligence-pool upgrade path in one short line.'
-);
-requireIncludes(
-  p0Shell,
-  "menuButton('connect-local','Connect local model','Get the install command in this chat.')",
-  '+ menu must expose exactly one plain connect-local path for local node onboarding.'
-);
-requireIncludes(
-  p0Shell,
-  'Press + -> Connect local model to connect this computer.',
-  'Model menu must explain why adding a local model matters without showing a dashboard.'
-);
+	  p0Shell,
+	  'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.',
+	  'Empty state must explain immediate chat plus the intelligence-pool upgrade path in one short line.'
+	);
+	requireIncludes(
+	  p0Shell,
+	  "menuButton('connect-local','Koble til lokal AI','Vis install-kommandoen i chatten.')",
+	  '+ menu must expose exactly one plain connect-local path for local node onboarding.'
+	);
+	requireIncludes(
+	  p0Shell,
+	  'Trykk ⚙ -> Koble til lokal AI for å koble denne maskinen.',
+	  'Model menu must explain why adding a local model matters without showing a dashboard.'
+	);
 requireIncludes(
   localInstall,
   'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.',

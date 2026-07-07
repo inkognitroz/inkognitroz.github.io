@@ -460,16 +460,16 @@ requireText(
   '<body class="mimir-public-chat mimir-chat-first mmir-p0-ready">',
   "Public page must hide legacy UI at first paint before the P0 runtime installs.",
 );
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Connect local model",
-  "P0 + menu must expose local setup as one simple connect-local action.",
-);
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Get the install command in this chat.",
-  "P0 + menu must keep local setup chat-native and avoid redirecting to installer pages.",
-);
+	requireText(
+	  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+	  "Koble til lokal AI",
+	  "P0 + menu must expose local setup as one simple connect-local action.",
+	);
+	requireText(
+	  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+	  "Vis install-kommandoen i chatten.",
+	  "P0 + menu must keep local setup chat-native and avoid redirecting to installer pages.",
+	);
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   'id="p0-input"',
@@ -840,11 +840,11 @@ requireText(
   "function explicitMentionDecision(prompt)",
   "P0 shell must route explicit @model tags intentionally.",
 );
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Refresh models first, then use @supergeni @gemma for compare.",
-  "P0 shell must fail clearly when a local route tag is used before local discovery.",
-);
+	requireText(
+	  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
+	  "Oppdater AI først, så kan @supergeni @gemma sammenlignes.",
+	  "P0 shell must fail clearly when a local route tag is used before local discovery.",
+	);
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
   "Local-only: public facts may be outdated",

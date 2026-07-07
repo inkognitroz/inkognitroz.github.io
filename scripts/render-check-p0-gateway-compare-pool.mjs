@@ -531,35 +531,32 @@ async function checkViewport(browser, viewport) {
     return /Verifisert/i.test(route?.textContent || '') &&
       /live routes|model routes visible|Score 100/i.test(route?.getAttribute('aria-label') || '');
   });
-  const routeCta = page.locator('#p0-superboost');
-  const routeCtaCount = await routeCta.count();
-  assert(routeCtaCount === 1, `${viewport.name}: composer should expose exactly one visible Superboost action`);
-  if (routeCtaCount === 1) {
-    const routeCtaText = await routeCta.innerText();
-    assert(/Superboost\s+·\s+5 AI/i.test(routeCtaText), `${viewport.name}: Superboost action should show active route count`);
-    assert(await routeCta.isVisible(), `${viewport.name}: Superboost action should be visible`);
-  }
+	  const routeCta = page.locator('#p0-superboost');
+	  const routeCtaCount = await routeCta.count();
+	  assert(routeCtaCount === 1, `${viewport.name}: composer should keep exactly one Superboost route action`);
+	  if (routeCtaCount === 1) {
+	    const routeCtaText = await routeCta.innerText();
+	    assert(/Superboost\s+·\s+5 AI/i.test(routeCtaText), `${viewport.name}: Superboost action should show active route count`);
+	    assert(!(await routeCta.isVisible()), `${viewport.name}: Superboost should be behind the settings menu on the launch shell`);
+	  }
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
-  assert(/Many AI/i.test(addMenu), `${viewport.name}: add menu should put scaled intelligence in its own first-class group`);
+	  assert(/Mange AI/i.test(addMenu), `${viewport.name}: add menu should put scaled intelligence in its own first-class group`);
   assert(/More answers/i.test(addMenu), `${viewport.name}: add menu should expose compact More answers tools when hosted routes are active`);
   assert(/Superboost/i.test(addMenu), `${viewport.name}: add menu should expose Superboost without adding toolbar clutter`);
   assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
-  assert(/Ask 5 free live routes/i.test(addMenu), `${viewport.name}: Superboost should explain the active free route count`);
-  assert(/Debate/i.test(addMenu), `${viewport.name}: add menu should expose model debate without hiding it behind advanced wording`);
-  assert(/Ask 5 live routes through MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active route count subtly`);
+	  assert(/Spør 5 gratis AI-kilder/i.test(addMenu), `${viewport.name}: Superboost should explain the active free AI count`);
+	  assert(/Debate/i.test(addMenu), `${viewport.name}: add menu should expose model debate without hiding it behind advanced wording`);
+	  assert(/Spør 5 AI-kilder gjennom MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active AI count subtly`);
   assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
   assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
-  await page.locator('#p0-add').click();
-  await page.waitForFunction(() => document.getElementById('p0-add-menu')?.hidden === true);
-
-  await routeCta.click();
-  await page.waitForFunction(() => {
-    const text = document.getElementById('p0-transcript')?.innerText || '';
-    const status = document.getElementById('p0-status')?.textContent || '';
+	  await page.locator('#p0-add-menu [data-p0-action="boost-answer-live"]').click();
+	  await page.waitForFunction(() => {
+	    const text = document.getElementById('p0-transcript')?.innerText || '';
+	    const status = document.getElementById('p0-status')?.textContent || '';
     return /Intelligence Boost is running/i.test(text) &&
       /Scoring answer quality/i.test(text) &&
       /asking|ranking|synthesizing/i.test(status);
@@ -581,11 +578,11 @@ async function checkViewport(browser, viewport) {
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,
     bodyScrollWidth: document.body.scrollWidth,
-    status: document.getElementById('p0-status')?.textContent || '',
-    route: document.getElementById('p0-route')?.textContent || '',
-    routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
-    routeCta: document.querySelector('#p0-superboost')?.textContent || '',
-    routeCtaVisible: Boolean(document.querySelector('#p0-superboost')?.getClientRects().length),
+	    status: document.getElementById('p0-status')?.textContent || '',
+	    route: document.getElementById('p0-route')?.textContent || '',
+	    routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
+	    routeCta: document.querySelector('#p0-superboost')?.textContent || '',
+	    routeCtaVisible: Boolean(document.querySelector('#p0-superboost')?.getClientRects().length),
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare must not create horizontal overflow`);
@@ -595,8 +592,8 @@ async function checkViewport(browser, viewport) {
   assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
   assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
   assert(/privat/i.test(layout.route), `${viewport.name}: visible green route line should show privacy value`);
-  assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost CTA should survive after Boost finishes`);
-  assert(layout.routeCtaVisible, `${viewport.name}: Superboost CTA should remain visible after Boost finishes`);
+	  assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost route action should survive after Boost finishes`);
+	  assert(!layout.routeCtaVisible, `${viewport.name}: Superboost route action should remain hidden behind settings after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
   assert(/Superboost/i.test(layout.routeFull), `${viewport.name}: full boost receipt should identify the dedicated Superboost route`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
