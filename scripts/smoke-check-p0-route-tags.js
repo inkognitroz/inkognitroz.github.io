@@ -190,7 +190,7 @@ testApi.state.models = [hosted];
 const singleRoutePool = testApi.intelligencePoolSummary();
 assertEqual(singleRoutePool.liveRoutes, 1, 'Hosted-only intelligence pool must stay single-route');
 assertEqual(singleRoutePool.compareReady, false, 'Hosted-only intelligence pool must not claim parallel readiness');
-assertEqual(singleRoutePool.stateLabel, 'Single route now', 'Hosted-only summary must be honest before local discovery');
+assertEqual(singleRoutePool.stateLabel, 'Single AI source now', 'Hosted-only summary must be honest before local discovery');
 const missingLocal = testApi.explicitMentionDecision('@supergenius @gemma compare this');
 assertEqual(missingLocal.mode, 'missing-local', 'Explicit compare must fail clearly before local model discovery');
 

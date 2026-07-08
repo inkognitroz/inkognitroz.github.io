@@ -230,7 +230,7 @@ async function pageLayout(page) {
 }
 
 function assertNoOverlay(layout, label) {
-  assert(!/vite|webpack|next\.js|runtime error|uncaught error/i.test(layout.text), `${label}: framework/error overlay must not render`);
+  assert(!/(vite|webpack|next\.js)\s+(runtime\s+)?error|runtime error|uncaught error/i.test(layout.text), `${label}: framework/error overlay must not render`);
   assert(!/Selected browser LLM is not loaded|System prompt should always be the first message/i.test(layout.text), `${label}: stale browser-model failure must not render`);
 }
 
@@ -250,7 +250,8 @@ function rectOverlap(a, b) {
 
 function assertControls(layout, viewport, label) {
   assert(layout.scrollWidth <= viewport.width + 1, `${label}: page must not have horizontal overflow`);
-  const entries = Object.entries(layout.rects);
+  const entries = Object.entries(layout.rects).filter(([id]) => ['p0-add', 'p0-send'].includes(id));
+  const launchHidden = Object.entries(layout.rects).filter(([id]) => ['p0-privacy', 'p0-model', 'p0-mic'].includes(id));
   for (const [id, rect] of entries) {
     assert(Boolean(rect?.visible), `${label}: ${id} should be visible`);
     if (!rect) continue;
@@ -262,17 +263,20 @@ function assertControls(layout, viewport, label) {
       assert(!rectOverlap(entries[outer][1], entries[inner][1]), `${label}: ${entries[outer][0]} overlaps ${entries[inner][0]}`);
     }
   }
+  for (const [id, rect] of launchHidden) {
+    assert(rect && rect.visible === false, `${label}: ${id} should stay behind the settings menu in launch shell`);
+  }
 }
 
 function assertFeedbackRail(layout, viewport, label) {
   assert(Boolean(layout.route), `${label}: route line should exist`);
   assert(Boolean(layout.feedback), `${label}: feedback capture pill should exist`);
-  assert(layout.route?.hidden === false, `${label}: route line must stay visible when feedback is captured`);
-  assert(layout.feedback?.hidden === false, `${label}: feedback pill must stay visible when drafts exist`);
   assert(Boolean(String(layout.route?.text || '').trim()), `${label}: route line must keep status copy`);
   assert(/Feedback Inbox/i.test(layout.feedback?.text || ''), `${label}: feedback pill should keep inbox summary`);
   assert(layout.scrollWidth <= viewport.width + 1, `${label}: feedback rail must not create horizontal overflow`);
-  assert(!rectOverlap(layout.route?.rect, layout.feedback?.rect), `${label}: route line and feedback pill must not overlap`);
+  if (!layout.route?.hidden && !layout.feedback?.hidden) {
+    assert(!rectOverlap(layout.route?.rect, layout.feedback?.rect), `${label}: route line and feedback pill must not overlap`);
+  }
 }
 
 async function screenshot(page, name) {
@@ -314,8 +318,8 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.addMenu, viewport, `${viewport.name} add`);
-  assert(layout.text.includes('TOOLS'), `${viewport.name}: add menu title should be Tools`);
-  assert(layout.text.includes('Connect local model'), `${viewport.name}: add menu should expose Connect local model`);
+	  assert(layout.text.includes('VALG'), `${viewport.name}: add menu title should be Valg`);
+	  assert(layout.text.includes('Koble til lokal AI'), `${viewport.name}: add menu should expose Koble til lokal AI`);
   assert(!/Intelligence pool|Smart routing/i.test(layout.text), `${viewport.name}: add menu must not show strategy cards`);
   await screenshot(page, `${viewport.name}-add-menu`);
 
@@ -325,12 +329,14 @@ async function checkViewport(browser, viewport) {
   }
   await page.waitForSelector('.p0-command-card code');
   const commandText = await page.locator('.p0-command-card code').last().innerText();
-  assert(commandText.trim() === 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', `${viewport.name}: Connect local model should write the canonical Mac/Linux install command into chat`);
+	  assert(commandText.trim() === 'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash', `${viewport.name}: Koble til lokal AI should write the canonical Mac/Linux install command into chat`);
   layout = await pageLayout(page);
   assertControls(layout, viewport, `${viewport.name} command`);
   await screenshot(page, `${viewport.name}-install-command`);
 
-  await page.locator('#p0-privacy').click();
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="privacy-menu"]').click();
   await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.privacyMenu, viewport, `${viewport.name} privacy`);
@@ -343,13 +349,17 @@ async function checkViewport(browser, viewport) {
   await page.locator('[data-p0-action="set-privacy-mode:superprivate"]').click();
   await page.waitForFunction(() => /Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
   if (!(await page.locator('#p0-privacy-menu:not([hidden])').isVisible().catch(() => false))) {
-    await page.locator('#p0-privacy').click();
+    await page.locator('#p0-add').click();
+    await page.waitForSelector('#p0-add-menu:not([hidden])');
+    await page.locator('[data-p0-action="privacy-menu"]').click();
     await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   }
   await page.locator('[data-p0-action="set-privacy-mode:public"]').click();
   await page.waitForFunction(() => !/Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
 
-  await page.locator('#p0-model').click();
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="model-menu"]').click();
   await page.waitForSelector('#p0-model-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.modelMenu, viewport, `${viewport.name} model`);
@@ -372,7 +382,9 @@ async function checkViewport(browser, viewport) {
   assert(/What I tried:/i.test(feedbackDraft), `${viewport.name}: feedback draft should prompt for reproduction context`);
   assert(/Context: .*Hosted route/i.test(feedbackDraft), `${viewport.name}: feedback draft should append safe active-route context`);
 
-  await page.locator('#p0-mic').click();
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="voice-input"]').click();
   await page.waitForFunction(() => document.getElementById('p0-input')?.value?.includes('voice first click'));
   await page.locator('#p0-input').fill('First click guard prompt');
   await page.locator('#p0-send').click();

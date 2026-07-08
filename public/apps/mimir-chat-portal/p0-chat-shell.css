@@ -1153,3 +1153,55 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
     margin-left: 6px;
   }
 }
+
+#mmir-p0-app.p0-launch-shell .p0-status,
+#mmir-p0-app.p0-launch-shell .p0-status-rail,
+#mmir-p0-app.p0-launch-shell .p0-shield,
+#mmir-p0-app.p0-launch-shell .p0-superboost,
+#mmir-p0-app.p0-launch-shell .p0-council,
+#mmir-p0-app.p0-launch-shell .p0-model-button,
+#mmir-p0-app.p0-launch-shell .p0-mic,
+#mmir-p0-app.p0-launch-shell .p0-toolbar-tools {
+  display: none !important;
+}
+
+#mmir-p0-app.p0-launch-shell.p0-has-toolbar-tools .p0-toolbar-tools {
+  display: flex !important;
+}
+
+#mmir-p0-app.p0-launch-shell .p0-topbar {
+  border-bottom: 0;
+  min-height: 48px;
+  padding-bottom: 4px;
+}
+
+#mmir-p0-app.p0-launch-shell .p0-transcript {
+  padding-top: 10px;
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+
+#mmir-p0-app.p0-launch-shell .p0-transcript::-webkit-scrollbar {
+  display: none;
+}
+
+#mmir-p0-app.p0-launch-shell .p0-toolbar {
+  flex-wrap: nowrap;
+}
+
+#mmir-p0-app.p0-launch-shell .p0-left,
+#mmir-p0-app.p0-launch-shell .p0-right {
+  flex: 0 0 auto;
+}
+
+#mmir-p0-app.p0-launch-shell .p0-right {
+  margin-left: auto;
+}
+
+#mmir-p0-app.p0-launch-shell #p0-add {
+  font-size: 1rem;
+}
+
+#mmir-p0-app.p0-launch-shell.p0-has-draft .p0-empty-starters {
+  display: none;
+}

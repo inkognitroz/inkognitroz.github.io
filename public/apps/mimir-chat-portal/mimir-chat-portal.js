@@ -190,7 +190,7 @@
     writeProfiles(profiles);
     return profile;
   }
-  function createProfile(){const profile=ensureFreeLocalProfile({surface:'model-picker'});setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Pick a free route or run the installer, then Refresh models.'));render();}
+  function createProfile(){const profile=ensureFreeLocalProfile({surface:'model-picker'});setStatus((profile.health==='ready'?'Free local profile is active.':'Free local profile is active. Pick a free route or run the installer, then Oppdater AI.'));render();}
   function ensureManagedApiProfile(){
     const profile=upsertManagedApiProfile();
     selectedId=profile.id;

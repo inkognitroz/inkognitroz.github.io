@@ -1,5 +1,5 @@
 (function(){
-  const version='20260611-b0-06-21-active-local-attach-v1';
+  const version='20260707-one-window-shell-v1';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
@@ -65,11 +65,11 @@
   function localNetworkHint(error){
     const message=String(error?.message||error||'');
     if(/local_probe_deferred/i.test(message)){
-      return 'Local connector check was deferred. Press Refresh models again to allow this browser to check this Mac.';
+      return 'Local connector check was deferred. Press Oppdater AI again to allow this browser to check this Mac.';
     }
     if(error?.name==='AbortError')return 'Local connector timed out. Check that MMIR Local Connector and Ollama are running.';
     if(/Failed to fetch|NetworkError|Load failed|blocked|CORS/i.test(message)){
-      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Refresh models again. The connector stays on 127.0.0.1.';
+      return 'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Oppdater AI again. The connector stays on 127.0.0.1.';
     }
     return message||'Local connector is not reachable yet.';
   }

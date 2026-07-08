@@ -189,8 +189,8 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   let addMenu = await menuText(page);
-  assert(addMenu.includes('Connect local model'), `${viewport.name}: add menu should keep Connect local model`);
-  assert(addMenu.includes('Refresh models'), `${viewport.name}: add menu should keep Refresh models`);
+	  assert(addMenu.includes('Koble til lokal AI'), `${viewport.name}: add menu should keep Koble til lokal AI`);
+	  assert(addMenu.includes('Oppdater AI'), `${viewport.name}: add menu should keep Oppdater AI`);
   assert(!/Compare answers|Best answer benchmark|Supergeni Council/i.test(addMenu), `${viewport.name}: add menu must not show two-model tools before local discovery`);
 
   await page.locator('[data-p0-action="check-local"]').click();

@@ -57,7 +57,7 @@ requireOrder(previewHtml, './local-install-commands.js', './design-preview.js', 
 requireIncludes(mmirHtml, 'local-install-commands.js', 'Public MMIR shell must load the shared local install helper.');
 requireOrder(mmirHtml, 'local-install-commands.js', 'p0-chat-shell.js', 'Public MMIR shell must load install helper before P0 shell.');
 
-if (manifest.assets?.['local-install-commands.js'] !== '20260606-b1-06-local-install-commands-v2') {
+if (manifest.assets?.['local-install-commands.js'] !== '20260707-one-window-shell-v1') {
   fail('Asset manifest must version local-install-commands.js.');
 }
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-local-install-commands-helper.js')) {
@@ -86,7 +86,7 @@ if (!api || api.commandFor('mac') !== api.macLinux || api.commandFor('linux') !=
 if (!api || !api.introFor('mac').includes('Do you have a Mac computer? Copy and paste this in Terminal')) {
   fail('Shared helper must return the chat-native Mac install intro.');
 }
-if (!api || !api.returnInstruction().includes('press + -> Refresh models')) {
+if (!api || !api.returnInstruction().includes('press ⚙ -> Oppdater AI')) {
   fail('Shared helper must return the post-install refresh instruction.');
 }
 if (!api || !api.commandFor('windows').includes('mmir-local-node-windows.ps1')) {
