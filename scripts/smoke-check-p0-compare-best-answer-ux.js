@@ -40,21 +40,21 @@ const addMenu = functionBody(runtime, 'renderAddMenu');
 const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
 const captureCompareUsefulFeedback = functionBody(runtime, 'captureCompareUsefulFeedback');
 
-requireText(
-  addMenu,
-  "menuButton('connect-local','Connect local model'",
-  'Add menu must expose local setup once as Connect local model'
-);
-requireText(
-  addMenu,
-  "menuButton('check-local','Refresh models'",
-  'Add menu must keep a clear refresh path after connector install'
-);
-requireText(
-  runtime,
-  'Press + -> Connect local model to connect this computer.',
-  'Model menu local hint must stay short and avoid repeating platform strategy copy'
-);
+	requireText(
+	  addMenu,
+	  "menuButton('connect-local','Koble til lokal AI'",
+	  'Add menu must expose local setup once as Koble til lokal AI'
+	);
+	requireText(
+	  addMenu,
+	  "menuButton('check-local','Oppdater AI'",
+	  'Add menu must keep a clear refresh path after connector install'
+	);
+	requireText(
+	  runtime,
+	  'Trykk ⚙ -> Koble til lokal AI for å koble denne maskinen.',
+	  'Model menu local hint must stay short and avoid repeating platform strategy copy'
+	);
 forbidText(
   runtime,
   'expand the intelligence pool',
@@ -106,9 +106,9 @@ forbidText(
   'Add menu should avoid technical local-node detail in the compact toolbar menu'
 );
 
-const connectLocalCount = (addMenu.match(/'Connect local model'/g) || []).length;
+const connectLocalCount = (addMenu.match(/'Koble til lokal AI'/g) || []).length;
 if (connectLocalCount !== 1) {
-  fail(`Add menu should contain exactly one Connect local model action, found ${connectLocalCount}`);
+  fail(`Add menu should contain exactly one Koble til lokal AI action, found ${connectLocalCount}`);
 }
 
 requireText(

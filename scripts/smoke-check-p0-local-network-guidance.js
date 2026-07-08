@@ -43,12 +43,12 @@ requireIncludes(
 );
 requireIncludes(
   routeAdapters,
-  'Local connector check was deferred. Press Refresh models again to allow this browser to check this Mac.',
+  'Local connector check was deferred. Press Oppdater AI again to allow this browser to check this Mac.',
   'Deferred local probes must explain that the user can explicitly retry.'
 );
 requireIncludes(
   routeAdapters,
-  'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Refresh models again. The connector stays on 127.0.0.1.',
+  'Browser blocked access to this Mac. Allow Local Network Access for mmir.ai, then press Oppdater AI again. The connector stays on 127.0.0.1.',
   'Browser/PNA local-network failures must give an actionable user-facing instruction.'
 );
 requireIncludes(
@@ -58,7 +58,7 @@ requireIncludes(
 );
 requireIncludes(
   p0Shell,
-  "routeStatus('Local access blocked · Allow Local Network Access, then Refresh models','error')",
+  "routeStatus('Local access blocked · Allow Local Network Access, then Oppdater AI','error')",
   'Blocked local discovery must update the compact route/status line, not only throw a browser error.'
 );
 requireIncludes(
@@ -84,10 +84,10 @@ requireOrder(
   'Local chat must open the explicit local-probe allowance before pairing.'
 );
 requireIncludes(
-  p0Shell,
-  "menuButton('check-local','Refresh models'",
-  'Local model discovery must remain a visible explicit user action under the + menu.'
-);
+	  p0Shell,
+	  "menuButton('check-local','Oppdater AI'",
+	  'Local model discovery must remain a visible explicit user action under the + menu.'
+	);
 requireIncludes(
   p0Shell,
   'If the browser asks, allow Local Network Access for mmir.ai.',

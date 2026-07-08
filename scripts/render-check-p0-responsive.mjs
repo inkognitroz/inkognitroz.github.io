@@ -249,7 +249,8 @@ async function checkViewport(browser, viewport) {
   assert(layout.transcript?.overflowY === 'auto', `${viewport.name}: transcript must remain scrollable`);
   assert((layout.transcript?.scrollHeight || 0) > (layout.transcript?.clientHeight || 0), `${viewport.name}: seeded transcript must create a scrollable answer pane`);
 
-  const controls = Object.entries(layout.rects);
+  const controls = Object.entries(layout.rects).filter(([id]) => ['p0-add', 'p0-send'].includes(id));
+  const launchHidden = Object.entries(layout.rects).filter(([id]) => ['p0-privacy', 'p0-model', 'p0-mic'].includes(id));
   for (const [id, rect] of controls) {
     assert(rect?.visible, `${viewport.name}: ${id} should be visible`);
     assert(rect.left >= -1 && rect.right <= viewport.width + 1, `${viewport.name}: ${id} should stay inside viewport`);
@@ -260,13 +261,16 @@ async function checkViewport(browser, viewport) {
       assert(!overlap(controls[outer][1], controls[inner][1]), `${viewport.name}: ${controls[outer][0]} overlaps ${controls[inner][0]}`);
     }
   }
+  for (const [id, rect] of launchHidden) {
+    assert(rect && rect.visible === false, `${viewport.name}: ${id} should stay behind the settings menu in launch shell`);
+  }
 
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   layout = await collectLayout(page);
   assertMenuInViewport(layout.addMenu, viewport, `${viewport.name} add`);
-  assert(layout.text.includes('Connect local model'), `${viewport.name}: add menu should expose Connect local model`);
-  assert(layout.text.includes('Refresh models'), `${viewport.name}: add menu should expose Refresh models`);
+	  assert(layout.text.includes('Koble til lokal AI'), `${viewport.name}: add menu should expose Koble til lokal AI`);
+	  assert(layout.text.includes('Oppdater AI'), `${viewport.name}: add menu should expose Oppdater AI`);
 
   await page.locator('[data-p0-action="connect-local"]').click();
   await page.waitForSelector('.p0-command-card code');
@@ -275,7 +279,9 @@ async function checkViewport(browser, viewport) {
   layout = await collectLayout(page);
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: connect local card must not create horizontal overflow`);
 
-  await page.locator('#p0-model').click();
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="model-menu"]').click();
   await page.waitForSelector('#p0-model-menu:not([hidden])');
   layout = await collectLayout(page);
   assertMenuInViewport(layout.modelMenu, viewport, `${viewport.name} model`);

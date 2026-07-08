@@ -21,7 +21,7 @@ requireIncludes(runtime, "promptEl.value='Continue the previous answer without r
 requireIncludes(runtime, "note.textContent=message.truncated?'Local actions: copy, retry, continue, save, fork, share, next.':'Local actions: copy, retry, save, fork, share, next.';", 'Runtime action status copy must mention Continue only for truncated answers.');
 requireIncludes(runtime, "updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta,{truncated:result?.completion_truncated===true});", 'Backend chat path must preserve truncation metadata on the assistant message.');
 
-const expectedVersion = '20260622-runtime-truncation-recovery-v1';
+const expectedVersion = '20260707-one-window-shell-v1';
 requireIncludes(html, `./apps/mimir-chat-portal/chat-runtime.js?v=${expectedVersion}`, 'mmir.html must cache-bust the truncation-recovery runtime.');
 requireIncludes(manifest, `"chat-runtime.js": "${expectedVersion}"`, 'Asset manifest must track the truncation-recovery runtime.');
 requireIncludes(String(packageJson.scripts?.check || ''), 'smoke-check-runtime-truncation-recovery.js', 'npm run check must include the runtime truncation recovery smoke.');

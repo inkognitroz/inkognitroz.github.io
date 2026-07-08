@@ -42,12 +42,12 @@
     return 'Which computer will host your local model? Choose Mac, Windows or Linux, and I will give you the exact command here in chat.';
   }
 
-  function returnInstruction(){
-    return 'After it says "MMIR Local Connector is ready", return here and press + -> Refresh models. If the browser asks, allow Local Network Access for mmir.ai.';
-  }
+	  function returnInstruction(){
+	    return 'After it says "MMIR Local Connector is ready", return here and press ⚙ -> Oppdater AI. If the browser asks, allow Local Network Access for mmir.ai.';
+	  }
 
   window.MimirLocalInstallCommands={
-    version:'20260606-b1-06-local-install-commands-v2',
+	    version:'20260707-one-window-shell-v1',
     macLinux:MAC_LINUX,
     windows:WINDOWS,
     normalizeOs,
