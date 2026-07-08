@@ -16,6 +16,7 @@
   let compareBtn=null;
   let synthBtn=null;
   let feedbackBtn=null;
+  let reviewBtn=null;
   let lastResults=[];
   let lastSynthesis=null;
   let lastComparisonPrompt='';
@@ -166,6 +167,7 @@
           '<button id="compare-models" type="button">Compare models</button>'+
           '<button id="synthesize-models" type="button" disabled>Synthesize</button>'+
           '<button id="capture-comparison-feedback" type="button" disabled>Useful synthesis</button>'+
+          '<button id="capture-comparison-review" type="button" disabled>Needs review</button>'+
         '</div>'+
         '<p id="comparison-status" class="dashboard-note" data-state="idle" aria-live="polite"></p>'+
         '<div id="comparison-output" class="comparison-output" aria-live="polite"></div>'+
@@ -177,9 +179,52 @@
     compareBtn=document.getElementById('compare-models');
     synthBtn=document.getElementById('synthesize-models');
     feedbackBtn=document.getElementById('capture-comparison-feedback');
+    reviewBtn=document.getElementById('capture-comparison-review');
     compareBtn.addEventListener('click',compareModels);
     synthBtn.addEventListener('click',synthesizeResults);
-    feedbackBtn.addEventListener('click',captureComparisonFeedback);
+    feedbackBtn.addEventListener('click',()=>captureComparisonFeedback('useful'));
+    reviewBtn.addEventListener('click',()=>captureComparisonFeedback('review'));
+  }
+
+  function comparisonFeedbackButtons(){
+    return [feedbackBtn,reviewBtn].filter(Boolean);
+  }
+
+  function resetFeedbackButtons(){
+    comparisonFeedbackButtons().forEach(button=>{
+      button.disabled=true;
+      button.dataset.captured='false';
+      button.removeAttribute('aria-label');
+      button.removeAttribute('title');
+    });
+    if(feedbackBtn)feedbackBtn.textContent='Useful synthesis';
+    if(reviewBtn)reviewBtn.textContent='Needs review';
+  }
+
+  function enableFeedbackButtons(enabled){
+    comparisonFeedbackButtons().forEach(button=>{
+      button.disabled=!enabled;
+      button.dataset.captured='false';
+      button.removeAttribute('aria-label');
+      button.removeAttribute('title');
+    });
+    if(feedbackBtn)feedbackBtn.textContent='Useful synthesis';
+    if(reviewBtn)reviewBtn.textContent='Needs review';
+  }
+
+  function markFeedbackButtonsCaptured(signal){
+    const label=signal==='review'?'Review signal saved':'Useful saved';
+    const evidenceLabel=lastEvidenceId||'comparison-not-recorded';
+    const message='Compare synthesis feedback saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.';
+    comparisonFeedbackButtons().forEach(button=>{
+      button.dataset.captured='true';
+      button.dataset.evidenceId=evidenceLabel;
+      button.disabled=true;
+      button.setAttribute('aria-label',message);
+      button.title=message;
+    });
+    if(signal==='review'&&reviewBtn)reviewBtn.textContent=label;
+    else if(feedbackBtn)feedbackBtn.textContent=label;
   }
 
   function renderModelChoices(){
@@ -287,13 +332,7 @@
     article.append(title,body);
     outputEl.prepend(article);
     lastSynthesis={content:String(content||''),model};
-    if(feedbackBtn){
-      feedbackBtn.disabled=!lastSynthesis.content;
-      feedbackBtn.dataset.captured='false';
-      feedbackBtn.textContent='Useful synthesis';
-      feedbackBtn.removeAttribute('aria-label');
-      feedbackBtn.removeAttribute('title');
-    }
+    enableFeedbackButtons(Boolean(lastSynthesis.content));
   }
 
   function resultSummary(){
@@ -407,9 +446,11 @@
     return 'Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'; compared at: '+(lastEvidenceCapturedAt||'not recorded')+'; local fingerprint only, raw prompt, responses and synthesis not stored.';
   }
 
-  function comparisonFeedbackDraft(){
+  function comparisonFeedbackDraft(signal){
+    const review=signal==='review';
     return [
-      '@feedback Compare Live Models useful synthesis',
+      review?'@feedback Compare Live Models synthesis needs review':'@feedback Compare Live Models useful synthesis',
+      'Feedback signal: '+(review?'needs owner review':'useful synthesis'),
       evidenceSummary(),
       promptPrivacySummary(),
       compareRouteSafetySummary(),
@@ -417,22 +458,23 @@
       bestAnswerSignal(),
       resultSummary(),
       synthesisPrivacySummary(),
-      'Why useful: synthesized answer helped choose a best response.',
+      review?'Why review: synthesized answer needs owner inspection before it becomes a best-answer pattern.':'Why useful: synthesized answer helped choose a best response.',
       'Privacy: raw prompt, raw model responses and raw synthesis are not stored in this feedback draft.'
     ].join('\n');
   }
 
-  function captureComparisonFeedback(){
+  function captureComparisonFeedback(signal='useful'){
     if(!lastSynthesis?.content){setStatus('Run synthesis before marking it useful.','error');return;}
-    if(feedbackBtn?.dataset?.captured==='true'){setStatus('Useful synthesis already saved. Run a new synthesis to capture another signal.','ready');return;}
-    const draft=comparisonFeedbackDraft();
+    if(comparisonFeedbackButtons().some(button=>button.dataset?.captured==='true')){setStatus('Compare synthesis feedback already saved. Run a new synthesis to capture another signal.','ready');return;}
+    const review=signal==='review';
+    const draft=comparisonFeedbackDraft(review?'review':'useful');
     const saved=window.MimirChatRuntimeBridge?.saveFeedbackDraft?.(draft,{
       source:'model-comparison-panel',
       target:'feedback',
-      title:'Useful compare synthesis',
-      priority:'p3-ux',
+      title:review?'Compare synthesis needs review':'Useful compare synthesis',
+      priority:review?'p2-demo-learning':'p3-ux',
       lane:'L1 Frontend UX',
-      backlogHint:'compare-panel-useful-synthesis',
+      backlogHint:review?'compare-panel-synthesis-review':'compare-panel-useful-synthesis',
       openInbox:true
     });
     if(!saved&&promptEl){
@@ -441,14 +483,8 @@
       promptEl.dispatchEvent(new Event('change',{bubbles:true}));
       promptEl.focus();
     }
-    if(feedbackBtn){
-      feedbackBtn.dataset.captured='true';
-      feedbackBtn.disabled=true;
-      feedbackBtn.textContent='Useful saved';
-      feedbackBtn.setAttribute('aria-label','Useful synthesis saved. Run a new synthesis to capture another signal.');
-      feedbackBtn.title='Useful synthesis saved. Run a new synthesis to capture another signal.';
-    }
-    setStatus(saved?'Useful synthesis saved to Feedback Inbox.':'Useful synthesis draft added to the chat box.','ready');
+    markFeedbackButtonsCaptured(review?'review':'useful');
+    setStatus((saved?(review?'Review signal saved to Feedback Inbox.':'Useful synthesis saved to Feedback Inbox.'):(review?'Review draft added to the chat box.':'Useful synthesis draft added to the chat box.'))+' Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'.','ready');
   }
 
   async function compareModels(){
@@ -462,13 +498,7 @@
 
     compareBtn.disabled=true;
     synthBtn.disabled=true;
-    if(feedbackBtn){
-      feedbackBtn.disabled=true;
-      feedbackBtn.dataset.captured='false';
-      feedbackBtn.textContent='Useful synthesis';
-      feedbackBtn.removeAttribute('aria-label');
-      feedbackBtn.removeAttribute('title');
-    }
+    resetFeedbackButtons();
     outputEl.innerHTML='';
     lastResults=[];
     lastSynthesis=null;
