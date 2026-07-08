@@ -22,6 +22,68 @@ function requireString(value, label) {
   if (!String(value || '').trim()) fail(`${label} must be present.`);
 }
 
+function isLocalhost(hostname) {
+  return ['localhost', '127.0.0.1', '::1'].includes(String(hostname || '').toLowerCase());
+}
+
+function isLikelyAbsoluteUrl(value) {
+  return /^https?:\/\//i.test(String(value || ''));
+}
+
+function assertPublicUrl(value, label, { allowHttpLocalhost = false } = {}) {
+  const raw = String(value || '').trim();
+  if (!raw) return;
+  let url;
+  try {
+    url = new URL(raw);
+  } catch {
+    fail(`${label} must be a valid absolute URL.`);
+    return;
+  }
+
+  if (url.username || url.password) fail(`${label} must not embed credentials.`);
+  if (url.search) fail(`${label} must not include query strings.`);
+  if (url.hash) fail(`${label} must not include fragments.`);
+
+  if (url.protocol === 'http:') {
+    if (!allowHttpLocalhost || !isLocalhost(url.hostname)) fail(`${label} may only use http for localhost routes.`);
+    return;
+  }
+
+  if (url.protocol !== 'https:') fail(`${label} must use https unless it is a localhost-only route.`);
+}
+
+const secretValuePatterns = [
+  /\bsk-[A-Za-z0-9_-]{12,}\b/i,
+  /\bAIza[0-9A-Za-z_-]{20,}\b/,
+  /\bgh[pousr]_[A-Za-z0-9_]{20,}\b/,
+  /\b(?:token|api[_-]?key|secret|signature|sig)=/i
+];
+
+function inspectPublicValue(value, path = 'manifest') {
+  if (typeof value === 'string') {
+    for (const pattern of secretValuePatterns) {
+      if (pattern.test(value)) fail(`${path} must not contain secret-shaped values.`);
+    }
+
+    if (isLikelyAbsoluteUrl(value)) {
+      assertPublicUrl(value, path, { allowHttpLocalhost: true });
+    }
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => inspectPublicValue(entry, `${path}[${index}]`));
+    return;
+  }
+
+  if (value && typeof value === 'object') {
+    for (const [key, entry] of Object.entries(value)) inspectPublicValue(entry, `${path}.${key}`);
+  }
+}
+
+inspectPublicValue(manifest);
+
 const updatedAt = String(manifest.updated_at || '').trim();
 requireString(updatedAt, 'active-chat-nodes updated_at');
 if (updatedAt && Number.isNaN(Date.parse(updatedAt))) fail('active-chat-nodes updated_at must be parseable.');
@@ -47,6 +109,7 @@ for (const node of nodes) {
   const kind = String(route.kind || '');
   const type = String(node?.type || '');
   const trust = String(node?.trust_level || '');
+  const capabilities = Array.isArray(node?.capabilities) ? node.capabilities : [];
 
   requireFalse(cost.requires_approval, `node ${id} cost.requires_approval`);
   if (!String(cost.mode || '').startsWith('free')) fail(`node ${id} cost.mode must stay free-scoped.`);
@@ -54,12 +117,19 @@ for (const node of nodes) {
   if (meta.cloudflare_required !== undefined) requireFalse(meta.cloudflare_required, `node ${id} receipt_metadata.cloudflare_required`);
   if (meta.prompt_left_device !== undefined && meta.prompt_left_device !== false) fail(`node ${id} receipt_metadata.prompt_left_device must not claim prompts leave the user device.`);
   if (meta.install_required !== undefined && !bool(meta.install_required)) fail(`node ${id} receipt_metadata.install_required must be boolean when present.`);
+  if (node.provider_called === true) fail(`node ${id} must not claim provider_called in the static manifest.`);
+  if (node.trusted_live === true) fail(`node ${id} must not claim trusted_live in the static manifest.`);
+  if (node.public_promotion_allowed === true) fail(`node ${id} must not allow public promotion from the static manifest.`);
+
+  if (route.url) assertPublicUrl(route.url, `node ${id} route.url`, { allowHttpLocalhost: id === 'local-node' || type === 'local-adapter' });
 
   if (kind === 'managed-api') {
     hostedCount += 1;
     if (node.status === 'online') fail(`managed node ${id} must not claim static online status.`);
+    if (node.status !== 'verify_before_chat') fail(`managed node ${id} must verify before chat.`);
     if (String(route.url || '') !== 'https://api.mmir.ai') fail(`managed node ${id} must use the public MMIR free route host.`);
     if (trust !== 'public-free') fail(`managed node ${id} must remain public-free.`);
+    if (capabilities.includes('chat.completions') && !capabilities.includes('health')) fail(`managed node ${id} chat capability must keep a health proof path.`);
   }
 
   if (id === 'local-node' || type === 'local-adapter') {
