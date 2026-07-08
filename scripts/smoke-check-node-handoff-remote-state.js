@@ -31,7 +31,7 @@ requireIncludes(dashboard, 'syncPairingSummary(message,state);', 'Pairing-code a
 requireIncludes(css, '.node-handoff-status {', 'Node handoff remote-state block must have dedicated layout styles.');
 requireIncludes(css, '.node-handoff-status article[data-state="ready"] {', 'Node handoff remote-state block must style ready state.');
 
-const expectedVersion = '20260705-node-handoff-proof-v1';
+const expectedVersion = '20260708-node-handoff-resume-proof-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node-dashboard remote-state JavaScript update.');
 }

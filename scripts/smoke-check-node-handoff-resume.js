@@ -43,10 +43,12 @@ requireIncludes(dashboard, "gate_detail:String(payload?.gate_detail||'').slice(0
 requireIncludes(dashboard, 'data-node-handoff-gate', 'Handoff actions must persist the next health gate.');
 requireIncludes(dashboard, 'data-node-handoff-detail', 'Handoff actions must persist the gate explanation.');
 requireIncludes(dashboard, "safe(freshness)+' / '+safe(nodeHandoffTunnelProof(handoff))+' / no_paid_routes_started:true", 'Handoff resume security proof must include freshness and tunnel state before safety flags.');
+requireIncludes(dashboard, 'raw_response_stored:false', 'Node handoff resume must keep raw-response storage proof visible.');
 requireIncludes(dashboard, 'Handoff needs refresh', 'Node handoff resume must ask for a refresh when saved route state is stale.');
 requireIncludes(dashboard, 'Handoff resume', 'Node handoff resume banner must be visible and labeled.');
 requireIncludes(dashboard, 'provider_secrets_stored:false', 'Node handoff resume must keep security/cost proof visible.');
 requireIncludes(dashboard, 'node-handoff-resume-action', 'Node handoff resume action must be bindable.');
+requireIncludes(dashboard, 'data-node-dashboard-refresh="true"', 'Stale/checking resume CTAs must trigger node health refresh directly.');
 requireIncludes(dashboard, "record?.('node-handoff-resume-action'", 'Node handoff resume actions must be telemetry-visible.');
 requireIncludes(dashboard, 'renderNodeHandoffResumeBanner()+', 'Node handoff resume banner must render in dashboard states.');
 
@@ -56,7 +58,7 @@ requireIncludes(css, '.node-handoff-resume[data-state="pending"]', 'Node handoff
 requireIncludes(css, '.node-handoff-resume[data-state="stale"]', 'Node handoff resume banner must style stale handoff state.');
 requireIncludes(css, '.node-resume-banner[data-state="stale"]', 'Repair resume banner must style stale repair state.');
 
-const expectedVersion = '20260705-node-handoff-proof-v1';
+const expectedVersion = '20260708-node-handoff-resume-proof-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node handoff resume JavaScript update.');
 }

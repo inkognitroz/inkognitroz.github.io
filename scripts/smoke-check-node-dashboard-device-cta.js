@@ -32,7 +32,7 @@ requireIncludes(dashboard, "const starter={model:payload.model,device:payload.de
 requireIncludes(dashboard, "record?.('recommended-starter',{...starter,source:'node-handoff',free:true});", 'Node handoff model actions must mark the device-fit starter as recommended.');
 requireIncludes(dashboard, "detail:{starter,source:'node-handoff',no_paid_routes_started:true}", 'Node handoff model actions must pass the chosen starter into model library focus.');
 
-const expectedVersion = '20260705-node-handoff-proof-v1';
+const expectedVersion = '20260708-node-handoff-resume-proof-v1';
 if (manifest.assets?.['node-dashboard.js'] !== expectedVersion) {
   fail('Asset manifest must track the node-dashboard device-aware CTA update.');
 }
