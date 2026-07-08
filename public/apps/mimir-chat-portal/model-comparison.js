@@ -214,9 +214,11 @@
 
   function markFeedbackButtonsCaptured(signal){
     const label=signal==='review'?'Review signal saved':'Useful saved';
-    const message='Compare synthesis feedback saved. Run a new synthesis to capture another signal.';
+    const evidenceLabel=lastEvidenceId||'comparison-not-recorded';
+    const message='Compare synthesis feedback saved. Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.';
     comparisonFeedbackButtons().forEach(button=>{
       button.dataset.captured='true';
+      button.dataset.evidenceId=evidenceLabel;
       button.disabled=true;
       button.setAttribute('aria-label',message);
       button.title=message;
@@ -482,7 +484,7 @@
       promptEl.focus();
     }
     markFeedbackButtonsCaptured(review?'review':'useful');
-    setStatus(saved?(review?'Review signal saved to Feedback Inbox.':'Useful synthesis saved to Feedback Inbox.'):(review?'Review draft added to the chat box.':'Useful synthesis draft added to the chat box.'),'ready');
+    setStatus((saved?(review?'Review signal saved to Feedback Inbox.':'Useful synthesis saved to Feedback Inbox.'):(review?'Review draft added to the chat box.':'Useful synthesis draft added to the chat box.'))+' Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'.','ready');
   }
 
   async function compareModels(){

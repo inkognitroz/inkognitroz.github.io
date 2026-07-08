@@ -120,9 +120,15 @@ requireIncludes(js, "if(comparisonFeedbackButtons().some(button=>button.dataset?
 requireIncludes(js, 'promptEl.value=draft;', 'Compare feedback must fall back to prefilled chat draft when the bridge is absent.');
 requireIncludes(js, "button.dataset.captured='true';", 'Useful-synthesis capture must expose saved state in the UI.');
 requireIncludes(js, 'button.disabled=true;', 'Useful-synthesis capture must disable the saved button until another synthesis is generated.');
+requireIncludes(js, "const evidenceLabel=lastEvidenceId||'comparison-not-recorded';", 'Compare feedback capture must derive a stable evidence label from the comparison run.');
+if (js.includes('button.dataset.evidenceId=lastEvidenceId;') || js.includes('feedbackBtn.dataset.evidenceId=lastEvidenceId;')) {
+  fail('Compare feedback capture must never write a null evidence ID into a saved control.');
+}
+requireIncludes(js, 'button.dataset.evidenceId=evidenceLabel;', 'Compare feedback capture must expose the metadata-only evidence ID on saved controls.');
+requireIncludes(js, "Evidence ID: '+evidenceLabel+'. Run a new synthesis to capture another signal.", 'Compare feedback saved controls must expose the evidence ID to assistive tech and hover hints.');
 requireIncludes(js, "button.setAttribute('aria-label',message);", 'Useful-synthesis capture must expose the saved state to assistive tech.');
 requireIncludes(js, 'button.title=message;', 'Useful-synthesis capture must expose the saved state as a visible hover hint.');
-requireIncludes(js, "setStatus(saved?(review?'Review signal saved to Feedback Inbox.':'Useful synthesis saved to Feedback Inbox.'):(review?'Review draft added to the chat box.':'Useful synthesis draft added to the chat box.')", 'Compare feedback capture must show local storage truth for both signal types.');
+requireIncludes(js, "setStatus((saved?(review?'Review signal saved to Feedback Inbox.':'Useful synthesis saved to Feedback Inbox.'):(review?'Review draft added to the chat box.':'Useful synthesis draft added to the chat box.'))+' Evidence ID: '+(lastEvidenceId||'comparison-not-recorded')+'.'", 'Compare feedback capture must show local storage truth and evidence ID for both signal types.');
 requireIncludes(js, 'lastSynthesis=null;', 'New comparisons must clear stale synthesis feedback context.');
 
 requireIncludes(css, '.comparison-actions button[data-captured="true"]', 'Compare feedback saved state must have scoped styling.');
