@@ -72,5 +72,8 @@ assert.match(receiptSource, /function routeLabel\(receipt\)/, 'answer-context re
 assert.match(receiptSource, /function trustLabel\(receipt\)/, 'answer-context receipts must normalize trust labels through the shared helper');
 assert.match(receiptSource, /Context: '\+safe\(routeLabel\(receipt\)\)\+' · '\+safe\(trustLabel\(receipt\)\)\+' · memory /, 'answer-context receipt summary must surface route and trust before memory toggles');
 assert.match(receiptSource, /row\('Trust',trustLabel\(receipt\)\)/, 'answer-context receipt details must show normalized trust labels');
+assert.match(receiptSource, /function sourceSummary\(count,sources\)/, 'answer-context receipts must summarize receipt source matches without raw prompt or response text');
+assert.match(receiptSource, /row\('Memory sources',sourceSummary\(receipt\.memory_use_count,receipt\.memory_sources\)\)/, 'answer-context receipt details must expose memory source matches for demo debugging');
+assert.match(receiptSource, /row\('Knowledge sources',sourceSummary\(receipt\.knowledge_use_count,receipt\.knowledge_sources\)\)/, 'answer-context receipt details must expose knowledge source matches through the same summary path');
 
 console.log('route display helper smoke: ok');

@@ -89,6 +89,12 @@
   }
   function status(value){return String(value||'none').replace('+',' + ');}
   function row(label,value){return '<dt>'+safe(label)+'</dt><dd>'+safe(value||'none')+'</dd>';}
+  function sourceSummary(count,sources){
+    const total=Math.max(0,Math.round(Number(count)||0));
+    if(!total)return 'none';
+    const sourceList=Array.isArray(sources)?sources.map(item=>String(item||'').trim()).filter(Boolean).slice(0,3):[];
+    return String(total)+' metadata match(es)'+(sourceList.length?' · '+sourceList.join('/'):'');
+  }
   function routeLabel(receipt){
     const display=displayApi();
     if(display.receiptRouteLabel)return display.receiptRouteLabel(receipt,'Supergeni');
@@ -170,7 +176,8 @@
       row('Prompt left device',receipt.prompt_left_device?'yes':'no')+
       row('Role',receipt.role_preset||'none')+
       row('History',String(receipt.history_messages||0)+' messages')+
-      row('Knowledge sources',receipt.knowledge_use_count?String(receipt.knowledge_use_count)+' metadata match(es)':'none')+
+      row('Memory sources',sourceSummary(receipt.memory_use_count,receipt.memory_sources))+
+      row('Knowledge sources',sourceSummary(receipt.knowledge_use_count,receipt.knowledge_sources))+
       row('Modes',receipt.mode_summary||'default')+
       row('Cost',receipt.no_paid_routes_started?'no paid route started':receipt.cost_guard||'user-configured route')+
       '</dl>'+
