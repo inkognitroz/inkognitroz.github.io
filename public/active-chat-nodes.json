@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-07-05T23:31:09Z",
+  "updated_at": "2026-07-08T22:08:57Z",
   "description": "Public-safe active chat routes that the static MMIR frontend can actually attach to. No provider secrets, raw prompts, paid routes or private node tokens belong here.",
   "nodes": [
     {
