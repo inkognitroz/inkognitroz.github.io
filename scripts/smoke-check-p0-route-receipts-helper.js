@@ -15,6 +15,13 @@ function fail(message) {
   process.exit(1);
 }
 
+function assertNoLeak(value, label) {
+  const text = JSON.stringify(value || '');
+  for (const needle of ['token=', 'api_key=', 'secret=', 'sk-live-leaky', 'ghp_leaky', 'user:pass@']) {
+    if (text.includes(needle)) fail(`${label} must not leak ${needle}.`);
+  }
+}
+
 if (!helper.includes("version='20260614-first-user-route-receipts-v1'")) {
   fail('P0 route receipts helper version must be explicit.');
 }
@@ -26,6 +33,9 @@ if (!helper.includes('private local') || !helper.includes('No provider key is st
 }
 if (!helper.includes("displayName(model)+' · external free route'")) {
   fail('P0 route receipts helper must own external route receipt text.');
+}
+if (!helper.includes('hasUnsafeDisplayValue') || !helper.includes('safeRouteDisplayName')) {
+  fail('P0 route receipts helper must sanitize route display names before rendering receipts.');
 }
 if (!shell.includes('const P0_ROUTE_RECEIPTS=window.MimirP0RouteReceipts||{};')) {
   fail('P0 shell must read shared route receipts helper.');
@@ -62,6 +72,7 @@ const context = {
       this.detail = init.detail || {};
     }
   },
+  URL,
 };
 vm.createContext(context);
 vm.runInContext(helper, context, { filename: 'p0-route-receipts.js' });
@@ -69,10 +80,17 @@ const api = context.window.MimirP0RouteReceipts;
 if (!api || api.version !== '20260614-first-user-route-receipts-v1') fail('P0 route receipts helper must register on window.');
 if (api.hostedRouteLabel('api-staging.mmir.ai') !== 'Supergeni ready · hosted') fail('Hosted route label must stay clean for first-time users.');
 if (api.displayName({ name: 'Route Name' }) !== 'Route Name') fail('displayName must normalize route names.');
+if (api.displayName({ name: 'https://candidate.example/v1?token=sk-live-leaky-value' }) !== 'Supergeni') fail('displayName must fall back on tokenized URLs.');
+if (api.displayName({ label: 'https://user:pass@candidate.example/v1' }) !== 'Supergeni') fail('displayName must fall back on URLs with embedded credentials.');
+if (api.displayName({ display_name: 'Google key AIza123456789012345678901234567890' }) !== 'Supergeni') fail('displayName must fall back on Google-key-shaped values.');
+if (api.displayName({ id: 'github ghp_leaky123456789012345678901' }) !== 'Supergeni') fail('displayName must fall back on GitHub-token-shaped values.');
 if (api.receipt({ route: 'local', label: 'gemma3:270m' }).state !== 'local') fail('Local route receipt must return local state.');
 if (api.receipt({ route: 'hosted' }, { apiLabel: 'api.mmir.ai' }).detail.includes('api.mmir.ai')) fail('Hosted receipt detail should not repeat API host in first-user receipt copy.');
 if (!api.receipt({ route: 'hosted' }, { apiLabel: 'api.mmir.ai' }).detail.includes('No provider key')) fail('Hosted receipt detail must keep browser-secret guardrail.');
 if (api.receipt({ route: 'hosted', routeClass: 'external-untrusted-free', label: 'Google: gemini-2.5-flash' }, { apiLabel: 'api.mmir.ai' }).text !== 'Google: gemini-2.5-flash · external free route') fail('External route receipt must name the selected external model cleanly.');
+const unsafeReceipt = api.receipt({ route: 'hosted', routeClass: 'external-untrusted-free', label: 'https://candidate.example/v1?api_key=sk-live-leaky-value' }, { apiLabel: 'api.mmir.ai' });
+if (unsafeReceipt.text !== 'Supergeni · external free route') fail('External route receipt must redact unsafe route labels.');
+assertNoLeak(unsafeReceipt, 'Unsafe route receipt');
 if (events[0]?.type !== 'mimir-p0-route-receipts-ready') fail('P0 route receipts helper must emit readiness evidence.');
 
 console.log('P0 route receipts helper smoke passed.');
