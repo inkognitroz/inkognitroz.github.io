@@ -94,7 +94,13 @@ requireIncludes(js, 'function stableFingerprint(value){', 'Compare feedback must
 requireIncludes(js, 'function evidenceSnapshot(prompt,profile,url,models){', 'Compare feedback must build evidence IDs from comparison-time prompt, route and model metadata.');
 requireIncludes(js, "const promptPresent=String(prompt||'').trim()?'present':'empty';", 'Compare feedback evidence IDs must derive from prompt metadata, not raw prompt text.');
 requireIncludes(js, "'prompt:'+promptPresent", 'Compare feedback evidence snapshots must not fingerprint raw prompt text.');
+requireIncludes(js, 'function redactedPromptShapeFingerprint(prompt){', 'Compare feedback evidence IDs must distinguish prompts with a redacted token-shape fingerprint.');
+requireIncludes(js, "'prompt_shape:'+redactedPromptShapeFingerprint(prompt)", 'Compare feedback evidence snapshots must include a redacted prompt-shape fingerprint.');
+requireIncludes(js, "return stableFingerprint('shape:'+shape+';count:'+String(tokens.length));", 'Compare prompt-shape fingerprints must hash redacted token shapes rather than raw prompt text.');
 if (js.includes("'prompt:'+stableFingerprint(prompt)")) {
+  fail('Compare feedback evidence snapshots must not hash raw prompt text directly.');
+}
+if (js.includes('stableFingerprint(prompt)') || js.includes('stableFingerprint(String(prompt')) {
   fail('Compare feedback evidence snapshots must not hash raw prompt text directly.');
 }
 requireIncludes(js, "lastEvidenceId='cmp-'+stableFingerprint(evidenceSnapshot(prompt,profile,url,models));", 'Compare feedback must preserve the evidence ID from the comparison run.');
@@ -136,7 +142,7 @@ requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap not
 requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
 const expectedCssVersion = '20260704-compare-integrity-v1';
-const expectedJsVersion = '20260707-compare-review-feedback-v1';
+const expectedJsVersion = '20260710-compare-evidence-shape-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
