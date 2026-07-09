@@ -107,8 +107,9 @@ requireIncludes(strip, "bar.querySelectorAll('[data-active-route-refresh]').forE
 requireIncludes(strip, "function fallbackManifestNodes(){return [", 'Manifest fetch fallback must be owned by an explicit public-safe route inventory.');
 requireIncludes(strip, "status:'verify_before_chat',trust_level:'public-free',cost:{mode:'free',requires_approval:false}", 'Fallback managed API route must stay verify-before-chat and free.');
 requireIncludes(strip, "provider_key_required:false,cloudflare_required:false,install_required:false", 'Fallback managed API metadata must not imply provider keys, Cloudflare setup or install.');
+requireIncludes(strip, "execution_boundary:'public-free-route',prompt_left_device:true", 'Fallback managed API metadata must not claim hosted prompts stay local.');
 requireIncludes(strip, "status:'auto_detect',trust_level:'paired-local',cost:{mode:'free-local',requires_approval:false}", 'Fallback local node route must stay user-controlled and free-local.');
-requireIncludes(strip, "execution_boundary:'localhost-private-node'", 'Fallback local node route must preserve a localhost-private execution boundary.');
+requireIncludes(strip, "execution_boundary:'localhost-private-node',prompt_left_device:false", 'Fallback local node route must preserve a localhost-private execution boundary and local prompt boundary.');
 requireIncludes(strip, "capabilities:['health','models','openai.v1.models','hardware','chat.completions','openai.v1.chat.completions']", 'Fallback local node route must preserve node/model visibility capabilities without paid-provider routes.');
 requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'. '+policy+'.');", 'Hero description must reflect route-choice reasoning, capacity summary and route policy.');
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
