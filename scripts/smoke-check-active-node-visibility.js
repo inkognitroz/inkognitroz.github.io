@@ -37,7 +37,8 @@ requireIncludes(strip, 'const best=bestNode(allNodes,selected);', 'Active node s
 requireIncludes(strip, 'const state=nodeStatus(best),line=activeRouteLine(best,selected),policy=routePolicyLine(best),inventory=visibleInventory(allNodes)', 'Active node strip headline must use the active route helper and policy helper instead of selected-model-only labels.');
 requireIncludes(strip, "const costMode=String(node?.cost?.mode||meta.cost_class||'free').replace(/-/g,' ');", 'Active route policy line must expose route cost mode from manifest metadata.');
 requireIncludes(strip, "const boundary=meta.execution_boundary?String(meta.execution_boundary).replace(/-/g,' '):(isLocalAdapter(node)||node?.id==='local-node'?'localhost/private node':(needsWebGpu(node)?'current browser session':'public starter route'));", 'Active route policy line must expose execution boundary without inventing backend claims.');
-requireIncludes(strip, "const prompt=node?.id==='local-node'||isLocalAdapter(node)||meta.prompt_left_device===false?'prompt stays local':'no private prompt stored in browser';", 'Active route policy line must show whether the prompt stays local.');
+requireIncludes(strip, "const localBoundary=node?.id==='local-node'||isLocalAdapter(node)||String(meta.execution_boundary||'').includes('localhost-private')||String(meta.execution_boundary||'').includes('browser-local');", 'Active route policy line must restrict local prompt copy to local/private execution boundaries.');
+requireIncludes(strip, "const prompt=localBoundary&&meta.prompt_left_device===false?'prompt stays local':'no private prompt stored in browser';", 'Active route policy line must not let hosted/public routes claim prompts stay local.');
 requireIncludes(strip, "const keys=meta.provider_key_required===true?'provider key required':'no provider key';", 'Active route policy line must expose provider key requirements.');
 requireIncludes(strip, "const approval=node?.cost?.requires_approval===true?'approval required':'no paid route started';", 'Active route policy line must keep paid-route approval status explicit.');
 requireIncludes(strip, "class=\"mmir-active-node-policy\" aria-label=\"Active route policy\"", 'Active route strip must render the active route policy line in the headline.');
@@ -104,11 +105,18 @@ requireIncludes(strip, "source:'active-route-strip'", 'Route-feedback drafts mus
 requireIncludes(strip, "openInbox:true", 'Route-feedback CTA must open Feedback Inbox after saving the local route draft.');
 requireIncludes(strip, "promptEl.value=feedbackDraft(best,freshness);", 'Route-feedback CTA must prefill a sanitized @feedback draft.');
 requireIncludes(strip, "bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));", 'Route-refresh CTA must re-run the route inventory load from the strip.');
+requireIncludes(strip, "function fallbackManifestNodes(){return [", 'Manifest fetch fallback must be owned by an explicit public-safe route inventory.');
+requireIncludes(strip, "status:'verify_before_chat',trust_level:'public-free',cost:{mode:'free',requires_approval:false}", 'Fallback managed API route must stay verify-before-chat and free.');
+requireIncludes(strip, "provider_key_required:false,cloudflare_required:false,install_required:false", 'Fallback managed API metadata must not imply provider keys, Cloudflare setup or install.');
+requireIncludes(strip, "execution_boundary:'public-free-route',prompt_left_device:true", 'Fallback managed API metadata must not claim hosted prompts stay local.');
+requireIncludes(strip, "status:'auto_detect',trust_level:'paired-local',cost:{mode:'free-local',requires_approval:false}", 'Fallback local node route must stay user-controlled and free-local.');
+requireIncludes(strip, "execution_boundary:'localhost-private-node',prompt_left_device:false", 'Fallback local node route must preserve a localhost-private execution boundary and local prompt boundary.');
+requireIncludes(strip, "capabilities:['health','models','openai.v1.models','hardware','chat.completions','openai.v1.chat.completions']", 'Fallback local node route must preserve node/model visibility capabilities without paid-provider routes.');
 requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'. '+policy+'.');", 'Hero description must reflect route-choice reasoning, capacity summary and route policy.');
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260705-active-route-feedback-handoff-v1';
+const expectedVersion = '20260709-active-route-fallback-policy-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }

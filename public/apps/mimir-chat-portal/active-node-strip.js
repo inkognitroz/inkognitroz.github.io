@@ -151,7 +151,8 @@
     const meta=node?.receipt_metadata||{};
     const costMode=String(node?.cost?.mode||meta.cost_class||'free').replace(/-/g,' ');
     const boundary=meta.execution_boundary?String(meta.execution_boundary).replace(/-/g,' '):(isLocalAdapter(node)||node?.id==='local-node'?'localhost/private node':(needsWebGpu(node)?'current browser session':'public starter route'));
-    const prompt=node?.id==='local-node'||isLocalAdapter(node)||meta.prompt_left_device===false?'prompt stays local':'no private prompt stored in browser';
+    const localBoundary=node?.id==='local-node'||isLocalAdapter(node)||String(meta.execution_boundary||'').includes('localhost-private')||String(meta.execution_boundary||'').includes('browser-local');
+    const prompt=localBoundary&&meta.prompt_left_device===false?'prompt stays local':'no private prompt stored in browser';
     const keys=meta.provider_key_required===true?'provider key required':'no provider key';
     const approval=node?.cost?.requires_approval===true?'approval required':'no paid route started';
     return [trustTag(node),costMode,boundary,prompt,keys,approval].filter(Boolean).join(' · ');
@@ -255,7 +256,10 @@
     render();
     try{manifestRefreshState=await loadManifest(true)?'succeeded':'failed';}finally{if(bar)delete bar.dataset.refreshing;render();}
   }
-  function fallbackManifestNodes(){return [{id:'managed-api-bootstrap',name:FALLBACK_LABEL,route:{kind:'managed-api',starter_id:'mmir-supergenius',url:'https://api.mmir.ai'},models:[{name:FALLBACK_LABEL}]},{id:'local-node',name:'MMIR Local Node',route:{kind:'local-node',url:DEFAULT_LOCAL_URL},models:[]}];}
+  function fallbackManifestNodes(){return [
+    {id:'managed-api-bootstrap',name:FALLBACK_LABEL,type:'managed-api',status:'verify_before_chat',trust_level:'public-free',cost:{mode:'free',requires_approval:false},route:{kind:'managed-api',starter_id:'mmir-supergenius',url:'https://api.mmir.ai'},receipt_metadata:{node_type:'managed-api',trust_class:'public-free',cost_class:'free',quality_tier:'starter',execution_boundary:'public-free-route',prompt_left_device:true,provider_key_required:false,cloudflare_required:false,install_required:false},capabilities:['health','chat.completions','routing.free'],models:[{id:'mmir-supergenius',name:FALLBACK_LABEL,status:'available',provider:'mmir',source:'fallback-manifest'}]},
+    {id:'local-node',name:'MMIR Local Node',type:'local',status:'auto_detect',trust_level:'paired-local',cost:{mode:'free-local',requires_approval:false},route:{kind:'local-node',url:DEFAULT_LOCAL_URL},receipt_metadata:{node_type:'local-node',trust_class:'paired-local',cost_class:'free-local',quality_tier:'user-installed',execution_boundary:'localhost-private-node',prompt_left_device:false,provider_key_required:false,cloudflare_required:false,install_required:true},capabilities:['health','models','openai.v1.models','hardware','chat.completions','openai.v1.chat.completions'],models:[]}
+  ];}
   async function loadManifest(force=false){if(manifestLoaded&&!force)return true;try{const res=await fetch(MANIFEST_URL,{cache:force?'no-store':'default'});if(!res.ok)throw new Error('manifest unavailable');const body=await res.json();manifestUpdatedAt=String(body?.updated_at||'');manifestNodes=Array.isArray(body.nodes)?body.nodes.filter(node=>node?.id).map(normalizeNode):[];manifestLoaded=true;return true;}catch(error){if(manifestNodes.length&&manifestUpdatedAt){manifestLoaded=true;return false;}manifestUpdatedAt='';manifestNodes=fallbackManifestNodes();manifestLoaded=true;return false;}}
   function fallbackStarters(){return [{id:'mmir-supergenius',label:FALLBACK_LABEL,runtime:'auto',model:'mmir-supergenius'},{id:'ollama-qwen3-06b',label:'Qwen3 0.6B',runtime:'ollama',model:'qwen3:0.6b'}];}
   async function loadStarterCatalog(){if(catalogLoaded)return;try{const res=await fetch(STARTER_CATALOG,{cache:'default'});if(!res.ok)throw new Error('starter catalog unavailable');const body=await res.json();starterModels=Array.isArray(body.models)?body.models.filter(model=>model?.id&&model?.label).map(normalizeStarter):[];}catch(error){starterModels=fallbackStarters();}if(!starterModels.length)starterModels=fallbackStarters();catalogLoaded=true;}
