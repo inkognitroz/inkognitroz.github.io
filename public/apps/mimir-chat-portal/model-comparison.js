@@ -428,6 +428,15 @@
     return (hash>>>0).toString(36).padStart(7,'0').slice(0,7);
   }
 
+  function redactedPromptShapeFingerprint(prompt){
+    const tokens=String(prompt||'').toLowerCase().match(/[a-z0-9]+/g)||[];
+    const shape=tokens.slice(0,48).map(token=>{
+      const kind=/^\d+$/.test(token)?'n':(/^\d|[0-9]$/.test(token)?'m':'w');
+      return kind+String(Math.min(token.length,24));
+    }).join('.');
+    return stableFingerprint('shape:'+shape+';count:'+String(tokens.length));
+  }
+
   function evidenceSnapshot(prompt,profile,url,models){
     const host=(()=>{try{return new URL(url).host||'not-recorded';}catch(error){return 'not-recorded';}})();
     const modelIds=Array.isArray(models)?models.map(model=>model.id||model.label).filter(Boolean).join('|'):'';
@@ -436,6 +445,7 @@
     return [
       'prompt:'+promptPresent,
       'words:'+String(promptWords),
+      'prompt_shape:'+redactedPromptShapeFingerprint(prompt),
       'route:'+host,
       'provider:'+String(profile?.provider||'openai-compatible'),
       'models:'+modelIds
