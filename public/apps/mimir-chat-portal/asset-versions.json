@@ -2,7 +2,7 @@
   "scope": "public/mmir.html launch-critical chat assets",
   "updated": "2026-06-23",
   "assets": {
-    "active-node-strip.js": "20260705-active-route-feedback-handoff-v1",
+    "active-node-strip.js": "20260709-active-route-fallback-policy-v1",
     "activation-telemetry.js": "20260622-first-screen-starter-progress-v1",
     "api-client.js": "20260531-local-loopback-v1",
     "backend-profiles-critical.js": "20260531-supergeni-v1",

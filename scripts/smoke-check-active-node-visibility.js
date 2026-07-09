@@ -104,11 +104,17 @@ requireIncludes(strip, "source:'active-route-strip'", 'Route-feedback drafts mus
 requireIncludes(strip, "openInbox:true", 'Route-feedback CTA must open Feedback Inbox after saving the local route draft.');
 requireIncludes(strip, "promptEl.value=feedbackDraft(best,freshness);", 'Route-feedback CTA must prefill a sanitized @feedback draft.');
 requireIncludes(strip, "bar.querySelectorAll('[data-active-route-refresh]').forEach(button=>button.addEventListener('click',()=>refreshRouteInventory()));", 'Route-refresh CTA must re-run the route inventory load from the strip.');
+requireIncludes(strip, "function fallbackManifestNodes(){return [", 'Manifest fetch fallback must be owned by an explicit public-safe route inventory.');
+requireIncludes(strip, "status:'verify_before_chat',trust_level:'public-free',cost:{mode:'free',requires_approval:false}", 'Fallback managed API route must stay verify-before-chat and free.');
+requireIncludes(strip, "provider_key_required:false,cloudflare_required:false,install_required:false", 'Fallback managed API metadata must not imply provider keys, Cloudflare setup or install.');
+requireIncludes(strip, "status:'auto_detect',trust_level:'paired-local',cost:{mode:'free-local',requires_approval:false}", 'Fallback local node route must stay user-controlled and free-local.');
+requireIncludes(strip, "execution_boundary:'localhost-private-node'", 'Fallback local node route must preserve a localhost-private execution boundary.');
+requireIncludes(strip, "capabilities:['health','models','openai.v1.models','hardware','chat.completions','openai.v1.chat.completions']", 'Fallback local node route must preserve node/model visibility capabilities without paid-provider routes.');
 requireIncludes(strip, "q('#active-chat-description')&&(q('#active-chat-description').textContent=choiceReason+' '+summary+'. '+policy+'.');", 'Hero description must reflect route-choice reasoning, capacity summary and route policy.');
 requireIncludes(strip, "q('#active-chat-title')&&(q('#active-chat-title').textContent=best.name+' active - '+inventory.ready+' ready now.');", 'Hero title must show active-route readiness count.');
 requireIncludes(strip, "(state==='online'?'Ready':'Setup')+' · '+inventory.ready+'/'+inventory.visible", 'Active route pill must expose ready vs visible capacity.');
 
-const expectedVersion = '20260705-active-route-feedback-handoff-v1';
+const expectedVersion = '20260709-active-route-fallback-policy-v1';
 if (manifest.assets?.['active-node-strip.js'] !== expectedVersion) {
   fail('Asset manifest must track the active-node visibility update.');
 }
