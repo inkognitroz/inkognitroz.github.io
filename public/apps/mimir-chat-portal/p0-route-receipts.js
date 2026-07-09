@@ -1,14 +1,44 @@
 (function(){
   const version='20260614-first-user-route-receipts-v1';
 
+  const secretValuePatterns=[
+    /\bsk-[A-Za-z0-9_-]{12,}\b/i,
+    /\bAIza[0-9A-Za-z_-]{20,}\b/,
+    /\bgh[pousr]_[A-Za-z0-9_]{20,}\b/,
+    /\b(?:token|api[_-]?key|secret|signature|sig)=/i,
+    /https?:\/\/[^\s/@]+:[^\s/@]+@/i
+  ];
+
+  function hasUnsafeDisplayValue(value){
+    const raw=String(value||'');
+    if(!raw.trim()) return false;
+    if(secretValuePatterns.some(pattern=>pattern.test(raw))) return true;
+    if(/^https?:\/\//i.test(raw)){
+      try{
+        const url=new URL(raw);
+        return Boolean(url.username||url.password||url.search||url.hash);
+      }catch(_error){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function safeRouteDisplayName(raw,fallback='Supergeni'){
+    const clean=String(raw||'').replace(/\s+/g,' ').trim();
+    if(!clean||hasUnsafeDisplayValue(clean)) return fallback;
+    const display=window.MimirRouteDisplay;
+    const label=display?.displayLabel ? display.displayLabel(clean,fallback) : clean;
+    return hasUnsafeDisplayValue(label) ? fallback : label;
+  }
+
   function hostedRouteLabel(apiLabel='api.mmir.ai'){
     return 'Supergeni ready · hosted';
   }
 
   function displayName(model){
     const raw=String(model?.display_name||model?.name||model?.label||model?.id||'Supergeni').trim();
-    const display=window.MimirRouteDisplay;
-    return display?.displayLabel ? display.displayLabel(raw,'Supergeni') : raw;
+    return safeRouteDisplayName(raw,'Supergeni');
   }
 
   function receipt(model,{apiLabel='api.mmir.ai'}={}){
