@@ -91,7 +91,12 @@ export async function resolveRenderPort({
     const candidate = requestedPort + offset;
     const release = await reservePort(candidate, host);
     if (!release) continue;
-    if (await canListen(candidate, host)) return candidate;
+    if (await canListen(candidate, host)) {
+      if (candidate !== requestedPort) {
+        console.log(`${label} port ${requestedPort} busy; using ${candidate}.`);
+      }
+      return candidate;
+    }
     release();
   }
 
