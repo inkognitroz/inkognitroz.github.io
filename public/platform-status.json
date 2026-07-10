@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_at": "2026-07-10T10:38:22Z",
+  "updated_at": "2026-07-10T19:31:36Z",
   "description": "Public-safe status manifest for MMIR.ai. Internal QA, agent instructions and deploy reports stay in the private control repo; this browser payload contains only product-safe status copy.",
-  "latest_verified_commit": "c705de84da3c",
+  "latest_verified_commit": "7f12ba7f1db",
   "domain_availability_watch": "./domain-availability-watch.json",
   "components": [
     {
@@ -16,8 +16,8 @@
       "id": "latest-deploy-verification",
       "label": "Latest deploy verification",
       "status": "online",
-      "route": "c705de84da3c / GitHub Actions",
-      "notes": "The public artifact is checked by GitHub Actions before deploy. Current public copy includes chat-first entry, guarded photo/library selection, media-boundary feedback capture, route trust copy, active-route fallback policy and stale compare-feedback evidence guards for demo users."
+      "route": "7f12ba7f1db / GitHub Actions",
+      "notes": "The public artifact is checked by GitHub Actions before deploy. Current public copy includes chat-first entry, guarded photo/library selection, media-boundary feedback capture, route trust copy, active-route fallback policy, stale compare-feedback evidence guards and model-catalog lifecycle proof states for demo users."
     },
     {
       "id": "public-url-health",
@@ -30,15 +30,15 @@
       "id": "domain-availability-watch-refresh",
       "label": "Domain availability watch",
       "status": "watch",
-      "route": "c705de84da3c / mmir.ai",
-      "notes": "Latest Pages deploy is green for the verified active-route fallback and compare-feedback evidence baseline. DNS resolves through Cloudflare. Keep this watch generic and public-safe when diagnosing network/domain-reputation failures."
+      "route": "7f12ba7f1db / mmir.ai",
+      "notes": "Latest Pages deploy is green for the verified active-route fallback, compare-feedback evidence baseline and model-catalog lifecycle proof states. DNS resolves through Cloudflare. Keep this watch generic and public-safe when diagnosing network/domain-reputation failures."
     },
     {
       "id": "no-model-deploy-verification",
       "label": "No-model deploy proof",
       "status": "online",
-      "route": "c705de84da3c / GitHub Pages artifact",
-      "notes": "The public chat shell includes a no-model fallback path, free route floor, Superboost/Council entry points, guarded media selection, active-route fallback policy, compare-feedback evidence guards and visible route policy without exposing internal QA reports."
+      "route": "7f12ba7f1db / GitHub Pages artifact",
+      "notes": "The public chat shell includes a no-model fallback path, free route floor, Superboost/Council entry points, guarded media selection, active-route fallback policy, compare-feedback evidence guards, model-catalog lifecycle proof states and visible route policy without exposing internal QA reports."
     },
     {
       "id": "github-pages",
