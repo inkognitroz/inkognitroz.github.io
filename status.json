@@ -12,5 +12,5 @@
   "backend_health_url": "https://api.mmir.ai/status",
   "message": "Public chat shell is online: first screen is chat-first, Supergeni routes live-data, tools, skills and verified provider/node routes through the managed API, photo/library selection is guarded and feedback capture is active without sending raw images or starting paid provider routes.",
   "known_caveat": "Actual image analysis is intentionally blocked until a protected vision node is live with consent, size limits, redaction, signed receipt and rollback. Free-quota provider routes may be temporarily degraded and fail closed.",
-  "last_updated": "2026-07-04T16:05:41Z"
+  "last_updated": "2026-07-10T06:36:54Z"
 }
