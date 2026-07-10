@@ -55,6 +55,11 @@ requireIncludes(js, "const original=String(lastComparisonPrompt||promptEl?.value
 requireIncludes(js, 'raw prompt not stored in feedback draft', 'Compare feedback draft must explicitly avoid raw prompt storage.');
 requireIncludes(js, 'function synthesisPrivacySummary(){', 'Compare feedback must summarize synthesis metadata without raw answer text.');
 requireIncludes(js, 'raw synthesis not stored in feedback draft', 'Compare feedback draft must explicitly avoid raw synthesis storage.');
+requireIncludes(js, 'function synthesisGroundingSignal(){', 'Compare feedback must summarize whether synthesis is source-grounded without storing raw answer text.');
+requireIncludes(js, "return 'Grounding signal: '+(grounded?'grounded synthesis candidate':'needs grounding review')", 'Compare feedback must label grounded synthesis candidates separately from review-needed output.');
+requireIncludes(js, 'source/evidence language: ', 'Compare feedback grounding signal must expose source/evidence language presence.');
+requireIncludes(js, 'uncertainty/disagreement language: ', 'Compare feedback grounding signal must expose disagreement or uncertainty language presence.');
+requireIncludes(js, 'raw synthesis and route answers not stored', 'Compare feedback grounding signal must preserve raw answer privacy.');
 requireIncludes(js, 'function bestAnswerSignal(){', 'Compare feedback must summarize best-answer evidence without raw answers.');
 requireIncludes(js, 'Best-answer signal: ', 'Compare feedback draft must label the best-answer signal for triage.');
 requireIncludes(js, "usable.length>=2?'best-answer candidate needs owner review':'insufficient compare evidence'", 'Compare feedback must distinguish candidate-quality evidence from insufficient comparisons.');
@@ -120,6 +125,7 @@ requireIncludes(js, "'@feedback Compare Live Models synthesis needs review", 'Co
 requireIncludes(js, "Feedback signal: '+(review?'needs owner review':'useful synthesis')", 'Compare feedback draft must distinguish useful and review signals.');
 requireIncludes(js, 'evidenceSummary(),', 'Compare feedback draft must include the evidence ID before prompt and route metadata.');
 requireIncludes(js, 'bestAnswerSignal(),', 'Compare feedback draft must include best-answer evidence before raw-free result metadata.');
+requireIncludes(js, 'synthesisGroundingSignal(),', 'Compare feedback draft must include source-grounding evidence before raw-free result metadata.');
 requireIncludes(js, "review?'Why review: synthesized answer needs owner inspection before it becomes a best-answer pattern.':'Why useful: synthesized answer helped choose a best response.'", 'Compare feedback draft must explain useful versus review intent without raw answers.');
 requireIncludes(js, 'raw prompt, raw model responses and raw synthesis are not stored in this feedback draft', 'Compare feedback draft must preserve the public-safe storage boundary.');
 requireIncludes(js, ".saveFeedbackDraft?.(draft,{", 'Compare panel must use the runtime Feedback Inbox bridge when available.');
@@ -148,7 +154,7 @@ requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap not
 requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
 const expectedCssVersion = '20260704-compare-integrity-v1';
-const expectedJsVersion = '20260710-compare-stale-evidence-guard-v1';
+const expectedJsVersion = '20260710-compare-grounding-feedback-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
