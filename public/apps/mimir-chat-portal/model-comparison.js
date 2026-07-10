@@ -25,6 +25,7 @@
   let lastCoverageMetadata=null;
   let lastEvidenceId=null;
   let lastEvidenceCapturedAt='';
+  let lastModelListSignature=null;
 
   if(!host)return;
 
@@ -125,6 +126,10 @@
     }catch(error){return [];}
   }
 
+  function modelListSignature(models){
+    return (Array.isArray(models)?models:[]).map(model=>String(model.id||'')+'|'+String(model.label||'')).join('\n');
+  }
+
   function checkedModelInputs(){
     return Array.from(modelList?.querySelectorAll('input[type="checkbox"]:checked')||[]);
   }
@@ -201,6 +206,21 @@
     if(reviewBtn)reviewBtn.textContent='Needs review';
   }
 
+  function clearComparisonEvidence(reason=''){
+    lastResults=[];
+    lastSynthesis=null;
+    lastComparisonPrompt='';
+    lastPromptMetadata=null;
+    lastRouteMetadata=null;
+    lastCoverageMetadata=null;
+    lastEvidenceId=null;
+    lastEvidenceCapturedAt='';
+    resetFeedbackButtons();
+    if(synthBtn)synthBtn.disabled=true;
+    if(reason&&outputEl)outputEl.innerHTML='';
+    if(reason)setStatus(reason,'ready');
+  }
+
   function enableFeedbackButtons(enabled){
     comparisonFeedbackButtons().forEach(button=>{
       button.disabled=!enabled;
@@ -230,11 +250,15 @@
   function renderModelChoices(){
     if(!modelList)return;
     const models=liveModels();
+    const signature=modelListSignature(models);
+    const modelListChanged=lastModelListSignature!==null&&signature!==lastModelListSignature;
+    lastModelListSignature=signature;
+    if(modelListChanged)clearComparisonEvidence('Live route list changed. Run a new comparison before saving synthesis feedback.');
     modelList.innerHTML='';
     if(!models.length){
       modelList.innerHTML='<p class="empty-backends">Connect a backend and refresh live models first.</p>';
       if(compareBtn)compareBtn.disabled=true;
-      if(synthBtn)synthBtn.disabled=true;
+      clearComparisonEvidence('No live models are available. Connect a backend and refresh live models first.');
       return;
     }
     models.slice(0,8).forEach((model,index)=>{
