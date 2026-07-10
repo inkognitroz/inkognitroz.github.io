@@ -36,6 +36,12 @@ requireIncludes(js, "feedbackBtn.textContent='Useful synthesis';", 'New synthesi
 requireIncludes(js, "reviewBtn.textContent='Needs review';", 'New synthesis runs must reset the review button label.');
 requireIncludes(js, "button.removeAttribute('aria-label');", 'New synthesis runs must clear saved feedback accessibility labels.');
 requireIncludes(js, "button.removeAttribute('title');", 'New synthesis runs must clear saved feedback tooltips.');
+requireIncludes(js, 'let lastModelListSignature=null;', 'Compare panel must track live route list identity for stale feedback invalidation.');
+requireIncludes(js, 'function modelListSignature(models){', 'Compare panel must derive a stable live route list signature.');
+requireIncludes(js, 'function clearComparisonEvidence(reason=\'\'){', 'Compare panel must centralize stale comparison evidence clearing.');
+requireIncludes(js, "lastEvidenceId=null;", 'Stale comparison clearing must reset the local evidence ID.');
+requireIncludes(js, "if(modelListChanged)clearComparisonEvidence('Live route list changed. Run a new comparison before saving synthesis feedback.');", 'Live route changes must invalidate stale synthesis feedback evidence.');
+requireIncludes(js, "clearComparisonEvidence('No live models are available. Connect a backend and refresh live models first.');", 'Empty live model lists must clear stale synthesis feedback evidence.');
 requireIncludes(js, "function resultSummary(){", 'Compare feedback must summarize selected model coverage.');
 requireIncludes(js, "Compared '+String(lastResults.length)+' model(s): '+models", 'Compare feedback must include compared model count and labels.');
 requireIncludes(js, "failed.length?'Failed responses: '+String(failed.length):'No failed responses'", 'Compare feedback must preserve failed response count.');
@@ -142,7 +148,7 @@ requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap not
 requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
 const expectedCssVersion = '20260704-compare-integrity-v1';
-const expectedJsVersion = '20260710-compare-evidence-shape-v1';
+const expectedJsVersion = '20260710-compare-stale-evidence-guard-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
