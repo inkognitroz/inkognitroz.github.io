@@ -1,11 +1,10 @@
 import { mkdir } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { createServer as createNetServer } from 'node:net';
 import { chromium } from '@playwright/test';
+import { resolveRenderPort } from './render-port-helper.mjs';
 
 const host = '127.0.0.1';
-const preferredPort = Number(process.env.MMIR_LOCAL_MEMORY_RENDER_PORT || 8803);
-let port = preferredPort;
+let port = Number(process.env.MMIR_LOCAL_MEMORY_RENDER_PORT || 8803);
 let baseUrl = `http://${host}:${port}`;
 const screenshotDir = process.env.MMIR_LOCAL_MEMORY_SCREENSHOTS || 'test-results/p0-local-memory';
 const failures = [];
@@ -22,31 +21,6 @@ function fail(message) {
 
 function assert(condition, message) {
   if (!condition) fail(message);
-}
-
-function canListen(candidatePort) {
-  return new Promise((resolve, reject) => {
-    const probe = createNetServer();
-    probe.once('error', error => {
-      if (error?.code === 'EADDRINUSE') {
-        resolve(false);
-        return;
-      }
-      reject(error);
-    });
-    probe.listen(candidatePort, host, () => {
-      probe.close(() => resolve(true));
-    });
-  });
-}
-
-async function resolveLocalMemoryRenderPort() {
-  const maxAttempts = Number(process.env.MMIR_LOCAL_MEMORY_RENDER_PORT_ATTEMPTS || 50);
-  for (let offset = 0; offset < maxAttempts; offset += 1) {
-    const candidate = preferredPort + offset;
-    if (await canListen(candidate)) return candidate;
-  }
-  throw new Error(`No available local-memory render QA port found from ${preferredPort} across ${maxAttempts} attempts`);
 }
 
 function startServer() {
@@ -178,7 +152,13 @@ async function checkViewport(browser, viewport) {
   await page.close();
 }
 
-port = await resolveLocalMemoryRenderPort();
+port = await resolveRenderPort({
+  envName: 'MMIR_LOCAL_MEMORY_RENDER_PORT',
+  attemptsEnvName: 'MMIR_LOCAL_MEMORY_RENDER_PORT_ATTEMPTS',
+  defaultPort: 8803,
+  host,
+  label: 'local memory render check'
+});
 baseUrl = `http://${host}:${port}`;
 const server = startServer();
 try {
