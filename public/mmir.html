@@ -13,7 +13,7 @@
   <link rel="icon" href="./assets/mmir-icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./assets/mmir-maskable-icon.svg" />
   <link rel="stylesheet" href="./assets/styles.css" />
-  <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css?v=20260531-capability-cleanup-v1" />
+  <link rel="stylesheet" href="./apps/mimir-chat-portal/mimir-chat-portal.css?v=20260710-model-lifecycle-v1" />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/pwa.css" media="print" onload="this.media='all'" data-mimir-deferred-style />
   <link rel="stylesheet" href="./apps/mimir-chat-portal/chat-runtime.css?v=20260604-composer-css-owner-v1" />
   <link id="mmir-chat-workspace-css" rel="stylesheet" href="./apps/mimir-chat-portal/chat-workspace.css?v=20260604-composer-css-owner-v1" media="print" onload="this.media='all'" data-mimir-deferred-style />
@@ -347,7 +347,7 @@
     "./apps/mimir-chat-portal/pwa.js",
     "./apps/mimir-chat-portal/message-actions.js",
     "./apps/mimir-chat-portal/conversation-manager.js?v=20260607-b0-06-13-conversation-portability-v1",
-    "./apps/mimir-chat-portal/model-catalog-ui.js?v=20260531-no-rag-v1",
+    "./apps/mimir-chat-portal/model-catalog-ui.js?v=20260710-model-lifecycle-v1",
     "./apps/mimir-chat-portal/platform-status.js?v=20260627-status-card-dedupe-v1",
     "./apps/mimir-chat-portal/node-dashboard.js?v=20260708-node-handoff-resume-proof-v1",
     "./apps/mimir-chat-portal/model-comparison.js?v=20260710-compare-stale-evidence-guard-v1",
@@ -401,8 +401,19 @@
         if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:1600});
         else window.setTimeout(run,800);
       }
+      function hydrateTargetDetails(){
+        var id=String(location.hash||'').replace(/^#/,'');
+        if(!id)return false;
+        var target=document.getElementById(id);
+        var details=target&&target.matches&&target.matches('details')?target:(target&&target.closest&&target.closest('details'));
+        if(!details)return false;
+        details.open=true;
+        loadDeferred(true);
+        return true;
+      }
       window.MimirLoadDeferred=function(force){return loadDeferred(force!==false);};
       window.MimirLoadGrowth=loadGrowth;
+      window.addEventListener('hashchange',hydrateTargetDetails);
       document.addEventListener('click',function(event){
         var demo=event.target.closest('#try-demo-mode');
         var growthTarget=event.target.closest('#try-demo-mode,#beta-signup-submit,[href="#beta-signup-form"]');
@@ -429,8 +440,8 @@
       document.addEventListener('toggle',function(event){
         if(event.target&&event.target.open)loadDeferred(true);
       },true);
-      if(document.readyState==='complete')schedule();
-      else window.addEventListener('load',schedule,{once:true});
+      if(document.readyState==='complete'){if(!hydrateTargetDetails())schedule();}
+      else window.addEventListener('load',function(){if(!hydrateTargetDetails())schedule();},{once:true});
     })();
   </script>
 </body>

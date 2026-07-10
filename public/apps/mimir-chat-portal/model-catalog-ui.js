@@ -21,6 +21,60 @@
   function statusLabel(status){return String(status||'unknown').replaceAll('-',' ');}
   function modelLicense(model){return model.license_name||model.license||'check required';}
   function commercialUse(model){return model.commercial_use||'check-required';}
+  function compactValue(value,fallback){return String(value||fallback||'').trim()||'unknown';}
+  function lifecycleState(model){
+    const status=String(model?.status||'').toLowerCase();
+    if(model?.promoted||status==='promoted')return 'promoted';
+    if(model?.eligible_for_supergeni||status==='eligible-for-supergeni')return 'eligible_for_supergeni';
+    if(isRegistryLive(model))return 'active_in_chat';
+    if(model?.verified||status==='verified')return 'verified';
+    if(model?.configured||status==='configured')return 'configured';
+    if(['installable-free','candidate','add-yourself'].includes(status))return 'connectable';
+    return 'listed';
+  }
+  function lifecycleLabel(state){
+    return ({
+      listed:'Listed',
+      connectable:'Connectable',
+      configured:'Configured',
+      verified:'Verified',
+      active_in_chat:'Active in chat',
+      eligible_for_supergeni:'Supergeni eligible',
+      promoted:'Promoted'
+    })[state]||'Listed';
+  }
+  function lifecycleHint(model,state){
+    if(state==='promoted')return 'Promoted for Supergeni routing after proof.';
+    if(state==='eligible_for_supergeni')return 'Verified route can be used by Supergeni fanout.';
+    if(state==='active_in_chat')return 'Backend reports this model as live; use it directly in chat.';
+    if(state==='verified')return 'Health and receipt proof exist; promotion is still explicit.';
+    if(state==='configured')return 'Configured but not yet proven end-to-end.';
+    if(state==='connectable')return 'Can be connected or installed, then verified before promotion.';
+    return 'Visible as potential capacity. Not live until configured and proven.';
+  }
+  function actionLabelForModel(model,state){
+    if(state==='active_in_chat'||state==='eligible_for_supergeni'||state==='promoted')return 'Use in chat';
+    if(model?.registry_source==='free-starter-catalog'&&model?.runtime==='ollama')return 'Connect';
+    if(state==='connectable'||state==='configured')return 'Activate';
+    if(state==='verified')return 'Use in chat';
+    return 'View requirements';
+  }
+  function modelTruthMetrics(model,state){
+    const live=isRegistryLive(model);
+    const cost=compactValue(model.cost||model.cost_class||model.access,'provider-dependent');
+    const latency=compactValue(model.latency_hint||model.throughput_hint||model.capacity_hint,'not measured');
+    const norwegian=compactValue(model.norwegian_score||model.language_score||model.locale_score,'not scored');
+    const trust=live?'backend receipt required':(state==='connectable'?'setup proof required':'not live');
+    const source=live?'protected backend registry':compactValue(model.registry_source||model.source||model.access,'static catalog');
+    return [
+      ['State',lifecycleLabel(state)],
+      ['Cost',cost],
+      ['Latency',latency],
+      ['Norwegian',norwegian],
+      ['Trust',trust],
+      ['Source',source]
+    ];
+  }
   function isUnavailable(model){return ['planned','future','disabled','deprecated','requires-backend-router','requires-paid-provider','requires-paid-capacity'].includes(String(model.status||''));}
   function isHiddenPublicModel(model){
     const visibility=String(model?.visibility||'').toLowerCase();
@@ -248,18 +302,22 @@
     const live=isRegistryLive(model);
     const recommended=isRecommendedStarter(model);
     const starter=model.registry_source==='free-starter-catalog';
-    const buttonLabel=live?'Use live backend model':(disabled?'Requires protected backend':'Use as suggestion');
+    const state=lifecycleState(model);
+    const buttonLabel=disabled?'Requires protected backend':actionLabelForModel(model,state);
     const starterAction=model.runtime==='ollama'?'install':'select';
-    const starterLabel=model.runtime==='ollama'?'Install / prove in chat':'Use in chat';
-    return '<article class="model-card '+safe(statusClass(model.status))+(recommended?' is-recommended-starter':'')+'" data-model-id="'+safe(model.id)+'" data-model-tag="'+safe(model.model||'')+'" data-recommended-starter="'+safe(recommended?'true':'false')+'">'+
-      '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span>'+safe(recommended?'recommended starter':(live?'live backend':statusLabel(model.status||model.access||'model')))+'</span></div>'+
+    const starterLabel=actionLabelForModel(model,state);
+    const metrics=modelTruthMetrics(model,state).map(([key,value])=>'<div><dt>'+safe(key)+'</dt><dd>'+safe(value)+'</dd></div>').join('');
+    return '<article class="model-card '+safe(statusClass(model.status))+(recommended?' is-recommended-starter':'')+'" data-model-id="'+safe(model.id)+'" data-model-tag="'+safe(model.model||'')+'" data-model-lifecycle-state="'+safe(state)+'" data-model-action="'+safe(buttonLabel)+'" data-recommended-starter="'+safe(recommended?'true':'false')+'">'+
+      '<div class="model-card-header"><h3>'+safe(model.label||model.id)+'</h3><span class="model-lifecycle-badge" data-lifecycle-state="'+safe(state)+'">'+safe(recommended?'recommended starter':lifecycleLabel(state))+'</span></div>'+
       (recommended?'<small class="model-recommended-note">Recommended for this device. Free/local path; no paid route starts here.</small>':'')+
+      '<small class="model-lifecycle-note">'+safe(lifecycleHint(model,state))+'</small>'+
       '<p>'+safe(model.best_for||model.notes||'Model option for a compatible backend.')+'</p>'+
-      '<dl><div><dt>Category</dt><dd>'+safe(model.category||'general')+'</dd></div><div><dt>Capacity</dt><dd>'+safe(model.capacity_hint||'backend')+'</dd></div><div><dt>License</dt><dd>'+safe(modelLicense(model))+'</dd></div><div><dt>Commercial</dt><dd>'+safe(commercialUse(model))+'</dd></div><div><dt>RAM</dt><dd>'+safe(model.ram_hint||'varies')+'</dd></div><div><dt>GPU</dt><dd>'+safe(model.gpu_hint||'varies')+'</dd></div></dl>'+
+      '<dl class="model-truth-grid">'+metrics+'<div><dt>Category</dt><dd>'+safe(model.category||'general')+'</dd></div><div><dt>Capacity</dt><dd>'+safe(model.capacity_hint||'backend')+'</dd></div><div><dt>License</dt><dd>'+safe(modelLicense(model))+'</dd></div><div><dt>Commercial</dt><dd>'+safe(commercialUse(model))+'</dd></div></dl>'+
       '<div class="model-card-actions">'+
         (starter&&!disabled?'<button type="button" data-starter-id="'+safe(model.id)+'" data-starter-action="'+safe(starterAction)+'">'+safe(starterLabel)+'</button>':'')+
         '<button type="button" data-id="'+safe(model.id)+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+safe(buttonLabel)+'</button>'+
       '</div>'+
+      '<small class="model-proof-note">No browser secrets. Active means proven by backend health, chat and receipt evidence; promotion is reversible.</small>'+
     '</article>';
   }
 
