@@ -5,6 +5,7 @@ const root = resolve(new URL('..', import.meta.url).pathname);
 const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
 const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
 const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
+const workspaceCss = readFileSync(join(portalDir, 'chat-workspace.css'), 'utf8');
 const manifest = JSON.parse(readFileSync(join(portalDir, 'asset-versions.json'), 'utf8'));
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
@@ -20,6 +21,7 @@ function forbidIncludes(source, needle, message) {
 
 const expectedShellVersion = manifest.assets?.['p0-chat-shell.js'] || '';
 const expectedCssVersion = manifest.assets?.['p0-chat-shell.css'] || '';
+const expectedWorkspaceCssVersion = manifest.assets?.['chat-workspace.css'] || '';
 
 requireIncludes(
   shell,
@@ -38,6 +40,9 @@ requireIncludes(shell,"window.MimirChatRuntimeBridge.openFeedbackInbox=openFeedb
 forbidIncludes(css,'.p0-empty-starters','P0 shell CSS must not keep hardcoded starter-question styles.');
 forbidIncludes(css,'.p0-empty-starter','P0 shell CSS must not keep hardcoded starter-question button styles.');
 requireIncludes(css,'.p0-empty {','P0 shell CSS must keep a quiet empty transcript placeholder.');
+requireIncludes(workspaceCss,'.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting{display:none!important}','Public empty state must keep the greeting/hero hidden so the composer is first.');
+forbidIncludes(workspaceCss,'Open WebUI-style centered welcome','Public empty state must not reintroduce the centered welcome/hero pattern.');
+forbidIncludes(workspaceCss,'.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting h1','Public empty state must not style an empty-state hero heading.');
 requireIncludes(shell,'function updateDraftState(){','P0 shell must track draft state for first-keystroke cleanup.');
 requireIncludes(shell,"document.getElementById('p0-input')?.focus({preventScroll:true})",'P0 launch shell must focus the single chat input after install.');
 
@@ -46,6 +51,9 @@ if (!expectedShellVersion) {
 }
 if (!expectedCssVersion) {
   failures.push('Asset version manifest must track p0-chat-shell.css for the empty-state starter slice.');
+}
+if (!expectedWorkspaceCssVersion) {
+  failures.push('Asset version manifest must track chat-workspace.css for the empty-state starter slice.');
 }
 
 requireIncludes(
@@ -57,6 +65,11 @@ requireIncludes(
   html,
   `"./apps/mimir-chat-portal/p0-chat-shell.js?v=${expectedShellVersion}"`,
   'public/mmir.html must serve the starter-ready P0 shell JS version.'
+);
+requireIncludes(
+  html,
+  `"./apps/mimir-chat-portal/chat-workspace.css?v=${expectedWorkspaceCssVersion}"`,
+  'public/mmir.html must serve the minimal empty-state chat-workspace CSS version.'
 );
 requireIncludes(
   String(pkg.scripts?.check || ''),

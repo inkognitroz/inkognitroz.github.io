@@ -337,8 +337,8 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d350-20260711-route-benchmarks-model-actions-v1",
-  "Service worker cache must bust for P0 route benchmark and model action releases.",
+  "mmir-pwa-d351-20260711-route-benchmarks-model-actions-minimal-empty-composer-v1",
+  "Service worker cache must bust for the minimal empty composer release.",
 );
 requireText(
   serviceWorkerPath,
