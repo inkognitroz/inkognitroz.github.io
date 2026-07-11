@@ -76,12 +76,20 @@ forbid(files.publicIndex, /MMIR by Inkognitroz/i, 'Published root title must not
 
 for (const selector of [
   'id="mimir-prompt"',
+  'href="#model-library"',
   'id="new-backend"',
   'id="primary-chat-link"',
   'class="mimir-composer"'
 ]) {
   requireIncludes(files.mmir, selector, `First screen composer DOM is missing ${selector}.`);
 }
+
+requireIncludes(files.mmir, '<a href="#model-library">Børs</a>', 'Public launch nav must expose the intelligence exchange as the only secondary public surface.');
+requireIncludes(files.mmir, '<summary>+ Intelligensbørs</summary>', 'Public model catalog must be presented as the intelligence exchange, not a generic setup drawer.');
+requireIncludes(files.mmir, '<h2 id="model-library-title">Intelligensbørs</h2>', 'Public exchange heading must use the owner-approved intelligence-bourse framing.');
+requireIncludes(files.mmir, assetRef('chat-workspace.css'), 'Public exchange nav CSS must be cache-busted through the asset manifest.');
+requireIncludes(files.workspaceCss, 'nav a:not([href="#mimir-prompt"]):not([href="#model-library"])', 'Public launch CSS must keep only Chat and Børs visible in the side nav.');
+requireIncludes(files.mmir, 'Supergeni bruker dette kartet til å velge beste svar', 'Public exchange copy must describe connected intelligence without account, Pro or checkout promises.');
 
 for (const selector of [
   'runtime-model-chip',
