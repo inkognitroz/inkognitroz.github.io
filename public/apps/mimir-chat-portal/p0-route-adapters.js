@@ -6,7 +6,9 @@
   const CHAT_PATH='/v1/chat/completions';
   const ROUTE_SCORE_PATH='/routing/score';
   const TOKEN_KEY='mmir-p0-local-token';
-  const SYNTHETIC_DEMO_ASSISTANT_RE=/^\s*DEMO:\s*MMIR\s+(?:samler inn samtalen|collects the conversation)\b/i;
+  const SYNTHETIC_DEMO_ASSISTANT_RE=/^\s*DEMO:\s*MMIR\s+(?:samler inn samtalen|kan samle inn samtalen|collects the conversation)\b/i;
+  const PREVIOUS_USER_QUESTION_RE=/^Previous user question:\s*/i;
+  const PREVIOUS_ASSISTANT_ANSWER_RE=/^Previous assistant answer:\s*/i;
   const MISLEADING_TRUST_LABEL_RE=/Verifisert\s*·\s*privat/gi;
   const TRUTHFUL_TRUST_LABEL='Rute og personvern verifisert';
 
@@ -47,16 +49,64 @@
       .join('\n');
   }
 
+  function normalizedText(value){
+    return String(value||'').replace(/\s+/g,' ').trim();
+  }
+
   function normalizedMessageText(message){
-    return messageText(message).replace(/\s+/g,' ').trim();
+    return normalizedText(messageText(message));
   }
 
   function isSyntheticDemoAssistant(message){
     return String(message?.role||'').toLowerCase()==='assistant'&&SYNTHETIC_DEMO_ASSISTANT_RE.test(messageText(message));
   }
 
+  function markedSection(lines,startIndex,endIndex,markerRe){
+    if(startIndex<0)return '';
+    const first=String(lines[startIndex]||'').replace(markerRe,'');
+    return [first,...lines.slice(startIndex+1,endIndex)].join('\n').trim();
+  }
+
+  function sanitizeSystemMemoryContent(content,currentPrompt){
+    if(typeof content!=='string'||!normalizedText(currentPrompt)){
+      return {content,changed:false,removed_previous_user_question:0,removed_demo_previous_assistant:0};
+    }
+    const lines=content.split('\n');
+    const userIndex=lines.findIndex(line=>PREVIOUS_USER_QUESTION_RE.test(String(line||'')));
+    const assistantIndex=lines.findIndex(line=>PREVIOUS_ASSISTANT_ANSWER_RE.test(String(line||'')));
+    const userEnd=assistantIndex>userIndex?assistantIndex:lines.length;
+    const assistantEnd=lines.length;
+    const previousUser=markedSection(lines,userIndex,userEnd,PREVIOUS_USER_QUESTION_RE);
+    const previousAssistant=markedSection(lines,assistantIndex,assistantEnd,PREVIOUS_ASSISTANT_ANSWER_RE);
+    const removeUser=userIndex>=0&&normalizedText(previousUser)===normalizedText(currentPrompt);
+    const removeAssistant=assistantIndex>=0&&SYNTHETIC_DEMO_ASSISTANT_RE.test(previousAssistant);
+    if(!removeUser&&!removeAssistant){
+      return {content,changed:false,removed_previous_user_question:0,removed_demo_previous_assistant:0};
+    }
+    const kept=lines.filter((line,index)=>{
+      if(removeUser&&index>=userIndex&&index<userEnd)return false;
+      if(removeAssistant&&index>=assistantIndex&&index<assistantEnd)return false;
+      return true;
+    });
+    return {
+      content:kept.join('\n').replace(/\n{3,}/g,'\n\n').trim(),
+      changed:true,
+      removed_previous_user_question:removeUser?1:0,
+      removed_demo_previous_assistant:removeAssistant?1:0
+    };
+  }
+
   function sanitizeChatMessages(messages){
-    if(!Array.isArray(messages))return {messages,changed:false,removed_demo_turns:0,removed_duplicate_prompts:0};
+    if(!Array.isArray(messages)){
+      return {
+        messages,
+        changed:false,
+        removed_demo_turns:0,
+        removed_duplicate_prompts:0,
+        removed_system_prompt_echoes:0,
+        removed_system_demo_answers:0
+      };
+    }
     const filtered=[];
     let removedDemoTurns=0;
     messages.forEach(message=>{
@@ -91,11 +141,29 @@
       }
     }
 
+    const currentPrompt=lastUserIndex>=0?messageText(filtered[lastUserIndex]):'';
+    let removedSystemPromptEchoes=0;
+    let removedSystemDemoAnswers=0;
+    const sanitizedMessages=filtered.map(message=>{
+      if(String(message?.role||'').toLowerCase()!=='system'||typeof message?.content!=='string')return message;
+      const sanitized=sanitizeSystemMemoryContent(message.content,currentPrompt);
+      removedSystemPromptEchoes+=sanitized.removed_previous_user_question;
+      removedSystemDemoAnswers+=sanitized.removed_demo_previous_assistant;
+      return sanitized.changed?{...message,content:sanitized.content}:message;
+    });
+
     return {
-      messages:filtered,
-      changed:Boolean(removedDemoTurns||removedDuplicatePrompts),
+      messages:sanitizedMessages,
+      changed:Boolean(
+        removedDemoTurns||
+        removedDuplicatePrompts||
+        removedSystemPromptEchoes||
+        removedSystemDemoAnswers
+      ),
       removed_demo_turns:removedDemoTurns,
-      removed_duplicate_prompts:removedDuplicatePrompts
+      removed_duplicate_prompts:removedDuplicatePrompts,
+      removed_system_prompt_echoes:removedSystemPromptEchoes,
+      removed_system_demo_answers:removedSystemDemoAnswers
     };
   }
 
@@ -273,6 +341,7 @@
     fetchJson,
     messageText,
     isSyntheticDemoAssistant,
+    sanitizeSystemMemoryContent,
     sanitizeChatMessages,
     sanitizeChatRequestOptions,
     truthfulTrustLabel,
@@ -291,6 +360,7 @@
       no_paid_routes_started:true,
       provider_secrets_in_browser:false,
       request_truth_guard:true,
+      system_memory_truth_guard:true,
       factual_verification_claimed:false
     }
   }));

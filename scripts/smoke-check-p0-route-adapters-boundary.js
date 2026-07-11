@@ -31,6 +31,8 @@ requireIncludes(helper, 'window.MimirP0RouteAdapters', 'P0 route adapter helper 
 requireIncludes(helper, 'targetAddressSpace=\'loopback\'', 'P0 route adapter helper must own Local Network Access loopback hints.');
 requireIncludes(helper, 'provider_secrets_in_browser:false', 'P0 route adapter helper must publish no-secret evidence.');
 requireIncludes(helper, 'sanitizeChatRequestOptions', 'P0 route adapter helper must own public chat request sanitization.');
+requireIncludes(helper, 'sanitizeSystemMemoryContent', 'P0 route adapter helper must sanitize synthetic system-memory echoes.');
+requireIncludes(helper, 'system_memory_truth_guard:true', 'P0 route adapter helper must publish system-memory truth evidence.');
 requireIncludes(helper, 'request_truth_guard:true', 'P0 route adapter helper must publish request-truth evidence.');
 requireIncludes(helper, 'factual_verification_claimed:false', 'P0 route adapter helper must not claim factual verification from route/privacy proof.');
 requireIncludes(shell, 'const P0_ROUTE_ADAPTERS=window.MimirP0RouteAdapters||{};', 'P0 shell must read the route adapter helper.');
@@ -105,6 +107,7 @@ const api = context.window.MimirP0RouteAdapters;
 if (!api || api.version !== '20260707-one-window-shell-v1') fail('P0 route adapter helper must register on window.');
 if (events[0]?.type !== 'mimir-p0-route-adapters-ready') fail('P0 route adapter helper must emit readiness evidence.');
 if (events[0]?.detail?.request_truth_guard !== true) fail('P0 route adapter readiness must expose request-truth guard evidence.');
+if (events[0]?.detail?.system_memory_truth_guard !== true) fail('P0 route adapter readiness must expose system-memory truth evidence.');
 if (events[0]?.detail?.factual_verification_claimed !== false) fail('P0 route adapter readiness must deny factual-verification claims.');
 if (api.config().apiUrl !== 'https://api-staging.mmir.ai') fail('P0 route adapter helper must select staging API on staging.mmir.ai.');
 if (api.fetchOptions('http://127.0.0.1:3000/health', {}).targetAddressSpace !== 'loopback') fail('P0 route adapter helper must mark loopback fetches.');
@@ -119,7 +122,15 @@ await api.fetchJson('https://api-staging.mmir.ai/v1/chat/completions', {
   body: JSON.stringify({
     model: 'mmir-supergenius',
     messages: [
-      { role: 'system', content: 'Svar kort på norsk.' },
+      {
+        role: 'system',
+        content: [
+          'Svar kort på norsk.',
+          'Conversation memory:',
+          'Previous user question: '+currentPrompt,
+          'Previous assistant answer: DEMO: MMIR samler inn samtalen for en samtykkebasert demonstrasjon.'
+        ].join('\n')
+      },
       { role: 'user', content: currentPrompt },
       { role: 'assistant', content: 'DEMO: MMIR samler inn samtalen for en samtykkebasert demonstrasjon.' },
       { role: 'user', content: currentPrompt }
@@ -129,13 +140,22 @@ await api.fetchJson('https://api-staging.mmir.ai/v1/chat/completions', {
 });
 const sanitizedPayload = JSON.parse(lastFetch?.init?.body || '{}');
 const sanitizedMessages = Array.isArray(sanitizedPayload.messages) ? sanitizedPayload.messages : [];
-if (sanitizedMessages.some((message) => /^\s*DEMO:/i.test(String(message?.content || '')))) {
+const sanitizedSystem = String(sanitizedMessages.find((message) => message?.role === 'system')?.content || '');
+if (sanitizedMessages.some((message) => message?.role === 'assistant' && /^\s*DEMO:/i.test(String(message?.content || '')))) {
   fail('Public chat transport must remove synthetic DEMO assistant disclosure turns before fetch.');
+}
+if (/Previous user question:/i.test(sanitizedSystem) || sanitizedSystem.includes(currentPrompt)) {
+  fail('Public chat transport must remove the current prompt echo from system conversation memory.');
+}
+if (/Previous assistant answer:\s*DEMO:/i.test(sanitizedSystem) || /DEMO:\s*MMIR/i.test(sanitizedSystem)) {
+  fail('Public chat transport must remove synthetic DEMO answers from system conversation memory.');
 }
 if (sanitizedMessages.filter((message) => message?.role === 'user' && message?.content === currentPrompt).length !== 1) {
   fail('Public chat transport must send the current user prompt exactly once.');
 }
-if (sanitizedMessages[0]?.role !== 'system') fail('Public chat transport sanitization must preserve non-demo system context.');
+if (!sanitizedSystem.includes('Svar kort på norsk.') || !sanitizedSystem.includes('Conversation memory:')) {
+  fail('Public chat transport sanitization must preserve non-demo system instructions.');
+}
 
 const legitimateRepeat = api.sanitizeChatMessages([
   { role: 'user', content: 'Gjenta dette' },
@@ -145,6 +165,28 @@ const legitimateRepeat = api.sanitizeChatMessages([
 if (legitimateRepeat.changed || legitimateRepeat.messages.length !== 3) {
   fail('Public chat transport must preserve a legitimate repeated question when a real assistant answer separates the turns.');
 }
+
+const legitimateMemoryPrompt = 'Hva er været i Oslo?';
+const legitimateMemory = api.sanitizeChatMessages([
+  {
+    role: 'system',
+    content: [
+      'Svar kort på norsk.',
+      'Conversation memory:',
+      'Previous user question: Hva er været i Bergen?',
+      'Previous assistant answer: Det regner i Bergen.'
+    ].join('\n')
+  },
+  { role: 'user', content: legitimateMemoryPrompt }
+]);
+if (legitimateMemory.changed || legitimateMemory.messages.length !== 2) {
+  fail('Public chat transport must preserve legitimate different prior-turn memory.');
+}
+const legitimateSystem = String(legitimateMemory.messages[0]?.content || '');
+if (!legitimateSystem.includes('Hva er været i Bergen?') || !legitimateSystem.includes('Det regner i Bergen.')) {
+  fail('Public chat transport must retain a different previous question and real previous assistant answer.');
+}
+
 const adjacentDuplicate = api.sanitizeChatMessages([
   { role: 'user', content: 'Samme spørsmål' },
   { role: 'user', content: '  Samme   spørsmål  ' }
