@@ -397,9 +397,10 @@
     const usable=lastResults.filter(result=>!result.error&&result.content);
     const routeLabels=usable.map(result=>String(result.model?.label||result.model?.id||'').trim()).filter(Boolean);
     const namedRoutes=routeLabels.filter(label=>label&&lower.includes(label.toLowerCase())).length;
-    const mentionsSource=/\b(source|sources|according to|based on|evidence|route|model|response|answer)\b/.test(lower);
-    const mentionsUncertainty=/\b(uncertain|verify|provisional|confidence|disagree|conflict|different)\b/.test(lower);
-    const grounded=Boolean(content&&usable.length>=2&&(namedRoutes>0||mentionsSource)&&(mentionsUncertainty||/next step|recommend|should/i.test(content)));
+    const mentionsSource=/\b(source|sources|according to|based on|evidence|route|model|response|answer|kilde|kilder|ifølge|basert på|belegg|rute|modell|respons|svar)\b/.test(lower);
+    const mentionsUncertainty=/\b(uncertain|verify|provisional|confidence|disagree|conflict|different|usikker|usikkerhet|verifiser|foreløpig|midlertidig|sikkerhet|uenig|uenighet|konflikt|forskjellig|ulike)\b/.test(lower);
+    const mentionsNextAction=/\b(next step|next action|recommend|should|neste steg|neste handling|anbefal|anbefaler|anbefaling|bør)\b/i.test(content);
+    const grounded=Boolean(content&&usable.length>=2&&(namedRoutes>0||mentionsSource)&&(mentionsUncertainty||mentionsNextAction));
     return 'Grounding signal: '+(grounded?'grounded synthesis candidate':'needs grounding review')+'; usable route count: '+String(usable.length)+'; named route references: '+String(namedRoutes)+'; source/evidence language: '+(mentionsSource?'yes':'no')+'; uncertainty/disagreement language: '+(mentionsUncertainty?'yes':'no')+'; raw synthesis and route answers not stored.';
   }
 

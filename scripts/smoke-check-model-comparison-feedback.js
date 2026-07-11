@@ -59,6 +59,10 @@ requireIncludes(js, 'function synthesisGroundingSignal(){', 'Compare feedback mu
 requireIncludes(js, "return 'Grounding signal: '+(grounded?'grounded synthesis candidate':'needs grounding review')", 'Compare feedback must label grounded synthesis candidates separately from review-needed output.');
 requireIncludes(js, 'source/evidence language: ', 'Compare feedback grounding signal must expose source/evidence language presence.');
 requireIncludes(js, 'uncertainty/disagreement language: ', 'Compare feedback grounding signal must expose disagreement or uncertainty language presence.');
+requireIncludes(js, 'kilde|kilder|ifølge|basert på|belegg', 'Compare feedback grounding signal must recognize Norwegian source and evidence language.');
+requireIncludes(js, 'usikker|usikkerhet|verifiser|foreløpig', 'Compare feedback grounding signal must recognize Norwegian uncertainty language.');
+requireIncludes(js, 'neste steg|neste handling|anbefal|anbefaler|anbefaling|bør', 'Compare feedback grounding signal must recognize Norwegian recommendation language.');
+requireIncludes(js, 'const mentionsNextAction=', 'Compare feedback grounding signal must classify next-action language explicitly.');
 requireIncludes(js, 'raw synthesis and route answers not stored', 'Compare feedback grounding signal must preserve raw answer privacy.');
 requireIncludes(js, 'function bestAnswerSignal(){', 'Compare feedback must summarize best-answer evidence without raw answers.');
 requireIncludes(js, 'Best-answer signal: ', 'Compare feedback draft must label the best-answer signal for triage.');
@@ -154,7 +158,7 @@ requireIncludes(css, '.comparison-selection-note', 'Compare route picker cap not
 requireIncludes(css, '.comparison-model-choice-locked span::after', 'Compare route picker locked state must explain disabled route choices.');
 
 const expectedCssVersion = '20260704-compare-integrity-v1';
-const expectedJsVersion = '20260710-compare-grounding-feedback-v1';
+const expectedJsVersion = '20260711-compare-norwegian-grounding-v1';
 if (manifest.assets?.['model-comparison.js'] !== expectedJsVersion) {
   fail('Asset manifest must track model-comparison.js version.');
 }
