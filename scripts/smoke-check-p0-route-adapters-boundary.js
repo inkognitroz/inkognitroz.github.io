@@ -30,6 +30,9 @@ requireIncludes(helper, "version='20260707-one-window-shell-v1'", 'P0 route adap
 requireIncludes(helper, 'window.MimirP0RouteAdapters', 'P0 route adapter helper must expose a stable public helper object.');
 requireIncludes(helper, 'targetAddressSpace=\'loopback\'', 'P0 route adapter helper must own Local Network Access loopback hints.');
 requireIncludes(helper, 'provider_secrets_in_browser:false', 'P0 route adapter helper must publish no-secret evidence.');
+requireIncludes(helper, 'sanitizeChatRequestOptions', 'P0 route adapter helper must own public chat request sanitization.');
+requireIncludes(helper, 'request_truth_guard:true', 'P0 route adapter helper must publish request-truth evidence.');
+requireIncludes(helper, 'factual_verification_claimed:false', 'P0 route adapter helper must not claim factual verification from route/privacy proof.');
 requireIncludes(shell, 'const P0_ROUTE_ADAPTERS=window.MimirP0RouteAdapters||{};', 'P0 shell must read the route adapter helper.');
 requireIncludes(shell, 'const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;', 'P0 shell must delegate JSON transport to the route adapter helper.');
 requireIncludes(shell, 'const pairLocal=P0_ROUTE_ADAPTERS.pairLocal;', 'P0 shell must delegate local pairing to the route adapter helper.');
@@ -101,11 +104,61 @@ vm.runInContext(helper, context, { filename: 'p0-route-adapters.js' });
 const api = context.window.MimirP0RouteAdapters;
 if (!api || api.version !== '20260707-one-window-shell-v1') fail('P0 route adapter helper must register on window.');
 if (events[0]?.type !== 'mimir-p0-route-adapters-ready') fail('P0 route adapter helper must emit readiness evidence.');
+if (events[0]?.detail?.request_truth_guard !== true) fail('P0 route adapter readiness must expose request-truth guard evidence.');
+if (events[0]?.detail?.factual_verification_claimed !== false) fail('P0 route adapter readiness must deny factual-verification claims.');
 if (api.config().apiUrl !== 'https://api-staging.mmir.ai') fail('P0 route adapter helper must select staging API on staging.mmir.ai.');
 if (api.fetchOptions('http://127.0.0.1:3000/health', {}).targetAddressSpace !== 'loopback') fail('P0 route adapter helper must mark loopback fetches.');
 if (api.localHeaders('abc')['x-mmir-local-token'] !== 'abc') fail('P0 route adapter helper must build local connector headers.');
 await api.fetchJson('http://127.0.0.1:3000/health', { timeoutMs: 1000 });
 if (lastFetch?.init?.targetAddressSpace !== 'loopback') fail('P0 route adapter helper fetchJson must apply loopback fetch options.');
+
+const currentPrompt = 'Hvor mange minutter er det i 2,5 timer?';
+await api.fetchJson('https://api-staging.mmir.ai/v1/chat/completions', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    model: 'mmir-supergenius',
+    messages: [
+      { role: 'system', content: 'Svar kort på norsk.' },
+      { role: 'user', content: currentPrompt },
+      { role: 'assistant', content: 'DEMO: MMIR samler inn samtalen for en samtykkebasert demonstrasjon.' },
+      { role: 'user', content: currentPrompt }
+    ]
+  }),
+  timeoutMs: 1000
+});
+const sanitizedPayload = JSON.parse(lastFetch?.init?.body || '{}');
+const sanitizedMessages = Array.isArray(sanitizedPayload.messages) ? sanitizedPayload.messages : [];
+if (sanitizedMessages.some((message) => /^\s*DEMO:/i.test(String(message?.content || '')))) {
+  fail('Public chat transport must remove synthetic DEMO assistant disclosure turns before fetch.');
+}
+if (sanitizedMessages.filter((message) => message?.role === 'user' && message?.content === currentPrompt).length !== 1) {
+  fail('Public chat transport must send the current user prompt exactly once.');
+}
+if (sanitizedMessages[0]?.role !== 'system') fail('Public chat transport sanitization must preserve non-demo system context.');
+
+const legitimateRepeat = api.sanitizeChatMessages([
+  { role: 'user', content: 'Gjenta dette' },
+  { role: 'assistant', content: 'Første svar' },
+  { role: 'user', content: 'Gjenta dette' }
+]);
+if (legitimateRepeat.changed || legitimateRepeat.messages.length !== 3) {
+  fail('Public chat transport must preserve a legitimate repeated question when a real assistant answer separates the turns.');
+}
+const adjacentDuplicate = api.sanitizeChatMessages([
+  { role: 'user', content: 'Samme spørsmål' },
+  { role: 'user', content: '  Samme   spørsmål  ' }
+]);
+if (!adjacentDuplicate.changed || adjacentDuplicate.messages.length !== 1 || adjacentDuplicate.removed_duplicate_prompts !== 1) {
+  fail('Public chat transport must collapse only adjacent duplicate copies of the trailing current prompt.');
+}
+if (api.truthfulTrustLabel('Verifisert · privat') !== 'Rute og personvern verifisert') {
+  fail('Public trust copy must name route/privacy verification instead of implying factual verification.');
+}
+if (api.truthfulTrustLabel('Svar ikke faktasjekket') !== 'Svar ikke faktasjekket') {
+  fail('Public trust copy normalization must leave unrelated wording unchanged.');
+}
+
 const token = await api.pairLocal();
 if (token !== 'local-test-token') fail('P0 route adapter helper must pair local connector and return the token.');
 if (!api.hasLocalPairingToken()) fail('P0 route adapter helper must expose paired-token presence without leaking the token.');
