@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260711-compare-winner-fallback-v5';
+  const P0_RUNTIME_VERSION='20260711-hosted-trust-consent-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -883,12 +883,18 @@
     return host==='mmir.ai'||host==='www.mmir.ai'||host==='staging.mmir.ai';
   }
 
+  function localPreviewDemoOrigin(){
+    const host=String(window.location?.hostname||'').toLowerCase();
+    return host==='127.0.0.1'||host==='localhost'||host==='::1';
+  }
+
   function demoTranscriptOptOut(params=demoTranscriptParams()){
-    return params.get('demo_capture')==='0'||params.has('no_demo_capture');
+    return params.get('demo_capture')==='0'||params.has('no_demo_capture')||readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='declined';
   }
 
   function demoTranscriptModeRequested(params=demoTranscriptParams()){
     if(demoTranscriptOptOut(params))return false;
+    if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='accepted')return true;
     if(readStorageString(DEMO_GROWTH_MODE_KEY,'')==='true')return true;
     if(params.has('demo_capture')||
       params.has('mmir_demo')||
@@ -903,7 +909,6 @@
     if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='accepted')return true;
     if(readStorageString(DEMO_GROWTH_MODE_KEY,'')==='true')return true;
     if(params.get('demo_capture')==='1'||params.has('user_test')||params.has('mmir_qa_session'))return true;
-    if([...params.keys()].some(key=>/^codex_|^b0_|^first_click_guard|^responsive_guard/i.test(key)))return true;
     return false;
   }
 
@@ -911,15 +916,16 @@
     if(superPrivateModeActive())return false;
     const params=demoTranscriptParams();
     if(!demoTranscriptModeRequested(params))return false;
-    writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'accepted');
-    if(readStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'')==='shown')return true;
+    if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='accepted')return true;
+    if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='declined')return false;
+    if(readStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'')==='shown')return demoTranscriptConsentActive(params);
     writeStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'shown');
     const notice={
       id:'demo-consent-'+Date.now().toString(36),
       role:'assistant',
-      content:'DEMO: MMIR samler inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst for å lære raskere i testfasen. Ikke lim inn passord, API-nøkler eller sensitiv informasjon. Slå av med ?demo_capture=0 eller Superprivate mode.',
+      content:'DEMO: MMIR kan samle inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst for å lære raskere i testfasen. Rå samtale lagres ikke før du velger Demo-læring På i skjoldmenyen eller åpner en eksplisitt testlenke. Ikke lim inn passord, API-nøkler eller sensitiv informasjon.',
       label:'MMIR Demo',
-      receipt:'Visible demo learning · conversation + feedback + route evidence · redacted',
+      receipt:'Visible demo learning · opt-in required for raw transcript · feedback + route evidence',
       variant:'notice',
       actions:false,
       createdAt:new Date().toISOString()
@@ -933,7 +939,25 @@
       demo_capture:true,
       hosted_demo:hostedDemoOrigin()
     });
-    return true;
+    return false;
+  }
+
+  function setDemoTranscriptConsent(enabled){
+    const accepted=Boolean(enabled);
+    writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,accepted?'accepted':'declined');
+    writeStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'shown');
+    clearTimeout(demoTranscriptTimer);
+    renderPrivacyMenu();
+    const label=accepted?'Demo-læring på':'Demo-læring av';
+    status(label+'.','ready');
+    routeStatus(accepted?'Demo-læring · rå testdialog kan lagres':'Demo-læring av · rå dialog lagres ikke','hosted');
+    captureInteraction('demo_transcript_consent_changed',{
+      demo_capture:accepted,
+      hosted_demo:hostedDemoOrigin()
+    });
+    if(accepted){
+      scheduleDemoTranscriptCapture('demo_transcript_consent_enabled',{explicit_choice:true});
+    }
   }
 
   function demoTranscriptCaptureEnabled(){
@@ -943,7 +967,7 @@
   }
 
   function demoTranscriptUploadAllowed(){
-    return hostedDemoOrigin()&&demoTranscriptCaptureEnabled();
+    return (hostedDemoOrigin()||localPreviewDemoOrigin())&&demoTranscriptCaptureEnabled();
   }
 
   function redactDemoTranscriptText(value,limit=4000){
@@ -2150,6 +2174,14 @@
     return 0;
   }
 
+  function receiptPrivacyLabel(full=''){
+    const text=String(full||'');
+    if(/superprivate/i.test(text)||superPrivateModeActive())return 'superprivat';
+    if(/\b(?:local\/private|browser-local\/private|private local|local node|this mac|private mode)\b/i.test(text))return 'privat';
+    if(/\b(?:hosted|api\.mmir\.ai|free\/protected|no paid route|hosted free|supergeni ready)\b/i.test(text))return demoTranscriptCaptureEnabled()?'demo':'beskyttet';
+    return privacyMode()==='public'?'beskyttet':'privat';
+  }
+
   function routeEvidenceReceipt(full){
     const text=String(full||'');
     const evidence=[
@@ -2174,10 +2206,11 @@
     const routeCount=receiptRouteCount(text,parts);
     const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
     const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
+    const privacy=receiptPrivacyLabel(text);
     if(isSwarm&&routeCount>1){
-      return ['Spør '+routeCount+' AI - beste vinner',consensus,'Verifisert','privat'].filter(Boolean).join(' · ');
+      return ['Spør '+routeCount+' AI - beste vinner',consensus,'Verifisert',privacy].filter(Boolean).join(' · ');
     }
-    return 'Verifisert · privat';
+    return ['Verifisert',privacy].filter(Boolean).join(' · ');
   }
 
   function receiptConsensusState(full){
@@ -2284,10 +2317,13 @@
   }
 
   function answerStatus(model,score,prefix=''){
+    const privacy=model?.route==='local'
+      ? 'privat'
+      : (superPrivateModeActive()?'superprivat':(demoTranscriptCaptureEnabled()?'demo':'beskyttet'));
     const parts=[
       prefix,
       'Verifisert',
-      'privat'
+      privacy
     ];
     return parts.filter(Boolean).join(' · ');
   }
@@ -4345,6 +4381,18 @@
       : 'Off. MMIR follows the selected route with fewer factuality checks.';
   }
 
+  function demoTranscriptConsentLabel(){
+    const params=demoTranscriptParams();
+    if(demoTranscriptConsentActive(params))return 'På';
+    if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='declined')return 'Av';
+    return 'Av';
+  }
+
+  function demoTranscriptConsentDetail(){
+    if(demoTranscriptConsentActive())return 'Raw demo/test conversations may be persisted for product learning. Do not paste secrets.';
+    return 'Raw conversation persistence is off. Feedback, clicks and route metadata may still be captured as bounded telemetry.';
+  }
+
   function clearPersistedHistory(){
     writeHistorySchema();
     writeHistoryJson([]);
@@ -4383,6 +4431,8 @@
       menuButton('set-privacy-mode:superprivate','Superprivate',privacyModeDetail('superprivate'),{badge:selected==='superprivate'?'Selected':''})+
       menuSeparator()+
       menuButton('toggle-fact-guard',factGuardActive()?'Fact guard on':'Fact guard off',factGuardDetail(),{badge:factGuardActive()?'On':'Off'})+
+      menuButton('set-demo-transcript-consent:on','Demo-læring på','Lagre rå testdialog for produktlæring i denne nettleseren.',{badge:demoTranscriptConsentLabel()==='På'?'På':''})+
+      menuButton('set-demo-transcript-consent:off','Demo-læring av',demoTranscriptConsentDetail(),{badge:demoTranscriptConsentLabel()==='Av'?'Av':''})+
       menuSeparator()+
       '<button type="button"><strong>'+safeText(route)+'</strong><small>'+safeText(secret)+'</small></button>'+
       '<button type="button"><strong>Route receipt</strong><small>'+safeText(receipt.text)+' · '+safeText(receipt.detail)+'</small></button>'+
@@ -5188,6 +5238,10 @@
     }
 	    if(actionId.startsWith('set-privacy-mode:')){
 	      setPrivacyMode(actionId.split(':')[1]);
+	      return true;
+	    }
+	    if(actionId.startsWith('set-demo-transcript-consent:')){
+	      setDemoTranscriptConsent(actionId.split(':')[1]==='on');
 	      return true;
 	    }
 	    if(action==='model-menu'){

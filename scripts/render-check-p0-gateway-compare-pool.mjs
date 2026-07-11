@@ -592,7 +592,8 @@ async function checkViewport(browser, viewport) {
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
   assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
   assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
-  assert(/privat/i.test(layout.route), `${viewport.name}: visible green route line should show privacy value`);
+  assert(/beskyttet/i.test(layout.route), `${viewport.name}: visible green route line should show hosted protection truth`);
+  assert(!/privat/i.test(layout.route), `${viewport.name}: hosted route line must not claim private mode`);
 	  assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost route action should survive after Boost finishes`);
 	  assert(!layout.routeCtaVisible, `${viewport.name}: Superboost route action should remain hidden behind settings after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
@@ -659,7 +660,8 @@ async function checkViewport(browser, viewport) {
   }));
   assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Supergeni Council proof should show swarm value in the green status`);
   assert(/Verifisert/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show verified value`);
-  assert(/privat/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show privacy value`);
+  assert(/beskyttet/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show hosted protection truth`);
+  assert(!/privat/i.test(councilLayout.route), `${viewport.name}: hosted council route must not claim private mode`);
   assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep readiness detail behind details`);
   assert(!/signed receipts/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep receipt proof behind details`);
   assert(/round 1\/3/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve swarm round truth`);

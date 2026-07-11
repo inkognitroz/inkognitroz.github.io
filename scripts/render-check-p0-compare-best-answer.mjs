@@ -227,7 +227,6 @@ async function checkViewport(browser, viewport) {
   assert(text.includes('Local Gemma also says four.'), `${viewport.name}: local compare answer should render`);
   assert(text.includes('Best answer'), `${viewport.name}: best-answer content should render`);
   assert(text.includes('Verifisert'), `${viewport.name}: compare receipts should show trust value first`);
-  assert(text.includes('privat'), `${viewport.name}: compare receipts should show privacy value first`);
   assert(text.includes('Detaljer'), `${viewport.name}: compare receipts should keep raw telemetry inspectable`);
   assert(!text.includes('Winner: Supergeni'), `${viewport.name}: winner receipt must stay behind Details`);
   assert(!text.includes('No paid route'), `${viewport.name}: no-paid proof must stay behind Details`);
@@ -249,7 +248,14 @@ async function checkViewport(browser, viewport) {
   assert(layout.compareMessages >= 3, `${viewport.name}: compare flow should render hosted, local and synthesis messages`);
   assert(/finished/i.test(layout.status), `${viewport.name}: compare status should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: composer route line should stay subtle and not show winner clutter`);
+  assert(/Verifisert/i.test(layout.route), `${viewport.name}: composer route line should show verified value`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: composer route receipt must preserve winner summary for inspection`);
+  if (/Winner:\s*Supergeni/i.test(layout.routeFull)) {
+    assert(/beskyttet/i.test(layout.route), `${viewport.name}: composer hosted synthesis route should show protected value`);
+    assert(!/Verifisert\s*·\s*privat/i.test(layout.route), `${viewport.name}: composer hosted synthesis route must not claim private mode`);
+  } else {
+    assert(/privat/i.test(layout.route), `${viewport.name}: composer local synthesis route should show private value when local wins`);
+  }
 
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
