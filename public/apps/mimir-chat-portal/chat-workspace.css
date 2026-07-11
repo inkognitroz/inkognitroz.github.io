@@ -49,15 +49,10 @@
   .mimir-public-chat #composer-voice-input::before{content:"Mic";font-size:.82rem;color:#0f172a}
 }
 
-/* ---- Open WebUI-style centered welcome for the empty (no-chat) state ---- */
-/* Instead of a bottom-pinned composer floating in an empty void, center a
-   greeting + the composer + starter suggestions, like Open WebUI's home. */
+/* ---- Minimal empty state: composer is the first and only user action. ---- */
 .mimir-public-chat:not(.mimir-has-chat) .mimir-chat-center{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px;min-height:calc(100vh - 64px);padding:32px 16px}
 .mimir-public-chat:not(.mimir-has-chat) #mimir-chat-runtime{display:none}
-.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting{position:static;width:auto;height:auto;margin:0;clip:auto;clip-path:none;overflow:visible;white-space:normal;text-align:center;max-width:680px;display:grid;gap:10px}
-.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting .eyebrow{color:#16a34a;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0}
-.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting h1{font-size:clamp(1.7rem,3.2vw,2.4rem);line-height:1.18;color:#0f172a;font-weight:760;margin:0;letter-spacing:-.01em}
-.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting #active-chat-description{color:#64748b;font-size:1.02rem;line-height:1.5;margin:0}
+.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting{display:none!important}
 .mimir-public-chat:not(.mimir-has-chat) .mimir-composer{position:static;width:min(720px,100%);margin:0}
 .mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions{display:none!important}
 .mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions button,.mimir-public-chat:not(.mimir-has-chat) #mmir-quick-suggestions a{border:1px solid rgba(100,116,139,.22)!important;background:#fff!important;color:#334155!important;border-radius:999px;padding:9px 15px;font-size:.86rem;font-weight:600;line-height:1;cursor:pointer;text-decoration:none;min-height:38px;display:inline-flex;align-items:center;box-shadow:none!important;transition:border-color 120ms ease,background 120ms ease}

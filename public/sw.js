@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d350-20260711-route-benchmarks-model-actions-v1';
+const CACHE_NAME='mmir-pwa-d351-20260711-route-benchmarks-model-actions-minimal-empty-composer-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
