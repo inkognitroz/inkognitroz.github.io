@@ -26,7 +26,7 @@
     "local-connector.js": "20260604-canonical-local-install-v1",
     "mimir-chat-portal.css": "20260710-model-lifecycle-v1",
     "mimir-chat-portal.js": "20260707-one-window-shell-v1",
-    "model-catalog-ui.js": "20260710-model-lifecycle-v1",
+    "model-catalog-ui.js": "20260711-model-action-contract-v1",
     "model-comparison.css": "20260704-compare-integrity-v1",
     "model-comparison.js": "20260711-compare-norwegian-boundary-v2",
     "node-dashboard.css": "20260708-node-handoff-resume-proof-v1",
