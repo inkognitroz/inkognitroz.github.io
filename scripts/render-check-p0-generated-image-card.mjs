@@ -73,6 +73,7 @@ async function runCase(browser, imageStatus) {
     label: element.getAttribute('aria-label'),
     unavailable: element.classList.contains('is-preview-unavailable'),
     imageHidden: element.querySelector('img')?.hidden,
+    previewLinkHidden: element.querySelector(':scope > a')?.hidden,
     imageAlt: element.querySelector('img')?.alt,
     referrerPolicy: element.querySelector('img')?.referrerPolicy,
     linkText: element.querySelector('figcaption a')?.textContent,
@@ -97,6 +98,7 @@ try {
   const failed = await runCase(browser, 503);
   assert(failed.unavailable === true, 'failed image must activate the unavailable state');
   assert(failed.imageHidden === true, 'failed image preview must be hidden');
+  assert(failed.previewLinkHidden === true, 'failed image preview must not leave an empty focusable link');
   assert(failed.statusText === 'Forhåndsvisning utilgjengelig', 'failed image must explain the fallback');
   assert(failed.linkText === 'Åpne bilde', 'failed image must retain the direct image link');
 } finally {
