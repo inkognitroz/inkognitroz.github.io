@@ -153,8 +153,18 @@ requireText(
 );
 requireText(
   runtime,
-  "gatewayPrimaryAnswerText(data)||'Compare finished, but no best answer was returned.'",
+  "gatewayPrimaryAnswerText(data)||gatewayAvailableAnswerText(data)||'Compare finished, but no route returned an answer.'",
   'Best Answer rendering must use the plain answer string instead of rendering metadata objects'
+);
+requireText(
+  runtime,
+  'function gatewayAvailableAnswerText(data)',
+  'Best Answer rendering must preserve a usable route answer when synthesis is unavailable'
+);
+requireText(
+  runtime,
+  'Best-answer synthesis was unavailable. Showing an available route answer:',
+  'Best Answer fallback must label synthesis failure honestly before showing a route answer'
 );
 requireText(
   runtime,

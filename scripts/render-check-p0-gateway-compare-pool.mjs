@@ -671,6 +671,33 @@ async function checkViewport(browser, viewport) {
   assert(/2 quiet/i.test(allText), `${viewport.name}: Ask all should show quiet route count without noisy blocked lines`);
   assert(!/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should not show hidden throttled routes as visible failures`);
 
+  await page.route('https://api.mmir.ai/chat/compare', async route => {
+    await fulfillJson(route, {
+      object: 'chat.compare',
+      compare_status: 'partial',
+      data: [{
+        model: 'poolside/laguna-xs.2:free',
+        choices: [{ message: { content: 'A usable answer survived the synthesis failure.' } }],
+        mmir: { receipt: { provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free', latency_ms: 840, no_paid_routes_started: true } }
+      }],
+      route_attempts: [{
+        status: 'succeeded', provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free',
+        model_display_name: 'Laguna XS', score: 78, latency_ms: 840,
+        answer_class: 'complete', latency_class: 'fast'
+      }],
+      no_paid_routes_started: true
+    });
+  });
+  await page.locator('#p0-input').fill('Exercise the missing synthesis fallback.');
+  await page.locator('#p0-add').click();
+  await page.waitForSelector('#p0-add-menu:not([hidden])');
+  await page.locator('[data-p0-action="best-answer-live"]').click();
+  await page.waitForFunction(() => /A usable answer survived the synthesis failure/i.test(document.getElementById('p0-transcript')?.innerText || ''));
+  const fallbackText = await page.locator('#p0-transcript').innerText();
+  assert(/Best-answer synthesis was unavailable/i.test(fallbackText), `${viewport.name}: synthesis failure must be labeled honestly`);
+  assert(/A usable answer survived the synthesis failure/i.test(fallbackText), `${viewport.name}: synthesis failure must preserve an available route answer`);
+  assert(!/no best answer was returned/i.test(fallbackText), `${viewport.name}: synthesis failure must not discard a usable route answer`);
+
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
 
