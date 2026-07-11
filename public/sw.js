@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d350-20260607-route-benchmarks-v1';
+const CACHE_NAME='mmir-pwa-d350-20260711-route-benchmarks-model-actions-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -30,6 +30,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/composer-model-picker.js',
   './apps/mimir-chat-portal/composer-quick-actions.css',
   './apps/mimir-chat-portal/composer-quick-actions.js',
+  './apps/mimir-chat-portal/model-catalog-ui.js',
   './active-chat-nodes.json',
   './free-model-starters.json',
   './apps/mimir-chat-portal/repair-resume.css',

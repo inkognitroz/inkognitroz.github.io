@@ -7,6 +7,7 @@ const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
 const js = readFileSync(join(portalDir, 'model-catalog-ui.js'), 'utf8');
 const css = readFileSync(join(portalDir, 'mimir-chat-portal.css'), 'utf8');
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
+const sw = readFileSync(join(root, 'public', 'sw.js'), 'utf8');
 const manifest = JSON.parse(readFileSync(join(portalDir, 'asset-versions.json'), 'utf8'));
 const failures = [];
 
@@ -61,6 +62,8 @@ requireIncludes(html, 'mimir-chat-portal.css?v=20260710-model-lifecycle-v1', 'Pu
 requireIncludes(html, 'function hydrateTargetDetails()', 'Public page must hydrate hash-targeted details panels.');
 requireIncludes(html, "window.addEventListener('hashchange',hydrateTargetDetails)", 'Public page must hydrate model library when the hash changes.');
 requireIncludes(html, "if(!hydrateTargetDetails())schedule();", 'Public page must prefer targeted module loading over idle deferred loading.');
+requireIncludes(sw, "const CACHE_NAME='mmir-pwa-d350-20260711-route-benchmarks-model-actions-v1'", 'Service worker cache name must be bumped for model catalog action contract runtime.');
+requireIncludes(sw, './apps/mimir-chat-portal/model-catalog-ui.js', 'PWA shell cache must include model catalog action-contract runtime.');
 
 if (manifest.assets?.['model-catalog-ui.js'] !== '20260711-model-action-contract-v1') {
   failures.push('Asset manifest must track model-catalog-ui.js action-contract version.');
