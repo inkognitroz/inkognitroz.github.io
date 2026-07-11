@@ -95,13 +95,33 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'DEMO: MMIR samler inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst',
+  'DEMO: MMIR kan samle inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst',
   'P0 shell must explain wide demo learning capture in the chat, not hide it in background telemetry.'
 );
 requireIncludes(
   shell,
-  "writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'accepted')",
-  'P0 shell must mark consent only through the visible demo consent path.'
+  'function setDemoTranscriptConsent(enabled)',
+  'P0 shell must expose an explicit demo transcript consent control.'
+);
+requireIncludes(
+  shell,
+  "writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,accepted?'accepted':'declined')",
+  'P0 shell must persist demo transcript consent only from an explicit on/off choice.'
+);
+requireNotIncludes(
+  shell,
+  "function ensureDemoTranscriptConsentNotice(source='conversation_update'){\n    if(superPrivateModeActive())return false;\n    const params=demoTranscriptParams();\n    if(!demoTranscriptModeRequested(params))return false;\n    writeStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'accepted')",
+  'P0 shell must not auto-accept demo transcript consent when showing the notice.'
+);
+requireIncludes(
+  shell,
+  "menuButton('set-demo-transcript-consent:on','Demo-læring på'",
+  'Privacy menu must let the user enable raw demo transcript learning explicitly.'
+);
+requireIncludes(
+  shell,
+  "menuButton('set-demo-transcript-consent:off','Demo-læring av'",
+  'Privacy menu must let the user disable raw demo transcript learning from the UI.'
 );
 requireIncludes(
   shell,
@@ -160,8 +180,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'return hostedDemoOrigin()&&demoTranscriptCaptureEnabled();',
-  'P0 shell must only upload demo transcripts from approved hosted origins.'
+  'return (hostedDemoOrigin()||localPreviewDemoOrigin())&&demoTranscriptCaptureEnabled();',
+  'P0 shell must only upload demo transcripts from hosted or explicit local-preview origins after consent.'
 );
 requireIncludes(
   shell,

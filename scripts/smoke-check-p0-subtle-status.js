@@ -63,6 +63,10 @@ function assertExcludes(actual, needle, message) {
   if (String(actual).includes(needle)) fail(`${message}: should not include ${needle}`);
 }
 
+function assertNotMatches(actual, pattern, message) {
+  if (pattern.test(String(actual))) fail(`${message}: matched ${pattern}`);
+}
+
 function fakeElement() {
   return {
     attrs: {},
@@ -84,7 +88,8 @@ const hostedScore = testApi.routeScore(
 );
 const topStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore), 6);
 assertIncludes(topStatus, 'Verifisert', 'Top-right green status must show the trust value first.');
-assertIncludes(topStatus, 'privat', 'Top-right green status must show the privacy value first.');
+assertIncludes(topStatus, 'beskyttet', 'Top-right green status must show hosted protection truth, not private.');
+assertNotMatches(topStatus, /Verifisert\s*·\s*privat/i, 'Hosted top-right status must not claim private mode.');
 assertExcludes(topStatus, '746ms', 'Top-right green status must keep answer latency behind details.');
 assertExcludes(topStatus, 'Score ', 'Top-right green status must keep route score behind details.');
 assertExcludes(topStatus, 'Supergenious', 'Public status text must use Supergeni branding.');
@@ -96,7 +101,8 @@ testApi.renderMicroStatus(
   'hosted'
 );
 assertIncludes(bestAnswerEl.innerHTML, 'Verifisert', 'Under-chat green micro-status must show verified value, not raw telemetry.');
-assertIncludes(bestAnswerEl.innerHTML, 'privat', 'Under-chat green micro-status must show privacy value, not raw telemetry.');
+assertIncludes(bestAnswerEl.innerHTML, 'beskyttet', 'Under-chat hosted micro-status must show protected value, not private.');
+assertNotMatches(bestAnswerEl.innerHTML, /Verifisert\s*·\s*privat/i, 'Hosted under-chat status must not claim private mode.');
 assertExcludes(bestAnswerEl.innerHTML, 'API score 84', 'Under-chat green micro-status must keep score evidence behind details.');
 assertExcludes(bestAnswerEl.innerHTML, '746ms', 'Under-chat green micro-status must keep answer latency evidence behind details.');
 assertExcludes(bestAnswerEl.innerHTML, 'api.mmir.ai', 'Under-chat green micro-status must keep API host in details, not visible first-user text.');
@@ -210,7 +216,8 @@ assertIncludes(poolEl.innerHTML, 'Spør 5 AI - beste vinner', 'Under-chat micro-
 assertIncludes(poolEl.innerHTML, 'data-p0-route-action="boost-answer-live"', 'Under-chat micro-status must expose one direct multi-AI composer action.');
 assertIncludes(poolEl.innerHTML, 'p0-route-cta', 'Under-chat micro-status must render the multi-AI action as a compact route CTA.');
 assertIncludes(poolEl.innerHTML, 'Verifisert', 'Under-chat micro-status must show verified value.');
-assertIncludes(poolEl.innerHTML, 'privat', 'Under-chat micro-status must show privacy value.');
+assertIncludes(poolEl.innerHTML, 'beskyttet', 'Under-chat hosted swarm status must show protected value.');
+assertNotMatches(poolEl.innerHTML, /Verifisert\s*·\s*privat/i, 'Hosted swarm status must not claim private mode.');
 assertExcludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must keep successful-provider count behind details.');
 assertExcludes(poolEl.innerHTML, '2 quiet', 'Under-chat micro-status must keep quiet throttled routes behind details.');
 assertExcludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof behind details.');
