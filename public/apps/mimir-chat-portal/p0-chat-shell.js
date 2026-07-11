@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260707-one-window-shell-v1';
+  const P0_RUNTIME_VERSION='20260711-minimal-chat-image-card-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -2363,6 +2363,53 @@
       .join('')||'<p></p>';
   }
 
+  function generatedImageUrlFromContent(content){
+    const text=String(content||'');
+    const match=text.match(/https:\/\/image\.pollinations\.ai\/[^\s)]+/i);
+    if(!match)return '';
+    try{
+      const url=new URL(match[0]);
+      if(url.protocol!=='https:'||url.hostname!=='image.pollinations.ai')return '';
+      return url.toString();
+    }catch(_err){
+      return '';
+    }
+  }
+
+  function generatedImageAltFromContent(content){
+    const match=String(content||'').match(/!\[([^\]]{1,160})\]\(https:\/\/image\.pollinations\.ai\/[^)]+\)/i);
+    return (match&&match[1]?match[1]:'MMIR-generert bilde').replace(/\s+/g,' ').trim().slice(0,160);
+  }
+
+  function generatedImageTextContent(content){
+    const url=generatedImageUrlFromContent(content);
+    if(!url)return String(content||'');
+    return String(content||'')
+      .replace(/!\[[^\]]*\]\(https:\/\/image\.pollinations\.ai\/[^)]+\)/ig,'')
+      .replace(new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),'')
+      .replace(/Her er bildet:\s*$/gim,'Her er bildet:')
+      .replace(/\n{3,}/g,'\n\n')
+      .trim();
+  }
+
+  function renderGeneratedImageCard(content){
+    const url=generatedImageUrlFromContent(content);
+    if(!url)return '';
+    const alt=generatedImageAltFromContent(content);
+    return '<figure class="p0-generated-image-card" data-node-id="mmir-node-bilde" data-provider="pollinations" aria-label="Generert bilde">'+
+      '<a href="'+safeAttr(url)+'" target="_blank" rel="noopener noreferrer">'+
+        '<img src="'+safeAttr(url)+'" alt="'+safeAttr(alt)+'" loading="lazy" referrerpolicy="no-referrer" />'+
+      '</a>'+
+      '<figcaption>Generert via MMIR Bilde · gratis/no-key · <a href="'+safeAttr(url)+'" target="_blank" rel="noopener noreferrer">Åpne bilde</a></figcaption>'+
+    '</figure>';
+  }
+
+  function renderMessageBody(message,content){
+    const imageCard=message?.role==='assistant'?renderGeneratedImageCard(content):'';
+    const text=imageCard?generatedImageTextContent(content):content;
+    return paragraphs(text)+imageCard+renderMessageTools(message);
+  }
+
   function detectInstallOs(){
     return LOCAL_INSTALL_COMMANDS.detectOs?.()||'unknown';
   }
@@ -3432,7 +3479,7 @@
       '</main>'+
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Spør Supergeni..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
+          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Spør..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
           '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
           '<div class="p0-status-rail">'+
@@ -3559,13 +3606,6 @@
       delete message.dataset.actionsOpen;
     });
     document.addEventListener('click',(event)=>{
-      const emptyStarter=event.target.closest('[data-p0-empty-action]');
-      if(emptyStarter){
-        event.preventDefault();
-        event.stopPropagation();
-        handleEmptyStarterAction(emptyStarter.getAttribute('data-p0-empty-action')||'');
-        return;
-      }
       const copyButton=event.target.closest('[data-p0-copy-command]');
       if(copyButton){
         event.preventDefault();
@@ -3853,38 +3893,6 @@
 	    routeStatus('Bilde klart · sendes til beskyttet bildeanalyse ved neste melding','hosted');
     inputEl?.focus();
     return true;
-  }
-
-  function handleEmptyStarterAction(action){
-    if(action==='starter-current-electricity'){
-      captureInteraction('empty_starter_used',{starter:'current_electricity'});
-      return setPromptDraft('Hva er strømprisen der jeg er i dag?','Klar.','Kildebevis vises når svaret er klart');
-    }
-    if(action==='starter-football-world-cup'){
-      captureInteraction('empty_starter_used',{starter:'football_world_cup'});
-      return setPromptDraft('Hvem vinner VM, og hva er Norges neste kamp?','Klar.','Kildebevis vises når svaret er klart');
-    }
-    if(action==='starter-currency'){
-      captureInteraction('empty_starter_used',{starter:'currency'});
-      return setPromptDraft('Hvor mye er 200 CHF i NOK i dag?','Klar.','Kildebevis vises når svaret er klart');
-    }
-    if(action==='starter-best-answer'){
-      captureInteraction('empty_starter_used',{starter:'best_answer'});
-      return setPromptDraft('@compare ','Best Answer starter ready.','Best Answer starter · compare active routes when you send');
-    }
-    if(action==='starter-private-local'){
-      captureInteraction('empty_starter_used',{starter:'private_local'});
-      return handleMenuAction('connect-local');
-    }
-    if(action==='starter-verified-source'){
-      captureInteraction('empty_starter_used',{starter:'verified_source'});
-      return handleMenuAction('verified-source');
-    }
-    if(action==='starter-feedback'){
-      captureInteraction('empty_starter_used',{starter:'feedback'});
-      return handleMenuAction('draft-feedback');
-    }
-    return false;
   }
 
   function legacyPromptInput(){
@@ -4460,7 +4468,7 @@
     const label=document.querySelector('#p0-model .p0-model-name');
     const input=document.getElementById('p0-input');
     if(label)label.textContent=displayModel.label;
-    if(input)input.placeholder='Spør '+displayModel.label+'...';
+    if(input)input.placeholder='Spør...';
     renderShieldState(displayModel,local);
     renderSuperboostCta();
     renderCouncilCta();
@@ -5663,15 +5671,7 @@
     if(!root)return;
     if(!state.messages.length){
       root.innerHTML=''+
-        '<div class="p0-empty">'+
-          '<h1>Hva vil du vite?</h1>'+
-          '<p>Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.</p>'+
-          '<div class="p0-empty-starters" aria-label="Forslag til første spørsmål">'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-current-electricity">Hva er strømprisen?</button>'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-football-world-cup">Hvem vinner VM?</button>'+
-            '<button class="p0-empty-starter" type="button" data-p0-empty-action="starter-currency">200 CHF i NOK</button>'+
-          '</div>'+
-        '</div>';
+        '<div class="p0-empty" aria-hidden="true"></div>';
       return;
     }
     root.innerHTML=state.messages.map(message=>{
@@ -5681,7 +5681,7 @@
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
         renderReceipt(message.receipt)+
-        '<div class="p0-message-body">'+paragraphs(visibleContent)+renderMessageTools(message)+'</div>'+
+        '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
         renderMessageActions(message)+
       '</article>';
     }).join('');

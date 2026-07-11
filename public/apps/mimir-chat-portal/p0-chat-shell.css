@@ -128,60 +128,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-empty {
-  display: grid;
-  gap: 10px;
   min-height: 100%;
-  place-content: center;
-  justify-items: center;
-  margin: 0 auto 24px;
-  max-width: 620px;
-  text-align: center;
-}
-
-.p0-empty h1 {
-  color: #111827;
-  font-size: clamp(2rem, 5vw, 3.6rem);
-  font-weight: 720;
-  letter-spacing: 0;
-  line-height: 1.05;
-  margin: 0;
-}
-
-.p0-empty p {
-  color: #6b7280;
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.p0-empty-starters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 8px;
-}
-
-.p0-empty-starter {
-  align-items: center;
-  background: #ffffff;
-  border: 1px solid #d9dbe3;
-  border-radius: 999px;
-  color: #111827;
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 650;
-  justify-content: center;
-  min-height: 38px;
-  padding: 0 14px;
-}
-
-.p0-empty-starter:hover,
-.p0-empty-starter:focus-visible {
-  background: #f7f7f8;
-  outline: none;
 }
 
 .p0-message {
@@ -298,6 +245,42 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-message-body p:last-child {
   margin-bottom: 0;
+}
+
+.p0-generated-image-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 2px;
+  max-width: min(520px, 100%);
+  overflow: hidden;
+}
+
+.p0-generated-image-card a {
+  color: inherit;
+}
+
+.p0-generated-image-card img {
+  aspect-ratio: 4 / 3;
+  background: #f4f4f5;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+.p0-generated-image-card figcaption {
+  color: #6b7280;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  padding: 0 10px 10px;
+}
+
+.p0-generated-image-card figcaption a {
+  color: #047857;
+  font-weight: 650;
+  text-decoration: none;
 }
 
 .p0-message-actions {
@@ -1046,14 +1029,6 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
     padding: 22px 0 18px;
   }
 
-  .p0-empty-starters {
-    gap: 8px;
-  }
-
-  .p0-empty-starter {
-    width: 100%;
-  }
-
   .p0-composer-wrap {
     padding: 8px 10px calc(12px + env(safe-area-inset-bottom));
   }
@@ -1200,8 +1175,4 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 #mmir-p0-app.p0-launch-shell #p0-add {
   font-size: 1rem;
-}
-
-#mmir-p0-app.p0-launch-shell.p0-has-draft .p0-empty-starters {
-  display: none;
 }

@@ -6,6 +6,7 @@ const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
 const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
 const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
 const errors = [];
 
@@ -727,15 +728,12 @@ requireNotIncludes(
   'id="p0-owner',
   'Owner intake must not add another visible toolbar button.'
 );
+const shellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '';
+if (!shellVersion) errors.push('Asset manifest must track the owner-intake runtime version.');
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260707-one-window-shell-v1',
+  'p0-chat-shell.js?v='+shellVersion,
   'Public page must cache-bust the owner-intake runtime.'
-);
-requireIncludes(
-  manifest,
-  '"p0-chat-shell.js": "20260707-one-window-shell-v1"',
-  'Asset manifest must track the owner-intake runtime version.'
 );
 
 if (errors.length) {

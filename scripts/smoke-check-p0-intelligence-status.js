@@ -5,6 +5,7 @@ const root = resolve(new URL('..', import.meta.url).pathname);
 const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
 const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
@@ -13,7 +14,8 @@ function requireIncludes(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
-const expectedShellVersion = '20260707-one-window-shell-v1';
+const expectedShellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '';
+if (!expectedShellVersion) failures.push('Asset manifest must track Intelligence status runtime version.');
 
 requireIncludes(shell, "const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';", 'P0 shell must use the read-only intelligence scorecard endpoint.');
 requireIncludes(shell, "const SUPERGENI_QUALITY_PATH='/intelligence/supergeni/quality';", 'P0 shell must name the Supergeni quality surface for owner-readable status.');
@@ -33,7 +35,6 @@ requireIncludes(shell, "captureInteraction('intelligence_status_ready'", 'Intell
 requireIncludes(shell, 'no provider call', 'Intelligence status must be explicit that it does not burn provider calls.');
 requireIncludes(shell, `const P0_RUNTIME_VERSION='${expectedShellVersion}'`, 'P0 runtime version must be bumped for Intelligence status.');
 requireIncludes(html, `p0-chat-shell.js?v=${expectedShellVersion}`, 'Public page must cache-bust the P0 runtime after Intelligence status changes.');
-requireIncludes(manifest, `"p0-chat-shell.js": "${expectedShellVersion}"`, 'Asset manifest must track Intelligence status runtime version.');
 requireIncludes(String(packageJson.scripts?.check || ''), 'smoke-check-p0-intelligence-status.js', 'npm run check must include the Intelligence status smoke test.');
 
 if (failures.length) {

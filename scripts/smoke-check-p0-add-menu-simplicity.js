@@ -11,6 +11,8 @@ const assetVersions = readFileSync(
   join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'asset-versions.json'),
   'utf8'
 );
+const assetVersionMap = JSON.parse(assetVersions);
+const shellVersion = assetVersionMap.assets?.['p0-chat-shell.js'] || '';
 const failures = [];
 
 function fail(message) {
@@ -181,14 +183,10 @@ requireIncludes(
 );
 requireIncludes(
   mmirHtml,
-  'p0-chat-shell.js?v=20260707-one-window-shell-v1',
-  'mmir.html must cache-bust the P0 runtime after menu-helper changes.'
+  'p0-chat-shell.js?v='+shellVersion,
+  'mmir.html must cache-bust the P0 runtime.'
 );
-requireIncludes(
-  assetVersions,
-  '"p0-chat-shell.js": "20260707-one-window-shell-v1"',
-  'Asset manifest must track the P0 menu-helper runtime version.'
-);
+if (!shellVersion) fail('Asset manifest must track p0-chat-shell.js.');
 forbidPattern(
   renderAddMenu,
   /Local model setup|Connect local profile|Install guide|Install help|installer page|\.zip|\.command/i,

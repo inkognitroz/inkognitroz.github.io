@@ -7,6 +7,7 @@ const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
 const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const errors = [];
 
 function requireIncludes(source, needle, message) {
@@ -137,25 +138,19 @@ requireIncludes(
   '.p0-badge-future',
   'Future badge styling must be present.'
 );
+const shellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '';
+const cssVersion = assetVersions.assets?.['p0-chat-shell.css'] || '';
+if (!shellVersion) errors.push('Asset manifest must track the visible provider candidate runtime.');
+if (!cssVersion) errors.push('Asset manifest must track the visible provider candidate CSS.');
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260707-one-window-shell-v1',
+  'p0-chat-shell.js?v='+shellVersion,
   'Public page must cache-bust the visible provider candidate runtime.'
 );
 requireIncludes(
   html,
-  'p0-chat-shell.css?v=20260707-one-window-shell-v1',
+  'p0-chat-shell.css?v='+cssVersion,
   'Public page must cache-bust the visible provider candidate CSS.'
-);
-requireIncludes(
-  manifest,
-  '"p0-chat-shell.js": "20260707-one-window-shell-v1"',
-  'Asset manifest must track the visible provider candidate runtime.'
-);
-requireIncludes(
-  manifest,
-  '"p0-chat-shell.css": "20260707-one-window-shell-v1"',
-  'Asset manifest must track the visible provider candidate CSS.'
 );
 requireNotIncludes(
   html,
