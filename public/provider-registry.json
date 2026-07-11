@@ -1,7 +1,19 @@
 {
-  "version": 2,
-  "description": "Public-safe provider registry for the MMIR frontend. Status labels are product truth labels, not live telemetry. Live status must later come from a protected MMIR API or paired local node.",
+  "version": 3,
+  "description": "Public-safe product-surface registry for the MMIR frontend. Status labels describe whether a surface is offered, not live health telemetry. Live health and model availability come from api.mmir.ai or a paired local node.",
   "providers": [
+    {
+      "id": "hosted-free",
+      "label": "Supergeni Hosted Free",
+      "status": "live",
+      "role": "Immediate no-key hosted chat",
+      "capabilities": ["health", "status", "models", "chat.completions", "route-receipts"],
+      "route": "MMIR frontend -> api.mmir.ai -> policy-approved free routes",
+      "public_surface": true,
+      "no_key_required": true,
+      "no_paid_routes_started": true,
+      "notes": "Available now. Provider credentials stay server-side; hidden candidates and paid routes remain excluded until their control gates pass."
+    },
     {
       "id": "local-connector",
       "label": "Local Connector",
@@ -9,34 +21,33 @@
       "role": "Private local model runtime",
       "capabilities": ["health", "models", "chat", "local-test"],
       "route": "MMIR frontend -> paired local connector -> local model runtime",
-      "notes": "Local-first path is the current MVP focus. Raw Ollama ports should stay private and the connector must be hardened before broad use."
+      "public_surface": true,
+      "no_key_required": true,
+      "no_paid_routes_started": true,
+      "notes": "Optional local-first path. The UI must only call a paired connector and must not expose a raw model-runtime port."
     },
     {
       "id": "compatible-backend",
       "label": "Compatible Backend",
       "status": "beta",
-      "role": "Trusted MMIR-compatible API",
+      "role": "User-selected MMIR-compatible API",
       "capabilities": ["health", "status", "models", "chat.completions"],
-      "route": "MMIR frontend -> trusted backend API",
-      "notes": "For users who bring their own compatible backend. Secrets and provider keys must stay server-side."
+      "route": "MMIR frontend -> user-selected compatible backend API",
+      "public_surface": true,
+      "no_paid_routes_started": true,
+      "notes": "For users who bring a trusted compatible backend. Secrets and provider credentials must remain outside the public page."
     },
     {
       "id": "managed-provider",
       "label": "Managed Provider Routing",
       "status": "premium-planned",
-      "role": "Paid managed routing layer",
+      "role": "Owner-gated managed routing layer",
       "capabilities": ["health", "status", "models", "chat.completions", "usage"],
       "route": "MMIR frontend -> api.mmir.ai -> protected provider router",
-      "notes": "Future managed layer for cloud model connectors, encrypted key vault, team workspaces and usage analytics."
-    },
-    {
-      "id": "fallback-demo",
-      "label": "Fallback Demo Provider",
-      "status": "planned",
-      "role": "Lightweight fallback for demos and tests",
-      "capabilities": ["health", "status", "models", "chat-mock"],
-      "route": "MMIR frontend -> protected MMIR API -> fallback provider",
-      "notes": "Useful for demos, tests and resilience while live provider support is being built."
+      "public_surface": false,
+      "owner_gate_required": true,
+      "no_paid_routes_started": true,
+      "notes": "Not a live public product surface. Activation requires explicit cost, secret, receipt, rollback and owner-approval gates."
     }
   ]
 }
