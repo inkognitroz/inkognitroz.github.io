@@ -170,7 +170,7 @@ requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setu
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
 requireIncludes(files.p0Runtime, 'Koble til lokal AI', 'P0 add menu must present local setup as one simple connect-local task.');
 requireIncludes(files.p0Runtime, 'Vis install-kommandoen i chatten.', 'P0 add menu must keep local setup chat-native instead of opening another installer surface.');
-requireIncludes(files.p0Runtime, 'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.', 'P0 empty state must make the immediate chat path clear without launch noise.');
+forbid(files.p0Runtime, /Hva vil du vite\?|Skriv spørsmålet ditt\. Supergeni finner beste svar og viser bevis når det trengs\./, 'P0 empty state must not add hero copy or product mechanics above the composer.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
 requireIncludes(files.p0RouteReceipts, "'Supergeni ready · hosted'", 'P0 hosted route receipt must stay clean for first-time users.');
 requireIncludes(files.p0RouteReceipts, 'No provider key is stored in the browser', 'P0 hosted route receipt must keep browser-secret proof in details.');

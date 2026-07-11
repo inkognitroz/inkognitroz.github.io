@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 const root = process.cwd();
 const publicDir = join(resolve(root, 'public'));
 const html = readFileSync(join(publicDir, 'mmir.html'), 'utf8');
+const manifest = JSON.parse(readFileSync(join(publicDir, 'apps', 'mimir-chat-portal', 'asset-versions.json'), 'utf8'));
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
 
@@ -42,9 +43,12 @@ const webgpuIndex = deferred.findIndex((ref) => ref.includes('runtime-controls-w
 
 requireIncludes(
   html,
-  './apps/mimir-chat-portal/p0-chat-shell.js?v=20260707-one-window-shell-v1',
+  './apps/mimir-chat-portal/p0-chat-shell.js?v='+(manifest.assets?.['p0-chat-shell.js'] || ''),
   'P0 chat shell must stay on the direct first-paint path.'
 );
+if (!manifest.assets?.['p0-chat-shell.js']) {
+  fail('Asset manifest must track the P0 shell first-paint runtime.');
+}
 if (hasDirect) {
   fail('Legacy chat-runtime.js must not be a direct first-paint script when P0 owns the public chat shell.');
 }

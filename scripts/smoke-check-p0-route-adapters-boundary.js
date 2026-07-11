@@ -8,8 +8,11 @@ const helper = readFileSync(join(portalDir, 'p0-route-adapters.js'), 'utf8');
 const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
 const html = readFileSync(join(root, 'public/mmir.html'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
+const adapterVersion = assetVersions.assets?.['p0-route-adapters.js'] || '20260707-one-window-shell-v1';
+const shellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '20260707-one-window-shell-v1';
 
 function fail(message) {
   failures.push(message);
@@ -41,13 +44,13 @@ forbidPattern(shell, /function localHeaders\s*\(/, 'P0 shell must not own local 
 forbidPattern(shell, /function localNetworkHint\s*\(/, 'P0 shell must not own local network error copy.');
 forbidPattern(shell, /function allowLocalProbes\s*\(/, 'P0 shell must not own local probe gating.');
 forbidPattern(shell, /function hasLocalPairingToken\s*\(/, 'P0 shell must not own local pairing-token storage checks.');
-requireIncludes(html, 'p0-route-adapters.js?v=20260707-one-window-shell-v1', 'mmir.html must load the route adapter helper with cache busting.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260707-one-window-shell-v1', 'mmir.html must cache-bust the P0 shell for the adapter-boundary slice.');
-if (html.indexOf('p0-route-adapters.js?v=20260707-one-window-shell-v1') > html.indexOf('p0-chat-shell.js?v=')) {
+requireIncludes(html, 'p0-route-adapters.js?v='+adapterVersion, 'mmir.html must load the route adapter helper with cache busting.');
+requireIncludes(html, 'p0-chat-shell.js?v='+shellVersion, 'mmir.html must cache-bust the P0 shell.');
+if (html.indexOf('p0-route-adapters.js?v='+adapterVersion) > html.indexOf('p0-chat-shell.js?v=')) {
   fail('P0 route adapter helper must load before the P0 shell.');
 }
-requireIncludes(manifest, '"p0-route-adapters.js": "20260707-one-window-shell-v1"', 'Asset manifest must track p0-route-adapters.js.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260707-one-window-shell-v1"', 'Asset manifest must track the P0 shell adapter-boundary version.');
+if (assetVersions.assets?.['p0-route-adapters.js'] !== adapterVersion) fail('Asset manifest must track p0-route-adapters.js.');
+if (assetVersions.assets?.['p0-chat-shell.js'] !== shellVersion) fail('Asset manifest must track p0-chat-shell.js.');
 requireIncludes(String(packageJson.scripts?.check || ''), 'smoke-check-p0-route-adapters-boundary.js', 'npm run check must include the P0 route adapter boundary smoke.');
 forbidPattern(helper + shell, /OPENROUTER_API_KEY|CLOUDFLARE_API_TOKEN|BEGIN PRIVATE KEY|cash[- ]?out|token trading/i, 'Public route adapter boundary must not expose secrets or economic claims.');
 

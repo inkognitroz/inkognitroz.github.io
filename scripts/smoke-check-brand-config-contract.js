@@ -8,6 +8,7 @@ const portalDir = join(publicDir, 'apps', 'mimir-chat-portal');
 const html = readFileSync(join(publicDir, 'mmir.html'), 'utf8');
 const source = readFileSync(join(portalDir, 'brand-config.js'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 
 function fail(message) {
@@ -50,9 +51,11 @@ requireIncludes(source, 'no_orchestration_decisions_in_browser:true', 'Brand con
 requireIncludes(source, "preview_url:'./mmir.html?brand=supergeni'", 'A second brand preview URL must be documented.');
 requireIncludes(html, 'data-brand-field="name"', 'MMIR shell must expose brand name binding.');
 requireIncludes(html, 'data-brand-field="tagline"', 'MMIR shell must expose tagline binding.');
-requireIncludes(html, 'brand-config.js?v=20260710-brand-config-contract-v1', 'Public shell must load brand config with cache-busted version.');
-requireOrder(html, 'brand-config.js?v=20260710-brand-config-contract-v1', 'p0-chat-shell.js?v=', 'Brand config must load before the protected P0 shell.');
-requireIncludes(manifest, '"brand-config.js": "20260710-brand-config-contract-v1"', 'Asset manifest must track brand-config.js.');
+const brandVersion = assetVersions.assets?.['brand-config.js'] || '';
+if (!brandVersion) fail('Asset manifest must track brand-config.js.');
+requireIncludes(source, "const VERSION='"+brandVersion+"'", 'Brand config internal version must match asset manifest.');
+requireIncludes(html, 'brand-config.js?v='+brandVersion, 'Public shell must load brand config with cache-busted version.');
+requireOrder(html, 'brand-config.js?v='+brandVersion, 'p0-chat-shell.js?v=', 'Brand config must load before the protected P0 shell.');
 
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-brand-config-contract.js')) {
   fail('npm run check must include smoke-check-brand-config-contract.js.');

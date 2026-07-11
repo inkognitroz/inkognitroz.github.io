@@ -6,6 +6,7 @@ const shell = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-por
 const css = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'), 'utf8');
 const html = readFileSync(join(resolve(root, 'public'), 'mmir.html'), 'utf8');
 const manifest = readFileSync(join(resolve(root, 'public'), 'apps', 'mimir-chat-portal', 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const failures = [];
 
 function fail(message) {
@@ -49,7 +50,7 @@ requireIncludes(shell, 'function renderCouncilCta()', 'Debate/Supergeni Council 
 requireIncludes(shell, "label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate'", 'Debate CTA must show the live AI route count when available.');
 requireIncludes(shell, "action==='supergeni-council-live'", 'Composer route actions must handle the visible Council CTA.');
 requireIncludes(shell, 'function supergeniCouncil()', 'Visible Council CTA must reuse the gateway council flow.');
-requireIncludes(shell, 'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.', 'Empty state must be chat-first and keep scaled intelligence implicit until the answer receipt.');
+if (shell.includes('Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.')) fail('Empty state must stay minimal; scaled intelligence proof belongs in the answer receipt.');
 requireIncludes(renderAddMenu, "menuButton('ask-all-active','Ask all active'", '+ menu must expose Ask all active without adding a visible toolbar button.');
 requireIncludes(renderAddMenu, 'p0-intelligence-map', '+ menu must show one subtle green intelligence map line without adding toolbar buttons.');
 requireIncludes(renderAddMenu, "menuSection('Verified tools')", '+ menu must group verified no-key tools separately.');
@@ -118,8 +119,9 @@ requireIncludes(compareGatewayRoutes, 'system_context_injected:Boolean(systemCon
 requireIncludes(shell, "Memory saved · browser only · no API call", 'Remember command must not call provider routes.');
 requireIncludes(shell, "Document note · browser only · no API call", 'Document notes must be browser-only.');
 requireIncludes(shell, "Storage: browser only. No cloud storage, no provider call, no owner cost.", 'Local memory recall must state storage/cost truth.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260707-one-window-shell-v1', 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260707-one-window-shell-v1"', 'Asset manifest must track the swarm WOW runtime version.');
+const shellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '';
+if (!shellVersion) fail('Asset manifest must track the swarm WOW runtime version.');
+requireIncludes(html, 'p0-chat-shell.js?v='+shellVersion, 'mmir.html must cache-bust the P0 runtime after swarm WOW changes.');
 
 if (failures.length) {
   console.error('P0 WOW demo memory/boost smoke failed:');

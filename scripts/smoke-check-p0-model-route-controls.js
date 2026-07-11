@@ -8,6 +8,7 @@ const p0Shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
 const p0RouteBenchmarks = readFileSync(join(portalDir, 'p0-route-benchmarks.js'), 'utf8');
 const html = readFileSync(join(publicDir, 'mmir.html'), 'utf8');
 const assetVersions = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersionMap = JSON.parse(assetVersions);
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
 
@@ -235,18 +236,16 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  'p0-chat-shell.js?v=20260707-one-window-shell-v1',
+  'p0-chat-shell.js?v='+(assetVersionMap.assets?.['p0-chat-shell.js'] || ''),
   'mmir.html must cache-bust the P0 runtime for model route controls.'
 );
+if (!assetVersionMap.assets?.['p0-chat-shell.js']) {
+  fail('asset-versions.json must match the model route controls runtime version.');
+}
 requireIncludes(
   assetVersions,
   '"p0-route-benchmarks.js": "20260611-b0-06-27-demotion-receipts-v1"',
   'asset-versions.json must match the P0 route benchmark helper version.'
-);
-requireIncludes(
-  assetVersions,
-  '"p0-chat-shell.js": "20260707-one-window-shell-v1"',
-  'asset-versions.json must match the model route controls runtime version.'
 );
 requireIncludes(
   String(packageJson.scripts?.check || ''),

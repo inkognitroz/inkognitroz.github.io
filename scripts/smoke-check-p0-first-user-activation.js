@@ -20,11 +20,9 @@ function forbid(source, pattern, message) {
   if (pattern.test(source)) fail(message);
 }
 
-requireIncludes(
-	  p0Shell,
-	  'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.',
-	  'Empty state must explain immediate chat plus the intelligence-pool upgrade path in one short line.'
-	);
+if (p0Shell.includes('Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.')) {
+  fail('First screen must stay minimal; product mechanics belong in answer receipts and menus.');
+}
 	requireIncludes(
 	  p0Shell,
 	  "menuButton('connect-local','Koble til lokal AI','Vis install-kommandoen i chatten.')",

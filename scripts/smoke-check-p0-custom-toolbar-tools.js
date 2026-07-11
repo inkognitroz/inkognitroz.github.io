@@ -8,6 +8,7 @@ const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
 const icons = readFileSync(join(portalDir, 'p0-icons.js'), 'utf8');
 const html = readFileSync(join(resolve(root, 'public'), 'mmir.html'), 'utf8');
 const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
+const assetVersions = JSON.parse(manifest);
 const failures = [];
 
 function fail(message) {
@@ -92,12 +93,15 @@ requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion b
 requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
 requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
 requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
-requireIncludes(html, 'p0-chat-shell.js?v=20260707-one-window-shell-v1', 'Public page must cache-bust the toolbar runtime.');
-requireIncludes(html, 'p0-chat-shell.css?v=20260707-one-window-shell-v1', 'Public page must cache-bust the toolbar CSS.');
-requireIncludes(html, 'p0-icons.js?v=20260611-lightning-toolbar-icons-v1', 'Public page must cache-bust toolbar icons.');
-requireIncludes(manifest, '"p0-chat-shell.js": "20260707-one-window-shell-v1"', 'Asset manifest must track toolbar runtime version.');
-requireIncludes(manifest, '"p0-chat-shell.css": "20260707-one-window-shell-v1"', 'Asset manifest must track toolbar CSS version.');
-requireIncludes(manifest, '"p0-icons.js": "20260611-lightning-toolbar-icons-v1"', 'Asset manifest must track toolbar icons version.');
+const shellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '';
+const shellCssVersion = assetVersions.assets?.['p0-chat-shell.css'] || '';
+const iconsVersion = assetVersions.assets?.['p0-icons.js'] || '';
+if (!shellVersion) fail('Asset manifest must track toolbar runtime version.');
+if (!shellCssVersion) fail('Asset manifest must track toolbar CSS version.');
+if (!iconsVersion) fail('Asset manifest must track toolbar icons version.');
+requireIncludes(html, `p0-chat-shell.js?v=${shellVersion}`, 'Public page must cache-bust the toolbar runtime.');
+requireIncludes(html, `p0-chat-shell.css?v=${shellCssVersion}`, 'Public page must cache-bust the toolbar CSS.');
+requireIncludes(html, `p0-icons.js?v=${iconsVersion}`, 'Public page must cache-bust toolbar icons.');
 
 if (failures.length) {
   console.error('P0 custom toolbar tools smoke failed:');
