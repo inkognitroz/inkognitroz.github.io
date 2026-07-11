@@ -6377,6 +6377,15 @@
     return '';
   }
 
+  function gatewayAvailableAnswerText(data){
+    const responses=Array.isArray(data?.data)?data.data:[];
+    for(const response of responses){
+      const text=responseText(response).trim();
+      if(text)return 'Best-answer synthesis was unavailable. Showing an available route answer:\n\n'+text;
+    }
+    return '';
+  }
+
   function swarmReceiptLabel(data){
     if(!data?.swarm_preview&&data?.object!=='chat.swarm.preview'&&data?.object!=='chat.superboost.preview')return '';
     if(data?.object==='chat.superboost.preview'||data?.superboost)return 'Superboost';
@@ -6851,7 +6860,7 @@
       recordTokenUsage(data,'gateway-fanout');
       const content=mode==='all'
         ? gatewayCompareAllAnswer(data)
-        : (gatewayPrimaryAnswerText(data)||'Compare finished, but no best answer was returned.');
+        : (gatewayPrimaryAnswerText(data)||gatewayAvailableAnswerText(data)||'Compare finished, but no route returned an answer.');
       const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')))+(toolReceipt?' · '+toolReceipt:'');
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
