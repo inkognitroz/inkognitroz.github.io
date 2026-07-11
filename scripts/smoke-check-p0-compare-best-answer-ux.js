@@ -168,6 +168,11 @@ requireText(
 );
 requireText(
   runtime,
+  "const winnerId=String(data?.best_answer?.model_id||data?.best_answer?.receipt?.model_id||'').trim();",
+  'Best Answer fallback must prefer the scorer-selected route when multiple answers remain'
+);
+requireText(
+  runtime,
   'High confidence',
   'Consensus confidence must have a compact high-confidence user label'
 );
