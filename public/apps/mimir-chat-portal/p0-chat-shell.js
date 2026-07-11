@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260711-image-card-fallback-v2';
+  const P0_RUNTIME_VERSION='20260711-image-card-focus-fallback-v3';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -2409,6 +2409,8 @@
     if(!(image instanceof HTMLImageElement)||!image.closest('.p0-generated-image-card'))return;
     const card=image.closest('.p0-generated-image-card');
     image.hidden=true;
+    const previewLink=image.closest('a');
+    if(previewLink)previewLink.hidden=true;
     card.classList.add('is-preview-unavailable');
     card.setAttribute('aria-label','Generert bilde – forhåndsvisning utilgjengelig');
     const statusText=card.querySelector('.p0-generated-image-status');

@@ -44,6 +44,11 @@ requireIncludes(
 );
 requireIncludes(
   runtime,
+  "if(previewLink)previewLink.hidden=true",
+  'Generated image fallbacks must not leave an empty focusable preview link.'
+);
+requireIncludes(
+  runtime,
   "renderMessageBody(message,visibleContent)",
   'Transcript renderer must use the generated-image-aware message body renderer.'
 );
