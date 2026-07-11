@@ -58,6 +58,17 @@ if (journeys.public_repo_rule && /secret|provider key|billing|private user data/
 
 const journeyList = Array.isArray(journeys.journeys) ? journeys.journeys : [];
 const progressJourney = journeyList.find((journey) => journey.id === 'J007');
+const orchestrationJourney = journeyList.find((journey) => journey.id === 'J004');
+if (!orchestrationJourney) {
+  fail('Public journey map must include the model-agnostic orchestration journey.');
+} else {
+  if (!/focused static and rendered comparison\/synthesis coverage is live/i.test(orchestrationJourney.current_gap || '')) {
+    fail('Model-agnostic orchestration must acknowledge the focused comparison/synthesis coverage already shipped.');
+  }
+  if (!/bounded live multi-provider quality evidence/i.test(orchestrationJourney.current_gap || '')) {
+    fail('Model-agnostic orchestration must keep the remaining live multi-provider proof gap explicit.');
+  }
+}
 if (!progressJourney) {
   fail('Public journey map must include the progress/operator dashboard journey.');
 } else {

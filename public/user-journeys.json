@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated_at": "2026-05-22T21:15:00+02:00",
+  "updated_at": "2026-07-11T18:20:00+02:00",
   "positioning": "MMIR is the orchestration layer for trusted AI: an AI control plane across local, edge, self-hosted and managed AI systems.",
   "public_repo_rule": "inkognitroz.github.io is public. It may contain static UI, public-safe manifests and non-sensitive local metadata only. Secrets, provider keys, billing, private user data and managed routing policy belong in private/protected backend or local connector repos.",
   "principles": [
@@ -91,7 +91,7 @@
         "User can synthesize results"
       ],
       "done_when": "A user can see clearly which model/role answered, why it was routed there, and can switch, compare and synthesize without losing context.",
-      "current_gap": "Comparison/synthesis needs more end-to-end smoke coverage and clearer first-screen discovery.",
+      "current_gap": "Focused static and rendered comparison/synthesis coverage is live. Remaining proof is bounded live multi-provider quality evidence; first-screen discovery remains intentionally secondary to the default chat path.",
       "cost": "zero with local/free models"
     },
     {
