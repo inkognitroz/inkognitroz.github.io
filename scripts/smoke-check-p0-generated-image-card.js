@@ -39,6 +39,11 @@ requireIncludes(
 );
 requireIncludes(
   runtime,
+  "function handleGeneratedImageError(event)",
+  'Generated image cards must expose a clean broken-preview fallback.'
+);
+requireIncludes(
+  runtime,
   "renderMessageBody(message,visibleContent)",
   'Transcript renderer must use the generated-image-aware message body renderer.'
 );
@@ -51,6 +56,11 @@ requireIncludes(
   css,
   "aspect-ratio: 4 / 3",
   'Generated image cards must reserve stable image dimensions.'
+);
+requireIncludes(
+  css,
+  ".p0-generated-image-card.is-preview-unavailable",
+  'Generated image cards must style the broken-preview fallback.'
 );
 
 const shellVersion = versions.assets?.['p0-chat-shell.js'] || '';

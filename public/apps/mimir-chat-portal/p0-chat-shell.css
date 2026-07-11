@@ -283,6 +283,14 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   text-decoration: none;
 }
 
+.p0-generated-image-card.is-preview-unavailable {
+  background: #f9fafb;
+}
+
+.p0-generated-image-card.is-preview-unavailable figcaption {
+  padding-top: 10px;
+}
+
 .p0-message-actions {
   align-items: center;
   display: flex;
