@@ -675,11 +675,19 @@ async function checkViewport(browser, viewport) {
     await fulfillJson(route, {
       object: 'chat.compare',
       compare_status: 'partial',
-      data: [{
-        model: 'poolside/laguna-xs.2:free',
-        choices: [{ message: { content: 'A usable answer survived the synthesis failure.' } }],
-        mmir: { receipt: { provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free', latency_ms: 840, no_paid_routes_started: true } }
-      }],
+      best_answer: { model_id: 'poolside/laguna-xs.2:free', receipt: { model_id: 'poolside/laguna-xs.2:free', provider: 'openrouter' } },
+      data: [
+        {
+          model: 'supergeni',
+          choices: [{ message: { content: 'A lower-scored answer arrived first.' } }],
+          mmir: { receipt: { provider: 'mmir', model_id: 'supergeni', latency_ms: 240, no_paid_routes_started: true } }
+        },
+        {
+          model: 'poolside/laguna-xs.2:free',
+          choices: [{ message: { content: 'A usable winning answer survived the synthesis failure.' } }],
+          mmir: { receipt: { provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free', latency_ms: 840, no_paid_routes_started: true } }
+        }
+      ],
       route_attempts: [{
         status: 'succeeded', provider: 'openrouter', model_id: 'poolside/laguna-xs.2:free',
         model_display_name: 'Laguna XS', score: 78, latency_ms: 840,
@@ -692,10 +700,11 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   await page.locator('[data-p0-action="best-answer-live"]').click();
-  await page.waitForFunction(() => /A usable answer survived the synthesis failure/i.test(document.getElementById('p0-transcript')?.innerText || ''));
+  await page.waitForFunction(() => /A usable winning answer survived the synthesis failure/i.test(document.getElementById('p0-transcript')?.innerText || ''));
   const fallbackText = await page.locator('#p0-transcript').innerText();
   assert(/Best-answer synthesis was unavailable/i.test(fallbackText), `${viewport.name}: synthesis failure must be labeled honestly`);
-  assert(/A usable answer survived the synthesis failure/i.test(fallbackText), `${viewport.name}: synthesis failure must preserve an available route answer`);
+  assert(/A usable winning answer survived the synthesis failure/i.test(fallbackText), `${viewport.name}: synthesis failure must preserve the scorer-selected route answer`);
+  assert(!/A lower-scored answer arrived first/i.test(fallbackText), `${viewport.name}: synthesis failure must not replace the scorer-selected winner with the first response`);
   assert(!/no best answer was returned/i.test(fallbackText), `${viewport.name}: synthesis failure must not discard a usable route answer`);
 
   await mkdir(screenshotDir, { recursive: true });
