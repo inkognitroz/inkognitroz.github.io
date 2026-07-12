@@ -78,6 +78,12 @@ if (!groundingInstructionFor('Hvor har du informasjonen fra?')) {
 if (!groundingInstructionFor('Where did you get the information from?')) {
   fail('English information-origin question must activate the grounding contract');
 }
+if (!groundingInstructionFor('Hvor kommer informasjonen fra?')) {
+  fail('Natural Norwegian information-origin question must activate the grounding contract');
+}
+if (!groundingInstructionFor('How do you know this?')) {
+  fail('Natural English evidence question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
