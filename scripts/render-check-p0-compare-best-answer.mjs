@@ -198,9 +198,11 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const route = document.getElementById('p0-route');
     const status = document.getElementById('p0-status');
+    const routeText = route?.textContent || '';
+    const routeProof = route?.getAttribute('aria-label') || '';
     return /Verifisert/i.test(route?.textContent || '') &&
-      /privat/i.test(route?.textContent || '') &&
-      /Private local ready:/i.test(route?.getAttribute('aria-label') || '') &&
+      !/Private local ready:|\d+\s+models?|This Mac/i.test(routeText) &&
+      /Private local ready:/i.test(routeProof) &&
       !/Private local ready:|\d+\s+models?|Private/i.test(status?.textContent || '');
   });
 

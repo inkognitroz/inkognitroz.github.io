@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260711-hosted-trust-consent-v1';
+  const P0_RUNTIME_VERSION='20260712-empty-composer-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3528,7 +3528,7 @@
       '</main>'+
       '<footer class="p0-composer-wrap">'+
         '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-          '<textarea id="p0-input" class="p0-input" rows="2" placeholder="Spør..." aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
+          '<textarea id="p0-input" class="p0-input" rows="2" aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
           '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
           '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
           '<div class="p0-status-rail">'+
@@ -4532,7 +4532,7 @@
     const label=document.querySelector('#p0-model .p0-model-name');
     const input=document.getElementById('p0-input');
     if(label)label.textContent=displayModel.label;
-    if(input)input.placeholder='Spør...';
+    if(input)input.removeAttribute('placeholder');
     renderShieldState(displayModel,local);
     renderSuperboostCta();
     renderCouncilCta();

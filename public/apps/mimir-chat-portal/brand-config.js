@@ -1,5 +1,5 @@
 !function(w,d){
-  const VERSION='20260711-minimal-chat-placeholder-v1';
+  const VERSION='20260712-empty-composer-v1';
   const REQUIRED_FIELDS=[
     'name',
     'tagline',
@@ -31,7 +31,7 @@
       default_model_label:'Supergeni',
       hero_title:'Ask anything.',
       chat_description:'Supergeni answers now.',
-      prompt_placeholder:'Spør...',
+      prompt_placeholder:'',
       active_title:'Supergeni active.',
       send_label:'Send prompt to Supergeni'
     },
@@ -54,7 +54,7 @@
       default_model_label:'Supergeni',
       hero_title:'One best answer.',
       chat_description:'Supergeni compares intelligence and gives one clean answer.',
-      prompt_placeholder:'Spør...',
+      prompt_placeholder:'',
       active_title:'Supergeni active.',
       send_label:'Send prompt to Supergeni'
     },
@@ -77,7 +77,7 @@
       default_model_label:'Supergeni',
       hero_title:'Laer smartere.',
       chat_description:'Skolechatten bruker MMIR til trygge svar med kilder.',
-      prompt_placeholder:'Spør...',
+      prompt_placeholder:'',
       active_title:'Skolechatten active.',
       send_label:'Send prompt to Skolechatten'
     },
@@ -100,7 +100,7 @@
       default_model_label:'Supergeni',
       hero_title:'Still sporsmalet.',
       chat_description:'Spakona bruker MMIRs bevislinje bak et lekent skall.',
-      prompt_placeholder:'Spør...',
+      prompt_placeholder:'',
       active_title:'Spakona active.',
       send_label:'Send prompt to Spakona'
     }

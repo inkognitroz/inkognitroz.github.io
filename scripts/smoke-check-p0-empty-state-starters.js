@@ -28,6 +28,10 @@ requireIncludes(
   '<div class="p0-empty" aria-hidden="true"></div>',
   'P0 empty state must stay visually quiet so the composer is the first action.'
 );
+forbidIncludes(html,'class="mimir-greeting"','Public first screen must not ship legacy greeting/hero markup that can flash before CSS or runtime loads.');
+forbidIncludes(html,'id="mmir-quick-suggestions"','Public first screen must not ship hardcoded quick suggestions or starter chips.');
+forbidIncludes(html,'placeholder="Spør..."','Public first screen must keep the composer visually empty.');
+forbidIncludes(shell,'placeholder="Spør..."','P0 first screen must keep the composer visually empty.');
 forbidIncludes(shell,'data-p0-empty-action','P0 empty state must not hardcode starter questions.');
 forbidIncludes(shell,'Hva vil du vite?','P0 empty state must not add a hero prompt above the chat composer.');
 forbidIncludes(shell,'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.','P0 empty state must not explain product mechanics before the first answer.');
