@@ -137,7 +137,7 @@ for (const required of [
 for (const required of [
   'window.MimirLocalInstallCommands',
   'curl -fsSL https://mmir.ai/downloads/mmir-local-node-macos-linux.sh | bash',
-  'After it says "MMIR Local Connector is ready", return here and press ⚙ -> Oppdater AI.',
+  'Oppdater AI i statuslinjen',
   'Do you have a Mac computer? Copy and paste this in Terminal'
 ]) {
   requireIncludes(localInstallHelper, required, `chat-native install helper must include ${required}`);

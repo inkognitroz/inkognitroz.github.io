@@ -84,14 +84,19 @@ requireOrder(
   'Local chat must open the explicit local-probe allowance before pairing.'
 );
 requireIncludes(
-	  p0Shell,
-	  "menuButton('check-local','Oppdater AI'",
-	  'Local model discovery must remain a visible explicit user action under the + menu.'
-	);
+  p0Shell,
+  'data-p0-route-action="check-local"',
+  'Local model discovery must remain a visible contextual action after install.'
+);
 requireIncludes(
   p0Shell,
-  'If the browser asks, allow Local Network Access for mmir.ai.',
-  'The + menu must set the correct expectation before local discovery.'
+  "if(action==='check-local')",
+  'The contextual refresh action must run explicit local discovery.'
+);
+requireIncludes(
+  p0Shell,
+  'LOCAL_INSTALL_COMMANDS.returnInstruction?.()',
+  'The install flow must use shared contextual return guidance before local discovery.'
 );
 
 requireIncludes(

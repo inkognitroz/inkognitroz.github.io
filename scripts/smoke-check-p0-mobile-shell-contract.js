@@ -69,7 +69,7 @@ for (const marker of [
 
 for (const marker of [
   'aria-label="Message Supergeni"',
-  'aria-label="Innstillinger og verktøy"',
+  'aria-label="Legg til"',
   'aria-label="Security and privacy status: public mode"',
   'aria-label="Choose model"',
   'aria-label="Voice input"',
@@ -79,13 +79,13 @@ for (const marker of [
 }
 
 for (const marker of [
-  'Koble til lokal AI',
-  'Vis install-kommandoen i chatten.',
-  'Oppdater AI',
-  'New chat',
+  "menuButton('privacy-menu','Personvern')",
+  "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel())",
+  "menuButton('new-chat','Ny chat'",
+  'data-p0-route-action="connect-local"',
   'LOCAL_INSTALL_COMMANDS.commandFor?.(os)'
 ]) {
-  requireText(runtime, marker, `P0 plus menu must expose only proven first-journey actions: ${marker}`);
+  requireText(runtime, marker, `P0 shell must keep a minimal proven action: ${marker}`);
 }
 
 requireText(

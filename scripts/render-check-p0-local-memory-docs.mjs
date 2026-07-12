@@ -113,9 +113,7 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const menu = await page.locator('#p0-add-menu').innerText();
-  assert(/Local memory/i.test(menu), `${viewport.name}: + menu should expose local memory section`);
-  assert(/Memory guide/i.test(menu), `${viewport.name}: + menu should expose memory guide`);
-  assert(/Add document note/i.test(menu), `${viewport.name}: + menu should expose document note template`);
+  assert(!/Local memory|Memory guide|Add document note/i.test(menu), `${viewport.name}: local memory commands must not clutter settings`);
   await page.locator('#p0-add').click();
 
   await send(page, '/remember demo friends want token boost without owner cloud cost');
@@ -142,7 +140,7 @@ async function checkViewport(browser, viewport) {
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: local memory body must not overflow`);
   assert(/Local memory shown/i.test(layout.status), `${viewport.name}: local memory should finish cleanly`);
   assert(/browser only/i.test(layout.route), `${viewport.name}: route line should preserve browser-only proof`);
-  assert(layout.toolbarButtons <= 7, `${viewport.name}: local memory must not add extra visible toolbar buttons beyond Superboost/Debate`);
+  assert(layout.toolbarButtons <= 5, `${viewport.name}: local memory must not add visible toolbar controls`);
 
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });

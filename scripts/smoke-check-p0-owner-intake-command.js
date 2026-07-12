@@ -116,12 +116,12 @@ requireNotIncludes(
 requireIncludes(
   shell,
   "menuButton('set-demo-transcript-consent:on','Demo-læring på'",
-  'Privacy menu must let the user enable raw demo transcript learning explicitly.'
+  'Explicit demo mode must let the tester enable transcript learning.'
 );
 requireIncludes(
   shell,
   "menuButton('set-demo-transcript-consent:off','Demo-læring av'",
-  'Privacy menu must let the user disable raw demo transcript learning from the UI.'
+  'Explicit demo mode must let the tester disable transcript learning.'
 );
 requireIncludes(
   shell,
@@ -280,11 +280,6 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "menuButton('draft-feedback','Send feedback'",
-  'Add menu must expose a simple Send feedback affordance.'
-);
-requireIncludes(
-  shell,
   'function feedbackDraftPrefill(){',
   'P0 shell must centralize a structured feedback draft prefill for demo handoff.'
 );
@@ -292,16 +287,6 @@ requireIncludes(
   shell,
   "return '@inkognitroz Feedback:\\nWhat I tried:\\nWhat felt wrong or confusing:\\nWhat I expected instead:\\nContext: '+feedbackDraftContextSummary();",
   'Feedback drafts must prefill a lightweight product-triage template with safe route context.'
-);
-requireIncludes(
-  shell,
-  "menuButton('feedback-inbox','Feedback Inbox'",
-  'Add menu must expose a feedback inbox review affordance.'
-);
-requireIncludes(
-  shell,
-  "menuButton('copy-feedback-triage','Copy triage pack'",
-  'Add menu must expose a one-click sanitized feedback triage export.'
 );
 requireIncludes(
   shell,
@@ -393,16 +378,8 @@ requireIncludes(
   "redactShareText(lines.join('\\n'))",
   'Feedback triage export must pass through safe-share redaction.'
 );
-requireIncludes(
-  shell,
-  "menuButton('model-health','Status'",
-  'Add menu must expose a compact model/node health view.'
-);
-requireIncludes(
-  shell,
-  "menuButton('discuss-topic','Supergeni Council'",
-  'Add menu must expose model debate with user-readable language.'
-);
+requireIncludes(shell, "action==='model-health'", 'Model/node health capability must remain available outside the launch menu.');
+requireIncludes(shell, "action==='discuss-topic'", 'Model debate capability must remain available outside the launch menu.');
 requireIncludes(
   shell,
   'function responseIsTruncated(payload)',
@@ -478,16 +455,7 @@ requireIncludes(
   'flex-wrap: wrap;',
   'Status rail must wrap on narrow screens instead of hiding route truth.'
 );
-requireIncludes(
-  shell,
-  "id=\"p0-feedback-capture\"",
-  'P0 composer must include a subtle captured-feedback inbox affordance.'
-);
-requireIncludes(
-  shell,
-  "openFeedbackInbox('feedback_capture_pill')",
-  'Captured-feedback affordance must open Feedback Inbox directly.'
-);
+requireNotIncludes(shell, 'id="p0-feedback-capture"', 'Public composer must not expose the owner feedback inbox.');
 requireIncludes(
   shell,
   "composer.dataset.feedbackCaptured=summary?'true':'false'",

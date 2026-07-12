@@ -69,15 +69,10 @@ requireIncludes(
   'Prompt preset API fetches must be limited to production and staging browser origins.'
 );
 
-requireIncludes(
+forbidPattern(
   renderAddMenuSource,
-  "menuButton('prompt-presets','Prompts','Use or save starters in this browser.')",
-  '+ menu must expose prompt presets only as a discrete submenu.'
-);
-requireIncludes(
-  renderAddMenuSource,
-  'Use or save starters in this browser.',
-  'Prompt preset entry must tell the user it is browser-scoped.'
+  /prompt-presets|Prompts|starters/i,
+  'Launch add menu must not expose hard-coded prompt starters.'
 );
 requireIncludes(
   renderPromptMenuSource,

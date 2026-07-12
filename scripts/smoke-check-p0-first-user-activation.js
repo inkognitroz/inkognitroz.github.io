@@ -23,16 +23,16 @@ function forbid(source, pattern, message) {
 if (p0Shell.includes('Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.')) {
   fail('First screen must stay minimal; product mechanics belong in answer receipts and menus.');
 }
-	requireIncludes(
-	  p0Shell,
-	  "menuButton('connect-local','Koble til lokal AI','Vis install-kommandoen i chatten.')",
-	  '+ menu must expose exactly one plain connect-local path for local node onboarding.'
-	);
-	requireIncludes(
-	  p0Shell,
-	  'Trykk ⚙ -> Koble til lokal AI for å koble denne maskinen.',
-	  'Model menu must explain why adding a local model matters without showing a dashboard.'
-	);
+requireIncludes(
+  p0Shell,
+  'data-p0-route-action="connect-local"',
+  'Local-node onboarding must remain reachable contextually without cluttering settings.'
+);
+requireIncludes(
+  p0Shell,
+  'Velg Koble til lokal AI i statuslinjen for å starte.',
+  'Private-mode fallback must point to the contextual local-node action.'
+);
 requireIncludes(
   localInstall,
   'Do you have a Mac computer? Copy and paste this in Terminal to connect a local node.',

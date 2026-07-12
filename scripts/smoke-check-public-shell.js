@@ -462,13 +462,13 @@ requireText(
 );
 	requireText(
 	  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-	  "Koble til lokal AI",
-	  "P0 + menu must expose local setup as one simple connect-local action.",
+	  'data-p0-route-action="connect-local"',
+	  "P0 shell must keep local setup reachable as one contextual action.",
 	);
 	requireText(
 	  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-	  "Vis install-kommandoen i chatten.",
-	  "P0 + menu must keep local setup chat-native and avoid redirecting to installer pages.",
+	  "if(action==='connect-local')",
+	  "P0 contextual action must keep local setup chat-native.",
 	);
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -627,23 +627,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "pool.compareReady",
-  "P0 + menu must truth-gate two-model tools behind local discovery.",
-);
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('compare-live','Compare answers'",
-  "P0 + menu must expose Compare answers after Supergeni plus a local model are ready.",
-);
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('best-answer-live','Best answer benchmark'",
-  "P0 + menu must expose Best Answer benchmark after two live routes are ready.",
-);
-requireText(
-  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('discuss-topic','Supergeni Council'",
-  "P0 + menu must expose Supergeni Council after two live routes are ready.",
+  "if(partner&&wantsCompareRoute(prompt))",
+  "P0 smart routing must activate comparison from user intent when a second route is ready.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -942,8 +927,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "menuButton('connect-local'",
-  "P0 connect-local action must start the chat-guided installer flow.",
+  "startLocalInstallAssistant();",
+  "P0 connect-local route action must start the chat-guided installer flow.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

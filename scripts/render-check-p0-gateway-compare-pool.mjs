@@ -532,29 +532,28 @@ async function checkViewport(browser, viewport) {
     return /Verifisert/i.test(route?.textContent || '') &&
       /live routes|model routes visible|Score 100/i.test(route?.getAttribute('aria-label') || '');
   });
-	  const routeCta = page.locator('#p0-superboost');
-	  const routeCtaCount = await routeCta.count();
-	  assert(routeCtaCount === 1, `${viewport.name}: composer should keep exactly one Superboost route action`);
-	  if (routeCtaCount === 1) {
-	    const routeCtaText = await routeCta.innerText();
-	    assert(/Superboost\s+·\s+5 AI/i.test(routeCtaText), `${viewport.name}: Superboost action should show active route count`);
-	    assert(!(await routeCta.isVisible()), `${viewport.name}: Superboost should be behind the settings menu on the launch shell`);
-	  }
+	assert(await page.locator('#p0-superboost, #p0-council').count() === 0, `${viewport.name}: launch composer must not mount advanced route controls`);
+
+  const invokeAction = async action => {
+    await page.evaluate(actionId => {
+      const menu = document.getElementById('p0-add-menu');
+      const probe = document.createElement('button');
+      probe.type = 'button';
+      probe.hidden = true;
+      probe.dataset.p0Action = actionId;
+      probe.id = 'qa-action-probe';
+      menu?.appendChild(probe);
+      probe.click();
+      probe.remove();
+    }, action);
+  };
 
   await page.locator('#p0-input').fill('What is 2 + 2? Reply with one number.');
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   const addMenu = await page.locator('#p0-add-menu').innerText();
-	  assert(/Mange AI/i.test(addMenu), `${viewport.name}: add menu should put scaled intelligence in its own first-class group`);
-  assert(/More answers/i.test(addMenu), `${viewport.name}: add menu should expose compact More answers tools when hosted routes are active`);
-  assert(/Superboost/i.test(addMenu), `${viewport.name}: add menu should expose Superboost without adding toolbar clutter`);
-  assert(/Ask all active/i.test(addMenu), `${viewport.name}: add menu should expose Ask all active without adding toolbar clutter`);
-	  assert(/Spør 5 gratis AI-kilder/i.test(addMenu), `${viewport.name}: Superboost should explain the active free AI count`);
-	  assert(/Debate/i.test(addMenu), `${viewport.name}: add menu should expose model debate without hiding it behind advanced wording`);
-	  assert(/Spør 5 AI-kilder gjennom MMIR/i.test(addMenu), `${viewport.name}: add menu should explain active AI count subtly`);
-  assert(/Best answer benchmark/i.test(addMenu), `${viewport.name}: add menu should expose Best Answer without adding toolbar clutter`);
-  assert(/Supergeni Council/i.test(addMenu), `${viewport.name}: add menu should expose Supergeni Council without adding toolbar clutter`);
-	  await page.locator('#p0-add-menu [data-p0-action="boost-answer-live"]').click();
+	assert(!/Mange AI|More answers|Superboost|Ask all active|Debate|Best answer benchmark|Supergeni Council/i.test(addMenu), `${viewport.name}: settings must not expose orchestration machinery`);
+	await invokeAction('boost-answer-live');
 	  await page.waitForFunction(() => {
 	    const text = document.getElementById('p0-transcript')?.innerText || '';
 	    const status = document.getElementById('p0-status')?.textContent || '';
@@ -582,8 +581,6 @@ async function checkViewport(browser, viewport) {
 	    status: document.getElementById('p0-status')?.textContent || '',
 	    route: document.getElementById('p0-route')?.textContent || '',
 	    routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
-	    routeCta: document.querySelector('#p0-superboost')?.textContent || '',
-	    routeCtaVisible: Boolean(document.querySelector('#p0-superboost')?.getClientRects().length),
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare must not create horizontal overflow`);
@@ -594,8 +591,6 @@ async function checkViewport(browser, viewport) {
   assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
   assert(/beskyttet/i.test(layout.route), `${viewport.name}: visible green route line should show hosted protection truth`);
   assert(!/privat/i.test(layout.route), `${viewport.name}: hosted route line must not claim private mode`);
-	  assert(/Superboost\s+·\s+5 AI/i.test(layout.routeCta), `${viewport.name}: Superboost route action should survive after Boost finishes`);
-	  assert(!layout.routeCtaVisible, `${viewport.name}: Superboost route action should remain hidden behind settings after Boost finishes`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
   assert(/Superboost/i.test(layout.routeFull), `${viewport.name}: full boost receipt should identify the dedicated Superboost route`);
   assert(!/5 routes compared/i.test(layout.route), `${viewport.name}: visible green route line should keep compared route count behind details`);
@@ -618,12 +613,10 @@ async function checkViewport(browser, viewport) {
   assert(/Groq live/i.test(layout.routeFull), `${viewport.name}: full receipt should name active Groq intelligence`);
   assert(/2 quiet/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve quiet provider count`);
   assert(/No paid route/i.test(layout.routeFull), `${viewport.name}: full receipt should preserve no-paid proof`);
-  assert(layout.toolbarButtons <= 7, `${viewport.name}: gateway compare must keep visible toolbar actions tight`);
+  assert(layout.toolbarButtons <= 5, `${viewport.name}: gateway compare must keep visible toolbar actions tight`);
 
   await page.locator('#p0-input').fill('Say hello from every active model.');
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="ask-all-active"]').click();
+  await invokeAction('ask-all-active');
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     return /Ask All Active is running/i.test(text) &&
@@ -639,9 +632,7 @@ async function checkViewport(browser, viewport) {
   assert(/All active answers:/i.test(allText), `${viewport.name}: Ask all should render every active answer`);
 
   await page.locator('#p0-input').fill('Should MMIR prioritize speed or quality?');
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="discuss-topic"]').click();
+  await invokeAction('discuss-topic');
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     return /Supergeni Council is running/i.test(text) &&
@@ -668,7 +659,7 @@ async function checkViewport(browser, viewport) {
   assert(/Fusion analysis/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve fusion analysis truth`);
   assert(/connection lift \+24/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve measured lift truth`);
   assert(/No paid route/i.test(councilLayout.routeFull), `${viewport.name}: Supergeni Council proof should preserve no-paid route truth`);
-  assert(councilLayout.toolbarButtons <= 7, `${viewport.name}: Supergeni Council must keep visible toolbar actions tight`);
+  assert(councilLayout.toolbarButtons <= 5, `${viewport.name}: Supergeni Council must keep visible toolbar actions tight`);
   assert(/OpenRouter · OpenRouter GPT OSS 20B/i.test(allText), `${viewport.name}: Ask all should show distinct OpenRouter model answers`);
   assert(/2 quiet/i.test(allText), `${viewport.name}: Ask all should show quiet route count without noisy blocked lines`);
   assert(!/Not active in this run:/i.test(allText), `${viewport.name}: Ask all should not show hidden throttled routes as visible failures`);
@@ -699,9 +690,7 @@ async function checkViewport(browser, viewport) {
     });
   });
   await page.locator('#p0-input').fill('Exercise the missing synthesis fallback.');
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="best-answer-live"]').click();
+  await invokeAction('best-answer-live');
   await page.waitForFunction(() => /A usable winning answer survived the synthesis failure/i.test(document.getElementById('p0-transcript')?.innerText || ''));
   const fallbackText = await page.locator('#p0-transcript').innerText();
   assert(/Best-answer synthesis was unavailable/i.test(fallbackText), `${viewport.name}: synthesis failure must be labeled honestly`);

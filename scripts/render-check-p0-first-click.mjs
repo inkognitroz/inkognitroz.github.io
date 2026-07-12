@@ -319,12 +319,24 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.addMenu, viewport, `${viewport.name} add`);
-	  assert(layout.text.includes('VALG'), `${viewport.name}: add menu title should be Valg`);
-	  assert(layout.text.includes('Koble til lokal AI'), `${viewport.name}: add menu should expose Koble til lokal AI`);
+  assert(layout.text.includes('Ta bilde'), `${viewport.name}: add menu should expose camera input`);
+  assert(layout.text.includes('Velg bilde'), `${viewport.name}: add menu should expose image-library input`);
   assert(!/Intelligence pool|Smart routing/i.test(layout.text), `${viewport.name}: add menu must not show strategy cards`);
   await screenshot(page, `${viewport.name}-add-menu`);
 
-  await page.locator('[data-p0-action="connect-local"]').click();
+  const invokeHiddenAction = async action => {
+    await page.evaluate(actionId => {
+      const menu = document.getElementById('p0-add-menu');
+      const probe = document.createElement('button');
+      probe.type = 'button';
+      probe.hidden = true;
+      probe.dataset.p0Action = actionId;
+      menu?.appendChild(probe);
+      probe.click();
+      probe.remove();
+    }, action);
+  };
+  await invokeHiddenAction('connect-local');
   if (await page.locator('[data-p0-os-command="mac"]').isVisible().catch(() => false)) {
     await page.locator('[data-p0-os-command="mac"]').click();
   }
@@ -341,12 +353,9 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.privacyMenu, viewport, `${viewport.name} privacy`);
-  assert(/Shield mode/i.test(layout.text), `${viewport.name}: shield mode menu should open`);
   assert(/Public/i.test(layout.text), `${viewport.name}: shield menu should expose public mode`);
   assert(/Private/i.test(layout.text), `${viewport.name}: shield menu should expose private mode`);
   assert(/Superprivate/i.test(layout.text), `${viewport.name}: shield menu should expose superprivate mode`);
-  assert(/Fact guard/i.test(layout.text), `${viewport.name}: privacy menu should expose hallucination-prevention guard`);
-  assert(/No paid route started/i.test(layout.text), `${viewport.name}: privacy menu should keep cost boundary visible`);
   await page.locator('[data-p0-action="set-privacy-mode:superprivate"]').click();
   await page.waitForFunction(() => /Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
   if (!(await page.locator('#p0-privacy-menu:not([hidden])').isVisible().catch(() => false))) {
@@ -358,9 +367,7 @@ async function checkViewport(browser, viewport) {
   await page.locator('[data-p0-action="set-privacy-mode:public"]').click();
   await page.waitForFunction(() => !/Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
 
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="model-menu"]').click();
+  await invokeHiddenAction('model-menu');
   await page.waitForSelector('#p0-model-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.modelMenu, viewport, `${viewport.name} model`);
@@ -375,17 +382,13 @@ async function checkViewport(browser, viewport) {
   layout = await pageLayout(page);
   assert(layout.text.includes('Route details'), `${viewport.name}: route controls should expose receipt details`);
 
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="draft-feedback"]').click();
+  await invokeHiddenAction('draft-feedback');
   const feedbackDraft = await page.locator('#p0-input').inputValue();
   assert(feedbackDraft.startsWith('@inkognitroz Feedback:'), `${viewport.name}: feedback action should prefill the explicit feedback template`);
   assert(/What I tried:/i.test(feedbackDraft), `${viewport.name}: feedback draft should prompt for reproduction context`);
   assert(/Context: .*Hosted route/i.test(feedbackDraft), `${viewport.name}: feedback draft should append safe active-route context`);
 
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="voice-input"]').click();
+  await invokeHiddenAction('voice-input');
   await page.waitForFunction(() => document.getElementById('p0-input')?.value?.includes('voice first click'));
   await page.locator('#p0-input').fill('First click guard prompt');
   await page.locator('#p0-send').click();
@@ -411,9 +414,8 @@ async function checkViewport(browser, viewport) {
 
   await page.locator('#p0-input').fill('@inkognitroz Keep route truth visible while feedback drafts exist.');
   await page.locator('#p0-send').click();
-  await page.waitForFunction(() => /Feedback Inbox/i.test(document.getElementById('p0-feedback-capture')?.textContent || ''));
-  layout = await pageLayout(page);
-  assertFeedbackRail(layout, viewport, `${viewport.name} feedback rail`);
+  await page.waitForFunction(() => /feedback was captured/i.test(document.getElementById('p0-transcript')?.innerText || ''));
+  assert(await page.locator('#p0-feedback-capture').count() === 0, `${viewport.name}: owner feedback inbox must not be mounted in the public composer`);
   await screenshot(page, `${viewport.name}-feedback-rail`);
 
   const relevantLogs = logs.filter(message => !/favicon|Failed to load resource/i.test(message));

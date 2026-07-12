@@ -4,11 +4,8 @@ import { join, resolve } from 'node:path';
 const root = process.cwd();
 const portalDir = join(resolve(root, 'public'), 'apps', 'mimir-chat-portal');
 const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
-const css = readFileSync(join(portalDir, 'p0-chat-shell.css'), 'utf8');
-const icons = readFileSync(join(portalDir, 'p0-icons.js'), 'utf8');
 const html = readFileSync(join(resolve(root, 'public'), 'mmir.html'), 'utf8');
-const manifest = readFileSync(join(portalDir, 'asset-versions.json'), 'utf8');
-const assetVersions = JSON.parse(manifest);
+const assetVersions = JSON.parse(readFileSync(join(portalDir, 'asset-versions.json'), 'utf8'));
 const failures = [];
 
 function fail(message) {
@@ -35,78 +32,52 @@ function functionSource(name, nextName) {
 
 const installShell = functionSource('installShell', 'enforceShellStyles');
 const renderAddMenu = functionSource('renderAddMenu', 'renderPromptPresetMenu');
-const handleMenuAction = functionSource('handleMenuAction', 'setActiveRoutePinned');
-const handleToolbarTool = functionSource('handleToolbarTool', 'handleMenuAction');
-const renderPinnedToolbarTools = functionSource('renderPinnedToolbarTools', 'updatePinnedToolbarToolStates');
-const updateSendControl = functionSource('updateSendControl', 'beginResponse');
+const handleRouteAction = functionSource('handleRouteAction', 'showFeedbackNotice');
 
-requireIncludes(shell, "const TOOLBAR_TOOLS_KEY='mmir-p0-toolbar-tools-v1'", 'Pinned toolbar tools must have a browser-local storage key.');
-requireIncludes(shell, "const ANSWER_STYLE_KEY='mmir-p0-answer-style-v1'", 'Answer style must have a browser-local storage key.');
-requireIncludes(shell, "const ROLE_PROFILE_KEY='mmir-p0-role-profile-v1'", 'Role profiles must have a browser-local storage key.');
-requireIncludes(shell, "const MEMORY_SNAPSHOT_KEY='mmir-p0-memory-snapshot-v1'", 'Memory must have an explicit browser-local snapshot key.');
-requireIncludes(installShell, 'id="p0-toolbar-tools"', 'Default toolbar must include an empty pinned-tool slot.');
-requireIncludes(installShell, 'id="p0-superboost"', 'Default composer must expose the owner-approved Superboost CTA.');
-requireIncludes(installShell, 'data-p0-route-action="boost-answer-live"', 'Superboost CTA must reuse the proven route action handler.');
-forbidIncludes(installShell, 'data-p0-toolbar-tool', 'Default toolbar must not ship optional tools as visible buttons.');
-requireIncludes(renderAddMenu, "menuSection('Add to toolbar')", '+ menu must expose optional tools as add-to-toolbar choices.');
-requireIncludes(renderAddMenu, ".filter(tool=>tool.id!=='discuss'||pool.compareReady)", 'Discussion toolbar option must stay hidden until two routes are ready.');
-requireIncludes(renderAddMenu, "pin-toolbar-tool:'", '+ menu must be able to pin optional toolbar tools.');
-requireIncludes(renderAddMenu, "unpin-toolbar-tool:'", '+ menu must be able to remove optional toolbar tools.');
-requireIncludes(shell, "id:'fresh-start'", '+ menu must include the fresh-start tool.');
-requireIncludes(shell, "id:'discuss'", '+ menu must include the Supergeni Council tool.');
-requireIncludes(shell, "id:'memory'", '+ menu must include the memory tool.');
-requireIncludes(shell, "id:'stop'", '+ menu must include the explicit stop tool.');
-requireIncludes(shell, "id:'fast-answer'", '+ menu must include the lightning fast-answer tool.');
-requireIncludes(renderAddMenu, "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel(),answerStyleDetail())", '+ menu must expose answer style without adding a toolbar button.');
-requireIncludes(renderAddMenu, "menuButton('role-profile-menu','Rolleprofil: '+roleProfileLabel(),roleProfileDetail())", '+ menu must expose role profiles without adding a toolbar button.');
-requireIncludes(handleMenuAction, "action==='cycle-answer-style'", 'Menu actions must handle answer style cycling.');
-requireIncludes(handleMenuAction, "action==='role-profile-menu'", 'Menu actions must open role profile selection.');
-requireIncludes(handleMenuAction, "actionId.startsWith('set-role-profile:')", 'Menu actions must handle role profile selection.');
-requireIncludes(shell, 'function answerStyleInstruction(style=answerStyle())', 'Answer style must influence hosted and local model prompts.');
-requireIncludes(shell, 'function roleProfileInstruction()', 'Role profiles must influence hosted and local model prompts.');
-requireIncludes(shell, "label:'Fact analyst'", 'Role profiles must include a factual presence preset.');
-requireIncludes(shell, "label:'Playful'", 'Role profiles must include a playful presence preset without adding toolbar clutter.');
-requireIncludes(shell, 'max_tokens:answerTokenBudget()', 'Answer style must cap response size instead of only changing visible labels.');
-requireIncludes(renderPinnedToolbarTools, 'data-p0-toolbar-tool', 'Pinned tools must render as toolbar actions only after user opt-in.');
-requireIncludes(handleMenuAction, "actionId.startsWith('pin-toolbar-tool:')", 'Menu actions must handle toolbar pinning.');
-requireIncludes(handleMenuAction, "actionId.startsWith('unpin-toolbar-tool:')", 'Menu actions must handle toolbar removal.');
-requireIncludes(handleToolbarTool, "runTwoModelTool('discuss-topic')", 'Toolbar discussion must reuse the proven two-model route.');
-requireIncludes(handleToolbarTool, 'fastAnswer();', 'Toolbar lightning must trigger fast answer mode.');
-requireIncludes(handleToolbarTool, 'freshStart();', 'Toolbar flame must trigger fresh start.');
-requireIncludes(handleToolbarTool, 'saveMemorySnapshot();', 'Toolbar brain must save memory locally.');
-requireIncludes(handleToolbarTool, 'stopActiveResponse();', 'Toolbar stop must reuse the active abort path.');
-requireIncludes(shell, 'function fastAnswerPrompt(prompt)', 'Fast answer must keep a dedicated short-answer prompt wrapper.');
-requireIncludes(shell, 'state.fastAnswerOnce=false;', 'Fast answer must be a one-shot mode, not a hidden permanent setting.');
-requireIncludes(shell, "function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt='')", 'Hosted payloads must know the clean display prompt separately from wrapped route prompts.');
-requireIncludes(shell, "history[history.length-1].content===currentUserContent||history[history.length-1].content===displayUserContent", 'Wrapped fast-answer prompts must drop the just-submitted raw display prompt from route history.');
-requireIncludes(shell, 'chatHostedData(routePrompt,signal,model,null,prompt)', 'Fast-answer hosted sends must pass the clean display prompt for history de-dupe.');
-requireIncludes(updateSendControl, 'updatePinnedToolbarToolStates();', 'Pinned stop state must track the active send/stop state.');
-requireIncludes(updateSendControl, 'renderSuperboostCta();', 'Superboost CTA must disable during active responses.');
-requireIncludes(css, '.p0-toolbar-tools', 'CSS must keep optional tools aligned in the composer toolbar.');
-requireIncludes(css, '.p0-left {\n  flex: 1 1 auto;\n  overflow: hidden;', 'Composer toolbar left rail must shrink instead of overlapping route controls.');
-requireIncludes(css, '.p0-right {\n  flex: 0 0 auto;', 'Composer toolbar route controls must keep a fixed hit target after tools are pinned.');
-requireIncludes(css, '.p0-toolbar-tools {\n  align-items: center;\n  display: inline-flex;\n  gap: 8px;\n  min-width: 0;\n  overflow: hidden;', 'Pinned toolbar tools must clip before they can overlap model controls.');
-requireIncludes(css, '.p0-superboost', 'CSS must style the visible Superboost CTA.');
-requireIncludes(css, '.p0-toolbar-tool:disabled', 'CSS must make inactive optional tools visibly subtle.');
-requireIncludes(icons, "const flame='", 'Icon helper must provide flame icon.');
-requireIncludes(icons, "const bubbles='", 'Icon helper must provide discussion bubbles icon.');
-requireIncludes(icons, "const brain='", 'Icon helper must provide memory brain icon.');
-requireIncludes(icons, "const stop='", 'Icon helper must provide stop icon.');
-requireIncludes(icons, "const lightning='", 'Icon helper must provide lightning icon.');
+requireIncludes(installShell, 'id="p0-add"', 'The minimalist composer must keep one settings button.');
+requireIncludes(installShell, 'id="p0-privacy"', 'The minimalist composer must keep a direct privacy control.');
+requireIncludes(installShell, 'id="p0-model"', 'The model picker must remain available without exposing implementation controls.');
+requireIncludes(installShell, 'id="p0-input"', 'The composer must remain immediately usable.');
+requireIncludes(installShell, 'id="p0-send"', 'The composer must keep an explicit send control.');
+
+for (const removedId of ['p0-superboost', 'p0-council', 'p0-toolbar-tools', 'p0-feedback-capture']) {
+  forbidIncludes(installShell, `id="${removedId}"`, `${removedId} must not be mounted in the launch composer.`);
+}
+
+requireIncludes(renderAddMenu, "menuTitle('Legg til')", 'The add menu must have a short user-facing title.');
+requireIncludes(renderAddMenu, "menuButton('take-photo-local','Ta bilde'", 'Camera capture must remain directly accessible.');
+requireIncludes(renderAddMenu, "menuButton('choose-photo-local','Velg bilde'", 'Image library must remain directly accessible.');
+requireIncludes(renderAddMenu, "menuButton('privacy-menu','Personvern')", 'Privacy must remain reachable from settings.');
+requireIncludes(renderAddMenu, "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel())", 'Answer style must remain reachable from settings.');
+requireIncludes(renderAddMenu, "menuButton('new-chat','Ny chat')", 'New chat must remain reachable from settings.');
+
+for (const excluded of [
+  'Add to toolbar',
+  'Superboost',
+  'Ask all active',
+  'Supergeni Council',
+  'Intelligence status',
+  'Feedback Inbox',
+  'Local memory',
+  'Verified tools'
+]) {
+  forbidIncludes(renderAddMenu, excluded, `Settings must not expose internal or advanced control: ${excluded}.`);
+}
+
+// Removing controls from the default UI must not remove the connected-intelligence engine.
+requireIncludes(handleRouteAction, "action==='boost-answer-live'", 'The boost route action must remain available to deliberate product surfaces.');
+requireIncludes(handleRouteAction, "action==='supergeni-council-live'", 'The council route action must remain available to deliberate product surfaces.');
+requireIncludes(shell, 'function answerStyleInstruction(style=answerStyle())', 'Answer style must still affect model prompts.');
+requireIncludes(shell, 'function hostedConversationMessages(', 'Hosted conversation context must remain intact.');
+
 const shellVersion = assetVersions.assets?.['p0-chat-shell.js'] || '';
-const shellCssVersion = assetVersions.assets?.['p0-chat-shell.css'] || '';
-const iconsVersion = assetVersions.assets?.['p0-icons.js'] || '';
-if (!shellVersion) fail('Asset manifest must track toolbar runtime version.');
-if (!shellCssVersion) fail('Asset manifest must track toolbar CSS version.');
-if (!iconsVersion) fail('Asset manifest must track toolbar icons version.');
-requireIncludes(html, `p0-chat-shell.js?v=${shellVersion}`, 'Public page must cache-bust the toolbar runtime.');
-requireIncludes(html, `p0-chat-shell.css?v=${shellCssVersion}`, 'Public page must cache-bust the toolbar CSS.');
-requireIncludes(html, `p0-icons.js?v=${iconsVersion}`, 'Public page must cache-bust toolbar icons.');
+if (!shellVersion) fail('Asset manifest must track the P0 runtime.');
+requireIncludes(html, `p0-chat-shell.js?v=${shellVersion}`, 'Public page must cache-bust the P0 runtime.');
 
 if (failures.length) {
-  console.error('P0 custom toolbar tools smoke failed:');
+  console.error('P0 minimalist composer contract failed:');
   failures.forEach(failure => console.error('- ' + failure));
   process.exit(1);
 }
 
-console.log('P0 custom toolbar tools smoke passed.');
+console.log('P0 minimalist composer contract passed.');

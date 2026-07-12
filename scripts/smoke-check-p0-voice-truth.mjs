@@ -83,9 +83,9 @@ async function preparePage(page, suffix) {
 }
 
 async function clickVoiceInput(page) {
-  await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="voice-input"]').click();
+  await page.locator('#p0-mic').evaluate(button => {
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
 }
 
 async function checkUnsupported(browser) {

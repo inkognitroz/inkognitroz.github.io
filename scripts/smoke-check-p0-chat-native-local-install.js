@@ -70,15 +70,15 @@ requireIncludes(
   'Mac onboarding must stay plain-language, helper-owned and chat-native.'
 );
 requireIncludes(
-	  p0Shell,
-	  'After it says "MMIR Local Connector is ready", return here and press ⚙ -> Oppdater AI.',
-	  'Install instructions must tell the user exactly how to return to model discovery.'
-	);
+  p0Shell,
+  'LOCAL_INSTALL_COMMANDS.returnInstruction?.()',
+  'Install instructions must use the shared contextual return guidance.'
+);
 
 requireIncludes(
   handleMenuSource,
   "if(action==='connect-local')",
-	  'Koble til lokal AI must remain a first-class menu action.'
+  'Koble til lokal AI capability must remain implemented.'
 );
 requireOrder(
   handleMenuSource,
