@@ -7110,7 +7110,6 @@
     }
     const locationContext=sharedLocationContextForPrompt(prompt);
     const guardedRoutePrompt=locationContext?locationContext+'\n\nUser text:\n'+(smart.prompt||prompt):(smart.prompt||prompt);
-    state.pendingMedia=null;
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
     const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
@@ -7144,6 +7143,7 @@
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });
+      if(pendingMedia&&state.pendingMedia===pendingMedia)state.pendingMedia=null;
       captureInteraction(hostedTruncated?'truncation_seen':'chat_answer_ready',{
         active_model_id:model.id,
         active_model_route:model.route,
