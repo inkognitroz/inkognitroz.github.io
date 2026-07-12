@@ -54,9 +54,19 @@ requireText(
 );
 requireText(
   explicitGroundingInstruction,
-  'bygger du (?:svaret )?på',
+  'bygger du (?:svaret(?: ditt)? )?på',
   'Explicit grounding detection must cover natural Norwegian basis questions'
 );
+const groundingInstructionFor = new Function(`${explicitGroundingInstruction}; return explicitGroundingInstruction;`)();
+if (!groundingInstructionFor('Hva bygger du svaret ditt på?')) {
+  fail('Natural Norwegian source-basis question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Which sources support this answer?')) {
+  fail('English source question must activate the grounding contract');
+}
+if (groundingInstructionFor('Forklar MMIR kort.')) {
+  fail('Ordinary prompts must not activate the grounding contract');
+}
 requireText(
   compareApiPayload,
   'explicitGroundingInstruction(prompt)',
