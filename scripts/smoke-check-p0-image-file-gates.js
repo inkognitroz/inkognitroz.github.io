@@ -103,6 +103,16 @@ requireIncludes(
   'chatVisionPreviewData(routePrompt,signal,pendingMedia)',
   'P0 photo picker must route image prompts to the protected vision preview endpoint, not the text-only chat endpoint.'
 );
+forbidIncludes(
+  p0Runtime,
+  "state.pendingMedia=null;\n    const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;",
+  'P0 vision chat must not discard the selected image before the protected route succeeds.'
+);
+requireIncludes(
+  p0Runtime,
+  'if(pendingMedia&&state.pendingMedia===pendingMedia)state.pendingMedia=null;',
+  'P0 vision chat must clear the selected image only after a successful answer so failure/stop retry keeps the local attachment.'
+);
 requireIncludes(
   p0Runtime,
   'queueMediaCapabilityFeedback(media);',
