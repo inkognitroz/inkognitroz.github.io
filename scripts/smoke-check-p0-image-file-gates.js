@@ -40,17 +40,12 @@ for (const label of p0ForbiddenLabels) {
 
 requireIncludes(
   p0Runtime,
-  "menuSection('Inndata')",
-  '+ menu must expose the requested media entrypoints as a guarded local input section.'
-);
-requireIncludes(
-  p0Runtime,
   "menuButton('take-photo-local','Ta bilde'",
   '+ menu must let mobile users open camera capture from the plus menu.'
 );
 requireIncludes(
   p0Runtime,
-  "menuButton('choose-photo-local','Velg fra bibliotek'",
+  "menuButton('choose-photo-local','Velg bilde'",
   '+ menu must let users choose an image from the device library.'
 );
 requireIncludes(

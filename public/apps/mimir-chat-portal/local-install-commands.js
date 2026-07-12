@@ -43,7 +43,7 @@
   }
 
 	  function returnInstruction(){
-	    return 'After it says "MMIR Local Connector is ready", return here and press ⚙ -> Oppdater AI. If the browser asks, allow Local Network Access for mmir.ai.';
+	    return 'Når terminalen sier at MMIR Local Connector er klar, velg Oppdater AI i statuslinjen. Tillat lokal nettverkstilgang hvis nettleseren spør.';
 	  }
 
   window.MimirLocalInstallCommands={

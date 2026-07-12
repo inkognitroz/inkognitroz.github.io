@@ -141,7 +141,7 @@ try {
       localStorage.clear();
       sessionStorage.clear();
     });
-    await page.goto(`${baseUrl}/mmir.html#mmir-chat-runtime`, { waitUntil: 'networkidle' });
+    await page.goto(`${baseUrl}/mmir.html?mmir_demo=1#mmir-chat-runtime`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#mmir-p0-app');
 
     await sendPrompt(page, 'Hva er 2+2?');
@@ -155,6 +155,7 @@ try {
     await page.waitForSelector('#p0-add-menu:not([hidden])');
     await page.locator('[data-p0-action="privacy-menu"]').click();
     await page.waitForSelector('#p0-privacy-menu:not([hidden])');
+    assert(/Demo-læring på/i.test(await page.locator('#p0-privacy-menu').innerText()), 'Explicit demo mode must expose an informed consent control.');
     await page.locator('[data-p0-action="set-demo-transcript-consent:on"]').click();
     await page.waitForFunction(() => window.localStorage.getItem('mmir-p0-demo-transcript-consent-v1') === 'accepted');
     await page.waitForTimeout(900);

@@ -22,7 +22,7 @@ requireIncludes(runtime, "note.textContent=message.truncated?'Local actions: cop
 requireIncludes(runtime, "updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta,{truncated:result?.completion_truncated===true});", 'Backend chat path must preserve truncation metadata on the assistant message.');
 
 const expectedVersion = manifest.assets?.['chat-runtime.js'] || '';
-if (!expectedVersion) failures.push('Asset manifest must define the chat runtime version.');
+if (!expectedVersion) failures.push('Asset manifest must track chat-runtime.js.');
 requireIncludes(html, `./apps/mimir-chat-portal/chat-runtime.js?v=${expectedVersion}`, 'mmir.html must cache-bust the truncation-recovery runtime.');
 requireIncludes(String(packageJson.scripts?.check || ''), 'smoke-check-runtime-truncation-recovery.js', 'npm run check must include the runtime truncation recovery smoke.');
 

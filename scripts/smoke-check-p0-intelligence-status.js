@@ -19,9 +19,11 @@ if (!expectedShellVersion) failures.push('Asset manifest must track Intelligence
 
 requireIncludes(shell, "const INTELLIGENCE_SCORECARD_PATH='/intelligence/fabric/scorecard';", 'P0 shell must use the read-only intelligence scorecard endpoint.');
 requireIncludes(shell, "const SUPERGENI_QUALITY_PATH='/intelligence/supergeni/quality';", 'P0 shell must name the Supergeni quality surface for owner-readable status.');
-requireIncludes(shell, "menuButton('intelligence-status','Intelligence status'", 'Tools menu must expose Intelligence status inside the existing chat UI.');
 requireIncludes(shell, "if(action==='intelligence-status')", 'Menu dispatcher must route the Intelligence status action.');
 requireIncludes(shell, 'async function showIntelligenceStatus()', 'P0 shell must implement the Intelligence status action.');
+if (shell.slice(shell.indexOf('function renderAddMenu('), shell.indexOf('function renderPromptPresetMenu(')).includes('intelligence-status')) {
+  failures.push('Launch settings must not expose owner-facing Intelligence status in the user chat menu.');
+}
 requireIncludes(shell, 'fetchJson(API_URL+INTELLIGENCE_SCORECARD_PATH,{timeoutMs:9000})', 'Intelligence status must fetch the scorecard with a short read-only timeout.');
 requireIncludes(shell, 'Intelligence. Connected.', 'Intelligence status answer must lead with the MMIR vision.');
 requireIncludes(shell, 'Known executable parameter lower bound', 'Intelligence status must surface parameter capacity as lower-bound metadata.');

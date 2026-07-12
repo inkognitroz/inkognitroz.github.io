@@ -112,61 +112,24 @@ requireText(
   'Local chat requests must apply the explicit grounding contract'
 );
 
-	requireText(
-	  addMenu,
-	  "menuButton('connect-local','Koble til lokal AI'",
-	  'Add menu must expose local setup once as Koble til lokal AI'
-	);
-	requireText(
-	  addMenu,
-	  "menuButton('check-local','Oppdater AI'",
-	  'Add menu must keep a clear refresh path after connector install'
-	);
-	requireText(
-	  runtime,
-	  'Trykk ⚙ -> Koble til lokal AI for å koble denne maskinen.',
-	  'Model menu local hint must stay short and avoid repeating platform strategy copy'
-	);
+forbidText(
+  addMenu,
+  'connect-local',
+  'Minimal settings must not expose local connector setup as product-process clutter'
+);
 forbidText(
   runtime,
   'expand the intelligence pool',
   'Model menu must not repeat intelligence-pool strategy copy in the compact route picker'
-);
-requireText(
-  addMenu,
-  "gatewayCompareAvailable()?'More answers':'Two models'",
-  'Add menu may show a compact More answers section only when hosted compare routes are active'
 );
 forbidText(
   addMenu,
   'Smart routing',
   'Add menu must not bring back dashboard-style Smart routing cards'
 );
-requireText(
-  addMenu,
-  'pool.compareReady',
-  'Add menu must truth-gate two-model tools behind a second active route'
-);
-requireText(
-  addMenu,
-  "menuSection(gatewayCompareAvailable()?'More answers':'Two models')",
-  'Add menu must group parallel tools only when multiple answer routes are ready'
-);
-requireText(
-  addMenu,
-  "menuButton('compare-live','Compare answers'",
-  'Add menu must expose Compare answers after Supergeni plus a local model are ready'
-);
-requireText(
-  addMenu,
-  "menuButton('best-answer-live','Best answer benchmark'",
-  'Add menu must expose a scored Best Answer benchmark after two live routes are ready'
-);
-requireText(
-  addMenu,
-  "menuButton('discuss-topic','Supergeni Council'",
-  'Add menu must expose Supergeni Council through the proven compare/synthesis path'
-);
+forbidText(addMenu, 'compare-live', 'Minimal settings must not expose comparison machinery');
+forbidText(addMenu, 'best-answer-live', 'Minimal settings must not expose benchmark machinery');
+forbidText(addMenu, 'discuss-topic', 'Minimal settings must not expose council machinery');
 forbidText(
   addMenu,
   'Add model',
@@ -177,11 +140,6 @@ forbidText(
   'Connect this computer as a private local node from chat.',
   'Add menu should avoid technical local-node detail in the compact toolbar menu'
 );
-
-const connectLocalCount = (addMenu.match(/'Koble til lokal AI'/g) || []).length;
-if (connectLocalCount !== 1) {
-  fail(`Add menu should contain exactly one Koble til lokal AI action, found ${connectLocalCount}`);
-}
 
 requireText(
   runtime,
