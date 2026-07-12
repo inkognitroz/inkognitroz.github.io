@@ -84,6 +84,9 @@ if (!groundingInstructionFor('Hvor kommer informasjonen fra?')) {
 if (!groundingInstructionFor('How do you know this?')) {
   fail('Natural English evidence question must activate the grounding contract');
 }
+if (!groundingInstructionFor('Hvordan vet du det?')) {
+  fail('Natural Norwegian evidence question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
