@@ -39,6 +39,29 @@ function functionBody(source, name) {
 const addMenu = functionBody(runtime, 'renderAddMenu');
 const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
 const captureCompareUsefulFeedback = functionBody(runtime, 'captureCompareUsefulFeedback');
+const explicitGroundingInstruction = functionBody(runtime, 'explicitGroundingInstruction');
+const compareApiPayload = functionBody(runtime, 'compareApiPayload');
+
+requireText(
+  explicitGroundingInstruction,
+  'If no sources are attached, say that plainly',
+  'Explicit source questions must force an honest no-source disclosure'
+);
+requireText(
+  explicitGroundingInstruction,
+  'distinguish product knowledge from verified live evidence',
+  'Explicit grounding questions must separate product knowledge from verified evidence'
+);
+requireText(
+  explicitGroundingInstruction,
+  'bygger du (?:svaret )?på',
+  'Explicit grounding detection must cover natural Norwegian basis questions'
+);
+requireText(
+  compareApiPayload,
+  'explicitGroundingInstruction(prompt)',
+  'Best Answer requests must apply the explicit grounding contract'
+);
 
 	requireText(
 	  addMenu,
