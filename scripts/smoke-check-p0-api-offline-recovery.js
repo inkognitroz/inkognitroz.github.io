@@ -55,8 +55,8 @@ requireIncludes(
 );
 requireIncludes(
   sendFlow,
-  "updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Please refresh and try again.');",
-  'Hosted API failure must replace Thinking with a visible, non-stuck assistant error.'
+  "updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Select Retry below to send the same message again.');",
+  'Hosted API failure must replace Thinking with a visible error that points to the preserved Retry action.'
 );
 requireIncludes(
   sendFlow,
