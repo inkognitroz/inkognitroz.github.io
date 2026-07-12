@@ -276,7 +276,7 @@ async function checkViewport(browser, viewport) {
   assert(addMenuText.includes('Svarstil:'), `${viewport.name}: add menu should expose concise answer style`);
   assert(addMenuText.includes('Ny chat'), `${viewport.name}: add menu should expose new chat`);
   assert(!/Koble til lokal AI|Oppdater AI|Superboost|Debatt|Tilbakemelding|Modell/i.test(addMenuText), `${viewport.name}: default add menu must stay free of internal model and process controls`);
-  await page.keyboard.press('Escape');
+  await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu', { state: 'hidden' });
 
   await page.locator('#p0-input').fill('Ping responsive guard');
