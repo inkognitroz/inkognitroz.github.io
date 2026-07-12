@@ -7224,7 +7224,7 @@
         }
       }else{
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
-        updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Please refresh and try again.');
+        updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Select Retry below to send the same message again.');
         status('Chat failed: '+API_LABEL+' unreachable','error');
         captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
