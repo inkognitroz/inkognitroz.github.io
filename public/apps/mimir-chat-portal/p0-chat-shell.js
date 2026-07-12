@@ -6185,11 +6185,17 @@
       : chatHosted(prompt,signal,model);
   }
 
+  function explicitGroundingInstruction(prompt){
+    const asksForBasis=/\b(source|sources|citation|citations|evidence|basis|based on|grounded|kilde|kilder|henvisning|henvisninger|belegg|grunnlag|bygger du (?:svaret(?: ditt)? )?på|basert på)(?=\s|[?.!,;:]|$)/i.test(String(prompt||''));
+    if(!asksForBasis)return '';
+    return ' The user explicitly asked for the answer basis. Name the available sources or evidence. If no sources are attached, say that plainly and distinguish product knowledge from verified live evidence; never imply source grounding that is absent.';
+  }
+
   function compareApiPayload(prompt){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, prefer the verified/fresher route and say when verification is needed.'
       : '';
-    const systemPrompt='You are Supergeni inside MMIR Best Answer. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Keep route/source/privacy proof in receipts/status, not in the main answer unless asked.';
+    const systemPrompt='You are Supergeni inside MMIR Best Answer. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+explicitGroundingInstruction(prompt)+' Keep route/source/privacy proof in receipts/status, not in the main answer unless asked.';
     return {
       model:'supergeni',
       messages:hostedConversationMessages(prompt,systemPrompt),

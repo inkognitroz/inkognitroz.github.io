@@ -39,6 +39,39 @@ function functionBody(source, name) {
 const addMenu = functionBody(runtime, 'renderAddMenu');
 const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
 const captureCompareUsefulFeedback = functionBody(runtime, 'captureCompareUsefulFeedback');
+const explicitGroundingInstruction = functionBody(runtime, 'explicitGroundingInstruction');
+const compareApiPayload = functionBody(runtime, 'compareApiPayload');
+
+requireText(
+  explicitGroundingInstruction,
+  'If no sources are attached, say that plainly',
+  'Explicit source questions must force an honest no-source disclosure'
+);
+requireText(
+  explicitGroundingInstruction,
+  'distinguish product knowledge from verified live evidence',
+  'Explicit grounding questions must separate product knowledge from verified evidence'
+);
+requireText(
+  explicitGroundingInstruction,
+  'bygger du (?:svaret(?: ditt)? )?på',
+  'Explicit grounding detection must cover natural Norwegian basis questions'
+);
+const groundingInstructionFor = new Function(`${explicitGroundingInstruction}; return explicitGroundingInstruction;`)();
+if (!groundingInstructionFor('Hva bygger du svaret ditt på?')) {
+  fail('Natural Norwegian source-basis question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Which sources support this answer?')) {
+  fail('English source question must activate the grounding contract');
+}
+if (groundingInstructionFor('Forklar MMIR kort.')) {
+  fail('Ordinary prompts must not activate the grounding contract');
+}
+requireText(
+  compareApiPayload,
+  'explicitGroundingInstruction(prompt)',
+  'Best Answer requests must apply the explicit grounding contract'
+);
 
 	requireText(
 	  addMenu,
