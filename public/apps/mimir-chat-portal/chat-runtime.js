@@ -1237,6 +1237,7 @@
       'Answer the user question first with useful, direct substance.',
       'Do not turn ordinary chats into setup/support flows.',
       'MMIR is the orchestration layer for trusted AI; explain that only when relevant.',
+      'When asked what MMIR is or what it can do today, lead with concrete user outcomes and currently usable capabilities; do not lead with routes, nodes, orchestration or other internal plumbing unless the user asks for technical details.',
       'No frontend secrets; label privacy and local-node options honestly when relevant.'
     ].join('\n');
   }
