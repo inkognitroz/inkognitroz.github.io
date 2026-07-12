@@ -35,32 +35,20 @@ const compareGatewayRoutes = functionSource('compareGatewayRoutes', 'synthesizeC
 requireIncludes(shell, "const LOCAL_MEMORY_ITEMS_KEY='mmir-p0-local-memory-items-v1'", 'Local memory must have a browser-local storage key.');
 requireIncludes(shell, "const LOCAL_DOCUMENT_NOTES_KEY='mmir-p0-local-document-notes-v1'", 'Local document notes must have a browser-local storage key.');
 requireIncludes(shell, "const TOOL_CONTEXT_KEY='mmir-p0-last-tool-context-v1'", 'Verified tool context must have a browser-local proof key.');
-requireIncludes(renderAddMenu, "menuSection('Mange AI')", '+ menu must group scaled-intelligence actions before utility tools.');
-requireIncludes(renderAddMenu, "menuButton('boost-answer-live','Superboost'", '+ menu must expose Superboost, not old Boost answer wording, behind Tools.');
-requireIncludes(renderAddMenu, "menuButton('supergeni-council-live','Debate'", '+ menu must expose Debate as a one-click council action behind Tools.');
-requireIncludes(shell, 'id="p0-superboost"', 'Composer must keep the Superboost route action available for the launch shell.');
 requireIncludes(shell, 'function renderSuperboostCta()', 'Superboost CTA must update from live route inventory.');
 requireIncludes(shell, "label=visibleCount?'Superboost · '+String(visibleCount)+' AI':'Superboost'", 'Superboost CTA must show the live AI route count when available.');
 requireIncludes(shell, 'id="p0-token-counter"', 'Status rail must expose a discreet token counter health signal.');
 requireIncludes(shell, 'function recordTokenUsage(payload,source', 'Runtime must record token usage after chat and swarm responses.');
 requireIncludes(shell, "recordTokenUsage(data,'gateway-fanout')", 'Gateway Superboost/Debate responses must update the token counter.');
 requireIncludes(shell, "recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat')", 'Hosted and protected-vision chat responses must update the token counter.');
-requireIncludes(shell, 'id="p0-council"', 'Composer must keep Debate/Supergeni Council available for progressive disclosure.');
 requireIncludes(shell, 'function renderCouncilCta()', 'Debate/Supergeni Council CTA must update from live route inventory.');
 requireIncludes(shell, "label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate'", 'Debate CTA must show the live AI route count when available.');
 requireIncludes(shell, "action==='supergeni-council-live'", 'Composer route actions must handle the visible Council CTA.');
 requireIncludes(shell, 'function supergeniCouncil()', 'Visible Council CTA must reuse the gateway council flow.');
 if (shell.includes('Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.')) fail('Empty state must stay minimal; scaled intelligence proof belongs in the answer receipt.');
-requireIncludes(renderAddMenu, "menuButton('ask-all-active','Ask all active'", '+ menu must expose Ask all active without adding a visible toolbar button.');
-requireIncludes(renderAddMenu, 'p0-intelligence-map', '+ menu must show one subtle green intelligence map line without adding toolbar buttons.');
-requireIncludes(renderAddMenu, "menuSection('Verified tools')", '+ menu must group verified no-key tools separately.');
-requireIncludes(renderAddMenu, "menuButton('verified-calculator','Verified calculator'", '+ menu must expose the verified calculator without toolbar clutter.');
-requireIncludes(renderAddMenu, "menuButton('verified-time','Current time'", '+ menu must expose current time context without toolbar clutter.');
-requireIncludes(renderAddMenu, "menuButton('verified-source','Verified source'", '+ menu must expose manual source grounding without toolbar clutter.');
-requireIncludes(renderAddMenu, "menuSection('Local memory')", '+ menu must group local memory under a secondary section.');
-requireIncludes(renderAddMenu, "menuButton('local-memory-guide','Memory guide'", '+ menu must explain memory through chat-native commands.');
-requireIncludes(renderAddMenu, "menuButton('show-local-memory','Show memory'", '+ menu must let users inspect browser-local memory.');
-requireIncludes(renderAddMenu, "menuButton('add-document-note','Add document note'", '+ menu must prepare browser-only document notes.');
+if (/Mange AI|Superboost|Ask all active|Debate|Verified tools|Local memory/.test(renderAddMenu)) {
+  fail('Advanced intelligence and utility controls must not clutter the default settings menu.');
+}
 requireIncludes(handleMenuAction, "action==='boost-answer-live'", 'Menu actions must handle Superboost.');
 requireIncludes(handleMenuAction, "action==='ask-all-active'", 'Menu actions must handle Ask all active.');
 requireIncludes(handleMenuAction, "action==='supergeni-council-live'", 'Menu actions must handle Debate/Supergeni Council.');
@@ -87,7 +75,7 @@ requireIncludes(shell, "if(mode==='boost'||mode==='all'||mode==='council')", 'Bo
 requireIncludes(shell, 'payload.swarm_mode=mode', 'Boost/Ask all/Council must send swarm_mode so the gateway can choose smart preselection or full fanout.');
 requireIncludes(shell, "payload.mmir_mode='council'", 'Council mode must explicitly request the gateway debate/council path.');
 requireIncludes(shell, 'data-p0-route-action="boost-answer-live"', 'Composer route status must expose a direct Ask AI action when multiple routes are ready.');
-requireIncludes(shell, 'data-p0-route-action="supergeni-council-live"', 'Composer must expose a direct model-debate action when multiple routes are ready.');
+requireIncludes(shell, "action==='supergeni-council-live'", 'Council must remain available through deliberate capability surfaces without cluttering the launch composer.');
 requireIncludes(shell, 'data-p0-route-action="connect-local"', 'Composer route status must keep local setup reachable when only one route is active.');
 requireIncludes(shell, 'data-p0-route-action="model-health"', 'Composer route status must keep model health reachable when a local route is attached.');
 requireIncludes(shell, "captureInteraction('tool_used',{tool:'route-ask-ai-cta'", 'Composer Ask AI action must be captured for UX telemetry.');

@@ -269,23 +269,15 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-add-menu:not([hidden])');
   layout = await collectLayout(page);
   assertMenuInViewport(layout.addMenu, viewport, `${viewport.name} add`);
-	  assert(layout.text.includes('Koble til lokal AI'), `${viewport.name}: add menu should expose Koble til lokal AI`);
-	  assert(layout.text.includes('Oppdater AI'), `${viewport.name}: add menu should expose Oppdater AI`);
-
-  await page.locator('[data-p0-action="connect-local"]').click();
-  await page.waitForSelector('.p0-command-card code');
-  const commandText = await page.locator('.p0-command-card code').last().innerText();
-  assert(commandText.includes('https://mmir.ai/downloads/mmir-local-node-macos-linux.sh'), `${viewport.name}: connect local flow should show canonical command in chat`);
-  layout = await collectLayout(page);
-  assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: connect local card must not create horizontal overflow`);
-
+  const addMenuText = await page.locator('#p0-add-menu').innerText();
+  assert(addMenuText.includes('Ta bilde'), `${viewport.name}: add menu should expose camera input`);
+  assert(addMenuText.includes('Velg bilde'), `${viewport.name}: add menu should expose image upload`);
+  assert(addMenuText.includes('Personvern'), `${viewport.name}: add menu should expose privacy settings`);
+  assert(addMenuText.includes('Svarstil:'), `${viewport.name}: add menu should expose concise answer style`);
+  assert(addMenuText.includes('Ny chat'), `${viewport.name}: add menu should expose new chat`);
+  assert(!/Koble til lokal AI|Oppdater AI|Superboost|Debatt|Tilbakemelding|Modell/i.test(addMenuText), `${viewport.name}: default add menu must stay free of internal model and process controls`);
   await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu:not([hidden])');
-  await page.locator('[data-p0-action="model-menu"]').click();
-  await page.waitForSelector('#p0-model-menu:not([hidden])');
-  layout = await collectLayout(page);
-  assertMenuInViewport(layout.modelMenu, viewport, `${viewport.name} model`);
-  assert(layout.text.includes('Supergeni'), `${viewport.name}: model picker should show active model`);
+  await page.waitForSelector('#p0-add-menu', { state: 'hidden' });
 
   await page.locator('#p0-input').fill('Ping responsive guard');
   await page.locator('#p0-send').click();
