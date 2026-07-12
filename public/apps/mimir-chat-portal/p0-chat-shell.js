@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260712-natural-source-questions-v2';
+  const P0_RUNTIME_VERSION='20260712-natural-source-slow-demo-v3';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -360,6 +360,7 @@
   };
   let activeChatController=null;
   let stopRequested=false;
+  const SLOW_RESPONSE_NOTICE_MS=12000;
   const TOOLBAR_TOOL_DEFINITIONS=[
     {
       id:'fast-answer',
@@ -920,24 +921,15 @@
     if(readStorageString(DEMO_TRANSCRIPT_CONSENT_KEY,'')==='declined')return false;
     if(readStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'')==='shown')return demoTranscriptConsentActive(params);
     writeStorageString(DEMO_TRANSCRIPT_NOTICE_KEY,'shown');
-    const notice={
-      id:'demo-consent-'+Date.now().toString(36),
-      role:'assistant',
-      content:'DEMO: MMIR kan samle inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst for å lære raskere i testfasen. Rå samtale lagres ikke før du velger Demo-læring På i skjoldmenyen eller åpner en eksplisitt testlenke. Ikke lim inn passord, API-nøkler eller sensitiv informasjon.',
-      label:'MMIR Demo',
-      receipt:'Visible demo learning · opt-in required for raw transcript · feedback + route evidence',
-      variant:'notice',
-      actions:false,
-      createdAt:new Date().toISOString()
-    };
-    state.messages.push(notice);
-    state.messages=state.messages.slice(-MAX_HISTORY);
-    saveHistory();
-    renderTranscript();
+    if(!state.busy){
+      status('Demo-læring av. Rå testdialog lagres ikke uten opt-in.','ready');
+    }
+    routeStatus('Demo-læring av · rå dialog lagres ikke · slå på i Personvern','hosted');
     captureInteraction('demo_transcript_consent_visible',{
       source,
-      demo_capture:true,
-      hosted_demo:hostedDemoOrigin()
+      demo_capture:false,
+      hosted_demo:hostedDemoOrigin(),
+      raw_transcript_enabled:false
     });
     return false;
   }
@@ -5830,6 +5822,21 @@
     });
   }
 
+  function startSlowResponseNotice(message,{content='Still working. This is taking a little longer than usual.',statusText='Still working...',routeText='Still working · request still active'}={}){
+    let shown=false;
+    const timer=window.setTimeout(()=>{
+      if(shown||!state.busy||stopRequested)return;
+      if(!state.messages.includes(message))return;
+      shown=true;
+      updateMessage(message,content,{slowNotice:true});
+      status(statusText,'ready');
+      routeStatus(routeText,'ready');
+    },SLOW_RESPONSE_NOTICE_MS);
+    return ()=>{
+      window.clearTimeout(timer);
+    };
+  }
+
   function clearChat(){
     state.messages=[];
     lastDemoTranscriptHash='';
@@ -6867,6 +6874,12 @@
       const elapsedMs=performance.now()-started;
       const elapsed=formatDuration(elapsedMs);
       const stage=gatewaySwarmProgressStage(mode,elapsedMs);
+      if(elapsedMs>=SLOW_RESPONSE_NOTICE_MS){
+        updateMessage(assistant,title+' is still working. The request is taking longer than usual, but it is still running.',{receipt:receiptBase,slowNotice:true});
+        status(title+' still working...','ready');
+        routeStatus(title+' · still working · request still active','ready');
+        return;
+      }
       updateMessage(assistant,gatewaySwarmProgressLines(mode,title,routeCount,elapsed,elapsedMs).join('\n'),{receipt:receiptBase});
       status(title+' running: '+stage.status+'...','ready');
       routeStatus(title+' · '+stage.status+' · signed proof pending','ready');
@@ -7106,6 +7119,11 @@
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
     status(routePrefix+model.label+' is answering...','ready');
     routeStatus(routePrefix+receipt.text,receipt.state);
+    const stopSlowNotice=startSlowResponseNotice(assistant,{
+      content:'Still working. This answer is taking a little longer than usual.',
+      statusText:model.label+' is still answering...',
+      routeText:routePrefix+'Still working · request still active'
+    });
     try{
       const started=performance.now();
       let hostedData=null;
@@ -7211,6 +7229,7 @@
         captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
     }finally{
+      stopSlowNotice();
       finishResponse();
       input?.focus();
     }

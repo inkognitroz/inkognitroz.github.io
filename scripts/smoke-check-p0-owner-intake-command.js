@@ -95,8 +95,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'DEMO: MMIR kan samle inn samtalen, klikk/handlinger, feedback, feilsignaler, rutevalg, kilder/receipts, ytelse og nettleser-/device-kontekst',
-  'P0 shell must explain wide demo learning capture in the chat, not hide it in background telemetry.'
+  "routeStatus('Demo-læring av · rå dialog lagres ikke · slå på i Personvern','hosted');",
+  'P0 shell must explain demo learning capture through compact visible status instead of chat history.'
 );
 requireIncludes(
   shell,
