@@ -40,6 +40,8 @@ const addMenu = functionBody(runtime, 'renderAddMenu');
 const compareUsefulFeedbackSummary = functionBody(runtime, 'compareUsefulFeedbackSummary');
 const captureCompareUsefulFeedback = functionBody(runtime, 'captureCompareUsefulFeedback');
 const explicitGroundingInstruction = functionBody(runtime, 'explicitGroundingInstruction');
+const hostedPayload = functionBody(runtime, 'hostedPayload');
+const localPayload = functionBody(runtime, 'localPayload');
 const compareApiPayload = functionBody(runtime, 'compareApiPayload');
 
 requireText(
@@ -71,6 +73,16 @@ requireText(
   compareApiPayload,
   'explicitGroundingInstruction(prompt)',
   'Best Answer requests must apply the explicit grounding contract'
+);
+requireText(
+  hostedPayload,
+  'explicitGroundingInstruction(prompt)',
+  'Default hosted chat requests must apply the explicit grounding contract'
+);
+requireText(
+  localPayload,
+  'explicitGroundingInstruction(prompt)',
+  'Local chat requests must apply the explicit grounding contract'
 );
 
 	requireText(

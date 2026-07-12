@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260712-empty-composer-v1';
+  const P0_RUNTIME_VERSION='20260712-grounded-default-chat-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -6016,9 +6016,9 @@
       : '';
     const modelId=String(model?.model||model?.id||'mmir-supergenius').trim()||'mmir-supergenius';
     const externalUntrustedFree=model?.routeClass==='external-untrusted-free'||model?.trustLevel==='external-untrusted-free';
-    const systemPrompt=externalUntrustedFree
+    const systemPrompt=(externalUntrustedFree
       ? 'You are an external untrusted-free model connected through MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
-      : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.';
+      : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.')+explicitGroundingInstruction(prompt);
     return {
       model:modelId,
       messages:hostedConversationMessages(prompt,systemPrompt,media,displayPrompt),
@@ -6034,7 +6034,7 @@
     return {
       model:model.model,
       messages:[
-        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard},
+        {role:'system',content:'You are connected through MMIR Local Connector. Answer directly. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+explicitGroundingInstruction(prompt)},
         {role:'user',content:prompt}
       ],
       stream:false,
