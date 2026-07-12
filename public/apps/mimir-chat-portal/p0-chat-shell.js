@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260712-grounded-default-chat-v1';
+  const P0_RUNTIME_VERSION='20260712-natural-source-questions-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -6186,7 +6186,7 @@
   }
 
   function explicitGroundingInstruction(prompt){
-    const asksForBasis=/\b(source|sources|citation|citations|evidence|basis|based on|grounded|where did you get (?:this|that) from|kilde|kilder|henvisning|henvisninger|belegg|grunnlag|bygger du (?:svaret(?: ditt)? )?på|hvor har du (?:dette|det) fra|basert på)(?=\s|[?.!,;:]|$)/i.test(String(prompt||''));
+    const asksForBasis=/\b(source|sources|citation|citations|evidence|basis|based on|grounded|kilde|kilder|henvisning|henvisninger|belegg|grunnlag|bygger du (?:svaret(?: ditt)? )?på|basert på|hvor har du (?:det(?:te)?|informasjonen) fra|where did you get (?:this|that|the information) from)(?=\s|[?.!,;:]|$)/i.test(String(prompt||''));
     if(!asksForBasis)return '';
     return ' The user explicitly asked for the answer basis. Name the available sources or evidence. If no sources are attached, say that plainly and distinguish product knowledge from verified live evidence; never imply source grounding that is absent.';
   }
