@@ -6186,7 +6186,7 @@
   }
 
   function explicitGroundingInstruction(prompt){
-    const asksForBasis=/\b(source|sources|citation|citations|evidence|basis|based on|grounded|kilde|kilder|henvisning|henvisninger|belegg|grunnlag|bygger du (?:svaret(?: ditt)? )?på|basert på)(?=\s|[?.!,;:]|$)/i.test(String(prompt||''));
+    const asksForBasis=/\b(source|sources|citation|citations|evidence|basis|based on|grounded|where did you get (?:this|that) from|kilde|kilder|henvisning|henvisninger|belegg|grunnlag|bygger du (?:svaret(?: ditt)? )?på|hvor har du (?:dette|det) fra|basert på)(?=\s|[?.!,;:]|$)/i.test(String(prompt||''));
     if(!asksForBasis)return '';
     return ' The user explicitly asked for the answer basis. Name the available sources or evidence. If no sources are attached, say that plainly and distinguish product knowledge from verified live evidence; never imply source grounding that is absent.';
   }

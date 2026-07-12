@@ -66,6 +66,12 @@ if (!groundingInstructionFor('Hva bygger du svaret ditt på?')) {
 if (!groundingInstructionFor('Which sources support this answer?')) {
   fail('English source question must activate the grounding contract');
 }
+if (!groundingInstructionFor('Hvor har du dette fra?')) {
+  fail('Natural Norwegian provenance question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Where did you get this from?')) {
+  fail('Natural English provenance question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
