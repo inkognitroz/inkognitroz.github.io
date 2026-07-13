@@ -144,6 +144,21 @@ if (!groundingInstructionFor('Stemmer det?')) {
 if (!groundingInstructionFor('Er dette sant?')) {
   fail('Natural Norwegian truth challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('Are you sure?')) {
+  fail('Concise English certainty challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Are you really sure about that?')) {
+  fail('Natural English certainty challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Er du sikker?')) {
+  fail('Concise Norwegian certainty challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Er du helt sikker på dette?')) {
+  fail('Natural Norwegian certainty challenge must activate the grounding contract');
+}
+if (groundingInstructionFor('Are you sure you want to delete this?')) {
+  fail('Operational confirmation questions must not activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
