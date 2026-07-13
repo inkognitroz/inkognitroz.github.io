@@ -156,6 +156,18 @@ if (!groundingInstructionFor('Er du sikker?')) {
 if (!groundingInstructionFor('Er du helt sikker på dette?')) {
   fail('Natural Norwegian certainty challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('How confident are you?')) {
+  fail('English confidence challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('How certain are you about that?')) {
+  fail('Natural English confidence challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hvor sikker er du?')) {
+  fail('Norwegian confidence challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hvor trygg er du på dette?')) {
+  fail('Natural Norwegian confidence challenge must activate the grounding contract');
+}
 if (groundingInstructionFor('Are you sure you want to delete this?')) {
   fail('Operational confirmation questions must not activate the grounding contract');
 }
