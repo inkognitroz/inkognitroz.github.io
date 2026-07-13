@@ -126,6 +126,15 @@ if (!groundingInstructionFor('Prove it.')) {
 if (!groundingInstructionFor('Bevis det.')) {
   fail('Concise Norwegian proof challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('Can you verify that?')) {
+  fail('Natural English verification challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Kan du verifisere det?')) {
+  fail('Natural Norwegian verification challenge must activate the grounding contract');
+}
+if (groundingInstructionFor('Can you verify my email address?')) {
+  fail('Operational verification requests must not activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
