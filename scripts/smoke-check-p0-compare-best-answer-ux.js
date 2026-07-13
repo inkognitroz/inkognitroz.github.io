@@ -96,6 +96,9 @@ if (!groundingInstructionFor('What is your source?')) {
 if (!groundingInstructionFor('Where does this come from?')) {
   fail('Natural English source-origin question must activate the grounding contract');
 }
+if (!groundingInstructionFor('Where is this from?')) {
+  fail('Natural English source-location question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
