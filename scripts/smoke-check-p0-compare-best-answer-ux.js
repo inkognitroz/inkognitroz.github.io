@@ -120,6 +120,12 @@ if (!groundingInstructionFor('Can you back that up?')) {
 if (!groundingInstructionFor('Kan du dokumentere dette?')) {
   fail('Natural Norwegian evidence challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('Prove it.')) {
+  fail('Concise English proof challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Bevis det.')) {
+  fail('Concise Norwegian proof challenge must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
