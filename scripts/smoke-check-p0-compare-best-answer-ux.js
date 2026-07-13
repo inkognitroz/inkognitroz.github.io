@@ -102,6 +102,12 @@ if (!groundingInstructionFor('Where is this from?')) {
 if (!groundingInstructionFor('Hvor fant du dette?')) {
   fail('Natural Norwegian source-find question must activate the grounding contract');
 }
+if (!groundingInstructionFor('What are you basing this on?')) {
+  fail('Natural English source-basing question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hva baserer du dette på?')) {
+  fail('Natural Norwegian source-basing question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
