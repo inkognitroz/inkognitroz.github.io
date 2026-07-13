@@ -6,7 +6,7 @@ const shell = readFileSync(join(root, 'public/apps/mimir-chat-portal/p0-chat-she
 const css = readFileSync(join(root, 'public/apps/mimir-chat-portal/p0-chat-shell.css'), 'utf8');
 const html = readFileSync(join(root, 'public/mmir.html'), 'utf8');
 const assetVersions = {
-  'p0-chat-shell.js': '20260713-connected-intelligence-certainty-v3',
+  'p0-chat-shell.js': '20260713-connected-intelligence-confidence-v4',
   'p0-chat-shell.css': '20260713-connected-intelligence-label-v2'
 };
 
