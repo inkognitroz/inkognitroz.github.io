@@ -93,6 +93,9 @@ if (!groundingInstructionFor('Hva er kilden din?')) {
 if (!groundingInstructionFor('What is your source?')) {
   fail('Natural English possessive source question must activate the grounding contract');
 }
+if (!groundingInstructionFor('Where does this come from?')) {
+  fail('Natural English source-origin question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
