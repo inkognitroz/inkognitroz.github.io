@@ -58,7 +58,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260713-truth-challenge-v6';
+  const P0_RUNTIME_VERSION='20260713-connected-intelligence-label-v2';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3261,6 +3261,22 @@
     '</details>';
   }
 
+  function connectedIntelligenceLabel(payload){
+    return String(
+      payload?.mmir?.scaled_intelligence_label||
+      payload?.scaled_intelligence_label||
+      ''
+    ).replace(/\s+/g,' ').trim().slice(0,120);
+  }
+
+  function renderConnectedIntelligenceLabel(message){
+    const label=String(message?.intelligenceLabel||'').replace(/\s+/g,' ').trim().slice(0,120);
+    if(message?.role!=='assistant'||!label)return '';
+    return '<div class="p0-connected-intelligence-label" aria-label="Connected intelligence: '+safeAttr(label)+'">'+
+      '<span aria-hidden="true">⚡</span> '+safeText(label)+
+    '</div>';
+  }
+
   function winningRoute(hostedModel,hostedScore,localModel,localScore){
     const hostedValue=hostedScore?.score??0;
     const localValue=localScore?.score??0;
@@ -5677,6 +5693,7 @@
       const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
+        renderConnectedIntelligenceLabel(message)+
         renderReceipt(message.receipt)+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
         renderMessageActions(message)+
@@ -6883,6 +6900,7 @@
       const displayContent=withConsensusAnswerNotice(content,data);
       updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{
         receipt:receipt+(truncated?' · truncated guard':''),
+        intelligenceLabel:connectedIntelligenceLabel(data),
         truncated,
         continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
         continuationSuggestedMessage:truncated?gatewayContinuationSuggestedMessage(data):'',
@@ -7077,6 +7095,7 @@
       const connectGuide=responseConnectGuide(hostedData);
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
         receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
+        intelligenceLabel:connectedIntelligenceLabel(hostedData),
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });
@@ -7136,7 +7155,7 @@
           updateMessage(
             assistant,
             withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
-            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),truncated:fallbackTruncated}
+            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),intelligenceLabel:connectedIntelligenceLabel(fallbackData),truncated:fallbackTruncated}
           );
           captureInteraction(fallbackTruncated?'truncation_seen':'chat_fallback_ready',{
             active_model_id:activeModel()?.id||'',
