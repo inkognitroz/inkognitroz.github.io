@@ -108,6 +108,12 @@ if (!groundingInstructionFor('What are you basing this on?')) {
 if (!groundingInstructionFor('Hva baserer du dette på?')) {
   fail('Natural Norwegian source-basing question must activate the grounding contract');
 }
+if (!groundingInstructionFor('What supports that?')) {
+  fail('Natural English evidence-support question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hva støtter denne påstanden?')) {
+  fail('Natural Norwegian evidence-support question must activate the grounding contract');
+}
 if (!groundingInstructionFor('Can you back that up?')) {
   fail('Natural English evidence challenge must activate the grounding contract');
 }
