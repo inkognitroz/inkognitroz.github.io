@@ -165,6 +165,21 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   line-height: 1.2;
 }
 
+.p0-connected-intelligence-label {
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  color: #047857;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 700;
+  gap: 3px;
+  line-height: 1.2;
+  padding: 3px 8px;
+  width: fit-content;
+}
+
 .p0-message-receipt {
   color: #6b7280;
   font-size: 0.72rem;
