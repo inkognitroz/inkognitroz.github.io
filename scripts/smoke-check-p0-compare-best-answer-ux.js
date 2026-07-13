@@ -135,6 +135,15 @@ if (!groundingInstructionFor('Kan du verifisere det?')) {
 if (groundingInstructionFor('Can you verify my email address?')) {
   fail('Operational verification requests must not activate the grounding contract');
 }
+if (!groundingInstructionFor('Is that true?')) {
+  fail('Concise English truth challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Stemmer det?')) {
+  fail('Concise Norwegian truth challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Er dette sant?')) {
+  fail('Natural Norwegian truth challenge must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
