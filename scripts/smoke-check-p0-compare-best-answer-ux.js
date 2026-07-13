@@ -99,6 +99,9 @@ if (!groundingInstructionFor('Where does this come from?')) {
 if (!groundingInstructionFor('Where is this from?')) {
   fail('Natural English source-location question must activate the grounding contract');
 }
+if (!groundingInstructionFor('Hvor fant du dette?')) {
+  fail('Natural Norwegian source-find question must activate the grounding contract');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
