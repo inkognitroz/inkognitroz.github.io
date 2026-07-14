@@ -120,6 +120,12 @@ if (!groundingInstructionFor('Hva støtter denne påstanden?')) {
 if (!groundingInstructionFor('Hva får deg til å si det?')) {
   fail('Natural Norwegian rationale challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('Why should I believe you?')) {
+  fail('Natural English trust challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hvorfor skal jeg tro på deg?')) {
+  fail('Natural Norwegian trust challenge must activate the grounding contract');
+}
 if (!groundingInstructionFor('Can you back that up?')) {
   fail('Natural English evidence challenge must activate the grounding contract');
 }
