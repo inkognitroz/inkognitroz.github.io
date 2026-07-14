@@ -25,7 +25,9 @@ concurrency:
 jobs:
   validate:
     name: Validate public site
-    runs-on: ubuntu-latest
+    # Private-repo minutes are billable; operators can select an ephemeral
+    # self-hosted runner without weakening the required check.
+    runs-on: ${{ fromJSON(vars.MMIR_CI_RUNNER_JSON || '["ubuntu-latest"]') }}
     timeout-minutes: 12
     steps:
       - name: Checkout
@@ -44,7 +46,7 @@ jobs:
           set -euo pipefail
           find public -name '*.json' -o -name '*.webmanifest' | while IFS= read -r file; do
             echo "Validating $file"
-            python -m json.tool "$file" > /dev/null
+            python3 -m json.tool "$file" > /dev/null
           done
 
       - name: JavaScript syntax check
