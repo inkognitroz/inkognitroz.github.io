@@ -25,7 +25,9 @@ concurrency:
 jobs:
   validate:
     name: Validate public site
-    runs-on: ubuntu-latest
+    # Private-repo minutes are billable; operators can select an ephemeral
+    # self-hosted runner without weakening the required check.
+    runs-on: ${{ fromJSON(vars.MMIR_CI_RUNNER_JSON || '["ubuntu-latest"]') }}
     timeout-minutes: 12
     steps:
       - name: Checkout
