@@ -1061,6 +1061,13 @@
 
   function appendTextBlock(target,text){
     if(!text)return;
+    const markdown=window.MimirP0Text?.markdown;
+    if(typeof markdown==='function'){
+      const wrapper=document.createElement('div');
+      wrapper.innerHTML=markdown(text);
+      while(wrapper.firstChild)target.appendChild(wrapper.firstChild);
+      return;
+    }
     const blocks=String(text).split(/\n{2,}/);
     for(const block of blocks){
       if(!block)continue;

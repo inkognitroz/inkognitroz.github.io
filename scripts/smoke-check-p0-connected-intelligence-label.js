@@ -7,7 +7,7 @@ const css = readFileSync(join(root, 'public/apps/mimir-chat-portal/p0-chat-shell
 const html = readFileSync(join(root, 'public/mmir.html'), 'utf8');
 const assetVersions = {
   'p0-chat-shell.js': '20260714-grounding-trust-v7',
-  'p0-chat-shell.css': '20260713-connected-intelligence-label-v2'
+  'p0-chat-shell.css': '20260714-safe-markdown-v1'
 };
 
 for (const contract of [

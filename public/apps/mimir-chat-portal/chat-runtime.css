@@ -368,6 +368,41 @@ body.mimir-composer-dock-ready .composer-actions #new-backend {
   overflow-wrap: anywhere;
 }
 
+.runtime-message-body :is(ul, ol) {
+  margin: 0;
+  padding-left: 1.35rem;
+}
+
+.runtime-message-body li + li {
+  margin-top: 4px;
+}
+
+.runtime-message-body :is(h3, h4, blockquote) {
+  margin: 0;
+}
+
+.runtime-message-body blockquote {
+  border-left: 3px solid rgba(15, 23, 42, 0.24);
+  padding-left: 10px;
+}
+
+.runtime-message-body .message-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.runtime-message-body table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.runtime-message-body :is(th, td) {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.14);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
 .runtime-code-block {
   display: grid;
   gap: 0;
