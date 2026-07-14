@@ -111,8 +111,14 @@ if (!groundingInstructionFor('Hva baserer du dette på?')) {
 if (!groundingInstructionFor('What supports that?')) {
   fail('Natural English evidence-support question must activate the grounding contract');
 }
+if (!groundingInstructionFor('What makes you say that?')) {
+  fail('Natural English rationale challenge must activate the grounding contract');
+}
 if (!groundingInstructionFor('Hva støtter denne påstanden?')) {
   fail('Natural Norwegian evidence-support question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hva får deg til å si det?')) {
+  fail('Natural Norwegian rationale challenge must activate the grounding contract');
 }
 if (!groundingInstructionFor('Can you back that up?')) {
   fail('Natural English evidence challenge must activate the grounding contract');
