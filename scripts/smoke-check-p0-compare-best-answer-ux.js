@@ -171,6 +171,15 @@ if (!groundingInstructionFor('Hvor trygg er du på dette?')) {
 if (groundingInstructionFor('Are you sure you want to delete this?')) {
   fail('Operational confirmation questions must not activate the grounding contract');
 }
+if (groundingInstructionFor('Show me open source models.')) {
+  fail('Open-source discovery prompts must not activate the grounding contract');
+}
+if (groundingInstructionFor('Give me a source code example.')) {
+  fail('Source-code prompts must not activate the grounding contract');
+}
+if (!groundingInstructionFor('What sources support this open source model claim?')) {
+  fail('Explicit grounding requests must survive open-source phrase filtering');
+}
 if (groundingInstructionFor('Forklar MMIR kort.')) {
   fail('Ordinary prompts must not activate the grounding contract');
 }
