@@ -71,6 +71,7 @@ if (api.markdown('- en\n- to') !== '<ul><li>en</li><li>to</li></ul>') fail('mark
 if (!api.markdown('| A | B |\n|---|---|\n| 1 | 2 |').includes('<table>')) fail('markdown must render tables.');
 if (!api.markdown('[Kilde](https://example.com)').includes('rel="noopener noreferrer"')) fail('markdown links must be isolated.');
 if (api.markdown('[Farlig](javascript:alert(1))').includes('<a ')) fail('markdown must reject non-http links.');
+if (api.markdown('![Alt](https://example.com/image.png)').includes('<img')) fail('markdown images must remain inert.');
 if (api.markdown('<script>alert(1)</script>').includes('<script>')) fail('markdown must escape raw HTML.');
 if (api.formatDuration(320) !== '320ms' || api.formatDuration(2500) !== '2.5s') fail('formatDuration must match the P0 receipt style.');
 if (events[0]?.type !== 'mimir-p0-text-ready') fail('P0 text helper must emit readiness evidence.');
