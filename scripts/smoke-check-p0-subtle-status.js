@@ -4,11 +4,19 @@ import vm from 'node:vm';
 
 const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
+const stateCopyPath = resolve(root, 'public/apps/mimir-chat-portal/chat-state-copy.js');
+const legacyRuntimePath = resolve(root, 'public/apps/mimir-chat-portal/chat-runtime.js');
+const htmlPath = resolve(root, 'public/mmir.html');
+const manifestPath = resolve(root, 'public/apps/mimir-chat-portal/asset-versions.json');
 const storagePath = resolve(root, 'public/apps/mimir-chat-portal/p0-storage.js');
 const routeReceiptsPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-receipts.js');
 const routeBenchmarksPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-benchmarks.js');
 const historyPath = resolve(root, 'public/apps/mimir-chat-portal/p0-history.js');
 const runtime = readFileSync(runtimePath, 'utf8');
+const stateCopy = readFileSync(stateCopyPath, 'utf8');
+const legacyRuntime = readFileSync(legacyRuntimePath, 'utf8');
+const html = readFileSync(htmlPath, 'utf8');
+const manifest = readFileSync(manifestPath, 'utf8');
 const storageHelper = readFileSync(storagePath, 'utf8');
 const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
@@ -42,6 +50,7 @@ context.window = context;
 context.globalThis = context;
 
 vm.createContext(context);
+vm.runInContext(stateCopy, context, { filename: stateCopyPath });
 vm.runInContext(storageHelper, context, { filename: storagePath });
 vm.runInContext(routeReceiptsHelper, context, { filename: routeReceiptsPath });
 vm.runInContext(routeBenchmarksHelper, context, { filename: routeBenchmarksPath });
@@ -50,6 +59,24 @@ vm.runInContext(runtime.replace(bootBlock, exportBlock), context, { filename: ru
 
 const testApi = context.__p0SubtleStatusTest;
 if (!testApi) throw new Error('P0 subtle status smoke did not expose test API.');
+const chatState = context.MimirChatStateCopy;
+if (chatState?.version !== '20260714-truthful-chat-state-v1') throw new Error('Shared chat-state copy must expose an explicit version.');
+if (chatState.pending('Supergeni') !== 'Supergeni tenker …') throw new Error('Pending state must be short and Norwegian.');
+if (chatState.comparing('Supergeni') !== 'Supergeni sammenligner svar …') throw new Error('Compare state must be short and Norwegian.');
+if (chatState.synthesizing() !== 'Supergeni velger beste svar …') throw new Error('Synthesis state must be short and Norwegian.');
+if (!chatState.transient(chatState.pending('Supergeni')) || !chatState.transient(chatState.comparing('Supergeni')) || !chatState.transient(chatState.synthesizing())) throw new Error('Transient chat states must stay out of memory and answer actions.');
+if (chatState.errorText({ status: 503 }).includes('503')) throw new Error('Public error copy must not expose raw status codes.');
+if (!chatState.errorText({ status: 503 }).includes('Prøv igjen')) throw new Error('Temporary provider failures must offer a retry action.');
+if (chatState.errorText(new TypeError('secret upstream detail')).includes('secret')) throw new Error('Raw runtime/provider errors must never reach users.');
+if (chatState.errorText({ name: 'AbortError' }) !== chatState.stoppedText()) throw new Error('Abort state must use canonical stopped copy.');
+if (!runtime.includes('const CHAT_STATE=window.MimirChatStateCopy||{};')) throw new Error('P0 shell must consume shared chat-state copy.');
+if (!legacyRuntime.includes('const chatState=window.MimirChatStateCopy||{};')) throw new Error('Legacy runtime must consume shared chat-state copy.');
+if (!legacyRuntime.includes('isPendingContent(message.content)')) throw new Error('Translated pending copy must stay out of persisted context.');
+if (!runtime.includes('!CHAT_STATE.transient?.(message.content)')) throw new Error('P0 feedback context must exclude transient chat state.');
+if (runtime.includes("status(title+' failed: '+(error?.message")) throw new Error('P0 chat must not expose raw error messages.');
+if (!html.includes('chat-state-copy.js?v=20260714-truthful-chat-state-v1')) throw new Error('Public shell must load cache-busted chat-state copy.');
+if (html.indexOf('chat-state-copy.js?v=') > html.indexOf('p0-chat-shell.js?v=')) throw new Error('Chat-state copy must load before the P0 shell.');
+if (!manifest.includes('"chat-state-copy.js": "20260714-truthful-chat-state-v1"')) throw new Error('Asset manifest must track chat-state copy.');
 
 function fail(message) {
   throw new Error(message);

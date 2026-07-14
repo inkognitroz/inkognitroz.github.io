@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d352-20260714-safe-markdown-v1';
+const CACHE_NAME='mmir-pwa-d353-20260714-truthful-chat-state-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -14,6 +14,7 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/chat-runtime-deferred.css',
   './apps/mimir-chat-portal/p0-chat-shell.css',
   './apps/mimir-chat-portal/p0-text.js',
+  './apps/mimir-chat-portal/chat-state-copy.js',
   './apps/mimir-chat-portal/p0-route-benchmarks.js',
   './apps/mimir-chat-portal/p0-chat-shell.js',
   './apps/mimir-chat-portal/route-chips.js',
