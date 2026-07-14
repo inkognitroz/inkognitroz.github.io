@@ -114,11 +114,17 @@ if (!groundingInstructionFor('What supports that?')) {
 if (!groundingInstructionFor('What makes you say that?')) {
   fail('Natural English rationale challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('Why should I believe that?')) {
+  fail('Natural English trust challenge must activate the grounding contract');
+}
 if (!groundingInstructionFor('Hva støtter denne påstanden?')) {
   fail('Natural Norwegian evidence-support question must activate the grounding contract');
 }
 if (!groundingInstructionFor('Hva får deg til å si det?')) {
   fail('Natural Norwegian rationale challenge must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hvorfor skal jeg tro på det?')) {
+  fail('Natural Norwegian trust challenge must activate the grounding contract');
 }
 if (!groundingInstructionFor('Can you back that up?')) {
   fail('Natural English evidence challenge must activate the grounding contract');
