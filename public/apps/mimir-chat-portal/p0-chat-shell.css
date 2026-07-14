@@ -262,6 +262,69 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   margin-bottom: 0;
 }
 
+.p0-message-body :is(ul, ol) {
+  margin: 0 0 0.72rem;
+  padding-left: 1.35rem;
+}
+
+.p0-message-body li + li {
+  margin-top: 0.26rem;
+}
+
+.p0-message-body :is(h3, h4) {
+  font-size: 1rem;
+  margin: 0.9rem 0 0.42rem;
+}
+
+.p0-message-body :is(code, pre) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.p0-message-body code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 0.08rem 0.28rem;
+}
+
+.p0-message-body pre {
+  background: #111827;
+  border-radius: 6px;
+  color: #f9fafb;
+  max-width: 100%;
+  overflow: auto;
+  padding: 0.72rem;
+}
+
+.p0-message-body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.p0-message-body blockquote {
+  border-left: 3px solid #9ca3af;
+  color: #4b5563;
+  margin: 0 0 0.72rem;
+  padding-left: 0.72rem;
+}
+
+.p0-message-body .message-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.p0-message-body table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 100%;
+}
+
+.p0-message-body :is(th, td) {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.42rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
 .p0-generated-image-card {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
