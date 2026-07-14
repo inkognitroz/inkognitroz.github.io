@@ -46,7 +46,7 @@ jobs:
           set -euo pipefail
           find public -name '*.json' -o -name '*.webmanifest' | while IFS= read -r file; do
             echo "Validating $file"
-            python -m json.tool "$file" > /dev/null
+            python3 -m json.tool "$file" > /dev/null
           done
 
       - name: JavaScript syntax check
