@@ -1,5 +1,6 @@
 (function(){
   const api=window.MimirApiClient;
+  const chatState=window.MimirChatStateCopy||{};
   const PROFILE_KEY='mimir-chat-backend-profiles';
   const ROLE_KEY='mimir-chat-active-role';
   const WORKSPACE_KEY='mimir-active-workspace-v1';
@@ -53,6 +54,7 @@
   let webllmModule=null;
   let webllmEngine=null;
   let webllmModelId='';
+  const isPendingContent=(value)=>chatState.transient?.(value)||String(value||'').trim()==='Thinking...'||/\btenker\s+…$/i.test(String(value||'').trim());
   let lastBackendMemoryUses=[];
   let lastBackendKnowledgeUses=[];
   let lastKnowledgeUses=[];
@@ -837,7 +839,7 @@
     return {id:String(message?.id||''),role:message?.role==='user'?'user':'assistant',content:String(message?.content||''),meta:String(message?.meta||''),createdAt:String(message?.createdAt||new Date().toISOString()),retryPrompt:typeof message?.retryPrompt==='string'?message.retryPrompt:'',model:typeof message?.model==='string'?message.model:'',truncated:Boolean(message?.truncated)};
   }
   function runtimeMessageSnapshot(){
-    return messages.filter(message=>(message.role==='user'||message.role==='assistant')&&message.content&&message.content!=='Thinking...').map(publicMessage);
+    return messages.filter(message=>(message.role==='user'||message.role==='assistant')&&message.content&&!isPendingContent(message.content)).map(publicMessage);
   }
   function replaceRuntimeMessages(nextMessages){
     messages=parseStoredMessages(JSON.stringify(Array.isArray(nextMessages)?nextMessages:[]));
@@ -1023,7 +1025,7 @@
 
   function renderMessageActions(bubble,message){
     bubble.querySelector('.runtime-message-actions')?.remove();
-    if(message.role!=='assistant'||!message.content||message.content==='Thinking...')return;
+    if(message.role!=='assistant'||!message.content||isPendingContent(message.content))return;
     const actions=document.createElement('div');
     actions.className='runtime-message-actions';
     actions.setAttribute('role','group');
@@ -1260,7 +1262,7 @@
   function contextMessages(prompt,backendMemory='',backendKnowledge=''){
     const history=messages
       .filter(message=>message.role==='user'||message.role==='assistant')
-      .filter(message=>message.content&&message.content!=='Thinking...')
+      .filter(message=>message.content&&!isPendingContent(message.content))
       .slice(-MAX_CONTEXT_MESSAGES);
     if(history.length&&history[history.length-1].role==='user'&&history[history.length-1].content===prompt){
       history.pop();
@@ -1879,7 +1881,7 @@
   }
 
   function friendlyError(error){
-    return api.friendlyError(error);
+    return chatState.errorText?.(error)||api.friendlyError(error);
   }
 
   function secureContextAvailable(){
@@ -2023,12 +2025,12 @@
     appendMessage('user',prompt,SUPERGENIUS_LABEL);
     promptEl.value='';
     const meta=starter?.label||SUPERGENIUS_LABEL;
-    const assistant=appendMessage('assistant','Thinking...',meta,{retryPrompt:prompt,model:SUPERGENIUS_LABEL});
-    setStatus(SUPERGENIUS_LABEL+' is answering...','loading');
+    const assistant=appendMessage('assistant',chatState.pending?.(SUPERGENIUS_LABEL)||'Supergeni tenker …',meta,{retryPrompt:prompt,model:SUPERGENIUS_LABEL});
+    setStatus(chatState.pending?.(SUPERGENIUS_LABEL)||'Supergeni tenker …','loading');
     try{
       const result=await managedSupergeniusContent(prompt,(partial)=>{
-        updateMessage(assistant.message.id,partial||'Thinking...',meta);
-        setStatus('Streaming from '+SUPERGENIUS_LABEL+'...','loading');
+        updateMessage(assistant.message.id,partial||(chatState.pending?.(SUPERGENIUS_LABEL)||'Supergeni tenker …'),meta);
+        setStatus(chatState.streaming?.()||'Skriver svar …','loading');
       },currentAbortController.signal);
       const content=result?.content||'';
       updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',meta,{truncated:result?.completion_truncated===true});
@@ -2099,7 +2101,7 @@
       try{
         setStatus('Browser Model unavailable. Switching to '+SUPERGENIUS_LABEL+'...','loading');
         const result=await managedSupergeniusContent(prompt,(partial)=>{
-          updateMessage(assistant.message.id,partial||'Thinking...', SUPERGENIUS_LABEL);
+          updateMessage(assistant.message.id,partial||(chatState.pending?.(SUPERGENIUS_LABEL)||'Supergeni tenker …'), SUPERGENIUS_LABEL);
         },currentAbortController.signal);
         const content=result?.content||'';
         updateMessage(assistant.message.id,content||SUPERGENIUS_LABEL+' returned an empty response.',SUPERGENIUS_LABEL,{truncated:result?.completion_truncated===true});
@@ -2438,8 +2440,8 @@
     const messageMeta=[selectedModel,roleName].filter(Boolean).join(' - ');
     appendMessage('user',prompt,profile.name||profile.provider||'backend');
     promptEl.value='';
-    const assistant=appendMessage('assistant','Thinking...',messageMeta,{retryPrompt:prompt,model:selectedModel,rolePreset:roleName});
-    setStatus(roleName?'Sending to '+roleName+' role...':'Sending to backend...','loading');
+    const assistant=appendMessage('assistant',chatState.pending?.(messageMeta||SUPERGENIUS_LABEL)||'Supergeni tenker …',messageMeta,{retryPrompt:prompt,model:selectedModel,rolePreset:roleName});
+    setStatus(chatState.pending?.(roleName||SUPERGENIUS_LABEL)||'Supergeni tenker …','loading');
     try{
       const token=await pairIfNeeded(profile,url);
       const headers=authHeaders(token);
@@ -2451,8 +2453,8 @@
       const payloadMessages=contextMessages(prompt,backendMemory,backendKnowledge);
       const payload={model:selectedModel,messages:payloadMessages,...runtimePayload()};
       const result=await chatWithBackend(url,headers,payload,currentAbortController.signal,(partial)=>{
-        updateMessage(assistant.message.id,partial||'Thinking...',messageMeta);
-        setStatus('Streaming response...','loading');
+        updateMessage(assistant.message.id,partial||(chatState.pending?.(messageMeta||SUPERGENIUS_LABEL)||'Supergeni tenker …'),messageMeta);
+        setStatus(chatState.streaming?.()||'Skriver svar …','loading');
       });
       const content=result?.content||'';
       updateMessage(assistant.message.id,content||'Backend returned an empty response.',messageMeta,{truncated:result?.completion_truncated===true});

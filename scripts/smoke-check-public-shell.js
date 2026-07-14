@@ -337,7 +337,7 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d352-20260714-safe-markdown-v1",
+  "mmir-pwa-d353-20260714-truthful-chat-state-v1",
   "Service worker cache must bust for the minimal empty composer release.",
 );
 requireText(

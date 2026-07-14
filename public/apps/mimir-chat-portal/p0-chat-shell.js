@@ -1,6 +1,7 @@
 (function(){
   window.__MimirP0SimpleChat=true;
   const P0_ROUTE_ADAPTERS=window.MimirP0RouteAdapters||{};
+  const CHAT_STATE=window.MimirChatStateCopy||{};
   const ROUTE_ADAPTER_CONFIG=typeof P0_ROUTE_ADAPTERS.config==='function'?P0_ROUTE_ADAPTERS.config():{};
   const API_URL=ROUTE_ADAPTER_CONFIG.apiUrl||'https://api.mmir.ai';
   const API_LABEL=ROUTE_ADAPTER_CONFIG.apiLabel||'api.mmir.ai';
@@ -58,7 +59,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260714-grounding-trust-v7';
+  const P0_RUNTIME_VERSION='20260714-truthful-chat-state-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -712,7 +713,7 @@
   function feedbackPreviousTurnContext(){
     const messages=Array.isArray(state.messages)?state.messages:[];
     const prior=[...messages].reverse();
-    const previousAssistant=prior.find(message=>message&&message.role==='assistant'&&String(message.content||'').trim()&&!/^(Thinking|Comparing active routes|Synthesizing best answer|Response stopped)/i.test(String(message.content||'')))||null;
+    const previousAssistant=prior.find(message=>message&&message.role==='assistant'&&String(message.content||'').trim()&&!CHAT_STATE.transient?.(message.content))||null;
     const previousUser=prior.find(message=>message&&message.role==='user'&&String(message.content||'').trim())||null;
     if(!previousAssistant&&!previousUser)return null;
     return {
@@ -2011,7 +2012,7 @@
         routeStatus('Stopped · owner ping cancelled','hosted');
       }else{
         updateMessage(assistant,'Owner ping needs active owner identity on api.mmir.ai. Use /ping for public Boost, or check owner auth/server config.',{receipt:'Owner ping · owner auth/config needed',actions:false});
-        status('Owner ping unavailable: '+(error?.message||'owner auth/config needed'),'error');
+        status('Eierkontrollen er ikke tilgjengelig akkurat nå. Prøv igjen.','error');
         routeStatus('Owner ping unavailable · owner auth/config needed','error');
       }
     }finally{
@@ -5459,7 +5460,7 @@
     if(message?.actions===false)return false;
     if(message?.command||message?.showOsChoices||message?.variant==='install')return false;
     if(!content)return false;
-    if(/^(Thinking|Synthesizing best answer)\.\.\.$/i.test(content))return false;
+    if(CHAT_STATE.transient?.(content)||/^(Thinking|Synthesizing best answer)\.\.\.$/i.test(content))return false;
     return true;
   }
 
@@ -5776,7 +5777,7 @@
     });
   }
 
-  function startSlowResponseNotice(message,{content='Still working. This is taking a little longer than usual.',statusText='Still working...',routeText='Still working · request still active'}={}){
+  function startSlowResponseNotice(message,{content=CHAT_STATE.slow?.()||'Jobber fortsatt. Dette tar litt lengre tid enn vanlig.',statusText='Supergeni jobber fortsatt …',routeText='Jobber fortsatt · forespørselen er aktiv'}={}){
     let shown=false;
     const timer=window.setTimeout(()=>{
       if(shown||!state.busy||stopRequested)return;
@@ -5924,7 +5925,7 @@
       .filter(message=>{
         const content=String(message.content||'').trim();
         if(!content)return false;
-        if(message.role==='assistant'&&/^(Thinking|Comparing active routes|Synthesizing best answer|Opening Feedback Inbox|Registrerer feedback|Response stopped)/i.test(content))return false;
+        if(message.role==='assistant'&&(CHAT_STATE.transient?.(content)||/^(Thinking|Comparing active routes|Synthesizing best answer|Opening Feedback Inbox|Registrerer feedback|Response stopped)/i.test(content)))return false;
         return true;
       })
       .map(message=>({
@@ -6883,7 +6884,7 @@
     const routeCount=String(activeHostedCompareModels().length);
     const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
     const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route'+(toolReceipt?' · '+toolReceipt:'');
-    const assistant=append('assistant','Comparing active routes...',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
+    const assistant=append('assistant',CHAT_STATE.comparing?.('Supergeni')||'Supergeni sammenligner svar …',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
     const stopProgress=startGatewaySwarmProgress(assistant,{title,mode,routeCount});
     status(title+' is asking '+routeCount+' active routes...','ready');
     routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
@@ -6928,13 +6929,13 @@
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
         captureInteraction('swarm_stopped',{tool:title,mode});
-        updateMessage(assistant,'Response stopped.',{receipt:'Best Answer · stopped'});
+        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:'Best Answer · stopped'});
         status(title+' stopped.','idle');
         routeStatus('Stopped · compare routes cancelled','hosted');
       }else{
         captureInteraction('swarm_failed',{tool:title,mode,reason:'gateway_unavailable'});
-        updateMessage(assistant,'Best Answer is unavailable right now. Try normal chat or refresh models.',{receipt:'Best Answer · gateway compare failed'});
-        status(title+' failed: '+(error?.message||'gateway unavailable'),'error');
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{receipt:'Best Answer · gateway compare failed'});
+        status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
         routeStatus('Best Answer unavailable · refresh routes','error');
       }
     }finally{
@@ -7069,16 +7070,16 @@
     const guardedRoutePrompt=locationContext?locationContext+'\n\nUser text:\n'+(smart.prompt||prompt):(smart.prompt||prompt);
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
-    const assistant=append('assistant','Thinking...',model.label,receipt.text,{retryPrompt:prompt});
+    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt});
     const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
     const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',rolePart,smart.reason].filter(Boolean);
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
-    status(routePrefix+model.label+' is answering...','ready');
+    status(CHAT_STATE.pending?.(model.label)||'Supergeni tenker …','loading');
     routeStatus(routePrefix+receipt.text,receipt.state);
     const stopSlowNotice=startSlowResponseNotice(assistant,{
-      content:'Still working. This answer is taking a little longer than usual.',
-      statusText:model.label+' is still answering...',
-      routeText:routePrefix+'Still working · request still active'
+      content:CHAT_STATE.slow?.()||'Jobber fortsatt. Dette tar litt lengre tid enn vanlig.',
+      statusText:'Supergeni jobber fortsatt …',
+      routeText:routePrefix+'Jobber fortsatt · forespørselen er aktiv'
     });
     try{
       const started=performance.now();
@@ -7123,8 +7124,8 @@
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
         captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||''});
-        updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
-        status('Response stopped.','idle');
+        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user'});
+        status(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.','idle');
         routeStatus('Stopped · no failed first request','hosted');
         return;
       }
@@ -7171,8 +7172,8 @@
         }catch(fallbackError){
           if(stopRequested||fallbackError?.name==='AbortError'){
             captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||'',phase:'fallback'});
-            updateMessage(assistant,'Response stopped.',{receipt:receipt.text+' · stopped by user'});
-            status('Response stopped.','idle');
+            updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user'});
+            status(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.','idle');
             routeStatus('Stopped · no failed first request','hosted');
             return;
           }
@@ -7182,8 +7183,8 @@
         }
       }else{
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
-        updateMessage(assistant,'I could not reach '+API_LABEL+' from this browser right now. Select Retry below to send the same message again.');
-        status('Chat failed: '+API_LABEL+' unreachable','error');
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.');
+        status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
         captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
     }finally{
@@ -7229,8 +7230,8 @@
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
     const localQualityNote=localModel.route==='local'&&wantsPublicFactRoute(prompt)?' · Local facts may be stale':'';
-    const hostedMessage=append('assistant','Thinking...',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare',retryPrompt:prompt});
-    const localMessage=append('assistant','Thinking...',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare',retryPrompt:prompt});
+    const hostedMessage=append('assistant',CHAT_STATE.pending?.(hostedModel.label)||'Supergeni tenker …',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare',retryPrompt:prompt});
+    const localMessage=append('assistant',CHAT_STATE.pending?.(localModel.label)||'Supergeni tenker …',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare',retryPrompt:prompt});
     let hostedAnswerText='';
     let localAnswerText='';
     let hostedScore=null;
@@ -7253,7 +7254,7 @@
         hostedFailed=true;
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true,'compare');
-        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.'),{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
       });
     const localStarted=performance.now();
     const localJob=chatRoute(prompt,localModel,signal)
@@ -7268,7 +7269,7 @@
         localElapsedMs=performance.now()-localStarted;
         localScore=routeScore(localModel,prompt,'',localElapsedMs,true,'compare');
         const errorText=localModel.route==='local'?localNetworkHint(error):(localModel.label+' did not answer this compare request. Try normal chat or refresh.');
-        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':errorText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):errorText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
       });
     await Promise.allSettled([hostedJob,localJob]);
     if(stopRequested){
@@ -7298,14 +7299,14 @@
     if(hostedAnswerText||localAnswerText){
       const winner=finalWinner||winningRoute(hostedModel,hostedScore,localModel,localScore);
       const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+scoringSource+' · '+winner.summary;
-      const synthesisMessage=append('assistant','Synthesizing best answer...','Supergeni · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
+      const synthesisMessage=append('assistant',CHAT_STATE.synthesizing?.()||'Supergeni velger beste svar …','Supergeni · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
       const synthesisStarted=performance.now();
       try{
         const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);
         const synthesisElapsedMs=performance.now()-synthesisStarted;
         updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(synthesisElapsedMs)+' · '+latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis')});
       }catch(error){
-        updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?'Response stopped.':(hostedAnswerText||localAnswerText||'Compare finished, but synthesis did not answer.'),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed')});
+        updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(hostedAnswerText||localAnswerText||(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.')),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed')});
       }
       if(stopRequested){
         status(title+' stopped.','idle');
