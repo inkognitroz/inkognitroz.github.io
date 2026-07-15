@@ -22,7 +22,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0SubtleStatusTest={state,renderMicroStatus,compactStatusText,answerStatus,routeScore,routeMicroStatus,recordRouteBenchmark,effectiveModelScore};";
+const exportBlock = "  globalThis.__p0SubtleStatusTest={state,renderMicroStatus,compactStatusText,answerStatus,routeScore,routeMicroStatus,recordRouteBenchmark,effectiveModelScore,answerProofLine,proofTrustLabel,noteAnswerProof};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 subtle status smoke cannot find boot block.');
@@ -113,21 +113,55 @@ const hostedScore = testApi.routeScore(
   'Donald J. Trump is the current president of the United States.',
   746
 );
-const topStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore), 6);
-assertIncludes(topStatus, 'Verifisert', 'Top-right green status must show the trust value first.');
+
+// Real gateway payload shapes (measured live on api.mmir.ai 2026-07-15):
+// string form from capability routes, object form (v2) from synthesis routes, or absent.
+const verifiedProof = testApi.answerProofLine({
+  mmir: {
+    answer_proof_line: 'Verifisert med live-kilde',
+    sources: [{
+      id: 'norges-bank-policy-rate',
+      title: 'Norges Bank styringsrente',
+      url: 'https://data.norges-bank.no/api/data/IR/B.KPRA.SD.R?lastNObservations=1&format=sdmx-json'
+    }]
+  }
+});
+if (testApi.proofTrustLabel(verifiedProof) !== 'Verifisert') fail('Capability proof string must map to the verified trust value.');
+const consensusProof = testApi.answerProofLine({
+  mmir: {
+    answer_proof_line: {
+      object: 'mmir.answer_proof_line',
+      schema_version: '2026-07-02-answer-proof-line-v2',
+      status: 'consensus_signed',
+      label: 'Bevis: 2/3 enige · signert kvittering',
+      consensus: { status: 'high', agree_count: 2, total: 3, public_ui_label: 'Høy tillit - 2/3 ruter enige' },
+      verification: { deterministic: false, source_count: 0, source_hosts: [], source_trust: [], primary_source_trust: null },
+      receipt: { signed: true, keyed: true }
+    }
+  }
+});
+if (testApi.proofTrustLabel(consensusProof) !== 'Signert kvittering') fail('consensus_signed proof must map to the signed-receipt value, never a verified badge.');
+if (testApi.answerProofLine({ mmir: {} }) !== null) fail('Missing answer_proof_line must parse to null, not a fabricated proof.');
+
+const topStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore, '', verifiedProof), 6);
+assertIncludes(topStatus, 'Verifisert', 'Top-right green status must show the trust value when the gateway proof is verified.');
 assertIncludes(topStatus, 'beskyttet', 'Top-right green status must show hosted protection truth, not private.');
 assertNotMatches(topStatus, /Verifisert\s*·\s*privat/i, 'Hosted top-right status must not claim private mode.');
 assertExcludes(topStatus, '746ms', 'Top-right green status must keep answer latency behind details.');
 assertExcludes(topStatus, 'Score ', 'Top-right green status must keep route score behind details.');
 assertExcludes(topStatus, 'Supergenious', 'Public status text must use Supergeni branding.');
+const unprovenStatus = testApi.compactStatusText(testApi.answerStatus(hosted, hostedScore, '', null), 6);
+assertExcludes(unprovenStatus, 'Verifisert', 'Top-right status must never fabricate a verified badge without gateway proof.');
+assertIncludes(unprovenStatus, 'beskyttet', 'Top-right status keeps the true privacy value even without proof.');
 
 const bestAnswerEl = fakeElement();
+testApi.noteAnswerProof(verifiedProof);
 testApi.renderMicroStatus(
   bestAnswerEl,
   'Supergeni ready · hosted · Best answer synthesis · No paid route · api.mmir.ai/routing/score · Winner: Supergeni · API score 84 · complete answer · hosted default route · acceptable latency · 746ms',
   'hosted'
 );
-assertIncludes(bestAnswerEl.innerHTML, 'Verifisert', 'Under-chat green micro-status must show verified value, not raw telemetry.');
+assertIncludes(bestAnswerEl.innerHTML, 'Verifisert', 'Under-chat green micro-status must show verified value when the gateway proof is verified.');
 assertIncludes(bestAnswerEl.innerHTML, 'beskyttet', 'Under-chat hosted micro-status must show protected value, not private.');
 assertNotMatches(bestAnswerEl.innerHTML, /Verifisert\s*·\s*privat/i, 'Hosted under-chat status must not claim private mode.');
 assertExcludes(bestAnswerEl.innerHTML, 'API score 84', 'Under-chat green micro-status must keep score evidence behind details.');
@@ -137,13 +171,24 @@ assertExcludes(bestAnswerEl.innerHTML, 'Winner:', 'Under-chat green micro-status
 assertIncludes(bestAnswerEl.attrs['aria-label'], 'No paid route', 'Full route receipt must remain available through aria-label/title even when visible text is compact.');
 assertIncludes(bestAnswerEl.attrs['aria-label'], 'Winner: Supergeni', 'Full route receipt must keep winner data inspectable outside visible text.');
 
+const unprovenEl = fakeElement();
+testApi.noteAnswerProof(null);
+testApi.renderMicroStatus(
+  unprovenEl,
+  'Supergeni ready · hosted · Best answer synthesis · No paid route · api.mmir.ai/routing/score · Winner: Supergeni · API score 84 · complete answer · hosted default route · acceptable latency · 746ms',
+  'hosted'
+);
+assertExcludes(unprovenEl.innerHTML, 'Verifisert', 'Under-chat status must never fabricate a verified badge without gateway proof.');
+
 const localEl = fakeElement();
+testApi.noteAnswerProof(verifiedProof);
 testApi.renderMicroStatus(
   localEl,
   'Local node ready · 5 models · Private · This Mac · Score 82 · avg 650ms',
   'local'
 );
-assertIncludes(localEl.innerHTML, 'Verifisert', 'Local attach status must show verified value.');
+assertExcludes(localEl.innerHTML, 'Verifisert', 'Local attach status must not inherit a hosted answer proof.');
+assertIncludes(localEl.innerHTML, 'Local node ready', 'Local attach status must show the plain readiness value.');
 assertIncludes(localEl.innerHTML, 'privat', 'Local attach status must show privacy value.');
 assertExcludes(localEl.innerHTML, 'Score 82', 'Local attach status must keep route score behind details.');
 assertExcludes(localEl.innerHTML, 'avg 650ms', 'Local attach status must keep measured latency behind details.');
@@ -234,6 +279,7 @@ assertIncludes(testApi.routeMicroStatus(hosted), 'NVIDIA live', 'Route micro-sta
 assertIncludes(testApi.routeMicroStatus(hosted), 'Google live', 'Route micro-status must name active Google intelligence.');
 assertIncludes(testApi.routeMicroStatus(hosted), 'Groq live', 'Route micro-status must name active Groq intelligence.');
 const poolEl = fakeElement();
+testApi.noteAnswerProof(consensusProof);
 testApi.renderMicroStatus(
   poolEl,
   'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 4 live provider routes · OpenRouter live + NVIDIA live + Google live + Groq live · 43 queued · 64 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
@@ -242,9 +288,10 @@ testApi.renderMicroStatus(
 assertIncludes(poolEl.innerHTML, 'Spør 5 AI - beste vinner', 'Under-chat micro-status must show the swarm value in plain language.');
 assertIncludes(poolEl.innerHTML, 'data-p0-route-action="boost-answer-live"', 'Under-chat micro-status must expose one direct multi-AI composer action.');
 assertIncludes(poolEl.innerHTML, 'p0-route-cta', 'Under-chat micro-status must render the multi-AI action as a compact route CTA.');
-assertIncludes(poolEl.innerHTML, 'Verifisert', 'Under-chat micro-status must show verified value.');
+assertIncludes(poolEl.innerHTML, 'Signert kvittering', 'Under-chat micro-status must show the gateway-proven trust value.');
+assertExcludes(poolEl.innerHTML, 'Verifisert', 'consensus_signed swarm proof must not be inflated to a verified badge.');
 assertIncludes(poolEl.innerHTML, 'beskyttet', 'Under-chat hosted swarm status must show protected value.');
-assertNotMatches(poolEl.innerHTML, /Verifisert\s*·\s*privat/i, 'Hosted swarm status must not claim private mode.');
+assertNotMatches(poolEl.innerHTML, /(Verifisert|Signert kvittering)\s*·\s*privat/i, 'Hosted swarm status must not claim private mode.');
 assertExcludes(poolEl.innerHTML, '3 answered', 'Under-chat micro-status must keep successful-provider count behind details.');
 assertExcludes(poolEl.innerHTML, '2 quiet', 'Under-chat micro-status must keep quiet throttled routes behind details.');
 assertExcludes(poolEl.innerHTML, 'signed receipts', 'Under-chat micro-status must keep signed receipt proof behind details.');

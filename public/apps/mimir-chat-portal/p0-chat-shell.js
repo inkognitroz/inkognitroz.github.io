@@ -59,7 +59,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260715-enter-send-grounding-verification-v1';
+  const P0_RUNTIME_VERSION='20260715-truthful-proof-line-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -2192,7 +2192,89 @@
     return evidence.some(test=>test.test(text))&&!/^Local connector setup\b/i.test(text);
   }
 
-  function trustValueSummary(full){
+  let lastAnswerProof=null;
+
+  function proofSourceRecords(payload,contract){
+    const rawSources=Array.isArray(payload?.mmir?.sources)?payload.mmir.sources:(Array.isArray(payload?.sources)?payload.sources:[]);
+    const trustRecords=Array.isArray(contract?.verification?.source_trust)?contract.verification.source_trust:[];
+    const records=[];
+    const seen=new Set();
+    for(const source of rawSources){
+      if(records.length>=3)break;
+      const rawUrl=String(source?.url||source?.href||'').trim();
+      const url=/^https?:\/\//i.test(rawUrl)?rawUrl:'';
+      let host='';
+      if(url){
+        try{host=new URL(url).hostname.replace(/^www\./i,'');}catch(error){host='';}
+      }
+      const name=String(source?.title||source?.topic||host||'').replace(/\s+/g,' ').trim().slice(0,80);
+      if(!name)continue;
+      const key=(url||name).toLowerCase();
+      if(seen.has(key))continue;
+      seen.add(key);
+      const trust=trustRecords.find(record=>record?.host&&host&&(host===record.host||host.endsWith('.'+record.host)))||null;
+      records.push({
+        name,
+        url,
+        host,
+        tier:Number.isFinite(Number(trust?.tier))?Number(trust.tier):null,
+        tierLabel:String(trust?.label||'').replace(/\s+/g,' ').trim().slice(0,80)
+      });
+    }
+    if(!records.length){
+      for(const trust of trustRecords){
+        if(records.length>=3)break;
+        const host=String(trust?.host||'').replace(/\s+/g,' ').trim().slice(0,80);
+        if(!host||seen.has(host.toLowerCase()))continue;
+        seen.add(host.toLowerCase());
+        records.push({
+          name:host,
+          url:'',
+          host,
+          tier:Number.isFinite(Number(trust?.tier))?Number(trust.tier):null,
+          tierLabel:String(trust?.label||'').replace(/\s+/g,' ').trim().slice(0,80)
+        });
+      }
+    }
+    return records;
+  }
+
+  function answerProofLine(payload){
+    const raw=payload?.mmir?.answer_proof_line??payload?.answer_proof_line??null;
+    if(typeof raw==='string'){
+      const label=raw.replace(/\s+/g,' ').trim().slice(0,160);
+      if(!label)return null;
+      return {
+        status:/^verifisert\b/i.test(label)?'verified':'stated',
+        label,
+        consensusLabel:'',
+        sources:proofSourceRecords(payload,null)
+      };
+    }
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    const status=String(raw.status||'').trim().toLowerCase();
+    return {
+      status:['verified','consensus_signed','signed'].includes(status)?status:'unverified',
+      label:String(raw.label||'').replace(/\s+/g,' ').trim().slice(0,160),
+      consensusLabel:String(raw.consensus?.public_ui_label||'').replace(/\s+/g,' ').trim().slice(0,120),
+      sources:proofSourceRecords(payload,raw)
+    };
+  }
+
+  function proofTrustLabel(proof){
+    if(!proof)return '';
+    if(proof.status==='verified')return 'Verifisert';
+    if(proof.status==='consensus_signed'||proof.status==='signed')return 'Signert kvittering';
+    if(proof.status==='unverified')return 'Ubekreftet';
+    return '';
+  }
+
+  function noteAnswerProof(proof){
+    lastAnswerProof=proof||null;
+    return lastAnswerProof;
+  }
+
+  function trustValueSummary(full,proof,options={}){
     const text=canonicalBrandText(full).trim();
     if(!routeEvidenceReceipt(text))return '';
     const parts=receiptParts(text);
@@ -2200,10 +2282,12 @@
     const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
     const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
     const privacy=receiptPrivacyLabel(text);
+    const trust=proofTrustLabel(proof)||(options.explicitUnverified?'Ubekreftet':'');
     if(isSwarm&&routeCount>1){
-      return ['Spør '+routeCount+' AI - beste vinner',consensus,'Verifisert',privacy].filter(Boolean).join(' · ');
+      return ['Spør '+routeCount+' AI - beste vinner',consensus,trust,privacy].filter(Boolean).join(' · ');
     }
-    return ['Verifisert',privacy].filter(Boolean).join(' · ');
+    if(!trust)return '';
+    return [trust,privacy].filter(Boolean).join(' · ');
   }
 
   function receiptConsensusState(full){
@@ -2245,11 +2329,12 @@
   function renderMicroStatus(el,message,stateValue='hosted'){
     if(!el)return;
     const full=String(message||routeReceipt().text).trim();
-    const trustSummary=stateValue==='error'?'':trustValueSummary(full);
     const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
-    const compactLocalReady=/^(local node attached|private local ready:|local node connected)/i.test(full)
+    const compactLocalReady=/^(local node attached|local node ready|private local ready:|local node connected)/i.test(full)
       ? 'Local node ready'
       : '';
+    const localSummary=compactLocalReady?[compactLocalReady,receiptPrivacyLabel(full)].filter(Boolean).join(' · '):'';
+    const trustSummary=stateValue==='error'?'':(localSummary||trustValueSummary(full,lastAnswerProof));
     const primary=compactLocalReady||parts[0]||'Ready';
     const candidates=parts.filter(part=>
       part!==primary &&
@@ -2314,13 +2399,13 @@
       .join(' · ');
   }
 
-  function answerStatus(model,score,prefix=''){
+  function answerStatus(model,score,prefix='',proof=lastAnswerProof){
     const privacy=model?.route==='local'
       ? 'privat'
       : (superPrivateModeActive()?'superprivat':(demoTranscriptCaptureEnabled()?'demo':'beskyttet'));
     const parts=[
       prefix,
-      'Verifisert',
+      proofTrustLabel(proof),
       privacy
     ];
     return parts.filter(Boolean).join(' · ');
@@ -3240,13 +3325,15 @@
     return [parts.slice(0,3).join(' · '),score,timing].filter(Boolean).join(' · ');
   }
 
-  function renderReceipt(receipt){
+  function renderReceipt(receipt,proof){
     const full=canonicalBrandText(receipt).trim();
     if(!full)return '';
-    const trustSummary=trustValueSummary(full);
+    const trustSummary=trustValueSummary(full,proof,{explicitUnverified:true});
     if(trustSummary){
       const consensusState=receiptConsensusState(full);
-      const consensusClass=consensusState?' p0-message-receipt-consensus-'+safeAttr(consensusState):'';
+      const trustLabel=proofTrustLabel(proof);
+      const unverifiedClass=!trustLabel||trustLabel==='Ubekreftet'?' p0-message-receipt-proof-unverified':'';
+      const consensusClass=(consensusState?' p0-message-receipt-consensus-'+safeAttr(consensusState):'')+unverifiedClass;
       return '<details class="p0-message-receipt p0-message-receipt-trust'+consensusClass+'" title="'+safeAttr(full)+'">'+
         '<summary><span class="p0-receipt-summary-main">'+safeText(trustSummary)+'</span><span class="p0-receipt-details">Detaljer</span></summary>'+
         '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
@@ -3275,6 +3362,26 @@
     if(message?.role!=='assistant'||!label)return '';
     return '<div class="p0-connected-intelligence-label" aria-label="Connected intelligence: '+safeAttr(label)+'">'+
       '<span aria-hidden="true">⚡</span> '+safeText(label)+
+    '</div>';
+  }
+
+  function renderProofLine(message,trustShownInReceipt=false){
+    const proof=message?.role==='assistant'?message?.proofLine:null;
+    if(!proof)return '';
+    const trust=trustShownInReceipt?'':proofTrustLabel(proof);
+    const badge=trust&&(!proof.label||!proof.label.toLowerCase().startsWith(trust.toLowerCase()))?trust:'';
+    const badges=(Array.isArray(proof.sources)?proof.sources:[]).slice(0,3).map(source=>{
+      const hint=source.tierLabel?source.name+' · '+source.tierLabel:source.name;
+      if(source.url){
+        return '<a class="p0-proof-source" href="'+safeAttr(source.url)+'" target="_blank" rel="noopener noreferrer" title="'+safeAttr(hint)+'">'+safeText(source.name)+'</a>';
+      }
+      return '<span class="p0-proof-source" title="'+safeAttr(hint)+'">'+safeText(source.name)+'</span>';
+    }).join('');
+    if(!badge&&!proof.label&&!badges)return '';
+    return '<div class="p0-proof-line p0-proof-status-'+safeAttr(String(proof.status||'unverified').replace(/[^a-z0-9_-]/gi,''))+'" aria-label="'+safeAttr('Bevislinje: '+(proof.label||proofTrustLabel(proof)||'ingen'))+'">'+
+      (badge?'<span class="p0-proof-badge">'+safeText(badge)+'</span>':'')+
+      (proof.label?'<span class="p0-proof-text">'+safeText(proof.label)+'</span>':'')+
+      badges+
     '</div>';
   }
 
@@ -5701,10 +5808,12 @@
       const focusAttr=answerActionsAllowed(message)?' tabindex="0"':'';
       const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):(message.label||message.role);
       const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
+      const receiptHtml=renderReceipt(message.receipt,message.proofLine);
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
         renderConnectedIntelligenceLabel(message)+
-        renderReceipt(message.receipt)+
+        receiptHtml+
+        renderProofLine(message,receiptHtml.includes('p0-message-receipt-trust'))+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
         renderMessageActions(message)+
       '</article>';
@@ -5751,6 +5860,7 @@
       content:String(content||''),
       label:role==='assistant'?routeDisplayName({label:label||role}):(label||role),
       receipt:receipt||'',
+      proofLine:meta.proofLine||null,
       variant:meta.variant||'',
       command:meta.command||'',
       commandLabel:meta.commandLabel||'',
@@ -5826,6 +5936,7 @@
 
   function beginResponse(){
     stopRequested=false;
+    noteAnswerProof(null);
     activeChatController=new AbortController();
     state.busy=true;
     updateSendControl();
@@ -6910,8 +7021,10 @@
       const receipt=gatewayCompareReceipt(data,mode==='boost'?'Intelligence boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best answer')))+(toolReceipt?' · '+toolReceipt:'');
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
+      const answerProof=noteAnswerProof(answerProofLine(data?.best_answer)||answerProofLine(data));
       updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{
         receipt:receipt+(truncated?' · truncated guard':''),
+        proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(data),
         truncated,
         continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
@@ -6967,7 +7080,7 @@
       '- '+localLabel+': '+scoreSummary(localScore)+'\n\n'+
       hostedLabel+' answer:\n'+(hostedAnswer||'[no answer]')+'\n\n'+
       localLabel+' answer:\n'+(localAnswer||'[no answer]');
-    return chatHosted(synthesisPrompt,signal);
+    return chatHostedData(synthesisPrompt,signal);
   }
 
   async function sendMessage(){
@@ -7105,8 +7218,10 @@
       recordRouteBenchmark(model,measuredScore);
       const elapsed=formatDuration(elapsedMs);
       const connectGuide=responseConnectGuide(hostedData);
+      const answerProof=noteAnswerProof(answerProofLine(hostedData));
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
         receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
+        proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(hostedData),
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
@@ -7164,10 +7279,11 @@
           const fallbackElapsedMs=performance.now()-fallbackStarted;
           recordRouteBenchmark(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs));
           const fallbackElapsed=formatDuration(fallbackElapsedMs);
+          const fallbackProof=noteAnswerProof(answerProofLine(fallbackData));
           updateMessage(
             assistant,
             withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
-            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),intelligenceLabel:connectedIntelligenceLabel(fallbackData),truncated:fallbackTruncated}
+            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),truncated:fallbackTruncated}
           );
           captureInteraction(fallbackTruncated?'truncation_seen':'chat_fallback_ready',{
             active_model_id:activeModel()?.id||'',
@@ -7249,15 +7365,17 @@
     let localElapsedMs=0;
     let hostedFailed=false;
     let localFailed=false;
+    let hostedProof=null;
     status(title+' is asking '+hostedModel.label+' and '+localModel.label+' in parallel...','ready');
     routeStatus(title+' · '+hostedModel.label+' + '+localModel.label,'ready');
     const hostedStarted=performance.now();
-    const hostedJob=chatHosted(prompt,signal,hostedModel)
-      .then(answer=>{
-        hostedAnswerText=answer||'Supergeni returned an empty response.';
+    const hostedJob=chatHostedData(prompt,signal,hostedModel)
+      .then(data=>{
+        hostedAnswerText=responseText(data)||'Supergeni returned an empty response.';
+        hostedProof=answerProofLine(data);
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs,false,'compare');
-        updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+        updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),proofLine:hostedProof});
       })
       .catch((error)=>{
         hostedFailed=true;
@@ -7298,7 +7416,7 @@
       recordRouteBenchmark(localModel,localScore);
       finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
       scoringSource=API_LABEL+'/routing/score';
-      updateMessage(hostedMessage,hostedAnswerText||'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+      updateMessage(hostedMessage,hostedAnswerText||'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),proofLine:hostedProof});
       updateMessage(localMessage,localAnswerText||(localModel.route==='local'?localNetworkHint('Local model did not answer.'):localModel.label+' did not answer this compare request. Try normal chat or refresh.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
     }catch(error){
       recordRouteBenchmark(hostedModel,hostedScore);
@@ -7311,9 +7429,11 @@
       const synthesisMessage=append('assistant',CHAT_STATE.synthesizing?.()||'Supergeni velger beste svar …','Supergeni · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
       const synthesisStarted=performance.now();
       try{
-        const synthesis=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);
+        const synthesisData=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);
+        const synthesis=responseText(synthesisData);
+        const synthesisProof=noteAnswerProof(answerProofLine(synthesisData));
         const synthesisElapsedMs=performance.now()-synthesisStarted;
-        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(synthesisElapsedMs)+' · '+latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis')});
+        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(synthesisElapsedMs)+' · '+latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis'),proofLine:synthesisProof});
       }catch(error){
         updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(hostedAnswerText||localAnswerText||(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.')),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed')});
       }
