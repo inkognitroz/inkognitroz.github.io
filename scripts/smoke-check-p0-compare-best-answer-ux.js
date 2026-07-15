@@ -150,6 +150,12 @@ if (!groundingInstructionFor('Can you verify that?')) {
 if (!groundingInstructionFor('Kan du verifisere det?')) {
   fail('Natural Norwegian verification challenge must activate the grounding contract');
 }
+if (!groundingInstructionFor('How can I verify that?')) {
+  fail('English verification-method question must activate the grounding contract');
+}
+if (!groundingInstructionFor('Hvordan kan jeg verifisere dette?')) {
+  fail('Norwegian verification-method question must activate the grounding contract');
+}
 if (groundingInstructionFor('Can you verify my email address?')) {
   fail('Operational verification requests must not activate the grounding contract');
 }
