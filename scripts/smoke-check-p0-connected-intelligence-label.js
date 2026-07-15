@@ -5,9 +5,10 @@ const root = resolve(process.cwd());
 const shell = readFileSync(join(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js'), 'utf8');
 const css = readFileSync(join(root, 'public/apps/mimir-chat-portal/p0-chat-shell.css'), 'utf8');
 const html = readFileSync(join(root, 'public/mmir.html'), 'utf8');
+const manifest = JSON.parse(readFileSync(join(root, 'public/apps/mimir-chat-portal/asset-versions.json'), 'utf8'));
 const assetVersions = {
-  'p0-chat-shell.js': '20260714-truthful-chat-state-grounding-v2',
-  'p0-chat-shell.css': '20260714-safe-markdown-v1'
+  'p0-chat-shell.js': manifest.assets?.['p0-chat-shell.js'],
+  'p0-chat-shell.css': manifest.assets?.['p0-chat-shell.css']
 };
 
 for (const contract of [

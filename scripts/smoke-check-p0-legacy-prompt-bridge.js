@@ -23,6 +23,11 @@ requireText(shell, "document.getElementById('new-backend')?.addEventListener('cl
 requireText(shell, 'syncP0InputFromLegacy();', 'Bridge must copy legacy prompt text before P0 send.');
 requireText(shell, 'syncLegacyPromptFromP0();', 'P0 input changes must keep legacy prompt value in sync.');
 requireText(shell, 'bindLegacyPromptBridge();', 'P0 shell must bind the bridge during shell setup.');
+requireText(shell, "form.addEventListener('keydown'", 'Visible composer Enter handling must be bound at form level.');
+requireText(shell, "if(event.target!==input)return;", 'Form-level Enter handling must only act on the canonical P0 input.');
+requireText(shell, "legacy.addEventListener('keydown'", 'Bridge must handle Enter from the legacy prompt during dual-input migration.');
+requireText(shell, "if(event.key!=='Enter'||event.shiftKey||event.isComposing)return;", 'Legacy Enter handling must preserve newlines and IME composition.');
+requireText(shell, 'syncP0InputFromLegacy();\n        if(state.busy)return;\n        sendMessage();', 'Legacy Enter must sync the active value before sending through the canonical P0 path.');
 
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-legacy-prompt-bridge.js')) {
   fail('npm run check must include smoke-check-p0-legacy-prompt-bridge.js.');

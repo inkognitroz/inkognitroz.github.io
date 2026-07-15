@@ -59,7 +59,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260714-truthful-chat-state-grounding-v2';
+  const P0_RUNTIME_VERSION='20260715-enter-send-bridge-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -3609,7 +3609,8 @@
       }
       sendMessage();
     },true);
-    input.addEventListener('keydown',(event)=>{
+    form.addEventListener('keydown',(event)=>{
+      if(event.target!==input)return;
       if(event.key==='Escape'&&state.busy){
         event.preventDefault();
         stopActiveResponse();
@@ -3620,7 +3621,7 @@
         if(state.busy)return;
         sendMessage();
       }
-    });
+    },true);
     input.addEventListener('input',()=>{
       autosizeInput();
       syncLegacyPromptFromP0();
@@ -3998,6 +3999,14 @@
     if(legacy){
       legacy.addEventListener('input',syncP0InputFromLegacy);
       legacy.addEventListener('change',syncP0InputFromLegacy);
+      legacy.addEventListener('keydown',(event)=>{
+        if(event.key!=='Enter'||event.shiftKey||event.isComposing)return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        syncP0InputFromLegacy();
+        if(state.busy)return;
+        sendMessage();
+      },true);
     }
     document.getElementById('primary-chat-link')?.addEventListener('click',(event)=>{
       if(!document.getElementById('mmir-p0-app'))return;
