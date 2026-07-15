@@ -85,6 +85,8 @@ async function installFixtures(page, transcriptCalls) {
         finish_reason: 'stop'
       }],
       usage: { prompt_tokens: 0, completion_tokens: 1, total_tokens: 1 },
+      // Measured live 2026-07-15: tool-verify routes return a top-level proof string.
+      answer_proof_line: 'Verifisert med deterministisk tool-verify',
       mmir: {
         no_paid_routes_started: true,
         receipt: {
@@ -147,8 +149,9 @@ try {
     await sendPrompt(page, 'Hva er 2+2?');
     assert(transcriptCalls.length === 0, 'Fresh public session must not persist raw demo transcript before explicit consent.');
     const routeText = await page.locator('#p0-route').innerText();
-    assert(/Verifisert/i.test(routeText), 'Hosted answer should still show verified status.');
-    assert(/beskyttet/i.test(routeText), 'Hosted answer should show protected status, not private.');
+    const statusText = await page.locator('#p0-status').innerText();
+    assert(/Verifisert/i.test(routeText), 'Deterministic tool-verify proof should surface the verified status.');
+    assert(/beskyttet/i.test(routeText + statusText), 'Hosted answer should show protected status, not private.');
     assert(!/Verifisert\s*·\s*privat/i.test(routeText), 'Hosted answer must not claim private status.');
 
     await page.locator('#p0-add').click();

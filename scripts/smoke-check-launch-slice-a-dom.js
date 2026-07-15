@@ -229,7 +229,7 @@ requireIncludes(files.p0Runtime, 'function synthesizeCompareAnswer(prompt,hosted
 requireIncludes(files.p0Runtime, 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
 requireIncludes(files.p0Runtime, 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
 requireIncludes(files.p0Runtime, 'function compactReceipt(receipt)', 'P0 route receipts must be compact by default.');
-requireIncludes(files.p0Runtime, 'function renderReceipt(receipt)', 'P0 route receipts must keep full audit details available on click.');
+requireIncludes(files.p0Runtime, 'function renderReceipt(receipt,proof)', 'P0 route receipts must keep full audit details available on click.');
 requireIncludes(files.p0Runtime, "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
 requireIncludes(files.p0Runtime, "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path must emit testable state evidence.');

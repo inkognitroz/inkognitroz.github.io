@@ -243,6 +243,79 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   text-underline-offset: 2px;
 }
 
+.p0-message-receipt-proof-unverified summary,
+.p0-message-receipt-proof-unverified .p0-receipt-summary-main {
+  color: #6b7280;
+  font-weight: 620;
+}
+
+.p0-proof-line {
+  align-items: center;
+  color: #6b7280;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  gap: 6px;
+  line-height: 1.25;
+}
+
+.p0-proof-badge {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  color: #374151;
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-weight: 720;
+  line-height: 1;
+  padding: 4px 7px;
+}
+
+.p0-proof-status-verified .p0-proof-badge,
+.p0-proof-status-verified .p0-proof-text {
+  color: #047857;
+}
+
+.p0-proof-status-verified .p0-proof-badge {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+.p0-proof-status-consensus_signed .p0-proof-badge,
+.p0-proof-status-signed .p0-proof-badge {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+
+.p0-proof-text {
+  overflow-wrap: anywhere;
+}
+
+.p0-proof-source {
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  color: #1d4ed8;
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 4px 7px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.p0-proof-source:hover,
+a.p0-proof-source:focus-visible {
+  background: #eff6ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .p0-message-user .p0-message-label {
   display: none;
 }

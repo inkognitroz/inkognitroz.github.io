@@ -50,6 +50,7 @@ async function waitForServer(url) {
 }
 
 function chatCompletion(content, model = 'mmir-supergenius') {
+  const hosted = model === 'mmir-supergenius';
   return {
     id: `chatcmpl_${Date.now()}`,
     object: 'chat.completion',
@@ -58,7 +59,23 @@ function chatCompletion(content, model = 'mmir-supergenius') {
     usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
     mmir: {
       no_paid_routes_started: true,
-      route: { route_id: model === 'mmir-supergenius' ? 'browser-guide/free' : `local/${model}`, route_class: model === 'mmir-supergenius' ? 'free' : 'local', cost_class: 'free' }
+      route: { route_id: hosted ? 'browser-guide/free' : `local/${model}`, route_class: hosted ? 'free' : 'local', cost_class: 'free' },
+      // Mirrors the live gateway contract (mmir.answer_proof_line, schema 2026-07-02-answer-proof-line-v2).
+      answer_proof_line: hosted
+        ? {
+            object: 'mmir.answer_proof_line',
+            schema_version: '2026-07-02-answer-proof-line-v2',
+            status: 'consensus_signed',
+            label: 'Bevis: 2/3 enige · signert kvittering',
+            consensus: { status: 'medium', agree_count: 2, total: 3, public_ui_label: 'Middels tillit - 2/3 ruter enige' },
+            verification: { deterministic: false, source_count: 0, source_hosts: [], source_trust: [], primary_source_trust: null },
+            receipt: { signed: true, keyed: true, id: 'receipt_mmir_test', route_id: 'browser-guide/free', node_id: 'browser-guide', signature_authority: 'mmir-keyed-hmac', signature_key_id: 'mmir-live-route-receipt-key-v1' },
+            provider_secrets_in_browser: false,
+            raw_prompt_returned: false,
+            raw_answer_returned: false,
+            no_paid_routes_started: true
+          }
+        : null
     }
   };
 }
@@ -208,7 +225,8 @@ async function checkViewport(browser, viewport) {
     const status = document.getElementById('p0-status');
     const routeText = route?.textContent || '';
     const routeProof = route?.getAttribute('aria-label') || '';
-    return /Verifisert/i.test(route?.textContent || '') &&
+    return /Local node ready/i.test(routeText) &&
+      !/Verifisert/i.test(routeText) &&
       !/Private local ready:|\d+\s+models?|This Mac/i.test(routeText) &&
       /Private local ready:/i.test(routeProof) &&
       !/Private local ready:|\d+\s+models?|Private/i.test(status?.textContent || '');
@@ -222,7 +240,10 @@ async function checkViewport(browser, viewport) {
   assert(text.includes('Supergeni says four.'), `${viewport.name}: hosted compare answer should render`);
   assert(text.includes('Local Gemma also says four.'), `${viewport.name}: local compare answer should render`);
   assert(text.includes('Best answer'), `${viewport.name}: best-answer content should render`);
-  assert(text.includes('Verifisert'), `${viewport.name}: compare receipts should show trust value first`);
+  assert(text.includes('Signert kvittering'), `${viewport.name}: hosted receipts should show the gateway-proven trust value`);
+  assert(!text.includes('Verifisert'), `${viewport.name}: consensus_signed proof must not be inflated to a verified badge`);
+  assert(text.includes('Bevis: 2/3 enige'), `${viewport.name}: the gateway answer_proof_line label should render on hosted answers`);
+  assert(text.includes('Ubekreftet'), `${viewport.name}: answers without answer_proof_line must show the honest unverified state`);
   assert(text.includes('Detaljer'), `${viewport.name}: compare receipts should keep raw telemetry inspectable`);
   assert(!text.includes('Winner: Supergeni'), `${viewport.name}: winner receipt must stay behind Details`);
   assert(!text.includes('No paid route'), `${viewport.name}: no-paid proof must stay behind Details`);
@@ -244,11 +265,12 @@ async function checkViewport(browser, viewport) {
   assert(layout.compareMessages >= 3, `${viewport.name}: compare flow should render hosted, local and synthesis messages`);
   assert(/finished/i.test(layout.status), `${viewport.name}: compare status should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: composer route line should stay subtle and not show winner clutter`);
-  assert(/Verifisert/i.test(layout.route), `${viewport.name}: composer route line should show verified value`);
+  assert(/Signert kvittering/i.test(layout.route), `${viewport.name}: composer route line should show the gateway-proven trust value`);
+  assert(!/Verifisert/i.test(layout.route), `${viewport.name}: composer route line must not fabricate a verified badge from consensus_signed proof`);
   assert(/Winner:/i.test(layout.routeFull), `${viewport.name}: composer route receipt must preserve winner summary for inspection`);
   if (/Winner:\s*Supergeni/i.test(layout.routeFull)) {
     assert(/beskyttet/i.test(layout.route), `${viewport.name}: composer hosted synthesis route should show protected value`);
-    assert(!/Verifisert\s*·\s*privat/i.test(layout.route), `${viewport.name}: composer hosted synthesis route must not claim private mode`);
+    assert(!/(Verifisert|Signert kvittering)\s*·\s*privat/i.test(layout.route), `${viewport.name}: composer hosted synthesis route must not claim private mode`);
   } else {
     assert(/privat/i.test(layout.route), `${viewport.name}: composer local synthesis route should show private value when local wins`);
   }

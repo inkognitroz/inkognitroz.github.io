@@ -282,6 +282,20 @@ async function installFixtures(page) {
         model_display_name: 'Supergeni',
         content: '4',
         score: 96,
+        // Mirrors the live gateway contract (answer_proof_line, schema 2026-07-02-answer-proof-line-v2).
+        answer_proof_line: {
+          object: 'mmir.answer_proof_line',
+          schema_version: '2026-07-02-answer-proof-line-v2',
+          status: 'consensus_signed',
+          label: 'Bevis: 2/3 enige · signert kvittering',
+          consensus: { status: 'high', agree_count: 2, total: 3, public_ui_label: 'Høy tillit - 2/3 ruter enige' },
+          verification: { deterministic: false, source_count: 0, source_hosts: [], source_trust: [], primary_source_trust: null },
+          receipt: { signed: true, keyed: true, id: 'receipt_mmir_test', route_id: 'browser-guide/free', node_id: 'browser-guide', signature_authority: 'mmir-keyed-hmac', signature_key_id: 'mmir-live-route-receipt-key-v1' },
+          provider_secrets_in_browser: false,
+          raw_prompt_returned: false,
+          raw_answer_returned: false,
+          no_paid_routes_started: true
+        },
         receipt: {
           provider: 'mmir',
           model_id: 'supergeni',
@@ -529,7 +543,8 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#mmir-p0-app');
   await page.waitForFunction(() => {
     const route = document.getElementById('p0-route');
-    return /Verifisert/i.test(route?.textContent || '') &&
+    return /live routes|model routes visible/i.test(route?.textContent || '') &&
+      !/Verifisert/i.test(route?.textContent || '') &&
       /live routes|model routes visible|Score 100/i.test(route?.getAttribute('aria-label') || '');
   });
 	assert(await page.locator('#p0-superboost, #p0-council').count() === 0, `${viewport.name}: launch composer must not mount advanced route controls`);
@@ -588,7 +603,8 @@ async function checkViewport(browser, viewport) {
   assert(/ready/i.test(layout.status), `${viewport.name}: boost compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
   assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
-  assert(/Verifisert/i.test(layout.route), `${viewport.name}: visible green route line should show verified value`);
+  assert(/Signert kvittering/i.test(layout.route), `${viewport.name}: visible green route line should show the gateway-proven trust value`);
+  assert(!/Verifisert/i.test(layout.route), `${viewport.name}: consensus_signed proof must not be inflated to a verified badge`);
   assert(/beskyttet/i.test(layout.route), `${viewport.name}: visible green route line should show hosted protection truth`);
   assert(!/privat/i.test(layout.route), `${viewport.name}: hosted route line must not claim private mode`);
   assert(!/Swarm 472/i.test(layout.route), `${viewport.name}: visible green route line should keep swarm internals behind details`);
@@ -650,7 +666,8 @@ async function checkViewport(browser, viewport) {
     toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
   }));
   assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Supergeni Council proof should show swarm value in the green status`);
-  assert(/Verifisert/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show verified value`);
+  assert(/Signert kvittering/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show the gateway-proven trust value`);
+  assert(!/Verifisert/i.test(councilLayout.route), `${viewport.name}: consensus_signed council proof must not be inflated to a verified badge`);
   assert(/beskyttet/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show hosted protection truth`);
   assert(!/privat/i.test(councilLayout.route), `${viewport.name}: hosted council route must not claim private mode`);
   assert(!/council ready/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should keep readiness detail behind details`);

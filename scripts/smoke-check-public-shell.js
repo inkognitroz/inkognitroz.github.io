@@ -882,7 +882,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "return chatHosted(synthesisPrompt,signal)",
+  "return chatHostedData(synthesisPrompt,signal)",
   "P0 compare synthesis must use the active abort signal.",
 );
 requireText(
@@ -902,7 +902,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function renderReceipt(receipt)",
+  "function renderReceipt(receipt,proof)",
   "P0 route receipts must keep full audit details available on click.",
 );
 requireText(
