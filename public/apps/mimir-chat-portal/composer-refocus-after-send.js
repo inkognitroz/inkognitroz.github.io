@@ -31,6 +31,6 @@
     if(event.target?.classList?.contains('mimir-composer'))refocus('composer-submit',120);
   },true);
   d.addEventListener('keydown',(event)=>{
-    if(event.target&&event.target.id==='mimir-prompt'&&event.key==='Enter'&&!event.shiftKey)refocus('enter-send',160);
+    if(event.target&&event.target.id==='mimir-prompt'&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing)refocus('enter-send',160);
   },true);
 })();
