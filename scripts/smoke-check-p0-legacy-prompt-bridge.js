@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 const root = process.cwd();
 const shell = readFileSync(join(root, 'public', 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'), 'utf8');
+const refocus = readFileSync(join(root, 'public', 'apps', 'mimir-chat-portal', 'composer-refocus-after-send.js'), 'utf8');
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
 
@@ -28,6 +29,7 @@ requireText(shell, "if(event.target!==input)return;", 'Form-level Enter handling
 requireText(shell, "legacy.addEventListener('keydown'", 'Bridge must handle Enter from the legacy prompt during dual-input migration.');
 requireText(shell, "if(event.key!=='Enter'||event.shiftKey||event.isComposing)return;", 'Legacy Enter handling must preserve newlines and IME composition.');
 requireText(shell, 'syncP0InputFromLegacy();\n        if(state.busy)return;\n        sendMessage();', 'Legacy Enter must sync the active value before sending through the canonical P0 path.');
+requireText(refocus, "event.key==='Enter'&&!event.shiftKey&&!event.isComposing", 'Composer refocus must not treat IME composition confirmation as a completed send.');
 
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-legacy-prompt-bridge.js')) {
   fail('npm run check must include smoke-check-p0-legacy-prompt-bridge.js.');
