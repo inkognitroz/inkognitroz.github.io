@@ -25,7 +25,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    # Account-level Actions spend is hard-stopped. Operators can select an
+    # ephemeral self-hosted runner for a cost-safe production publish.
+    runs-on: ${{ fromJSON(vars.MMIR_PAGES_RUNNER_JSON || '["ubuntu-latest"]') }}
     timeout-minutes: 10
     steps:
       - name: Checkout
