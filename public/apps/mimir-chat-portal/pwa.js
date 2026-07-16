@@ -1,6 +1,7 @@
 (function(){
   const root=document.getElementById('pwa-install-root');
-  let deferredPrompt=null;
+  const installPromptState=window.__MimirPwaInstallPrompt||(window.__MimirPwaInstallPrompt={});
+  let deferredPrompt=installPromptState.event||null;
   let swRegistration=null;
   let statusEl=null;
   let cardsEl=null;
@@ -46,10 +47,12 @@
   }
 
   async function installApp(){
-    if(deferredPrompt){
-      deferredPrompt.prompt();
-      const choice=await deferredPrompt.userChoice.catch(()=>({outcome:'dismissed'}));
+    const prompt=deferredPrompt||installPromptState.event;
+    if(prompt){
       deferredPrompt=null;
+      installPromptState.event=null;
+      await prompt.prompt();
+      const choice=await prompt.userChoice.catch(()=>({outcome:'dismissed'}));
       setStatus(choice.outcome==='accepted'?'Install accepted. MMIR will open as an app from the device launcher.':'Install dismissed. You can install later from the browser menu.','ready');
       await renderStatus();
       return;
@@ -110,13 +113,19 @@
     registerServiceWorker();
   }
 
-  window.addEventListener('beforeinstallprompt',(event)=>{
-    event.preventDefault();
-    deferredPrompt=event;
+  function receiveInstallPrompt(event){
+    if(event){
+      event.preventDefault();
+      installPromptState.event=event;
+    }
+    deferredPrompt=installPromptState.event||null;
     setStatus('Install prompt is ready.','ready');
     renderStatus();
-  });
-  window.addEventListener('appinstalled',()=>{deferredPrompt=null;setStatus('MMIR installed on this device.','ready');renderStatus();});
+  }
+
+  if(!installPromptState.captureBound)window.addEventListener('beforeinstallprompt',receiveInstallPrompt);
+  window.addEventListener('mimir-pwa-install-prompt-ready',()=>receiveInstallPrompt());
+  window.addEventListener('appinstalled',()=>{deferredPrompt=null;installPromptState.event=null;setStatus('MMIR installed on this device.','ready');renderStatus();});
   window.addEventListener('online',()=>setStatus('Back online. Local nodes and protected backends can be checked again.','ready'));
   window.addEventListener('offline',()=>setStatus('Offline shell active. Cached public UI remains available.','warning'));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();

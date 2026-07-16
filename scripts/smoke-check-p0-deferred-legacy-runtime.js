@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { collectPwaOfflineBehaviorFailures } from './smoke-check-pwa-offline-behavior.js';
 
 const root = process.cwd();
 const publicDir = join(resolve(root, 'public'));
@@ -49,6 +50,11 @@ requireIncludes(
 if (!manifest.assets?.['p0-chat-shell.js']) {
   fail('Asset manifest must track the P0 shell first-paint runtime.');
 }
+requireIncludes(
+  html,
+  './apps/mimir-chat-portal/pwa.js?v='+(manifest.assets?.['pwa.js'] || ''),
+  'Deferred PWA UI must use its tracked prompt-handoff version.'
+);
 if (hasDirect) {
   fail('Legacy chat-runtime.js must not be a direct first-paint script when P0 owns the public chat shell.');
 }
@@ -61,6 +67,29 @@ if (runtimeIndex < 0 || webgpuIndex < 0 || runtimeIndex > webgpuIndex) {
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-deferred-legacy-runtime.js')) {
   fail('npm run check must include smoke-check-p0-deferred-legacy-runtime.js.');
 }
+
+requireIncludes(
+  html,
+  "'serviceWorker' in navigator",
+  'The P0 shell must feature-detect service workers outside the skipped legacy queue.'
+);
+requireIncludes(
+  html,
+  "navigator.serviceWorker.register('./sw.js',{scope:'./'})",
+  'The P0 shell must register the root service worker outside the skipped legacy queue.'
+);
+requireIncludes(
+  html,
+  "window.addEventListener('load',registerServiceWorker,{once:true})",
+  'Service-worker registration must wait until page load.'
+);
+requireIncludes(
+  html,
+  "window.requestIdleCallback(run,{timeout:4000})",
+  'Service-worker registration must stay off the first-chat critical path.'
+);
+
+for (const failure of await collectPwaOfflineBehaviorFailures(root)) fail(failure);
 
 if (failures.length) {
   console.error('P0 deferred legacy runtime smoke failed:');
