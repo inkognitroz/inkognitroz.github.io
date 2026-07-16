@@ -62,6 +62,27 @@ if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-deferred-
   fail('npm run check must include smoke-check-p0-deferred-legacy-runtime.js.');
 }
 
+requireIncludes(
+  html,
+  "'serviceWorker' in navigator",
+  'The P0 shell must feature-detect service workers outside the skipped legacy queue.'
+);
+requireIncludes(
+  html,
+  "navigator.serviceWorker.register('./sw.js',{scope:'./'})",
+  'The P0 shell must register the root service worker outside the skipped legacy queue.'
+);
+requireIncludes(
+  html,
+  "window.addEventListener('load',registerServiceWorker,{once:true})",
+  'Service-worker registration must wait until page load.'
+);
+requireIncludes(
+  html,
+  "window.requestIdleCallback(run,{timeout:4000})",
+  'Service-worker registration must stay off the first-chat critical path.'
+);
+
 if (failures.length) {
   console.error('P0 deferred legacy runtime smoke failed:');
   failures.forEach((failure) => console.error('- ' + failure));
