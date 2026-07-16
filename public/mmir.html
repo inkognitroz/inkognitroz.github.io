@@ -437,5 +437,21 @@
       else window.addEventListener('load',function(){if(!hydrateTargetDetails())schedule();},{once:true});
     })();
   </script>
+  <script>
+    (function(){
+      if(!('serviceWorker' in navigator))return;
+      if(!(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'))return;
+      function registerServiceWorker(){
+        var run=function(){
+          try{navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){});}
+          catch(error){}
+        };
+        if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:4000});
+        else window.setTimeout(run,1200);
+      }
+      if(document.readyState==='complete')registerServiceWorker();
+      else window.addEventListener('load',registerServiceWorker,{once:true});
+    })();
+  </script>
 </body>
 </html>
