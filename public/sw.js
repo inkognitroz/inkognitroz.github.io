@@ -40,13 +40,39 @@ const SHELL_ASSETS=[
   './apps/mimir-chat-portal/pwa.js',
   './user-journeys.json'
 ];
+const SHELL_ASSET_PATHS=new Set(SHELL_ASSETS.map((asset)=>new URL(asset,self.location.href).pathname));
+
+function isNavigationRequest(request){
+  return request.mode==='navigate'||request.destination==='document';
+}
 
 function shouldUseNetworkFirst(request,url){
-  if(request.mode==='navigate')return true;
+  if(isNavigationRequest(request))return true;
+  if(request.destination==='script'||request.destination==='style'||request.destination==='worker')return true;
   const path=url.pathname.toLowerCase();
   const lastDot=path.lastIndexOf('.');
   const extension=lastDot>=0?path.slice(lastDot):'';
   return NETWORK_FIRST_EXTENSIONS.has(extension);
+}
+
+async function matchCachedRequest(request,url){
+  const exact=await caches.match(request);
+  if(exact||!url.search||!SHELL_ASSET_PATHS.has(url.pathname))return exact;
+  return caches.match(request,{ignoreSearch:true});
+}
+
+async function networkFirst(request,url){
+  try{
+    return cacheResponse(request,await fetch(request,{cache:'no-cache'}));
+  }catch(error){
+    const cached=await matchCachedRequest(request,url);
+    if(cached)return cached;
+    if(isNavigationRequest(request)){
+      const offline=await caches.match('./offline.html');
+      if(offline)return offline;
+    }
+    return Response.error();
+  }
 }
 
 function cacheResponse(request,response){
@@ -76,12 +102,12 @@ self.addEventListener('fetch',(event)=>{
   if(url.origin!==self.location.origin)return;
 
   if(shouldUseNetworkFirst(request,url)){
-    event.respondWith(fetch(request,{cache:'no-cache'}).then((response)=>cacheResponse(request,response)).catch(()=>caches.match(request).then((cached)=>cached||caches.match('./offline.html'))));
+    event.respondWith(networkFirst(request,url));
     return;
   }
 
-  event.respondWith(caches.match(request).then((cached)=>{
-    const network=fetch(request).then((response)=>cacheResponse(request,response)).catch(()=>cached);
+  event.respondWith(matchCachedRequest(request,url).then((cached)=>{
+    const network=fetch(request).then((response)=>cacheResponse(request,response)).catch(()=>cached||Response.error());
     return cached||network;
   }));
 });

@@ -1,6 +1,6 @@
 {
   "scope": "public/mmir.html launch-critical chat assets",
-  "updated": "2026-06-23",
+  "updated": "2026-07-16",
   "assets": {
     "active-node-strip.js": "20260709-active-route-fallback-policy-v1",
     "activation-telemetry.js": "20260622-first-screen-starter-progress-v1",
@@ -44,6 +44,7 @@
     "p0-storage.js": "20260606-b1-06-p0-storage-v2",
     "p0-text.js": "20260714-safe-markdown-v1",
     "platform-status.js": "20260627-status-card-dedupe-v1",
+    "pwa.js": "20260716-install-prompt-handoff-v1",
     "public-launch-guard.js": "20260604-hidden-capability-inert-v1",
     "quiet-first-paint-hotfix.js": "20260531-local-loopback-v1",
     "route-chips.js": "20260604-route-display-consumers-v1",

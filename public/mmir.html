@@ -9,6 +9,19 @@
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="MMIR" />
+  <script id="mimir-pwa-install-bridge">
+    (function(){
+      var state=window.__MimirPwaInstallPrompt=window.__MimirPwaInstallPrompt||{};
+      if(state.captureBound)return;
+      state.captureBound=true;
+      window.addEventListener('beforeinstallprompt',function(event){
+        event.preventDefault();
+        state.event=event;
+        window.dispatchEvent(new Event('mimir-pwa-install-prompt-ready'));
+      });
+      window.addEventListener('appinstalled',function(){state.event=null;});
+    })();
+  </script>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./assets/mmir-icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./assets/mmir-maskable-icon.svg" />
@@ -337,7 +350,7 @@
     "./apps/mimir-chat-portal/first-screen-activation-hydration.js?v=20260622-first-screen-starter-progress-v1",
     "./apps/mimir-chat-portal/context-controls.js",
     "./apps/mimir-chat-portal/answer-context-receipts.js",
-    "./apps/mimir-chat-portal/pwa.js",
+    "./apps/mimir-chat-portal/pwa.js?v=20260716-install-prompt-handoff-v1",
     "./apps/mimir-chat-portal/message-actions.js",
     "./apps/mimir-chat-portal/conversation-manager.js?v=20260607-b0-06-13-conversation-portability-v1",
     "./apps/mimir-chat-portal/model-catalog-ui.js?v=20260711-model-action-contract-v1",

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { collectPwaOfflineBehaviorFailures } from './smoke-check-pwa-offline-behavior.js';
 
 const root = process.cwd();
 const publicDir = join(resolve(root, 'public'));
@@ -49,6 +50,11 @@ requireIncludes(
 if (!manifest.assets?.['p0-chat-shell.js']) {
   fail('Asset manifest must track the P0 shell first-paint runtime.');
 }
+requireIncludes(
+  html,
+  './apps/mimir-chat-portal/pwa.js?v='+(manifest.assets?.['pwa.js'] || ''),
+  'Deferred PWA UI must use its tracked prompt-handoff version.'
+);
 if (hasDirect) {
   fail('Legacy chat-runtime.js must not be a direct first-paint script when P0 owns the public chat shell.');
 }
@@ -82,6 +88,8 @@ requireIncludes(
   "window.requestIdleCallback(run,{timeout:4000})",
   'Service-worker registration must stay off the first-chat critical path.'
 );
+
+for (const failure of await collectPwaOfflineBehaviorFailures(root)) fail(failure);
 
 if (failures.length) {
   console.error('P0 deferred legacy runtime smoke failed:');
