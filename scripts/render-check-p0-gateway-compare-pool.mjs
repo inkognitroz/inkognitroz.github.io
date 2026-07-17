@@ -260,7 +260,7 @@ async function installFixtures(page) {
           status: 'high',
           supporting_route_count: 2,
           supporting_routes: [
-            { route: 'mmir · Supergeni', score: 96, latency_ms: 420 },
+            { route: 'mistral · Mistral Large', score: 96, latency_ms: 420 },
             { route: 'openrouter · Laguna XS', score: 83, latency_ms: 1370 }
           ]
         },
@@ -278,10 +278,17 @@ async function installFixtures(page) {
         provider_secrets_in_browser: false
       },
       best_answer: {
-        model_id: 'supergeni',
-        model_display_name: 'Supergeni',
+        model_id: 'mistral-large-latest',
+        model_display_name: 'Mistral Large',
         content: '4',
         score: 96,
+        answer_writer: {
+          object: 'mmir.answer_writer',
+          type: 'llm',
+          provider: 'mistral',
+          model_id: 'mistral-large-latest',
+          model_display_name: 'Mistral Large'
+        },
         // Mirrors the live gateway contract (answer_proof_line, schema 2026-07-02-answer-proof-line-v2).
         answer_proof_line: {
           object: 'mmir.answer_proof_line',
@@ -297,22 +304,22 @@ async function installFixtures(page) {
           no_paid_routes_started: true
         },
         receipt: {
-          provider: 'mmir',
-          model_id: 'supergeni',
-          route_id: 'browser-guide/free',
+          provider: 'mistral',
+          model_id: 'mistral-large-latest',
+          route_id: 'mistral/mistral-large-latest',
           latency_ms: 420,
           no_paid_routes_started: true
         }
       },
       data: [
         {
-          model: 'supergeni',
+          model: 'mistral-large-latest',
           choices: [{ message: { content: '4' } }],
           mmir: {
             receipt: {
-              provider: 'mmir',
-              model_id: 'supergeni',
-              model_display_name: 'Supergeni',
+              provider: 'mistral',
+              model_id: 'mistral-large-latest',
+              model_display_name: 'Mistral Large',
               latency_ms: 420,
               no_paid_routes_started: true
             }
@@ -350,14 +357,14 @@ async function installFixtures(page) {
       route_attempts: [
         {
           status: 'succeeded',
-          provider: 'mmir',
-          model_id: 'supergeni',
-          model_display_name: 'Supergeni',
+          provider: 'mistral',
+          model_id: 'mistral-large-latest',
+          model_display_name: 'Mistral Large',
           score: 96,
           latency_ms: 420,
           answer_class: 'complete',
           latency_class: 'fast',
-          receipt: { provider: 'mmir', model_id: 'supergeni', route_id: 'browser-guide/free', latency_ms: 420, receipt_signature: 'hmac-sha256:test' }
+          receipt: { provider: 'mistral', model_id: 'mistral-large-latest', route_id: 'mistral/mistral-large-latest', latency_ms: 420, receipt_signature: 'hmac-sha256:test' }
         },
         {
           status: 'succeeded',
@@ -383,7 +390,7 @@ async function installFixtures(page) {
         }
       ],
       ranking: [
-        { model_id: 'supergeni', score: 96 },
+        { model_id: 'mistral-large-latest', score: 96 },
         { model_id: 'poolside/laguna-xs.2:free', score: 83 },
         { model_id: 'openai/gpt-oss-20b:free', score: 81 }
       ],
@@ -429,27 +436,34 @@ async function installFixtures(page) {
         }
       },
       best_answer: {
-        model_id: 'supergeni',
-        model_display_name: 'Supergeni',
+        model_id: 'mistral-large-latest',
+        model_display_name: 'Mistral Large',
         content: '4',
         score: 96,
+        answer_writer: {
+          object: 'mmir.answer_writer',
+          type: 'llm',
+          provider: 'mistral',
+          model_id: 'mistral-large-latest',
+          model_display_name: 'Mistral Large'
+        },
         receipt: {
-          provider: 'mmir',
-          model_id: 'supergeni',
-          route_id: 'browser-guide/free',
+          provider: 'mistral',
+          model_id: 'mistral-large-latest',
+          route_id: 'mistral/mistral-large-latest',
           latency_ms: 420,
           no_paid_routes_started: true
         }
       },
       data: [
         {
-          model: 'supergeni',
+          model: 'mistral-large-latest',
           choices: [{ message: { content: '4' } }],
           mmir: {
             receipt: {
-              provider: 'mmir',
-              model_id: 'supergeni',
-              model_display_name: 'Supergeni',
+              provider: 'mistral',
+              model_id: 'mistral-large-latest',
+              model_display_name: 'Mistral Large',
               latency_ms: 420,
               no_paid_routes_started: true
             }
@@ -485,14 +499,14 @@ async function installFixtures(page) {
       route_attempts: [
         {
           status: 'succeeded',
-          provider: 'mmir',
-          model_id: 'supergeni',
-          model_display_name: 'Supergeni',
+          provider: 'mistral',
+          model_id: 'mistral-large-latest',
+          model_display_name: 'Mistral Large',
           score: 96,
           latency_ms: 420,
           answer_class: 'complete',
           latency_class: 'fast',
-          receipt: { provider: 'mmir', model_id: 'supergeni', route_id: 'browser-guide/free', latency_ms: 420 }
+          receipt: { provider: 'mistral', model_id: 'mistral-large-latest', route_id: 'mistral/mistral-large-latest', latency_ms: 420 }
         },
         {
           status: 'succeeded',
@@ -579,12 +593,13 @@ async function checkViewport(browser, viewport) {
   await page.waitForFunction(() => {
     const text = document.getElementById('p0-transcript')?.innerText || '';
     const routeFull = document.getElementById('p0-route')?.getAttribute('aria-label') || '';
-    return /\b4\b/.test(text) && /Spør 5 AI - beste vinner/i.test(text) && /Superboost/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
+    return /\b4\b/.test(text) && /Mistral Large/i.test(text) && !/Spør 5 AI - beste vinner/i.test(text) && /Superboost/i.test(routeFull) && /round 1\/3/i.test(routeFull) && /5 routes compared/i.test(routeFull);
   });
 
   const text = await page.locator('#p0-transcript').innerText();
   assert(text.includes('4'), `${viewport.name}: gateway compare should render the best answer`);
-  assert(/Spør 5 AI - beste vinner/i.test(text), `${viewport.name}: boost receipt should show the user-value swarm line`);
+  assert(/Mistral Large/i.test(text), `${viewport.name}: boost answer must name the actual writer model`);
+  assert(!/Spør 5 AI - beste vinner/i.test(text), `${viewport.name}: boost answer must not expose internal swarm marketing copy`);
   assert(/Fortsett svaret/i.test(text), `${viewport.name}: truncated Superboost answer should expose the plain-language continuation action`);
   assert(/Svarvakt/i.test(text), `${viewport.name}: truncated Superboost answer should explain why continuation is available`);
   assert(/Detaljer/i.test(text), `${viewport.name}: boost receipt should keep raw telemetry behind Details`);
@@ -606,7 +621,7 @@ async function checkViewport(browser, viewport) {
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare body must not overflow`);
   assert(/ready/i.test(layout.status), `${viewport.name}: boost compare should finish cleanly`);
   assert(!/Winner:/i.test(layout.route), `${viewport.name}: visible green route line should stay subtle`);
-  assert(/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible green route line should show swarm value, not machinery`);
+  assert(!/Spør 5 AI - beste vinner/i.test(layout.route), `${viewport.name}: visible route line must not expose internal swarm marketing copy`);
   assert(/Signert kvittering/i.test(layout.route), `${viewport.name}: visible green route line should show the gateway-proven trust value`);
   assert(!/Verifisert/i.test(layout.route), `${viewport.name}: consensus_signed proof must not be inflated to a verified badge`);
   assert(/beskyttet/i.test(layout.route), `${viewport.name}: visible green route line should show hosted protection truth`);
@@ -647,7 +662,7 @@ async function checkViewport(browser, viewport) {
     return /All active answers:/i.test(text) && /OpenRouter · Laguna XS/i.test(text);
   });
   const allText = await page.locator('#p0-transcript').innerText();
-  assert(/Best live score: Supergeni/i.test(allText), `${viewport.name}: Ask all should keep the winning route visible in the answer`);
+  assert(/Best live score: Mistral Large/i.test(allText), `${viewport.name}: Ask all should keep the actual winning model visible in the answer`);
   assert(/Why: complete answer, fast/i.test(allText), `${viewport.name}: Ask all should explain the winning route briefly`);
   assert(/All active answers:/i.test(allText), `${viewport.name}: Ask all should render every active answer`);
 
@@ -673,7 +688,7 @@ async function checkViewport(browser, viewport) {
         return rect.width > 0 && rect.height > 0;
       }).length
   }));
-  assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Supergeni Council proof should show swarm value in the green status`);
+  assert(!/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status must not expose internal swarm marketing copy`);
   assert(/Signert kvittering/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show the gateway-proven trust value`);
   assert(!/Verifisert/i.test(councilLayout.route), `${viewport.name}: consensus_signed council proof must not be inflated to a verified badge`);
   assert(/beskyttet/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show hosted protection truth`);
