@@ -59,7 +59,16 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260717-real-writer-answer-first-v1';
+  const P0_RUNTIME_VERSION='20260717-canonical-grounded-writer-v1';
+  const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
+  const CANONICAL_HOSTED_MODEL_ALIASES=new Set([
+    CANONICAL_HOSTED_MODEL_ID,
+    'supergeni',
+    'supergeni-free',
+    'supergenius-free',
+    'supergenious-free',
+    'mmir-github-fallback'
+  ]);
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -481,11 +490,23 @@
   }
 
   function readActiveModelId(){
-    return readStorageString(ACTIVE_MODEL_KEY,'mmir-supergenius');
+    return canonicalHostedModelId(readStorageString(ACTIVE_MODEL_KEY,CANONICAL_HOSTED_MODEL_ID));
   }
 
   function persistActiveModelId(){
-    writeStorageString(ACTIVE_MODEL_KEY,state.activeModelId||'mmir-supergenius');
+    writeStorageString(ACTIVE_MODEL_KEY,canonicalHostedModelId(state.activeModelId||CANONICAL_HOSTED_MODEL_ID));
+  }
+
+  function canonicalHostedModelId(value){
+    const id=String(value||'').trim();
+    return CANONICAL_HOSTED_MODEL_ALIASES.has(id.toLowerCase())?CANONICAL_HOSTED_MODEL_ID:id;
+  }
+
+  function isCanonicalHostedModel(model){
+    return model?.route==='hosted'&&(
+      canonicalHostedModelId(model?.id)===CANONICAL_HOSTED_MODEL_ID||
+      canonicalHostedModelId(model?.model)===CANONICAL_HOSTED_MODEL_ID
+    );
   }
 
   function pinnedRouteIds(){
@@ -2777,7 +2798,8 @@
       .filter(visibleHostedModel)
       .filter(model=>String(model?.id||model?.model||'').trim())
       .map((model,index)=>{
-        const id=String(model.id||model.model).trim();
+        const rawModelId=String(model.id||model.model).trim();
+        const id=canonicalHostedModelId(rawModelId);
         const executable=executableHostedModel(model);
         const candidate=hostedCandidateModel(model);
         const routeClass=String(model.route_class||'').trim();
@@ -2792,7 +2814,7 @@
           detail,
           tags:candidate?[provider,'Candidate','Future']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
-          model:id,
+          model:rawModelId,
           executable,
           candidate,
           provider,
@@ -2829,6 +2851,7 @@
       const activeLocal=state.models.find(model=>model.id===state.activeModelId&&model.route==='local');
       state.routeInventory=modelInventorySummary(payload,models);
       state.models=models.concat(state.models.filter(model=>model.route==='local'));
+      state.activeModelId=canonicalHostedModelId(state.activeModelId);
       const selected=state.models.find(model=>model.id===state.activeModelId);
       if(!activeLocal&&(!selected||selected.executable===false||selected.selectable===false)){
         state.activeModelId=(state.models.find(model=>model.executable!==false&&model.selectable!==false)||models[0]).id;
@@ -3058,7 +3081,8 @@
   }
 
   function defaultHostedModel(){
-    return state.models.find(model=>model.route==='hosted'&&model.executable!==false&&model.selectable!==false)||
+    return state.models.find(model=>isCanonicalHostedModel(model)&&model.executable!==false&&model.selectable!==false)||
+      state.models.find(model=>model.route==='hosted'&&model.executable!==false&&model.selectable!==false)||
       state.models.find(model=>model.executable!==false&&model.selectable!==false)||
       state.models[0];
   }
@@ -3590,8 +3614,8 @@
     if(partner&&wantsCompareRoute(prompt)){
       return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};
     }
-    if(factGuardActive()&&active.route==='local'&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
-      return {mode:'single',model:defaultHostedModel(),reason:'Quality guard: public facts'};
+    if(factGuardActive()&&!isCanonicalHostedModel(active)&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
+      return {mode:'single',model:defaultHostedModel(),reason:'Kvalitetssikret fakta · nettsøk ved behov',prompt:cleanSmartPrompt(prompt)||prompt};
     }
     if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
       return {mode:'single',model:local,reason:routeReason('Smart route: private local',prompt,local),prompt:cleanSmartPrompt(prompt)||prompt};
@@ -6156,9 +6180,9 @@
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
     const modelId=String(model?.model||model?.id||'mmir-supergenius').trim()||'mmir-supergenius';
-    const externalUntrustedFree=model?.routeClass==='external-untrusted-free'||model?.trustLevel==='external-untrusted-free';
-    const systemPrompt=(externalUntrustedFree
-      ? 'You are an external untrusted-free model connected through MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
+    const directWriter=!isCanonicalHostedModel(model);
+    const systemPrompt=(directWriter
+      ? 'You are the language model selected by the user inside MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.')+explicitGroundingInstruction(prompt);
     return {
       model:modelId,
