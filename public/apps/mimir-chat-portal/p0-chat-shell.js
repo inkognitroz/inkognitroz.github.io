@@ -59,7 +59,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260715-truthful-proof-line-v1';
+  const P0_RUNTIME_VERSION='20260717-duck-like-composer-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -85,6 +85,8 @@
   const ICON_BRAIN=P0_ICONS.brain||'';
   const ICON_STOP=P0_ICONS.stop||'';
   const ICON_LIGHTNING=P0_ICONS.lightning||'';
+  const ICON_ATTACH=P0_ICONS.attach||'<span aria-hidden="true">+</span>';
+  const ICON_TOOLS=P0_ICONS.tools||'<span aria-hidden="true">Tools</span>';
   const readJson=P0_STORAGE.readJson;
   const writeJson=P0_STORAGE.writeJson;
   const readStorageString=P0_STORAGE.readString;
@@ -3637,38 +3639,54 @@
     app.className='p0-launch-shell';
     app.setAttribute('aria-label','MMIR chat');
     app.innerHTML=''+
-      '<header class="p0-topbar">'+
-        '<a class="p0-brand" href="./mmir.html" aria-label="MMIR.ai chat">'+
+      '<aside class="p0-sidebar" aria-label="MMIR navigation">'+
+        '<a class="p0-sidebar-brand" href="./mmir.html" aria-label="MMIR.ai chat">'+
           '<span class="p0-mark" aria-hidden="true">MM</span>'+
           '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
         '</a>'+
-        '<div id="p0-status" class="p0-status" data-state="ready">Ready</div>'+
-      '</header>'+
-      '<main class="p0-chat">'+
-        '<div id="p0-transcript" class="p0-transcript" aria-live="polite" aria-relevant="additions text"></div>'+
-      '</main>'+
-      '<footer class="p0-composer-wrap">'+
-        '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-          '<textarea id="p0-input" class="p0-input" rows="2" aria-label="Message Supergeni" autocomplete="off" spellcheck="true"></textarea>'+
-          '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
-          '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
-          '<div class="p0-status-rail">'+
-            '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
-            '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
-          '</div>'+
-          '<div class="p0-toolbar">'+
-            '<div class="p0-left">'+
-              '<button id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Legg til" title="Legg til" aria-expanded="false">+</button>'+
-              '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
+        '<nav class="p0-sidebar-nav" aria-label="Chat actions">'+
+          '<button type="button" data-p0-sidebar-action="new-chat">'+ICON_TOOLS+'<span>New Chat</span></button>'+
+          '<button type="button" data-p0-sidebar-action="voice-input">'+ICON_MIC+'<span>New Voice Chat</span></button>'+
+          '<button type="button" data-p0-sidebar-action="choose-photo-local">'+ICON_ATTACH+'<span>New Image</span></button>'+
+        '</nav>'+
+        '<button id="p0-sidebar-settings" class="p0-sidebar-settings" type="button" data-p0-sidebar-action="privacy-menu">'+ICON_SHIELD+'<span>Settings</span></button>'+
+      '</aside>'+
+      '<div class="p0-main-shell">'+
+        '<header class="p0-topbar">'+
+          '<a class="p0-brand" href="./mmir.html" aria-label="MMIR.ai chat">'+
+            '<span class="p0-mark" aria-hidden="true">MM</span>'+
+            '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
+          '</a>'+
+          '<div id="p0-status" class="p0-status" data-state="ready">Ready</div>'+
+        '</header>'+
+        '<main class="p0-chat">'+
+          '<div id="p0-transcript" class="p0-transcript" aria-live="polite" aria-relevant="additions text"></div>'+
+        '</main>'+
+        '<footer class="p0-composer-wrap">'+
+          '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
+            '<textarea id="p0-input" class="p0-input" rows="2" aria-label="Message MMIR" placeholder="Spør hva som helst" autocomplete="off" spellcheck="true"></textarea>'+
+            '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
+            '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
+            '<div class="p0-status-rail">'+
+              '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
+              '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
             '</div>'+
-            '<div class="p0-right">'+
-              '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
-              '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input">'+ICON_MIC+'</button>'+
-              '<button id="p0-send" class="p0-btn p0-btn-icon p0-send" type="submit" aria-label="Send message">↑</button>'+
+            '<div class="p0-toolbar">'+
+              '<div class="p0-left">'+
+                '<button id="p0-attach" class="p0-btn p0-btn-icon" type="button" aria-label="Legg ved bilde" title="Legg ved bilde">'+ICON_ATTACH+'</button>'+
+                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Tools" title="Tools" aria-expanded="false">'+ICON_TOOLS+'<span>Tools</span></button>'+
+                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
+              '</div>'+
+              '<div class="p0-right">'+
+                '<span class="p0-speed-chip" title="Fast default route">Fast</span>'+
+                '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
+                '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input">'+ICON_MIC+'</button>'+
+                '<button id="p0-send" class="p0-btn p0-send" type="submit" aria-label="Send message">Ask</button>'+
+              '</div>'+
             '</div>'+
-          '</div>'+
-        '</form>'+
-      '</footer>'+
+          '</form>'+
+        '</footer>'+
+      '</div>'+
       '<div id="p0-add-menu" class="p0-menu" hidden></div>'+
       '<div id="p0-model-menu" class="p0-menu" hidden></div>'+
       '<div id="p0-privacy-menu" class="p0-menu" hidden></div>';
@@ -3735,6 +3753,10 @@
     });
     bindLegacyPromptBridge();
     document.getElementById('p0-add').addEventListener('click',(event)=>toggleMenu('add',event.currentTarget));
+    document.getElementById('p0-attach')?.addEventListener('click',(event)=>{
+      event.preventDefault();
+      triggerPhotoPicker('library');
+    });
     document.getElementById('p0-model').addEventListener('click',(event)=>toggleMenu('model',event.currentTarget));
     document.getElementById('p0-privacy').addEventListener('click',(event)=>toggleMenu('privacy',event.currentTarget));
     document.getElementById('p0-photo-camera')?.addEventListener('change',(event)=>handlePhotoPicked(event,'camera'));
@@ -3812,10 +3834,17 @@
         return;
       }
       const actionButton=event.target.closest('[data-p0-action]');
-      if(actionButton&&actionButton.closest('.p0-menu')){
+      if(actionButton&&(actionButton.closest('.p0-menu')||actionButton.closest('.p0-sidebar'))){
         event.preventDefault();
         event.stopPropagation();
         handleMenuAction(actionButton.getAttribute('data-p0-action'));
+        return;
+      }
+      const sidebarActionButton=event.target.closest('[data-p0-sidebar-action]');
+      if(sidebarActionButton&&sidebarActionButton.closest('.p0-sidebar')){
+        event.preventDefault();
+        event.stopPropagation();
+        handleMenuAction(sidebarActionButton.getAttribute('data-p0-sidebar-action'));
         return;
       }
       if(event.target.closest('#p0-add,#p0-model,#p0-privacy,.p0-menu'))return;

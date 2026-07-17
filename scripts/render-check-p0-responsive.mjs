@@ -249,8 +249,8 @@ async function checkViewport(browser, viewport) {
   assert(layout.transcript?.overflowY === 'auto', `${viewport.name}: transcript must remain scrollable`);
   assert((layout.transcript?.scrollHeight || 0) > (layout.transcript?.clientHeight || 0), `${viewport.name}: seeded transcript must create a scrollable answer pane`);
 
-  const controls = Object.entries(layout.rects).filter(([id]) => ['p0-add', 'p0-send'].includes(id));
-  const launchHidden = Object.entries(layout.rects).filter(([id]) => ['p0-privacy', 'p0-model', 'p0-mic'].includes(id));
+  const controls = Object.entries(layout.rects).filter(([id]) => ['p0-attach', 'p0-add', 'p0-model', 'p0-mic', 'p0-send'].includes(id));
+  const launchHidden = Object.entries(layout.rects).filter(([id]) => ['p0-privacy'].includes(id));
   for (const [id, rect] of controls) {
     assert(rect?.visible, `${viewport.name}: ${id} should be visible`);
     assert(rect.left >= -1 && rect.right <= viewport.width + 1, `${viewport.name}: ${id} should stay inside viewport`);
@@ -262,7 +262,7 @@ async function checkViewport(browser, viewport) {
     }
   }
   for (const [id, rect] of launchHidden) {
-    assert(rect && rect.visible === false, `${viewport.name}: ${id} should stay behind the settings menu in launch shell`);
+    assert(rect && rect.visible === false, `${viewport.name}: ${id} should stay behind the Tools menu in launch shell`);
   }
 
   await page.locator('#p0-add').click();

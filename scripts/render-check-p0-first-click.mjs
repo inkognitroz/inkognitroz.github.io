@@ -186,7 +186,7 @@ async function clearBrowserState(page) {
 
 async function pageLayout(page) {
   return page.evaluate(() => {
-    const controls = ['p0-add', 'p0-privacy', 'p0-model', 'p0-mic', 'p0-send'];
+    const controls = ['p0-attach', 'p0-add', 'p0-privacy', 'p0-model', 'p0-mic', 'p0-send'];
     const rects = {};
     for (const id of controls) {
       const element = document.getElementById(id);
@@ -251,8 +251,8 @@ function rectOverlap(a, b) {
 
 function assertControls(layout, viewport, label) {
   assert(layout.scrollWidth <= viewport.width + 1, `${label}: page must not have horizontal overflow`);
-  const entries = Object.entries(layout.rects).filter(([id]) => ['p0-add', 'p0-send'].includes(id));
-  const launchHidden = Object.entries(layout.rects).filter(([id]) => ['p0-privacy', 'p0-model', 'p0-mic'].includes(id));
+  const entries = Object.entries(layout.rects).filter(([id]) => ['p0-attach', 'p0-add', 'p0-model', 'p0-mic', 'p0-send'].includes(id));
+  const launchHidden = Object.entries(layout.rects).filter(([id]) => ['p0-privacy'].includes(id));
   for (const [id, rect] of entries) {
     assert(Boolean(rect?.visible), `${label}: ${id} should be visible`);
     if (!rect) continue;
@@ -265,7 +265,7 @@ function assertControls(layout, viewport, label) {
     }
   }
   for (const [id, rect] of launchHidden) {
-    assert(rect && rect.visible === false, `${label}: ${id} should stay behind the settings menu in launch shell`);
+    assert(rect && rect.visible === false, `${label}: ${id} should stay behind the Tools menu in launch shell`);
   }
 }
 

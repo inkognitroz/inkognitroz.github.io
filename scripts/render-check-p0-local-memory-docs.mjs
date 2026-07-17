@@ -134,7 +134,11 @@ async function checkViewport(browser, viewport) {
     bodyScrollWidth: document.body.scrollWidth,
     status: document.getElementById('p0-status')?.textContent || '',
     route: document.getElementById('p0-route')?.textContent || '',
-    toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
+    toolbarButtons: Array.from(document.querySelectorAll('.p0-toolbar button'))
+      .filter(button => {
+        const rect = button.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      }).length
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: local memory must not create horizontal overflow`);
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: local memory body must not overflow`);

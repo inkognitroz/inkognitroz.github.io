@@ -144,10 +144,10 @@ requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compa
 requireIncludes(files.p0Icons, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
 requireIncludes(files.p0Icons, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
 requireIncludes(files.p0Runtime, 'id="p0-input"', 'P0 shell must expose #p0-input as the canonical visible first-chat input.');
-requireIncludes(files.p0Runtime, 'aria-label="Message Supergeni"', 'P0 canonical input must have an accessible label for browser/UI automation.');
+requireIncludes(files.p0Runtime, 'aria-label="Message MMIR"', 'P0 canonical input must have an accessible label for browser/UI automation without pretending Supergeni is the only writer.');
 requireIncludes(files.p0Runtime, 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
 forbid(files.mmir, /class="mimir-greeting"|id="mmir-quick-suggestions"|placeholder="Spør\.\.\."/i, 'Public first screen must not ship legacy hero, quick suggestions or visible prompt placeholder.');
-forbid(files.p0Runtime, /placeholder="Spør\.\.\."/i, 'P0 canonical input must stay visually empty while keeping aria-label for accessibility.');
+forbid(files.p0Runtime, /placeholder="Spør Supergeni|placeholder="Spør\.\.\."/i, 'P0 canonical input must avoid the old Supergeni-only or vague placeholder.');
 requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
 requireIncludes(files.p0Css, '.p0-route-line', 'P0 route receipt must render as a subtle text line, not noisy chips.');

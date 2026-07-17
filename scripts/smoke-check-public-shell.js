@@ -477,8 +477,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'aria-label="Message Supergeni"',
-  "P0 canonical input must have an accessible label for browser/UI automation.",
+  'aria-label="Message MMIR"',
+  "P0 canonical input must have an accessible label for browser/UI automation without locking copy to one writer.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
