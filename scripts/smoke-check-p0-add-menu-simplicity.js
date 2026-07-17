@@ -84,8 +84,18 @@ requireIncludes(
 );
 requireIncludes(
   installShell,
-  'id="p0-add" class="p0-btn p0-btn-icon" type="button" aria-label="Legg til" title="Legg til"',
-  'Plussknappen må ha et tilgjengelig norsk navn.'
+  'id="p0-attach" class="p0-btn p0-btn-icon" type="button" aria-label="Legg ved bilde" title="Legg ved bilde"',
+  'Composer must expose a direct attachment button.'
+);
+requireIncludes(
+  installShell,
+  'id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Tools" title="Tools"',
+  'Composer must expose a simple Tools button.'
+);
+requireIncludes(
+  installShell,
+  'id="p0-model" class="p0-model-button" type="button" aria-label="Choose model"',
+  'Composer must expose first-screen model choice.'
 );
 
 for (const mode of ['public', 'private', 'superprivate']) {

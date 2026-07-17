@@ -55,6 +55,7 @@ requireText(runtime, "app.id='mmir-p0-app'", 'P0 runtime must mount the protecte
 for (const marker of [
   'id="p0-transcript"',
   'id="p0-input"',
+  'id="p0-attach"',
   'id="p0-add"',
   'id="p0-privacy"',
   'id="p0-model"',
@@ -68,8 +69,9 @@ for (const marker of [
 }
 
 for (const marker of [
-  'aria-label="Message Supergeni"',
-  'aria-label="Legg til"',
+  'aria-label="Message MMIR"',
+  'aria-label="Legg ved bilde"',
+  'aria-label="Tools"',
   'aria-label="Security and privacy status: public mode"',
   'aria-label="Choose model"',
   'aria-label="Voice input"',
@@ -111,9 +113,12 @@ forbidText(html, './apps/mimir-chat-portal/admin-governance.js', 'First screen m
 
 for (const marker of [
   '#mmir-p0-app {',
-  'grid-template-rows: auto minmax(0, 1fr) auto;',
+  'grid-template-columns: 220px minmax(0, 1fr);',
   'height: 100vh;',
   'body.mmir-p0-ready > :not(#mmir-p0-app)',
+  '.p0-main-shell {',
+  'grid-template-rows: auto minmax(0, 1fr) auto;',
+  '.p0-sidebar {',
   '.p0-transcript {',
   'overflow-y: auto;',
   'overscroll-behavior: contain;',
@@ -132,6 +137,7 @@ for (const marker of [
   '.p0-model-button {',
   'max-width: min(230px, 46vw);',
   '@media (max-width: 640px)',
+  'grid-template-columns: minmax(0, 1fr);',
   '@media (max-width: 380px)'
 ]) {
   requireText(css, marker, `P0 mobile CSS contract missing: ${marker}`);
@@ -139,7 +145,7 @@ for (const marker of [
 
 requirePattern(
   normalizedCss,
-  /@media \(max-width: 640px\).*?\.p0-status \{ display: none; \}.*?\.p0-model-button \{ max-width: 42vw; \}.*?\.p0-menu \{.*?left: 10px !important;.*?right: 10px;.*?width: auto;/,
+  /@media \(max-width: 640px\).*?\.p0-sidebar \{ display: none; \}.*?\.p0-status \{ display: none; \}.*?\.p0-model-button \{ max-width: 34vw; \}.*?\.p0-menu \{.*?left: 10px !important;.*?right: 10px;.*?width: auto;/,
   'Mobile CSS must hide topbar status, constrain model picker and make menus viewport-safe.'
 );
 requirePattern(

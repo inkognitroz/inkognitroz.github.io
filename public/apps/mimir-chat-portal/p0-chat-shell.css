@@ -15,12 +15,73 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 #mmir-p0-app {
   box-sizing: border-box;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   height: 100vh;
   min-height: 100vh;
   width: 100%;
   background: #ffffff;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.p0-main-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.p0-sidebar {
+  align-items: stretch;
+  border-right: 1px solid #ececf1;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  padding: 20px 14px;
+}
+
+.p0-sidebar-brand {
+  align-items: center;
+  color: #111827;
+  display: inline-flex;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px 0 22px;
+  text-decoration: none;
+}
+
+.p0-sidebar-nav {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.p0-sidebar-nav button,
+.p0-sidebar-settings {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: #111827;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.93rem;
+  font-weight: 680;
+  gap: 10px;
+  min-height: 38px;
+  padding: 8px;
+  text-align: left;
+}
+
+.p0-sidebar-nav button:hover,
+.p0-sidebar-nav button:focus-visible,
+.p0-sidebar-settings:hover,
+.p0-sidebar-settings:focus-visible {
+  background: #f7f7f8;
+  outline: none;
 }
 
 .p0-topbar {
@@ -674,6 +735,35 @@ a.p0-proof-source:focus-visible {
   opacity: 0.48;
 }
 
+.p0-tools-button {
+  gap: 7px;
+  padding: 0 12px 0 10px;
+}
+
+.p0-speed-chip {
+  align-items: center;
+  color: #111827;
+  display: inline-flex;
+  font-size: 0.88rem;
+  font-weight: 720;
+  gap: 5px;
+  height: 38px;
+  line-height: 1;
+  padding: 0 2px;
+  white-space: nowrap;
+}
+
+.p0-speed-chip::before {
+  content: "";
+  border: 2px solid currentColor;
+  border-left-color: transparent;
+  border-radius: 999px;
+  display: inline-block;
+  height: 13px;
+  transform: rotate(-20deg);
+  width: 13px;
+}
+
 .p0-route-line {
   display: block;
   flex: 0 1 auto;
@@ -952,8 +1042,9 @@ a.p0-proof-source:focus-visible {
   background: #111827;
   border-color: #111827;
   color: #ffffff;
-  font-size: 1.4rem;
-  padding-bottom: 2px;
+  font-size: 0.9rem;
+  min-width: 58px;
+  padding: 0 16px;
 }
 
 .p0-send.is-stopping {
@@ -1168,7 +1259,12 @@ a.p0-proof-source:focus-visible {
 
 @media (max-width: 640px) {
   #mmir-p0-app {
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .p0-sidebar {
+    display: none;
   }
 
   .p0-topbar {
@@ -1207,7 +1303,7 @@ a.p0-proof-source:focus-visible {
 
   .p0-toolbar {
     gap: 6px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .p0-left,
@@ -1218,7 +1314,7 @@ a.p0-proof-source:focus-visible {
 
   .p0-left,
   .p0-right {
-    flex: 1 1 100%;
+    flex: 0 0 auto;
   }
 
   .p0-left {
@@ -1232,10 +1328,21 @@ a.p0-proof-source:focus-visible {
 
   .p0-right {
     justify-content: flex-end;
+    margin-left: auto;
   }
 
   .p0-model-button {
-    max-width: 42vw;
+    max-width: 34vw;
+  }
+
+  .p0-tools-button span,
+  .p0-speed-chip {
+    display: none;
+  }
+
+  .p0-send {
+    min-width: 42px;
+    padding: 0 12px;
   }
 
   .p0-superboost {
@@ -1293,8 +1400,6 @@ a.p0-proof-source:focus-visible {
 #mmir-p0-app.p0-launch-shell .p0-shield,
 #mmir-p0-app.p0-launch-shell .p0-superboost,
 #mmir-p0-app.p0-launch-shell .p0-council,
-#mmir-p0-app.p0-launch-shell .p0-model-button,
-#mmir-p0-app.p0-launch-shell .p0-mic,
 #mmir-p0-app.p0-launch-shell .p0-toolbar-tools {
   display: none !important;
 }
@@ -1333,5 +1438,5 @@ a.p0-proof-source:focus-visible {
 }
 
 #mmir-p0-app.p0-launch-shell #p0-add {
-  font-size: 1rem;
+  font-size: 0.88rem;
 }

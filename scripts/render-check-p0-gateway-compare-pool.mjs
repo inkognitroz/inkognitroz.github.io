@@ -596,7 +596,11 @@ async function checkViewport(browser, viewport) {
 	    status: document.getElementById('p0-status')?.textContent || '',
 	    route: document.getElementById('p0-route')?.textContent || '',
 	    routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
-    toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
+    toolbarButtons: Array.from(document.querySelectorAll('.p0-toolbar button'))
+      .filter(button => {
+        const rect = button.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      }).length
   }));
   assert(layout.docScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare must not create horizontal overflow`);
   assert(layout.bodyScrollWidth <= viewport.width + 1, `${viewport.name}: gateway compare body must not overflow`);
@@ -663,7 +667,11 @@ async function checkViewport(browser, viewport) {
   const councilLayout = await page.evaluate(() => ({
     route: document.getElementById('p0-route')?.textContent || '',
     routeFull: document.getElementById('p0-route')?.getAttribute('aria-label') || '',
-    toolbarButtons: document.querySelectorAll('.p0-toolbar button').length
+    toolbarButtons: Array.from(document.querySelectorAll('.p0-toolbar button'))
+      .filter(button => {
+        const rect = button.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      }).length
   }));
   assert(/Spør 5 AI - beste vinner/i.test(councilLayout.route), `${viewport.name}: Supergeni Council proof should show swarm value in the green status`);
   assert(/Signert kvittering/i.test(councilLayout.route), `${viewport.name}: Supergeni Council status should show the gateway-proven trust value`);
