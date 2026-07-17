@@ -227,18 +227,11 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-connected-intelligence-label {
-  align-items: center;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  border-radius: 999px;
-  color: #047857;
-  display: inline-flex;
+  color: #6b7280;
   font-size: 0.72rem;
-  font-weight: 700;
-  gap: 3px;
+  font-weight: 560;
   line-height: 1.2;
-  padding: 3px 8px;
-  width: fit-content;
+  overflow-wrap: anywhere;
 }
 
 .p0-message-receipt {
@@ -277,8 +270,8 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 }
 
 .p0-message-receipt-trust summary {
-  color: #047857;
-  font-weight: 680;
+  color: #6b7280;
+  font-weight: 600;
 }
 
 .p0-receipt-summary-main {

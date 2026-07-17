@@ -285,7 +285,8 @@ testApi.renderMicroStatus(
   'Best answer · 5 routes compared · 3 answered · 2 quiet · signed receipts · No paid route · 4 live provider routes · OpenRouter live + NVIDIA live + Google live + Groq live · 43 queued · 64 visible total · Winner: Supergeni · Score 96 · OpenRouter 1370ms Score 83',
   'hosted'
 );
-assertIncludes(poolEl.innerHTML, 'Spør 5 AI - beste vinner', 'Under-chat micro-status must show the swarm value in plain language.');
+assertExcludes(poolEl.innerHTML, 'Spør 5 AI - beste vinner', 'Under-chat micro-status must not present MMIR orchestration as the answer writer.');
+assertIncludes(poolEl.innerHTML, '>Spør 5 AI<', 'Under-chat micro-status may expose multi-model comparison as an explicit user tool.');
 assertIncludes(poolEl.innerHTML, 'data-p0-route-action="boost-answer-live"', 'Under-chat micro-status must expose one direct multi-AI composer action.');
 assertIncludes(poolEl.innerHTML, 'p0-route-cta', 'Under-chat micro-status must render the multi-AI action as a compact route CTA.');
 assertIncludes(poolEl.innerHTML, 'Signert kvittering', 'Under-chat micro-status must show the gateway-proven trust value.');

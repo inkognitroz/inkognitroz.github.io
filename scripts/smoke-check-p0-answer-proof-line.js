@@ -136,7 +136,8 @@ const unverifiedReceipt = api.renderReceipt('Supergeni · hosted route · Score 
 if (!unverifiedReceipt.includes('p0-message-receipt-proof-unverified')) fail('Unproven receipts must use the muted unverified style.');
 const verifiedReceipt = api.renderReceipt('Supergeni · hosted route · Score 92 · 746ms', capabilityProof);
 if (verifiedReceipt.includes('p0-message-receipt-proof-unverified')) fail('Verified receipts must not use the muted unverified style.');
-if (!verifiedReceipt.includes('Verifisert')) fail('Verified receipts must show the Verifisert value.');
+if (!verifiedReceipt.includes('p0-receipt-details')) fail('Technical receipts must remain available behind Details.');
+if (verifiedReceipt.includes('p0-receipt-summary-main')) fail('Receipt summary must not repeat the proof status shown below the answer.');
 
 // 6) Injection safety: hostile source fields must never become markup or javascript: links.
 const hostileProof = api.answerProofLine({

@@ -59,7 +59,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260717-duck-like-composer-v1';
+  const P0_RUNTIME_VERSION='20260717-real-writer-answer-first-v1';
   const TELEMETRY_DENIED_FIELD_RE=/(prompt|answer|message|content|completion|suggestion|text|input|secret|token|password|api[_-]?key|authorization|cookie)/i;
   const OWNER_SECRETISH_RE=/\b[A-Za-z0-9_.-]*(?:api[_-]?key|secret|password|token|bearer)[A-Za-z0-9_.-]*\b(?:\s*[:=]\s*|\s+)[A-Za-z0-9._~+/=-]{8,}/gi;
   const OWNER_PROVIDER_KEY_RE=/\b(?:sk-or-v1-|sk-proj-|sk-ant-|sk-[A-Za-z0-9]|gsk_|nvapi-)[A-Za-z0-9._~+/=-]{12,}/gi;
@@ -2279,15 +2279,8 @@
   function trustValueSummary(full,proof,options={}){
     const text=canonicalBrandText(full).trim();
     if(!routeEvidenceReceipt(text))return '';
-    const parts=receiptParts(text);
-    const routeCount=receiptRouteCount(text,parts);
-    const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
-    const isSwarm=/\b(?:Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)\b|\d+\s+routes?\s+compared|\d+\s+active\s+hosted\s+routes/i.test(text);
     const privacy=receiptPrivacyLabel(text);
     const trust=proofTrustLabel(proof)||(options.explicitUnverified?'Ubekreftet':'');
-    if(isSwarm&&routeCount>1){
-      return ['Spør '+routeCount+' AI - beste vinner',consensus,trust,privacy].filter(Boolean).join(' · ');
-    }
     if(!trust)return '';
     return [trust,privacy].filter(Boolean).join(' · ');
   }
@@ -3336,8 +3329,9 @@
       const trustLabel=proofTrustLabel(proof);
       const unverifiedClass=!trustLabel||trustLabel==='Ubekreftet'?' p0-message-receipt-proof-unverified':'';
       const consensusClass=(consensusState?' p0-message-receipt-consensus-'+safeAttr(consensusState):'')+unverifiedClass;
+      const honestUnverified=!proof?'<span class="p0-receipt-summary-main">Ubekreftet</span>':'';
       return '<details class="p0-message-receipt p0-message-receipt-trust'+consensusClass+'" title="'+safeAttr(full)+'">'+
-        '<summary><span class="p0-receipt-summary-main">'+safeText(trustSummary)+'</span><span class="p0-receipt-details">Detaljer</span></summary>'+
+        '<summary>'+honestUnverified+'<span class="p0-receipt-details">Detaljer</span></summary>'+
         '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
       '</details>';
     }
@@ -3351,20 +3345,54 @@
     '</details>';
   }
 
+  function answerWriterProfile(payload,fallbackModel=null){
+    const best=payload?.mmir?.best_answer||payload?.best_answer||payload?.mmir?.compare_best_answer||{};
+    const writer=payload?.mmir?.answer_writer||best?.answer_writer||payload?.answer_writer||{};
+    const fallbackLabel=String(fallbackModel?.label||fallbackModel?.model_display_name||fallbackModel?.model||'').trim();
+    const modelId=String(
+      writer?.model_id||
+      best?.model_id||
+      payload?.model||
+      fallbackModel?.model||
+      fallbackModel?.id||
+      ''
+    ).trim();
+    const displayName=String(
+      writer?.model_display_name||
+      best?.model_display_name||
+      payload?.model_display_name||
+      modelId||
+      fallbackLabel
+    ).replace(/\s+/g,' ').trim().slice(0,120);
+    return {
+      type:String(writer?.type||'').trim().toLowerCase()||'llm',
+      provider:String(writer?.provider||best?.provider||payload?.provider||'').trim(),
+      model_id:modelId,
+      model_display_name:displayName||fallbackLabel||'AI-modell'
+    };
+  }
+
   function connectedIntelligenceLabel(payload){
-    return String(
+    const explicit=String(
       payload?.mmir?.scaled_intelligence_label||
       payload?.scaled_intelligence_label||
       ''
     ).replace(/\s+/g,' ').trim().slice(0,120);
+    if(/^(?:Rask|Søk)\s*·/i.test(explicit))return explicit;
+    const writer=answerWriterProfile(payload);
+    const sources=Array.isArray(payload?.mmir?.sources)
+      ? payload.mmir.sources
+      : (Array.isArray(payload?.sources)?payload.sources:[]);
+    if(writer.type==='llm'&&sources.length){
+      return 'Søk · '+sources.length+' '+(sources.length===1?'kilde':'kilder');
+    }
+    return '';
   }
 
   function renderConnectedIntelligenceLabel(message){
     const label=String(message?.intelligenceLabel||'').replace(/\s+/g,' ').trim().slice(0,120);
     if(message?.role!=='assistant'||!label)return '';
-    return '<div class="p0-connected-intelligence-label" aria-label="Connected intelligence: '+safeAttr(label)+'">'+
-      '<span aria-hidden="true">⚡</span> '+safeText(label)+
-    '</div>';
+    return '<div class="p0-connected-intelligence-label" aria-label="Svarmodus: '+safeAttr(label)+'">'+safeText(label)+'</div>';
   }
 
   function renderProofLine(message,trustShownInReceipt=false){
@@ -5840,10 +5868,10 @@
       const receiptHtml=renderReceipt(message.receipt,message.proofLine);
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
-        renderConnectedIntelligenceLabel(message)+
-        receiptHtml+
-        renderProofLine(message,receiptHtml.includes('p0-message-receipt-trust'))+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
+        renderConnectedIntelligenceLabel(message)+
+        renderProofLine(message,false)+
+        receiptHtml+
         renderMessageActions(message)+
       '</article>';
     }).join('');
@@ -5890,6 +5918,8 @@
       label:role==='assistant'?routeDisplayName({label:label||role}):(label||role),
       receipt:receipt||'',
       proofLine:meta.proofLine||null,
+      intelligenceLabel:meta.intelligenceLabel||'',
+      answerWriter:meta.answerWriter||null,
       variant:meta.variant||'',
       command:meta.command||'',
       commandLabel:meta.commandLabel||'',
@@ -6319,9 +6349,20 @@
   }
 
   function attemptProviderLabel(attempt){
-    const provider=String(attempt?.provider||attempt?.receipt?.provider||'').trim();
+    const receipt=attempt?.receipt||{};
+    const model=String(
+      attempt?.model_display_name||
+      receipt.model_display_name||
+      attempt?.model_id||
+      receipt.model_id||
+      ''
+    ).trim();
+    if(model&&!/^supergeni$/i.test(model)){
+      return routeDisplayName({display_name:model,id:model});
+    }
+    const provider=String(attempt?.provider||receipt.provider||'').trim();
     if(provider&&provider!=='mmir')return providerLabel(provider);
-    return routeDisplayName({label:attempt?.model_display_name||attempt?.model_id||'Supergeni'});
+    return routeDisplayName({display_name:model||'Supergeni',id:model||'supergeni'});
   }
 
   function compareAttemptSummary(attempt){
@@ -7051,10 +7092,13 @@
       const truncated=gatewayDataTruncated(data);
       const displayContent=withConsensusAnswerNotice(content,data);
       const answerProof=noteAnswerProof(answerProofLine(data?.best_answer)||answerProofLine(data));
+      const answerWriter=answerWriterProfile(data,data?.best_answer||{label:assistantLabel});
       updateMessage(assistant,withTruncationGuard(displayContent,{completion_truncated:truncated}),{
+        label:answerWriter.model_display_name,
         receipt:receipt+(truncated?' · truncated guard':''),
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(data),
+        answerWriter,
         truncated,
         continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
         continuationSuggestedMessage:truncated?gatewayContinuationSuggestedMessage(data):'',
@@ -7248,10 +7292,13 @@
       const elapsed=formatDuration(elapsedMs);
       const connectGuide=responseConnectGuide(hostedData);
       const answerProof=noteAnswerProof(answerProofLine(hostedData));
+      const answerWriter=answerWriterProfile(hostedData,model);
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
+        label:answerWriter.model_display_name,
         receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(hostedData),
+        answerWriter,
         truncated:hostedTruncated,
         ...connectGuideMessageUpdates(connectGuide)
       });
@@ -7309,10 +7356,11 @@
           recordRouteBenchmark(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs));
           const fallbackElapsed=formatDuration(fallbackElapsedMs);
           const fallbackProof=noteAnswerProof(answerProofLine(fallbackData));
+          const fallbackWriter=answerWriterProfile(fallbackData,activeModel());
           updateMessage(
             assistant,
             withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
-            {label:activeModel().label,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),truncated:fallbackTruncated}
+            {label:fallbackWriter.model_display_name,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),answerWriter:fallbackWriter,truncated:fallbackTruncated}
           );
           captureInteraction(fallbackTruncated?'truncation_seen':'chat_fallback_ready',{
             active_model_id:activeModel()?.id||'',

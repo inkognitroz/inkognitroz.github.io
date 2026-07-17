@@ -44,10 +44,19 @@ async function installFixtures(page) {
       body = {
         id: 'chatcmpl_connected_label',
         object: 'chat.completion',
-        model: 'mmir-supergenius',
+        model: 'mistral-small-latest',
+        model_display_name: 'Mistral Small',
         choices: [{ index: 0, message: { role: 'assistant', content: 'Her er et kort og vennlig forslag til naboen.' }, finish_reason: 'stop' }],
         mmir: {
-          scaled_intelligence_label: 'Spør 3 AI - beste vinner',
+          scaled_intelligence_label: 'Søk · 1 kilde · Mistral Small',
+          answer_writer: {
+            object: 'mmir.answer_writer',
+            type: 'llm',
+            provider: 'mistral',
+            model_id: 'mistral-small-latest',
+            model_display_name: 'Mistral Small'
+          },
+          sources: [{ title: 'Eksempelkilde', url: 'https://example.no/kilde' }],
           no_paid_routes_started: true,
           provider_secrets_in_browser: false
         }
@@ -75,7 +84,10 @@ async function check(browser, viewport) {
 
   const label = page.locator('.p0-connected-intelligence-label');
   assert(await label.count() === 1, 'Exactly one connected-intelligence label should render for the assistant answer.');
-  assert((await label.innerText()).includes('Spør 3 AI - beste vinner'), 'The API-provided connected-intelligence label should remain visible and intact.');
+  assert((await label.innerText()).includes('Søk · 1 kilde · Mistral Small'), 'The API-provided answer mode should remain visible and intact.');
+  assert(!(await label.innerText()).includes('⚡'), 'The answer mode must not use a decorative lightning badge.');
+  assert((await page.locator('.p0-message-assistant .p0-message-label').innerText()).includes('Mistral Small'), 'The actual answer-writer model must label the answer.');
+  assert(!(await page.locator('#p0-transcript').innerText()).includes('Spør 3 AI - beste vinner'), 'Internal swarm marketing copy must not enter the answer surface.');
   assert(await page.locator('.p0-message-user .p0-connected-intelligence-label').count() === 0, 'User messages must not render a connected-intelligence label.');
   assert((await page.locator('#p0-transcript').innerText()).includes('Her er et kort og vennlig forslag'), 'The answer should remain visible beside the label.');
 
