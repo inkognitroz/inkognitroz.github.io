@@ -797,8 +797,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Quality guard: public facts",
-  "P0 quality guard must label hosted fallback for public facts from local routes.",
+  "Kvalitetssikret fakta · nettsøk ved behov",
+  "P0 quality guard must label the canonical search-capable route for public facts.",
 );
 forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),

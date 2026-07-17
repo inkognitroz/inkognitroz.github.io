@@ -211,7 +211,7 @@ requireIncludes(files.p0Runtime, 'Smart route: private local', 'P0 smart routing
 forbid(files.p0Runtime, /<strong>Smart routing<\/strong>/, 'P0 model picker must not render smart-routing dashboard cards in the dropdown.');
 forbid(files.p0Css, /\.p0-routing-hint/, 'P0 dropdowns must not rely on dashboard-style routing hint cards.');
 requireIncludes(files.p0Runtime, 'function wantsPublicFactRoute(prompt)', 'P0 quality guard must detect public/current factual prompts.');
-requireIncludes(files.p0Runtime, 'Quality guard: public facts', 'P0 quality guard must label hosted fallback for public facts from local routes.');
+requireIncludes(files.p0Runtime, 'Kvalitetssikret fakta · nettsøk ved behov', 'P0 quality guard must label the canonical search-capable route for public facts.');
 forbid(files.p0Runtime, /Public facts use Supergeni\. Private\/local prompts/, 'P0 model picker must not show long public/private routing policy copy in the dropdown.');
 requireIncludes(files.p0Runtime, 'function explicitMentionDecision(prompt)', 'P0 chat must treat explicit @model tags as route commands.');
 requireIncludes(files.p0Runtime, "return {mode:'compare',model:localModel,prompt:cleaned}", 'P0 chat must support explicit @supergenius + local-model compare intent.');

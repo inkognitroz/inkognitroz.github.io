@@ -14,7 +14,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -83,6 +83,15 @@ const qwenTiny = {
   score: 45,
   model: 'qwen2.5:0.5b'
 };
+
+const normalizedHosted = testApi.normalizeHostedModels({
+  data: [
+    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true },
+    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true }
+  ]
+});
+assertEqual(normalizedHosted[0].id, 'mmir-supergenius', 'Live supergeni alias must keep the canonical browser route id');
+assertEqual(normalizedHosted[0].model, 'supergeni', 'Canonical browser route must still send the API model alias');
 
 testApi.state.models = [hosted, gemma, qwenTiny];
 testApi.state.activeModelId = hosted.id;
@@ -184,7 +193,16 @@ testApi.state.activeModelId = gemma.id;
 const guarded = testApi.smartDecision('Who is president of USA?');
 assertEqual(guarded.mode, 'single', 'Public fact guard must stay single-route');
 assertEqual(guarded.model.id, hosted.id, 'Public fact guard must route local-selected public facts to hosted Supergeni');
-assertIncludes(guarded.reason, 'Quality guard: public facts', 'Public fact guard must label the hosted route');
+assertIncludes(guarded.reason, 'nettsøk ved behov', 'Public fact guard must label the canonical search-capable route');
+
+const cerebras = normalizedHosted[1];
+testApi.state.models = [cerebras, normalizedHosted[0], gemma];
+testApi.state.activeModelId = cerebras.id;
+const groundedPerson = testApi.smartDecision('Hvem er Sverre Stoltz?');
+assertEqual(groundedPerson.model.id, 'mmir-supergenius', 'Person lookups must use the canonical grounded route even when a direct hosted model remains selected');
+assertIncludes(groundedPerson.reason, 'nettsøk ved behov', 'Grounded person lookups must explain the automatic search-capable route');
+const directCreative = testApi.smartDecision('Skriv et kort dikt om havet.');
+assertEqual(directCreative.model.id, cerebras.id, 'Non-factual creative prompts must still honor the manually selected writer');
 
 testApi.state.models = [hosted];
 const singleRoutePool = testApi.intelligencePoolSummary();
