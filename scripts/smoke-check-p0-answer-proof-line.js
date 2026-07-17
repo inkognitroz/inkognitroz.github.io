@@ -18,7 +18,7 @@ const routeBenchmarksPath = resolve(root, 'public/apps/mimir-chat-portal/p0-rout
 const historyPath = resolve(root, 'public/apps/mimir-chat-portal/p0-history.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0ProofLineTest={state,answerProofLine,proofTrustLabel,trustValueSummary,renderProofLine,renderReceipt,answerStatus,noteAnswerProof};";
+const exportBlock = "  globalThis.__p0ProofLineTest={state,answerProofLine,proofTrustLabel,trustValueSummary,quietReceiptStatus,renderProofLine,renderReceipt,answerStatus,noteAnswerProof};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 answer-proof-line smoke cannot find boot block.');
@@ -131,13 +131,35 @@ const ambientSummary = api.trustValueSummary('Supergeni · hosted route · Score
 if (ambientSummary.includes('Verifisert') || ambientSummary.includes('Ubekreftet')) fail('Ambient status without proof must simply omit the trust badge.');
 if (api.renderProofLine({ role: 'assistant', proofLine: null }) !== '') fail('No proof line means no proof row.');
 
-// 5) Receipt rendering: unverified state must carry the muted class, verified must not.
-const unverifiedReceipt = api.renderReceipt('Supergeni · hosted route · Score 92 · 746ms', null);
+// 5) Receipt rendering: one quiet, model-visible line must own trust; evidence stays expandable.
+const unverifiedReceipt = api.renderReceipt('Supergeni · hosted route · Score 92 · 746ms', null, 'Supergeni');
 if (!unverifiedReceipt.includes('p0-message-receipt-proof-unverified')) fail('Unproven receipts must use the muted unverified style.');
-const verifiedReceipt = api.renderReceipt('Supergeni · hosted route · Score 92 · 746ms', capabilityProof);
+if (!unverifiedReceipt.match(/<summary[^>]*>.*Ubekreftet.*<\/summary>/)) fail('Unproven receipt summary must disclose Ubekreftet once.');
+const verifiedReceipt = api.renderReceipt('Supergeni · hosted route · Score 92 · 746ms', capabilityProof, 'Mistral Small', 'Søk · 1 kilde · Mistral Small');
 if (verifiedReceipt.includes('p0-message-receipt-proof-unverified')) fail('Verified receipts must not use the muted unverified style.');
 if (!verifiedReceipt.includes('p0-receipt-details')) fail('Technical receipts must remain available behind Details.');
-if (verifiedReceipt.includes('p0-receipt-summary-main')) fail('Receipt summary must not repeat the proof status shown below the answer.');
+if (!verifiedReceipt.includes('p0-receipt-summary-main')) fail('The single receipt line must expose its quiet status.');
+if (!verifiedReceipt.includes('<span class="p0-receipt-model">Mistral Small</span>')) fail('The answer-writer model must remain visible in the receipt line.');
+if (!verifiedReceipt.includes('<div class="p0-receipt-expanded">')) fail('Technical evidence must remain inside expandable receipt details.');
+if (!verifiedReceipt.includes('p0-connected-intelligence-label')) fail('Answer mode must remain available inside receipt details.');
+if (!verifiedReceipt.includes('<a class="p0-proof-source"')) fail('Source links must remain available inside receipt details.');
+const verifiedSummary = verifiedReceipt.match(/<summary[^>]*>(.*?)<\/summary>/)?.[1] || '';
+if ((verifiedSummary.match(/Verifisert/g) || []).length !== 1) fail('Default receipt line must show the verified state exactly once.');
+if (/spr[aå]k\s*guard|language\s*guard|bevis\s*:/i.test(verifiedSummary)) fail('Default receipt line must not repeat language-guard or proof labels.');
+
+const legacyReceipt = api.renderReceipt(
+  'Supergeni · Norsk språkguard · Verifisert · beskyttet · Verifisert med norsk språkguard',
+  null,
+  'Supergeni'
+);
+const legacySummary = legacyReceipt.match(/<summary[^>]*>(.*?)<\/summary>/)?.[1] || '';
+if (/spr[aå]k\s*guard|language\s*guard|bevis\s*:/i.test(legacySummary)) fail('Legacy language/proof chrome must be deduplicated from the default receipt line.');
+if (/Verifisert/i.test(legacySummary)) fail('A legacy receipt string must not fabricate verified status without structured proof.');
+if (!legacyReceipt.includes('Norsk språkguard')) fail('Legacy technical receipt text must remain available on demand.');
+
+const modelOnlyReceipt = api.renderReceipt('', null, 'Mistral Small');
+if (!modelOnlyReceipt.includes('p0-message-receipt-static')) fail('Answers without technical evidence must still keep one quiet status line.');
+if (!modelOnlyReceipt.includes('Mistral Small')) fail('Model visibility must survive when no technical receipt is available.');
 
 // 6) Injection safety: hostile source fields must never become markup or javascript: links.
 const hostileProof = api.answerProofLine({

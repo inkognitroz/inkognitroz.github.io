@@ -242,7 +242,7 @@ async function checkViewport(browser, viewport) {
   assert(text.includes('Best answer'), `${viewport.name}: best-answer content should render`);
   assert(text.includes('Signert kvittering'), `${viewport.name}: hosted receipts should show the gateway-proven trust value`);
   assert(!text.includes('Verifisert'), `${viewport.name}: consensus_signed proof must not be inflated to a verified badge`);
-  assert(text.includes('Bevis: 2/3 enige'), `${viewport.name}: the gateway answer_proof_line label should render on hosted answers`);
+  assert(!text.includes('Bevis: 2/3 enige'), `${viewport.name}: the gateway answer_proof_line label must stay behind Details by default`);
   assert(text.includes('Ubekreftet'), `${viewport.name}: answers without answer_proof_line must show the honest unverified state`);
   assert(text.includes('Detaljer'), `${viewport.name}: compare receipts should keep raw telemetry inspectable`);
   assert(!text.includes('Winner: Supergeni'), `${viewport.name}: winner receipt must stay behind Details`);
@@ -250,6 +250,16 @@ async function checkViewport(browser, viewport) {
   assert(!text.includes('target 3.0s met'), `${viewport.name}: hosted compare latency target must stay behind Details`);
   assert(!text.includes('target 9.0s met'), `${viewport.name}: local compare latency target must stay behind Details`);
   assert(!text.includes('target 3.5s met'), `${viewport.name}: synthesis latency target must stay behind Details`);
+
+  const signedStatus = page.locator('.p0-receipt-summary-main', { hasText: 'Signert kvittering' }).first();
+  const signedReceipt = signedStatus.locator('..').locator('..');
+  const signedProof = signedReceipt.locator('.p0-proof-line');
+  assert(await signedReceipt.count() === 1, `${viewport.name}: signed hosted answer must retain one receipt control`);
+  assert(!(await signedProof.isVisible()), `${viewport.name}: signed proof detail must be collapsed by default`);
+  await signedReceipt.locator('summary').click();
+  await signedProof.waitFor({ state: 'visible' });
+  assert((await signedProof.innerText()).includes('Bevis: 2/3 enige'), `${viewport.name}: the gateway answer_proof_line label should render on demand`);
+  await signedReceipt.locator('summary').click();
 
   const layout = await page.evaluate(() => ({
     docScrollWidth: document.documentElement.scrollWidth,

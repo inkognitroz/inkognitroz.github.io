@@ -897,12 +897,12 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function compactReceipt(receipt)",
-  "P0 route receipts must be compact by default.",
+  "function quietReceiptStatus(receipt,modelLabel='',proof=null)",
+  "P0 route receipts must collapse to one quiet status line by default.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function renderReceipt(receipt,proof)",
+  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='')",
   "P0 route receipts must keep full audit details available on click.",
 );
 requireText(

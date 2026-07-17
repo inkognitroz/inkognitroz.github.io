@@ -1,6 +1,6 @@
 {
   "scope": "public/mmir.html launch-critical chat assets",
-  "updated": "2026-07-17",
+  "updated": "2026-07-18",
   "assets": {
     "active-node-strip.js": "20260709-active-route-fallback-policy-v1",
     "activation-telemetry.js": "20260622-first-screen-starter-progress-v1",
@@ -32,8 +32,8 @@
     "model-comparison.js": "20260711-compare-norwegian-boundary-v2",
     "node-dashboard.css": "20260708-node-handoff-resume-proof-v1",
     "node-dashboard.js": "20260708-node-handoff-resume-proof-v1",
-    "p0-chat-shell.css": "20260717-real-writer-answer-first-v1",
-    "p0-chat-shell.js": "20260717-canonical-grounded-writer-v1",
+    "p0-chat-shell.css": "20260718-minimal-response-chrome-v1",
+    "p0-chat-shell.js": "20260718-minimal-response-chrome-v1",
     "p0-clipboard.js": "20260606-b1-06-p0-clipboard-v1",
     "p0-history.js": "20260618-qa-history-scoped-v1",
     "p0-icons.js": "20260717-duck-like-composer-v1",

@@ -62,7 +62,7 @@ function seededHistory() {
       role: 'assistant',
       content: `Responsive QA answer ${index + 1}. This answer is intentionally short, scrollable and safe.`,
       label: 'Supergeni',
-      receipt: 'Supergeni ready · hosted'
+      receipt: 'Supergeni ready · hosted · Norsk språkguard · Verifisert med norsk språkguard'
     });
   }
   return messages;
@@ -125,6 +125,7 @@ async function installApiFixtures(page) {
         id: 'chatcmpl_responsive_guard',
         object: 'chat.completion',
         model: 'mmir-supergenius',
+        model_display_name: 'Supergeni',
         choices: [
           {
             index: 0,
@@ -136,6 +137,19 @@ async function installApiFixtures(page) {
           }
         ],
         mmir: {
+          answer_writer: {
+            object: 'mmir.answer_writer',
+            type: 'llm',
+            provider: 'mmir',
+            model_id: 'mmir-supergenius',
+            model_display_name: 'Supergeni'
+          },
+          scaled_intelligence_label: 'Søk · 1 kilde · Supergeni',
+          answer_proof_line: 'Verifisert med live-kilde',
+          sources: [{
+            title: 'Norges Bank',
+            url: 'https://data.norges-bank.no/api/data/IR/B.KPRA.SD.R?lastNObservations=1&format=sdmx-json'
+          }],
           no_paid_routes_started: true,
           route: {
             route_id: 'browser-guide/free',
@@ -282,6 +296,76 @@ async function checkViewport(browser, viewport) {
   await page.locator('#p0-input').fill('Ping responsive guard');
   await page.locator('#p0-send').click();
   await page.waitForSelector('text=Responsive guard answer.');
+  const answer = page.locator('.p0-message-assistant').last();
+  const receipt = answer.locator(':scope > .p0-message-receipt');
+  const receiptSummary = receipt.locator('summary');
+  await receiptSummary.waitFor();
+  const responseChrome = await answer.evaluate(element => {
+    const children = Array.from(element.children);
+    const body = element.querySelector(':scope > .p0-message-body');
+    const receipts = element.querySelectorAll(':scope > .p0-message-receipt');
+    const receipt = receipts[0];
+    const summary = receipt?.querySelector('summary');
+    const model = summary?.querySelector('.p0-receipt-model');
+    const status = summary?.querySelector('.p0-receipt-summary-main');
+    const summaryRect = summary?.getBoundingClientRect();
+    return {
+      childClasses: children.map(child => child.className),
+      bodyIndex: children.indexOf(body),
+      receiptIndex: children.indexOf(receipt),
+      receiptCount: receipts.length,
+      directLabelCount: element.querySelectorAll(':scope > .p0-message-label').length,
+      directModeCount: element.querySelectorAll(':scope > .p0-connected-intelligence-label').length,
+      directProofCount: element.querySelectorAll(':scope > .p0-proof-line').length,
+      open: Boolean(receipt?.open),
+      summaryText: String(summary?.textContent || '').replace(/\s+/g, ' ').trim(),
+      summaryAria: summary?.getAttribute('aria-label') || '',
+      summaryRect: summaryRect ? {
+        left: summaryRect.left,
+        right: summaryRect.right,
+        height: summaryRect.height
+      } : null,
+      modelText: String(model?.textContent || '').trim(),
+      statusText: String(status?.textContent || '').trim(),
+      bodyText: String(body?.textContent || '').trim()
+    };
+  });
+  assert(responseChrome.bodyIndex >= 0 && responseChrome.bodyIndex < responseChrome.receiptIndex, `${viewport.name}: answer content must render before receipt chrome`);
+  assert(responseChrome.receiptCount === 1, `${viewport.name}: each answer must render exactly one receipt/status line`);
+  assert(responseChrome.directLabelCount === 0, `${viewport.name}: separate model-label chrome must be removed`);
+  assert(responseChrome.directModeCount === 0, `${viewport.name}: answer mode must not render as a second default line`);
+  assert(responseChrome.directProofCount === 0, `${viewport.name}: proof must not render as a second default line`);
+  assert(!responseChrome.open, `${viewport.name}: receipt details must be closed by default`);
+  assert(responseChrome.bodyText.includes('Responsive guard answer.'), `${viewport.name}: answer content must remain first and visible`);
+  assert(responseChrome.modelText === 'Supergeni', `${viewport.name}: answer-writer model must remain visible`);
+  assert((responseChrome.statusText.match(/Verifisert/g) || []).length === 1, `${viewport.name}: verification status must appear exactly once in the quiet line`);
+  assert(!/spr[aå]k\s*guard|language\s*guard|bevis\s*:/i.test(responseChrome.summaryText), `${viewport.name}: quiet line must not repeat guard or proof labels`);
+  assert(responseChrome.summaryAria.includes('Supergeni') && responseChrome.summaryAria.includes('Vis kvitteringsdetaljer'), `${viewport.name}: receipt control must expose model and purpose accessibly`);
+  assert((responseChrome.summaryRect?.height || 0) <= 26, `${viewport.name}: receipt line should remain compact`);
+  assert((responseChrome.summaryRect?.left || 0) >= -1 && (responseChrome.summaryRect?.right || 0) <= viewport.width + 1, `${viewport.name}: receipt line must stay inside the viewport`);
+  const allReceiptSummaries = await page.locator('.p0-message-assistant > .p0-message-receipt > summary').allInnerTexts();
+  assert(allReceiptSummaries.every(text => !/spr[aå]k\s*guard|language\s*guard|bevis\s*:/i.test(text)), `${viewport.name}: historical answers must also dedupe legacy guard/proof chrome`);
+
+  const expanded = receipt.locator('.p0-receipt-expanded');
+  const modeDetail = expanded.locator('.p0-connected-intelligence-label');
+  const proofDetail = expanded.locator('.p0-proof-line');
+  const sourceDetail = expanded.locator('.p0-proof-source');
+  assert(!(await expanded.isVisible()), `${viewport.name}: technical details must be hidden until requested`);
+  assert(await modeDetail.count() === 1 && await proofDetail.count() === 1 && await sourceDetail.count() === 1, `${viewport.name}: mode, proof and source details must remain available`);
+  const deferredBefore = await page.locator('script[src*="/chat-runtime.js"]').count();
+  await receiptSummary.click();
+  await expanded.waitFor({ state: 'visible' });
+  assert(await modeDetail.isVisible(), `${viewport.name}: answer mode must be visible on demand`);
+  assert(await proofDetail.isVisible(), `${viewport.name}: proof must be visible on demand`);
+  assert(await sourceDetail.isVisible(), `${viewport.name}: source link must be visible on demand`);
+  assert((await sourceDetail.innerText()).includes('Norges Bank'), `${viewport.name}: source link must retain its accessible name`);
+  assert((await sourceDetail.getAttribute('rel')) === 'noopener noreferrer', `${viewport.name}: source link must retain safe external-link semantics`);
+  assert(await page.locator('script[src*="/chat-runtime.js"]').count() === deferredBefore, `${viewport.name}: opening a receipt must not wake deferred panel runtimes`);
+  await receiptSummary.click();
+  await page.locator('#p0-input').focus();
+  await page.mouse.move(1, 1);
+  await page.waitForTimeout(220);
+
   const lastActions = page.locator('.p0-message-actions').last();
   assert(await lastActions.count() === 1, `${viewport.name}: answer action group should render`);
   assert(await page.locator('[data-p0-message-action="copy"]').last().isVisible(), `${viewport.name}: answer copy action should remain accessible`);

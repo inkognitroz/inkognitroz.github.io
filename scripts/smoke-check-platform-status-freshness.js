@@ -73,8 +73,8 @@ requireText(
 );
 requireText(
   mmirHtml,
-  "if(event.target&&event.target.open)loadDeferred(true);",
-  'Opening a deferred diagnostics panel must force its runtime to load'
+  "if(event.target&&event.target.open&&event.target.matches('.mimir-provider-drawer,.mimir-model-library,.mimir-settings-drawer'))loadDeferred(true);",
+  'Opening a deferred diagnostics panel must force its runtime to load without treating answer receipts as panels'
 );
 requireText(
   mmirHtml,

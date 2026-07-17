@@ -59,7 +59,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260717-canonical-grounded-writer-v1';
+  const P0_RUNTIME_VERSION='20260718-minimal-response-chrome-v1';
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
   const CANONICAL_HOSTED_MODEL_ALIASES=new Set([
     CANONICAL_HOSTED_MODEL_ID,
@@ -3308,64 +3308,89 @@
       .join('');
   }
 
-  function compactReceipt(receipt){
-    const full=String(receipt||'').trim();
-    const parts=full.split('·').map(part=>part.trim()).filter(Boolean);
-    if(parts.length<=4)return full;
-    const consensus=parts.find(part=>/^(High confidence|Medium confidence|Contested|Confidence pending)\b/i.test(part));
-    const winner=parts.find(part=>/^Winner:/i.test(part));
-    const winnerReason=parts.find(part=>/^Why:/i.test(part));
-    const score=parts.find(part=>/^(API score|Score)\s+\d+/i.test(part));
-    const timing=[...parts].reverse().find(part=>/^\d+(?:\.\d+)?(?:ms|s)$/i.test(part));
-    const target=parts.find(part=>/^target\s+\d+(?:\.\d+)?(?:ms|s)\s+met$/i.test(part)||/^over\s+\d+(?:\.\d+)?(?:ms|s)\s+target$/i.test(part));
-    const noPaid=parts.find(part=>/No paid route/i.test(part));
-    const signed=parts.find(part=>/^signed receipts$/i.test(part));
-    const swarm=parts.find(part=>/^Swarm\s+\d+|^Swarm preview$/i.test(part));
-    const compare=parts.find(part=>/^Compare answer \d\/\d/i.test(part));
-    const routeCount=parts.find(part=>/^\d+\s+routes?(?:\s+compared)?$/i.test(part));
-    const answered=parts.find(part=>/^\d+\s+answered$/i.test(part));
-    const demoted=parts.find(part=>/^\d+\s+demoted$/i.test(part));
-    const quiet=parts.find(part=>/^\d+\s+quiet$/i.test(part));
-    const activeProviders=parts.find(part=>/^\d+\s+(?:active|live) provider routes$/i.test(part));
-    const externalNodes=parts.find(part=>/^\d+\s+(?:external nodes|live external nodes)$/i.test(part));
-    const queued=parts.find(part=>/^\d+\s+queued$/i.test(part));
-    const visibleTotal=parts.find(part=>/^\d+\s+visible total$/i.test(part));
-    const council=parts.find(part=>/^council ready$/i.test(part));
-    const providers=gatewayProviderSummary(parts);
-    if(/^(Best answer|Intelligence boost|Ask all active|Model Debate|Supergeni Council)$/i.test(parts[0]||'')&&routeCount){
-      return [parts[0],swarm,routeCount,consensus,answered,demoted,quiet,activeProviders,externalNodes,queued,visibleTotal,council,signed,noPaid,winner,winnerReason,providers,score].filter(Boolean).join(' · ');
-    }
-    if(parts.some(part=>/Best answer synthesis/i.test(part))){
-      return ['Best answer',winner,score,timing,target,noPaid].filter(Boolean).join(' · ');
-    }
-    if(compare){
-      return [compare.replace('Compare answer','Compare'),score,timing,target,parts[0]].filter(Boolean).join(' · ');
-    }
-    return [parts.slice(0,3).join(' · '),score,timing].filter(Boolean).join(' · ');
+  function receiptChromeKey(value){
+    return String(value||'')
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,' ')
+      .trim();
   }
 
-  function renderReceipt(receipt,proof){
+  function receiptHasPendingOrError(value){
+    return /\b(?:awaiting|blocked|checking|connecting|error|failed|loading|pending|retrying|sending|stopped|thinking|unavailable|working|avbrutt|feil|kobler|laster|mislyktes|sender|sjekker|tenker|utilgjengelig|venter)\b/i.test(String(value||''));
+  }
+
+  function quietReceiptPart(part,modelLabel=''){
+    let value=canonicalBrandText(part).replace(/\s+/g,' ').trim();
+    const model=canonicalBrandText(modelLabel).replace(/\s+/g,' ').trim();
+    if(model&&value.toLowerCase().startsWith(model.toLowerCase())){
+      value=value.slice(model.length).replace(/^[\s:|/-]+/,'').trim();
+    }
+    value=value.replace(/^Supergeni(?:us)?\s+/i,'').trim();
+    if(!value||/^(?:MMIR(?:\.ai)?|AI-modell)$/i.test(value))return '';
+    if(/\b(?:language|spr[aå]k)\s*guard\b/i.test(value))return '';
+    if(/^(?:bevis|proof)\s*:/i.test(value))return '';
+    if(/^(?:verified|verifisert|signed receipts?|signert kvittering)\b/i.test(value))return '';
+    if(/^(?:no browser secrets?|no paid routes?(?: started)?|provider secrets? in browser)\b/i.test(value))return '';
+    if(/^(?:ready|hosted|hosted route|managed route|free route)$/i.test(value))return 'Klar';
+    if(/^(?:private local|local\/private|browser-local\/private|this mac)$/i.test(value))return 'Privat';
+    return value;
+  }
+
+  function quietReceiptStatus(receipt,modelLabel='',proof=null){
     const full=canonicalBrandText(receipt).trim();
-    if(!full)return '';
-    const trustSummary=trustValueSummary(full,proof,{explicitUnverified:true});
-    if(trustSummary){
-      const consensusState=receiptConsensusState(full);
+    const parts=receiptParts(full);
+    const urgent=parts.filter(receiptHasPendingOrError);
+    let candidates=[];
+    if(urgent.length){
+      candidates=urgent.map(part=>quietReceiptPart(part,modelLabel));
+    }else{
+      const trustSummary=trustValueSummary(full,proof,{explicitUnverified:true});
       const trustLabel=proofTrustLabel(proof);
-      const unverifiedClass=!trustLabel||trustLabel==='Ubekreftet'?' p0-message-receipt-proof-unverified':'';
-      const consensusClass=(consensusState?' p0-message-receipt-consensus-'+safeAttr(consensusState):'')+unverifiedClass;
-      const honestUnverified=!proof?'<span class="p0-receipt-summary-main">Ubekreftet</span>':'';
-      return '<details class="p0-message-receipt p0-message-receipt-trust'+consensusClass+'" title="'+safeAttr(full)+'">'+
-        '<summary>'+honestUnverified+'<span class="p0-receipt-details">Detaljer</span></summary>'+
-        '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
-      '</details>';
+      if(trustSummary)candidates=receiptParts(trustSummary);
+      else if(trustLabel)candidates=[trustLabel,receiptPrivacyLabel(full)];
+      else candidates=parts.map(part=>quietReceiptPart(part,modelLabel));
     }
-    const compact=compactReceipt(full);
-    if(compact===full){
-      return '<div class="p0-message-receipt">'+safeText(full)+'</div>';
+    const seen=new Set();
+    const quiet=[];
+    for(const candidate of candidates){
+      const value=String(candidate||'').trim();
+      const key=receiptChromeKey(value);
+      if(!key||seen.has(key))continue;
+      seen.add(key);
+      quiet.push(value);
+      if(quiet.length===2)break;
     }
-    return '<details class="p0-message-receipt" title="'+safeAttr(full)+'">'+
-      '<summary>'+safeText(compact)+'</summary>'+
-      '<div class="p0-receipt-full">'+safeText(full)+'</div>'+
+    return quiet.join(' · ')||'Klar';
+  }
+
+  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel=''){
+    const full=canonicalBrandText(receipt).trim();
+    const model=canonicalBrandText(modelLabel).replace(/\s+/g,' ').trim()||'AI-modell';
+    const statusText=quietReceiptStatus(full,model,proof);
+    const trustLabel=proofTrustLabel(proof);
+    const trustShown=Boolean(trustLabel&&receiptChromeKey(statusText).includes(receiptChromeKey(trustLabel)));
+    const intelligence=String(intelligenceLabel||'').replace(/\s+/g,' ').trim();
+    const hasDetails=Boolean(full||proof||intelligence);
+    const summary='<span class="p0-receipt-model">'+safeText(model)+'</span>'+
+      '<span class="p0-receipt-summary-main">'+safeText(statusText)+'</span>';
+    const ariaLabel=[model,statusText,hasDetails?'Vis kvitteringsdetaljer':''].filter(Boolean).join(' · ');
+    if(!hasDetails){
+      return '<div class="p0-message-receipt p0-message-receipt-static" aria-label="'+safeAttr(ariaLabel)+'">'+summary+'</div>';
+    }
+    const consensusState=receiptConsensusState(full);
+    const unverifiedClass=routeEvidenceReceipt(full)&&(!trustLabel||trustLabel==='Ubekreftet')?' p0-message-receipt-proof-unverified':'';
+    const consensusClass=consensusState?' p0-message-receipt-consensus-'+safeAttr(consensusState):'';
+    const trustClass=trustLabel||routeEvidenceReceipt(full)?' p0-message-receipt-trust':'';
+    const expanded=[
+      full?'<div class="p0-receipt-full">'+safeText(full)+'</div>':'',
+      renderConnectedIntelligenceLabel({role:'assistant',intelligenceLabel:intelligence}),
+      renderProofLine({role:'assistant',proofLine:proof},trustShown)
+    ].filter(Boolean).join('');
+    return '<details class="p0-message-receipt'+trustClass+consensusClass+unverifiedClass+'">'+
+      '<summary aria-label="'+safeAttr(ariaLabel)+'">'+summary+'<span class="p0-receipt-details">Detaljer</span></summary>'+
+      '<div class="p0-receipt-expanded">'+expanded+'</div>'+
     '</details>';
   }
 
@@ -5887,14 +5912,13 @@
     }
     root.innerHTML=state.messages.map(message=>{
       const focusAttr=answerActionsAllowed(message)?' tabindex="0"':'';
-      const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):(message.label||message.role);
+      const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):'';
       const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
-      const receiptHtml=renderReceipt(message.receipt,message.proofLine);
+      const receiptHtml=message.role==='assistant'
+        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel)
+        : '';
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
-        '<div class="p0-message-label">'+safeText(visibleLabel)+'</div>'+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
-        renderConnectedIntelligenceLabel(message)+
-        renderProofLine(message,false)+
         receiptHtml+
         renderMessageActions(message)+
       '</article>';
