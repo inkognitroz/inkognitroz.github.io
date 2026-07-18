@@ -80,16 +80,29 @@ async function check(browser, viewport) {
   await page.goto(`${baseUrl}/mmir.html?mmir_qa_session=connected-label`, { waitUntil: 'networkidle' });
   await page.locator('#p0-input').fill('Skriv en kort e-post til naboen.');
   await page.locator('#p0-send').click();
-  await page.locator('.p0-connected-intelligence-label').waitFor();
+  const answer = page.locator('.p0-message-assistant').last();
+  const receipt = answer.locator(':scope > .p0-message-receipt');
+  const summary = receipt.locator('summary');
+  await summary.waitFor();
 
-  const label = page.locator('.p0-connected-intelligence-label');
+  const label = receipt.locator('.p0-connected-intelligence-label');
   assert(await label.count() === 1, 'Exactly one connected-intelligence label should render for the assistant answer.');
+  assert(!(await label.isVisible()), 'The connected-intelligence label should stay inside closed receipt details by default.');
+  assert(!(await summary.innerText()).includes('Søk · 1 kilde'), 'The quiet receipt line must not repeat answer-mode detail.');
+  assert((await receipt.locator('.p0-receipt-model').innerText()).includes('Mistral Small'), 'The actual answer-writer model must stay visible in the receipt line.');
+  assert(await answer.locator(':scope > .p0-message-label').count() === 0, 'The answer must not render a separate model-label row before content.');
+  const deferredBefore = await page.locator('script[src*="/chat-runtime.js"]').count();
+  await summary.click();
+  await label.waitFor({ state: 'visible' });
   assert((await label.innerText()).includes('Søk · 1 kilde · Mistral Small'), 'The API-provided answer mode should remain visible and intact.');
   assert(!(await label.innerText()).includes('⚡'), 'The answer mode must not use a decorative lightning badge.');
-  assert((await page.locator('.p0-message-assistant .p0-message-label').innerText()).includes('Mistral Small'), 'The actual answer-writer model must label the answer.');
+  assert(await page.locator('script[src*="/chat-runtime.js"]').count() === deferredBefore, 'Opening an answer receipt must not load deferred panel runtimes.');
   assert(!(await page.locator('#p0-transcript').innerText()).includes('Spør 3 AI - beste vinner'), 'Internal swarm marketing copy must not enter the answer surface.');
   assert(await page.locator('.p0-message-user .p0-connected-intelligence-label').count() === 0, 'User messages must not render a connected-intelligence label.');
   assert((await page.locator('#p0-transcript').innerText()).includes('Her er et kort og vennlig forslag'), 'The answer should remain visible beside the label.');
+
+  await summary.click();
+  assert(!(await label.isVisible()), 'Closing receipt details must restore the single quiet default line.');
 
   const layout = await page.evaluate(() => ({
     documentWidth: document.documentElement.scrollWidth,

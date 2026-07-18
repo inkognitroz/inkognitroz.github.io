@@ -16,7 +16,8 @@ for (const contract of [
   'function renderConnectedIntelligenceLabel(message)',
   'intelligenceLabel:connectedIntelligenceLabel(hostedData)',
   'intelligenceLabel:connectedIntelligenceLabel(data)',
-  'renderConnectedIntelligenceLabel(message)'
+  '<div class="p0-receipt-expanded">',
+  "renderConnectedIntelligenceLabel({role:'assistant',intelligenceLabel:intelligence})"
 ]) {
   if (!shell.includes(contract)) {
     console.error('Connected-intelligence label contract is missing: ' + contract);

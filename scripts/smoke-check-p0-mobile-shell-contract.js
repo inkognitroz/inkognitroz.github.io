@@ -105,6 +105,23 @@ for (const marker of [
   requireText(runtime, marker, `P0 assistant answers must expose proven answer action: ${marker}`);
 }
 
+for (const marker of [
+  "function quietReceiptStatus(receipt,modelLabel='',proof=null)",
+  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='')",
+  '<span class="p0-receipt-model">',
+  '<div class="p0-receipt-expanded">',
+  'renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel)'
+]) {
+  requireText(runtime, marker, `P0 answer chrome must keep one model-visible receipt line with on-demand details: ${marker}`);
+}
+
+forbidText(runtime, '<div class="p0-message-label">', 'P0 answers must lead with content instead of a separate model-label row.');
+const answerBodyIndex = runtime.indexOf('<div class="p0-message-body">');
+const answerReceiptIndex = runtime.indexOf('receiptHtml+', answerBodyIndex);
+if (answerBodyIndex < 0 || answerReceiptIndex < answerBodyIndex) {
+  fail('P0 answer content must render before its single receipt line.');
+}
+
 forbidText(runtime, 'Install guide', 'P0 plus menu must not redirect local setup to a separate install guide.');
 forbidText(runtime, 'Install help', 'P0 plus menu must not redirect local setup to a separate install help page.');
 forbidText(html, '<a href="#platform-status">Status</a>', 'First screen must not expose diagnostics/status nav.');
@@ -125,6 +142,10 @@ for (const marker of [
   '-webkit-overflow-scrolling: touch;',
   '.p0-message-actions',
   '.p0-message-action-status',
+  '.p0-message-receipt-static',
+  '.p0-receipt-model',
+  '.p0-receipt-expanded',
+  '.p0-message-receipt summary:focus-visible',
   '.p0-composer-wrap {',
   'env(safe-area-inset-bottom)',
   '.p0-toolbar {',
@@ -150,8 +171,8 @@ requirePattern(
 );
 requirePattern(
   normalizedCss,
-  /@media \(max-width: 380px\).*?\.p0-model-button \{.*?max-width: 34vw;.*?padding: 0 10px;/,
-  'Narrow mobile CSS must further constrain the model selector.'
+  /@media \(max-width: 380px\).*?\.p0-model-button \{.*?max-width: 34vw;.*?padding: 0 10px;.*?\.p0-receipt-model \{.*?max-width: 30vw;/,
+  'Narrow mobile CSS must constrain both the model selector and the answer receipt model.'
 );
 
 requireText(

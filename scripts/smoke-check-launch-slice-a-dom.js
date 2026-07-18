@@ -228,8 +228,8 @@ requireIncludes(files.p0Css, '.p0-message-compare', 'P0 compare answers must be 
 requireIncludes(files.p0Runtime, 'function synthesizeCompareAnswer(prompt,hostedAnswer,localAnswer,localModel,hostedScore,localScore,signal)', 'P0 compare must synthesize a best answer from real model outputs and route evidence with abort support.');
 requireIncludes(files.p0Runtime, 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
 requireIncludes(files.p0Runtime, 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
-requireIncludes(files.p0Runtime, 'function compactReceipt(receipt)', 'P0 route receipts must be compact by default.');
-requireIncludes(files.p0Runtime, 'function renderReceipt(receipt,proof)', 'P0 route receipts must keep full audit details available on click.');
+requireIncludes(files.p0Runtime, "function quietReceiptStatus(receipt,modelLabel='',proof=null)", 'P0 route receipts must collapse to one quiet status line by default.');
+requireIncludes(files.p0Runtime, "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='')", 'P0 route receipts must keep full audit details available on click.');
 requireIncludes(files.p0Runtime, "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
 requireIncludes(files.p0Runtime, "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path must emit testable state evidence.');
