@@ -8,6 +8,7 @@ const preferredPort = Number(process.env.MMIR_RESPONSIVE_PORT || 8796);
 let port = preferredPort;
 let baseUrl = `http://${host}:${port}`;
 const screenshotDir = process.env.MMIR_RESPONSIVE_SCREENSHOTS || 'test-results/p0-responsive';
+const responsiveWriterLabel = 'Mistral Small';
 const failures = [];
 
 const viewports = [
@@ -140,11 +141,11 @@ async function installApiFixtures(page) {
           answer_writer: {
             object: 'mmir.answer_writer',
             type: 'llm',
-            provider: 'mmir',
-            model_id: 'mmir-supergenius',
-            model_display_name: 'Supergeni'
+            provider: 'mistral',
+            model_id: 'mistral-small-latest',
+            model_display_name: responsiveWriterLabel
           },
-          scaled_intelligence_label: 'Søk · 1 kilde · Supergeni',
+          scaled_intelligence_label: `Søk · 1 kilde · ${responsiveWriterLabel}`,
           answer_proof_line: 'Verifisert med live-kilde',
           sources: [{
             title: 'Norges Bank',
@@ -337,10 +338,10 @@ async function checkViewport(browser, viewport) {
   assert(responseChrome.directProofCount === 0, `${viewport.name}: proof must not render as a second default line`);
   assert(!responseChrome.open, `${viewport.name}: receipt details must be closed by default`);
   assert(responseChrome.bodyText.includes('Responsive guard answer.'), `${viewport.name}: answer content must remain first and visible`);
-  assert(responseChrome.modelText === 'Supergeni', `${viewport.name}: answer-writer model must remain visible`);
+  assert(responseChrome.modelText === responsiveWriterLabel, `${viewport.name}: answer-writer model must remain visible`);
   assert((responseChrome.statusText.match(/Verifisert/g) || []).length === 1, `${viewport.name}: verification status must appear exactly once in the quiet line`);
   assert(!/spr[aå]k\s*guard|language\s*guard|bevis\s*:/i.test(responseChrome.summaryText), `${viewport.name}: quiet line must not repeat guard or proof labels`);
-  assert(responseChrome.summaryAria.includes('Supergeni') && responseChrome.summaryAria.includes('Vis kvitteringsdetaljer'), `${viewport.name}: receipt control must expose model and purpose accessibly`);
+  assert(responseChrome.summaryAria.includes(responsiveWriterLabel) && responseChrome.summaryAria.includes('Vis kvitteringsdetaljer'), `${viewport.name}: receipt control must expose model and purpose accessibly`);
   assert((responseChrome.summaryRect?.height || 0) <= 26, `${viewport.name}: receipt line should remain compact`);
   assert((responseChrome.summaryRect?.left || 0) >= -1 && (responseChrome.summaryRect?.right || 0) <= viewport.width + 1, `${viewport.name}: receipt line must stay inside the viewport`);
   const allReceiptSummaries = await page.locator('.p0-message-assistant > .p0-message-receipt > summary').allInnerTexts();
