@@ -13,6 +13,15 @@
   const SUPERBOOST_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.superboostPreviewPath||'/chat/superboost/preview';
   const NO_KEY_TOOL_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.noKeyToolPreviewPath||'/tools/no-key/preview';
   const fetchJson=P0_ROUTE_ADAPTERS.fetchJson;
+  const sanitizedChatPayload=P0_ROUTE_ADAPTERS.sanitizedChatPayload||((payload)=>payload);
+  const boundedChatMessageTail=P0_ROUTE_ADAPTERS.boundedChatMessageTail||(()=>[]);
+  const hostedLineageEligible=P0_ROUTE_ADAPTERS.hostedLineageEligible||(()=>false);
+  const normalizedWriterContinuityState=P0_ROUTE_ADAPTERS.normalizedWriterContinuityState||(()=>null);
+  const writerContinuityRequest=P0_ROUTE_ADAPTERS.writerContinuityRequest||((payload)=>payload);
+  const writerContinuityRequestPlan=P0_ROUTE_ADAPTERS.writerContinuityRequestPlan||((payload,state)=>({payload:writerContinuityRequest(payload,state),applied:false,reason:'adapter-unavailable',limit_bytes:96*1024}));
+  const writerContinuityStateFromResponse=P0_ROUTE_ADAPTERS.writerContinuityStateFromResponse||(()=>null);
+  const writerContinuityStatePlanFromResponse=P0_ROUTE_ADAPTERS.writerContinuityStatePlanFromResponse||((requestPayload,responsePayload,previousState)=>({state:writerContinuityStateFromResponse(requestPayload,responsePayload,previousState),reason:'legacy-adapter',limit_bytes:96*1024}));
+  const truthfulWriterIdentity=P0_ROUTE_ADAPTERS.truthfulWriterIdentity||(()=>({type:'unknown',provider:'',model_id:'',model_display_name:'Ukjent svarforfatter · ikke verifisert',identity_source:'missing',identity_verified:false}));
   const localNetworkHint=P0_ROUTE_ADAPTERS.localNetworkHint;
   const allowLocalProbes=P0_ROUTE_ADAPTERS.allowLocalProbes;
   const pairLocal=P0_ROUTE_ADAPTERS.pairLocal;
@@ -22,6 +31,7 @@
   const HISTORY_SCHEMA_KEY='mmir-p0-chat-history-schema';
   const HISTORY_SESSION_KEY='mmir-p0-chat-history-qa-session-v1';
   const HISTORY_SESSION_SCHEMA_KEY='mmir-p0-chat-history-qa-session-schema';
+  const WRITER_CONTINUITY_SESSION_KEY='mmir-p0-writer-continuity-v1';
   const HISTORY_SCHEMA='20260603-clean-first-chat-v40';
   const MODELS_KEY='mmir-p0-active-models-v1';
   const ACTIVE_MODEL_KEY='mmir-p0-active-model-id-v1';
@@ -59,7 +69,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260718-minimal-response-chrome-v1';
+  const P0_RUNTIME_VERSION='20260718-writer-continuity-v1';
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
   const CANONICAL_HOSTED_MODEL_ALIASES=new Set([
     CANONICAL_HOSTED_MODEL_ID,
@@ -107,6 +117,9 @@
     : {historyKey:HISTORY_SESSION_KEY,schemaKey:HISTORY_SESSION_SCHEMA_KEY,scope:''};
   const activeHistorySessionKey=historySessionKeys.historyKey||HISTORY_SESSION_KEY;
   const activeHistorySessionSchemaKey=historySessionKeys.schemaKey||HISTORY_SESSION_SCHEMA_KEY;
+  const activeWriterContinuitySessionKey=historySessionMode&&historySessionKeys.scope
+    ? WRITER_CONTINUITY_SESSION_KEY+':'+historySessionKeys.scope
+    : WRITER_CONTINUITY_SESSION_KEY;
   window.__MimirP0HistorySessionMode=historySessionMode;
   window.__MimirP0HistorySessionKey=historySessionMode?activeHistorySessionKey:'';
   window.__MimirP0HistorySessionScope=historySessionMode?(historySessionKeys.scope||''):'';
@@ -370,8 +383,10 @@
       source:''
     }
   };
+  let writerContinuityState=normalizedWriterContinuityState(readSessionJson(activeWriterContinuitySessionKey,null));
   let activeChatController=null;
   let stopRequested=false;
+  if(privateModeActive())clearWriterContinuityState();
   const SLOW_RESPONSE_NOTICE_MS=12000;
   const TOOLBAR_TOOL_DEFINITIONS=[
     {
@@ -445,6 +460,34 @@
     }catch(error){
       return false;
     }
+  }
+
+  function clearWriterContinuityState(){
+    writerContinuityState=null;
+    removeSessionKey(activeWriterContinuitySessionKey);
+  }
+
+  function setWriterContinuityState(next){
+    const normalized=normalizedWriterContinuityState(next);
+    if(!normalized||privateModeActive()){
+      clearWriterContinuityState();
+      return null;
+    }
+    writerContinuityState=normalized;
+    writeSessionJson(activeWriterContinuitySessionKey,normalized);
+    return normalized;
+  }
+
+  function captureWriterContinuity(requestPayload,responsePayload,previousState){
+    const plan=writerContinuityStatePlanFromResponse(requestPayload,responsePayload,previousState);
+    if(plan.state){
+      setWriterContinuityState(plan.state);
+      return plan;
+    }
+    if(requestPayload?.writer_continuity_receipt||responsePayload?.mmir?.writer_continuity_receipt!==undefined){
+      clearWriterContinuityState();
+    }
+    return plan;
   }
 
   function ensureHistorySchema(){
@@ -3318,7 +3361,7 @@
   }
 
   function receiptHasPendingOrError(value){
-    return /\b(?:awaiting|blocked|checking|connecting|error|failed|loading|pending|retrying|sending|stopped|thinking|unavailable|working|avbrutt|feil|kobler|laster|mislyktes|sender|sjekker|tenker|utilgjengelig|venter)\b/i.test(String(value||''));
+    return /\b(?:awaiting|blocked|checking|connecting|error|failed|loading|pending|reset|retrying|sending|stopped|thinking|unavailable|working|avbrutt|feil|kobler|laster|mislyktes|sender|sjekker|tenker|tilbakestilt|utilgjengelig|venter)\b/i.test(String(value||''));
   }
 
   function quietReceiptPart(part,modelLabel=''){
@@ -3395,30 +3438,20 @@
   }
 
   function answerWriterProfile(payload,fallbackModel=null){
-    const best=payload?.mmir?.best_answer||payload?.best_answer||payload?.mmir?.compare_best_answer||{};
-    const writer=payload?.mmir?.answer_writer||best?.answer_writer||payload?.answer_writer||{};
-    const fallbackLabel=String(fallbackModel?.label||fallbackModel?.model_display_name||fallbackModel?.model||'').trim();
-    const modelId=String(
-      writer?.model_id||
-      best?.model_id||
-      payload?.model||
-      fallbackModel?.model||
-      fallbackModel?.id||
-      ''
-    ).trim();
-    const displayName=String(
-      writer?.model_display_name||
-      best?.model_display_name||
-      payload?.model_display_name||
-      modelId||
-      fallbackLabel
-    ).replace(/\s+/g,' ').trim().slice(0,120);
-    return {
-      type:String(writer?.type||'').trim().toLowerCase()||'llm',
-      provider:String(writer?.provider||best?.provider||payload?.provider||'').trim(),
-      model_id:modelId,
-      model_display_name:displayName||fallbackLabel||'AI-modell'
-    };
+    return truthfulWriterIdentity(payload,fallbackModel);
+  }
+
+  function writerContinuityResetMetadata(payload){
+    const reset=payload?.mmir?.client_writer_continuity;
+    if(!reset||reset.object!=='mmir.client_writer_continuity'||reset.status!=='reset')return null;
+    return reset;
+  }
+
+  function writerContinuityResetReceipt(payload){
+    const reset=writerContinuityResetMetadata(payload);
+    if(!reset)return '';
+    const kib=Math.max(1,Math.round((Number(reset.limit_bytes)||96*1024)/1024));
+    return ' · Writer continuity reset ('+kib+' KiB browser boundary)';
   }
 
   function connectedIntelligenceLabel(payload){
@@ -4570,6 +4603,7 @@
   function setPrivacyMode(mode){
     state.privacyMode=normalizePrivacyMode(mode);
     writePrivacyMode(state.privacyMode);
+    if(privateModeActive())clearWriterContinuityState();
     if(superPrivateModeActive())clearPersistedHistory();
     renderToolbar();
     renderPrivacyMenu();
@@ -4789,6 +4823,7 @@
     const input=document.getElementById('p0-input');
     state.fastAnswerOnce=false;
     state.messages=[];
+    clearWriterContinuityState();
     clearPersistedHistory();
     if(input){
       input.value='';
@@ -4890,9 +4925,9 @@
     if(remember){
       const item=addLocalMemory(remember[1]);
       closeMenus();
-      append('user',value,'You');
+      append('user',value,'You','',{routeProvenance:'browser-local',hostedLineage:false});
       if(input){input.value='';autosizeInput();}
-      append('assistant',item?('Saved locally in this browser:\n- '+item.text):'Nothing was saved. Add text after /remember.','MMIR local memory','Memory saved · browser only · no API call');
+      append('assistant',item?('Saved locally in this browser:\n- '+item.text):'Nothing was saved. Add text after /remember.','MMIR local memory','Memory saved · browser only · no API call',{routeProvenance:'browser-local',hostedLineage:false});
       status(item?'Memory saved locally.':'Memory was empty.','ready');
       routeStatus(item?'Memory saved · browser only · no owner cost':'Memory not saved · empty input','hosted');
       input?.focus();
@@ -4901,9 +4936,9 @@
     if(doc){
       const note=addLocalDocumentNote(doc[1],doc[2]);
       closeMenus();
-      append('user',value,'You');
+      append('user',value,'You','',{routeProvenance:'browser-local',hostedLineage:false});
       if(input){input.value='';autosizeInput();}
-      append('assistant',note?('Document note saved locally:\n- '+note.title+': '+note.text):'Nothing was saved. Use /doc Title: short note.','MMIR local documents','Document note · browser only · no API call');
+      append('assistant',note?('Document note saved locally:\n- '+note.title+': '+note.text):'Nothing was saved. Use /doc Title: short note.','MMIR local documents','Document note · browser only · no API call',{routeProvenance:'browser-local',hostedLineage:false});
       status(note?'Document note saved locally.':'Document note was empty.','ready');
       routeStatus(note?'Document note · browser only · no owner cost':'Document note not saved · empty input','hosted');
       input?.focus();
@@ -4913,9 +4948,9 @@
       writeJson(LOCAL_MEMORY_ITEMS_KEY,[]);
       writeJson(LOCAL_DOCUMENT_NOTES_KEY,[]);
       closeMenus();
-      append('user',value,'You');
+      append('user',value,'You','',{routeProvenance:'browser-local',hostedLineage:false});
       if(input){input.value='';autosizeInput();}
-      append('assistant','Local memory and local document notes were cleared in this browser.','MMIR local memory','Memory cleared · browser only · no API call');
+      append('assistant','Local memory and local document notes were cleared in this browser.','MMIR local memory','Memory cleared · browser only · no API call',{routeProvenance:'browser-local',hostedLineage:false});
       status('Local memory cleared.','ready');
       routeStatus('Memory cleared · browser only','hosted');
       input?.focus();
@@ -4923,9 +4958,9 @@
     }
     if(guide||isLocalMemoryQuestion(value)){
       closeMenus();
-      append('user',value,'You');
+      append('user',value,'You','',{routeProvenance:'browser-local',hostedLineage:false});
       if(input){input.value='';autosizeInput();}
-      append('assistant',guide?'Use /remember something important, /memory to show it, /doc Title: note to save a document note, and /forget memory to clear local memory.\n\nEverything stays in this browser unless you explicitly send it in a later prompt.':localMemoryAnswer(),'MMIR local memory','Memory recall · browser only · no API call');
+      append('assistant',guide?'Use /remember something important, /memory to show it, /doc Title: note to save a document note, and /forget memory to clear local memory.\n\nEverything stays in this browser unless you explicitly send it in a later prompt.':localMemoryAnswer(),'MMIR local memory','Memory recall · browser only · no API call',{routeProvenance:'browser-local',hostedLineage:false});
       status('Local memory shown.','ready');
       routeStatus('Memory recall · browser only · no owner cost','hosted');
       input?.focus();
@@ -5978,6 +6013,9 @@
       continuationLabel:meta.continuationLabel||'',
       continuationSuggestedMessage:meta.continuationSuggestedMessage||'',
       continuationSource:meta.continuationSource||'',
+      routeProvenance:String(meta.routeProvenance||'ui-local'),
+      hostedLineage:meta.hostedLineage===true,
+      ...(meta.hostedDeliveryState?{hostedDeliveryState:String(meta.hostedDeliveryState)}:{}),
       createdAt:new Date().toISOString()
     };
     state.messages.push(message);
@@ -6020,6 +6058,7 @@
 
   function clearChat(){
     state.messages=[];
+    clearWriterContinuityState();
     lastDemoTranscriptHash='';
     clearTimeout(demoTranscriptTimer);
     saveHistory();
@@ -6146,8 +6185,8 @@
   }
 
   function hostedConversationHistory(){
-    return (Array.isArray(state.messages)?state.messages:[])
-      .filter(message=>message&&(message.role==='user'||message.role==='assistant'))
+    const lineage=(Array.isArray(state.messages)?state.messages:[])
+      .filter(hostedLineageEligible)
       .filter(message=>!message.command&&!message.showOsChoices&&message.variant!=='install')
       .filter(message=>{
         const content=String(message.content||'').trim();
@@ -6159,6 +6198,7 @@
         role:message.role,
         content:chatPayloadContent(message.content,message.role==='assistant'?1600:1100)
       }));
+    return boundedChatMessageTail(lineage,{maxMessages:MAX_HISTORY,maxBytes:72*1024});
   }
 
   function hostedConversationMemoryContext(history){
@@ -6194,7 +6234,7 @@
     const memoryContext=hostedConversationMemoryContext(history);
     return [
       {role:'system',content:[systemPrompt,memoryContext].filter(Boolean).join('\n\n')},
-      ...history.slice(-10),
+      ...history,
       {role:'user',content:mediaChatContent(currentUserContent,media)}
     ];
   }
@@ -6290,15 +6330,48 @@
       .trim();
   }
 
-  async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null,displayPrompt=''){
-    const payload=hostedPayload(prompt,model,media,displayPrompt);
-    return fetchJson(API_URL+CHAT_PATH,{
+  async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null,displayPrompt='',options={}){
+    const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
+    const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
+    let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt));
+    const continuityPlan=continuityEnabled
+      ? writerContinuityRequestPlan(payload,writerContinuityState)
+      : {payload,applied:false,reason:'disabled',limit_bytes:96*1024};
+    payload=continuityPlan.payload;
+    const continuityApplied=continuityPlan.applied===true;
+    const requestContinuityReset=continuityEnabled&&continuityPlan.reason==='continuity-payload-limit-exceeded';
+    if(continuityEnabled&&writerContinuityState&&!continuityApplied)clearWriterContinuityState();
+    const response=await fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
       timeoutMs:45000,
       signal
     });
+    const capturePlan=continuityEnabled
+      ? captureWriterContinuity(payload,response,continuityApplied?previousState:null)
+      : null;
+    const responseContinuityReset=capturePlan?.reason==='continuity-payload-limit-exceeded';
+    const continuityReset=requestContinuityReset||responseContinuityReset;
+    const continuityResetReason=requestContinuityReset?continuityPlan.reason:capturePlan?.reason;
+    const continuityResetLimit=requestContinuityReset?continuityPlan.limit_bytes:capturePlan?.limit_bytes;
+    const data=continuityReset&&response&&typeof response==='object'&&!Array.isArray(response)
+      ? {
+          ...response,
+          mmir:{
+            ...(response.mmir&&typeof response.mmir==='object'&&!Array.isArray(response.mmir)?response.mmir:{}),
+            client_writer_continuity:{
+              object:'mmir.client_writer_continuity',
+              status:'reset',
+              reason:continuityResetReason,
+              phase:requestContinuityReset?'request':'response',
+              limit_bytes:continuityResetLimit,
+              receipt_echoed:continuityApplied
+            }
+          }
+        }
+      : response;
+    return data;
   }
 
   async function chatVisionPreviewData(prompt,signal,media){
@@ -7273,14 +7346,15 @@
       const modeLabel=privacyModeLabel();
       const modeNeed=superPrivateModeActive()?'Superprivate needs local node':'Private mode needs local node';
       closeMenus();
-      append('user',prompt,'You');
+      append('user',prompt,'You','',{routeProvenance:'local-private',hostedLineage:false});
       input.value='';
       autosizeInput();
       append(
         'assistant',
         modeLabel+' er på, men ingen lokal modell er koblet til. Velg Koble til lokal AI i statuslinjen for å starte.',
         'MMIR privacy guard',
-        modeLabel+' · hosted route blocked'
+        modeLabel+' · hosted route blocked',
+        {routeProvenance:'local-private',hostedLineage:false}
       );
       status(modeLabel+' needs a local model.','error');
       routeStatus(modeNeed,'error');
@@ -7296,12 +7370,16 @@
     if(pendingMedia&&smart.mode==='single'&&smart.model?.route==='local'&&!privateModeActive()){
       smart={...smart,model:defaultHostedModel(),reason:'Protected vision boundary'};
     }
+    const model=smart.model;
+    const directHostedLineage=Boolean(model?.route==='hosted'&&!pendingMedia);
+    const routeProvenance=directHostedLineage
+      ? 'hosted-chat'
+      : (model?.route==='local'?'local-model':(pendingMedia?'hosted-vision':'ui-local'));
     closeMenus();
     const signal=beginResponse();
-    append('user',prompt,'You');
+    const userMessage=append('user',prompt,'You','',{routeProvenance,hostedLineage:directHostedLineage});
     input.value='';
     autosizeInput();
-    const model=smart.model;
     if(!model||model.executable===false||model.selectable===false){
       status((model?.label||'Provider candidate')+' is future capacity. Active free routes are ready now.','ready');
       routeStatus('Future node · deploy handoff needed','hosted');
@@ -7313,7 +7391,7 @@
     const guardedRoutePrompt=locationContext?locationContext+'\n\nUser text:\n'+(smart.prompt||prompt):(smart.prompt||prompt);
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
-    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt});
+    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage});
     const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
     const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',rolePart,smart.reason].filter(Boolean);
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
@@ -7331,7 +7409,7 @@
         ? await chatLocal(routePrompt,model,signal)
         : pendingMedia
           ? responseText((hostedData=await chatVisionPreviewData(routePrompt,signal,pendingMedia)))||'Vision-ruten svarte tomt. Prøv igjen med et tydeligere bilde eller en kortere forespørsel.'
-          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt)))||((model?.label||'Hosted route')+' returned an empty response.');
+          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true})))||((model?.label||'Hosted route')+' returned an empty response.');
       if(hostedData)recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
@@ -7341,13 +7419,16 @@
       const connectGuide=responseConnectGuide(hostedData);
       const answerProof=noteAnswerProof(answerProofLine(hostedData));
       const answerWriter=answerWriterProfile(hostedData,model);
+      const answeredRouteProvenance=directHostedLineage&&answerWriter.type==='capability'?'hosted-capability':routeProvenance;
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
         label:answerWriter.model_display_name,
-        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':''),
+        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':'')+writerContinuityResetReceipt(hostedData),
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(hostedData),
         answerWriter,
         truncated:hostedTruncated,
+        routeProvenance:answeredRouteProvenance,
+        hostedLineage:directHostedLineage,
         ...connectGuideMessageUpdates(connectGuide)
       });
       if(pendingMedia&&state.pendingMedia===pendingMedia)state.pendingMedia=null;
@@ -7358,7 +7439,9 @@
         score:effectiveModelScore(model),
         truncated:hostedTruncated,
         raw_image_sent_to_gateway:Boolean(pendingMedia),
-        provider_called:Boolean(hostedData?.mmir?.provider_called||hostedData?.provider_called)
+        provider_called:Boolean(hostedData?.mmir?.provider_called||hostedData?.provider_called),
+        writer_continuity_reset:Boolean(writerContinuityResetMetadata(hostedData)),
+        writer_continuity_reset_reason:writerContinuityResetMetadata(hostedData)?.reason||''
       });
       renderModelMenu();
       if(connectGuide){
@@ -7372,7 +7455,8 @@
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
         captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||''});
-        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user'});
+        updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
+        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user',routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.','idle');
         routeStatus('Stopped · no failed first request','hosted');
         return;
@@ -7397,7 +7481,10 @@
         try{
           const fallbackReceipt=routeReceipt(activeModel());
           const fallbackStarted=performance.now();
-          const fallbackData=await chatHostedData(routePrompt,signal,defaultHostedModel(),null,prompt);
+          updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
+          updateMessage(assistant,assistant.content,{receipt:receipt.text+' · Hosted fallback attempted · result unknown',routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
+          captureInteraction('chat_fallback_started',{original_route:'local',active_model_id:activeModel()?.id||'',hosted_delivery_state:'attempted-result-unknown'});
+          const fallbackData=await chatHostedData(routePrompt,signal,defaultHostedModel(),null,prompt,{writerContinuity:true});
           const fallbackAnswer=responseText(fallbackData)||((activeModel()?.label||'Hosted route')+' returned an empty response.');
           const fallbackTruncated=responseIsTruncated(fallbackData);
           const fallbackElapsedMs=performance.now()-fallbackStarted;
@@ -7405,35 +7492,42 @@
           const fallbackElapsed=formatDuration(fallbackElapsedMs);
           const fallbackProof=noteAnswerProof(answerProofLine(fallbackData));
           const fallbackWriter=answerWriterProfile(fallbackData,activeModel());
+          updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback',hostedLineage:true,hostedDeliveryState:'succeeded'});
           updateMessage(
             assistant,
             withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
-            {label:fallbackWriter.model_display_name,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':''),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),answerWriter:fallbackWriter,truncated:fallbackTruncated}
+            {label:fallbackWriter.model_display_name,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':'')+writerContinuityResetReceipt(fallbackData),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),answerWriter:fallbackWriter,truncated:fallbackTruncated,routeProvenance:'hosted-fallback',hostedLineage:true,hostedDeliveryState:'succeeded'}
           );
           captureInteraction(fallbackTruncated?'truncation_seen':'chat_fallback_ready',{
             active_model_id:activeModel()?.id||'',
             active_model_route:activeModel()?.route||'',
             original_route:'local',
             latency_ms:Math.round(fallbackElapsedMs),
-            truncated:fallbackTruncated
+            truncated:fallbackTruncated,
+            hosted_delivery_state:'succeeded',
+            writer_continuity_reset:Boolean(writerContinuityResetMetadata(fallbackData)),
+            writer_continuity_reset_reason:writerContinuityResetMetadata(fallbackData)?.reason||''
           });
           status(answerStatus(activeModel(),routeScore(activeModel(),routePrompt,fallbackAnswer,fallbackElapsedMs),'Local fallback')+' · while local access waits for permission','ready');
           routeStatus(routeMicroStatus(activeModel()),fallbackReceipt.state);
         }catch(fallbackError){
           if(stopRequested||fallbackError?.name==='AbortError'){
-            captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||'',phase:'fallback'});
-            updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user'});
+            captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||'',phase:'fallback',hosted_delivery_state:'attempted-result-unknown'});
+            updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
+            updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · Hosted fallback attempted · result unknown · stopped by user',routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
             status(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.','idle');
-            routeStatus('Stopped · no failed first request','hosted');
+            routeStatus('Hosted fallback attempted · result unknown · stopped','hosted');
             return;
           }
-          updateMessage(assistant,hint+'\n\nSupergeni is still available from the model picker.');
+          updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
+          updateMessage(assistant,hint+'\n\nSupergeni is still available from the model picker.',{receipt:receipt.text+' · Hosted fallback attempted · result unknown',routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
           status('Chat failed: local node blocked/unavailable','error');
-          captureInteraction('chat_failed',{reason:'local_and_fallback_unavailable',active_model_id:model?.id||''});
+          captureInteraction('chat_failed',{reason:'local_and_fallback_unavailable',active_model_id:model?.id||'',hosted_delivery_state:'attempted-result-unknown'});
         }
       }else{
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
-        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.');
+        updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
         captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
