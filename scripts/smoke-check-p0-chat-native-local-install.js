@@ -135,7 +135,7 @@ requireIncludes(
 );
 requireIncludes(
   chatHostedDataSource,
-  'return fetchJson(API_URL+CHAT_PATH',
+  'const response=await fetchJson(API_URL+CHAT_PATH',
   'Hosted chat must keep raw API metadata available for chat-native connect guidance.'
 );
 requireIncludes(

@@ -50,12 +50,12 @@ const retryFlow = sliceBetween(
 
 requireIncludes(
   sendFlow,
-  "const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt});",
+  "const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage});",
   'Hosted chat must retain the original prompt on the assistant message before the request starts.'
 );
 requireIncludes(
   sendFlow,
-  "updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.');",
+  "updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{routeProvenance:'hosted-failed',hostedLineage:false});",
   'Hosted API failure must replace pending copy with a safe visible error that points to Retry.'
 );
 requireIncludes(
