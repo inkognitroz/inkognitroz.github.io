@@ -69,7 +69,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260718-writer-continuity-v1';
+  const P0_RUNTIME_VERSION='20260726-first-session-truth-v2';
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
   const CANONICAL_HOSTED_MODEL_ALIASES=new Set([
     CANONICAL_HOSTED_MODEL_ID,
@@ -376,6 +376,7 @@
         probeQueuedLabels:[]
       }
     },
+    hostedRouteState:'checking',
     tokenCounter:{
       total:0,
       last:0,
@@ -524,7 +525,7 @@
       .filter(message=>!staleFailureMessage(message))
       .filter(message=>!transientInstallMessage(message))
       .slice(-MAX_HISTORY)
-      .map(message=>({
+      .map(message=>normalizeAnswerTruth({
         ...message,
         id:message.id||makeMessageId()
       }));
@@ -2058,14 +2059,14 @@
       input.value='';
       autosizeInput();
     }
-    const assistant=append('assistant','Pinging connected intelligence...','MMIR Intelligence Well','Owner ping · asking all owner routes · no paid route',{variant:'compare',retryPrompt:'/ping '+parsed.prompt});
+    const assistant=append('assistant','Pinging connected intelligence...','MMIR Intelligence Well','Owner ping · asking all owner routes · no paid route',{variant:'compare',retryPrompt:'/ping '+parsed.prompt,answerState:'pending',aiGenerated:false});
     status('Owner ping is asking available intelligence routes...','ready');
     routeStatus('Owner ping · Supergeni + configured free candidates · no paid route','ready');
     try{
       const data=await submitOwnerPingCommand(parsed,signal);
       if(data?.object!=='owner.intelligence.ping')throw new Error('Owner ping unavailable');
       const receipt=ownerPingReceipt(data);
-      updateMessage(assistant,ownerPingAnswer(data),{receipt,actions:true});
+      updateMessage(assistant,ownerPingAnswer(data),{receipt,actions:true,answerState:'live',aiGenerated:true});
       recordGatewayCompareBenchmarks(data);
       renderModelMenu();
       renderToolbar();
@@ -2073,11 +2074,11 @@
       routeStatus(receipt,'ready');
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
-        updateMessage(assistant,'Owner ping stopped.',{receipt:'Owner ping · stopped',actions:false});
+        updateMessage(assistant,'Owner ping stopped.',{receipt:'Owner ping · stopped',actions:false,answerState:'degraded',aiGenerated:false});
         status('Owner ping stopped.','idle');
         routeStatus('Stopped · owner ping cancelled','hosted');
       }else{
-        updateMessage(assistant,'Owner ping needs active owner identity on api.mmir.ai. Use /ping for public Boost, or check owner auth/server config.',{receipt:'Owner ping · owner auth/config needed',actions:false});
+        updateMessage(assistant,'Owner ping needs active owner identity on api.mmir.ai. Use /ping for public Boost, or check owner auth/server config.',{receipt:'Owner ping · owner auth/config needed',actions:false,answerState:'degraded',aiGenerated:false});
         status('Eierkontrollen er ikke tilgjengelig akkurat nå. Prøv igjen.','error');
         routeStatus('Owner ping unavailable · owner auth/config needed','error');
       }
@@ -2714,6 +2715,16 @@
     return true;
   }
 
+  function liveHostedModel(model){
+    return Boolean(
+      model &&
+      model.route!=='local' &&
+      executableHostedModel(model) &&
+      !hostedCandidateModel(model) &&
+      model.selectable!==false
+    );
+  }
+
   function visibleHostedModel(model){
     return executableHostedModel(model)||
       model?.candidate===true||
@@ -2820,14 +2831,14 @@
 
   function modelInventorySummary(payload,models=[]){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
-    const active=raw.filter(model=>executableHostedModel(model)&&!hostedCandidateModel(model)).length;
+    const active=raw.filter(liveHostedModel).length;
     const future=raw.filter(hostedCandidateModel).length;
-    const fallbackActive=(models||[]).filter(model=>model?.executable!==false&&model?.selectable!==false&&!model?.candidate).length;
+    const fallbackActive=(models||[]).filter(liveHostedModel).length;
     const fallbackFuture=(models||[]).filter(model=>model?.candidate||model?.executable===false||model?.selectable===false).length;
     return {
-      activeRoutes:active||fallbackActive||1,
+      activeRoutes:active||fallbackActive||0,
       futureRoutes:future||fallbackFuture||0,
-      totalRoutes:raw.length||((models||[]).length)||1,
+      totalRoutes:raw.length||((models||[]).length)||0,
       activePublicProviderRoutes:Number(payload?.active_public_provider_route_count)||0,
       activeExternalNodeRoutes:Number(payload?.active_external_node_route_count)||0,
       visibleCandidateCount:Number(payload?.visible_candidate_count)||future||fallbackFuture||0,
@@ -2890,7 +2901,16 @@
     try{
       const payload=await fetchJson(API_URL+hostedModelsPath(),{timeoutMs:9000});
       const models=normalizeHostedModels(payload);
-      if(!models.length)return;
+      const liveModels=models.filter(liveHostedModel);
+      if(!liveModels.length){
+        state.routeInventory=modelInventorySummary(payload,models);
+        state.models=models.concat(state.models.filter(model=>model.route==='local'));
+        state.hostedRouteState='degraded';
+        renderToolbar();
+        renderTranscript();
+        window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'degraded',models}}));
+        return;
+      }
       const activeLocal=state.models.find(model=>model.id===state.activeModelId&&model.route==='local');
       state.routeInventory=modelInventorySummary(payload,models);
       state.models=models.concat(state.models.filter(model=>model.route==='local'));
@@ -2901,9 +2921,13 @@
       }
       persistActiveModelId();
       writeJson(MODELS_KEY,state.models);
+      state.hostedRouteState=liveModels.length?'ready':'degraded';
       renderToolbar();
+      renderTranscript();
       window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'ready',models}}));
     }catch(error){
+      state.hostedRouteState='degraded';
+      renderTranscript();
       window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'deferred',models:[]}}));
     }
   }
@@ -3408,10 +3432,75 @@
     return quiet.join(' · ')||'Klar';
   }
 
-  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel=''){
+  function answerDeliveryLabel(stateValue){
+    if(stateValue==='live')return 'Live';
+    if(stateValue==='local')return 'Lokalt';
+    if(stateValue==='demo')return 'Demo';
+    if(stateValue==='degraded')return 'Degradert';
+    if(stateValue==='pending')return 'Pågår';
+    return '';
+  }
+
+  function normalizeAnswerTruth(message={}){
+    const next={...message};
+    if(next.role!=='assistant'){
+      next.answerState='';
+      next.aiGenerated=false;
+      return next;
+    }
+    const provenance=String(next.routeProvenance||'').toLowerCase();
+    const variant=String(next.variant||'').toLowerCase();
+    const receipt=String(next.receipt||'').toLowerCase();
+    const content=String(next.content||'').toLowerCase();
+    const explicitState=['live','demo','local','degraded','pending'].includes(String(next.answerState||'').toLowerCase())
+      ? String(next.answerState).toLowerCase()
+      : '';
+    const failed=/failed|unavailable|stopped|blocked|result unknown|privacy fail-closed/.test(receipt+' '+provenance)||
+      /svarer ikke akkurat nå|svaret ble stoppet|noe gikk galt/.test(content);
+    const modelGenerated=next.answerWriter?.type==='llm';
+    const capabilityAnswer=next.answerWriter?.type==='capability';
+    const inFlight=explicitState==='pending'||(!explicitState&&(
+      Boolean(next.slowNotice)||
+      /(?:\btenker\b|\bsammenligner\b|\bvelger beste svar\b|\bcomparing\b|\bsynthesizing\b|\bis running\b|\bstill working\b|\bpinging connected intelligence\b)/.test(content)
+    ));
+    let answerState=explicitState;
+    if(!answerState){
+      if(inFlight)answerState='pending';
+      else if(provenance.includes('demo')||variant==='demo')answerState='demo';
+      else if(failed||provenance.includes('fallback')||provenance.includes('failed'))answerState='degraded';
+      else if(provenance.includes('local-model'))answerState='local';
+      else if(next.hostedLineage===true||provenance.includes('hosted-chat')||provenance.includes('hosted-vision'))answerState='live';
+      else if(variant==='compare')answerState=failed?'degraded':'live';
+    }
+    const explicitGenerated=Object.prototype.hasOwnProperty.call(next,'aiGenerated')
+      ? Boolean(next.aiGenerated)
+      : null;
+    const aiGenerated=capabilityAnswer||inFlight
+      ? false
+      : (explicitGenerated===true
+        ? true
+        : (!failed&&(modelGenerated||answerState==='local'||answerState==='demo'||
+          (answerState==='live'&&(variant==='compare'||next.hostedLineage===true)))));
+    next.answerState=answerState;
+    next.aiGenerated=Boolean(aiGenerated);
+    return next;
+  }
+
+  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false){
     const full=canonicalBrandText(receipt).trim();
     const model=canonicalBrandText(modelLabel).replace(/\s+/g,' ').trim()||'AI-modell';
-    const statusText=quietReceiptStatus(full,model,proof);
+    const quietStatus=quietReceiptStatus(full,model,proof);
+    const conciseGeneratedStatus=aiGenerated
+      ? (receiptParts(quietStatus).find(part=>/^(?:Verifisert|Signert kvittering|Ubekreftet)$/i.test(part))||receiptParts(quietStatus)[0]||'')
+      : quietStatus;
+    const statusParts=[
+      answerDeliveryLabel(answerState),
+      conciseGeneratedStatus,
+      aiGenerated?'KI-svar · kan ta feil':''
+    ].filter(Boolean);
+    const statusText=statusParts
+      .filter((part,index,all)=>all.indexOf(part)===index)
+      .join(' · ');
     const trustLabel=proofTrustLabel(proof);
     const trustShown=Boolean(trustLabel&&receiptChromeKey(statusText).includes(receiptChromeKey(trustLabel)));
     const intelligence=String(intelligenceLabel||'').replace(/\s+/g,' ').trim();
@@ -3755,11 +3844,11 @@
           '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
         '</a>'+
         '<nav class="p0-sidebar-nav" aria-label="Chat actions">'+
-          '<button type="button" data-p0-sidebar-action="new-chat">'+ICON_TOOLS+'<span>New Chat</span></button>'+
-          '<button type="button" data-p0-sidebar-action="voice-input">'+ICON_MIC+'<span>New Voice Chat</span></button>'+
-          '<button type="button" data-p0-sidebar-action="choose-photo-local">'+ICON_ATTACH+'<span>New Image</span></button>'+
+          '<button type="button" data-p0-sidebar-action="new-chat">'+ICON_TOOLS+'<span>Ny chat</span></button>'+
+          '<button type="button" data-p0-sidebar-action="voice-input">'+ICON_MIC+'<span>Ny talechat</span></button>'+
+          '<button type="button" data-p0-sidebar-action="choose-photo-local">'+ICON_ATTACH+'<span>Nytt bilde</span></button>'+
         '</nav>'+
-        '<button id="p0-sidebar-settings" class="p0-sidebar-settings" type="button" data-p0-sidebar-action="privacy-menu">'+ICON_SHIELD+'<span>Settings</span></button>'+
+        '<button id="p0-sidebar-settings" class="p0-sidebar-settings" type="button" data-p0-sidebar-action="privacy-menu">'+ICON_SHIELD+'<span>Innstillinger</span></button>'+
       '</aside>'+
       '<div class="p0-main-shell">'+
         '<header class="p0-topbar">'+
@@ -3767,14 +3856,17 @@
             '<span class="p0-mark" aria-hidden="true">MM</span>'+
             '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
           '</a>'+
-          '<div id="p0-status" class="p0-status" data-state="ready">Ready</div>'+
+          '<div class="p0-topbar-truth">'+
+            '<span class="p0-ai-badge" role="note" aria-label="KI-chat. Supergeni er kunstig intelligens. Svarforfatter, rute og kilder vises i kvitteringen etter hvert svar." title="Supergeni er kunstig intelligens. Svarforfatter, rute og kilder vises i kvitteringen etter hvert svar.">KI-chat</span>'+
+            '<div id="p0-status" class="p0-status" data-state="ready">Klar</div>'+
+          '</div>'+
         '</header>'+
         '<main class="p0-chat">'+
           '<div id="p0-transcript" class="p0-transcript" aria-live="polite" aria-relevant="additions text"></div>'+
         '</main>'+
         '<footer class="p0-composer-wrap">'+
           '<form id="p0-composer" class="p0-composer" aria-label="MMIR chat composer">'+
-            '<textarea id="p0-input" class="p0-input" rows="2" aria-label="Message MMIR" placeholder="Spør hva som helst" autocomplete="off" spellcheck="true"></textarea>'+
+            '<textarea id="p0-input" class="p0-input" rows="2" aria-label="Spør Supergeni, en kunstig intelligens" placeholder="Spør Supergeni (KI) om hva som helst …" autocomplete="off" spellcheck="true"></textarea>'+
             '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
             '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
             '<div class="p0-status-rail">'+
@@ -3784,14 +3876,14 @@
             '<div class="p0-toolbar">'+
               '<div class="p0-left">'+
                 '<button id="p0-attach" class="p0-btn p0-btn-icon" type="button" aria-label="Legg ved bilde" title="Legg ved bilde">'+ICON_ATTACH+'</button>'+
-                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Tools" title="Tools" aria-expanded="false">'+ICON_TOOLS+'<span>Tools</span></button>'+
-                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Security and privacy status: public mode" title="Security and privacy · Public mode" data-state="public">'+ICON_SHIELD+'</button>'+
+                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Verktøy" title="Verktøy" aria-expanded="false">'+ICON_TOOLS+'<span>Verktøy</span></button>'+
+                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Sikkerhet og personvern: offentlig modus" title="Sikkerhet og personvern · Offentlig modus" data-state="public">'+ICON_SHIELD+'</button>'+
               '</div>'+
               '<div class="p0-right">'+
                 '<span class="p0-speed-chip" title="Fast default route">Fast</span>'+
                 '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
                 '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input">'+ICON_MIC+'</button>'+
-                '<button id="p0-send" class="p0-btn p0-send" type="submit" aria-label="Send message">Ask</button>'+
+                '<button id="p0-send" class="p0-btn p0-send" type="submit" aria-label="Send melding">Spør</button>'+
               '</div>'+
             '</div>'+
           '</form>'+
@@ -4543,38 +4635,38 @@
   }
 
   function privacyModeLabel(mode=privacyMode()){
-    if(mode==='superprivate')return 'Superprivate mode';
-    if(mode==='private')return 'Private mode';
-    return 'Public mode';
+    if(mode==='superprivate')return 'Superprivat modus';
+    if(mode==='private')return 'Privat modus';
+    return 'Offentlig modus';
   }
 
   function privacyModeDetail(mode){
     const value=normalizePrivacyMode(mode);
     if(value==='superprivate'){
       return bestLocalModel()||activeModel().route==='local'
-        ? 'Local-only. Hosted routes are blocked and browser chat history is not saved.'
-        : 'Requires a local model. Hosted routes stay blocked and browser chat history is not saved.';
+        ? 'Bare lokalt. Hostede ruter er blokkert, og chatteloggen lagres ikke i nettleseren.'
+        : 'Krever en lokal modell. Hostede ruter forblir blokkert, og chatteloggen lagres ikke i nettleseren.';
     }
     if(value==='private'){
       return bestLocalModel()||activeModel().route==='local'
-        ? 'Uses your local model when available. Hosted fallback is blocked.'
-        : 'Requires a local model before private prompts can be sent.';
+        ? 'Bruker den lokale modellen. Hosted reservebane er blokkert.'
+        : 'Krever en lokal modell før private meldinger kan sendes.';
     }
-    return 'Standard mode. Supergeni hosted route is allowed. Do not paste private secrets or sensitive files.';
+    return 'Standardmodus. Supergenis hostede rute er tillatt. Ikke lim inn hemmeligheter eller sensitive filer.';
   }
 
   function privacyModeRouteStatus(){
     if(superPrivateModeActive()){
       return bestLocalModel()||activeModel().route==='local'
-        ? {text:'Superprivate mode',state:'local'}
-        : {text:'Superprivate needs local node',state:'error'};
+        ? {text:'Superprivat modus',state:'local'}
+        : {text:'Superprivat krever lokal node',state:'error'};
     }
     if(privateModeActive()){
       return bestLocalModel()||activeModel().route==='local'
-        ? {text:'Private mode',state:'local'}
-        : {text:'Private mode needs local node',state:'error'};
+        ? {text:'Privat modus',state:'local'}
+        : {text:'Privat modus krever lokal node',state:'error'};
     }
-    return {text:'Public mode',state:'hosted'};
+    return {text:'Offentlig modus',state:'hosted'};
   }
 
   function factGuardDetail(){
@@ -4591,8 +4683,8 @@
   }
 
   function demoTranscriptConsentDetail(){
-    if(demoTranscriptConsentActive())return 'Raw demo/test conversations may be persisted for product learning. Do not paste secrets.';
-    return 'Raw conversation persistence is off. Feedback, clicks and route metadata may still be captured as bounded telemetry.';
+    if(demoTranscriptConsentActive())return 'Rå demo- og testsamtaler kan lagres for produktlæring. Ikke lim inn hemmeligheter.';
+    return 'Lagring av rå samtaler er av. Avgrenset telemetri kan fortsatt registrere tilbakemeldinger, klikk og rutemetadata.';
   }
 
   function clearPersistedHistory(){
@@ -4631,26 +4723,26 @@
       : '';
     menu.innerHTML=''+
       menuTitle('Personvern')+
-      menuButton('set-privacy-mode:public','Public',privacyModeDetail('public'),{badge:selected==='public'?'Selected':''})+
-      menuButton('set-privacy-mode:private','Private',privacyModeDetail('private'),{badge:selected==='private'?'Selected':''})+
-      menuButton('set-privacy-mode:superprivate','Superprivate',privacyModeDetail('superprivate'),{badge:selected==='superprivate'?'Selected':''})+
+      menuButton('set-privacy-mode:public','Offentlig',privacyModeDetail('public'),{badge:selected==='public'?'Valgt':''})+
+      menuButton('set-privacy-mode:private','Privat',privacyModeDetail('private'),{badge:selected==='private'?'Valgt':''})+
+      menuButton('set-privacy-mode:superprivate','Superprivat',privacyModeDetail('superprivate'),{badge:selected==='superprivate'?'Valgt':''})+
       demoControls;
   }
 
   function shieldStateFor(model,local){
     if(superPrivateModeActive()){
       return local||model?.route==='local'
-        ? {state:'superprivate',label:'Superprivate mode · local connector active'}
-        : {state:'error',label:'Superprivate mode needs local node'};
+        ? {state:'superprivate',label:'Superprivat modus · lokal tilkobling aktiv'}
+        : {state:'error',label:'Superprivat modus krever lokal node'};
     }
     if(privateModeActive()){
       return local||model?.route==='local'
-        ? {state:'private',label:'Private mode · local connector active'}
-        : {state:'error',label:'Private mode needs local node'};
+        ? {state:'private',label:'Privat modus · lokal tilkobling aktiv'}
+        : {state:'error',label:'Privat modus krever lokal node'};
     }
-    if(model?.route==='local')return {state:'local',label:'Local connector active'};
-    if(local)return {state:'local',label:'Local connector ready · Public mode'};
-    return {state:'public',label:'Public mode · Supergeni hosted route allowed'};
+    if(model?.route==='local')return {state:'local',label:'Lokal tilkobling aktiv'};
+    if(local)return {state:'local',label:'Lokal tilkobling klar · offentlig modus'};
+    return {state:'public',label:'Offentlig modus · Supergenis hostede rute er tillatt'};
   }
 
   function renderShieldState(model=activeModel(),local=bestLocalModel()){
@@ -4658,8 +4750,8 @@
     if(!shield)return;
     const next=shieldStateFor(model,local);
     shield.dataset.state=next.state;
-    shield.setAttribute('aria-label','Security and privacy status: '+next.label);
-    shield.setAttribute('title','Security and privacy · '+next.label);
+    shield.setAttribute('aria-label','Sikkerhet og personvern: '+next.label);
+    shield.setAttribute('title','Sikkerhet og personvern · '+next.label);
   }
 
   function renderPinnedToolbarTools(){
@@ -4722,14 +4814,20 @@
     });
   }
 
+  function syncAiDisclosureComposer(){
+    const input=document.getElementById('p0-input');
+    if(!input)return;
+    input.setAttribute('placeholder','Spør Supergeni (KI) om hva som helst …');
+    input.setAttribute('aria-label','Spør Supergeni, en kunstig intelligens');
+  }
+
   function renderToolbar(){
     const model=activeModel();
     const local=bestLocalModel();
     const displayModel=privateModeActive()&&local?local:model;
     const label=document.querySelector('#p0-model .p0-model-name');
-    const input=document.getElementById('p0-input');
     if(label)label.textContent=displayModel.label;
-    if(input)input.removeAttribute('placeholder');
+    syncAiDisclosureComposer();
     renderShieldState(displayModel,local);
     renderSuperboostCta();
     renderCouncilCta();
@@ -5728,12 +5826,12 @@
     const compareUsefulCaptured=Boolean(message.compareUsefulCaptured);
     const compareUsefulEvidence=String(message.compareUsefulEvidenceId||'').replace(/\s+/g,' ').trim();
     const compareUsefulTitle=compareUsefulCaptured&&compareUsefulEvidence?('Useful signal saved. Evidence ID: '+compareUsefulEvidence+'. Raw prompt and answer not stored.'):'';
-    return '<div class="p0-message-actions" aria-label="Answer actions" data-has-status="false">'+
-      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="'+(compareUsefulCaptured?'Compare useful signal already saved':'Mark compare answer useful')+'"'+(compareUsefulCaptured?' disabled data-captured="true" data-evidence-id="'+safeAttr(compareUsefulEvidence)+'" title="'+safeAttr(compareUsefulTitle)+'"':'')+'>'+(compareUsefulCaptured?'Useful saved':'Useful')+'</button>':'')+
-      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Continue truncated answer">'+continuationLabel+'</button>':'')+
-      '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Copy answer">Copy</button>'+
-      '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Retry prompt">Retry</button>'+
-      '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'" aria-label="Copy safe share draft">Share safe</button>'+
+    return '<div class="p0-message-actions" aria-label="Svarhandlinger" data-has-status="false">'+
+      (message.variant==='compare'?'<button type="button" data-p0-message-action="useful-compare" data-p0-message-id="'+id+'" aria-label="'+(compareUsefulCaptured?'Nyttig-signal er allerede lagret':'Merk sammenligningssvaret som nyttig')+'"'+(compareUsefulCaptured?' disabled data-captured="true" data-evidence-id="'+safeAttr(compareUsefulEvidence)+'" title="'+safeAttr(compareUsefulTitle)+'"':'')+'>'+(compareUsefulCaptured?'Nyttig lagret':'Nyttig')+'</button>':'')+
+      (message.truncated?'<button type="button" data-p0-message-action="continue" data-p0-message-id="'+id+'" aria-label="Fortsett avkortet svar">'+continuationLabel+'</button>':'')+
+      '<button type="button" data-p0-message-action="copy" data-p0-message-id="'+id+'" aria-label="Kopier svar">Kopier</button>'+
+      '<button type="button" data-p0-message-action="retry" data-p0-message-id="'+id+'" aria-label="Prøv spørsmålet på nytt">Prøv igjen</button>'+
+      '<button type="button" data-p0-message-action="share-safe" data-p0-message-id="'+id+'" aria-label="Kopier trygg delingskladd">Del trygt</button>'+
       '<span id="p0-action-status-'+id+'" class="p0-message-action-status" aria-live="polite"></span>'+
     '</div>';
   }
@@ -5941,8 +6039,25 @@
     const root=document.getElementById('p0-transcript');
     if(!root)return;
     if(!state.messages.length){
+      const local=privateModeActive()&&Boolean(bestLocalModel());
+      const degraded=state.hostedRouteState==='degraded'||(privateModeActive()&&!local);
+      const checking=!local&&!degraded&&state.hostedRouteState==='checking';
+      const answerState=local?'local':(degraded?'degraded':(checking?'checking':'live'));
+      const stateLabel=local?'Lokalt KI-svar':(degraded?'Degradert':(checking?'Sjekker live-rute':'Live KI-svar'));
+      const stateDetail=local
+        ? 'Svaret lages av den valgte lokale modellen.'
+        : (degraded
+          ? 'Live-ruten er ikke bekreftet. MMIR viser ikke et simulert svar som om det var live.'
+          : (checking
+            ? 'MMIR bekrefter nå den ekte modellruten. Ingen demosimulering vises som et live-svar.'
+            : 'Svaret lages av en ekte modellrute, ikke av en demosimulering.'));
       root.innerHTML=''+
-        '<div class="p0-empty" aria-hidden="true"></div>';
+        '<section class="p0-first-session" data-answer-state="'+answerState+'" aria-labelledby="p0-first-session-title">'+
+          '<span class="p0-first-session-state">'+safeText(stateLabel)+'</span>'+
+          '<h1 id="p0-first-session-title">Hva vil du vite?</h1>'+
+          '<p>Du snakker med <strong>Supergeni, en kunstig intelligens</strong> fra MMIR. Svar kan inneholde feil. Ikke lim inn sensitive personopplysninger.</p>'+
+          '<small>'+safeText(stateDetail)+' Faktisk svarforfatter og eventuelle kilder vises under svaret.</small>'+
+        '</section>';
       return;
     }
     root.innerHTML=state.messages.map(message=>{
@@ -5950,7 +6065,7 @@
       const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):'';
       const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
       const receiptHtml=message.role==='assistant'
-        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel)
+        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated)
         : '';
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
@@ -5994,7 +6109,7 @@
   }
 
   function append(role,content,label,receipt,meta={}){
-    const message={
+    const message=normalizeAnswerTruth({
       id:meta.id||makeMessageId(),
       role,
       content:String(content||''),
@@ -6003,6 +6118,8 @@
       proofLine:meta.proofLine||null,
       intelligenceLabel:meta.intelligenceLabel||'',
       answerWriter:meta.answerWriter||null,
+      answerState:meta.answerState||'',
+      ...(Object.prototype.hasOwnProperty.call(meta,'aiGenerated')?{aiGenerated:Boolean(meta.aiGenerated)}:{}),
       variant:meta.variant||'',
       command:meta.command||'',
       commandLabel:meta.commandLabel||'',
@@ -6017,7 +6134,7 @@
       hostedLineage:meta.hostedLineage===true,
       ...(meta.hostedDeliveryState?{hostedDeliveryState:String(meta.hostedDeliveryState)}:{}),
       createdAt:new Date().toISOString()
-    };
+    });
     state.messages.push(message);
     state.messages=state.messages.slice(-MAX_HISTORY);
     saveHistory();
@@ -6032,6 +6149,7 @@
   function updateMessage(message,content,updates={}){
     message.content=String(content||'');
     Object.assign(message,updates);
+    Object.assign(message,normalizeAnswerTruth(message));
     saveHistory();
     renderTranscript();
     scheduleDemoTranscriptCapture('message_updated',{
@@ -6074,8 +6192,8 @@
     send.classList.toggle('is-stopping',state.busy);
     send.dataset.state=state.busy?'stopping':'send';
     send.textContent=state.busy?'■':'↑';
-    send.setAttribute('aria-label',state.busy?'Stop current response':'Send message');
-    send.setAttribute('title',state.busy?'Stop':'Send');
+    send.setAttribute('aria-label',state.busy?'Stopp gjeldende svar':'Send melding');
+    send.setAttribute('title',state.busy?'Stopp':'Send');
     renderSuperboostCta();
     updatePinnedToolbarToolStates();
   }
@@ -7195,7 +7313,7 @@
     const routeCount=String(activeHostedCompareModels().length);
     const assistantLabel=mode==='boost'?'Supergeni · Intelligence Boost':(mode==='all'?'MMIR · All active routes':(mode==='council'?'Supergeni · Council':'Supergeni · Best answer'));
     const initialReceipt=(mode==='boost'?'Intelligence Boost':(mode==='all'?'Ask all active':(mode==='council'?'Supergeni Council':'Best Answer')))+' · '+routeCount+' active hosted routes · signed receipt check · no paid route'+(toolReceipt?' · '+toolReceipt:'');
-    const assistant=append('assistant',CHAT_STATE.comparing?.('Supergeni')||'Supergeni sammenligner svar …',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt});
+    const assistant=append('assistant',CHAT_STATE.comparing?.('Supergeni')||'Supergeni sammenligner svar …',assistantLabel,initialReceipt,{variant:'compare',retryPrompt:prompt,answerState:'pending',aiGenerated:false});
     const stopProgress=startGatewaySwarmProgress(assistant,{title,mode,routeCount});
     status(title+' is asking '+routeCount+' active routes...','ready');
     routeStatus(title+' · '+routeCount+' active routes · no paid route','ready');
@@ -7220,6 +7338,10 @@
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(data),
         answerWriter,
+        answerState:'live',
+        aiGenerated:answerWriter.type!=='capability',
+        routeProvenance:'hosted-compare',
+        hostedLineage:true,
         truncated,
         continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
         continuationSuggestedMessage:truncated?gatewayContinuationSuggestedMessage(data):'',
@@ -7245,12 +7367,12 @@
     }catch(error){
       if(stopRequested||error?.name==='AbortError'){
         captureInteraction('swarm_stopped',{tool:title,mode});
-        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:'Best Answer · stopped'});
+        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:'Best Answer · stopped',answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
         status(title+' stopped.','idle');
         routeStatus('Stopped · compare routes cancelled','hosted');
       }else{
         captureInteraction('swarm_failed',{tool:title,mode,reason:'gateway_unavailable'});
-        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{receipt:'Best Answer · gateway compare failed'});
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{receipt:'Best Answer · gateway compare failed',answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
         routeStatus('Best Answer unavailable · refresh routes','error');
       }
@@ -7391,7 +7513,7 @@
     const guardedRoutePrompt=locationContext?locationContext+'\n\nUser text:\n'+(smart.prompt||prompt):(smart.prompt||prompt);
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
-    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage});
+    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage,answerState:'pending',aiGenerated:false});
     const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
     const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',rolePart,smart.reason].filter(Boolean);
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
@@ -7420,12 +7542,15 @@
       const answerProof=noteAnswerProof(answerProofLine(hostedData));
       const answerWriter=answerWriterProfile(hostedData,model);
       const answeredRouteProvenance=directHostedLineage&&answerWriter.type==='capability'?'hosted-capability':routeProvenance;
+      state.hostedRouteState='ready';
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
         label:answerWriter.model_display_name,
         receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':'')+writerContinuityResetReceipt(hostedData),
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(hostedData),
         answerWriter,
+        answerState:model.route==='local'?'local':'live',
+        aiGenerated:model.route==='local'||answerWriter.type!=='capability',
         truncated:hostedTruncated,
         routeProvenance:answeredRouteProvenance,
         hostedLineage:directHostedLineage,
@@ -7456,7 +7581,7 @@
       if(stopRequested||error?.name==='AbortError'){
         captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||''});
         updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
-        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user',routeProvenance:'hosted-failed',hostedLineage:false});
+        updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · stopped by user',answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.','idle');
         routeStatus('Stopped · no failed first request','hosted');
         return;
@@ -7469,7 +7594,7 @@
           updateMessage(
             assistant,
             hint+'\n\nPrivacy guard: I did not send this local/private prompt to hosted Supergeni. Fix local access or choose Supergeni explicitly if you want a hosted answer.',
-            {receipt:receipt.text+' · Local privacy fail-closed'}
+            {receipt:receipt.text+' · Local privacy fail-closed',answerState:'degraded',aiGenerated:false,routeProvenance:'local-failed',hostedLineage:false}
           );
           status('Local route unavailable. Private prompt was not sent to hosted route.','error');
           routeStatus('Local privacy guard · hosted fallback blocked','error');
@@ -7492,11 +7617,12 @@
           const fallbackElapsed=formatDuration(fallbackElapsedMs);
           const fallbackProof=noteAnswerProof(answerProofLine(fallbackData));
           const fallbackWriter=answerWriterProfile(fallbackData,activeModel());
+          state.hostedRouteState='ready';
           updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback',hostedLineage:true,hostedDeliveryState:'succeeded'});
           updateMessage(
             assistant,
             withTruncationGuard(fallbackAnswer,fallbackData)+'\n\nLocal model note: '+hint,
-            {label:fallbackWriter.model_display_name,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':'')+writerContinuityResetReceipt(fallbackData),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),answerWriter:fallbackWriter,truncated:fallbackTruncated,routeProvenance:'hosted-fallback',hostedLineage:true,hostedDeliveryState:'succeeded'}
+            {label:fallbackWriter.model_display_name,receipt:fallbackReceipt.text+' · Local fallback · '+fallbackElapsed+' · '+latencyTargetReceipt(activeModel(),fallbackElapsedMs)+(fallbackTruncated?' · truncated guard':'')+writerContinuityResetReceipt(fallbackData),proofLine:fallbackProof,intelligenceLabel:connectedIntelligenceLabel(fallbackData),answerWriter:fallbackWriter,answerState:'degraded',aiGenerated:fallbackWriter.type==='llm',truncated:fallbackTruncated,routeProvenance:'hosted-fallback',hostedLineage:true,hostedDeliveryState:'succeeded'}
           );
           captureInteraction(fallbackTruncated?'truncation_seen':'chat_fallback_ready',{
             active_model_id:activeModel()?.id||'',
@@ -7514,20 +7640,21 @@
           if(stopRequested||fallbackError?.name==='AbortError'){
             captureInteraction('chat_stopped',{active_model_id:model?.id||'',active_model_route:model?.route||'',phase:'fallback',hosted_delivery_state:'attempted-result-unknown'});
             updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
-            updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · Hosted fallback attempted · result unknown · stopped by user',routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
+            updateMessage(assistant,CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.',{receipt:receipt.text+' · Hosted fallback attempted · result unknown · stopped by user',answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
             status(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.','idle');
             routeStatus('Hosted fallback attempted · result unknown · stopped','hosted');
             return;
           }
           updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
-          updateMessage(assistant,hint+'\n\nSupergeni is still available from the model picker.',{receipt:receipt.text+' · Hosted fallback attempted · result unknown',routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
+          updateMessage(assistant,hint+'\n\nSupergeni is still available from the model picker.',{receipt:receipt.text+' · Hosted fallback attempted · result unknown',answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-fallback-attempted',hostedLineage:false,hostedDeliveryState:'attempted-result-unknown'});
           status('Chat failed: local node blocked/unavailable','error');
           captureInteraction('chat_failed',{reason:'local_and_fallback_unavailable',active_model_id:model?.id||'',hosted_delivery_state:'attempted-result-unknown'});
         }
       }else{
+        state.hostedRouteState='degraded';
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
-        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{routeProvenance:'hosted-failed',hostedLineage:false});
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
         captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
@@ -7574,8 +7701,8 @@
     const hostedReceipt=routeReceipt(hostedModel);
     const localReceipt=routeReceipt(localModel);
     const localQualityNote=localModel.route==='local'&&wantsPublicFactRoute(prompt)?' · Local facts may be stale':'';
-    const hostedMessage=append('assistant',CHAT_STATE.pending?.(hostedModel.label)||'Supergeni tenker …',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare',retryPrompt:prompt});
-    const localMessage=append('assistant',CHAT_STATE.pending?.(localModel.label)||'Supergeni tenker …',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare',retryPrompt:prompt});
+    const hostedMessage=append('assistant',CHAT_STATE.pending?.(hostedModel.label)||'Supergeni tenker …',hostedModel.label+' · Compare',hostedReceipt.text+' · Compare answer 1/2',{variant:'compare',retryPrompt:prompt,answerState:'pending',aiGenerated:false});
+    const localMessage=append('assistant',CHAT_STATE.pending?.(localModel.label)||'Supergeni tenker …',localModel.label+' · Compare',localReceipt.text+' · Compare answer 2/2'+localQualityNote,{variant:'compare',retryPrompt:prompt,answerState:'pending',aiGenerated:false});
     let hostedAnswerText='';
     let localAnswerText='';
     let hostedScore=null;
@@ -7592,15 +7719,16 @@
       .then(data=>{
         hostedAnswerText=responseText(data)||'Supergeni returned an empty response.';
         hostedProof=answerProofLine(data);
+        const hostedWriter=answerWriterProfile(data,hostedModel);
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,hostedAnswerText,hostedElapsedMs,false,'compare');
-        updateMessage(hostedMessage,hostedAnswerText,{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),proofLine:hostedProof});
+        updateMessage(hostedMessage,hostedAnswerText,{label:hostedWriter.model_display_name,receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),proofLine:hostedProof,answerWriter:hostedWriter,answerState:'live',aiGenerated:hostedWriter.type!=='capability',routeProvenance:'hosted-compare',hostedLineage:true});
       })
       .catch((error)=>{
         hostedFailed=true;
         hostedElapsedMs=performance.now()-hostedStarted;
         hostedScore=routeScore(hostedModel,prompt,'',hostedElapsedMs,true,'compare');
-        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.'),{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore)});
+        updateMessage(hostedMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.'),{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
       });
     const localStarted=performance.now();
     const localJob=chatRoute(prompt,localModel,signal)
@@ -7608,14 +7736,14 @@
         localAnswerText=answer||(localModel.route==='local'?'Local model returned an empty response.':localModel.label+' returned an empty response.');
         localElapsedMs=performance.now()-localStarted;
         localScore=routeScore(localModel,prompt,localAnswerText,localElapsedMs,false,'compare');
-        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+        updateMessage(localMessage,localAnswerText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore),answerState:localModel.route==='local'?'local':'live',aiGenerated:true,routeProvenance:localModel.route==='local'?'local-model':'hosted-compare',hostedLineage:localModel.route!=='local'});
       })
       .catch(error=>{
         localFailed=true;
         localElapsedMs=performance.now()-localStarted;
         localScore=routeScore(localModel,prompt,'',localElapsedMs,true,'compare');
         const errorText=localModel.route==='local'?localNetworkHint(error):(localModel.label+' did not answer this compare request. Try normal chat or refresh.');
-        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):errorText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+        updateMessage(localMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):errorText,{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore),answerState:'degraded',aiGenerated:false,routeProvenance:localModel.route==='local'?'local-failed':'hosted-failed',hostedLineage:false});
       });
     await Promise.allSettled([hostedJob,localJob]);
     if(stopRequested){
@@ -7635,8 +7763,8 @@
       recordRouteBenchmark(localModel,localScore);
       finalWinner=apiWinner(scoring,hostedModel,hostedScore,localModel,localScore);
       scoringSource=API_LABEL+'/routing/score';
-      updateMessage(hostedMessage,hostedAnswerText||'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),proofLine:hostedProof});
-      updateMessage(localMessage,localAnswerText||(localModel.route==='local'?localNetworkHint('Local model did not answer.'):localModel.label+' did not answer this compare request. Try normal chat or refresh.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore)});
+      updateMessage(hostedMessage,hostedAnswerText||'Supergeni did not answer this compare request. Try normal chat or refresh.',{receipt:hostedReceipt.text+' · Compare answer 1/2 · '+scoreSummary(hostedScore),proofLine:hostedProof,answerState:hostedAnswerText?'live':'degraded',aiGenerated:Boolean(hostedAnswerText),routeProvenance:hostedAnswerText?'hosted-compare':'hosted-failed',hostedLineage:Boolean(hostedAnswerText)});
+      updateMessage(localMessage,localAnswerText||(localModel.route==='local'?localNetworkHint('Local model did not answer.'):localModel.label+' did not answer this compare request. Try normal chat or refresh.'),{receipt:localReceipt.text+' · Compare answer 2/2'+localQualityNote+' · '+scoreSummary(localScore),answerState:localAnswerText?(localModel.route==='local'?'local':'live'):'degraded',aiGenerated:Boolean(localAnswerText),routeProvenance:localAnswerText?(localModel.route==='local'?'local-model':'hosted-compare'):(localModel.route==='local'?'local-failed':'hosted-failed'),hostedLineage:Boolean(localAnswerText&&localModel.route!=='local')});
     }catch(error){
       recordRouteBenchmark(hostedModel,hostedScore);
       recordRouteBenchmark(localModel,localScore);
@@ -7645,16 +7773,18 @@
     if(hostedAnswerText||localAnswerText){
       const winner=finalWinner||winningRoute(hostedModel,hostedScore,localModel,localScore);
       const synthesisReceipt=hostedReceipt.text+' · Best answer synthesis · No paid route · '+scoringSource+' · '+winner.summary;
-      const synthesisMessage=append('assistant',CHAT_STATE.synthesizing?.()||'Supergeni velger beste svar …','Supergeni · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt});
+      const synthesisMessage=append('assistant',CHAT_STATE.synthesizing?.()||'Supergeni velger beste svar …','Supergeni · Best answer',synthesisReceipt,{variant:'compare',retryPrompt:prompt,answerState:'pending',aiGenerated:false});
       const synthesisStarted=performance.now();
       try{
         const synthesisData=await synthesizeCompareAnswer(prompt,hostedAnswerText,localAnswerText,localModel,hostedScore,localScore,signal);
         const synthesis=responseText(synthesisData);
         const synthesisProof=noteAnswerProof(answerProofLine(synthesisData));
+        const synthesisWriter=answerWriterProfile(synthesisData,hostedModel);
         const synthesisElapsedMs=performance.now()-synthesisStarted;
-        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{receipt:synthesisReceipt+' · '+formatDuration(synthesisElapsedMs)+' · '+latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis'),proofLine:synthesisProof});
+        updateMessage(synthesisMessage,synthesis||hostedAnswerText||localAnswerText,{label:synthesisWriter.model_display_name,receipt:synthesisReceipt+' · '+formatDuration(synthesisElapsedMs)+' · '+latencyTargetReceipt(hostedModel,synthesisElapsedMs,'synthesis'),proofLine:synthesisProof,answerWriter:synthesisWriter,answerState:synthesis?'live':'degraded',aiGenerated:synthesis?synthesisWriter.type!=='capability':Boolean(hostedAnswerText||localAnswerText),routeProvenance:synthesis?'hosted-synthesis':'synthesis-fallback',hostedLineage:Boolean(synthesis)});
       }catch(error){
-        updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(hostedAnswerText||localAnswerText||(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.')),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed')});
+        const fallbackAnswer=(stopRequested||error?.name==='AbortError')?'':(hostedAnswerText||localAnswerText);
+        updateMessage(synthesisMessage,(stopRequested||error?.name==='AbortError')?(CHAT_STATE.stoppedText?.()||'Svaret ble stoppet.'):(fallbackAnswer||(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.')),{receipt:synthesisReceipt+' · '+((stopRequested||error?.name==='AbortError')?'stopped':'failed'),answerState:'degraded',aiGenerated:Boolean(fallbackAnswer),routeProvenance:'synthesis-fallback',hostedLineage:false});
       }
       if(stopRequested){
         status(title+' stopped.','idle');
@@ -7696,7 +7826,8 @@
     }
     installShell();
     enforceShellStyles();
-    status('Ready','ready');
+    window.addEventListener('mimir-brand-config-applied',syncAiDisclosureComposer);
+    status('Klar','ready');
     updateSendControl();
     refreshHostedModels().catch(()=>{});
     refreshPromptPresets().catch(()=>{});

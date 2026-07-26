@@ -344,7 +344,7 @@ requireText(
 );
 requireText(
   runtime,
-  "compareUsefulCaptured?'Useful saved':'Useful'",
+  "compareUsefulCaptured?'Nyttig lagret':'Nyttig'",
   'Compare useful feedback action must show when the signal is already captured'
 );
 requireText(

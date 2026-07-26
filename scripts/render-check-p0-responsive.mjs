@@ -230,6 +230,52 @@ function assertMenuInViewport(menu, viewport, label) {
 }
 
 async function checkViewport(browser, viewport) {
+  const firstSessionPage = await browser.newPage({
+    viewport: { width: viewport.width, height: viewport.height },
+    deviceScaleFactor: 1,
+    isMobile: viewport.width <= 430
+  });
+  await installApiFixtures(firstSessionPage);
+  await firstSessionPage.addInitScript(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await firstSessionPage.goto(`${baseUrl}/mmir.html?first_session_truth=${viewport.name}#mimir-chat-runtime`, {
+    waitUntil: 'networkidle'
+  });
+  await firstSessionPage.waitForSelector('.p0-first-session[data-answer-state="live"]');
+  const firstSession = await firstSessionPage.evaluate(() => {
+    const disclosure = document.querySelector('.p0-first-session');
+    const badge = document.querySelector('.p0-ai-badge');
+    const input = document.getElementById('p0-input');
+    const disclosureRect = disclosure?.getBoundingClientRect();
+    const badgeRect = badge?.getBoundingClientRect();
+    return {
+      lang: document.documentElement.lang,
+      disclosureText: disclosure?.textContent || '',
+      disclosureState: disclosure?.getAttribute('data-answer-state') || '',
+      disclosureRect: disclosureRect ? disclosureRect.toJSON() : null,
+      badgeText: badge?.textContent || '',
+      badgeAria: badge?.getAttribute('aria-label') || '',
+      badgeRect: badgeRect ? badgeRect.toJSON() : null,
+      inputPlaceholder: input?.getAttribute('placeholder') || '',
+      inputAria: input?.getAttribute('aria-label') || '',
+      scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+      clientWidth: document.documentElement.clientWidth
+    };
+  });
+  assert(firstSession.lang === 'no', `${viewport.name}: first-session document language must be Norwegian`);
+  assert(firstSession.disclosureState === 'live', `${viewport.name}: confirmed route must expose the live answer state`);
+  assert(/Supergeni, en kunstig intelligens/i.test(firstSession.disclosureText), `${viewport.name}: first session must disclose the AI interaction before the first prompt`);
+  assert(/Ikke lim inn sensitive personopplysninger/i.test(firstSession.disclosureText), `${viewport.name}: first session must warn against sensitive personal data`);
+  assert(/ikke av en demosimulering/i.test(firstSession.disclosureText), `${viewport.name}: live state must not be confused with demo/sample content`);
+  assert(firstSession.badgeText.trim() === 'KI-chat' && /kunstig intelligens/i.test(firstSession.badgeAria), `${viewport.name}: persistent AI badge must be visible and accessible`);
+  assert(/Supergeni \(KI\)/i.test(firstSession.inputPlaceholder) && /kunstig intelligens/i.test(firstSession.inputAria), `${viewport.name}: composer must identify the AI accessibly`);
+  assert((firstSession.disclosureRect?.left || 0) >= -1 && (firstSession.disclosureRect?.right || 0) <= viewport.width + 1, `${viewport.name}: first-session disclosure must stay inside viewport`);
+  assert((firstSession.badgeRect?.left || 0) >= -1 && (firstSession.badgeRect?.right || 0) <= viewport.width + 1, `${viewport.name}: AI badge must stay inside viewport`);
+  assert(firstSession.scrollWidth <= firstSession.clientWidth + 1, `${viewport.name}: first-session truth UI must not create horizontal overflow`);
+  await firstSessionPage.close();
+
   const page = await browser.newPage({
     viewport: { width: viewport.width, height: viewport.height },
     deviceScaleFactor: 1,
@@ -291,8 +337,14 @@ async function checkViewport(browser, viewport) {
   assert(addMenuText.includes('Svarstil:'), `${viewport.name}: add menu should expose concise answer style`);
   assert(addMenuText.includes('Ny chat'), `${viewport.name}: add menu should expose new chat`);
   assert(!/Koble til lokal AI|Oppdater AI|Superboost|Debatt|Tilbakemelding|Modell/i.test(addMenuText), `${viewport.name}: default add menu must stay free of internal model and process controls`);
+  await page.locator('[data-p0-action="privacy-menu"]').click();
+  await page.waitForSelector('#p0-privacy-menu:not([hidden])');
+  const privacyText = await page.locator('#p0-privacy-menu').innerText();
+  assert(/Personvern/i.test(privacyText) && /Offentlig/.test(privacyText) && /Privat/.test(privacyText) && /Superprivat/.test(privacyText), `${viewport.name}: privacy menu must use visible Norwegian labels, got ${JSON.stringify(privacyText)}`);
+  const privacyAria = await page.locator('#p0-privacy').getAttribute('aria-label');
+  assert(/Sikkerhet og personvern/i.test(privacyAria || ''), `${viewport.name}: privacy control must have a Norwegian accessible label`);
   await page.locator('#p0-add').click();
-  await page.waitForSelector('#p0-add-menu', { state: 'hidden' });
+  await page.waitForSelector('#p0-privacy-menu', { state: 'hidden' });
 
   await page.locator('#p0-input').fill('Ping responsive guard');
   await page.locator('#p0-send').click();
@@ -339,6 +391,8 @@ async function checkViewport(browser, viewport) {
   assert(!responseChrome.open, `${viewport.name}: receipt details must be closed by default`);
   assert(responseChrome.bodyText.includes('Responsive guard answer.'), `${viewport.name}: answer content must remain first and visible`);
   assert(responseChrome.modelText === responsiveWriterLabel, `${viewport.name}: answer-writer model must remain visible`);
+  assert(/Live/i.test(responseChrome.statusText), `${viewport.name}: successful hosted answer must be labelled live`);
+  assert(/KI-svar/i.test(responseChrome.statusText) && /kan ta feil/i.test(responseChrome.statusText), `${viewport.name}: generated answer must carry the visible AI warning`);
   assert((responseChrome.statusText.match(/Verifisert/g) || []).length === 1, `${viewport.name}: verification status must appear exactly once in the quiet line`);
   assert(!/spr[aå]k\s*guard|language\s*guard|bevis\s*:/i.test(responseChrome.summaryText), `${viewport.name}: quiet line must not repeat guard or proof labels`);
   assert(responseChrome.summaryAria.includes(responsiveWriterLabel) && responseChrome.summaryAria.includes('Vis kvitteringsdetaljer'), `${viewport.name}: receipt control must expose model and purpose accessibly`);
@@ -372,6 +426,10 @@ async function checkViewport(browser, viewport) {
   assert(await page.locator('[data-p0-message-action="copy"]').last().isVisible(), `${viewport.name}: answer copy action should remain accessible`);
   assert(await page.locator('[data-p0-message-action="retry"]').last().isVisible(), `${viewport.name}: answer retry action should remain accessible`);
   assert(await page.locator('[data-p0-message-action="share-safe"]').last().isVisible(), `${viewport.name}: answer share-safe action should remain accessible`);
+  assert((await page.locator('[data-p0-message-action="copy"]').last().innerText()).trim() === 'Kopier', `${viewport.name}: copy action must be Norwegian`);
+  assert(/Prøv igjen/i.test(await page.locator('[data-p0-message-action="retry"]').last().innerText()), `${viewport.name}: retry action must be Norwegian`);
+  assert(/Del trygt/i.test(await page.locator('[data-p0-message-action="share-safe"]').last().innerText()), `${viewport.name}: share action must be Norwegian`);
+  assert(/Kopier svar/i.test(await page.locator('[data-p0-message-action="copy"]').last().getAttribute('aria-label') || ''), `${viewport.name}: copy action must have a Norwegian accessible label`);
   const hiddenOpacity = Number(await lastActions.evaluate((el) => getComputedStyle(el).opacity));
   assert(hiddenOpacity < 0.2, `${viewport.name}: answer actions should be visually subtle before focus, opacity=${hiddenOpacity}`);
   await page.locator('.p0-message-assistant').last().focus();

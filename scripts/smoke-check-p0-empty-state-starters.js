@@ -25,15 +25,17 @@ const expectedWorkspaceCssVersion = manifest.assets?.['chat-workspace.css'] || '
 
 requireIncludes(
   shell,
-  '<div class="p0-empty" aria-hidden="true"></div>',
-  'P0 empty state must stay visually quiet so the composer is the first action.'
+  '<section class="p0-first-session"',
+  'P0 empty state must disclose the answer state and AI interaction before the first prompt.'
 );
 forbidIncludes(html,'class="mimir-greeting"','Public first screen must not ship legacy greeting/hero markup that can flash before CSS or runtime loads.');
 forbidIncludes(html,'id="mmir-quick-suggestions"','Public first screen must not ship hardcoded quick suggestions or starter chips.');
 forbidIncludes(html,'placeholder="Spør..."','Public first screen must keep the composer visually empty.');
 forbidIncludes(shell,'placeholder="Spør..."','P0 first screen must keep the composer visually empty.');
 forbidIncludes(shell,'data-p0-empty-action','P0 empty state must not hardcode starter questions.');
-forbidIncludes(shell,'Hva vil du vite?','P0 empty state must not add a hero prompt above the chat composer.');
+requireIncludes(shell,'Hva vil du vite?','P0 empty state must keep one concise first-session prompt.');
+requireIncludes(shell,'Supergeni, en kunstig intelligens','P0 empty state must disclose the AI interaction before the first prompt.');
+requireIncludes(shell,'ikke av en demosimulering','P0 live state must not be confused with demo/sample content.');
 forbidIncludes(shell,'Skriv spørsmålet ditt. Supergeni finner beste svar og viser bevis når det trengs.','P0 empty state must not explain product mechanics before the first answer.');
 forbidIncludes(shell,'Supergeni answers now. Use Superboost for many AI routes, ranking and one best answer, or start with demo, source proof, local setup or feedback capture.','P0 empty state must not expose demo/tooling copy on launch.');
 forbidIncludes(shell,"const emptyStarter=event.target.closest('[data-p0-empty-action]');",'P0 shell must not keep empty-state starter click routing.');
@@ -43,7 +45,7 @@ requireIncludes(shell,"window.MimirChatRuntimeBridge.saveFeedbackDraft=saveFeedb
 requireIncludes(shell,"window.MimirChatRuntimeBridge.openFeedbackInbox=openFeedbackInbox;",'P0 shell must expose Feedback Inbox opening through the runtime bridge.');
 forbidIncludes(css,'.p0-empty-starters','P0 shell CSS must not keep hardcoded starter-question styles.');
 forbidIncludes(css,'.p0-empty-starter','P0 shell CSS must not keep hardcoded starter-question button styles.');
-requireIncludes(css,'.p0-empty {','P0 shell CSS must keep a quiet empty transcript placeholder.');
+requireIncludes(css,'.p0-first-session {','P0 shell CSS must keep the disclosure compact and responsive.');
 requireIncludes(workspaceCss,'.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting{display:none!important}','Public empty state must keep the greeting/hero hidden so the composer is first.');
 forbidIncludes(workspaceCss,'Open WebUI-style centered welcome','Public empty state must not reintroduce the centered welcome/hero pattern.');
 forbidIncludes(workspaceCss,'.mimir-public-chat:not(.mimir-has-chat) .mimir-greeting h1','Public empty state must not style an empty-state hero heading.');

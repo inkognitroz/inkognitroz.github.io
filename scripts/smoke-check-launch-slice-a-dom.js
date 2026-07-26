@@ -144,10 +144,10 @@ requireIncludes(files.p0Css, '.p0-mic', 'P0 toolbar must render voice as a compa
 requireIncludes(files.p0Icons, 'p0-icon-shield', 'P0 privacy button must render a real discreet shield icon.');
 requireIncludes(files.p0Icons, 'p0-icon-mic', 'P0 voice button must render a real discreet mic icon.');
 requireIncludes(files.p0Runtime, 'id="p0-input"', 'P0 shell must expose #p0-input as the canonical visible first-chat input.');
-requireIncludes(files.p0Runtime, 'aria-label="Message MMIR"', 'P0 canonical input must have an accessible label for browser/UI automation without pretending Supergeni is the only writer.');
+requireIncludes(files.p0Runtime, 'aria-label="Spør Supergeni, en kunstig intelligens"', 'P0 canonical input must identify the AI interaction accessibly before the first prompt.');
 requireIncludes(files.p0Runtime, 'id="p0-send"', 'P0 shell must expose #p0-send as the canonical visible first-chat submit control.');
 forbid(files.mmir, /class="mimir-greeting"|id="mmir-quick-suggestions"|placeholder="Spør\.\.\."/i, 'Public first screen must not ship legacy hero, quick suggestions or visible prompt placeholder.');
-forbid(files.p0Runtime, /placeholder="Spør Supergeni|placeholder="Spør\.\.\."/i, 'P0 canonical input must avoid the old Supergeni-only or vague placeholder.');
+requireIncludes(files.p0Runtime, 'placeholder="Spør Supergeni (KI) om hva som helst …"', 'P0 canonical input must keep the concise AI disclosure placeholder.');
 requireIncludes(files.p0Css, 'stroke: currentColor', 'P0 toolbar icons must use monochrome currentColor styling.');
 requireIncludes(files.p0Css, '.p0-route', 'P0 shell must show a subtle route receipt in the composer.');
 requireIncludes(files.p0Css, '.p0-route-line', 'P0 route receipt must render as a subtle text line, not noisy chips.');
@@ -179,7 +179,7 @@ requireIncludes(files.p0Runtime, 'data-p0-os-command="windows"', 'P0 local setup
 requireIncludes(files.p0Runtime, 'Command selected. Press Cmd+C', 'P0 local setup must gracefully handle browsers that block clipboard writes.');
 forbid(files.p0Runtime, /Install guide|Install help/i, 'P0 local setup must keep the connector install flow in chat instead of opening a guide page.');
 requireIncludes(files.p0Runtime, "if(action==='connect-local')", 'P0 contextual action must keep local setup chat-native.');
-forbid(files.p0Runtime, /Hva vil du vite\?|Skriv spørsmålet ditt\. Supergeni finner beste svar og viser bevis når det trengs\./, 'P0 empty state must not add hero copy or product mechanics above the composer.');
+requireIncludes(files.p0Runtime, 'Supergeni, en kunstig intelligens', 'P0 empty state must disclose the AI interaction before the first prompt.');
 requireIncludes(files.p0Runtime, "function hostedRouteLabel()", 'P0 hosted route receipt must be generated from the active API host.');
 requireIncludes(files.p0RouteReceipts, "'Supergeni ready · hosted'", 'P0 hosted route receipt must stay clean for first-time users.');
 requireIncludes(files.p0RouteReceipts, 'No provider key is stored in the browser', 'P0 hosted route receipt must keep browser-secret proof in details.');
@@ -229,7 +229,7 @@ requireIncludes(files.p0Runtime, 'function synthesizeCompareAnswer(prompt,hosted
 requireIncludes(files.p0Runtime, 'Best answer synthesis', 'P0 compare synthesis must be labeled in the route receipt.');
 requireIncludes(files.p0Runtime, 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
 requireIncludes(files.p0Runtime, "function quietReceiptStatus(receipt,modelLabel='',proof=null)", 'P0 route receipts must collapse to one quiet status line by default.');
-requireIncludes(files.p0Runtime, "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='')", 'P0 route receipts must keep full audit details available on click.');
+requireIncludes(files.p0Runtime, "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false)", 'P0 route receipts must keep full audit details available on click.');
 requireIncludes(files.p0Runtime, "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
 requireIncludes(files.p0Runtime, "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path must emit testable state evidence.');
