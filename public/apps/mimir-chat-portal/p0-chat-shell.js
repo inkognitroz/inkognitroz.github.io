@@ -69,7 +69,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260726-first-session-truth-v2';
+  const P0_RUNTIME_VERSION='20260726-lanseringstekst-v1';
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
   const CANONICAL_HOSTED_MODEL_ALIASES=new Set([
     CANONICAL_HOSTED_MODEL_ID,
@@ -6054,8 +6054,58 @@
       root.innerHTML=''+
         '<section class="p0-first-session" data-answer-state="'+answerState+'" aria-labelledby="p0-first-session-title">'+
           '<span class="p0-first-session-state">'+safeText(stateLabel)+'</span>'+
-          '<h1 id="p0-first-session-title">Hva vil du vite?</h1>'+
-          '<p>Du snakker med <strong>Supergeni, en kunstig intelligens</strong> fra MMIR. Svar kan inneholde feil. Ikke lim inn sensitive personopplysninger.</p>'+
+          '<h1 id="p0-first-session-title">KI-en som viser kvitteringen.</h1>'+
+          '<p class="p0-launch-lead">Alle KI-assistenter svarer selvsikkert. Supergeni er bygget for noe annet: å være <strong>beviselig riktig</strong> der fasit finnes — og ærlig når den ikke gjør det.</p>'+
+
+          '<figure class="p0-launch-receipt">'+
+            '<blockquote class="p0-launch-receipt-q">«Hvor nær nabogrensen kan jeg bygge?»</blockquote>'+
+            '<p class="p0-launch-receipt-a">Minst byggverkets halve høyde, og ikke under 4 meter. Unntak: skriftlig samtykke fra naboen, eller frittliggende garasje/uthus under grensene i SAK10.</p>'+
+            '<figcaption class="p0-launch-receipt-src">'+
+              'Kilde: <a href="https://lovdata.no/lov/2008-06-27-71/%C2%A729-4" target="_blank" rel="noopener noreferrer">plan- og bygningsloven § 29-4</a> · Lovdata · verifisert 23.07.2026'+
+            '</figcaption>'+
+          '</figure>'+
+
+          '<ul class="p0-launch-claims">'+
+            '<li>'+
+              '<strong>Ekte kilder, ikke hukommelse.</strong> Vær fra MET, valuta fra Norges Bank, byggeregler fra Lovdata, satser fra nav.no, strøm fra hvakosterstrommen, datoer beregnes.'+
+              '<span class="p0-launch-metric">vær 12/12 · valuta 5/5 · NAV 5/5 — harde porter</span>'+
+            '</li>'+
+            '<li>'+
+              '<strong>Kvittering på hvert svar.</strong> Kilde + verifisert-dato, signert og etterprøvbart.'+
+              '<span class="p0-launch-metric">signerte route_receipts i hele kjeden</span>'+
+            '</li>'+
+            '<li>'+
+              '<strong>Maskinen sier «vet ikke».</strong> Utenfor det verifiserte: ærlig henvisning, aldri dikt (fail-closed by design).'+
+              '<span class="p0-launch-metric">0 fabrikasjoner på node-klassene</span>'+
+            '</li>'+
+          '</ul>'+
+
+          '<p class="p0-launch-fineprint">'+
+            '<strong>Det ærlige lilleskriftet:</strong> Supergeni er beviselig riktig på det som kan bevises. På åpne spørsmål er den en god assistent som alle andre, med kilder der de finnes. Vi utvider det beviselige området uke for uke, og du ser alltid hvilken kategori svaret ditt tilhører.'+
+          '</p>'+
+
+          '<details class="p0-launch-coverage">'+
+            '<summary>Påstandsdekning — seks harde porter dømmer hver utrulling</summary>'+
+            '<div class="p0-launch-coverage-scroll">'+
+              '<table>'+
+                '<thead><tr><th scope="col">Påstand</th><th scope="col">Levende måling</th></tr></thead>'+
+                '<tbody>'+
+                  '<tr><td>Vær fra MET</td><td>weather-truth 12/12 HARD</td></tr>'+
+                  '<tr><td>Valuta fra Norges Bank</td><td>currency-truth 5/5 eksakt HARD</td></tr>'+
+                  '<tr><td>Byggeregler fra Lovdata</td><td>byggesak-truth HARD + fail-closed node</td></tr>'+
+                  '<tr><td>Datoer beregnes</td><td>calendar-truth (computus + ISO-uke) HARD</td></tr>'+
+                  '<tr><td>NAV-satser fra nav.no</td><td>nav-satser-truth 5/5 HARD</td></tr>'+
+                  '<tr><td>Strøm fra hvakosterstrommen</td><td>strompris-truth (svarets egen kilde-URL re-hentes)</td></tr>'+
+                  '<tr><td>Kvittering på hvert svar</td><td>signerte route_receipts i hele kjeden</td></tr>'+
+                  '<tr><td>Ærlig «vet ikke»</td><td>fail-closed henvisning, 0 fabrikasjoner på node-klassene</td></tr>'+
+                '</tbody>'+
+              '</table>'+
+            '</div>'+
+          '</details>'+
+
+          '<p class="p0-launch-cta">Hva vil du vite?</p>'+
+
+          '<p class="p0-launch-disclosure">Du snakker med <strong>Supergeni, en kunstig intelligens</strong> fra MMIR. Svar kan inneholde feil. Ikke lim inn sensitive personopplysninger.</p>'+
           '<small>'+safeText(stateDetail)+' Faktisk svarforfatter og eventuelle kilder vises under svaret.</small>'+
         '</section>';
       return;
