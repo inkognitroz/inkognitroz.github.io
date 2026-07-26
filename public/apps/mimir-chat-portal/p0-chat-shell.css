@@ -214,6 +214,9 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-first-session {
   align-content: center;
+  /* safe center keeps the top of the block reachable when the launch copy
+     is taller than the transcript viewport (short windows / mobile). */
+  align-content: safe center;
   box-sizing: border-box;
   display: grid;
   gap: 10px;
@@ -221,7 +224,7 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   min-height: 100%;
   padding: 24px 0 72px;
   text-align: center;
-  width: min(560px, 100%);
+  width: min(620px, 100%);
 }
 
 .p0-first-session-state {
@@ -267,6 +270,177 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-first-session small {
   font-size: 0.8rem;
+}
+
+/* --- Lanseringstekst (eier-godkjent 26.07.2026) --- */
+
+.p0-first-session .p0-launch-lead {
+  color: #374151;
+  font-size: 1.02rem;
+  margin: 2px 0 4px;
+}
+
+.p0-launch-receipt {
+  background: #f9fafb;
+  border: 1px solid #ececf1;
+  border-radius: 14px;
+  margin: 6px 0 2px;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.p0-launch-receipt-q {
+  border: 0;
+  color: #6b7280;
+  font-size: 0.88rem;
+  font-weight: 650;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+.p0-first-session .p0-launch-receipt-a {
+  color: #111827;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.p0-first-session .p0-launch-receipt-src {
+  border-top: 1px solid #ececf1;
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.p0-launch-receipt-src a {
+  color: #1d4ed8;
+}
+
+.p0-launch-claims {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 8px 0 2px;
+  padding: 0;
+  text-align: left;
+}
+
+.p0-launch-claims li {
+  border-left: 2px solid #d1d5db;
+  color: #4b5563;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  padding-left: 12px;
+}
+
+.p0-launch-claims strong {
+  color: #111827;
+}
+
+.p0-launch-metric {
+  color: #047857;
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+.p0-first-session .p0-launch-fineprint {
+  background: #ecfdf5;
+  border: 1px solid rgba(4, 120, 87, 0.18);
+  border-radius: 12px;
+  color: #065f46;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin: 8px 0 2px;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.p0-first-session .p0-launch-fineprint strong {
+  color: #047857;
+}
+
+.p0-launch-coverage {
+  border: 1px solid #ececf1;
+  border-radius: 12px;
+  margin: 4px 0;
+  text-align: left;
+}
+
+.p0-launch-coverage > summary {
+  border-radius: 12px;
+  color: #374151;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+  list-style: none;
+  padding: 10px 14px;
+}
+
+.p0-launch-coverage > summary::-webkit-details-marker {
+  display: none;
+}
+
+.p0-launch-coverage > summary::before {
+  content: "+ ";
+  color: #6b7280;
+}
+
+.p0-launch-coverage[open] > summary::before {
+  content: "− ";
+}
+
+.p0-launch-coverage > summary:hover,
+.p0-launch-coverage > summary:focus-visible {
+  color: #111827;
+}
+
+.p0-launch-coverage-scroll {
+  overflow-x: auto;
+  padding: 0 14px 12px;
+}
+
+.p0-launch-coverage table {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.p0-launch-coverage th,
+.p0-launch-coverage td {
+  border-top: 1px solid #ececf1;
+  color: #4b5563;
+  padding: 7px 8px 7px 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.p0-launch-coverage th {
+  border-top: 0;
+  color: #111827;
+  font-weight: 700;
+}
+
+.p0-launch-coverage td:first-child {
+  color: #111827;
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.p0-first-session .p0-launch-cta {
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.p0-first-session .p0-launch-disclosure {
+  color: #6b7280;
+  font-size: 0.84rem;
+  margin-top: 6px;
 }
 
 .p0-message {
