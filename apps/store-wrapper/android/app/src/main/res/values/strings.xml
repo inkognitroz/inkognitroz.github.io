@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Supergeni</string>
+    <string name="title_activity_main">Supergeni</string>
+    <string name="package_name">ai.mmir.supergeni</string>
+    <string name="custom_url_scheme">ai.mmir.supergeni</string>
+</resources>

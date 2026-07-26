@@ -1,0 +1,25 @@
+node_modules/
+dist/
+
+# Android build output (prosjektfilene sjekkes inn, build-artefakter ikke)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/app/release/
+
+# iOS build output
+ios/App/build/
+ios/App/DerivedData/
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+
+# Signering — ALDRI i repo
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
