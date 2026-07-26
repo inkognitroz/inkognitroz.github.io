@@ -353,11 +353,11 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.privacyMenu, viewport, `${viewport.name} privacy`);
-  assert(/Public/i.test(layout.text), `${viewport.name}: shield menu should expose public mode`);
-  assert(/Private/i.test(layout.text), `${viewport.name}: shield menu should expose private mode`);
-  assert(/Superprivate/i.test(layout.text), `${viewport.name}: shield menu should expose superprivate mode`);
+  assert(/Offentlig/i.test(layout.text), `${viewport.name}: shield menu should expose public mode in Norwegian`);
+  assert(/Privat/i.test(layout.text), `${viewport.name}: shield menu should expose private mode in Norwegian`);
+  assert(/Superprivat/i.test(layout.text), `${viewport.name}: shield menu should expose superprivate mode in Norwegian`);
   await page.locator('[data-p0-action="set-privacy-mode:superprivate"]').click();
-  await page.waitForFunction(() => /Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.waitForFunction(() => /Superprivat krever lokal node/i.test(document.getElementById('p0-route')?.textContent || ''));
   if (!(await page.locator('#p0-privacy-menu:not([hidden])').isVisible().catch(() => false))) {
     await page.locator('#p0-add').click();
     await page.waitForSelector('#p0-add-menu:not([hidden])');
@@ -365,7 +365,7 @@ async function checkViewport(browser, viewport) {
     await page.waitForSelector('#p0-privacy-menu:not([hidden])');
   }
   await page.locator('[data-p0-action="set-privacy-mode:public"]').click();
-  await page.waitForFunction(() => !/Superprivate needs local node/i.test(document.getElementById('p0-route')?.textContent || ''));
+  await page.waitForFunction(() => !/Superprivat krever lokal node/i.test(document.getElementById('p0-route')?.textContent || ''));
 
   await invokeHiddenAction('model-menu');
   await page.waitForSelector('#p0-model-menu:not([hidden])');

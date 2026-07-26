@@ -94,6 +94,26 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
   padding: 10px 18px;
 }
 
+.p0-topbar-truth {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.p0-ai-badge,
+.p0-first-session-state {
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 999px;
+  color: #1d4ed8;
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1;
+  padding: 6px 9px;
+}
+
 .p0-brand {
   align-items: center;
   color: #111827;
@@ -190,6 +210,63 @@ body.mmir-p0-ready > :not(#mmir-p0-app) {
 
 .p0-empty {
   min-height: 100%;
+}
+
+.p0-first-session {
+  align-content: center;
+  box-sizing: border-box;
+  display: grid;
+  gap: 10px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding: 24px 0 72px;
+  text-align: center;
+  width: min(560px, 100%);
+}
+
+.p0-first-session-state {
+  justify-self: center;
+}
+
+.p0-first-session[data-answer-state="degraded"] .p0-first-session-state {
+  background: #fff7ed;
+  border-color: rgba(194, 65, 12, 0.2);
+  color: #c2410c;
+}
+
+.p0-first-session[data-answer-state="checking"] .p0-first-session-state {
+  background: #f8fafc;
+  border-color: rgba(100, 116, 139, 0.2);
+  color: #475569;
+}
+
+.p0-first-session[data-answer-state="local"] .p0-first-session-state {
+  background: #ecfdf5;
+  border-color: rgba(4, 120, 87, 0.18);
+  color: #047857;
+}
+
+.p0-first-session h1 {
+  color: #111827;
+  font-size: clamp(1.65rem, 4vw, 2.35rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin: 4px 0 0;
+}
+
+.p0-first-session p,
+.p0-first-session small {
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.p0-first-session p {
+  font-size: 0.98rem;
+}
+
+.p0-first-session small {
+  font-size: 0.8rem;
 }
 
 .p0-message {
@@ -930,6 +1007,13 @@ a.p0-proof-source:focus-visible {
   padding: 0 12px;
 }
 
+#p0-add,
+#p0-model,
+#p0-privacy {
+  position: relative;
+  z-index: 1001;
+}
+
 .p0-btn:hover,
 .p0-model-button:hover {
   background: #f7f7f8;
@@ -1092,7 +1176,7 @@ a.p0-proof-source:focus-visible {
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  bottom: 84px;
+  bottom: 104px;
   box-shadow: 0 18px 44px rgba(17, 24, 39, 0.14);
   box-sizing: border-box;
   display: grid;
@@ -1296,6 +1380,11 @@ a.p0-proof-source:focus-visible {
     padding: 8px 12px;
   }
 
+  .p0-ai-badge {
+    font-size: 0.72rem;
+    padding: 5px 8px;
+  }
+
   .p0-status {
     display: none;
   }
@@ -1306,6 +1395,10 @@ a.p0-proof-source:focus-visible {
 
   .p0-transcript {
     padding: 22px 0 18px;
+  }
+
+  .p0-first-session {
+    padding: 12px 8px 36px;
   }
 
   .p0-composer-wrap {

@@ -80,7 +80,10 @@ async function checkViewport(browser, viewport) {
   assert(await page.locator('#p0-model').count() === 1, `${viewport.name}: model picker must exist`);
   assert(await page.locator('#p0-send').count() === 1, `${viewport.name}: send button must exist`);
   assert(await page.locator('#p0-superboost, #p0-council, #p0-toolbar-tools, #p0-feedback-capture').count() === 0, `${viewport.name}: advanced controls must not be mounted`);
-  assert((await page.locator('#p0-input').getAttribute('placeholder') || '') === '', `${viewport.name}: composer must not contain prompt copy`);
+  assert(
+    /Spør Supergeni \(KI\)/i.test(await page.locator('#p0-input').getAttribute('placeholder') || ''),
+    `${viewport.name}: composer must keep the concise AI disclosure placeholder`
+  );
 
   await page.locator('#p0-add').click();
   await page.waitForSelector('#p0-add-menu:not([hidden])');

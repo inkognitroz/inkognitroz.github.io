@@ -477,8 +477,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  'aria-label="Message MMIR"',
-  "P0 canonical input must have an accessible label for browser/UI automation without locking copy to one writer.",
+  'aria-label="Spør Supergeni, en kunstig intelligens"',
+  "P0 canonical input must identify the AI interaction accessibly before the first prompt.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -762,7 +762,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Local connector ready · Public mode",
+  "Lokal tilkobling klar · offentlig modus",
   "P0 privacy shield must turn green when a local connector is ready even if public mode remains selected.",
 );
 requireText(
@@ -902,7 +902,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='')",
+  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false)",
   "P0 route receipts must keep full audit details available on click.",
 );
 requireText(

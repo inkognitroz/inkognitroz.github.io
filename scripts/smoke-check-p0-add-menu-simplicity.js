@@ -89,8 +89,8 @@ requireIncludes(
 );
 requireIncludes(
   installShell,
-  'id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Tools" title="Tools"',
-  'Composer must expose a simple Tools button.'
+  'id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Verktøy" title="Verktøy"',
+  'Composer must expose a simple Norwegian tools button.'
 );
 requireIncludes(
   installShell,

@@ -69,13 +69,13 @@ for (const marker of [
 }
 
 for (const marker of [
-  'aria-label="Message MMIR"',
+  'aria-label="Spør Supergeni, en kunstig intelligens"',
   'aria-label="Legg ved bilde"',
-  'aria-label="Tools"',
-  'aria-label="Security and privacy status: public mode"',
+  'aria-label="Verktøy"',
+  'aria-label="Sikkerhet og personvern: offentlig modus"',
   'aria-label="Choose model"',
   'aria-label="Voice input"',
-  'aria-label="Send message"'
+  'aria-label="Send melding"'
 ]) {
   requireText(runtime, marker, `P0 controls must keep accessible labels: ${marker}`);
 }
@@ -100,17 +100,17 @@ for (const marker of [
   'data-p0-message-action="copy"',
   'data-p0-message-action="retry"',
   'data-p0-message-action="share-safe"',
-  'Share safe'
+  'Del trygt'
 ]) {
   requireText(runtime, marker, `P0 assistant answers must expose proven answer action: ${marker}`);
 }
 
 for (const marker of [
   "function quietReceiptStatus(receipt,modelLabel='',proof=null)",
-  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='')",
+  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false)",
   '<span class="p0-receipt-model">',
   '<div class="p0-receipt-expanded">',
-  'renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel)'
+  'renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated)'
 ]) {
   requireText(runtime, marker, `P0 answer chrome must keep one model-visible receipt line with on-demand details: ${marker}`);
 }
