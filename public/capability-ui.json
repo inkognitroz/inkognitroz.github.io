@@ -1,0 +1,113 @@
+{
+  "object": "mmir.capability_ui_overlay",
+  "schema_version": 1,
+  "projection_semantic_revision": "sha256:a8b63891b29cc0a3ed0ca9e50810c85640bacae80631d1d950574624d324a1ff",
+  "copy": {
+    "cap-001": {
+      "description": "Én offentlig testflate for samtale. Svarbanen er avhengig av at en kvalifisert modellrute faktisk er klar.",
+      "runtime_capabilities": ["chat.completions"]
+    },
+    "cap-002": {
+      "description": "Supergeni er MMIR-orkestratoren som velger og kontrollerer ruter; den er ikke en selvstendig generell språkmodell.",
+      "runtime_capabilities": ["intelligence.supergeni.quality", "intelligence.status"]
+    },
+    "cap-005": {
+      "description": "Velger modell eller rute ut fra oppgave, tilgjengelighet og regler. Katalogtreff alene er ikke kvalitetsbevis.",
+      "runtime_capabilities": ["intelligence.router.advice"]
+    },
+    "cap-006": {
+      "description": "Viser hvilken rute som ble brukt og hvilket bevis som foreligger, når kvitteringen er tilgjengelig.",
+      "runtime_capabilities": []
+    },
+    "cap-007": {
+      "description": "Kan sammenligne flere svarbaner. Kvaliteten avhenger av at flere egnede ruter er tilgjengelige.",
+      "runtime_capabilities": ["chat.compare", "chat.superboost.preview"]
+    },
+    "cap-021": {
+      "description": "Henter ferske nettkilder gjennom en avgrenset søkebane når spørsmålet krever oppdatert informasjon.",
+      "runtime_capabilities": ["web.search.execute.safe_live_data_slice", "web.url_fetch.execute.bounded_evidence_slice"]
+    },
+    "cap-023": {
+      "description": "Avgrenset værkapabilitet med ekstern kilde. Tilgjengelighet og sted/tid må fortsatt kontrolleres per kall.",
+      "runtime_capabilities": []
+    },
+    "cap-024": {
+      "description": "Avgrenset oppslag for valuta og renter. Resultat må merkes med kilde og tidspunkt.",
+      "runtime_capabilities": []
+    },
+    "cap-029": {
+      "description": "Sammenholder kilder eller svar før presentasjon. Dette reduserer risiko, men garanterer ikke korrekthet.",
+      "runtime_capabilities": []
+    },
+    "cap-032": {
+      "description": "Viser flere modellforslag side om side når compare-banen er klar.",
+      "runtime_capabilities": ["chat.compare"]
+    },
+    "cap-033": {
+      "description": "Planlegger parallell bruk av flere intelligenser. Preview er ikke det samme som en gjennomført sverm.",
+      "runtime_capabilities": ["intelligence.swarm.plan", "chat.swarm.preview"]
+    },
+    "cap-035": {
+      "description": "Kan bruke en separat kritiker eller dommer. Krever uavhengige, tilgjengelige ruter for reell effekt.",
+      "runtime_capabilities": []
+    },
+    "cap-051": {
+      "description": "Knytter en lokal Ollama-instans til MMIR gjennom eksplisitt lokal oppkobling. Fortsatt begrenset beta.",
+      "runtime_capabilities": []
+    },
+    "cap-052": {
+      "description": "Avgrenset pairing for lokale eller private noder. Offentlig API-nøkkelinnliming er ikke del av 0.2.",
+      "runtime_capabilities": []
+    },
+    "cap-055": {
+      "description": "Register for eksterne provider-noder. En registrert node er ikke live før den har ferskt livsløpsbevis.",
+      "runtime_capabilities": ["external-node.registry", "external-node.hidden_probe"]
+    },
+    "cap-056": {
+      "description": "Samlet oversikt over modeller og noder. Inventory er informasjon; kjørbarhet kommer fra runtime-bevis.",
+      "runtime_capabilities": ["intelligence.fleet.overview", "intelligence.fabric.scorecard"]
+    },
+    "cap-067": {
+      "description": "Kontrollerer kildebruk og kobling mellom påstand og kilde når svarbanen leverer slik evidens.",
+      "runtime_capabilities": []
+    },
+    "cap-083": {
+      "description": "Skiller modellnavn, rute, konfigurasjon, degradering og ferskt live-bevis.",
+      "runtime_capabilities": ["intelligence.status"]
+    },
+    "cap-084": {
+      "description": "Synliggjør kostklasse og kvotebegrensninger. 0.2 starter ingen betalt rute uten uttrykkelig godkjenning.",
+      "runtime_capabilities": []
+    }
+  },
+  "roadmap": [
+    {
+      "id": "byok",
+      "title": "Egen API-nøkkel (BYOK)",
+      "state": "unavailable",
+      "description": "Planlagt sikker server-/vault-bane for brukerens egne leverandørnøkler. Ingen rå nøkkel skal lagres i nettleseren.",
+      "limitations": ["Ikke tilgjengelig i offentlig 0.2-beta", "Krever sikker nøkkellagring, sletting og leverandørspesifikke vilkår"]
+    },
+    {
+      "id": "compute-marketplace",
+      "title": "Compute og modellkjøring",
+      "state": "planned",
+      "description": "Fremtidig bane for å koble eller leie beregningskapasitet og kjøre tyngre modeller.",
+      "limitations": ["Ingen offentlig bestilling eller betaling i 0.2", "Krever isolasjon, kostkontroll og kapasitetsbevis"]
+    },
+    {
+      "id": "intelligence-marketplace",
+      "title": "Intelligensmarkedsplass",
+      "state": "planned",
+      "description": "Retningen er et marked for modeller, noder, verktøy og spesialisert intelligens gjennom felles kontrakter.",
+      "limitations": ["Ikke en ferdig kundetjeneste", "Krever identitet, kvalitet, oppgjør og ansvarslinjer"]
+    },
+    {
+      "id": "autonomous-evolution",
+      "title": "Autonom selvforbedring",
+      "state": "planned",
+      "description": "MMIR skal måle gap, foreslå forbedringer og bygge avgrensede kandidater under review- og releaseporter.",
+      "limitations": ["Ingen ubegrenset selvdeploy", "Endringer må være sporbare, testbare og reversible"]
+    }
+  ]
+}

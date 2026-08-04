@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kapabiliteter | MMIR.ai 0.2 Beta</title>
+  <meta name="description" content="Et ærlig kapabilitetskart for MMIR, modeller, verktøy og planlagte funksjoner." />
+  <link rel="icon" href="../assets/mmir-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../release-0.2.css?v=20260804" />
+</head>
+<body data-release-page="capabilities">
+  <a class="skip-link" href="#main-content">Hopp til innhold</a>
+  <header class="release-header">
+    <div class="release-header-inner">
+      <a class="release-brand" href="../mmir.html" aria-label="MMIR.ai – åpne testflaten"><span class="release-mark" aria-hidden="true">MM</span><span class="release-brand-copy"><strong>MMIR.ai</strong><small>0.2 Beta · Intelligence. Connected.</small></span></a>
+      <nav class="release-nav" aria-label="Hovednavigasjon"><a href="../mmir.html">Prøv</a><a href="../modeller/">Modeller</a><a href="./" aria-current="page">Kapabiliteter</a><a href="../tillit/">Tillit</a></nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="release-main">
+    <section class="release-hero">
+      <p class="eyebrow">Kapabilitetsregister · bevis før påstand</p>
+      <h1>Hva MMIR kan gjøre — og hva MMIR ikke kan gjøre ennå.</h1>
+      <p>Kartet skiller systemkapabiliteter fra modellkapabiliteter. Supergeni er orkestratoren som velger, beriker og kontrollerer svar; selve svaret skal skrives av en kvalifisert modell eller et avgrenset verktøy.</p>
+      <aside id="capability-truth" class="truth-banner" data-state="warning" aria-live="polite"><strong>Henter live kapabilitetsannonse …</strong><p>En annonsert rute er ikke automatisk det samme som ferskt kvalitetsbevis.</p></aside>
+    </section>
+
+    <section class="metric-grid" aria-label="Kapabilitetsstatus">
+      <article class="metric-card"><span>Bevist tilgjengelig</span><strong id="cap-metric-verified">0</strong><small>krever eksplisitt live-bevis</small></article>
+      <article class="metric-card"><span>Begrenset / avansert</span><strong id="cap-metric-limited">–</strong><small>registerstatus; ikke live-bevis</small></article>
+      <article class="metric-card"><span>Strukturelt tilgjengelig</span><strong id="cap-metric-configured">–</strong><small>registerstatus; ikke live-bevis</small></article>
+      <article class="metric-card"><span>Planlagt / utilgjengelig</span><strong id="cap-metric-planned">–</strong><small>skal ikke markedsføres som klart</small></article>
+    </section>
+
+    <section class="section" aria-labelledby="capability-map-title">
+      <div class="section-heading"><h2 id="capability-map-title">Kanonisk kapabilitetskart</h2><p>48 offentlige rader fra MMIR-registeret. Hvert kort viser registerstatus, runtime-match og kjente begrensninger; manglende måling vises som «Ikke målt».</p></div>
+      <p class="catalog-revision">Semantisk katalogrevisjon: <code id="capability-revision">hentes …</code></p>
+      <div class="catalog-controls">
+        <label for="capability-search">Søk i kapabilitetene<input id="capability-search" type="search" placeholder="Søk, kilde, bilde, lokal modell …" autocomplete="off" /></label>
+        <label for="capability-state">Status<select id="capability-state"><option value="all">Alle</option><option value="verified">Bevist tilgjengelig</option><option value="limited">Begrenset / beta</option><option value="configured">Konfigurert</option><option value="planned">Planlagt</option><option value="unavailable">Utilgjengelig</option></select></label>
+      </div>
+      <div id="capability-grid" class="card-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="section" aria-labelledby="roadmap-title">
+      <div class="section-heading"><h2 id="roadmap-title">Retning etter 0.2</h2><p>Disse radene er en separat produkt-roadmap, ikke en del av det kanoniske kapabilitetsregisteret og ikke markedsført som tilgjengelige.</p></div>
+      <div id="roadmap-grid" class="card-grid"></div>
+    </section>
+
+    <section class="section" aria-labelledby="principles-title">
+      <div class="section-heading"><h2 id="principles-title">Slik leses kartet</h2><p>«Ukjent» er et gyldig og ønsket svar når vi mangler målinger.</p></div>
+      <div class="trust-grid">
+        <article class="trust-card"><h2>System vs. modell</h2><p>Websøk, kilder, ruting og kvitteringer er MMIR-egenskaper. Språk, resonnering og skriving kommer fra den valgte modellen. Begge ledd må virke for et godt svar.</p></article>
+        <article class="trust-card"><h2>Kvalitet</h2><p>Vi publiserer ikke stjerner basert på magefølelse. En kvalitetspåstand skal vise testsett, utvalg, modellversjon, måletid og sammenligningsgrunnlag.</p></article>
+        <article class="trust-card"><h2>BYOK og lokale modeller</h2><p>En nettleser skal ikke lagre rå leverandørnøkler. Lokal tilkobling er beta; offentlig «lim inn API-nøkkel»-flyt er utilgjengelig til sikker server-/vault-bane er ferdig.</p></article>
+        <article class="trust-card"><h2>Compute og selvutvikling</h2><p>Leid compute, markedsplass og autonom selvutvikling er retningen, ikke en ferdig kundetjeneste i 0.2.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="release-footer"><div class="release-footer-inner"><span>MMIR 0.2 Beta · kapabiliteter med begrensninger</span><span><a href="../tillit/">Tillit, dataflyt og bevis</a></span></div></footer>
+  <script src="../release-0.2.js?v=20260804" type="module"></script>
+</body>
+</html>
