@@ -45,8 +45,18 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "tags:candidate?[provider,'Kandidat','Fremtidig']",
+  "[provider,'Kandidat','Fremtidig']",
   'Provider candidates must be visibly marked as future capacity in the model picker.'
+);
+requireIncludes(
+  shell,
+  "[provider,'Live-bevis','Port blokkert']",
+  'A live-E2E route behind a blocked release gate must preserve its proof while naming the blocked port.'
+);
+requireIncludes(
+  shell,
+  "[provider,'Konfigurert','Ikke live']",
+  'A route without live-E2E proof must remain explicitly non-live.'
 );
 requireIncludes(
   shell,

@@ -230,7 +230,7 @@ requireIncludes(files.p0Runtime, 'Best answer synthesis', 'P0 compare synthesis 
 requireIncludes(files.p0Runtime, 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
 requireIncludes(files.p0Runtime, "function quietReceiptStatus(receipt,modelLabel='',proof=null)", 'P0 route receipts must collapse to one quiet status line by default.');
 requireIncludes(files.p0Runtime, "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false)", 'P0 route receipts must keep full audit details available on click.');
-requireIncludes(files.p0Runtime, "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
+requireIncludes(files.p0Runtime, "routeStatus('Lytter …','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
 requireIncludes(files.p0Runtime, "routeStatus('Taleinndata stoppet.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path must emit testable state evidence.');
 requireIncludes(files.p0Runtime, 'no_server_audio:true', 'P0 voice path must stay browser-local with no server audio capture.');
@@ -263,7 +263,7 @@ requireIncludes(files.p0Runtime, 'Local fallback', 'P0 local chat failures must 
 requireIncludes(files.p0Runtime, 'while local access waits for permission', 'P0 local chat failures must explain that hosted fallback answered.');
 requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.returnInstruction?.()', 'P0 local install copy must use the contextual return flow.');
 requireIncludes(files.p0Runtime, 'checkLocalModels().catch(()=>{})', 'P0 local model checks must not leak browser-blocked probes as unhandled page errors.');
-requireIncludes(files.p0Runtime, "status('Listening...','ready')", 'P0 mic button must give immediate feedback when voice input is requested.');
+requireIncludes(files.p0Runtime, "status('Lytter …','ready')", 'P0 mic button must give immediate feedback when voice input is requested.');
 requireIncludes(files.p0Runtime, "document.body.classList.add('mmir-p0-ready')", 'P0 runtime must set the same ready class that the P0 CSS uses to hide legacy UI.');
 forbid(files.p0Runtime, /classList\.add\('mimir-p0-ready'\)/, 'P0 runtime must not use the misspelled ready class.');
 requireIncludes(files.p0Runtime, "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');

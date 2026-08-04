@@ -81,6 +81,15 @@ for (const marker of [
 }
 
 for (const marker of [
+  'aria-controls="p0-add-menu" aria-expanded="false"',
+  'aria-controls="p0-privacy-menu" aria-expanded="false"',
+  'aria-haspopup="dialog" aria-controls="p0-model-menu" aria-expanded="false"'
+]) {
+  requireText(runtime, marker, `P0 popover controls must expose their owned expanded region: ${marker}`);
+}
+forbidText(runtime, 'class="p0-menu" role="menu"', 'Generic button popovers must not claim the ARIA menu pattern without menuitem keyboard semantics.');
+
+for (const marker of [
   "menuButton('privacy-menu','Personvern')",
   "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel())",
   "menuButton('new-chat','Ny chat'",

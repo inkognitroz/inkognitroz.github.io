@@ -2967,6 +2967,13 @@
         const liveE2EVerified=model.live_e2e_verified===true;
         const releaseReady=hostedJourneyReady('first_chat');
         const selectable=Boolean(executable&&!candidate&&model.selectable!==false&&liveE2EVerified&&releaseReady);
+        const tags=candidate
+          ? [provider,'Kandidat','Fremtidig']
+          : (!liveE2EVerified
+            ? [provider,'Konfigurert','Ikke live']
+            : (releaseReady
+              ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Verifisert']
+              : [provider,'Live-bevis','Port blokkert']));
         const detail=candidate
           ? candidateDetail(model,provider)
           : (!liveE2EVerified
@@ -2979,7 +2986,7 @@
           label:routeDisplayName(model),
           route:'hosted',
           detail,
-          tags:candidate?[provider,'Kandidat','Fremtidig']:(selectable?[provider,externalUntrustedFree?'Ekstern':'Hostet','Verifisert']:[provider,'Konfigurert','Ikke live']),
+          tags,
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
           model:rawModelId,
           executable,
@@ -3440,6 +3447,13 @@
     }
     if(model?.route==='hosted'){
       if(!hostedJourneyReady('first_chat')){
+        if(hostedModelLiveVerified(model)){
+          return {
+            label:'Live-bevis · port blokkert',
+            detail:'Ruten har ferskt ende-til-ende-bevis, men den samlede offentlige releaseporten er blokkert.',
+            state:'setup'
+          };
+        }
         return {
           label:'Ikke produksjonsklar',
           detail:'Offentlig svarbane er blokkert til ferskt, uavhengig produksjonsbevis er grønt.',
@@ -4060,8 +4074,8 @@
             '<div class="p0-toolbar">'+
               '<div class="p0-left">'+
                 '<button id="p0-attach" class="p0-btn p0-btn-icon" type="button" aria-label="Legg ved bilde" title="Legg ved bilde">'+ICON_ATTACH+'</button>'+
-                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Verktøy" title="Verktøy" aria-expanded="false">'+ICON_TOOLS+'<span>Verktøy</span></button>'+
-                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Sikkerhet og personvern: offentlig modus" title="Sikkerhet og personvern · Offentlig modus" data-state="public">'+ICON_SHIELD+'</button>'+
+                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Verktøy" title="Verktøy" aria-controls="p0-add-menu" aria-expanded="false">'+ICON_TOOLS+'<span>Verktøy</span></button>'+
+                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Sikkerhet og personvern: offentlig modus" title="Sikkerhet og personvern · Offentlig modus" aria-controls="p0-privacy-menu" aria-expanded="false" data-state="public">'+ICON_SHIELD+'</button>'+
               '</div>'+
               '<div class="p0-right">'+
                 '<span class="p0-speed-chip" title="Fast default route">Fast</span>'+
@@ -4073,9 +4087,9 @@
           '</form>'+
         '</footer>'+
       '</div>'+
-      '<div id="p0-add-menu" class="p0-menu" role="menu" hidden></div>'+
+      '<div id="p0-add-menu" class="p0-menu" hidden></div>'+
       '<div id="p0-model-menu" class="p0-menu" role="dialog" aria-label="Velg modell" hidden></div>'+
-      '<div id="p0-privacy-menu" class="p0-menu" role="menu" hidden></div>';
+      '<div id="p0-privacy-menu" class="p0-menu" hidden></div>';
     document.body.appendChild(app);
     document.body.classList.remove('mimir-p0-ready');
     document.body.classList.add('mmir-p0-ready');
@@ -4608,8 +4622,8 @@
         routeStatus('Lytter …','hosted');
     recognition.onstart=()=>{
       emitVoiceState('listening');
-      status('Listening...','ready');
-      routeStatus('Listening...','hosted');
+      status('Lytter …','ready');
+      routeStatus('Lytter …','hosted');
     };
     recognition.onerror=(event)=>{
       emitVoiceState('failed',{error:event?.error||'unknown'});

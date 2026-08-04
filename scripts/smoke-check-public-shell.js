@@ -907,7 +907,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "routeStatus('Listening...','hosted')",
+  "routeStatus('Lytter …','hosted')",
   "P0 voice feedback must be visible in the composer route line on mobile.",
 );
 requireText(
@@ -982,7 +982,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "status('Listening...','ready')",
+  "status('Lytter …','ready')",
   "P0 mic button must give immediate feedback.",
 );
 requireText(
