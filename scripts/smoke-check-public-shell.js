@@ -292,7 +292,7 @@ if (managedNode?.status === "online")
 
 requireText(
   indexPath,
-  "Chat-first Supergeni entry",
+  "Chat-first MMIR entry",
   "Homepage must state the public chat-first entry category.",
 );
 requireText(

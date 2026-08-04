@@ -6,12 +6,15 @@ const failures=[];
 const assert=(condition,message)=>{if(!condition)failures.push(message);};
 
 const mmir=read('public/mmir.html');
+const rootEntry=read('public/index.html');
 const models=read('public/modeller/index.html');
 const capabilities=read('public/kapabiliteter/index.html');
 const trust=read('public/tillit/index.html');
 const runtime=read('public/release-0.2.js');
 const taxonomy=read('public/release-route-taxonomy.js');
 const p0Shell=read('public/apps/mimir-chat-portal/p0-chat-shell.js');
+const brandConfig=read('public/apps/mimir-chat-portal/brand-config.js');
+const legacyPortal=read('public/apps/mimir-chat-portal/mimir-chat-portal.js');
 const nav=read('public/apps/mimir-chat-portal/p0-release-nav.js');
 const navCss=read('public/apps/mimir-chat-portal/p0-release-nav.css');
 const releaseCss=read('public/release-0.2.css');
@@ -87,6 +90,10 @@ assert(roadmap.find(row=>row.id==='compute-marketplace')?.state==='planned','com
 assert(roadmap.find(row=>row.id==='autonomous-evolution')?.state==='planned','autonomous evolution must not be presented as green');
 
 assert(!mmir.includes('Active: Supergeni')&&!mmir.includes('Supergeni answers now.')&&!mmir.includes('The first answer works without setup')&&!mmir.includes('Supergeni active.'),'no-JS and slow-JS markup must not claim an unverified answer route');
+assert(!rootEntry.includes('connected intelligence with private, verifiable answers')&&!rootEntry.includes('Connected intelligence, private answers and source-aware routes are the public first screen.'),'root redirect must not claim intelligence, privacy or answer availability before runtime verification');
+assert(rootEntry.includes('Readiness is checked on the chat surface before use.'),'root redirect must state that runtime readiness is checked after redirect');
+assert(!brandConfig.includes("text('#active-chat-description',config.chat_description)")&&!brandConfig.includes("text('#active-chat-title',config.active_title)"),'brand identity config must not overwrite the neutral chat readiness fields before runtime truth loads');
+assert(!legacyPortal.includes("activeBadge.textContent='Active: '")&&!legacyPortal.includes("activeBadge.textContent='Free chat ready'")&&!legacyPortal.includes('Supergeni answers immediately'),'deferred legacy profile UI must not overwrite canonical chat readiness before live runtime proof');
 assert(mmir.indexOf('release-route-taxonomy.js?v=')<mmir.indexOf('p0-chat-shell.js?v='),'shared taxonomy must load before the public chat shell');
 assert(models.indexOf('release-route-taxonomy.js?v=')<models.indexOf('release-0.2.js?v='),'shared taxonomy must load before the model catalog runtime');
 
