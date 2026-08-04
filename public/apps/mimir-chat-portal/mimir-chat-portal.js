@@ -19,11 +19,7 @@
   const activeBtn=document.getElementById('set-active');
   const deleteBtn=document.getElementById('delete-profile');
   const launchLink=document.getElementById('launch-chat');
-  const primaryLink=document.getElementById('primary-chat-link');
   const statusEl=document.getElementById('config-status');
-  const activeBadge=document.getElementById('active-badge');
-  const activeTitle=document.getElementById('active-chat-title');
-  const activeDesc=document.getElementById('active-chat-description');
   const refreshDashboardBtn=document.getElementById('refresh-dashboard');
   const metricProfiles=document.getElementById('metric-profiles');
   const metricActive=document.getElementById('metric-active');
@@ -75,7 +71,6 @@
 
   function renderEditor(){
     const p=selectedProfile();
-    const active=activeProfile();
     if(!p){
       nameEl.value='MMIR Local Node';urlEl.value=DEFAULT_LOCAL_URL;providerEl.value='local-node';modelsEl.value='auto-discovered';
       if(keyRefEl)keyRefEl.value='local pairing token only';
@@ -95,14 +90,6 @@
       if(healthEl)healthEl.value=p.health||'unknown';
       const ok=validUrl(p.url);
       launchLink.href=ok?p.url:'#';launchLink.classList.toggle('disabled',!ok);launchLink.setAttribute('aria-disabled',String(!ok));
-    }
-    if(active&&validUrl(active.url)){
-      activeBadge.textContent='Active: '+(active.name||'backend');
-      activeTitle.textContent=active.name||'Mimir Chat';
-      activeDesc.textContent=(active.provider||'local-node')+' \u00b7 '+(active.models||'models selected in backend')+' \u00b7 '+(active.health||'unknown');
-      primaryLink.href=active.url;primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
-    }else{
-      activeBadge.textContent='Free chat ready';activeTitle.textContent='Ask MMIR now. Add your own model when ready.';activeDesc.textContent='Supergeni answers immediately; Connect Model stays optional for private local models and trusted backends.';primaryLink.href='#mimir-chat-runtime';primaryLink.classList.remove('disabled');primaryLink.setAttribute('aria-disabled','false');
     }
   }
 

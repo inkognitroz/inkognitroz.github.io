@@ -1,5 +1,5 @@
 !function(w,d){
-  const VERSION='20260712-empty-composer-v1';
+  const VERSION='20260804-root-truth-v1';
   const REQUIRED_FIELDS=[
     'name',
     'tagline',
@@ -138,8 +138,6 @@
     text('[data-brand-field="tagline"]',config.tagline);
     text('[data-brand-field="mark"]',config.icon);
     text('#mimir-title',config.hero_title);
-    text('#active-chat-description',config.chat_description);
-    text('#active-chat-title',config.active_title);
     attr('#mimir-prompt','placeholder',config.prompt_placeholder);
     attr('#primary-chat-link','aria-label',config.send_label);
     attr('.mimir-brand','aria-label',config.name+' home');
