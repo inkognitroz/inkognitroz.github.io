@@ -4,6 +4,7 @@ import vm from 'node:vm';
 
 const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
+const taxonomyPath = resolve(root, 'public/release-route-taxonomy.js');
 const stateCopyPath = resolve(root, 'public/apps/mimir-chat-portal/chat-state-copy.js');
 const legacyRuntimePath = resolve(root, 'public/apps/mimir-chat-portal/chat-runtime.js');
 const htmlPath = resolve(root, 'public/mmir.html');
@@ -13,6 +14,7 @@ const routeReceiptsPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-
 const routeBenchmarksPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-benchmarks.js');
 const historyPath = resolve(root, 'public/apps/mimir-chat-portal/p0-history.js');
 const runtime = readFileSync(runtimePath, 'utf8');
+const taxonomy = readFileSync(taxonomyPath, 'utf8');
 const stateCopy = readFileSync(stateCopyPath, 'utf8');
 const legacyRuntime = readFileSync(legacyRuntimePath, 'utf8');
 const html = readFileSync(htmlPath, 'utf8');
@@ -50,6 +52,7 @@ context.window = context;
 context.globalThis = context;
 
 vm.createContext(context);
+vm.runInContext(taxonomy, context, { filename: taxonomyPath });
 vm.runInContext(stateCopy, context, { filename: stateCopyPath });
 vm.runInContext(storageHelper, context, { filename: storagePath });
 vm.runInContext(routeReceiptsHelper, context, { filename: routeReceiptsPath });

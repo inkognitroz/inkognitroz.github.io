@@ -105,11 +105,11 @@ button, input, select { font: inherit; }
 .catalog-card ul { margin: .55rem 0 0; padding-left: 1rem; color: var(--muted); font-size: .8rem; }
 
 .state-pill { flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 26px; padding: .16rem .5rem; border: 1px solid var(--line); border-radius: 999px; background: var(--soft); color: var(--muted); font-size: .69rem; font-weight: 800; white-space: nowrap; }
-.state-verified { border-color: #9dd7c3; background: var(--green-soft); color: var(--green); }
-.state-configured, .state-limited { border-color: #a8c7fa; background: var(--blue-soft); color: var(--blue); }
+.state-verified, .state-free_now, .state-local_ready { border-color: #9dd7c3; background: var(--green-soft); color: var(--green); }
+.state-configured, .state-configured_unavailable, .state-local_setup, .state-limited { border-color: #a8c7fa; background: var(--blue-soft); color: var(--blue); }
 .state-orchestrator { border-color: #c7b4f8; background: #f4f0ff; color: #6941c6; }
 .state-degraded { border-color: #f0d39c; background: var(--amber-soft); color: var(--amber); }
-.state-planned, .state-unavailable, .state-catalogued { color: #667085; background: #f2f4f7; }
+.state-planned, .state-unavailable, .state-byok_unavailable, .state-catalogued { color: #667085; background: #f2f4f7; }
 
 .card-action { align-self: end; justify-self: start; display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: .45rem .72rem; border-radius: 10px; background: #111827; color: white; text-decoration: none; font-size: .8rem; font-weight: 750; }
 .card-action.secondary { border: 1px solid var(--line); background: white; color: var(--ink); }
@@ -118,8 +118,10 @@ button, input, select { font: inherit; }
 .legend { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
 .legend span { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); font-size: .78rem; }
 .legend i { width: 10px; height: 10px; border-radius: 999px; background: #98a2b3; }
-.legend .verified i { background: var(--green); }
+.legend .verified i, .legend .free-now i { background: var(--green); }
 .legend .configured i { background: var(--blue); }
+.legend .local i { background: #0e7490; }
+.legend .byok i { background: #667085; }
 .legend .degraded i { background: #d97706; }
 .legend .orchestrator i { background: #7f56d9; }
 

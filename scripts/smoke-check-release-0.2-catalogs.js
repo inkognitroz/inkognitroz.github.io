@@ -10,6 +10,8 @@ const models=read('public/modeller/index.html');
 const capabilities=read('public/kapabiliteter/index.html');
 const trust=read('public/tillit/index.html');
 const runtime=read('public/release-0.2.js');
+const taxonomy=read('public/release-route-taxonomy.js');
+const p0Shell=read('public/apps/mimir-chat-portal/p0-chat-shell.js');
 const nav=read('public/apps/mimir-chat-portal/p0-release-nav.js');
 const navCss=read('public/apps/mimir-chat-portal/p0-release-nav.css');
 const releaseCss=read('public/release-0.2.css');
@@ -33,27 +35,32 @@ for(const [name,html] of [['models',models],['capabilities',capabilities],['trus
   assert(!/<input[^>]+(?:api.?key|secret|token)/i.test(html),name+' page must not collect provider secrets');
 }
 
-assert(models.includes('Valgbar total')&&models.includes('Live-verifisert'),'model page must separate authoritative selectable inventory from live proof');
+assert(models.includes('Gratis å prøve nå')&&models.includes('Konfigurert, utilgjengelig'),'model page must separate testable-now truth from configured inventory');
 assert(models.includes('kuratert utvalg'),'model page must not claim comprehensive editorial coverage');
 assert(models.includes('Åpne og lokale modellfamilier'),'model page must expose the curated open/local discovery area');
 assert(!runtime.includes("'Prøv modellen'")&&!runtime.includes("'Test med forbehold'"),'model cards must not pretend to deep-link an exact route');
 assert(runtime.includes("'Route-ID'")&&runtime.includes("'Node'"),'model cards must expose route and node identity');
-assert(runtime.includes("if(model?.id==='supergeni'){"),'Supergeni must be classified separately from language models');
-assert(runtime.includes("return supergeniState.includes('degrad')||model?.executable===false?'degraded':'orchestrator'"),'Supergeni type must not hide operational degradation');
-assert(runtime.includes("routeType.includes('external')")&&runtime.includes('gratis kvote · ingen egen API-nøkkel'),'free external routes must have a truthful no-key access label');
-assert(runtime.includes('inventory.live_selectable_model_count'),'selectable metric must come from authoritative inventory');
+assert(taxonomy.includes("free_now:'Gratis å prøve nå'"),'shared taxonomy must expose the exact free-now label');
+assert(taxonomy.includes("configured_unavailable:'Konfigurert · utilgjengelig nå'"),'shared taxonomy must distinguish configured but unavailable routes');
+assert(taxonomy.includes("local_ready:'Lokal · paret node'")&&taxonomy.includes("local_setup:'Lokal · krever paret node'"),'shared taxonomy must distinguish paired and unpaired local models');
+assert(taxonomy.includes("byok_unavailable:'BYOK · ikke støttet i 0.2'")&&taxonomy.includes("planned:'Planlagt · ikke tilgjengelig'"),'shared taxonomy must distinguish BYOK and planned routes');
+assert(taxonomy.includes("writer?.authenticated_release_ready===true")&&taxonomy.includes("journeys?.first_chat_ready===true")&&taxonomy.includes("model?.live_e2e_verified===true"),'free-now truth must require authenticated release, first-chat readiness and exact model E2E proof');
+assert(runtime.includes('RELEASE_ROUTE_TAXONOMY.classifyModel'),'model catalog must consume the shared taxonomy');
+assert(p0Shell.includes('RELEASE_ROUTE_TAXONOMY.releaseReadiness')&&p0Shell.includes('RELEASE_ROUTE_TAXONOMY.hostedTryableNow'),'chat selectability must consume the same shared taxonomy');
+assert(!runtime.includes('inventory.live_selectable_model_count'),'public testability must not inherit the configured inventory count');
 assert(capabilities.includes('id="roadmap-grid"')&&capabilities.includes('id="capability-revision"'),'capability page must show roadmap separately and expose the canonical revision');
 assert(capabilities.includes('48 offentlige rader'),'capability page must describe the canonical public projection');
 assert(trust.includes('grønt nettsted betyr ikke automatisk'),'trust page must separate site health from intelligence health');
 
 assert(runtime.includes("fetchJson(API_BASE+'/v1/models')"),'model catalog must use the canonical live inventory');
+assert(runtime.includes("fetchJson(API_BASE+'/status')"),'model catalog must bind card testability to canonical release status');
 assert(runtime.includes("fetchJson(API_BASE+'/status')"),'capability catalog must overlay the canonical live status');
 assert(runtime.includes("fetchJson('../capability-ui.json')"),'capability editorial copy must load as a separate overlay');
 assert(runtime.includes('catalog.semantic_revision===overlay.projection_semantic_revision'),'capability UI must fail closed on semantic revision mismatch');
 assert(runtime.includes("overlay.object==='mmir.capability_ui_overlay'")&&runtime.includes('Object.keys(overlayCopy).every(id=>ids.has(id))'),'capability UI must reject malformed overlays and unknown capability ids');
 assert(runtime.includes('capabilities.length===48'),'capability UI must validate the reviewed public projection shape at runtime');
 assert(runtime.includes("readiness==='ready'&&releaseReady&&verified>0"),'trust green must require operator readiness, authenticated release and live route proof');
-assert(runtime.includes('model?.live_e2e_verified===true'),'only an explicit E2E flag may classify a model as verified');
+assert(taxonomy.includes('model?.live_e2e_verified===true'),'only an explicit E2E flag may classify a model as live verified');
 assert(!runtime.includes('.innerHTML'),'release catalog renderer must use DOM text APIs rather than HTML interpolation');
 assert(!runtime.includes('2026-08-04'),'runtime must not hardcode a verification date');
 
@@ -79,7 +86,11 @@ assert(roadmap.find(row=>row.id==='byok')?.state==='unavailable','public BYOK mu
 assert(roadmap.find(row=>row.id==='compute-marketplace')?.state==='planned','compute marketplace must remain planned');
 assert(roadmap.find(row=>row.id==='autonomous-evolution')?.state==='planned','autonomous evolution must not be presented as green');
 
-for(const asset of ['./modeller/','./kapabiliteter/','./tillit/','./release-0.2.css','./release-0.2.js','./capability-catalog.json','./capability-ui.json','./apps/mimir-chat-portal/p0-release-nav.js']){
+assert(!mmir.includes('Active: Supergeni')&&!mmir.includes('Supergeni answers now.')&&!mmir.includes('The first answer works without setup')&&!mmir.includes('Supergeni active.'),'no-JS and slow-JS markup must not claim an unverified answer route');
+assert(mmir.indexOf('release-route-taxonomy.js?v=')<mmir.indexOf('p0-chat-shell.js?v='),'shared taxonomy must load before the public chat shell');
+assert(models.indexOf('release-route-taxonomy.js?v=')<models.indexOf('release-0.2.js?v='),'shared taxonomy must load before the model catalog runtime');
+
+for(const asset of ['./modeller/','./kapabiliteter/','./tillit/','./release-0.2.css','./release-0.2.js','./release-route-taxonomy.js','./capability-catalog.json','./capability-ui.json','./apps/mimir-chat-portal/p0-release-nav.js']){
   assert(sw.includes("'"+asset+"'"),'service worker must include '+asset);
 }
 

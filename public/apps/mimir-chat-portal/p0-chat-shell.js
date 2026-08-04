@@ -1,6 +1,7 @@
 (function(){
   window.__MimirP0SimpleChat=true;
   const P0_ROUTE_ADAPTERS=window.MimirP0RouteAdapters||{};
+  const RELEASE_ROUTE_TAXONOMY=window.MmirReleaseRouteTaxonomy||null;
   const CHAT_STATE=window.MimirChatStateCopy||{};
   const ROUTE_ADAPTER_CONFIG=typeof P0_ROUTE_ADAPTERS.config==='function'?P0_ROUTE_ADAPTERS.config():{};
   const API_URL=ROUTE_ADAPTER_CONFIG.apiUrl||'https://api.mmir.ai';
@@ -69,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260804-release-readiness-truth-v2';
+  const P0_RUNTIME_VERSION='20260804-model-truth-v1';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
@@ -2738,32 +2739,12 @@
   }
 
   function releaseReadinessFromStatus(payload){
-    const operator=payload?.operator_readiness;
-    const writer=operator?.default_writer_readiness;
-    const journeys=operator?.journeys;
-    const verifiedRoutes=Math.max(0,Number(payload?.live_verified_intelligence_route_count)||0);
-    const hostedReady=Boolean(
-      operator?.readiness_state==='ready'&&
-      writer?.classification==='ready'&&
-      writer?.authenticated_release_ready===true&&
-      journeys?.first_chat_ready===true&&
-      verifiedRoutes>=1
-    );
-    const blockerCodes=Array.isArray(writer?.blocker_codes)?writer.blocker_codes.filter(Boolean):[];
-    return {
-      state:hostedReady?'ready':'blocked',
-      hostedReady,
-      compareReady:Boolean(hostedReady&&journeys?.compare_ready===true),
-      swarmPreviewReady:Boolean(hostedReady&&journeys?.swarm_preview_ready===true),
-      verifiedRoutes,
-      checkedAt:Date.now(),
-      reason:hostedReady
-        ? 'Offentlig svarbane er live-verifisert.'
-        : (blockerCodes.length?blockerCodes.join(', '):'Offentlig svarbane mangler ferskt produksjonsbevis.')
-    };
+    if(!RELEASE_ROUTE_TAXONOMY?.releaseReadiness)return blockedReleaseReadiness('Delt release-taksonomi kunne ikke lastes.');
+    return RELEASE_ROUTE_TAXONOMY.releaseReadiness(payload);
   }
 
   function blockedReleaseReadiness(reason='Kunne ikke verifisere offentlig svarbane.'){
+    if(RELEASE_ROUTE_TAXONOMY?.blockedReadiness)return RELEASE_ROUTE_TAXONOMY.blockedReadiness(reason);
     return {
       state:'blocked',
       hostedReady:false,
@@ -2788,7 +2769,7 @@
   }
 
   function hostedModelLiveVerified(model){
-    return model?.liveE2EVerified===true||model?.live_e2e_verified===true;
+    return RELEASE_ROUTE_TAXONOMY?.modelLiveVerified?.(model)===true;
   }
 
   function matchingLiveHostedModel(model){
@@ -2806,27 +2787,15 @@
   }
 
   function localModelReady(model){
-    if(model?.route!=='local'||model?.executable===false||model?.selectable===false)return false;
-    const readiness=state.localReadiness||{};
-    const modelId=String(model?.model||model?.id||'');
-    return Boolean(
-      readiness.paired===true&&
-      readiness.runtimeChatReady===true&&
-      readiness.chatReady===true&&
-      Array.isArray(readiness.modelIds)&&
-      readiness.modelIds.includes(modelId)
-    );
+    return RELEASE_ROUTE_TAXONOMY?.localPairedNow?.(model,state.localReadiness||{})===true;
   }
 
   function liveHostedModel(model){
     return Boolean(
       model &&
       model.route!=='local' &&
-      hostedJourneyReady('first_chat') &&
-      hostedModelLiveVerified(model) &&
-      executableHostedModel(model) &&
-      !hostedCandidateModel(model) &&
-      model.selectable!==false
+      RELEASE_ROUTE_TAXONOMY&&
+      RELEASE_ROUTE_TAXONOMY.hostedTryableNow(model,state.releaseReadiness)===true
     );
   }
 
@@ -2967,21 +2936,26 @@
         const provider=providerLabel(model.provider);
         const liveE2EVerified=model.live_e2e_verified===true;
         const releaseReady=hostedJourneyReady('first_chat');
-        const selectable=Boolean(executable&&!candidate&&model.selectable!==false&&liveE2EVerified&&releaseReady);
-        const tags=candidate
-          ? [provider,'Kandidat','Fremtidig']
-          : (!liveE2EVerified
-            ? [provider,'Konfigurert','Ikke live']
-            : (releaseReady
-              ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Verifisert']
-              : [provider,'Live-bevis','Port blokkert']));
-        const detail=candidate
-          ? candidateDetail(model,provider)
-          : (!liveE2EVerified
-            ? 'Konfigurert · mangler ferskt live-bevis'
-            : (!releaseReady
-              ? 'Live-bevis finnes · releaseport blokkert'
-              : (externalUntrustedFree?'Verifisert ekstern rute':'Verifisert hostet rute')));
+        const truth=RELEASE_ROUTE_TAXONOMY?.classifyModel?.(model,{surface:'chat',releaseReadiness:state.releaseReadiness})||{
+          key:'configured_unavailable',
+          tryable:false,
+          reason:'Delt release-taksonomi kunne ikke lastes.'
+        };
+        const selectable=truth.tryable===true;
+        const tags=truth.key==='free_now'
+          ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Gratis nå']
+          : (truth.key==='byok_unavailable'
+            ? [provider,'BYOK','Ikke støttet i 0.2']
+            : (candidate||truth.key==='planned'
+              ? [provider,'Kandidat','Fremtidig']
+              : (!liveE2EVerified
+                ? [provider,'Konfigurert','Ikke live']
+                : (!releaseReady
+                  ? [provider,'Live-bevis','Port blokkert']
+                  : [provider,'Konfigurert','Utilgjengelig']))));
+        const detail=truth.key==='free_now'
+          ? (externalUntrustedFree?'Gratis å prøve nå · verifisert ekstern rute':'Gratis å prøve nå · verifisert hostet rute')
+          : (candidate?candidateDetail(model,provider):truth.reason);
         return {
           id,
           label:routeDisplayName(model),

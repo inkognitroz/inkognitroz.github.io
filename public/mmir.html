@@ -45,7 +45,7 @@
   <header class="mimir-topbar">
     <a class="mimir-brand" href="./index.html" aria-label="MMIR.ai home">
       <span class="mimir-mark mimir-mark-rune" aria-hidden="true" data-brand-field="mark">MM</span>
-      <span><strong data-brand-field="name">MMIR.ai</strong><small id="active-badge">Active: Supergeni</small></span>
+      <span><strong data-brand-field="name">MMIR.ai</strong><small id="active-badge">Status sjekkes før bruk</small></span>
     </a>
     <nav aria-label="Primary navigation">
       <a href="#mimir-prompt">Chat</a>
@@ -57,13 +57,13 @@
     <section class="mimir-chat-center">
       <h1 id="mimir-title" hidden>MMIR chat</h1>
       <span data-brand-field="tagline" hidden>Intelligence. Connected.</span>
-      <span id="active-chat-description" hidden>Supergeni answers now.</span>
+      <span id="active-chat-description" hidden>Offentlig svarbane verifiseres før bruk.</span>
 
       <section id="mimir-instant-start" class="mimir-instant-start" aria-label="MMIR ready state" hidden data-mimir-capability-state="advanced">
         <div class="instant-copy">
-          <p class="eyebrow">Ready now</p>
+          <p class="eyebrow">Status sjekkes før bruk</p>
           <h2 id="first-impression-status">Chat first. Connect more later.</h2>
-          <p id="first-impression-detail">The first answer works without setup. Local Node appears only when a real local model is connected.</p>
+          <p id="first-impression-detail">Hostet chat aktiveres bare etter ferskt produksjonsbevis. Lokal modell vises bare når en paret node faktisk er klar.</p>
         </div>
         <div class="instant-map" aria-label="Current orchestration path">
           <span class="instant-node is-active">Supergeni</span>
@@ -77,8 +77,8 @@
       <form class="mimir-composer" aria-label="MMIR chat composer" onsubmit="return false;">
         <textarea id="mimir-prompt" rows="2" aria-label="Message MMIR"></textarea>
         <div class="composer-bar">
-          <div class="composer-context"><span id="active-chat-title">Supergeni active.</span></div>
-          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary" aria-label="Innstillinger og verktøy" title="Innstillinger og verktøy">&#9881;</button><button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send prompt to Supergeni" title="Send" onclick="window.__MimirEarlySend=1">&#8593;</button></div>
+          <div class="composer-context"><span id="active-chat-title">Offentlig svarbane sjekkes.</span></div>
+          <div class="composer-actions"><button id="new-backend" type="button" class="btn btn-secondary" aria-label="Innstillinger og verktøy" title="Innstillinger og verktøy">&#9881;</button><button id="primary-chat-link" type="submit" class="btn btn-primary" aria-label="Send når en verifisert rute er klar" title="Send" onclick="window.__MimirEarlySend=1">&#8593;</button></div>
         </div>
       </form>
 
@@ -318,7 +318,8 @@
   <script src="./apps/mimir-chat-portal/p0-history.js?v=20260618-qa-history-scoped-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-menu.js?v=20260606-b1-06-p0-menu-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-route-adapters.js?v=20260718-writer-continuity-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/p0-chat-shell.js?v=20260804-release-readiness-truth-v2" defer></script>
+  <script src="./release-route-taxonomy.js?v=20260804-model-truth-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/p0-chat-shell.js?v=20260804-model-truth-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-release-nav.js?v=20260804-release-0-2-beta-v1" defer></script>
   <script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>
   <script src="./apps/mimir-chat-portal/public-launch-guard.js?v=20260604-hidden-capability-inert-v1" defer></script>

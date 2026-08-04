@@ -1,5 +1,6 @@
 const API_BASE='https://api.mmir.ai';
 const page=document.body.dataset.releasePage||'';
+const RELEASE_ROUTE_TAXONOMY=window.MmirReleaseRouteTaxonomy;
 
 function el(tag,className,text){
   const node=document.createElement(tag);
@@ -34,24 +35,10 @@ function safeLink(value){
   }
 }
 
-function modelState(model){
-  if(model?.id==='supergeni'){
-    const supergeniState=[model?.status,model?.route_state,model?.availability].join(' ').toLowerCase();
-    return supergeniState.includes('degrad')||model?.executable===false?'degraded':'orchestrator';
-  }
-  if(model?.live_e2e_verified===true)return 'verified';
-  const combined=[model?.status,model?.route_state,model?.availability].join(' ').toLowerCase();
-  if(combined.includes('degrad')||model?.executable===false||model?.selectable===false)return 'degraded';
-  if(model?.executable===true&&model?.selectable===true)return 'configured';
-  return 'catalogued';
-}
-
-const MODEL_STATE_LABELS={
-  orchestrator:'Orkestrator · ikke modell',
-  verified:'Live-verifisert',
-  configured:'Valgbar · ikke ferskt verifisert',
+const MODEL_STATE_LABELS=RELEASE_ROUTE_TAXONOMY?.labels||{
+  configured_unavailable:'Konfigurert · utilgjengelig nå',
   degraded:'Midlertidig degradert',
-  catalogued:'Katalogført'
+  catalogued:'Katalogført · ikke koblet'
 };
 
 const CAPABILITY_STATE_LABELS={
@@ -67,21 +54,6 @@ function statePill(state,kind='model'){
   return el('span','state-pill state-'+state,labels[state]||state);
 }
 
-function modelAccess(model){
-  if(model?.id==='supergeni')return 'MMIR-orkestrator · plattformbeta';
-  if(model?.route_type==='local'||model?.trust_boundary==='local_machine')return 'Lokal maskin · brukerens compute';
-  const routeType=String(model?.route_type||'');
-  const costClass=String(model?.cost_class||model?.cost_state||'');
-  if(routeType.includes('external')){
-    return costClass.includes('free')?'Ekstern MMIR-rute · gratis kvote · ingen egen API-nøkkel':'Ekstern MMIR-rute · vilkår må kontrolleres';
-  }
-  if(costClass.includes('free')){
-    return 'MMIR-plattformbeta · gratis kvote · ingen egen API-nøkkel';
-  }
-  if(model?.selectable===true)return 'MMIR-plattformbeta · vilkår per rute';
-  return 'Katalog / krever oppsett';
-}
-
 function modelDescription(model){
   if(model?.id==='supergeni')return 'MMIR-orkestrator: velger og kontrollerer svarruter. Supergeni er ikke en selvstendig generell språkmodell og teller ikke som live modellrute.';
   const limitations=Array.isArray(model?.limitations)?model.limitations:[];
@@ -94,8 +66,9 @@ function appendDefinition(list,label,value){
   list.append(row);
 }
 
-function renderModelCard(model){
-  const state=modelState(model);
+function renderModelCard(model,context){
+  const truth=RELEASE_ROUTE_TAXONOMY.classifyModel(model,context);
+  const state=truth.key;
   const card=el('article','catalog-card');
   card.dataset.state=state;
   card.dataset.search=[model?.display_name,model?.name,model?.id,model?.provider,model?.route_id,model?.node_id,(model?.capabilities||[]).join(' ')].join(' ').toLowerCase();
@@ -107,7 +80,8 @@ function renderModelCard(model){
   appendDefinition(definitions,'Modell-ID',model?.id||'Ukjent');
   appendDefinition(definitions,'Route-ID',model?.route_id||model?.mmir?.route||'Ikke oppgitt');
   appendDefinition(definitions,'Node',model?.node_id||'Ikke oppgitt');
-  appendDefinition(definitions,'Tilgang',modelAccess(model));
+  appendDefinition(definitions,'Tilgang',truth.access);
+  appendDefinition(definitions,'Chat i 0.2',truth.tryable?'Kan prøves nå':'Ikke tilgjengelig nå');
   appendDefinition(definitions,'Kvalitet','Ikke målt for denne eksakte ruten');
   appendDefinition(definitions,'Live-bevis',model?.live_e2e_verified===true?'Ja':'Nei / mangler ferskt bevis');
   card.append(definitions);
@@ -125,10 +99,10 @@ function renderModelCard(model){
 
 function renderFamilyCard(model){
   const card=el('article','catalog-card');
-  card.dataset.state='catalogued';
+  card.dataset.state='planned';
   card.dataset.search=[model?.label,model?.family,model?.provider_family,model?.category,model?.best_for].join(' ').toLowerCase();
   const header=el('div','catalog-card-header');
-  header.append(el('h3','',model?.label||model?.family||model?.id||'Modellfamilie'),statePill('catalogued'));
+  header.append(el('h3','',model?.label||model?.family||model?.id||'Modellfamilie'),statePill('planned'));
   card.append(header,el('p','',model?.best_for||'Kataloginformasjon. Ikke en påstand om at modellen er koblet til MMIR.'));
   const definitions=el('dl');
   appendDefinition(definitions,'Leverandør/familie',model?.provider_family||'Ukjent');
@@ -159,33 +133,45 @@ async function initModels(){
   const runtime=document.getElementById('runtime-truth');
   const grid=document.getElementById('models-grid');
   const familyGrid=document.getElementById('family-grid');
-  const [inventoryResult,familyResult]=await Promise.allSettled([
+  const [inventoryResult,statusResult,familyResult]=await Promise.allSettled([
     fetchJson(API_BASE+'/v1/models'),
+    fetchJson(API_BASE+'/status'),
     fetchJson('../ai-model-catalog.json')
   ]);
 
-  if(inventoryResult.status==='fulfilled'){
+  if(inventoryResult.status==='fulfilled'&&RELEASE_ROUTE_TAXONOMY){
     const inventory=inventoryResult.value||{};
     const models=Array.isArray(inventory.data)?inventory.data:[];
-    const verified=Number(inventory.live_verified_intelligence_route_count??models.filter(model=>modelState(model)==='verified').length);
-    const selectable=Number(inventory.live_selectable_model_count??models.filter(model=>modelState(model)==='configured'||modelState(model)==='verified').length);
-    const degraded=Number(inventory.degraded_model_count??models.filter(model=>modelState(model)==='degraded').length);
+    const releaseReadiness=statusResult.status==='fulfilled'
+      ? RELEASE_ROUTE_TAXONOMY.releaseReadiness(statusResult.value)
+      : RELEASE_ROUTE_TAXONOMY.blockedReadiness('Status for offentlig svarbane kunne ikke verifiseres.');
+    const context={surface:'catalog',releaseReadiness,localReadiness:statusResult.status==='fulfilled'?statusResult.value?.local_readiness:null};
+    const truths=models.map(model=>RELEASE_ROUTE_TAXONOMY.classifyModel(model,context));
+    const tryable=truths.filter(truth=>truth.key==='free_now').length;
+    const configured=truths.filter(truth=>truth.key==='configured_unavailable').length;
+    const unavailable=truths.filter(truth=>['degraded','planned','byok_unavailable','local_setup'].includes(truth.key)).length;
+    const e2e=truths.filter((truth,index)=>truth.liveE2EVerified===true&&models[index]?.id!=='supergeni').length;
     const orchestrators=models.filter(model=>model?.id==='supergeni').length;
     setText('metric-visible',inventory.total_visible_model_count??models.length);
-    setText('metric-verified',verified);
-    setText('metric-configured',selectable);
-    setText('metric-degraded',degraded);
-    runtime.dataset.state=verified>0?'ready':'warning';
+    setText('metric-tryable',tryable);
+    setText('metric-configured',configured);
+    setText('metric-unavailable',unavailable);
+    const cta=document.getElementById('models-primary-cta');
+    if(cta){
+      cta.textContent=tryable>0?'Prøv en gratis modell nå':'Åpne testflaten · ingen hostet modell er klar nå';
+      cta.setAttribute('aria-label',tryable>0?'Prøv en live-verifisert gratis modell':'Åpne testflaten; ingen hostet modell er testklar akkurat nå');
+    }
+    runtime.dataset.state=tryable>0?'ready':(statusResult.status==='fulfilled'?'warning':'error');
     runtime.replaceChildren(
-      el('strong','',verified>0?'Ferske live-bevis finnes for minst én modellrute.':'Ingen modellrute har ferskt live-bevis akkurat nå.'),
-      el('p','',(inventory.total_visible_model_count??models.length)+' synlige ruter · '+selectable+' valgbare totalt · '+degraded+' degraderte · av disse er '+orchestrators+' en orkestratoroppføring, ikke en språkmodell. Åpne testflaten for å velge en tilgjengelig rute; kortene lover ikke eksakt modellvalg.')
+      el('strong','',tryable>0?'Minst én gratis modellrute er klar i offentlig chat.':'Ingen hostet modell kan merkes «gratis å prøve nå».'),
+      el('p','',(inventory.total_visible_model_count??models.length)+' synlige ruter · '+tryable+' gratis å prøve nå · '+configured+' konfigurerte, men utilgjengelige · '+unavailable+' degraderte/planlagte/oppsettavhengige · '+e2e+' med eksplisitt modell-E2E-bevis. '+orchestrators+' oppføring er en orkestrator, ikke en språkmodell. Gratisstatus krever både modellbevis og autentisert first-chat-release.')
     );
-    models.forEach(model=>grid.append(renderModelCard(model)));
+    models.forEach(model=>grid.append(renderModelCard(model,context)));
   }else{
     setText('metric-visible','Ukjent');
-    setText('metric-verified','Ukjent');
+    setText('metric-tryable','Ukjent');
     setText('metric-configured','Ukjent');
-    setText('metric-degraded','Ukjent');
+    setText('metric-unavailable','Ukjent');
     runtime.dataset.state='error';
     runtime.replaceChildren(el('strong','','Live inventory er utilgjengelig.'),el('p','','Ingen rute vises som live. Kataloginformasjon kan fortsatt leses nedenfor.'));
     grid.append(el('p','empty-state','Kunne ikke hente live modellstatus. Prøv igjen senere.'));

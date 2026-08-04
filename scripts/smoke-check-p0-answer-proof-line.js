@@ -11,6 +11,7 @@ import vm from 'node:vm';
 
 const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
+const taxonomyPath = resolve(root, 'public/release-route-taxonomy.js');
 const stateCopyPath = resolve(root, 'public/apps/mimir-chat-portal/chat-state-copy.js');
 const storagePath = resolve(root, 'public/apps/mimir-chat-portal/p0-storage.js');
 const routeReceiptsPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-receipts.js');
@@ -46,6 +47,7 @@ context.window = context;
 context.globalThis = context;
 
 vm.createContext(context);
+vm.runInContext(readFileSync(taxonomyPath, 'utf8'), context, { filename: taxonomyPath });
 vm.runInContext(readFileSync(stateCopyPath, 'utf8'), context, { filename: stateCopyPath });
 vm.runInContext(readFileSync(storagePath, 'utf8'), context, { filename: storagePath });
 vm.runInContext(readFileSync(routeReceiptsPath, 'utf8'), context, { filename: routeReceiptsPath });

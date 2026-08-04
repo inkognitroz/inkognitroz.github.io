@@ -62,7 +62,7 @@ async function installFixtures(page) {
         }
       };
     } else if (url.pathname === '/v1/models') {
-      body = { object: 'list', data: [{ id: 'mmir-supergenius', display_name: 'Supergeni', executable: true, selectable: true, recommended: true, live_e2e_verified: true }] };
+      body = { object: 'list', data: [{ id: 'mmir-supergenius', display_name: 'Supergeni', executable: true, selectable: true, recommended: true, live_e2e_verified: true, cost_class: 'free' }] };
     } else if (url.pathname === '/status') {
       body = {
         live_verified_intelligence_route_count: 1,

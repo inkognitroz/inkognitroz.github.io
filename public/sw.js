@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d354-20260804-release-0-2-beta-v2';
+const CACHE_NAME='mmir-pwa-d355-20260804-model-truth-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -14,6 +14,7 @@ const SHELL_ASSETS=[
   './assets/mmir-maskable-icon.svg',
   './release-0.2.css',
   './release-0.2.js',
+  './release-route-taxonomy.js',
   './capability-catalog.json',
   './capability-ui.json',
   './ai-model-catalog.json',
