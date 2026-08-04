@@ -407,6 +407,7 @@
   let activeChatController=null;
   let hostedReadinessTimer=null;
   let hostedReadinessRefreshGeneration=0;
+  let menuReturnFocusElement=null;
   let stopRequested=false;
   if(privateModeActive())clearWriterContinuityState();
   const SLOW_RESPONSE_NOTICE_MS=12000;
@@ -4170,8 +4171,10 @@
       const expanded=document.querySelector('#p0-add[aria-expanded="true"],#p0-model[aria-expanded="true"],#p0-privacy[aria-expanded="true"]');
       if(!expanded)return;
       event.preventDefault();
+      const returnFocus=menuReturnFocusElement||expanded;
       closeMenus();
-      expanded.focus({preventScroll:true});
+      menuReturnFocusElement=null;
+      returnFocus.focus?.({preventScroll:true});
     });
     document.addEventListener('focusin',(event)=>{
       const message=event.target.closest?.('.p0-message');
@@ -4246,14 +4249,14 @@
       if(actionButton&&(actionButton.closest('.p0-menu')||actionButton.closest('.p0-sidebar'))){
         event.preventDefault();
         event.stopPropagation();
-        handleMenuAction(actionButton.getAttribute('data-p0-action'));
+        handleMenuAction(actionButton.getAttribute('data-p0-action'),actionButton);
         return;
       }
       const sidebarActionButton=event.target.closest('[data-p0-sidebar-action]');
       if(sidebarActionButton&&sidebarActionButton.closest('.p0-sidebar')){
         event.preventDefault();
         event.stopPropagation();
-        handleMenuAction(sidebarActionButton.getAttribute('data-p0-sidebar-action'));
+        handleMenuAction(sidebarActionButton.getAttribute('data-p0-sidebar-action'),sidebarActionButton);
         return;
       }
       if(event.target.closest('#p0-add,#p0-model,#p0-privacy,.p0-menu'))return;
@@ -4676,12 +4679,16 @@
     });
   }
 
-  function toggleMenu(name,button){
+  function toggleMenu(name,button,returnFocus=button){
     const menu=menuEl(name);
-    if(!menu)return;
+    if(!menu||!button)return;
     const willOpen=menu.hidden;
     closeMenus();
-    if(!willOpen)return;
+    if(!willOpen){
+      menuReturnFocusElement=null;
+      return;
+    }
+    menuReturnFocusElement=returnFocus||button;
     if(name==='add')renderAddMenu();
     if(name==='model')renderModelMenu();
     if(name==='privacy')renderPrivacyMenu();
@@ -4691,7 +4698,7 @@
     menu.style.left=left+'px';
     menu.hidden=false;
     button.setAttribute('aria-expanded','true');
-    if(name==='model')menu.querySelector('button')?.focus({preventScroll:true});
+    menu.querySelector('button')?.focus({preventScroll:true});
   }
 
   function menuTitle(text){
@@ -4774,10 +4781,20 @@
       model.selectable!==false&&
       !model.candidate
     ));
+    const hostedBlockedVerifiedModels=rankedModels(state.models.filter(model=>
+      model.route==='hosted'&&
+      modelVisibleInFilter(model,filter)&&
+      model.executable!==false&&
+      model.selectable===false&&
+      !model.candidate&&
+      hostedModelLiveVerified(model)&&
+      !hostedJourneyReady('first_chat')
+    ));
     const hostedFutureModels=rankedModels(state.models.filter(model=>
       model.route==='hosted'&&
       modelVisibleInFilter(model,filter)&&
-      (model.candidate||model.executable===false||model.selectable===false)
+      (model.candidate||model.executable===false||model.selectable===false)&&
+      !hostedBlockedVerifiedModels.some(verified=>verified.id===model.id)
     ));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
@@ -4789,14 +4806,20 @@
           ? [routeOperationalHint(model),modelUseCase(model),model.provider,'node-overlevering kreves'].filter(Boolean).join(' · ')
           : [routeOperationalHint(model),modelUseCase(model),rankSummary,(model.routeClass==='external-untrusted-free'||model.trustLevel==='external-untrusted-free')?'Ekstern':'Hostet',benchmark].filter(Boolean).join(' · ');
       const selectable=model.executable!==false&&model.selectable!==false;
-      const title=selectable?('Velg '+model.label):(model.nextAction||'Kandidaten er synlig, men kan ikke velges ennå.');
+      const releaseBlockedVerified=model.route==='hosted'&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat');
+      const title=selectable
+        ? ('Velg '+model.label)
+        : (releaseBlockedVerified
+          ? 'Live-bevis finnes, men den offentlige releaseporten er blokkert.'
+          : (model.nextAction||'Kandidaten er synlig, men kan ikke velges ennå.'));
       return '<button type="button" data-model-id="'+safeAttr(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'" data-model-selectable="'+(selectable?'true':'false')+'" aria-disabled="'+(selectable?'false':'true')+'" title="'+safeAttr(title)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
     }).join('');
     const buttons=''+
       (hostedActiveModels.length?menuSection('Live-verifiserte hostede ruter')+renderButtons(hostedActiveModels):'<div class="p0-menu-note">Ingen hostet rute er produksjonsverifisert nå.</div>')+
+      (hostedBlockedVerifiedModels.length?menuSection('Live-bevis · releaseport blokkert')+renderButtons(hostedBlockedVerifiedModels):'')+
       (hostedFutureModels.length?menuSection('Konfigurerte eller fremtidige ruter')+renderButtons(hostedFutureModels):'')+
       (localModels.length?menuSection('Private lokale modeller')+renderButtons(localModels):'');
-    const filterHint=(hostedActiveModels.length||hostedFutureModels.length||localModels.length)?'':
+    const filterHint=(hostedActiveModels.length||hostedBlockedVerifiedModels.length||hostedFutureModels.length||localModels.length)?'':
       '<div class="p0-menu-note">Ingen '+safeText(modelFilterLabel(filter).toLowerCase())+' ruter ennå.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Viser '+safeText(modelFilterLabel(filter).toLowerCase())+' ruter.</div>';
     const scoreHint='<div class="p0-menu-note">Poeng betyr rutetilpasning for forespørselen, ikke sannhetsprosent.</div>';
@@ -4807,8 +4830,13 @@
         const model=state.models.find(item=>item.id===button.getAttribute('data-model-id'));
         if(!model||model.executable===false||model.selectable===false){
           const label=model?.label||'Leverandørkandidat';
-          status(label+' er synlig, men ikke live-verifisert for chat.','error');
-          routeStatus('Konfigurert/fremtidig rute · produksjonsbevis kreves','error');
+          if(model&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat')){
+            status(label+' har live-bevis, men den offentlige releaseporten er blokkert.','error');
+            routeStatus('Live-bevis · releaseport blokkert · ingen rute startet','error');
+          }else{
+            status(label+' er synlig, men ikke live-verifisert for chat.','error');
+            routeStatus('Konfigurert/fremtidig rute · produksjonsbevis kreves','error');
+          }
           return;
         }
         state.activeModelId=model.id;
@@ -5735,7 +5763,7 @@
     return false;
   }
 
-  function handleMenuAction(action){
+  function handleMenuAction(action,sourceElement=null){
     const actionId=String(action||'');
     if(actionId.startsWith('pin-toolbar-tool:')||actionId.startsWith('unpin-toolbar-tool:')){
       const pinned=actionId.startsWith('pin-toolbar-tool:');
@@ -5759,11 +5787,13 @@
 	      return true;
 	    }
 	    if(action==='model-menu'){
-	      toggleMenu('model',document.getElementById('p0-add')||document.getElementById('p0-model'));
+	      const returnFocus=sourceElement?.closest?.('#p0-add-menu')?document.getElementById('p0-add'):(sourceElement||document.getElementById('p0-model'));
+	      toggleMenu('model',document.getElementById('p0-model'),returnFocus);
 	      return true;
 	    }
 	    if(action==='privacy-menu'){
-	      toggleMenu('privacy',document.getElementById('p0-add')||document.getElementById('p0-privacy'));
+	      const returnFocus=sourceElement?.closest?.('#p0-add-menu')?document.getElementById('p0-add'):(sourceElement||document.getElementById('p0-privacy'));
+	      toggleMenu('privacy',document.getElementById('p0-privacy'),returnFocus);
 	      return true;
 	    }
 	    if(action==='toggle-fact-guard'){

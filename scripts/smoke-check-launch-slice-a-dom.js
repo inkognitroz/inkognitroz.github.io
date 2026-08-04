@@ -236,7 +236,7 @@ requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path m
 requireIncludes(files.p0Runtime, 'no_server_audio:true', 'P0 voice path must stay browser-local with no server audio capture.');
 requireIncludes(files.p0Runtime, 'Taleinndata er ikke tilgjengelig. Skriv i feltet i stedet.', 'P0 unsupported voice path must give concise truthful fallback.');
 requireIncludes(files.p0Runtime, "input.value=(input.value?input.value+' ':'')+text", 'P0 supported voice path must add recognized text to the prompt.');
-requireIncludes(files.p0Runtime, 'function handleMenuAction(action)', 'P0 menu actions must use a central handler so local discovery cannot silently close menus.');
+requireIncludes(files.p0Runtime, 'function handleMenuAction(action,sourceElement=null)', 'P0 menu actions must use a central handler so local discovery cannot silently close menus.');
 requireIncludes(files.p0Runtime, 'Checking this Mac for local models...', 'P0 local discovery must show immediate route feedback.');
 requireIncludes(files.p0Runtime, 'Tiny private model · slower/weak fallback', 'Tiny local models must be labeled as weak fallback routes.');
 requireIncludes(files.p0Runtime, 'Best local', 'P0 model picker must identify the best local starter after discovery.');

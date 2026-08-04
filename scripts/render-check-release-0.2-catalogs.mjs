@@ -137,6 +137,11 @@ async function checkChatNav(browser){
   const verifiedWriterText=await page.locator('#p0-model-menu button').filter({hasText:'Verified Writer'}).innerText();
   assert(/Live-bevis/i.test(verifiedWriterText)&&/Port blokkert/i.test(verifiedWriterText),'live-E2E proof must remain visible when only the release port is blocked');
   assert(!/Ikke live/i.test(verifiedWriterText),'a live-E2E route behind a blocked release port must not be mislabeled non-live');
+  await page.locator('#p0-model-menu button').filter({hasText:'Verified Writer'}).evaluate(button=>button.click());
+  assert(/har live-bevis.+releaseporten er blokkert/i.test(await page.locator('#p0-status').innerText()),'clicking a verified-but-blocked route must preserve its live proof and name the release block');
+  const blockedRouteText=await page.locator('#p0-route').innerText();
+  assert(/Live-bevis.+releaseport blokkert/i.test(blockedRouteText),'verified-but-blocked route click must preserve its proof in the route line; got '+blockedRouteText);
+  assert(hostedChatCalls===0,'clicking a verified-but-blocked route must never start hosted chat');
   await page.keyboard.press('Escape');
   assert(await page.locator('#p0-model-menu').isHidden(),'Escape must close the model menu');
   assert(await page.locator('#p0-model').getAttribute('aria-expanded')==='false','Escape must reset model menu expanded state');
@@ -144,6 +149,12 @@ async function checkChatNav(browser){
   assert(await page.locator('#p0-add').getAttribute('aria-controls')==='p0-add-menu','tools trigger must own its generic popover');
   await page.locator('#p0-add').click();
   assert(await page.locator('#p0-add-menu').getAttribute('role')===null,'tools popover must not claim unsupported ARIA menu semantics');
+  await page.locator('#p0-add-menu [data-p0-action="privacy-menu"]').click();
+  assert(await page.locator('#p0-add').getAttribute('aria-expanded')==='false','tools trigger must collapse when privacy takes ownership');
+  assert(await page.locator('#p0-add-menu').isHidden(),'tools popover must hide when privacy opens');
+  assert(await page.locator('#p0-privacy').getAttribute('aria-expanded')==='true','privacy trigger must own the visible privacy popover');
+  assert(await page.locator('#p0-privacy-menu').isVisible(),'privacy popover must be visible under its matching controller');
+  assert(await page.evaluate(()=>document.getElementById('p0-privacy-menu')?.contains(document.activeElement)),'privacy popover must receive focus when opened from tools');
   await page.keyboard.press('Escape');
   assert(await page.evaluate(()=>document.activeElement?.id)==='p0-add','Escape must return focus to the tools trigger');
   assert(await page.locator('#p0-privacy').getAttribute('aria-controls')==='p0-privacy-menu','privacy trigger must own its generic popover');
