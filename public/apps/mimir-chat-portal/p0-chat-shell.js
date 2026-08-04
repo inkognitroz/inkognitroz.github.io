@@ -69,7 +69,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260804-release-readiness-truth-v1';
+  const P0_RUNTIME_VERSION='20260804-release-readiness-truth-v2';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
@@ -4069,7 +4069,7 @@
             '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
             '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
             '<div class="p0-status-rail">'+
-              '<div id="p0-route" class="p0-route" data-state="hosted">'+hostedRouteLabel()+'</div>'+
+              '<div id="p0-route" class="p0-route" data-state="hosted">Sjekker offentlig svarbane · ingen hosted-rute startet</div>'+
               '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
             '</div>'+
             '<div class="p0-toolbar">'+
@@ -5061,6 +5061,20 @@
     input.setAttribute('aria-label','Spør Supergeni, en kunstig intelligens');
   }
 
+  function publicRouteToolbarStatus(model){
+    const receipt=routeReceipt(model);
+    if(model?.route!=='hosted'||hostedJourneyReady('first_chat')){
+      return {text:routeMicroStatus(model),state:receipt.state};
+    }
+    if(state.releaseReadiness?.state==='checking'){
+      return {text:'Sjekker offentlig svarbane · ingen hosted-rute startet',state:'hosted'};
+    }
+    if(hostedModelLiveVerified(model)){
+      return {text:'Live-bevis · releaseport blokkert · ingen rute startet',state:'error'};
+    }
+    return {text:'Offentlig svarbane blokkert · ingen hosted-rute startet',state:'error'};
+  }
+
   function renderToolbar(){
     const model=activeModel();
     const local=bestLocalModel();
@@ -5076,7 +5090,8 @@
       const next=privacyModeRouteStatus();
       routeStatus(next.text,next.state);
     }else{
-      routeStatus(routeMicroStatus(model),routeReceipt(model).state);
+      const next=publicRouteToolbarStatus(model);
+      routeStatus(next.text,next.state);
     }
     updateSendControl();
   }

@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d354-20260804-release-0-2-beta-v1';
+const CACHE_NAME='mmir-pwa-d354-20260804-release-0-2-beta-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',

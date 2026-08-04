@@ -45,49 +45,55 @@ async function waitForServer(){
   throw new Error('Release 0.2 test server did not become ready');
 }
 
-async function routeApi(page,{fail=false,failModels=false,zeroLive=false,degradedSupergeni=false,releaseReady=false,replace=false}={}){
+async function routeApi(page,{fail=false,failModels=false,zeroLive=false,degradedSupergeni=false,releaseReady=false,replace=false,delayMs=0}={}){
   if(replace){
     await page.unroute('https://api.mmir.ai/status');
     await page.unroute('https://api.mmir.ai/v1/models');
   }
-  await page.route('https://api.mmir.ai/status',route=>route.fulfill({
-    status:fail?503:200,
-    contentType:'application/json',
-    body:fail?JSON.stringify({error:'unavailable'}):JSON.stringify({
-      ok:true,
-      capabilities:['chat.completions','web.search.execute.safe_live_data_slice'],
-      live_verified_intelligence_route_count:releaseReady?1:0,
-      operator_readiness:{
-        readiness_state:releaseReady?'ready':'blocked',
-        default_writer_readiness:{
-          classification:releaseReady?'ready':'blocked',
-          authenticated_release_ready:releaseReady
-        },
-        journeys:{
-          first_chat_ready:releaseReady,
-          compare_ready:releaseReady,
-          swarm_preview_ready:releaseReady
+  await page.route('https://api.mmir.ai/status',async route=>{
+    if(delayMs)await new Promise(resolve=>setTimeout(resolve,delayMs));
+    return route.fulfill({
+      status:fail?503:200,
+      contentType:'application/json',
+      body:fail?JSON.stringify({error:'unavailable'}):JSON.stringify({
+        ok:true,
+        capabilities:['chat.completions','web.search.execute.safe_live_data_slice'],
+        live_verified_intelligence_route_count:releaseReady?1:0,
+        operator_readiness:{
+          readiness_state:releaseReady?'ready':'blocked',
+          default_writer_readiness:{
+            classification:releaseReady?'ready':'blocked',
+            authenticated_release_ready:releaseReady
+          },
+          journeys:{
+            first_chat_ready:releaseReady,
+            compare_ready:releaseReady,
+            swarm_preview_ready:releaseReady
+          }
         }
-      }
-    })
-  }));
-  await page.route('https://api.mmir.ai/v1/models',route=>route.fulfill({
-    status:fail||failModels?503:200,
-    contentType:'application/json',
-    body:fail||failModels?JSON.stringify({error:'unavailable'}):JSON.stringify({
-      object:'list',
-      total_visible_model_count:4,
-      live_selectable_model_count:2,
-      live_verified_intelligence_route_count:1,
-      degraded_model_count:1,
-      data:[
-        {id:'supergeni',display_name:'Supergeni',provider:'mmir',status:degradedSupergeni?'temporarily_degraded':'available',route_id:'browser-guide/free',node_id:'browser-guide',route_state:degradedSupergeni?'orchestrator_degraded':'available',route_type:'managed_provider',executable:!degradedSupergeni,selectable:false,live_e2e_verified:false,cost_class:'free',capabilities:['chat.completions'],limitations:['Fixture orchestrator.']},
-        {id:'verified-writer',display_name:'Verified Writer',provider:'fixture',status:'available',route_id:'fixture/verified',node_id:'fixture-a',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:!zeroLive,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture verified route.']},
-        {id:'configured-writer',display_name:'Configured Writer',provider:'fixture',status:'available',route_id:'fixture/configured',node_id:'fixture-b',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:false,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture without fresh E2E proof.']},
-        {id:'degraded-writer',display_name:'Degraded Writer',provider:'fixture',status:'temporarily_degraded',route_id:'fixture/degraded',node_id:'fixture-c',route_state:'provider_temporarily_degraded',route_type:'external_untrusted_free',executable:false,selectable:false,live_e2e_verified:false,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture degraded route.']}
-      ]
-    })
-  }));
+      })
+    });
+  });
+  await page.route('https://api.mmir.ai/v1/models',async route=>{
+    if(delayMs)await new Promise(resolve=>setTimeout(resolve,delayMs));
+    return route.fulfill({
+      status:fail||failModels?503:200,
+      contentType:'application/json',
+      body:fail||failModels?JSON.stringify({error:'unavailable'}):JSON.stringify({
+        object:'list',
+        total_visible_model_count:4,
+        live_selectable_model_count:2,
+        live_verified_intelligence_route_count:1,
+        degraded_model_count:1,
+        data:[
+          {id:'supergeni',display_name:'Supergeni',provider:'mmir',status:degradedSupergeni?'temporarily_degraded':'available',route_id:'browser-guide/free',node_id:'browser-guide',route_state:degradedSupergeni?'orchestrator_degraded':'available',route_type:'managed_provider',executable:!degradedSupergeni,selectable:false,live_e2e_verified:false,cost_class:'free',capabilities:['chat.completions'],limitations:['Fixture orchestrator.']},
+          {id:'verified-writer',display_name:'Verified Writer',provider:'fixture',status:'available',route_id:'fixture/verified',node_id:'fixture-a',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:!zeroLive,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture verified route.']},
+          {id:'configured-writer',display_name:'Configured Writer',provider:'fixture',status:'available',route_id:'fixture/configured',node_id:'fixture-b',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:false,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture without fresh E2E proof.']},
+          {id:'degraded-writer',display_name:'Degraded Writer',provider:'fixture',status:'temporarily_degraded',route_id:'fixture/degraded',node_id:'fixture-c',route_state:'provider_temporarily_degraded',route_type:'external_untrusted_free',executable:false,selectable:false,live_e2e_verified:false,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture degraded route.']}
+        ]
+      })
+    });
+  });
 }
 
 async function noHorizontalOverflow(page,label){
@@ -118,6 +124,10 @@ async function checkChatNav(browser){
   assert(/ikke produksjonsgrønn/i.test(warning),'blocked operator release must be disclosed at the chat entry point');
   assert(/sensitive|høyrisiko/i.test(warning),'blocked chat entry must warn against sensitive or high-risk use');
   assert(await page.locator('#p0-send').isDisabled(),'hosted send CTA must fail closed while first chat is blocked');
+  const blockedDefaultRouteText=await page.locator('#p0-route').innerText();
+  assert(/offentlig svarbane blokkert/i.test(blockedDefaultRouteText),'blocked first chat must make the default route line fail closed; got '+blockedDefaultRouteText);
+  assert(!/\bready\b/i.test(blockedDefaultRouteText),'blocked first chat must never label the default route ready; got '+blockedDefaultRouteText);
+  assert(await page.locator('#p0-route').getAttribute('data-state')==='error','blocked default route line must expose error state');
   assert(await page.locator('#p0-send').evaluate(button=>getComputedStyle(button).cursor)==='not-allowed','blocked send must look unavailable, not loading');
   if(await page.locator('#p0-superboost').count())assert(await page.locator('#p0-superboost').isDisabled(),'blocked compare gate must disable Superboost');
   if(await page.locator('#p0-council').count())assert(await page.locator('#p0-council').isDisabled(),'blocked swarm gate must disable Council');
@@ -161,6 +171,17 @@ async function checkChatNav(browser){
   assert(await page.locator('#p0-privacy-menu').getAttribute('role')===null,'privacy popover must not claim unsupported ARIA menu semantics');
   assert(!(await page.locator('body').innerText()).includes('Leid compute og intelligensmarkedsplass'),'planned catalog copy must stay off the clean chat surface');
   await noHorizontalOverflow(page,'mobile chat navigation');
+  await page.close();
+}
+
+async function checkCheckingFirstPaint(browser){
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await routeApi(page,{delayMs:500});
+  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  const checkingRouteText=await page.locator('#p0-route').innerText();
+  assert(/sjekker offentlig svarbane/i.test(checkingRouteText),'synchronous first paint must disclose that public readiness is still being checked; got '+checkingRouteText);
+  assert(!/\bready\b/i.test(checkingRouteText),'synchronous first paint must never inherit the legacy ready label; got '+checkingRouteText);
+  await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   await page.close();
 }
 
@@ -219,6 +240,9 @@ async function checkReadyHostedGate(browser){
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
   assert(!(await page.locator('#p0-send').isDisabled()),'hosted send must enable only after the complete release-readiness contract is green');
+  const readyRouteText=await page.locator('#p0-route').innerText();
+  assert(!/blokkert|sjekker offentlig svarbane/i.test(readyRouteText),'green first chat must clear the fail-closed route line; got '+readyRouteText);
+  assert(await page.locator('#p0-route').getAttribute('data-state')!=='error','green first chat must clear route error state');
   await page.close();
 }
 
@@ -420,6 +444,7 @@ let browser;
 try{
   await waitForServer();
   browser=await chromium.launch({headless:true});
+  await checkCheckingFirstPaint(browser);
   await checkChatNav(browser);
   await checkModels(browser);
   await checkDegradedSupergeni(browser);
