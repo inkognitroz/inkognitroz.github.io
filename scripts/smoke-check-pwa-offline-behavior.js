@@ -131,9 +131,12 @@ async function checkEarlyInstallPrompt(root,fail){
 
 async function checkOfflineFetchBehavior(root,fail){
   const source=readFileSync(join(root,'public','sw.js'),'utf8');
+  const cacheName=source.match(/const CACHE_NAME='([^']+)'/)?.[1]||'';
+  const priorCacheName='mmir-pwa-d354-20260804-release-0-2-beta-v1';
   const origin='https://example.test';
   const listeners=new Map();
   const matchCalls=[];
+  const deletedCaches=[];
   const stored=new Map([
     [origin+'/apps/mimir-chat-portal/p0-chat-shell.css',new FakeResponse('.mimir-chat-main{display:block}',{headers:{'content-type':'text/css'}})],
     [origin+'/apps/mimir-chat-portal/p0-chat-shell.js',new FakeResponse('window.__offlineShell=true',{headers:{'content-type':'text/javascript'}})],
@@ -151,8 +154,8 @@ async function checkOfflineFetchBehavior(root,fail){
       return undefined;
     },
     async open(){return {put:async()=>{},addAll:async()=>{}};},
-    async keys(){return [];},
-    async delete(){return true;}
+    async keys(){return [priorCacheName,cacheName,'unrelated-cache'];},
+    async delete(key){deletedCaches.push(key);return true;}
   };
   const self={
     location:new URL(origin+'/sw.js'),
@@ -162,6 +165,19 @@ async function checkOfflineFetchBehavior(root,fail){
   };
   const context=vm.createContext({self,caches,fetch:async()=>{throw new Error('offline');},Response:FakeResponse,URL,Set,Promise,console});
   vm.runInContext(source,context,{filename:'sw.js'});
+  const activateHandler=listeners.get('activate');
+  if(!activateHandler){
+    fail('PWA update: service worker did not install an activate handler.');
+  }else{
+    let activation=null;
+    activateHandler({waitUntil(value){activation=Promise.resolve(value);}});
+    if(!activation)fail('PWA update: activate handler did not bind cache cleanup.');
+    else await activation;
+    if(cacheName===priorCacheName)fail('PWA update: release-readiness hotfix reused the prior cache identity.');
+    if(!deletedCaches.includes(priorCacheName))fail('PWA update: prior release cache was not deleted during activation.');
+    if(deletedCaches.includes(cacheName))fail('PWA update: current release cache was deleted during activation.');
+    if(deletedCaches.includes('unrelated-cache'))fail('PWA update: unrelated cache was deleted during activation.');
+  }
   const fetchHandler=listeners.get('fetch');
   if(!fetchHandler){
     fail('PWA offline: service worker did not install a fetch handler.');

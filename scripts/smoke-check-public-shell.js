@@ -337,8 +337,8 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d354-20260804-release-0-2-beta-v1",
-  "Service worker cache must bust for the minimal empty composer release.",
+  "mmir-pwa-d354-20260804-release-0-2-beta-v2",
+  "Service worker cache must bust for the release-readiness truth hotfix.",
 );
 requireText(
   serviceWorkerPath,
