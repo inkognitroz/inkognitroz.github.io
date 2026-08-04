@@ -45,18 +45,18 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "tags:candidate?[provider,'Candidate','Future']",
+  "tags:candidate?[provider,'Kandidat','Fremtidig']",
   'Provider candidates must be visibly marked as future capacity in the model picker.'
 );
 requireIncludes(
   shell,
-  'menuSection(\'Active free routes\')',
-  'Model picker must lead with active free routes, not future candidates.'
+  'menuSection(\'Live-verifiserte hostede ruter\')',
+  'Model picker must separate live-verified hosted routes from unverified inventory.'
 );
 requireIncludes(
   shell,
-  'menuSection(\'Future node candidates\')',
-  'Model picker must group non-active provider candidates separately.'
+  'menuSection(\'Konfigurerte eller fremtidige ruter\')',
+  'Model picker must group configured or future routes separately.'
 );
 requireIncludes(
   shell,
@@ -80,8 +80,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "Future node · deploy handoff needed",
-  'Clicking a provider candidate must explain the deploy handoff gate instead of selecting it.'
+  "Konfigurert/fremtidig rute · produksjonsbevis kreves",
+  'Clicking an unverified provider route must explain the production-proof gate instead of selecting it.'
 );
 requireNotIncludes(
   shell,

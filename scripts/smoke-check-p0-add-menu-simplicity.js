@@ -94,7 +94,7 @@ requireIncludes(
 );
 requireIncludes(
   installShell,
-  'id="p0-model" class="p0-model-button" type="button" aria-label="Choose model"',
+  'id="p0-model" class="p0-model-button" type="button" aria-label="Velg modell"',
   'Composer must expose first-screen model choice.'
 );
 

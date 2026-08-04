@@ -39,10 +39,22 @@ async function waitForServer() {
 }
 
 async function installFixtures(page, imageStatus) {
+  await page.route('https://api.mmir.ai/status', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      live_verified_intelligence_route_count: 1,
+      operator_readiness: {
+        readiness_state: 'ready',
+        default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+        journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
+      }
+    })
+  }));
   await page.route('https://api.mmir.ai/v1/models', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify({ object: 'list', data: [{ id: 'mmir-supergenius', display_name: 'Supergeni', executable: true, recommended: true, availability: 'available', route_state: 'managed_provider_available', cost_class: 'free' }] })
+    body: JSON.stringify({ object: 'list', data: [{ id: 'mmir-supergenius', display_name: 'Supergeni', executable: true, recommended: true, availability: 'available', route_state: 'managed_provider_available', live_e2e_verified: true, cost_class: 'free' }] })
   }));
   await page.route('https://api.mmir.ai/v1/chat/completions', route => route.fulfill({
     status: 200,

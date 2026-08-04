@@ -572,8 +572,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Best default",
-  "P0 model picker must label the safe default route.",
+  "Ingen hostet rute er produksjonsverifisert nå.",
+  "P0 model picker must fail closed instead of labelling an unverified hosted route as the safe default.",
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
@@ -582,7 +582,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Private local models",
+  "Private lokale modeller",
   "P0 model picker must separate local models from the hosted default.",
 );
 requireText(
@@ -912,7 +912,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "routeStatus('Voice input stopped.','hosted')",
+  "routeStatus('Taleinndata stoppet.','hosted')",
   "P0 voice stop feedback must remain visible briefly when recognition ends quickly.",
 );
 requireText(
@@ -997,7 +997,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "Voice input unavailable. Type instead.",
+  "Taleinndata er ikke tilgjengelig. Skriv i feltet i stedet.",
   "P0 mic fallback must be concise and truthful when browser speech recognition is unavailable.",
 );
 requireText(

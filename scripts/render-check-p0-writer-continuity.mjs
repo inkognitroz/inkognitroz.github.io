@@ -112,8 +112,20 @@ async function installFixtures(page){
           route_type:'managed_provider',
           route_class:'free',
           trust_level:'public-free',
+          live_e2e_verified:true,
           cost_class:'free'
         }]
+      });
+      return;
+    }
+    if(url.pathname==='/status'){
+      await fulfillJson(route,{
+        live_verified_intelligence_route_count:1,
+        operator_readiness:{
+          readiness_state:'ready',
+          default_writer_readiness:{classification:'ready',authenticated_release_ready:true},
+          journeys:{first_chat_ready:true,compare_ready:true,swarm_preview_ready:true}
+        }
       });
       return;
     }
