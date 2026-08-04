@@ -96,7 +96,7 @@ async function checkUnsupported(browser) {
   });
   await preparePage(page, 'unsupported');
   await clickVoiceInput(page);
-  await page.waitForFunction(() => document.getElementById('p0-status')?.textContent?.includes('Voice input unavailable'));
+  await page.waitForFunction(() => document.getElementById('p0-status')?.textContent?.includes('Taleinndata er ikke tilgjengelig'));
   const state = await page.evaluate(() => ({
     buttonState: document.getElementById('p0-mic')?.dataset.voiceState,
     status: document.getElementById('p0-status')?.textContent,
@@ -104,8 +104,8 @@ async function checkUnsupported(browser) {
     events: window.__mmirVoiceEvents
   }));
   assert(state.buttonState === 'unavailable', 'Unsupported browser must mark mic as unavailable, not hidden or fake-ready.');
-  assert(/Type instead/.test(state.status || ''), 'Unsupported browser must tell the user to type instead.');
-  assert(/Voice unavailable/.test(state.route || ''), 'Unsupported browser must show voice unavailable in the compact route line.');
+  assert(/Skriv i feltet/.test(state.status || ''), 'Unsupported browser must tell the user to type instead.');
+  assert(/Tale utilgjengelig/.test(state.route || ''), 'Unsupported browser must show voice unavailable in the compact route line.');
   assert(state.events.some(event => event.state === 'unavailable' && event.no_server_audio === true), 'Unsupported browser must emit no-server-audio unavailable evidence.');
   await page.close();
 }
@@ -146,7 +146,7 @@ async function checkSupported(browser) {
   }));
   assert(state.buttonState === 'available', 'Supported browser must mark mic as available.');
   assert(state.input === 'hello voice route', 'Supported browser must add recognized voice text to the prompt.');
-  assert(/Voice text added/.test(state.status || ''), 'Supported browser must confirm voice text was added.');
+  assert(/Taletekst lagt til/.test(state.status || ''), 'Supported browser must confirm voice text was added.');
   assert(state.events.some(event => event.state === 'transcribed' && event.no_server_audio === true && event.no_paid_route === true), 'Supported browser must emit transcribed no-server-audio evidence.');
   await page.close();
 }

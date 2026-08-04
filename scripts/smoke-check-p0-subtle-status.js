@@ -107,6 +107,16 @@ function fakeElement() {
 }
 
 const hosted = testApi.state.models[0];
+testApi.state.releaseReadiness = {
+  state: 'ready',
+  hostedReady: true,
+  compareReady: true,
+  swarmPreviewReady: true,
+  verifiedRoutes: 5
+};
+hosted.liveE2EVerified = true;
+hosted.executable = true;
+hosted.selectable = true;
 const hostedScore = testApi.routeScore(
   hosted,
   'Who is president of USA?',
@@ -221,6 +231,7 @@ testApi.state.models.push(
     trustLevel: 'external-untrusted-free',
     executable: true,
     selectable: true,
+    liveE2EVerified: true,
     score: 86
   },
   {
@@ -233,6 +244,7 @@ testApi.state.models.push(
     trustLevel: 'external-untrusted-free',
     executable: true,
     selectable: true,
+    liveE2EVerified: true,
     score: 86
   },
   {
@@ -245,6 +257,7 @@ testApi.state.models.push(
     trustLevel: 'external-untrusted-free',
     executable: true,
     selectable: true,
+    liveE2EVerified: true,
     score: 86
   },
   {
@@ -260,6 +273,7 @@ testApi.state.models.push(
     availability: 'available',
     executable: true,
     selectable: true,
+    liveE2EVerified: true,
     score: 86
   }
 );

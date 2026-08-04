@@ -111,17 +111,17 @@ requireIncludes(
 );
 requireIncludes(
   renderRouteControlsMenuSource,
-  'Back to models',
+  'Tilbake til modeller',
   'Route controls menu must return to the simple model list.'
 );
 requireIncludes(
   renderRouteControlsMenuSource,
-  'Pin selected route',
+  'Fest valgt rute',
   'Route controls menu must offer pinning without cluttering the simple model list.'
 );
 requireIncludes(
   renderRouteControlsMenuSource,
-  'Unpin selected route',
+  'Løsne valgt rute',
   'Route controls menu must offer unpinning for a pinned selected route.'
 );
 requireIncludes(
@@ -136,7 +136,7 @@ requireIncludes(
 );
 requireIncludes(
   renderRouteControlsMenuSource,
-  'Pinned routes stay in this browser. Route scores still show quality.',
+  'Festede ruter lagres i denne nettleseren. Rutepoeng viser fortsatt kvalitet.',
   'Route controls menu must explain pinned-route behavior without cluttering first chat.'
 );
 requireIncludes(

@@ -49,6 +49,20 @@ async function waitForServer(url) {
 }
 
 async function installApiFixtures(page) {
+  await page.route('https://api.mmir.ai/status', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        live_verified_intelligence_route_count: 1,
+        operator_readiness: {
+          readiness_state: 'ready',
+          default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+          journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
+        }
+      })
+    });
+  });
   await page.route('https://api.mmir.ai/v1/models', async route => {
     await route.fulfill({
       status: 200,
@@ -64,6 +78,7 @@ async function installApiFixtures(page) {
             recommended: true,
             availability: 'available',
             route_state: 'managed_provider_available',
+            live_e2e_verified: true,
             cost_class: 'free'
           }
         ]
@@ -371,16 +386,16 @@ async function checkViewport(browser, viewport) {
   await page.waitForSelector('#p0-model-menu:not([hidden])');
   layout = await pageLayout(page);
   assertMenuBounds(layout.modelMenu, viewport, `${viewport.name} model`);
-  assert(layout.text.includes('MODELS'), `${viewport.name}: model menu should open`);
+  assert(layout.text.includes('MODELLER'), `${viewport.name}: model menu should open`);
   assert(layout.text.includes('Supergeni'), `${viewport.name}: model menu should show active route`);
-  assert(!/Active route/i.test(layout.text), `${viewport.name}: simple model menu must not show active route detail card`);
-  assert(layout.text.includes('Route controls'), `${viewport.name}: route details should stay behind Route controls`);
+  assert(!/Aktiv rute/i.test(layout.text), `${viewport.name}: simple model menu must not show active route detail card`);
+  assert(layout.text.includes('Rutestyring'), `${viewport.name}: route details should stay behind Route controls`);
   await screenshot(page, `${viewport.name}-model-menu`);
 
   await page.locator('[data-p0-action="model-route-controls"]').click();
-  await page.waitForSelector('text=Route details');
+  await page.waitForSelector('text=Rutedetaljer');
   layout = await pageLayout(page);
-  assert(layout.text.includes('Route details'), `${viewport.name}: route controls should expose receipt details`);
+  assert(layout.text.includes('Rutedetaljer'), `${viewport.name}: route controls should expose receipt details`);
 
   await invokeHiddenAction('draft-feedback');
   const feedbackDraft = await page.locator('#p0-input').inputValue();

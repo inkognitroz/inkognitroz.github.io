@@ -69,7 +69,9 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260726-first-session-truth-v2';
+  const P0_RUNTIME_VERSION='20260804-release-readiness-truth-v1';
+  const RELEASE_PREFLIGHT_REUSE_MS=2000;
+  const RELEASE_BACKGROUND_REFRESH_MS=30000;
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
   const CANONICAL_HOSTED_MODEL_ALIASES=new Set([
     CANONICAL_HOSTED_MODEL_ID,
@@ -342,14 +344,16 @@
         id:'mmir-supergenius',
         label:'Supergeni',
         route:'hosted',
-        detail:'Hosted default · ready now',
-        tags:['Ready','Hosted','Best default'],
+        detail:'Hosted orchestrator · release verification pending',
+        tags:['Beta','Hosted','Not verified'],
         score:100,
         model:'mmir-supergenius',
-        executable:true,
-        routeState:'managed_provider_available',
+        executable:false,
+        selectable:false,
+        liveE2EVerified:false,
+        routeState:'release_verification_pending',
         routeType:'managed_provider',
-        availability:'available',
+        availability:'temporarily_degraded',
         costState:'free'
       }
     ],
@@ -377,6 +381,21 @@
       }
     },
     hostedRouteState:'checking',
+    releaseReadiness:{
+      state:'checking',
+      hostedReady:false,
+      compareReady:false,
+      swarmPreviewReady:false,
+      verifiedRoutes:0,
+      checkedAt:0,
+      reason:'Sjekker offentlig svarbane.'
+    },
+    localReadiness:{
+      paired:false,
+      runtimeChatReady:false,
+      chatReady:false,
+      modelIds:[]
+    },
     tokenCounter:{
       total:0,
       last:0,
@@ -386,6 +405,9 @@
   };
   let writerContinuityState=normalizedWriterContinuityState(readSessionJson(activeWriterContinuitySessionKey,null));
   let activeChatController=null;
+  let hostedReadinessTimer=null;
+  let hostedReadinessRefreshGeneration=0;
+  let menuReturnFocusElement=null;
   let stopRequested=false;
   if(privateModeActive())clearWriterContinuityState();
   const SLOW_RESPONSE_NOTICE_MS=12000;
@@ -614,20 +636,20 @@
 
   function modelFilterLabel(value=modelFilter()){
     return {
-      all:'All',
-      hosted:'Hosted',
-      local:'Local',
-      pinned:'Pinned'
-    }[value]||'All';
+      all:'Alle',
+      hosted:'Hostede',
+      local:'Lokale',
+      pinned:'Festede'
+    }[value]||'Alle';
   }
 
   function modelFilterDetail(value=modelFilter()){
     return {
-      all:'Show every available route.',
-      hosted:'Show hosted/default routes only.',
-      local:'Show private local routes only.',
-      pinned:'Show routes pinned in this browser.'
-    }[value]||'Show every available route.';
+      all:'Vis alle tilgjengelige ruter.',
+      hosted:'Vis bare hostede ruter.',
+      local:'Vis bare private lokale ruter.',
+      pinned:'Vis ruter som er festet i denne nettleseren.'
+    }[value]||'Vis alle tilgjengelige ruter.';
   }
 
   function nextModelFilter(){
@@ -2715,10 +2737,93 @@
     return true;
   }
 
+  function releaseReadinessFromStatus(payload){
+    const operator=payload?.operator_readiness;
+    const writer=operator?.default_writer_readiness;
+    const journeys=operator?.journeys;
+    const verifiedRoutes=Math.max(0,Number(payload?.live_verified_intelligence_route_count)||0);
+    const hostedReady=Boolean(
+      operator?.readiness_state==='ready'&&
+      writer?.classification==='ready'&&
+      writer?.authenticated_release_ready===true&&
+      journeys?.first_chat_ready===true&&
+      verifiedRoutes>=1
+    );
+    const blockerCodes=Array.isArray(writer?.blocker_codes)?writer.blocker_codes.filter(Boolean):[];
+    return {
+      state:hostedReady?'ready':'blocked',
+      hostedReady,
+      compareReady:Boolean(hostedReady&&journeys?.compare_ready===true),
+      swarmPreviewReady:Boolean(hostedReady&&journeys?.swarm_preview_ready===true),
+      verifiedRoutes,
+      checkedAt:Date.now(),
+      reason:hostedReady
+        ? 'Offentlig svarbane er live-verifisert.'
+        : (blockerCodes.length?blockerCodes.join(', '):'Offentlig svarbane mangler ferskt produksjonsbevis.')
+    };
+  }
+
+  function blockedReleaseReadiness(reason='Kunne ikke verifisere offentlig svarbane.'){
+    return {
+      state:'blocked',
+      hostedReady:false,
+      compareReady:false,
+      swarmPreviewReady:false,
+      verifiedRoutes:0,
+      checkedAt:Date.now(),
+      reason
+    };
+  }
+
+  function releaseReadinessFresh(maxAgeMs=RELEASE_PREFLIGHT_REUSE_MS){
+    const checkedAt=Number(state.releaseReadiness?.checkedAt)||0;
+    return checkedAt>0&&Date.now()-checkedAt<=Math.max(0,Number(maxAgeMs)||0);
+  }
+
+  function hostedJourneyReady(journey='first_chat'){
+    if(state.releaseReadiness?.hostedReady!==true)return false;
+    if(journey==='compare')return state.releaseReadiness.compareReady===true;
+    if(journey==='swarm_preview')return state.releaseReadiness.swarmPreviewReady===true;
+    return true;
+  }
+
+  function hostedModelLiveVerified(model){
+    return model?.liveE2EVerified===true||model?.live_e2e_verified===true;
+  }
+
+  function matchingLiveHostedModel(model){
+    if(!model||model.route!=='hosted')return null;
+    const wantedId=canonicalHostedModelId(model.id||model.model||'');
+    const wantedModel=String(model.model||model.id||'').trim();
+    return state.models.find(item=>
+      item?.route==='hosted'&&
+      liveHostedModel(item)&&
+      (
+        canonicalHostedModelId(item.id||item.model||'')===wantedId||
+        String(item.model||item.id||'').trim()===wantedModel
+      )
+    )||null;
+  }
+
+  function localModelReady(model){
+    if(model?.route!=='local'||model?.executable===false||model?.selectable===false)return false;
+    const readiness=state.localReadiness||{};
+    const modelId=String(model?.model||model?.id||'');
+    return Boolean(
+      readiness.paired===true&&
+      readiness.runtimeChatReady===true&&
+      readiness.chatReady===true&&
+      Array.isArray(readiness.modelIds)&&
+      readiness.modelIds.includes(modelId)
+    );
+  }
+
   function liveHostedModel(model){
     return Boolean(
       model &&
       model.route!=='local' &&
+      hostedJourneyReady('first_chat') &&
+      hostedModelLiveVerified(model) &&
       executableHostedModel(model) &&
       !hostedCandidateModel(model) &&
       model.selectable!==false
@@ -2788,7 +2893,7 @@
       if(!rawProvider||rawProvider==='mmir')return;
       const label=providerLabel(rawProvider);
       const key=rawProvider;
-      const isActive=executableHostedModel(model)&&!hostedCandidateModel(model)&&model?.selectable!==false;
+      const isActive=liveHostedModel(model);
       if(isActive){
         active.set(key,label);
         return;
@@ -2860,13 +2965,29 @@
         const trustLevel=String(model.trust_level||'').trim();
         const externalUntrustedFree=routeClass==='external-untrusted-free'||trustLevel==='external-untrusted-free'||String(model.route_type||'')==='external_untrusted_free';
         const provider=providerLabel(model.provider);
-        const detail=candidate?candidateDetail(model,provider):(externalUntrustedFree?'Ready external route':(model.availability==='available'?'Ready now':(model.route_state||'Ready')));
+        const liveE2EVerified=model.live_e2e_verified===true;
+        const releaseReady=hostedJourneyReady('first_chat');
+        const selectable=Boolean(executable&&!candidate&&model.selectable!==false&&liveE2EVerified&&releaseReady);
+        const tags=candidate
+          ? [provider,'Kandidat','Fremtidig']
+          : (!liveE2EVerified
+            ? [provider,'Konfigurert','Ikke live']
+            : (releaseReady
+              ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Verifisert']
+              : [provider,'Live-bevis','Port blokkert']));
+        const detail=candidate
+          ? candidateDetail(model,provider)
+          : (!liveE2EVerified
+            ? 'Konfigurert · mangler ferskt live-bevis'
+            : (!releaseReady
+              ? 'Live-bevis finnes · releaseport blokkert'
+              : (externalUntrustedFree?'Verifisert ekstern rute':'Verifisert hostet rute')));
         return {
           id,
           label:routeDisplayName(model),
           route:'hosted',
           detail,
-          tags:candidate?[provider,'Candidate','Future']:(externalUntrustedFree?[provider,'External','Free']:(index===0?['Fast','Free','Best default']:['Free','Hosted'])),
+          tags,
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
           model:rawModelId,
           executable,
@@ -2880,7 +3001,9 @@
           availability:model.availability||'available',
           costState:model.cost_state||model.cost_class||'free',
           nextAction:model.next_action||null,
-          selectable:executable&&model.selectable!==false
+          liveE2EVerified,
+          configuredSelectable:model.selectable!==false,
+          selectable
         };
       });
     const active=normalized
@@ -2898,18 +3021,37 @@
   }
 
   async function refreshHostedModels(){
-    try{
-      const payload=await fetchJson(API_URL+hostedModelsPath(),{timeoutMs:9000});
+    const refreshGeneration=++hostedReadinessRefreshGeneration;
+    const [modelsResult,statusResult]=await Promise.allSettled([
+      fetchJson(API_URL+hostedModelsPath(),{timeoutMs:9000}),
+      fetchJson(API_URL+'/status',{timeoutMs:9000})
+    ]);
+    if(refreshGeneration!==hostedReadinessRefreshGeneration){
+      return {ready:false,models:[],stale:true};
+    }
+    state.releaseReadiness=statusResult.status==='fulfilled'
+      ? releaseReadinessFromStatus(statusResult.value)
+      : blockedReleaseReadiness('Status for offentlig svarbane kunne ikke verifiseres.');
+    if(modelsResult.status==='fulfilled'){
+      const payload=modelsResult.value;
       const models=normalizeHostedModels(payload);
       const liveModels=models.filter(liveHostedModel);
       if(!liveModels.length){
+        state.releaseReadiness=blockedReleaseReadiness(
+          state.releaseReadiness.hostedReady===true
+            ? 'Modellinventaret mangler en fersk live-verifisert rute.'
+            : state.releaseReadiness.reason
+        );
         state.routeInventory=modelInventorySummary(payload,models);
         state.models=models.concat(state.models.filter(model=>model.route==='local'));
         state.hostedRouteState='degraded';
+        renderReleaseReadiness();
+        status('Offentlig svarbane er ikke produksjonsklar.','error');
         renderToolbar();
         renderTranscript();
-        window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'degraded',models}}));
-        return;
+        updateSendControl();
+        window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'degraded',models,release_readiness:state.releaseReadiness}}));
+        return {ready:false,models};
       }
       const activeLocal=state.models.find(model=>model.id===state.activeModelId&&model.route==='local');
       state.routeInventory=modelInventorySummary(payload,models);
@@ -2922,13 +3064,27 @@
       persistActiveModelId();
       writeJson(MODELS_KEY,state.models);
       state.hostedRouteState=liveModels.length?'ready':'degraded';
+      renderReleaseReadiness();
+      status('Offentlig svarbane er live-verifisert.','ready');
       renderToolbar();
       renderTranscript();
-      window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'ready',models}}));
-    }catch(error){
+      updateSendControl();
+      window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'ready',models,release_readiness:state.releaseReadiness}}));
+      return {ready:true,models};
+    }else{
+      state.releaseReadiness=blockedReleaseReadiness('Modellinventaret for offentlig svarbane kunne ikke verifiseres.');
       state.hostedRouteState='degraded';
+      state.models=state.models.map(model=>model?.route==='hosted'
+        ? {...model,selectable:false,liveE2EVerified:false,detail:'Konfigurert · modellinventaret kunne ikke verifiseres'}
+        : model
+      );
+      renderReleaseReadiness();
+      status('Offentlig svarbane er ikke produksjonsklar.','error');
+      renderToolbar();
       renderTranscript();
-      window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'deferred',models:[]}}));
+      updateSendControl();
+      window.dispatchEvent(new CustomEvent('mmir-p0-hosted-models-refreshed',{detail:{status:'deferred',models:[],release_readiness:state.releaseReadiness}}));
+      return {ready:false,models:[]};
     }
   }
 
@@ -3076,14 +3232,14 @@
     const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
 	    const scaleLine=[
-	      activeRouteTotal+' live AI',
+	      activeRouteTotal+(hostedJourneyReady('first_chat')?' live AI':' verifiserte/lokale AI'),
 	      futureRoutes?futureRoutes+' i kø':'',
 	      visibleRoutes&&visibleRoutes!==activeRouteTotal?visibleRoutes+' synlige':'',
 	      activeExternalNodeRoutes?activeExternalNodeRoutes+' eksterne':''
 	    ].filter(Boolean).join(' / ');
-	    const details=compareReady
-	      ? 'Best Answer can ask '+(activeProviderRoutes?String(activeProviderRoutes)+' providers':(hosted.length>1?String(hosted.length)+' hosted AI':(primary.label+' and '+partner.label)))+' in parallel, then synthesize one answer.'
-	      : 'Supergeni is ready now. Connect another AI source to unlock parallel Best Answer.';
+	    const details=compareReady&&hostedJourneyReady('compare')
+	      ? 'Beste svar kan spørre '+(activeProviderRoutes?String(activeProviderRoutes)+' leverandører':(hosted.length>1?String(hosted.length)+' hostede AI-er':(primary.label+' og '+partner.label)))+' parallelt og samle ett svar.'
+	      : (hostedJourneyReady('first_chat')?'Koble til en ny verifisert AI-kilde for å låse opp parallelt beste svar.':'Hostet Supergeni er blokkert til produksjonsbeviset er grønt.');
     return {
       liveRoutes,
       hostedRoutes:hosted.length,
@@ -3109,25 +3265,28 @@
   }
 
   function compareLocalModel(preferredLocalModel=null){
-    if(preferredLocalModel)return preferredLocalModel;
+    if(preferredLocalModel)return localModelReady(preferredLocalModel)?preferredLocalModel:null;
     const best=bestLocalModel();
-    if(best)return best;
+    if(best&&localModelReady(best))return best;
     const active=activeModel();
-    return active.route==='local'?active:null;
+    return active.route==='local'&&localModelReady(active)?active:null;
   }
 
   function comparePartnerModel(preferredModel=null){
-    if(preferredModel)return preferredModel;
+    if(preferredModel){
+      if(preferredModel.route==='local')return localModelReady(preferredModel)?preferredModel:null;
+      return liveHostedModel(preferredModel)?preferredModel:null;
+    }
     const primary=defaultHostedModel();
     const local=compareLocalModel();
     if(local)return local;
     const active=activeModel();
     if(active&&active.route==='hosted'&&primary&&active.id!==primary.id)return active;
-    return activeIntelligenceModels().find(model=>model.route==='hosted'&&(!primary||model.id!==primary.id))||null;
+    return activeIntelligenceModels().find(model=>liveHostedModel(model)&&(!primary||model.id!==primary.id))||null;
   }
 
   function activeHostedCompareModels(){
-    return activeIntelligenceModels().filter(model=>model.route==='hosted'&&!model.candidate&&model.executable!==false&&model.selectable!==false);
+    return state.models.filter(liveHostedModel);
   }
 
   function gatewayCompareAvailable(){
@@ -3288,9 +3447,30 @@
       };
     }
     if(model?.route==='hosted'){
+      if(!hostedJourneyReady('first_chat')){
+        if(hostedModelLiveVerified(model)){
+          return {
+            label:'Live-bevis · port blokkert',
+            detail:'Ruten har ferskt ende-til-ende-bevis, men den samlede offentlige releaseporten er blokkert.',
+            state:'setup'
+          };
+        }
+        return {
+          label:'Ikke produksjonsklar',
+          detail:'Offentlig svarbane er blokkert til ferskt, uavhengig produksjonsbevis er grønt.',
+          state:'setup'
+        };
+      }
+      if(!hostedModelLiveVerified(model)){
+        return {
+          label:'Konfigurert · ikke live-bevist',
+          detail:'Ruten er synlig i inventaret, men mangler ferskt ende-til-ende-bevis.',
+          state:'setup'
+        };
+      }
       return {
-        label:'Ready',
-        detail:'Default route is ready through '+API_LABEL+'.',
+        label:'Live-verifisert',
+        detail:'Ruten har ferskt ende-til-ende-bevis gjennom '+API_LABEL+'.',
         state:'warm'
       };
     }
@@ -3777,8 +3957,14 @@
       const token=await pairLocal();
       const connectorStatus=await fetchJson(LOCAL_URL+'/status',{headers:localHeaders(token),timeoutMs:9000});
       if(!connectorStatus||connectorStatus.status==='offline')throw new Error('Local connector reports offline.');
-      if(connectorStatus.readiness?.paired===false||connectorStatus.model_summary?.visibility==='public-safe'){
-        throw new Error('Local connector paired status is required before model metadata is visible.');
+      const localRuntimeReadiness=connectorStatus.readiness||{};
+      if(
+        localRuntimeReadiness.paired!==true||
+        localRuntimeReadiness.runtime_chat_ready!==true||
+        localRuntimeReadiness.chat_ready!==true||
+        connectorStatus.model_summary?.visibility==='public-safe'
+      ){
+        throw new Error('Local connector must prove paired and chat-ready before a local route can run.');
       }
       let modelPayload=connectorStatus.model_summary;
       if(!Array.isArray(modelPayload?.data)||!modelPayload.data.length){
@@ -3788,6 +3974,8 @@
         ? connectorStatus.route_telemetry
         : null;
       const models=normalizeLocalModels(modelPayload,routeTelemetry);
+      const localModelIds=models.map(model=>String(model.model||model.id||'')).filter(Boolean);
+      if(!localModelIds.length)throw new Error('Local connector is chat-ready but returned no private model inventory.');
       let hardware=null;
       try{
         hardware=normalizeLocalHardware(await fetchJson(LOCAL_URL+'/hardware',{headers:localHeaders(token),timeoutMs:7000}));
@@ -3799,6 +3987,12 @@
       state.localHardware=hardware;
       state.localChecked=true;
       state.localError='';
+      state.localReadiness={
+        paired:true,
+        runtimeChatReady:true,
+        chatReady:true,
+        modelIds:localModelIds
+      };
       writeJson(MODELS_KEY,state.models);
       emitLocalReadiness(models,hardware);
       if(models.length&&!state.models.some(model=>model.id===state.activeModelId)){
@@ -3816,6 +4010,7 @@
       state.localChecked=true;
       state.localError=localNetworkHint(error);
       state.localHardware=null;
+      state.localReadiness={paired:false,runtimeChatReady:false,chatReady:false,modelIds:[]};
       state.models=state.models.filter(model=>model.route!=='local');
       if(!state.models.some(model=>model.id===state.activeModelId)){
         state.activeModelId='mmir-supergenius';
@@ -3858,9 +4053,13 @@
           '</a>'+
           '<div class="p0-topbar-truth">'+
             '<span class="p0-ai-badge" role="note" aria-label="KI-chat. Supergeni er kunstig intelligens. Svarforfatter, rute og kilder vises i kvitteringen etter hvert svar." title="Supergeni er kunstig intelligens. Svarforfatter, rute og kilder vises i kvitteringen etter hvert svar.">KI-chat</span>'+
-            '<div id="p0-status" class="p0-status" data-state="ready">Klar</div>'+
+            '<div id="p0-status" class="p0-status" data-state="loading">Sjekker svarbanen</div>'+
           '</div>'+
         '</header>'+
+        '<section id="p0-release-warning" class="p0-release-warning" data-state="checking" role="status" aria-live="polite">'+
+          '<div><strong>Sjekker offentlig svarbane …</strong><span>Ingen hosted-rute regnes som klar før produksjonsbeviset er verifisert.</span></div>'+
+          '<a href="./tillit/">Se tillit og driftsbevis</a>'+
+        '</section>'+
         '<main class="p0-chat">'+
           '<div id="p0-transcript" class="p0-transcript" aria-live="polite" aria-relevant="additions text"></div>'+
         '</main>'+
@@ -3876,13 +4075,13 @@
             '<div class="p0-toolbar">'+
               '<div class="p0-left">'+
                 '<button id="p0-attach" class="p0-btn p0-btn-icon" type="button" aria-label="Legg ved bilde" title="Legg ved bilde">'+ICON_ATTACH+'</button>'+
-                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Verktøy" title="Verktøy" aria-expanded="false">'+ICON_TOOLS+'<span>Verktøy</span></button>'+
-                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Sikkerhet og personvern: offentlig modus" title="Sikkerhet og personvern · Offentlig modus" data-state="public">'+ICON_SHIELD+'</button>'+
+                '<button id="p0-add" class="p0-btn p0-tools-button" type="button" aria-label="Verktøy" title="Verktøy" aria-controls="p0-add-menu" aria-expanded="false">'+ICON_TOOLS+'<span>Verktøy</span></button>'+
+                '<button id="p0-privacy" class="p0-btn p0-btn-icon p0-shield" type="button" aria-label="Sikkerhet og personvern: offentlig modus" title="Sikkerhet og personvern · Offentlig modus" aria-controls="p0-privacy-menu" aria-expanded="false" data-state="public">'+ICON_SHIELD+'</button>'+
               '</div>'+
               '<div class="p0-right">'+
                 '<span class="p0-speed-chip" title="Fast default route">Fast</span>'+
-                '<button id="p0-model" class="p0-model-button" type="button" aria-label="Choose model" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
-                '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Voice input" title="Voice input">'+ICON_MIC+'</button>'+
+                '<button id="p0-model" class="p0-model-button" type="button" aria-label="Velg modell" aria-haspopup="dialog" aria-controls="p0-model-menu" aria-expanded="false"><span class="p0-model-name">Supergeni</span><span class="p0-chevron" aria-hidden="true"></span></button>'+
+                '<button id="p0-mic" class="p0-btn p0-btn-icon p0-mic" type="button" aria-label="Taleinndata" title="Taleinndata">'+ICON_MIC+'</button>'+
                 '<button id="p0-send" class="p0-btn p0-send" type="submit" aria-label="Send melding">Spør</button>'+
               '</div>'+
             '</div>'+
@@ -3890,7 +4089,7 @@
         '</footer>'+
       '</div>'+
       '<div id="p0-add-menu" class="p0-menu" hidden></div>'+
-      '<div id="p0-model-menu" class="p0-menu" hidden></div>'+
+      '<div id="p0-model-menu" class="p0-menu" role="dialog" aria-label="Velg modell" hidden></div>'+
       '<div id="p0-privacy-menu" class="p0-menu" hidden></div>';
     document.body.appendChild(app);
     document.body.classList.remove('mimir-p0-ready');
@@ -3965,7 +4164,18 @@
     document.getElementById('p0-photo-library')?.addEventListener('change',(event)=>handlePhotoPicked(event,'library'));
     const mic=document.getElementById('p0-mic');
     updateVoiceButtonState(mic);
+    updateVoiceButtonState(document.querySelector('[data-p0-sidebar-action="voice-input"]'));
     mic.addEventListener('click',startVoice);
+    document.addEventListener('keydown',(event)=>{
+      if(event.key!=='Escape')return;
+      const expanded=document.querySelector('#p0-add[aria-expanded="true"],#p0-model[aria-expanded="true"],#p0-privacy[aria-expanded="true"]');
+      if(!expanded)return;
+      event.preventDefault();
+      const returnFocus=menuReturnFocusElement||expanded;
+      closeMenus();
+      menuReturnFocusElement=null;
+      returnFocus.focus?.({preventScroll:true});
+    });
     document.addEventListener('focusin',(event)=>{
       const message=event.target.closest?.('.p0-message');
       if(message)message.dataset.actionsOpen='true';
@@ -4039,14 +4249,14 @@
       if(actionButton&&(actionButton.closest('.p0-menu')||actionButton.closest('.p0-sidebar'))){
         event.preventDefault();
         event.stopPropagation();
-        handleMenuAction(actionButton.getAttribute('data-p0-action'));
+        handleMenuAction(actionButton.getAttribute('data-p0-action'),actionButton);
         return;
       }
       const sidebarActionButton=event.target.closest('[data-p0-sidebar-action]');
       if(sidebarActionButton&&sidebarActionButton.closest('.p0-sidebar')){
         event.preventDefault();
         event.stopPropagation();
-        handleMenuAction(sidebarActionButton.getAttribute('data-p0-sidebar-action'));
+        handleMenuAction(sidebarActionButton.getAttribute('data-p0-sidebar-action'),sidebarActionButton);
         return;
       }
       if(event.target.closest('#p0-add,#p0-model,#p0-privacy,.p0-menu'))return;
@@ -4371,12 +4581,15 @@
     if(!mic)return;
     const supported=speechSupported();
     mic.dataset.voiceState=supported?'available':'unavailable';
-    mic.setAttribute('aria-disabled','false');
-    mic.title=supported?'Voice input: browser-local speech recognition':'Voice input is not available in this browser';
+    mic.disabled=false;
+    mic.setAttribute('aria-disabled',supported?'false':'true');
+    mic.title=supported?'Taleinndata: lokal talegjenkjenning i nettleseren':'Taleinndata er ikke tilgjengelig i denne nettleseren. Skriv i feltet i stedet.';
     mic.setAttribute(
       'aria-label',
-      supported?'Voice input: browser-local speech recognition':'Voice input unavailable in this browser'
+      supported?'Taleinndata: lokal talegjenkjenning i nettleseren':'Taleinndata er ikke tilgjengelig. Aktiver for mer informasjon.'
     );
+    const text=mic.querySelector?.('span');
+    if(text)text.textContent=supported?'Ny talechat':'Talechat (ikke støttet)';
   }
 
   function emitVoiceState(stateValue,detail={}){
@@ -4395,8 +4608,8 @@
     const restoreRouteLater=(delay=1800)=>setTimeout(()=>renderToolbar(),delay);
     updateVoiceButtonState();
     if(!speechSupported()){
-      status('Voice input unavailable. Type instead.','error');
-      routeStatus('Voice unavailable · browser local only','error');
+      status('Taleinndata er ikke tilgjengelig. Skriv i feltet i stedet.','error');
+      routeStatus('Tale utilgjengelig · kun lokalt i nettleseren','error');
       emitVoiceState('unavailable');
       restoreRouteLater(2200);
       return;
@@ -4408,24 +4621,24 @@
     recognition.maxAlternatives=1;
     let heardVoice=false;
     emitVoiceState('starting');
-    status('Listening...','ready');
-    routeStatus('Listening...','hosted');
+        status('Lytter …','ready');
+        routeStatus('Lytter …','hosted');
     recognition.onstart=()=>{
       emitVoiceState('listening');
-      status('Listening...','ready');
-      routeStatus('Listening...','hosted');
+      status('Lytter …','ready');
+      routeStatus('Lytter …','hosted');
     };
     recognition.onerror=(event)=>{
       emitVoiceState('failed',{error:event?.error||'unknown'});
-      status('Voice input failed or was cancelled.','error');
-      routeStatus('Voice input failed or was cancelled.','error');
+      status('Taleinndata feilet eller ble avbrutt.','error');
+      routeStatus('Taleinndata feilet eller ble avbrutt.','error');
       restoreRouteLater(2200);
     };
     recognition.onend=()=>{
       if(!heardVoice){
         emitVoiceState('stopped');
-        status('Voice input stopped.','idle');
-        routeStatus('Voice input stopped.','hosted');
+        status('Taleinndata stoppet.','idle');
+        routeStatus('Taleinndata stoppet.','hosted');
         restoreRouteLater();
       }
     };
@@ -4438,8 +4651,8 @@
         autosizeInput();
         input.focus();
         emitVoiceState('transcribed',{text_length:text.length});
-        status('Voice text added.','ready');
-        routeStatus('Voice text added.','hosted');
+        status('Taletekst lagt til.','ready');
+        routeStatus('Taletekst lagt til.','hosted');
         restoreRouteLater();
       }
     };
@@ -4447,8 +4660,8 @@
       recognition.start();
     }catch(error){
       emitVoiceState('failed',{error:error?.message||'start failed'});
-      status('Voice input failed or was cancelled.','error');
-      routeStatus('Voice input failed or was cancelled.','error');
+      status('Taleinndata feilet eller ble avbrutt.','error');
+      routeStatus('Taleinndata feilet eller ble avbrutt.','error');
       restoreRouteLater(2200);
     }
   }
@@ -4466,12 +4679,16 @@
     });
   }
 
-  function toggleMenu(name,button){
+  function toggleMenu(name,button,returnFocus=button){
     const menu=menuEl(name);
-    if(!menu)return;
+    if(!menu||!button)return;
     const willOpen=menu.hidden;
     closeMenus();
-    if(!willOpen)return;
+    if(!willOpen){
+      menuReturnFocusElement=null;
+      return;
+    }
+    menuReturnFocusElement=returnFocus||button;
     if(name==='add')renderAddMenu();
     if(name==='model')renderModelMenu();
     if(name==='privacy')renderPrivacyMenu();
@@ -4481,6 +4698,7 @@
     menu.style.left=left+'px';
     menu.hidden=false;
     button.setAttribute('aria-expanded','true');
+    menu.querySelector('button')?.focus({preventScroll:true});
   }
 
   function menuTitle(text){
@@ -4563,49 +4781,69 @@
       model.selectable!==false&&
       !model.candidate
     ));
+    const hostedBlockedVerifiedModels=rankedModels(state.models.filter(model=>
+      model.route==='hosted'&&
+      modelVisibleInFilter(model,filter)&&
+      model.executable!==false&&
+      model.selectable===false&&
+      !model.candidate&&
+      hostedModelLiveVerified(model)&&
+      !hostedJourneyReady('first_chat')
+    ));
     const hostedFutureModels=rankedModels(state.models.filter(model=>
       model.route==='hosted'&&
       modelVisibleInFilter(model,filter)&&
-      (model.candidate||model.executable===false||model.selectable===false)
+      (model.candidate||model.executable===false||model.selectable===false)&&
+      !hostedBlockedVerifiedModels.some(verified=>verified.id===model.id)
     ));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
     const renderButtons=(models)=>models.map(model=>{
       const benchmark=routeBenchmarkSummary(model);
       const rankSummary=routeRankSummary(model);
       const shortDetail=model.route==='local'
-        ? [routeOperationalHint(model),modelUseCase(model),rankSummary,'Private · This Mac',benchmark].filter(Boolean).join(' · ')
+        ? [routeOperationalHint(model),modelUseCase(model),rankSummary,'Privat · Denne maskinen',benchmark].filter(Boolean).join(' · ')
         : model.candidate
-          ? [routeOperationalHint(model),modelUseCase(model),model.provider,'node handoff needed'].filter(Boolean).join(' · ')
-          : [routeOperationalHint(model),modelUseCase(model),rankSummary,(model.routeClass==='external-untrusted-free'||model.trustLevel==='external-untrusted-free')?'External':'Hosted',benchmark].filter(Boolean).join(' · ');
+          ? [routeOperationalHint(model),modelUseCase(model),model.provider,'node-overlevering kreves'].filter(Boolean).join(' · ')
+          : [routeOperationalHint(model),modelUseCase(model),rankSummary,(model.routeClass==='external-untrusted-free'||model.trustLevel==='external-untrusted-free')?'Ekstern':'Hostet',benchmark].filter(Boolean).join(' · ');
       const selectable=model.executable!==false&&model.selectable!==false;
-      const title=selectable?('Select '+model.label):(model.nextAction||'Candidate is visible, but not selectable yet.');
+      const releaseBlockedVerified=model.route==='hosted'&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat');
+      const title=selectable
+        ? ('Velg '+model.label)
+        : (releaseBlockedVerified
+          ? 'Live-bevis finnes, men den offentlige releaseporten er blokkert.'
+          : (model.nextAction||'Kandidaten er synlig, men kan ikke velges ennå.'));
       return '<button type="button" data-model-id="'+safeAttr(model.id)+'" data-route-rank-state="'+safeAttr(routeRankState(model))+'" data-model-selectable="'+(selectable?'true':'false')+'" aria-disabled="'+(selectable?'false':'true')+'" title="'+safeAttr(title)+'"><span class="p0-menu-row"><strong>'+safeText(model.label)+'</strong>'+compactModelBadges(model,local,rankMap[model.id])+'</span><small>'+safeText(shortDetail)+'</small></button>';
     }).join('');
     const buttons=''+
-      menuSection('Active free routes')+
-      renderButtons(hostedActiveModels)+
-      (hostedFutureModels.length?menuSection('Future node candidates')+renderButtons(hostedFutureModels):'')+
-      (localModels.length?menuSection('Private local models')+renderButtons(localModels):'');
-    const filterHint=(hostedActiveModels.length||hostedFutureModels.length||localModels.length)?'':
-      '<div class="p0-menu-note">No '+safeText(modelFilterLabel(filter).toLowerCase())+' routes yet.</div>';
-    const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Showing '+safeText(modelFilterLabel(filter).toLowerCase())+' routes.</div>';
-    const scoreHint='<div class="p0-menu-note">Score means route fit for this request, not truth percentage.</div>';
-    const routeControls=menuSeparator()+menuButton('model-route-controls','Route controls','Pin routes, filter models and inspect route/score details.');
-    menu.innerHTML=menuTitle('Models')+buttons+filterHint+activeFilterHint+scoreHint+routeControls;
+      (hostedActiveModels.length?menuSection('Live-verifiserte hostede ruter')+renderButtons(hostedActiveModels):'<div class="p0-menu-note">Ingen hostet rute er produksjonsverifisert nå.</div>')+
+      (hostedBlockedVerifiedModels.length?menuSection('Live-bevis · releaseport blokkert')+renderButtons(hostedBlockedVerifiedModels):'')+
+      (hostedFutureModels.length?menuSection('Konfigurerte eller fremtidige ruter')+renderButtons(hostedFutureModels):'')+
+      (localModels.length?menuSection('Private lokale modeller')+renderButtons(localModels):'');
+    const filterHint=(hostedActiveModels.length||hostedBlockedVerifiedModels.length||hostedFutureModels.length||localModels.length)?'':
+      '<div class="p0-menu-note">Ingen '+safeText(modelFilterLabel(filter).toLowerCase())+' ruter ennå.</div>';
+    const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Viser '+safeText(modelFilterLabel(filter).toLowerCase())+' ruter.</div>';
+    const scoreHint='<div class="p0-menu-note">Poeng betyr rutetilpasning for forespørselen, ikke sannhetsprosent.</div>';
+    const routeControls=menuSeparator()+menuButton('model-route-controls','Rutestyring','Fest og filtrer modeller, og se rute- og poengdetaljer.');
+    menu.innerHTML=menuTitle('Modeller')+buttons+filterHint+activeFilterHint+scoreHint+routeControls;
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         const model=state.models.find(item=>item.id===button.getAttribute('data-model-id'));
         if(!model||model.executable===false||model.selectable===false){
-          const label=model?.label||'Provider candidate';
-          status(label+' is future capacity. Active free routes are ready now.','ready');
-          routeStatus('Future node · deploy handoff needed','hosted');
+          const label=model?.label||'Leverandørkandidat';
+          if(model&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat')){
+            status(label+' har live-bevis, men den offentlige releaseporten er blokkert.','error');
+            routeStatus('Live-bevis · releaseport blokkert · ingen rute startet','error');
+          }else{
+            status(label+' er synlig, men ikke live-verifisert for chat.','error');
+            routeStatus('Konfigurert/fremtidig rute · produksjonsbevis kreves','error');
+          }
           return;
         }
         state.activeModelId=model.id;
         persistActiveModelId();
         closeMenus();
         renderToolbar();
-        status(model.label+' selected.','ready');
+        status(model.label+' er valgt.','ready');
       });
     });
   }
@@ -4618,20 +4856,20 @@
     const filter=modelFilter();
     const pinControl=menuButton(
       activePinned?'unpin-active-route':'pin-active-route',
-      activePinned?'Unpin selected route':'Pin selected route',
-      activePinned?'Keep normal score ranking for '+active.label+'.':'Keep '+active.label+' at the top of this browser model picker.'
+      activePinned?'Løsne valgt rute':'Fest valgt rute',
+      activePinned?'Bruk vanlig poengrangering for '+active.label+'.':'Hold '+active.label+' øverst i modellvelgeren i denne nettleseren.'
     );
     const filterControl=menuButton('cycle-model-filter','Filter: '+modelFilterLabel(filter),modelFilterDetail(filter));
-    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Route details</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
+    const detailReceipt='<div class="p0-menu-note p0-route-detail"><strong>Rutedetaljer</strong><span>'+safeText(routeDetailReceipt(active))+'</span></div>';
     menu.innerHTML=''+
-      menuTitle('Route controls')+
-      menuButton('model-menu-main','Back to models','Return to the simple model list.')+
+      menuTitle('Rutestyring')+
+      menuButton('model-menu-main','Tilbake til modeller','Gå tilbake til den enkle modellisten.')+
       menuSeparator()+
       pinControl+
       filterControl+
       detailReceipt+
       '<div class="p0-menu-note">'+safeText(routeScoreExplainer())+'</div>'+
-      '<div class="p0-menu-note">Pinned routes stay in this browser. Route scores still show quality.</div>';
+      '<div class="p0-menu-note">Festede ruter lagres i denne nettleseren. Rutepoeng viser fortsatt kvalitet.</div>';
   }
 
   function privacyModeLabel(mode=privacyMode()){
@@ -4742,7 +4980,9 @@
     }
     if(model?.route==='local')return {state:'local',label:'Lokal tilkobling aktiv'};
     if(local)return {state:'local',label:'Lokal tilkobling klar · offentlig modus'};
-    return {state:'public',label:'Offentlig modus · Supergenis hostede rute er tillatt'};
+    return hostedJourneyReady('first_chat')
+      ? {state:'public',label:'Offentlig modus · Supergenis hostede rute er live-verifisert'}
+      : {state:'error',label:'Offentlig modus · hostet rute blokkert til produksjonsbeviset er grønt'};
   }
 
   function renderShieldState(model=activeModel(),local=bestLocalModel()){
@@ -4773,15 +5013,15 @@
     if(!button)return;
     const pool=intelligencePoolSummary();
     const routeCount=Math.max(Number(pool.compareRouteTotal)||0,Number(pool.activeRouteTotal)||0,activeHostedCompareModels().length);
-    const ready=Boolean(!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
-    const visibleCount=routeCount>1?routeCount:0;
+    const ready=Boolean(hostedJourneyReady('compare')&&!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
+    const visibleCount=ready&&routeCount>1?routeCount:0;
     const label=visibleCount?'Superboost · '+String(visibleCount)+' AI':'Superboost';
-    const title=visibleCount
-      ? 'Superboost: ask '+String(visibleCount)+' live AI routes, rank them, then return one best answer'
-      : 'Superboost: write a prompt, then MMIR checks live free routes and uses the strongest available answer path';
+    const title=ready
+      ? 'Superboost: spør '+String(visibleCount)+' live-verifiserte AI-ruter, ranger svarene og returner det beste'
+      : 'Superboost er blokkert til sammenligningsporten har ferskt produksjonsbevis';
     button.textContent=label;
     button.dataset.state=ready?'ready':'setup';
-    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()));
+    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()||!ready));
     button.setAttribute('aria-label',title);
     button.setAttribute('title',title);
   }
@@ -4791,15 +5031,15 @@
     if(!button)return;
     const pool=intelligencePoolSummary();
     const routeCount=Math.max(Number(pool.compareRouteTotal)||0,Number(pool.activeRouteTotal)||0,activeHostedCompareModels().length);
-    const ready=Boolean(!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
-    const visibleCount=routeCount>1?routeCount:0;
+    const ready=Boolean(hostedJourneyReady('swarm_preview')&&!privateModeActive()&&(gatewayCompareAvailable()||comparePartnerModel()||routeCount>1));
+    const visibleCount=ready&&routeCount>1?routeCount:0;
     const label=visibleCount?'Debate · '+String(visibleCount)+' AI':'Debate';
-    const title=visibleCount
-      ? 'Supergeni Council: ask '+String(visibleCount)+' live AI routes to answer, challenge weak assumptions, then converge'
-      : 'Supergeni Council: write a topic, then MMIR checks live routes for a model debate';
+    const title=ready
+      ? 'Supergeni-råd: spør '+String(visibleCount)+' live-verifiserte AI-ruter, utfordre svake antakelser og samle konklusjonen'
+      : 'Supergeni-råd er blokkert til svermporten har ferskt produksjonsbevis';
     button.textContent=label;
     button.dataset.state=ready?'ready':'setup';
-    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()));
+    button.toggleAttribute('disabled',Boolean(state.busy||privateModeActive()||!ready));
     button.setAttribute('aria-label',title);
     button.setAttribute('title',title);
   }
@@ -4838,6 +5078,7 @@
     }else{
       routeStatus(routeMicroStatus(model),routeReceipt(model).state);
     }
+    updateSendControl();
   }
 
   function runTwoModelTool(action){
@@ -5522,7 +5763,7 @@
     return false;
   }
 
-  function handleMenuAction(action){
+  function handleMenuAction(action,sourceElement=null){
     const actionId=String(action||'');
     if(actionId.startsWith('pin-toolbar-tool:')||actionId.startsWith('unpin-toolbar-tool:')){
       const pinned=actionId.startsWith('pin-toolbar-tool:');
@@ -5546,11 +5787,13 @@
 	      return true;
 	    }
 	    if(action==='model-menu'){
-	      toggleMenu('model',document.getElementById('p0-add')||document.getElementById('p0-model'));
+	      const returnFocus=sourceElement?.closest?.('#p0-add-menu')?document.getElementById('p0-add'):(sourceElement||document.getElementById('p0-model'));
+	      toggleMenu('model',document.getElementById('p0-model'),returnFocus);
 	      return true;
 	    }
 	    if(action==='privacy-menu'){
-	      toggleMenu('privacy',document.getElementById('p0-add')||document.getElementById('p0-privacy'));
+	      const returnFocus=sourceElement?.closest?.('#p0-add-menu')?document.getElementById('p0-add'):(sourceElement||document.getElementById('p0-privacy'));
+	      toggleMenu('privacy',document.getElementById('p0-privacy'),returnFocus);
 	      return true;
 	    }
 	    if(action==='toggle-fact-guard'){
@@ -6185,15 +6428,61 @@
     document.getElementById('p0-input')?.focus();
   }
 
+  function renderReleaseReadiness(){
+    const warning=document.getElementById('p0-release-warning');
+    if(!warning)return;
+    const readiness=state.releaseReadiness||blockedReleaseReadiness();
+    if(readiness.hostedReady===true){
+      warning.hidden=true;
+      warning.dataset.state='ready';
+      return;
+    }
+    warning.hidden=false;
+    warning.dataset.state=readiness.state==='checking'?'checking':'blocked';
+    warning.innerHTML=''+
+      '<div><strong>Offentlig svarbane er ikke produksjonsgrønn.</strong><span>Svar kan feile eller være feil. Ikke bruk sensitiv informasjon eller høyrisikoformål i denne testversjonen.</span></div>'+
+      '<a href="./tillit/">Se tillit og driftsbevis</a>';
+  }
+
+  function selectedRouteReady(){
+    const model=activeModel();
+    if(model?.route==='local')return localModelReady(model);
+    return Boolean(model&&model.executable!==false&&model.selectable!==false&&hostedModelLiveVerified(model)&&hostedJourneyReady('first_chat'));
+  }
+
+  async function revalidateHostedBoundary(journey='first_chat',model=null,{force=false}={}){
+    if(force||!releaseReadinessFresh()){
+      const refreshResult=await refreshHostedModels();
+      // A newer readiness request owns the truth now. Never reuse an older
+      // green snapshot while that newer request is still unresolved.
+      if(refreshResult?.stale===true)return null;
+    }
+    if(!hostedJourneyReady(journey))return null;
+    return model?matchingLiveHostedModel(model):true;
+  }
+
+  async function ensureHostedJourneyReady(journey='first_chat',model=null){
+    if(await revalidateHostedBoundary(journey,model,{force:true}))return true;
+    const label=journey==='compare'?'Sammenligning':(journey==='swarm_preview'?'Sverm':'Offentlig chat');
+    status(label+' er blokkert til ferskt produksjonsbevis er grønt.','error');
+    routeStatus('Ikke produksjonsklar · ingen hosted-rute startet','error');
+    captureInteraction('chat_blocked',{reason:'hosted_release_not_ready',journey,provider_called:false});
+    renderReleaseReadiness();
+    updateSendControl();
+    return false;
+  }
+
   function updateSendControl(){
     const send=document.getElementById('p0-send');
     if(!send)return;
-    send.disabled=false;
+    const canSend=selectedRouteReady();
+    send.disabled=Boolean(!state.busy&&!canSend);
     send.classList.toggle('is-stopping',state.busy);
-    send.dataset.state=state.busy?'stopping':'send';
+    send.dataset.state=state.busy?'stopping':(canSend?'send':'blocked');
     send.textContent=state.busy?'■':'↑';
-    send.setAttribute('aria-label',state.busy?'Stopp gjeldende svar':'Send melding');
-    send.setAttribute('title',state.busy?'Stopp':'Send');
+    const blockedLabel=activeModel()?.route==='local'?'Lokal modell er ikke verifisert klar':'Offentlig svarbane er ikke produksjonsklar';
+    send.setAttribute('aria-label',state.busy?'Stopp gjeldende svar':(canSend?'Send melding':blockedLabel));
+    send.setAttribute('title',state.busy?'Stopp':(canSend?'Send':blockedLabel));
     renderSuperboostCta();
     updatePinnedToolbarToolStates();
   }
@@ -6449,6 +6738,13 @@
   }
 
   async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null,displayPrompt='',options={}){
+    const verifiedModel=await revalidateHostedBoundary('first_chat',model);
+    if(!verifiedModel){
+      const error=new Error('Hosted release is not production-ready.');
+      error.code='hosted_release_not_ready';
+      throw error;
+    }
+    model=verifiedModel;
     const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
     const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
     let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt));
@@ -6493,6 +6789,11 @@
   }
 
   async function chatVisionPreviewData(prompt,signal,media){
+    if(!await revalidateHostedBoundary('first_chat')){
+      const error=new Error('Hosted release is not production-ready.');
+      error.code='hosted_release_not_ready';
+      throw error;
+    }
     const systemPrompt='You are Supergeni using MMIR protected vision. Answer in Norwegian. Be concrete about what the image shows, but say when visual details are uncertain. Never reveal raw image bytes.';
     const payload={
       vision_consent:true,
@@ -6940,6 +7241,12 @@
   }
 
   async function fetchGatewayFanout(prompt,mode,signal,options={}){
+    const journey=mode==='compare'||mode==='best-answer'?'compare':'swarm_preview';
+    if(!await revalidateHostedBoundary(journey)){
+      const error=new Error('Hosted '+journey+' journey is not production-ready.');
+      error.code='hosted_release_not_ready';
+      throw error;
+    }
     const payload=compareApiPayload(prompt);
     const systemContext=String(options.systemContext||'').trim().slice(0,8000);
     if(systemContext){
@@ -7138,7 +7445,7 @@
   }
 
   async function localAllActiveRoutes(prompt,signal){
-    const models=state.models.filter(model=>model.route==='local'&&model.executable!==false&&model.selectable!==false).slice(0,8);
+    const models=state.models.filter(localModelReady).slice(0,8);
     if(!models.length)return {responses:[],attempts:[],blocked:[]};
     try{
       allowLocalProbes('p0-local-all-active',120000);
@@ -7291,6 +7598,11 @@
     if(!prompt){
       status('Write a prompt first, then '+title+' can run.','error');
       captureInteraction('tool_blocked',{tool:title,reason:'missing_prompt'});
+      input?.focus();
+      return;
+    }
+    const hostedJourney=mode==='compare'||mode==='best-answer'?'compare':'swarm_preview';
+    if(!await ensureHostedJourneyReady(hostedJourney)){
       input?.focus();
       return;
     }
@@ -7447,6 +7759,10 @@
     state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
     if(explicit?.mode==='compare'&&!privateModeActive()){
+      if(!await ensureHostedJourneyReady('compare')){
+        input?.focus();
+        return;
+      }
       compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
       return;
     }
@@ -7485,6 +7801,10 @@
       return;
     }
     if(smart.mode==='compare'){
+      if(!await ensureHostedJourneyReady('compare')){
+        input?.focus();
+        return;
+      }
       compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
       return;
     }
@@ -7493,6 +7813,17 @@
       smart={...smart,model:defaultHostedModel(),reason:'Protected vision boundary'};
     }
     const model=smart.model;
+    if(model?.route==='hosted'&&!await ensureHostedJourneyReady('first_chat',model)){
+      input?.focus();
+      return;
+    }
+    if(model?.route==='local'&&!localModelReady(model)){
+      status('Lokal modell er ikke bekreftet klar. Oppdater lokal AI først.','error');
+      routeStatus('Lokal rute blokkert · mangler paired chat-ready bevis','error');
+      captureInteraction('chat_blocked',{reason:'local_route_not_ready',provider_called:false});
+      input?.focus();
+      return;
+    }
     const directHostedLineage=Boolean(model?.route==='hosted'&&!pendingMedia);
     const routeProvenance=directHostedLineage
       ? 'hosted-chat'
@@ -7503,8 +7834,8 @@
     input.value='';
     autosizeInput();
     if(!model||model.executable===false||model.selectable===false){
-      status((model?.label||'Provider candidate')+' is future capacity. Active free routes are ready now.','ready');
-      routeStatus('Future node · deploy handoff needed','hosted');
+      status((model?.label||'Leverandørkandidat')+' er synlig, men ikke live-verifisert for chat.','error');
+      routeStatus('Konfigurert/fremtidig rute · produksjonsbevis kreves','error');
       captureInteraction('chat_blocked',{reason:'future_route',selected_model_id:model?.id||''});
       input?.focus();
       return;
@@ -7600,6 +7931,17 @@
           routeStatus('Local privacy guard · hosted fallback blocked','error');
           return;
         }
+        if(!await revalidateHostedBoundary('first_chat',defaultHostedModel(),{force:true})){
+          captureInteraction('chat_failed_closed',{reason:'local_failed_hosted_release_blocked',active_model_id:model?.id||'',provider_called:false});
+          updateMessage(
+            assistant,
+            hint+'\n\nDen offentlige svarbanen er ikke produksjonsklar, så MMIR sendte ikke forespørselen videre som hosted fallback.',
+            {receipt:receipt.text+' · Hosted fallback blocked by release gate',answerState:'degraded',aiGenerated:false,routeProvenance:'local-failed',hostedLineage:false}
+          );
+          status('Lokal rute feilet. Hosted fallback ble blokkert.','error');
+          routeStatus('Fail-closed · ingen hosted-rute startet','error');
+          return;
+        }
         state.activeModelId='mmir-supergenius';
         persistActiveModelId();
         renderToolbar();
@@ -7683,6 +8025,10 @@
     }
     if(!prompt){
       status('Write a prompt first, then '+title+' can run.','error');
+      input?.focus();
+      return;
+    }
+    if(!await ensureHostedJourneyReady('compare')){
       input?.focus();
       return;
     }
@@ -7827,9 +8173,16 @@
     installShell();
     enforceShellStyles();
     window.addEventListener('mimir-brand-config-applied',syncAiDisclosureComposer);
-    status('Klar','ready');
+    status('Sjekker offentlig svarbane …','loading');
+    renderReleaseReadiness();
     updateSendControl();
     refreshHostedModels().catch(()=>{});
+    if(!hostedReadinessTimer){
+      hostedReadinessTimer=window.setInterval(()=>{
+        if(document.visibilityState&&document.visibilityState!=='visible')return;
+        refreshHostedModels().catch(()=>{});
+      },RELEASE_BACKGROUND_REFRESH_MS);
+    }
     refreshPromptPresets().catch(()=>{});
     if(!maybeAutoCheckLocal())maybeAutoAttachPairedLocal();
     document.getElementById('p0-input')?.focus();

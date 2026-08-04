@@ -59,6 +59,16 @@ async function fulfillJson(route, body, status = 200) {
 }
 
 async function installFixtures(page) {
+  await page.route('https://api.mmir.ai/status', async route => {
+    await fulfillJson(route, {
+      live_verified_intelligence_route_count: 1,
+      operator_readiness: {
+        readiness_state: 'ready',
+        default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+        journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
+      }
+    });
+  });
   await page.route('https://api.mmir.ai/v1/models', async route => {
     await fulfillJson(route, {
       object: 'list',
@@ -76,6 +86,7 @@ async function installFixtures(page) {
           route_type: 'managed_provider',
           route_class: 'free',
           trust_level: 'public-free',
+          live_e2e_verified: true,
           cost_class: 'free'
         }
       ]

@@ -96,6 +96,20 @@ function startServer() {
 }
 
 async function installApiFixtures(page) {
+  await page.route('https://api.mmir.ai/status', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        live_verified_intelligence_route_count: 1,
+        operator_readiness: {
+          readiness_state: 'ready',
+          default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+          journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
+        }
+      })
+    });
+  });
   await page.route('https://api.mmir.ai/v1/models', async route => {
     await route.fulfill({
       status: 200,
@@ -111,6 +125,7 @@ async function installApiFixtures(page) {
             recommended: true,
             availability: 'available',
             route_state: 'managed_provider_available',
+            live_e2e_verified: true,
             cost_class: 'free'
           }
         ]

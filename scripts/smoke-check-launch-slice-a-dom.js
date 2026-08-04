@@ -230,13 +230,13 @@ requireIncludes(files.p0Runtime, 'Best answer synthesis', 'P0 compare synthesis 
 requireIncludes(files.p0Runtime, 'Best answer synthesis · No paid route', 'P0 compare synthesis must keep no-paid route trust visible.');
 requireIncludes(files.p0Runtime, "function quietReceiptStatus(receipt,modelLabel='',proof=null)", 'P0 route receipts must collapse to one quiet status line by default.');
 requireIncludes(files.p0Runtime, "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false)", 'P0 route receipts must keep full audit details available on click.');
-requireIncludes(files.p0Runtime, "routeStatus('Listening...','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
-requireIncludes(files.p0Runtime, "routeStatus('Voice input stopped.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
+requireIncludes(files.p0Runtime, "routeStatus('Lytter …','hosted')", 'P0 voice feedback must be visible in the composer route line on mobile.');
+requireIncludes(files.p0Runtime, "routeStatus('Taleinndata stoppet.','hosted')", 'P0 voice stop feedback must remain visible briefly when recognition ends quickly.');
 requireIncludes(files.p0Runtime, 'mmir-p0-voice-state-updated', 'P0 voice path must emit testable state evidence.');
 requireIncludes(files.p0Runtime, 'no_server_audio:true', 'P0 voice path must stay browser-local with no server audio capture.');
-requireIncludes(files.p0Runtime, 'Voice input unavailable. Type instead.', 'P0 unsupported voice path must give concise truthful fallback.');
+requireIncludes(files.p0Runtime, 'Taleinndata er ikke tilgjengelig. Skriv i feltet i stedet.', 'P0 unsupported voice path must give concise truthful fallback.');
 requireIncludes(files.p0Runtime, "input.value=(input.value?input.value+' ':'')+text", 'P0 supported voice path must add recognized text to the prompt.');
-requireIncludes(files.p0Runtime, 'function handleMenuAction(action)', 'P0 menu actions must use a central handler so local discovery cannot silently close menus.');
+requireIncludes(files.p0Runtime, 'function handleMenuAction(action,sourceElement=null)', 'P0 menu actions must use a central handler so local discovery cannot silently close menus.');
 requireIncludes(files.p0Runtime, 'Checking this Mac for local models...', 'P0 local discovery must show immediate route feedback.');
 requireIncludes(files.p0Runtime, 'Tiny private model · slower/weak fallback', 'Tiny local models must be labeled as weak fallback routes.');
 requireIncludes(files.p0Runtime, 'Best local', 'P0 model picker must identify the best local starter after discovery.');
@@ -253,7 +253,7 @@ requireIncludes(files.p0Runtime, 'function compactModelBadges(model,bestLocal)',
 forbid(files.p0Runtime, /Rank #/, 'P0 model picker must not show rank numbers in the clean dropdown.');
 requireIncludes(files.p0Runtime, 'Demoted', 'P0 model picker may quietly demote weak or failed routes.');
 requireIncludes(files.p0Css, '.p0-badge-demoted', 'P0 route demotion badge must be styled discreetly.');
-requireIncludes(files.p0Runtime, 'Private local models', 'P0 model picker must separate local models from the hosted default.');
+requireIncludes(files.p0Runtime, 'Private lokale modeller', 'P0 model picker must separate local models from the hosted default.');
 requireIncludes(files.p0Runtime, 'Private local ready:', 'P0 local discovery must clearly show paired private readiness after models are visible.');
 requireIncludes(files.p0Runtime, 'mmir-local-private-readiness-updated', 'P0 local discovery must emit explicit paired/private readiness evidence.');
 requireIncludes(files.p0Runtime, 'function compareLocalModel(preferredLocalModel=null)', 'P0 compare must choose the best local model unless the user explicitly mentions another model.');
@@ -263,7 +263,7 @@ requireIncludes(files.p0Runtime, 'Local fallback', 'P0 local chat failures must 
 requireIncludes(files.p0Runtime, 'while local access waits for permission', 'P0 local chat failures must explain that hosted fallback answered.');
 requireIncludes(files.p0Runtime, 'LOCAL_INSTALL_COMMANDS.returnInstruction?.()', 'P0 local install copy must use the contextual return flow.');
 requireIncludes(files.p0Runtime, 'checkLocalModels().catch(()=>{})', 'P0 local model checks must not leak browser-blocked probes as unhandled page errors.');
-requireIncludes(files.p0Runtime, "status('Listening...','ready')", 'P0 mic button must give immediate feedback when voice input is requested.');
+requireIncludes(files.p0Runtime, "status('Lytter …','ready')", 'P0 mic button must give immediate feedback when voice input is requested.');
 requireIncludes(files.p0Runtime, "document.body.classList.add('mmir-p0-ready')", 'P0 runtime must set the same ready class that the P0 CSS uses to hide legacy UI.');
 forbid(files.p0Runtime, /classList\.add\('mimir-p0-ready'\)/, 'P0 runtime must not use the misspelled ready class.');
 requireIncludes(files.p0Runtime, "const HISTORY_SCHEMA='20260603-clean-first-chat-v40'", 'P0 shell must invalidate stale browser-error and install-card chat history.');

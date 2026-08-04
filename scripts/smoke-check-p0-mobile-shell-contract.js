@@ -73,12 +73,21 @@ for (const marker of [
   'aria-label="Legg ved bilde"',
   'aria-label="Verktøy"',
   'aria-label="Sikkerhet og personvern: offentlig modus"',
-  'aria-label="Choose model"',
-  'aria-label="Voice input"',
+  'aria-label="Velg modell"',
+  'aria-label="Taleinndata"',
   'aria-label="Send melding"'
 ]) {
   requireText(runtime, marker, `P0 controls must keep accessible labels: ${marker}`);
 }
+
+for (const marker of [
+  'aria-controls="p0-add-menu" aria-expanded="false"',
+  'aria-controls="p0-privacy-menu" aria-expanded="false"',
+  'aria-haspopup="dialog" aria-controls="p0-model-menu" aria-expanded="false"'
+]) {
+  requireText(runtime, marker, `P0 popover controls must expose their owned expanded region: ${marker}`);
+}
+forbidText(runtime, 'class="p0-menu" role="menu"', 'Generic button popovers must not claim the ARIA menu pattern without menuitem keyboard semantics.');
 
 for (const marker of [
   "menuButton('privacy-menu','Personvern')",

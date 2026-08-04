@@ -14,7 +14,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,localAllActiveRoutes,comparePartnerModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -64,6 +64,17 @@ function assertIncludes(actual, needle, message) {
 }
 
 const hosted = testApi.state.models[0];
+testApi.state.releaseReadiness = {
+  state: 'ready',
+  hostedReady: true,
+  compareReady: true,
+  swarmPreviewReady: true,
+  verifiedRoutes: 2
+};
+hosted.liveE2EVerified = true;
+hosted.executable = true;
+hosted.selectable = true;
+hosted.availability = 'available';
 const gemma = {
   id: 'local-gemma3-270m',
   label: 'gemma3:270m',
@@ -86,8 +97,8 @@ const qwenTiny = {
 
 const normalizedHosted = testApi.normalizeHostedModels({
   data: [
-    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true },
-    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true }
+    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true },
+    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true }
   ]
 });
 assertEqual(normalizedHosted[0].id, 'mmir-supergenius', 'Live supergeni alias must keep the canonical browser route id');
@@ -95,6 +106,12 @@ assertEqual(normalizedHosted[0].model, 'supergeni', 'Canonical browser route mus
 
 testApi.state.models = [hosted, gemma, qwenTiny];
 testApi.state.activeModelId = hosted.id;
+testApi.state.localReadiness = {
+  paired: true,
+  runtimeChatReady: true,
+  chatReady: true,
+  modelIds: [gemma.model, qwenTiny.model]
+};
 
 const pool = testApi.intelligencePoolSummary();
 assertEqual(pool.liveRoutes, 3, 'Intelligence pool must count hosted plus discovered local routes');
@@ -211,5 +228,16 @@ assertEqual(singleRoutePool.compareReady, false, 'Hosted-only intelligence pool 
 assertEqual(singleRoutePool.stateLabel, 'Single AI source now', 'Hosted-only summary must be honest before local discovery');
 const missingLocal = testApi.explicitMentionDecision('@supergenius @gemma compare this');
 assertEqual(missingLocal.mode, 'missing-local', 'Explicit compare must fail clearly before local model discovery');
+
+testApi.state.models = [hosted, gemma];
+testApi.state.activeModelId = hosted.id;
+testApi.state.localReadiness = { paired: true, runtimeChatReady: true, chatReady: false, modelIds: [gemma.model] };
+const staleLocalCompare = testApi.smartDecision('Give me the best answer in parallel: what is the capital of Japan?');
+assertEqual(staleLocalCompare.mode, 'single', 'Stale local readiness must not enter compare execution.');
+assertEqual(staleLocalCompare.model.id, hosted.id, 'Stale local readiness must leave the verified hosted route as the single writer.');
+assertEqual(testApi.comparePartnerModel(gemma), null, 'Explicit local Compare must reject a preferred model without chat-ready inventory binding.');
+const staleLocalAll = await testApi.localAllActiveRoutes('do not send this', new AbortController().signal);
+assertEqual(staleLocalAll.responses.length, 0, 'Stale local readiness must not start Ask All local responses.');
+assertEqual(staleLocalAll.attempts.length, 0, 'Stale local readiness must not start Ask All local attempts.');
 
 console.log('P0 explicit route tag smoke check passed.');

@@ -92,6 +92,7 @@ button, input, select { font: inherit; }
 
 .card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; }
 .catalog-card { display: grid; align-content: start; gap: .8rem; min-width: 0; padding: 1.05rem; border: 1px solid var(--line); border-radius: 20px; background: white; box-shadow: 0 5px 22px rgba(16, 24, 40, .04); }
+.catalog-card[hidden] { display: none !important; }
 .catalog-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .7rem; }
 .catalog-card h3 { margin: 0; overflow-wrap: anywhere; font-size: 1rem; line-height: 1.25; }
 .catalog-card p { margin: 0; color: var(--muted); font-size: .87rem; }

@@ -40,9 +40,9 @@ requireCount(shellSource, /id="p0-input"/g, 1, 'P0 shell must have exactly one f
 requireCount(shellSource, /id="p0-send"/g, 1, 'P0 shell must have exactly one first-screen send control.');
 requireCount(shellSource, /id="p0-composer"/g, 1, 'P0 shell must have exactly one first-screen composer form.');
 requireCount(shellSource, /id="p0-transcript"/g, 1, 'P0 shell must have exactly one answer transcript pane.');
-requireCount(shellSource, /id="p0-add-menu" class="p0-menu" hidden/g, 1, 'P0 add menu must start hidden.');
-requireCount(shellSource, /id="p0-model-menu" class="p0-menu" hidden/g, 1, 'P0 model menu must start hidden.');
-requireCount(shellSource, /id="p0-privacy-menu" class="p0-menu" hidden/g, 1, 'P0 privacy menu must start hidden.');
+requireCount(shellSource, /id="p0-add-menu" class="p0-menu"[^>]* hidden/g, 1, 'P0 add menu must start hidden.');
+requireCount(shellSource, /id="p0-model-menu" class="p0-menu"[^>]* hidden/g, 1, 'P0 model menu must start hidden.');
+requireCount(shellSource, /id="p0-privacy-menu" class="p0-menu"[^>]* hidden/g, 1, 'P0 privacy menu must start hidden.');
 
 if (/id="mimir-prompt"|id="primary-chat-link"|class="mimir-composer"/.test(shellSource)) {
   fail('P0 shell must not render legacy composer/input/send controls inside the first-screen app.');

@@ -42,6 +42,22 @@ async function installFixtures(page) {
     localStorage.clear();
     sessionStorage.clear();
   });
+  await page.route('https://api.mmir.ai/status', route => route.fulfill(
+    modelsMode === 'ready'
+      ? {
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            live_verified_intelligence_route_count: 1,
+            operator_readiness: {
+              readiness_state: 'ready',
+              default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+              journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
+            }
+          })
+        }
+      : { status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'release blocked fixture' }) }
+  ));
   await page.route('https://api.mmir.ai/v1/models', route => route.fulfill(
     modelsMode === 'ready'
       ? {
@@ -57,6 +73,7 @@ async function installFixtures(page) {
               recommended: true,
               availability: 'available',
               route_state: 'managed_provider_available',
+              live_e2e_verified: true,
               cost_class: 'free'
             }]
           })
