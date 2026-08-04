@@ -4,11 +4,13 @@ import vm from 'node:vm';
 
 const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
+const taxonomyPath = resolve(root, 'public/release-route-taxonomy.js');
 const storagePath = resolve(root, 'public/apps/mimir-chat-portal/p0-storage.js');
 const routeReceiptsPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-receipts.js');
 const routeBenchmarksPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-benchmarks.js');
 const historyPath = resolve(root, 'public/apps/mimir-chat-portal/p0-history.js');
 const runtime = readFileSync(runtimePath, 'utf8');
+const taxonomy = readFileSync(taxonomyPath, 'utf8');
 const storageHelper = readFileSync(storagePath, 'utf8');
 const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
@@ -42,6 +44,7 @@ context.window = context;
 context.globalThis = context;
 
 vm.createContext(context);
+vm.runInContext(taxonomy, context, { filename: taxonomyPath });
 vm.runInContext(storageHelper, context, { filename: storagePath });
 vm.runInContext(routeReceiptsHelper, context, { filename: routeReceiptsPath });
 vm.runInContext(routeBenchmarksHelper, context, { filename: routeBenchmarksPath });
@@ -97,8 +100,8 @@ const qwenTiny = {
 
 const normalizedHosted = testApi.normalizeHostedModels({
   data: [
-    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true },
-    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true }
+    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true, cost_class: 'free' },
+    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true, cost_class: 'free' }
   ]
 });
 assertEqual(normalizedHosted[0].id, 'mmir-supergenius', 'Live supergeni alias must keep the canonical browser route id');

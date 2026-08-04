@@ -132,7 +132,7 @@ async function checkEarlyInstallPrompt(root,fail){
 async function checkOfflineFetchBehavior(root,fail){
   const source=readFileSync(join(root,'public','sw.js'),'utf8');
   const cacheName=source.match(/const CACHE_NAME='([^']+)'/)?.[1]||'';
-  const priorCacheName='mmir-pwa-d354-20260804-release-0-2-beta-v1';
+  const priorCacheName='mmir-pwa-d354-20260804-release-0-2-beta-v2';
   const origin='https://example.test';
   const listeners=new Map();
   const matchCalls=[];

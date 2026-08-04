@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Modeller | MMIR.ai 0.2 Beta</title>
-  <meta name="description" content="MMIRs modellkatalog skiller mellom live-verifiserte, konfigurerte, degraderte og katalogførte modeller." />
+  <meta name="description" content="MMIRs modellkatalog skiller mellom modeller som kan prøves nå, konfigurerte ruter, lokale noder, BYOK, degraderte og planlagte modeller." />
   <link rel="icon" href="../assets/mmir-icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="../release-0.2.css?v=20260804-readiness-v1" />
+  <link rel="stylesheet" href="../release-0.2.css?v=20260804-model-truth-v1" />
 </head>
 <body data-release-page="models">
   <a class="skip-link" href="#main-content">Hopp til innhold</a>
@@ -29,36 +29,38 @@
     <section class="release-hero">
       <p class="eyebrow">Modellkatalog · løpende sannhet</p>
       <h1>Se modellene. Se også hva som faktisk virker nå.</h1>
-      <p>0.2-visningen viser live inventory og et kuratert utvalg åpne og lokale modellfamilier. «Konfigurert» er ikke det samme som «live-verifisert», og en modell vises aldri som testklar bare fordi navnet finnes i en liste.</p>
+      <p>0.2-visningen viser live inventory og et kuratert utvalg åpne og lokale modellfamilier. «Gratis å prøve nå» krever både ferskt modellbevis og en autentisert, releaseklar first-chat-bane. Konfigurert, lokal, BYOK, degradert og planlagt vises som egne tilstander.</p>
       <aside id="runtime-truth" class="truth-banner" data-state="warning" aria-live="polite">
         <strong>Henter fersk status fra api.mmir.ai …</strong>
         <p>Inntil statusen er hentet viser vi bare kataloginformasjon, ikke live-påstander.</p>
       </aside>
-      <p class="hero-action"><a class="card-action" href="../mmir.html">Åpne testflaten og velg tilgjengelig modell</a></p>
+      <p class="hero-action"><a id="models-primary-cta" class="card-action" href="../mmir.html" aria-label="Åpne testflaten; status sjekkes før bruk">Åpne testflaten · status sjekkes først</a></p>
     </section>
 
     <section class="metric-grid" aria-label="Modellstatus">
       <article class="metric-card"><span>Synlige ruter</span><strong id="metric-visible">–</strong><small>fra live inventory</small></article>
-      <article class="metric-card"><span>Live-verifisert</span><strong id="metric-verified">–</strong><small>fersk ende-til-ende-kvittering</small></article>
-      <article class="metric-card"><span>Valgbar total</span><strong id="metric-configured">–</strong><small>autoritativt tall fra live inventory</small></article>
-      <article class="metric-card"><span>Degradert</span><strong id="metric-degraded">–</strong><small>holdes ute til ny verifisering</small></article>
+      <article class="metric-card"><span>Gratis å prøve nå</span><strong id="metric-tryable">–</strong><small>modell-E2E + autentisert first-chat</small></article>
+      <article class="metric-card"><span>Konfigurert, utilgjengelig</span><strong id="metric-configured">–</strong><small>finnes i inventory, men kan ikke prøves nå</small></article>
+      <article class="metric-card"><span>Ikke testklar nå</span><strong id="metric-unavailable">–</strong><small>degradert, planlagt, BYOK eller lokalt oppsett</small></article>
     </section>
 
     <section class="section" aria-labelledby="runtime-models-title">
       <div class="section-heading">
         <h2 id="runtime-models-title">Modeller og ruter</h2>
-        <p>Status kommer fra <code>/v1/models</code>. Kvalitet vises som ukjent når det ikke finnes et navngitt testsett, utvalg og dato.</p>
+        <p>Inventory kommer fra <code>/v1/models</code>; testklar status bindes til <code>/status</code>. Kvalitet vises som ukjent når det ikke finnes et navngitt testsett, utvalg og dato.</p>
       </div>
       <div class="legend" aria-label="Statusforklaring">
-        <span class="verified"><i></i>Live-verifisert</span>
-        <span class="configured"><i></i>Konfigurert, ikke ferskt verifisert</span>
+        <span class="free-now"><i></i>Gratis å prøve nå</span>
+        <span class="configured"><i></i>Konfigurert, utilgjengelig nå</span>
+        <span class="local"><i></i>Lokal, krever paret node</span>
+        <span class="byok"><i></i>BYOK, ikke støttet i 0.2</span>
         <span class="degraded"><i></i>Degradert</span>
         <span class="orchestrator"><i></i>Orkestrator, ikke modell</span>
-        <span><i></i>Katalogført</span>
+        <span><i></i>Planlagt/katalogført</span>
       </div>
       <div class="catalog-controls">
         <label for="model-search">Søk i modellene<input id="model-search" type="search" placeholder="Modell, leverandør eller egenskap" autocomplete="off" /></label>
-        <label for="model-state">Status<select id="model-state"><option value="all">Alle</option><option value="orchestrator">Orkestrator</option><option value="verified">Live-verifisert</option><option value="configured">Konfigurert</option><option value="degraded">Degradert</option><option value="catalogued">Katalogført</option></select></label>
+        <label for="model-state">Status<select id="model-state"><option value="all">Alle</option><option value="orchestrator">Orkestrator</option><option value="free_now">Gratis å prøve nå</option><option value="configured_unavailable">Konfigurert, utilgjengelig</option><option value="local_ready">Lokal, paret</option><option value="local_setup">Lokal, krever oppsett</option><option value="byok_unavailable">BYOK, ikke støttet</option><option value="degraded">Degradert</option><option value="planned">Planlagt</option></select></label>
       </div>
       <div id="models-grid" class="card-grid" aria-live="polite"></div>
     </section>
@@ -73,6 +75,7 @@
   </main>
 
   <footer class="release-footer"><div class="release-footer-inner"><span>MMIR 0.2 Beta · status uten oversalg</span><span><a href="../tillit/">Slik tolker vi bevis og begrensninger</a></span></div></footer>
-  <script src="../release-0.2.js?v=20260804" type="module"></script>
+  <script src="../release-route-taxonomy.js?v=20260804-model-truth-v1"></script>
+  <script src="../release-0.2.js?v=20260804-model-truth-v1" type="module"></script>
 </body>
 </html>

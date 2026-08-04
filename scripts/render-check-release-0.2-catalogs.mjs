@@ -189,19 +189,72 @@ async function checkModels(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await routeApi(page);
   await page.goto(baseUrl+'/modeller/index.html',{waitUntil:'networkidle'});
-  assert(await page.locator('#metric-verified').textContent()==='1','model page must count only explicit E2E proof as verified');
-  assert(await page.locator('#metric-configured').textContent()==='2','model page must use the authoritative selectable total');
+  assert(await page.locator('#metric-tryable').textContent()==='0','a blocked release must show zero models as free to try now');
+  assert(await page.locator('#metric-configured').textContent()==='2','blocked E2E and configured routes must remain configured but unavailable');
   assert(await page.locator('#models-grid .catalog-card').count()===4,'model page must render all fixture inventory rows');
   assert(await page.locator('#models-grid .state-orchestrator').count()===1,'Supergeni must render as an orchestrator, not a model');
-  assert(await page.locator('#models-grid .state-verified').count()===1,'verified fixture needs one verified badge');
-  assert(await page.locator('#models-grid .state-configured').count()===1,'configured fixture needs one non-verified badge');
+  assert(await page.locator('#models-grid .state-free_now').count()===0,'blocked release must never render a free-now badge');
+  assert(await page.locator('#models-grid .state-configured_unavailable').count()===2,'blocked verified and configured fixtures need unavailable badges');
   assert(await page.locator('#models-grid .state-degraded').count()===1,'degraded fixture needs one degraded badge');
   assert(await page.locator('#models-grid .card-action').count()===0,'model cards must not expose a misleading generic deep link');
   assert((await page.locator('#models-grid').innerText()).includes('fixture/configured'),'model cards must expose exact route identity');
-  assert((await page.locator('#models-grid').innerText()).includes('gratis kvote · ingen egen API-nøkkel'),'free-quota external routes must expose no-key tester access');
+  assert(!(await page.locator('#models-grid').innerText()).includes('Gratis offentlig MMIR-rute · ingen egen API-nøkkel'),'blocked routes must not expose free-now access copy');
   await page.locator('#model-search').fill('Configured Writer');
   assert(await page.locator('#models-grid .catalog-card:visible').count()===1,'model search must visually hide nonmatching cards');
   await noHorizontalOverflow(page,'mobile model catalog');
+  await page.close();
+}
+
+async function checkReadyModels(browser){
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await routeApi(page,{releaseReady:true});
+  await page.goto(baseUrl+'/modeller/index.html',{waitUntil:'networkidle'});
+  assert(await page.locator('#metric-tryable').textContent()==='1','a complete release gate plus model E2E proof must expose one free-now route');
+  assert(await page.locator('#metric-configured').textContent()==='1','a configured route without E2E proof must remain unavailable');
+  assert(await page.locator('#models-grid .state-free_now').count()===1,'ready verified fixture needs the exact free-now badge');
+  assert((await page.locator('#models-primary-cta').innerText()).includes('Prøv en gratis modell nå'),'ready model page CTA must promise only the proven free-now action');
+  assert((await page.locator('#models-grid').innerText()).includes('Gratis offentlig MMIR-rute · ingen egen API-nøkkel'),'only the ready E2E route may expose free-now no-key access copy');
+  await page.close();
+}
+
+async function checkSharedTaxonomy(browser){
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await routeApi(page);
+  await page.goto(baseUrl+'/modeller/index.html',{waitUntil:'networkidle'});
+  const states=await page.evaluate(()=>{
+    const taxonomy=window.MmirReleaseRouteTaxonomy;
+    const local={id:'local-model',route:'local',route_type:'local',executable:true,selectable:true};
+    const localReadiness={paired:true,runtimeChatReady:true,chatReady:true,modelIds:['local-model']};
+    const hosted={id:'hosted-model',route_type:'external_untrusted_free',cost_class:'free',executable:true,selectable:true,live_e2e_verified:true};
+    const status=(authenticated,firstChat)=>({
+      live_verified_intelligence_route_count:1,
+      operator_readiness:{
+        readiness_state:'ready',
+        default_writer_readiness:{classification:'ready',authenticated_release_ready:authenticated},
+        journeys:{first_chat_ready:firstChat}
+      }
+    });
+    return {
+      paired:taxonomy.classifyModel(local,{localReadiness}).key,
+      unpaired:taxonomy.classifyModel(local,{localReadiness:{}}).key,
+      byok:taxonomy.classifyModel({id:'key-model',route_type:'byok',requires_api_key:true,executable:true,selectable:true}).key,
+      planned:taxonomy.classifyModel({id:'future-model',candidate:true,status:'planned',executable:false,selectable:false}).key,
+      degraded:taxonomy.classifyModel({id:'down-model',status:'temporarily_degraded',executable:false,selectable:false}).key,
+      fullGate:taxonomy.classifyModel(hosted,{surface:'chat',status:status(true,true)}).key,
+      noAuth:taxonomy.classifyModel(hosted,{surface:'chat',status:status(false,true)}).key,
+      noFirstChat:taxonomy.classifyModel(hosted,{surface:'chat',status:status(true,false)}).key,
+      noModelProof:taxonomy.classifyModel({...hosted,live_e2e_verified:false},{surface:'chat',status:status(true,true)}).key
+    };
+  });
+  assert(states.paired==='local_ready','shared taxonomy must identify a genuinely paired local node');
+  assert(states.unpaired==='local_setup','shared taxonomy must keep an unpaired local model in setup');
+  assert(states.byok==='byok_unavailable','shared taxonomy must keep BYOK unavailable in release 0.2');
+  assert(states.planned==='planned','shared taxonomy must distinguish planned routes');
+  assert(states.degraded==='degraded','shared taxonomy must distinguish degraded routes');
+  assert(states.fullGate==='free_now','free-now needs the complete positive gate');
+  assert(states.noAuth==='configured_unavailable','missing authenticated release must fail closed');
+  assert(states.noFirstChat==='configured_unavailable','missing first-chat readiness must fail closed');
+  assert(states.noModelProof==='configured_unavailable','missing exact model E2E proof must fail closed');
   await page.close();
 }
 
@@ -447,6 +500,8 @@ try{
   await checkCheckingFirstPaint(browser);
   await checkChatNav(browser);
   await checkModels(browser);
+  await checkReadyModels(browser);
+  await checkSharedTaxonomy(browser);
   await checkDegradedSupergeni(browser);
   await checkCapabilities(browser);
   await checkCapabilitySchemaFailClosed(browser);
