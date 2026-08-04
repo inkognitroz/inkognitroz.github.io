@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tillit og begrensninger | MMIR.ai 0.2 Beta</title>
+  <meta name="description" content="Slik skiller MMIR katalog, konfigurasjon, live-bevis, dataflyt og planlagte funksjoner." />
+  <link rel="icon" href="../assets/mmir-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../release-0.2.css?v=20260804" />
+</head>
+<body data-release-page="trust">
+  <a class="skip-link" href="#main-content">Hopp til innhold</a>
+  <header class="release-header">
+    <div class="release-header-inner">
+      <a class="release-brand" href="../mmir.html" aria-label="MMIR.ai – åpne testflaten"><span class="release-mark" aria-hidden="true">MM</span><span class="release-brand-copy"><strong>MMIR.ai</strong><small>0.2 Beta · Intelligence. Connected.</small></span></a>
+      <nav class="release-nav" aria-label="Hovednavigasjon"><a href="../mmir.html">Prøv</a><a href="../modeller/">Modeller</a><a href="../kapabiliteter/">Kapabiliteter</a><a href="./" aria-current="page">Tillit</a></nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="release-main">
+    <section class="release-hero">
+      <p class="eyebrow">Tillit · dataflyt · begrensninger</p>
+      <h1>Du skal kunne se forskjellen på bygget, koblet og bevist.</h1>
+      <p>MMIR 0.2 er en beta. Vi viser derfor både hva løsningen gjør, hvor data kan gå, og hvilke deler som fortsatt mangler ferskt produksjonsbevis.</p>
+      <aside id="trust-runtime" class="truth-banner" data-state="warning" aria-live="polite"><strong>Kontrollerer offentlig status …</strong><p>Et grønt nettsted betyr ikke automatisk at modellrutene eller svar-kvaliteten er grønne.</p></aside>
+    </section>
+
+    <section class="section trust-grid" aria-label="Tillit og begrensninger">
+      <article class="trust-card"><h2>Fire statuser</h2><ul><li><strong>Live-verifisert:</strong> ferskt ende-til-ende-bevis.</li><li><strong>Konfigurert:</strong> ruten kan velges, men mangler ferskt live-bevis.</li><li><strong>Degradert:</strong> holdes ute etter feil eller utløpt bevis.</li><li><strong>Katalogført:</strong> informasjon eller kandidat, ikke kjørbarhet.</li></ul></article>
+      <article class="trust-card"><h2>Supergeni er orkestrator</h2><p>Supergeni skal forstå oppgaven, velge beste kvalifiserte modell/verktøy, hente kilder ved behov og kontrollere resultatet. Supergeni skal ikke late som det selv er en allvitende språkmodell.</p></article>
+      <article class="trust-card"><h2>Provider- og modelldata</h2><p>Når en ekstern modell velges, kan prompten sendes server-side til den oppgitte leverandøren. Rå leverandørnøkler skal ikke ligge i nettleseren. Lokal modell er separat beta-bane med eksplisitt paring.</p></article>
+      <article class="trust-card"><h2>Kvalitet</h2><p>Modellnavn, parameterantall eller grønn CI er ikke nok. En publisert kvalitetsscore skal ha testsett, utvalg, dato og versjon. Ellers står kvalitet som «ikke målt».</p></article>
+      <article class="trust-card"><h2>Gratis og kostnad</h2><p>0.2 starter ingen betalte ruter uten uttrykkelig godkjenning. «Gratis» kan bety plattformbeta, lokal maskin eller leverandørens gratis kvote, som kan ha hastighets- og kapasitetsgrenser.</p></article>
+      <article class="trust-card"><h2>Ikke klart i 0.2</h2><p>Offentlig BYOK med innlimt nøkkel, leid compute, intelligensmarkedsplass og autonom selvutvikling er ikke ferdige kundeløp. De vises som planlagt eller utilgjengelig til de er sikret og bevist.</p></article>
+      <article class="trust-card"><h2>Primære sannhetskilder</h2><p><a href="https://api.mmir.ai/status" rel="noreferrer">API-status</a> beskriver annonserte ruter og kapabiliteter. <a href="https://api.mmir.ai/v1/models" rel="noreferrer">Modellinventory</a> skiller konfigurerte, degraderte og live-verifiserte ruter. Det offentlige grensesnittet skal aldri oppgradere disse på egen hånd.</p></article>
+      <article class="trust-card"><h2>Rapporter feil</h2><p>Hvis svaret ikke treffer spørsmålet, mangler kilde eller viser feil modellstatus, er det en produktfeil. Bruk tilbakemeldingsfunksjonen i chatten; MMIR skal lære av klassen, ikke hardkode ett spørsmål.</p></article>
+    </section>
+  </main>
+
+  <footer class="release-footer"><div class="release-footer-inner"><span>MMIR 0.2 Beta · ingen skjult grønnmaling</span><span><a href="../mmir.html">Tilbake til testflaten</a></span></div></footer>
+  <script src="../release-0.2.js?v=20260804" type="module"></script>
+</body>
+</html>

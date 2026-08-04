@@ -1,0 +1,526 @@
+{
+  "capabilities": [
+    {
+      "availability": "available",
+      "capability_id": "cap-001",
+      "number": 1,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Én chatflate"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-002",
+      "number": 2,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Supergeni som standard"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-003",
+      "number": 3,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Svar først"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-004",
+      "number": 4,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Samtalekontekst"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-005",
+      "number": 5,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Modell- og rutevalg"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-006",
+      "number": 6,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Rutekvittering"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-007",
+      "number": 7,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Compare og Boost"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-008",
+      "number": 8,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Tale og mikrofon"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-009",
+      "number": 9,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Lokal minne/notater"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-010",
+      "number": 10,
+      "runtime_scope": "production",
+      "stage_id": "stage-01",
+      "surface": "public",
+      "title_no": "Mobil og PWA"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-011",
+      "number": 11,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Mål og rolle"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-012",
+      "number": 12,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Relevant kontekst"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-013",
+      "number": 13,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Premisser"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-014",
+      "number": 14,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Klare begrensninger"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-015",
+      "number": 15,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Ønsket format"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-016",
+      "number": 16,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Kildekrav"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-017",
+      "number": 17,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Ferskhetskrav"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-018",
+      "number": 18,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Språk og tone"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-019",
+      "number": 19,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-02",
+      "surface": "advanced",
+      "title_no": "Oppfølgingsdialog"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-021",
+      "number": 21,
+      "runtime_scope": "production",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Weboppslag"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-022",
+      "number": 22,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Aktuelle nyheter"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-023",
+      "number": 23,
+      "runtime_scope": "production",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Vær fra MET"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-024",
+      "number": 24,
+      "runtime_scope": "production",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Valuta og renter"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-025",
+      "number": 25,
+      "runtime_scope": "production",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Strømpris"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-026",
+      "number": 26,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Forskning og DOI"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-027",
+      "number": 27,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "SNL og Wikipedia"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-029",
+      "number": 29,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Kryssjekk av kilder"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-030",
+      "number": 30,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-03",
+      "surface": "public",
+      "title_no": "Sitater og dom"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-031",
+      "number": 31,
+      "runtime_scope": "production",
+      "stage_id": "stage-04",
+      "surface": "public",
+      "title_no": "Beste enkeltrute"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-032",
+      "number": 32,
+      "runtime_scope": "production",
+      "stage_id": "stage-04",
+      "surface": "public",
+      "title_no": "Sammenlign svar"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-033",
+      "number": 33,
+      "runtime_scope": "production",
+      "stage_id": "stage-04",
+      "surface": "public",
+      "title_no": "Parallell sverm"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-034",
+      "number": 34,
+      "runtime_scope": "production",
+      "stage_id": "stage-04",
+      "surface": "public",
+      "title_no": "Best Answer"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-035",
+      "number": 35,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-04",
+      "surface": "public",
+      "title_no": "Dommer og kritiker"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-037",
+      "number": 37,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-04",
+      "surface": "public",
+      "title_no": "Deliberasjon ved splitt"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-051",
+      "number": 51,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-06",
+      "surface": "public",
+      "title_no": "Lokal Ollama-node"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-052",
+      "number": 52,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-06",
+      "surface": "public",
+      "title_no": "Sikker pairing"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-055",
+      "number": 55,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-06",
+      "surface": "advanced",
+      "title_no": "Provider-noder"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-056",
+      "number": 56,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-06",
+      "surface": "advanced",
+      "title_no": "Modellflåte"
+    },
+    {
+      "availability": "limited_advanced",
+      "capability_id": "cap-058",
+      "number": 58,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-06",
+      "surface": "advanced",
+      "title_no": "Signerte kvitteringer"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-062",
+      "number": 62,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-07",
+      "surface": "public",
+      "title_no": "Oppsummering"
+    },
+    {
+      "availability": "limited",
+      "capability_id": "cap-063",
+      "number": 63,
+      "runtime_scope": "limited_release",
+      "stage_id": "stage-07",
+      "surface": "public",
+      "title_no": "Ekstraksjon/konvertering"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-064",
+      "number": 64,
+      "runtime_scope": "production",
+      "stage_id": "stage-07",
+      "surface": "public",
+      "title_no": "Oversettelse/norsk"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-067",
+      "number": 67,
+      "runtime_scope": "production",
+      "stage_id": "stage-07",
+      "surface": "public",
+      "title_no": "Kildesjekk"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-073",
+      "number": 73,
+      "runtime_scope": "production",
+      "stage_id": "stage-08",
+      "surface": "public",
+      "title_no": "Chat-kommandoer"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-081",
+      "number": 81,
+      "runtime_scope": "production",
+      "stage_id": "stage-09",
+      "surface": "public",
+      "title_no": "Svar-kilde-kobling"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-083",
+      "number": 83,
+      "runtime_scope": "production",
+      "stage_id": "stage-09",
+      "surface": "public",
+      "title_no": "Modell- og rutetruth"
+    },
+    {
+      "availability": "advanced",
+      "capability_id": "cap-084",
+      "number": 84,
+      "runtime_scope": "production",
+      "stage_id": "stage-09",
+      "surface": "advanced",
+      "title_no": "Kost og kvotetruth"
+    },
+    {
+      "availability": "available",
+      "capability_id": "cap-085",
+      "number": 85,
+      "runtime_scope": "production",
+      "stage_id": "stage-09",
+      "surface": "public",
+      "title_no": "Datalokalitet"
+    }
+  ],
+  "join_key": "capability_id",
+  "object": "mmir.capability_projection",
+  "projection_kind": "public",
+  "projection_version": "2026-08-01.1",
+  "registry_updated": "2026-08-01",
+  "registry_version": "2026-08-01.1",
+  "schema_version": 1,
+  "semantic_revision": "sha256:a8b63891b29cc0a3ed0ca9e50810c85640bacae80631d1d950574624d324a1ff",
+  "stages": [
+    {
+      "exposed_count": 10,
+      "goal": "Bruk MMIR effektivt",
+      "id": "stage-01",
+      "name": "Grunnlag"
+    },
+    {
+      "exposed_count": 9,
+      "goal": "Gjør behovet maskinlesbart",
+      "id": "stage-02",
+      "name": "Intent og prompt"
+    },
+    {
+      "exposed_count": 9,
+      "goal": "Forankre svar i etterprøvbar virkelighet",
+      "id": "stage-03",
+      "name": "Grounding"
+    },
+    {
+      "exposed_count": 6,
+      "goal": "Koble flere intelligenser",
+      "id": "stage-04",
+      "name": "Multi-modell"
+    },
+    {
+      "exposed_count": 0,
+      "goal": "Lever riktig svar gjennom riktig bane",
+      "id": "stage-05",
+      "name": "Ruting og syntese"
+    },
+    {
+      "exposed_count": 5,
+      "goal": "Koble modeller, noder og kapasitet sikkert",
+      "id": "stage-06",
+      "name": "Noder og compute"
+    },
+    {
+      "exposed_count": 4,
+      "goal": "Koble verktøy og spesialiserte evner",
+      "id": "stage-07",
+      "name": "Skills og connectors"
+    },
+    {
+      "exposed_count": 1,
+      "goal": "Gjør intelligens om til kontrollerte forløp",
+      "id": "stage-08",
+      "name": "Workflows"
+    },
+    {
+      "exposed_count": 4,
+      "goal": "Gjør utførelse sann, trygg og styrbar",
+      "id": "stage-09",
+      "name": "Trust og governance"
+    },
+    {
+      "exposed_count": 0,
+      "goal": "Forbedre systemet med målte utfall",
+      "id": "stage-10",
+      "name": "Evolusjon"
+    }
+  ],
+  "summary": {
+    "availability_counts": {
+      "advanced": 1,
+      "available": 23,
+      "limited": 12,
+      "limited_advanced": 12
+    },
+    "canonical_total": 100,
+    "exposed_total": 48,
+    "stage_counts": {
+      "stage-01": 10,
+      "stage-02": 9,
+      "stage-03": 9,
+      "stage-04": 6,
+      "stage-06": 5,
+      "stage-07": 4,
+      "stage-08": 1,
+      "stage-09": 4
+    }
+  }
+}
