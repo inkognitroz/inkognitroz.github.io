@@ -22,9 +22,12 @@ const sw=read('public/sw.js');
 const catalogRaw=read('public/capability-catalog.json');
 const catalog=JSON.parse(catalogRaw);
 const overlay=JSON.parse(read('public/capability-ui.json'));
+const proofSafeTagline='0.2 Beta · status verifiseres live';
+const unprovenTagline='Intelligence. Connected.';
 
 assert(mmir.includes('p0-release-nav.css?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation stylesheet');
 assert(mmir.includes('p0-release-nav.js?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation script');
+assert(mmir.includes('p0-chat-shell.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe shell asset version');
 assert(nav.includes("'./modeller/'")&&nav.includes("'./kapabiliteter/'")&&nav.includes("'./tillit/'"),'visible P0 shell must link all release information tabs');
 assert(nav.includes("tag.textContent='0.2 Beta'"),'visible shell must identify the beta release honestly');
 assert(!nav.includes('MutationObserver'),'release navigation must not observe the full document tree');
@@ -33,10 +36,15 @@ assert(navCss.includes('outline: 3px')&&releaseCss.includes('.skip-link'),'relea
 
 for(const [name,html] of [['models',models],['capabilities',capabilities],['trust',trust]]){
   assert(html.includes('MMIR.ai 0.2 Beta'),name+' page must show the beta release label');
+  assert(html.includes(proofSafeTagline),name+' page must show the proof-safe live-status tagline');
+  assert(!html.includes(unprovenTagline),name+' page must not show an unproven connected-intelligence claim');
   assert(html.includes('../mmir.html'),name+' page must link back to the clean test surface');
   assert(html.includes('class="skip-link"'),name+' page must provide a keyboard skip link');
   assert(!/<input[^>]+(?:api.?key|secret|token)/i.test(html),name+' page must not collect provider secrets');
 }
+
+assert(p0Shell.includes(proofSafeTagline),'visible chat shell must show the proof-safe live-status tagline');
+assert(!p0Shell.includes(unprovenTagline),'visible chat shell must not show an unproven connected-intelligence claim');
 
 assert(models.includes('Gratis å prøve nå')&&models.includes('Konfigurert, utilgjengelig'),'model page must separate testable-now truth from configured inventory');
 assert(models.includes('kuratert utvalg'),'model page must not claim comprehensive editorial coverage');
