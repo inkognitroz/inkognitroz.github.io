@@ -56,7 +56,7 @@
   <main class="mimir-chat-main" aria-label="MMIR chat">
     <section class="mimir-chat-center">
       <h1 id="mimir-title" hidden>MMIR chat</h1>
-      <span data-brand-field="tagline" hidden>Intelligence. Connected.</span>
+      <span data-brand-field="tagline" hidden>0.2 Beta · status verifiseres live</span>
       <span id="active-chat-description" hidden>Offentlig svarbane verifiseres før bruk.</span>
 
       <section id="mimir-instant-start" class="mimir-instant-start" aria-label="MMIR ready state" hidden data-mimir-capability-state="advanced">
@@ -148,7 +148,7 @@
 
     <details id="model-library" class="mimir-model-library">
       <summary>+ Intelligensbørs</summary>
-      <div class="library-heading"><div><p class="eyebrow">Intelligence. Connected.</p><h2 id="model-library-title">Intelligensbørs</h2></div><p>Se hvilke modeller og ruter som er live, degradert eller potensielle. Supergeni bruker dette kartet til å velge beste svar uten å låse brukeren til én modell.</p></div>
+      <div class="library-heading"><div><p class="eyebrow">0.2 Beta · status verifiseres live</p><h2 id="model-library-title">Intelligensbørs</h2></div><p>Se hvilke modeller og ruter som er live, degradert eller potensielle. Supergeni bruker dette kartet til å velge beste svar uten å låse brukeren til én modell.</p></div>
       <div id="model-library-grid" class="model-library-grid" aria-live="polite"></div>
     </details>
 
@@ -307,7 +307,7 @@
   <script data-mimir-quiet-first-paint>!function(){const w=window,d=document,k='__MimirLocalProbeAllowedUntil',ri=()=>{const p=new URLSearchParams(location.search),h=String(location.hash).toLowerCase();return p.get('mmir_local_return')==='1'||p.get('local_node_ready')==='1'||h.includes('local-connector-ready')||h.includes('mmir-local-ready')},lb=i=>{try{const u=new URL(String(typeof i==='string'?i:i&&i.url||''),location.href);if(u.origin===location.origin)return false;const h=u.hostname;return h==='127.0.0.1'||h==='localhost'||h==='::1'}catch(e){return false}},li=(i,n)=>{if(!lb(i))return n;const x={...(n||{})};x.targetAddressSpace||(x.targetAddressSpace='loopback');return x},allow=(r='manual',m=3e4)=>{w[k]=Math.max(+w[k]||0,Date.now()+m);w.dispatchEvent(new CustomEvent('mmir-local-probe-allowed',{detail:{reason:r,expires_at:new Date(w[k]).toISOString()}}))};w.MimirAllowLocalProbes||(w.MimirAllowLocalProbes=allow);ri()||(w[k]=0);try{if(!ri()){const ak='mimir-chat-active-backend',id=localStorage.getItem(ak)||'',ps=JSON.parse(localStorage.getItem('mimir-chat-backend-profiles')||'[]'),p=Array.isArray(ps)&&ps.find(x=>x&&x.id===id),h=String(p&&p.health||'unknown').toLowerCase();p&&p.provider==='local-node'&&['unknown','offline','checking',''].includes(h)&&(localStorage.removeItem(ak),w.dispatchEvent(new CustomEvent('mmir-backend-profiles-updated',{detail:{passive_local_deactivated:true}})))}}catch(e){}const f=w.fetch;if(f&&!w.__MimirQuietFirstPaintFetchGuard){w.__MimirQuietFirstPaintFetchGuard=1;w.fetch=function(i,n){if(lb(i)&&Date.now()>+w[k]&&!ri()){const e=new Error('local_probe_deferred');e.code='local_probe_deferred';return Promise.reject(e)}return f.call(this,i,li(i,n))}}d.addEventListener('click',e=>{e.target?.closest?.('#runtime-refresh,#refresh-node-dashboard,#refresh-platform-status,#progress-activation-autopilot,[data-local-action="refresh"],[data-local-action="tunnel"],[data-local-action="stop-tunnel"],[data-proof-action="retry"]')&&allow('user-click')},!0);try{const x='mimir-activation-events-v1:'+(localStorage.getItem('mimir-active-workspace-v1')||'personal'),a=JSON.parse(localStorage.getItem(x)||'[]');Array.isArray(a)&&!a.some(e=>e&&e.type==='recommended-starter')&&(a.push({type:'recommended-starter',status:'idle',model:'Supergeni',route:'api.mmir.ai/free',at:new Date().toISOString(),note:'no_paid_routes_started:true'}),localStorage.setItem(x,JSON.stringify(a.slice(-80))))}catch(e){}let n=0,t=setInterval(()=>{const c=w.MimirBackendClient,a=c&&c.allowLocalProbes;if(c&&!c.__runtimeNoSendProbePatch&&typeof a==='function'){c.allowLocalProbes=function(r='manual',m=3e4){if(r==='chat-runtime-send'&&!ri())return;return a.call(this,r,m)};c.__runtimeNoSendProbePatch=1;clearInterval(t)}else if(++n>30)clearInterval(t)},500);ri()&&allow('installer-return',6e4)}()</script>
   <script src="./apps/mimir-chat-portal/route-display.js?v=20260623-receipt-route-truth-v1" defer></script>
   <script src="./apps/mimir-chat-portal/local-install-commands.js?v=20260712-contextual-local-refresh-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/brand-config.js?v=20260804-root-truth-v1" defer></script>
+  <script src="./apps/mimir-chat-portal/brand-config.js?v=20260810-proof-safe-tagline-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-text.js?v=20260714-safe-markdown-v1" defer></script>
   <script src="./apps/mimir-chat-portal/chat-state-copy.js?v=20260714-truthful-chat-state-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-clipboard.js?v=20260606-b1-06-p0-clipboard-v1" defer></script>
@@ -353,7 +353,7 @@
     "./apps/mimir-chat-portal/first-screen-activation-hydration.js?v=20260622-first-screen-starter-progress-v1",
     "./apps/mimir-chat-portal/context-controls.js",
     "./apps/mimir-chat-portal/answer-context-receipts.js",
-    "./apps/mimir-chat-portal/pwa.js?v=20260716-install-prompt-handoff-v1",
+    "./apps/mimir-chat-portal/pwa.js?v=20260810-proof-safe-sw-binding-v1",
     "./apps/mimir-chat-portal/message-actions.js",
     "./apps/mimir-chat-portal/conversation-manager.js?v=20260607-b0-06-13-conversation-portability-v1",
     "./apps/mimir-chat-portal/model-catalog-ui.js?v=20260711-model-action-contract-v1",
@@ -457,9 +457,10 @@
     (function(){
       if(!('serviceWorker' in navigator))return;
       if(!(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'))return;
+      var serviceWorkerUrl='./sw.js?v=20260810-proof-safe-tagline-v1';
       function registerServiceWorker(){
         var run=function(){
-          try{navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){});}
+          try{navigator.serviceWorker.register(serviceWorkerUrl,{scope:'./'}).catch(function(){});}
           catch(error){}
         };
         if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:4000});

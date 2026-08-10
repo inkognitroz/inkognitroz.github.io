@@ -75,8 +75,13 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  "navigator.serviceWorker.register('./sw.js',{scope:'./'})",
-  'The P0 shell must register the root service worker outside the skipped legacy queue.'
+  "serviceWorkerUrl='./sw.js?v=20260810-proof-safe-tagline-v1'",
+  'The P0 shell must bind the proof-safe service-worker script version outside the skipped legacy queue.'
+);
+requireIncludes(
+  html,
+  "navigator.serviceWorker.register(serviceWorkerUrl,{scope:'./'})",
+  'The P0 shell must register the version-bound root service worker outside the skipped legacy queue.'
 );
 requireIncludes(
   html,

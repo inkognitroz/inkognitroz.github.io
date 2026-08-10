@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d355-20260804-model-truth-v1';
+const CACHE_NAME='mmir-pwa-d356-20260810-proof-safe-tagline-v1';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
@@ -67,9 +67,10 @@ function shouldUseNetworkFirst(request,url){
 }
 
 async function matchCachedRequest(request,url){
-  const exact=await caches.match(request);
+  const cache=await caches.open(CACHE_NAME);
+  const exact=await cache.match(request);
   if(exact||!url.search||!SHELL_ASSET_PATHS.has(url.pathname))return exact;
-  return caches.match(request,{ignoreSearch:true});
+  return cache.match(request,{ignoreSearch:true});
 }
 
 async function networkFirst(request,url){

@@ -125,6 +125,8 @@ async function checkChatNav(browser){
   await page.waitForSelector('#mmir-p0-app .p0-release-nav');
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   await assertProofSafeBrand(page,'.p0-brand-text > span','chat shell');
+  assert((await page.locator('#model-library .eyebrow').textContent())?.trim()===proofSafeTagline,'openable intelligence exchange must render the proof-safe live-status tagline');
+  assert(!(await page.locator('body').textContent()).includes('Intelligence. Connected.'),'public chat DOM must not retain the unproven connected-intelligence claim');
   const labels=await page.locator('.p0-release-nav a').allTextContents();
   assert(labels.join('|')==='Prøv|Modeller|Kapabiliteter|Tillit','visible chat shell must expose exactly the compact 0.2 tabs');
   assert(await page.locator('.p0-composer').isVisible(),'chat composer must remain visible after nav injection');
