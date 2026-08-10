@@ -1,5 +1,6 @@
 (function(){
   const root=document.getElementById('pwa-install-root');
+  const SERVICE_WORKER_URL='./sw.js?v=20260810-proof-safe-tagline-v1';
   const installPromptState=window.__MimirPwaInstallPrompt||(window.__MimirPwaInstallPrompt={});
   let deferredPrompt=installPromptState.event||null;
   let swRegistration=null;
@@ -37,7 +38,7 @@
       return;
     }
     try{
-      swRegistration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+      swRegistration=await navigator.serviceWorker.register(SERVICE_WORKER_URL,{scope:'./'});
       if(swRegistration.waiting)swRegistration.waiting.postMessage({type:'SKIP_WAITING'});
       setStatus('PWA shell registered. Offline fallback and install metadata are available.','ready');
     }catch(error){

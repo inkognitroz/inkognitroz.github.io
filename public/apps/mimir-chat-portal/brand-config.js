@@ -1,5 +1,5 @@
 !function(w,d){
-  const VERSION='20260804-root-truth-v1';
+  const VERSION='20260810-proof-safe-tagline-v1';
   const REQUIRED_FIELDS=[
     'name',
     'tagline',
@@ -16,7 +16,7 @@
       id:'mmir',
       name:'MMIR.ai',
       title:'MMIR.ai',
-      tagline:'Intelligence. Connected.',
+      tagline:'0.2 Beta · status verifiseres live',
       description:'One chat surface for connected intelligence, verified answers, models, nodes, tools and trusted routes.',
       theme:{accent:'#0f766e',accent2:'#2563eb',surface:'#ffffff'},
       icon:'MM',

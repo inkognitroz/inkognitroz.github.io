@@ -97,7 +97,7 @@ async function checkEarlyInstallPrompt(root,fail){
   const navigator={
     userAgent:'Chromium',
     standalone:false,
-    serviceWorker:{register:async()=>({waiting:null})}
+    serviceWorker:{register:async(url)=>{window.__registeredServiceWorkerUrl=url;return {waiting:null};}}
   };
   const location={protocol:'https:',hostname:'example.test',hash:'',href:'https://example.test/mmir.html'};
   const caches={match:async()=>null};
@@ -119,6 +119,7 @@ async function checkEarlyInstallPrompt(root,fail){
   if(window.__MimirPwaInstallPrompt?.event!==promptEvent)fail('PWA timing: the early prompt was not retained before pwa.js loaded.');
 
   vm.runInContext(pwa,context,{filename:'pwa.js'});
+  if(window.__registeredServiceWorkerUrl!=='./sw.js?v=20260810-proof-safe-tagline-v1')fail('PWA update: deferred registration did not bind the proof-safe service-worker script version.');
   const installButton=elements.get('pwa-install-button');
   if(!installButton){
     fail('PWA timing: deferred PWA UI did not render its install control.');
@@ -132,15 +133,19 @@ async function checkEarlyInstallPrompt(root,fail){
 async function checkOfflineFetchBehavior(root,fail){
   const source=readFileSync(join(root,'public','sw.js'),'utf8');
   const cacheName=source.match(/const CACHE_NAME='([^']+)'/)?.[1]||'';
-  const priorCacheName='mmir-pwa-d354-20260804-release-0-2-beta-v2';
+  const expectedCacheName='mmir-pwa-d356-20260810-proof-safe-tagline-v1';
+  const priorCacheName='mmir-pwa-d355-20260804-model-truth-v1';
   const origin='https://example.test';
   const listeners=new Map();
   const matchCalls=[];
   const deletedCaches=[];
-  const stored=new Map([
+  const currentStored=new Map([
     [origin+'/apps/mimir-chat-portal/p0-chat-shell.css',new FakeResponse('.mimir-chat-main{display:block}',{headers:{'content-type':'text/css'}})],
-    [origin+'/apps/mimir-chat-portal/p0-chat-shell.js',new FakeResponse('window.__offlineShell=true',{headers:{'content-type':'text/javascript'}})],
+    [origin+'/apps/mimir-chat-portal/p0-chat-shell.js',new FakeResponse("window.__offlineShell=true;window.__tagline='0.2 Beta · status verifiseres live'",{headers:{'content-type':'text/javascript'}})],
     [origin+'/offline.html',new FakeResponse('<!doctype html><title>Offline</title>',{headers:{'content-type':'text/html'}})]
+  ]);
+  const staleStored=new Map([
+    [origin+'/apps/mimir-chat-portal/p0-chat-shell.js',new FakeResponse("window.__tagline='Intelligence. Connected.'",{headers:{'content-type':'text/javascript'}})]
   ]);
   const absolute=(input)=>new URL(typeof input==='string'?input:input.url,origin+'/').href;
   const withoutSearch=(value)=>{const url=new URL(value);url.search='';return url.href;};
@@ -148,12 +153,25 @@ async function checkOfflineFetchBehavior(root,fail){
     async match(input,options={}){
       const requested=absolute(input);
       matchCalls.push({requested,ignoreSearch:Boolean(options.ignoreSearch)});
-      if(!options.ignoreSearch)return stored.get(requested)?.clone();
+      if(!options.ignoreSearch)return staleStored.get(requested)?.clone()||currentStored.get(requested)?.clone();
       const normalized=withoutSearch(requested);
-      for(const [key,response] of stored.entries())if(withoutSearch(key)===normalized)return response.clone();
+      for(const [key,response] of staleStored.entries())if(withoutSearch(key)===normalized)return response.clone();
+      for(const [key,response] of currentStored.entries())if(withoutSearch(key)===normalized)return response.clone();
       return undefined;
     },
-    async open(){return {put:async()=>{},addAll:async()=>{}};},
+    async open(name){return {
+      async match(input,options={}){
+        if(name!==cacheName)return undefined;
+        const requested=absolute(input);
+        matchCalls.push({requested,ignoreSearch:Boolean(options.ignoreSearch),cacheName:name});
+        if(!options.ignoreSearch)return currentStored.get(requested)?.clone();
+        const normalized=withoutSearch(requested);
+        for(const [key,response] of currentStored.entries())if(withoutSearch(key)===normalized)return response.clone();
+        return undefined;
+      },
+      put:async()=>{},
+      addAll:async()=>{}
+    };},
     async keys(){return [priorCacheName,cacheName,'unrelated-cache'];},
     async delete(key){deletedCaches.push(key);return true;}
   };
@@ -173,6 +191,7 @@ async function checkOfflineFetchBehavior(root,fail){
     activateHandler({waitUntil(value){activation=Promise.resolve(value);}});
     if(!activation)fail('PWA update: activate handler did not bind cache cleanup.');
     else await activation;
+    if(cacheName!==expectedCacheName)fail('PWA update: service worker did not use the proof-safe cache identity.');
     if(cacheName===priorCacheName)fail('PWA update: release-readiness hotfix reused the prior cache identity.');
     if(!deletedCaches.includes(priorCacheName))fail('PWA update: prior release cache was not deleted during activation.');
     if(deletedCaches.includes(cacheName))fail('PWA update: current release cache was deleted during activation.');
@@ -199,7 +218,9 @@ async function checkOfflineFetchBehavior(root,fail){
 
   const script=await request('/apps/mimir-chat-portal/p0-chat-shell.js?v=20260715-truthful-proof-line-v1',{destination:'script'});
   if(script.headers.get('content-type')!=='text/javascript')fail('PWA offline: versioned cached JavaScript did not retain a script MIME type.');
-  if(!(await script.text()).includes('__offlineShell'))fail('PWA offline: versioned JavaScript did not resolve to its unversioned precache entry.');
+  const scriptText=await script.text();
+  if(!scriptText.includes('__offlineShell'))fail('PWA offline: versioned JavaScript did not resolve to its unversioned precache entry.');
+  if(!scriptText.includes('status verifiseres live')||scriptText.includes('Intelligence. Connected.'))fail('PWA offline: versioned shell resolved to stale public copy instead of the current cache.');
 
   const missingCss=await request('/apps/mimir-chat-portal/not-precached.css?v=1',{destination:'style'});
   if(missingCss.type!=='error'||missingCss.headers.get('content-type')==='text/html')fail('PWA offline: uncached CSS received an HTML fallback instead of a network error.');

@@ -8,6 +8,7 @@ let port=preferredPort;
 let baseUrl='';
 const failures=[];
 const assert=(condition,message)=>{if(!condition)failures.push(message);};
+const proofSafeTagline='0.2 Beta · status verifiseres live';
 
 function canListen(candidate){
   return new Promise((resolve,reject)=>{
@@ -102,6 +103,12 @@ async function noHorizontalOverflow(page,label){
   assert(sizes.body<=sizes.viewport+1,label+' body must not overflow the viewport');
 }
 
+async function assertProofSafeBrand(page,selector,label){
+  const taglines=await page.locator(selector).allTextContents();
+  assert(taglines.length>0,label+' must render a visible release tagline');
+  assert(taglines.every(text=>text.trim()===proofSafeTagline),label+' must render only the proof-safe live-status tagline; got '+taglines.join(' | '));
+}
+
 async function checkChatNav(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await page.addInitScript(()=>{
@@ -117,6 +124,9 @@ async function checkChatNav(browser){
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#mmir-p0-app .p0-release-nav');
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
+  await assertProofSafeBrand(page,'.p0-brand-text > span','chat shell');
+  assert((await page.locator('#model-library .eyebrow').textContent())?.trim()===proofSafeTagline,'openable intelligence exchange must render the proof-safe live-status tagline');
+  assert(!(await page.locator('body').textContent()).includes('Intelligence. Connected.'),'public chat DOM must not retain the unproven connected-intelligence claim');
   const labels=await page.locator('.p0-release-nav a').allTextContents();
   assert(labels.join('|')==='Prøv|Modeller|Kapabiliteter|Tillit','visible chat shell must expose exactly the compact 0.2 tabs');
   assert(await page.locator('.p0-composer').isVisible(),'chat composer must remain visible after nav injection');
@@ -189,6 +199,7 @@ async function checkModels(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await routeApi(page);
   await page.goto(baseUrl+'/modeller/index.html',{waitUntil:'networkidle'});
+  await assertProofSafeBrand(page,'.release-brand-copy small','model page');
   assert(await page.locator('#metric-tryable').textContent()==='0','a blocked release must show zero models as free to try now');
   assert(await page.locator('#metric-configured').textContent()==='2','blocked E2E and configured routes must remain configured but unavailable');
   assert(await page.locator('#models-grid .catalog-card').count()===4,'model page must render all fixture inventory rows');
@@ -272,6 +283,7 @@ async function checkCapabilities(browser){
   const page=await browser.newPage({viewport:{width:768,height:1024}});
   await routeApi(page);
   await page.goto(baseUrl+'/kapabiliteter/index.html',{waitUntil:'networkidle'});
+  await assertProofSafeBrand(page,'.release-brand-copy small','capability page');
   const cards=page.locator('#capability-grid .catalog-card');
   assert(await cards.count()===48,'capability page must render all canonical public rows');
   assert((await page.locator('#capability-revision').innerText()).includes('a8b63891b29c'),'capability page must expose the canonical semantic revision');
@@ -456,6 +468,7 @@ async function checkFailClosed(browser){
   const page=await browser.newPage({viewport:{width:1280,height:800}});
   await routeApi(page,{fail:true});
   await page.goto(baseUrl+'/tillit/index.html',{waitUntil:'networkidle'});
+  await assertProofSafeBrand(page,'.release-brand-copy small','trust page');
   assert(await page.locator('#trust-runtime').getAttribute('data-state')==='error','failed runtime fetch must render an error state');
   assert((await page.locator('#trust-runtime').innerText()).includes('kunne ikke verifiseres'),'failed runtime fetch must say unknown/error, never live');
   await page.close();

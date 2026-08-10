@@ -337,8 +337,8 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d355-20260804-model-truth-v1",
-  "Service worker cache must bust for the shared model-truth taxonomy.",
+  "mmir-pwa-d356-20260810-proof-safe-tagline-v1",
+  "Service worker cache must bust for proof-safe public copy and the shared model-truth taxonomy.",
 );
 requireText(
   serviceWorkerPath,

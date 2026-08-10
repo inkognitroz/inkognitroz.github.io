@@ -25,7 +25,7 @@ if (shell.slice(shell.indexOf('function renderAddMenu('), shell.indexOf('functio
   failures.push('Launch settings must not expose owner-facing Intelligence status in the user chat menu.');
 }
 requireIncludes(shell, 'fetchJson(API_URL+INTELLIGENCE_SCORECARD_PATH,{timeoutMs:9000})', 'Intelligence status must fetch the scorecard with a short read-only timeout.');
-requireIncludes(shell, 'Intelligence. Connected.', 'Intelligence status answer must lead with the MMIR vision.');
+requireIncludes(shell, '0.2 Beta · status verifiseres live', 'Intelligence status answer must lead with the proof-safe live-status tagline.');
 requireIncludes(shell, 'Known executable parameter lower bound', 'Intelligence status must surface parameter capacity as lower-bound metadata.');
 requireIncludes(shell, 'Primary score: ', 'Intelligence status must explain the actual quality metric.');
 requireIncludes(shell, 'Parameters are capacity metadata, not the final quality score.', 'Intelligence status must not equate parameters with intelligence quality.');

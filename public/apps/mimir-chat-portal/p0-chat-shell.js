@@ -70,7 +70,8 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260804-model-truth-v1';
+  const P0_RUNTIME_VERSION='20260810-proof-safe-tagline-v1';
+  const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
   const CANONICAL_HOSTED_MODEL_ID='mmir-supergenius';
@@ -4000,6 +4001,12 @@
     }
   }
 
+  function syncProofSafeTagline(){
+    document.querySelectorAll('#mmir-p0-app .p0-brand-text > span').forEach(tagline=>{
+      if(tagline.textContent!==PROOF_SAFE_TAGLINE)tagline.textContent=PROOF_SAFE_TAGLINE;
+    });
+  }
+
   function installShell(){
     if(document.getElementById('mmir-p0-app'))return;
     const app=document.createElement('section');
@@ -4010,7 +4017,7 @@
       '<aside class="p0-sidebar" aria-label="MMIR navigation">'+
         '<a class="p0-sidebar-brand" href="./mmir.html" aria-label="MMIR.ai chat">'+
           '<span class="p0-mark" aria-hidden="true">MM</span>'+
-          '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
+          '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>'+PROOF_SAFE_TAGLINE+'</span></span>'+
         '</a>'+
         '<nav class="p0-sidebar-nav" aria-label="Chat actions">'+
           '<button type="button" data-p0-sidebar-action="new-chat">'+ICON_TOOLS+'<span>Ny chat</span></button>'+
@@ -4023,7 +4030,7 @@
         '<header class="p0-topbar">'+
           '<a class="p0-brand" href="./mmir.html" aria-label="MMIR.ai chat">'+
             '<span class="p0-mark" aria-hidden="true">MM</span>'+
-            '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>Intelligence. Connected.</span></span>'+
+            '<span class="p0-brand-text"><strong>MMIR.ai</strong><span>'+PROOF_SAFE_TAGLINE+'</span></span>'+
           '</a>'+
           '<div class="p0-topbar-truth">'+
             '<span class="p0-ai-badge" role="note" aria-label="KI-chat. Supergeni er kunstig intelligens. Svarforfatter, rute og kilder vises i kvitteringen etter hvert svar." title="Supergeni er kunstig intelligens. Svarforfatter, rute og kilder vises i kvitteringen etter hvert svar.">KI-chat</span>'+
@@ -5401,7 +5408,7 @@
     const next24=scorecard?.capacity_plan?.growth_targets?.next_24h?.callable_route_goal||scorecard?.owner_summary?.next_24h_target||'not set';
     const next7=scorecard?.capacity_plan?.growth_targets?.next_7d?.callable_route_goal||scorecard?.owner_summary?.next_7d_target||'not set';
     return [
-      'Intelligence. Connected.',
+      PROOF_SAFE_TAGLINE,
       '',
       'Live connected intelligence now:',
       '- '+callable+' callable routes / '+target+' target ('+progress+'%).',
@@ -8160,8 +8167,10 @@
       window.MimirChatRuntimeBridge.saveFeedbackDraft=saveFeedbackDraft;
     }
     installShell();
+    syncProofSafeTagline();
     enforceShellStyles();
     window.addEventListener('mimir-brand-config-applied',syncAiDisclosureComposer);
+    window.addEventListener('mimir-brand-config-applied',syncProofSafeTagline);
     status('Sjekker offentlig svarbane …','loading');
     renderReleaseReadiness();
     updateSendControl();
