@@ -190,6 +190,11 @@ requirePattern(
 );
 requirePattern(
   normalizedCss,
+  /\.mimir-public-chat \.p0-send \{.*?background: #111827;.*?border-color: #111827;.*?color: #ffffff;.*?transition: none;.*?\}/,
+  'Ready send colors must outrank the legacy public-button surface without blocking mobile size overrides.'
+);
+requirePattern(
+  normalizedCss,
   /\.p0-send:focus-visible \{.*?outline: 3px solid #0f766e;.*?outline-offset: 3px;.*?\}/,
   'Send control must keep a high-contrast keyboard focus indicator.'
 );
