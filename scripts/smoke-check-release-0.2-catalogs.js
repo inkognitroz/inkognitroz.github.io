@@ -37,7 +37,7 @@ function publicTextSources(directory){
 
 assert(mmir.includes('p0-release-nav.css?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation stylesheet');
 assert(mmir.includes('p0-release-nav.js?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation script');
-assert(mmir.includes('p0-chat-shell.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe shell asset version');
+assert(mmir.includes('p0-chat-shell.js?v=20260815-iphone-send-accessibility-v1'),'chat must bind the iPhone-accessible shell asset version');
 assert(mmir.includes('brand-config.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe brand asset version');
 assert(mmir.includes('pwa.js?v=20260810-proof-safe-sw-binding-v1'),'chat must bind the proof-safe PWA registration asset version');
 assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260810-proof-safe-tagline-v1'"),'no-JS shell must register the proof-safe service-worker script version');
@@ -57,6 +57,7 @@ for(const [name,html] of [['models',models],['capabilities',capabilities],['trus
 }
 
 assert(p0Shell.includes(proofSafeTagline),'visible chat shell must show the proof-safe live-status tagline');
+assert(p0Shell.includes('Chatten er ikke produksjonsklar.')&&p0Shell.includes('Ikke del sensitiv info eller bruk den til høyrisikoformål.'),'blocked chat must keep concise release, privacy and high-risk truth');
 assert(!p0Shell.includes(unprovenTagline),'visible chat shell must not show an unproven connected-intelligence claim');
 assert(mmir.includes('<span data-brand-field="tagline" hidden>'+proofSafeTagline+'</span>'),'no-JS brand fallback must use the proof-safe live-status tagline');
 assert(mmir.includes('<p class="eyebrow">'+proofSafeTagline+'</p><h2 id="model-library-title">'),'openable intelligence exchange must use the proof-safe live-status tagline');

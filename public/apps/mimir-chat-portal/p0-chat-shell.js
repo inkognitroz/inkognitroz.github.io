@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260810-proof-safe-tagline-v1';
+  const P0_RUNTIME_VERSION='20260815-iphone-send-accessibility-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -4038,8 +4038,8 @@
           '</div>'+
         '</header>'+
         '<section id="p0-release-warning" class="p0-release-warning" data-state="checking" role="status" aria-live="polite">'+
-          '<div><strong>Sjekker offentlig svarbane …</strong><span>Ingen hosted-rute regnes som klar før produksjonsbeviset er verifisert.</span></div>'+
-          '<a href="./tillit/">Se tillit og driftsbevis</a>'+
+          '<div><strong>Sjekker om chatten er klar …</strong><span>Vent med å sende; ikke del sensitiv info.</span></div>'+
+          '<a href="./tillit/" aria-label="Se tillit og driftsbevis">Status</a>'+
         '</section>'+
         '<main class="p0-chat">'+
           '<div id="p0-transcript" class="p0-transcript" aria-live="polite" aria-relevant="additions text"></div>'+
@@ -6290,11 +6290,12 @@
           : (checking
             ? 'MMIR bekrefter nå den ekte modellruten. Ingen demosimulering vises som et live-svar.'
             : 'Svaret lages av en ekte modellrute, ikke av en demosimulering.'));
+      const privacyReminder=state.releaseReadiness?.hostedReady===true?' Ikke del sensitiv info.':'';
       root.innerHTML=''+
         '<section class="p0-first-session" data-answer-state="'+answerState+'" aria-labelledby="p0-first-session-title">'+
           '<span class="p0-first-session-state">'+safeText(stateLabel)+'</span>'+
           '<h1 id="p0-first-session-title">Hva vil du vite?</h1>'+
-          '<p>Du snakker med <strong>Supergeni, en kunstig intelligens</strong> fra MMIR. Svar kan inneholde feil. Ikke lim inn sensitive personopplysninger.</p>'+
+          '<p>Du chatter med <strong>Supergeni, en kunstig intelligens</strong>. Svar kan være feil.'+privacyReminder+'</p>'+
           '<small>'+safeText(stateDetail)+' Faktisk svarforfatter og eventuelle kilder vises under svaret.</small>'+
         '</section>';
       return;
@@ -6436,8 +6437,8 @@
     warning.hidden=false;
     warning.dataset.state=readiness.state==='checking'?'checking':'blocked';
     warning.innerHTML=''+
-      '<div><strong>Offentlig svarbane er ikke produksjonsgrønn.</strong><span>Svar kan feile eller være feil. Ikke bruk sensitiv informasjon eller høyrisikoformål i denne testversjonen.</span></div>'+
-      '<a href="./tillit/">Se tillit og driftsbevis</a>';
+      '<div><strong>Chatten er ikke produksjonsklar.</strong><span>Ikke del sensitiv info eller bruk den til høyrisikoformål.</span></div>'+
+      '<a href="./tillit/" aria-label="Se tillit og driftsbevis">Status</a>';
   }
 
   function selectedRouteReady(){
@@ -6476,9 +6477,14 @@
     send.classList.toggle('is-stopping',state.busy);
     send.dataset.state=state.busy?'stopping':(canSend?'send':'blocked');
     send.textContent=state.busy?'■':'↑';
-    const blockedLabel=activeModel()?.route==='local'?'Lokal modell er ikke verifisert klar':'Offentlig svarbane er ikke produksjonsklar';
+    const blockedLabel=activeModel()?.route==='local'?'Lokal modell er ikke verifisert klar':'Chatten er ikke produksjonsklar ennå';
     send.setAttribute('aria-label',state.busy?'Stopp gjeldende svar':(canSend?'Send melding':blockedLabel));
     send.setAttribute('title',state.busy?'Stopp':(canSend?'Send':blockedLabel));
+    const releaseWarning=document.getElementById('p0-release-warning');
+    if(!state.busy&&!canSend&&releaseWarning&&!releaseWarning.hidden)send.setAttribute('aria-describedby','p0-release-warning');
+    else send.removeAttribute('aria-describedby');
+    const composer=document.getElementById('p0-composer');
+    if(composer)composer.setAttribute('aria-busy',state.busy?'true':'false');
     renderSuperboostCta();
     updatePinnedToolbarToolStates();
   }
