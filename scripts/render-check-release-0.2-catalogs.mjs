@@ -349,7 +349,8 @@ async function checkReadyHostedGate(browser){
   assert(!(await page.locator('#p0-send').isDisabled()),'hosted send must enable only after the complete release-readiness contract is green');
   const readySend=await sendVisualState(page);
   assert(readySend.width>=44&&readySend.height>=44,'ready iPhone send control must keep a 44 by 44 CSS pixel target');
-  assert(readySend.opacity==='1'&&contrastRatio(readySend.color,readySend.background)>=4.5,'ready send control must stay opaque with WCAG text contrast');
+  assert(readySend.background==='rgb(17, 24, 39)'&&readySend.color==='rgb(255, 255, 255)'&&readySend.opacity==='1','ready send control must keep its solid dark fill instead of inheriting the legacy white button surface');
+  assert(contrastRatio(readySend.color,readySend.background)>=4.5,'ready send control must keep WCAG text contrast');
   assert(readySend.ariaDescribedBy==='','ready send control must stop referencing the hidden release warning');
   await page.locator('#p0-send').focus();
   const focusedSend=await sendVisualState(page);

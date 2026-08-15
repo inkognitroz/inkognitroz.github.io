@@ -120,7 +120,7 @@ async function checkViewport(browser, viewport) {
     const style = getComputedStyle(button);
     return { background: style.backgroundColor, color: style.color, opacity: style.opacity };
   });
-  assert(sendVisual.background !== 'rgba(0, 0, 0, 0)' && sendVisual.opacity === '1', `${viewport.name}: enabled send control must stay opaque and visible`);
+  assert(sendVisual.background === 'rgb(17, 24, 39)' && sendVisual.color === 'rgb(255, 255, 255)' && sendVisual.opacity === '1', `${viewport.name}: enabled send control must keep its solid high-contrast fill`);
 
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
   assert(logs.length === 0, `${viewport.name}: console must stay clean (${logs.join('; ')})`);

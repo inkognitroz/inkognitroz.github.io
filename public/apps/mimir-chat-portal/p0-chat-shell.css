@@ -1201,16 +1201,19 @@ a.p0-proof-source:focus-visible {
 }
 
 .p0-send {
-  background: #111827;
-  border-color: #111827;
-  color: #ffffff;
   font-size: 0.9rem;
   min-height: 44px;
   min-width: 58px;
   padding: 0 16px;
   touch-action: manipulation;
-  transition: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.mimir-public-chat .p0-send {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+  transition: none;
 }
 
 .p0-send:hover,

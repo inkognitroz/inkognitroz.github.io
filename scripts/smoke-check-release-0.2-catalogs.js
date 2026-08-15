@@ -37,6 +37,7 @@ function publicTextSources(directory){
 
 assert(mmir.includes('p0-release-nav.css?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation stylesheet');
 assert(mmir.includes('p0-release-nav.js?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation script');
+assert(mmir.includes('p0-chat-shell.css?v=20260815-iphone-send-ready-fill-v1'),'chat must bind the ready-fill corrected shell stylesheet version');
 assert(mmir.includes('p0-chat-shell.js?v=20260815-iphone-send-accessibility-v1'),'chat must bind the iPhone-accessible shell asset version');
 assert(mmir.includes('brand-config.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe brand asset version');
 assert(mmir.includes('pwa.js?v=20260810-proof-safe-sw-binding-v1'),'chat must bind the proof-safe PWA registration asset version');
