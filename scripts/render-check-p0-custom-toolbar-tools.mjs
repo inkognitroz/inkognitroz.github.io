@@ -114,7 +114,13 @@ async function checkViewport(browser, viewport) {
   if (inputBox && sendBox) {
     assert(inputBox.x + inputBox.width <= viewport.width + 1, `${viewport.name}: input must fit viewport`);
     assert(sendBox.x + sendBox.width <= viewport.width + 1, `${viewport.name}: send control must fit viewport`);
+    assert(sendBox.width >= 44 && sendBox.height >= 44, `${viewport.name}: send control must keep a 44 by 44 CSS pixel tap target`);
   }
+  const sendVisual = await page.locator('#p0-send').evaluate(button => {
+    const style = getComputedStyle(button);
+    return { background: style.backgroundColor, color: style.color, opacity: style.opacity };
+  });
+  assert(sendVisual.background !== 'rgba(0, 0, 0, 0)' && sendVisual.opacity === '1', `${viewport.name}: enabled send control must stay opaque and visible`);
 
   await page.screenshot({ path: `${screenshotDir}/${viewport.name}.png`, fullPage: false });
   assert(logs.length === 0, `${viewport.name}: console must stay clean (${logs.join('; ')})`);

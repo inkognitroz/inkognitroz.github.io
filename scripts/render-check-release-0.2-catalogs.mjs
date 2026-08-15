@@ -10,6 +10,42 @@ const failures=[];
 const assert=(condition,message)=>{if(!condition)failures.push(message);};
 const proofSafeTagline='0.2 Beta · status verifiseres live';
 
+function relativeLuminance(color){
+  const channels=String(color||'').match(/[\d.]+/g)?.slice(0,3).map(Number);
+  if(!channels||channels.length!==3)return 0;
+  const linear=channels.map(value=>{
+    const channel=value/255;
+    return channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4;
+  });
+  return 0.2126*linear[0]+0.7152*linear[1]+0.0722*linear[2];
+}
+
+function contrastRatio(foreground,background){
+  const first=relativeLuminance(foreground);
+  const second=relativeLuminance(background);
+  return (Math.max(first,second)+0.05)/(Math.min(first,second)+0.05);
+}
+
+async function sendVisualState(page){
+  return page.locator('#p0-send').evaluate(button=>{
+    const style=getComputedStyle(button);
+    const rect=button.getBoundingClientRect();
+    return {
+      width:rect.width,
+      height:rect.height,
+      background:style.backgroundColor,
+      color:style.color,
+      opacity:style.opacity,
+      outlineColor:style.outlineColor,
+      outlineStyle:style.outlineStyle,
+      outlineWidth:Number.parseFloat(style.outlineWidth)||0,
+      ariaLabel:button.getAttribute('aria-label')||'',
+      ariaDescribedBy:button.getAttribute('aria-describedby')||'',
+      state:button.dataset.state||''
+    };
+  });
+}
+
 function canListen(candidate){
   return new Promise((resolve,reject)=>{
     const server=createNetServer();
@@ -131,9 +167,15 @@ async function checkChatNav(browser){
   assert(labels.join('|')==='Prøv|Modeller|Kapabiliteter|Tillit','visible chat shell must expose exactly the compact 0.2 tabs');
   assert(await page.locator('.p0-composer').isVisible(),'chat composer must remain visible after nav injection');
   const warning=await page.locator('#p0-release-warning').innerText();
-  assert(/ikke produksjonsgrønn/i.test(warning),'blocked operator release must be disclosed at the chat entry point');
-  assert(/sensitive|høyrisiko/i.test(warning),'blocked chat entry must warn against sensitive or high-risk use');
+  assert(/ikke produksjonsklar/i.test(warning),'blocked operator release must be disclosed at the chat entry point');
+  assert(/sensitiv info.+høyrisikoformål/i.test(warning),'blocked chat entry must concisely warn against sensitive and high-risk use');
+  assert(warning.replace(/\s+/g,' ').trim().length<=140,'blocked chat warning must stay concise on a mobile first screen');
   assert(await page.locator('#p0-send').isDisabled(),'hosted send CTA must fail closed while first chat is blocked');
+  const blockedSend=await sendVisualState(page);
+  assert(blockedSend.width>=44&&blockedSend.height>=44,'blocked iPhone send control must keep a 44 by 44 CSS pixel target');
+  assert(blockedSend.opacity==='1','blocked send control must remain opaque instead of looking transparent');
+  assert(contrastRatio(blockedSend.color,blockedSend.background)>=4.5,'blocked send icon must keep WCAG text contrast');
+  assert(blockedSend.ariaDescribedBy==='p0-release-warning','blocked send control must reference the visible release explanation');
   const blockedDefaultRouteText=await page.locator('#p0-route').innerText();
   assert(/offentlig svarbane blokkert/i.test(blockedDefaultRouteText),'blocked first chat must make the default route line fail closed; got '+blockedDefaultRouteText);
   assert(!/\bready\b/i.test(blockedDefaultRouteText),'blocked first chat must never label the default route ready; got '+blockedDefaultRouteText);
@@ -305,9 +347,53 @@ async function checkReadyHostedGate(browser){
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
   assert(!(await page.locator('#p0-send').isDisabled()),'hosted send must enable only after the complete release-readiness contract is green');
+  const readySend=await sendVisualState(page);
+  assert(readySend.width>=44&&readySend.height>=44,'ready iPhone send control must keep a 44 by 44 CSS pixel target');
+  assert(readySend.opacity==='1'&&contrastRatio(readySend.color,readySend.background)>=4.5,'ready send control must stay opaque with WCAG text contrast');
+  assert(readySend.ariaDescribedBy==='','ready send control must stop referencing the hidden release warning');
+  await page.locator('#p0-send').focus();
+  const focusedSend=await sendVisualState(page);
+  assert(focusedSend.outlineStyle==='solid'&&focusedSend.outlineWidth>=3,'keyboard-focused send control must expose a 3px solid outline');
+  assert(contrastRatio(focusedSend.outlineColor,'rgb(255, 255, 255)')>=3,'send focus outline must keep non-text contrast against the page');
   const readyRouteText=await page.locator('#p0-route').innerText();
   assert(!/blokkert|sjekker offentlig svarbane/i.test(readyRouteText),'green first chat must clear the fail-closed route line; got '+readyRouteText);
   assert(await page.locator('#p0-route').getAttribute('data-state')!=='error','green first chat must clear route error state');
+  await page.close();
+}
+
+async function checkKeyboardSendAndStop(browser){
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await routeApi(page,{releaseReady:true});
+  let hostedChatCalls=0;
+  let releaseChatResponse;
+  let noteChatStarted;
+  const chatResponseGate=new Promise(resolve=>{releaseChatResponse=resolve;});
+  const chatStarted=new Promise(resolve=>{noteChatStarted=resolve;});
+  await page.route('https://api.mmir.ai/v1/chat/completions',async route=>{
+    hostedChatCalls+=1;
+    noteChatStarted();
+    await chatResponseGate;
+    try{
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'stopped fixture'}}]})});
+    }catch(error){}
+  });
+  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
+  await page.locator('#p0-input').fill('Start og stopp med tastaturet');
+  await page.locator('#p0-input').press('Enter');
+  await page.waitForSelector('#p0-send[data-state="stopping"]');
+  await chatStarted;
+  const stoppingSend=await sendVisualState(page);
+  assert(!(await page.locator('#p0-send').isDisabled()),'busy send control must stay enabled as the stop action');
+  assert(stoppingSend.width>=44&&stoppingSend.height>=44,'busy iPhone stop control must keep a 44 by 44 CSS pixel target');
+  assert(stoppingSend.ariaLabel==='Stopp gjeldende svar','busy send control must expose its stop action accessibly');
+  assert(contrastRatio(stoppingSend.color,stoppingSend.background)>=4.5,'busy stop control must keep WCAG text contrast; got '+stoppingSend.color+' on '+stoppingSend.background);
+  assert(await page.locator('#p0-composer').getAttribute('aria-busy')==='true','composer must expose the busy state while an answer is running');
+  await page.locator('#p0-input').press('Escape');
+  releaseChatResponse();
+  await page.waitForFunction(()=>document.getElementById('p0-send')?.dataset.state==='send');
+  assert(await page.locator('#p0-composer').getAttribute('aria-busy')==='false','Escape stop must clear the composer busy state');
+  assert(hostedChatCalls===1,'keyboard send and stop must start exactly one hosted request');
   await page.close();
 }
 
@@ -520,6 +606,7 @@ try{
   await checkCapabilitySchemaFailClosed(browser);
   await checkReleaseReadinessGate(browser);
   await checkReadyHostedGate(browser);
+  await checkKeyboardSendAndStop(browser);
   await checkInventoryMismatchFailsClosed(browser);
   await checkReadyToBlockedTransition(browser);
   await checkOutOfOrderPreflightFailsClosed(browser);

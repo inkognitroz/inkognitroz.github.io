@@ -90,6 +90,15 @@ for (const marker of [
 forbidText(runtime, 'class="p0-menu" role="menu"', 'Generic button popovers must not claim the ARIA menu pattern without menuitem keyboard semantics.');
 
 for (const marker of [
+  'Chatten er ikke produksjonsklar.',
+  'Ikke del sensitiv info eller bruk den til høyrisikoformål.',
+  "send.setAttribute('aria-describedby','p0-release-warning')",
+  "composer.setAttribute('aria-busy',state.busy?'true':'false')"
+]) {
+  requireText(runtime, marker, `P0 send state must keep concise, accessible release truth: ${marker}`);
+}
+
+for (const marker of [
   "menuButton('privacy-menu','Personvern')",
   "menuButton('cycle-answer-style','Svarstil: '+answerStyleLabel())",
   "menuButton('new-chat','Ny chat'",
@@ -141,6 +150,7 @@ for (const marker of [
   '#mmir-p0-app {',
   'grid-template-columns: 220px minmax(0, 1fr);',
   'height: 100vh;',
+  'height: 100dvh;',
   'body.mmir-p0-ready > :not(#mmir-p0-app)',
   '.p0-main-shell {',
   'grid-template-rows: auto minmax(0, 1fr) auto;',
@@ -172,6 +182,27 @@ for (const marker of [
 ]) {
   requireText(css, marker, `P0 mobile CSS contract missing: ${marker}`);
 }
+
+requirePattern(
+  normalizedCss,
+  /\.p0-send \{.*?min-height: 44px;.*?touch-action: manipulation;.*?\}/,
+  'Send control must keep a 44px minimum tap target and direct touch handling.'
+);
+requirePattern(
+  normalizedCss,
+  /\.p0-send:focus-visible \{.*?outline: 3px solid #0f766e;.*?outline-offset: 3px;.*?\}/,
+  'Send control must keep a high-contrast keyboard focus indicator.'
+);
+requirePattern(
+  normalizedCss,
+  /\.p0-send\[data-state="blocked"\]:disabled \{.*?background: #e2e8f0;.*?border-color: #64748b;.*?color: #334155;.*?opacity: 1;.*?\}/,
+  'Blocked send control must remain opaque and visibly unavailable.'
+);
+requirePattern(
+  normalizedCss,
+  /@media \(max-width: 640px\).*?\.p0-send \{.*?min-height: 44px;.*?min-width: 44px;.*?\}/,
+  'Mobile send control must preserve a 44 by 44 CSS pixel tap target.'
+);
 
 requirePattern(
   normalizedCss,

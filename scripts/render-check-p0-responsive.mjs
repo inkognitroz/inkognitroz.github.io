@@ -282,7 +282,7 @@ async function checkViewport(browser, viewport) {
   assert(firstSession.lang === 'no', `${viewport.name}: first-session document language must be Norwegian`);
   assert(firstSession.disclosureState === 'live', `${viewport.name}: confirmed route must expose the live answer state`);
   assert(/Supergeni, en kunstig intelligens/i.test(firstSession.disclosureText), `${viewport.name}: first session must disclose the AI interaction before the first prompt`);
-  assert(/Ikke lim inn sensitive personopplysninger/i.test(firstSession.disclosureText), `${viewport.name}: first session must warn against sensitive personal data`);
+  assert(/Ikke del sensitiv info/i.test(firstSession.disclosureText), `${viewport.name}: ready first session must keep one concise sensitive-data warning`);
   assert(/ikke av en demosimulering/i.test(firstSession.disclosureText), `${viewport.name}: live state must not be confused with demo/sample content`);
   assert(firstSession.badgeText.trim() === 'KI-chat' && /kunstig intelligens/i.test(firstSession.badgeAria), `${viewport.name}: persistent AI badge must be visible and accessible`);
   assert(/Supergeni \(KI\)/i.test(firstSession.inputPlaceholder) && /kunstig intelligens/i.test(firstSession.inputAria), `${viewport.name}: composer must identify the AI accessibly`);
@@ -330,7 +330,8 @@ async function checkViewport(browser, viewport) {
   for (const [id, rect] of controls) {
     assert(rect?.visible, `${viewport.name}: ${id} should be visible`);
     assert(rect.left >= -1 && rect.right <= viewport.width + 1, `${viewport.name}: ${id} should stay inside viewport`);
-    assert(rect.height >= 34, `${viewport.name}: ${id} should keep a tappable height`);
+    assert(rect.height >= (id === 'p0-send' ? 44 : 34), `${viewport.name}: ${id} should keep a tappable height`);
+    if (id === 'p0-send') assert(rect.width >= 44, `${viewport.name}: ${id} should keep a 44px tap width`);
   }
   for (let outer = 0; outer < controls.length; outer += 1) {
     for (let inner = outer + 1; inner < controls.length; inner += 1) {
