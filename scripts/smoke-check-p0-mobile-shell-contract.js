@@ -252,7 +252,7 @@ for (const marker of [
 }
 
 for (const marker of [
-  'npx playwright install chromium webkit',
+  'npx playwright install --with-deps chromium webkit',
   'npm run check:iphone-webkit'
 ]) {
   requireText(qualityWorkflow, marker, `required quality CI must retain the iPhone WebKit gate: ${marker}`);
