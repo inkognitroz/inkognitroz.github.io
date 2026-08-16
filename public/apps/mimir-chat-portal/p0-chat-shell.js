@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260815-iphone-send-accessibility-v1';
+  const P0_RUNTIME_VERSION='20260816-iphone-webkit-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -4660,6 +4660,15 @@
     });
   }
 
+  function positionMenuAboveTrigger(menu,button){
+    const rect=button.getBoundingClientRect();
+    const width=Math.min(360,window.innerWidth-28);
+    const left=Math.max(14,Math.min(window.innerWidth-width-14,rect.left));
+    const bottom=Math.max(12,window.innerHeight-rect.top+8);
+    menu.style.left=left+'px';
+    menu.style.bottom=bottom+'px';
+  }
+
   function toggleMenu(name,button,returnFocus=button){
     const menu=menuEl(name);
     if(!menu||!button)return;
@@ -4673,13 +4682,15 @@
     if(name==='add')renderAddMenu();
     if(name==='model')renderModelMenu();
     if(name==='privacy')renderPrivacyMenu();
-    const rect=button.getBoundingClientRect();
-    const width=Math.min(360,window.innerWidth-28);
-    const left=Math.max(14,Math.min(window.innerWidth-width-14,rect.left));
-    menu.style.left=left+'px';
+    if(window.matchMedia('(max-width: 640px)').matches&&document.activeElement===document.getElementById('p0-input')){
+      document.activeElement.blur();
+    }
     menu.hidden=false;
+    const anchor=returnFocus?.isConnected?returnFocus:button;
+    positionMenuAboveTrigger(menu,anchor);
     button.setAttribute('aria-expanded','true');
     menu.querySelector('button')?.focus({preventScroll:true});
+    requestAnimationFrame(()=>positionMenuAboveTrigger(menu,anchor));
   }
 
   function menuTitle(text){

@@ -69,11 +69,14 @@ jobs:
       - name: Smoke check public shell
         run: node scripts/smoke-check-public-shell.js
 
-      - name: Install responsive browser
-        run: npx playwright install chromium
+      - name: Install responsive browsers
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Responsive P0 render check
         run: npm run check:responsive
+
+      - name: iPhone WebKit send regression
+        run: npm run check:iphone-webkit
 
       - name: Upload responsive screenshots
         if: always()
