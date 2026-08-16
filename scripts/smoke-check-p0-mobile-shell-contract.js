@@ -7,8 +7,10 @@ const paths = {
   html: join(publicDir, 'mmir.html'),
   p0Css: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.css'),
   p0Runtime: join(publicDir, 'apps', 'mimir-chat-portal', 'p0-chat-shell.js'),
+  iphoneWebkit: join(root, 'scripts', 'render-check-p0-iphone-webkit.mjs'),
   localInstall: join(publicDir, 'apps', 'mimir-chat-portal', 'local-install-commands.js'),
-  packageJson: join(root, 'package.json')
+  packageJson: join(root, 'package.json'),
+  qualityWorkflow: join(root, '.github', 'workflows', 'quality.yml')
 };
 
 function fail(message) {
@@ -39,6 +41,8 @@ function requirePattern(source, pattern, message) {
 const html = read(paths.html);
 const css = read(paths.p0Css);
 const runtime = read(paths.p0Runtime);
+const iphoneWebkit = read(paths.iphoneWebkit);
+const qualityWorkflow = read(paths.qualityWorkflow);
 const packageJson = JSON.parse(read(paths.packageJson) || '{}');
 const normalizedCss = css.replace(/\s+/g, ' ');
 
@@ -93,7 +97,10 @@ for (const marker of [
   'Chatten er ikke produksjonsklar.',
   'Ikke del sensitiv info eller bruk den til høyrisikoformål.',
   "send.setAttribute('aria-describedby','p0-release-warning')",
-  "composer.setAttribute('aria-busy',state.busy?'true':'false')"
+  "composer.setAttribute('aria-busy',state.busy?'true':'false')",
+  'function positionMenuAboveTrigger(menu,button)',
+  "const bottom=Math.max(12,window.innerHeight-rect.top+8)",
+  "document.activeElement===document.getElementById('p0-input')"
 ]) {
   requireText(runtime, marker, `P0 send state must keep concise, accessible release truth: ${marker}`);
 }
@@ -225,6 +232,31 @@ requireText(
   'smoke-check-p0-mobile-shell-contract.js',
   'npm run check must include the P0 mobile shell contract smoke.'
 );
+
+requireText(
+  String(packageJson.scripts?.['check:iphone-webkit'] || ''),
+  'render-check-p0-iphone-webkit.mjs',
+  'package scripts must expose the iPhone WebKit regression.'
+);
+
+for (const marker of [
+  "import { webkit } from '@playwright/test'",
+  'const viewport = { width: 390, height: 844 }',
+  'hasTouch: true',
+  'isMobile: true',
+  "await page.route('**/*'",
+  'network.chatCalls === 0',
+  'checkReadyBusyAndStop(browser)'
+]) {
+  requireText(iphoneWebkit, marker, `iPhone WebKit regression must keep its real mobile/network contract: ${marker}`);
+}
+
+for (const marker of [
+  'npx playwright install chromium webkit',
+  'npm run check:iphone-webkit'
+]) {
+  requireText(qualityWorkflow, marker, `required quality CI must retain the iPhone WebKit gate: ${marker}`);
+}
 
 if (!process.exitCode) {
   console.log('P0 mobile shell contract smoke passed.');
