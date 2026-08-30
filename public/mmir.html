@@ -318,8 +318,8 @@
   <script src="./apps/mimir-chat-portal/p0-history.js?v=20260618-qa-history-scoped-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-menu.js?v=20260606-b1-06-p0-menu-v1" defer></script>
   <script src="./apps/mimir-chat-portal/p0-route-adapters.js?v=20260718-writer-continuity-v1" defer></script>
-  <script src="./release-route-taxonomy.js?v=20260804-model-truth-v1" defer></script>
-  <script src="./apps/mimir-chat-portal/p0-chat-shell.js?v=20260816-iphone-webkit-v1" defer></script>
+  <script src="./release-route-taxonomy.js?v=20260830-gateway-release-contract-v2" defer></script>
+  <script src="./apps/mimir-chat-portal/p0-chat-shell.js?v=20260830-gateway-release-contract-v2" defer></script>
   <script src="./apps/mimir-chat-portal/p0-release-nav.js?v=20260804-release-0-2-beta-v1" defer></script>
   <script src="./apps/mimir-chat-portal/chat-first-scroll.js?v=20260524-chat-first-scroll-v1" defer></script>
   <script src="./apps/mimir-chat-portal/public-launch-guard.js?v=20260604-hidden-capability-inert-v1" defer></script>
@@ -353,7 +353,7 @@
     "./apps/mimir-chat-portal/first-screen-activation-hydration.js?v=20260622-first-screen-starter-progress-v1",
     "./apps/mimir-chat-portal/context-controls.js",
     "./apps/mimir-chat-portal/answer-context-receipts.js",
-    "./apps/mimir-chat-portal/pwa.js?v=20260810-proof-safe-sw-binding-v1",
+    "./apps/mimir-chat-portal/pwa.js?v=20260830-gateway-release-contract-v2",
     "./apps/mimir-chat-portal/message-actions.js",
     "./apps/mimir-chat-portal/conversation-manager.js?v=20260607-b0-06-13-conversation-portability-v1",
     "./apps/mimir-chat-portal/model-catalog-ui.js?v=20260711-model-action-contract-v1",
@@ -457,7 +457,7 @@
     (function(){
       if(!('serviceWorker' in navigator))return;
       if(!(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'))return;
-      var serviceWorkerUrl='./sw.js?v=20260810-proof-safe-tagline-v1';
+      var serviceWorkerUrl='./sw.js?v=20260830-gateway-release-contract-v2';
       function registerServiceWorker(){
         var run=function(){
           try{navigator.serviceWorker.register(serviceWorkerUrl,{scope:'./'}).catch(function(){});}

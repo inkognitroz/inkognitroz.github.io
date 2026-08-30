@@ -119,7 +119,7 @@ async function checkEarlyInstallPrompt(root,fail){
   if(window.__MimirPwaInstallPrompt?.event!==promptEvent)fail('PWA timing: the early prompt was not retained before pwa.js loaded.');
 
   vm.runInContext(pwa,context,{filename:'pwa.js'});
-  if(window.__registeredServiceWorkerUrl!=='./sw.js?v=20260810-proof-safe-tagline-v1')fail('PWA update: deferred registration did not bind the proof-safe service-worker script version.');
+  if(window.__registeredServiceWorkerUrl!=='./sw.js?v=20260830-gateway-release-contract-v2')fail('PWA update: deferred registration did not bind the gateway-contract service-worker version.');
   const installButton=elements.get('pwa-install-button');
   if(!installButton){
     fail('PWA timing: deferred PWA UI did not render its install control.');
@@ -133,8 +133,8 @@ async function checkEarlyInstallPrompt(root,fail){
 async function checkOfflineFetchBehavior(root,fail){
   const source=readFileSync(join(root,'public','sw.js'),'utf8');
   const cacheName=source.match(/const CACHE_NAME='([^']+)'/)?.[1]||'';
-  const expectedCacheName='mmir-pwa-d356-20260810-proof-safe-tagline-v1';
-  const priorCacheName='mmir-pwa-d355-20260804-model-truth-v1';
+  const expectedCacheName='mmir-pwa-d357-20260830-gateway-release-contract-v2';
+  const priorCacheName='mmir-pwa-d356-20260810-proof-safe-tagline-v1';
   const origin='https://example.test';
   const listeners=new Map();
   const matchCalls=[];

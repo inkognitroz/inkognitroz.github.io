@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260816-iphone-webkit-v1';
+  const P0_RUNTIME_VERSION='20260830-gateway-release-contract-v2';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2923,6 +2923,18 @@
 
   function normalizeHostedModels(payload){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+    const inventoryLiveVerifiedIntelligenceRouteCount=(
+      Number.isSafeInteger(payload?.live_verified_intelligence_route_count)&&
+      payload.live_verified_intelligence_route_count>=0
+    )?payload.live_verified_intelligence_route_count:0;
+    const liveUnderlyingProviderCount=raw.filter(model=>
+      RELEASE_ROUTE_TAXONOMY?.isConnectedSupergeni?.(model)!==true&&
+      RELEASE_ROUTE_TAXONOMY?.hostedTryableNow?.(model,state.releaseReadiness)===true
+    ).length;
+    const connectedInventoryContext={
+      liveVerifiedIntelligenceRouteCount:inventoryLiveVerifiedIntelligenceRouteCount,
+      liveUnderlyingProviderCount
+    };
     const normalized=raw
       .filter(visibleHostedModel)
       .filter(model=>String(model?.id||model?.model||'').trim())
@@ -2938,7 +2950,11 @@
         const liveE2EVerified=hostedModelLiveVerified(model);
         const connectedSupergeni=RELEASE_ROUTE_TAXONOMY?.isConnectedSupergeni?.(model)===true;
         const releaseReady=hostedJourneyReady('first_chat');
-        const truth=RELEASE_ROUTE_TAXONOMY?.classifyModel?.(model,{surface:'chat',releaseReadiness:state.releaseReadiness})||{
+        const truth=RELEASE_ROUTE_TAXONOMY?.classifyModel?.(model,{
+          surface:'chat',
+          releaseReadiness:state.releaseReadiness,
+          ...connectedInventoryContext
+        })||{
           key:'configured_unavailable',
           tryable:false,
           reason:'Delt release-taksonomi kunne ikke lastes.'
@@ -2983,7 +2999,8 @@
           liveE2EVerified,
           liveE2EProof:model.live_e2e_proof||null,
           noPaidRoutesStarted:model.no_paid_routes_started===true,
-          liveVerifiedModelRouteCount:Number.isSafeInteger(model.live_verified_model_route_count)?model.live_verified_model_route_count:0,
+          inventoryLiveVerifiedIntelligenceRouteCount:connectedSupergeni?inventoryLiveVerifiedIntelligenceRouteCount:0,
+          liveUnderlyingProviderCount:connectedSupergeni?liveUnderlyingProviderCount:0,
           configuredSelectable:model.selectable!==false,
           selectable
         };

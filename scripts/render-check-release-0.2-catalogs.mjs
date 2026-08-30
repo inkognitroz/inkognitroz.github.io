@@ -158,6 +158,7 @@ async function routeApi(page,{
       contentType:'application/json',
       body:fail||failModels?JSON.stringify({error:'unavailable'}):JSON.stringify({
         object:'list',
+        inventory_view:'compact',
         default_model:'supergeni',
         no_paid_routes_started:noPaidRoutesStarted,
         total_visible_model_count:5,
@@ -165,7 +166,7 @@ async function routeApi(page,{
         live_verified_intelligence_route_count:zeroLive?0:2,
         degraded_model_count:1,
         data:[
-          {id:'supergeni',model:'supergeni',object:'model',display_name:'Supergeni',provider:'mmir',status:degradedSupergeni?'temporarily_degraded':'available',route_id:'supergeni/connected',node_id:'supergeni',route_state:degradedSupergeni?'orchestrator_degraded':'connected_meta_route_available',route_type:'connected_meta_route',executable:!degradedSupergeni,selectable:!degradedSupergeni,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:null,cost_state:null,no_paid_routes_started:noPaidRoutesStarted,live_verified_model_route_count:zeroLive?0:2,callable_model_route_count:zeroLive?0:2,capabilities:['chat.completions'],limitations:['Connected meta-route; not an extra model.']},
+          {id:'supergeni',model:'supergeni',object:'model',display_name:'Supergeni',provider:'mmir',status:degradedSupergeni?'temporarily_degraded':'available',route_id:'supergeni/connected',node_id:'supergeni',route_state:degradedSupergeni?'orchestrator_degraded':'connected_meta_route_available',route_type:'connected_meta_route',executable:!degradedSupergeni,selectable:!degradedSupergeni,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:null,cost_state:null,no_paid_routes_started:noPaidRoutesStarted,capabilities:['chat.completions'],limitations:['Connected meta-route; not an extra model.']},
           {id:'mistral-small-latest',model:'mistral-small-latest',object:'model',display_name:'Mistral Small',provider:'mistral',status:'available',route_id:'mistral/mistral-small-latest',node_id:'mistral-candidate',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:!zeroLive,live_e2e_proof:liveProof('mistral','mistral-small-latest',!zeroLive),cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture verified route.']},
           {id:'llama-3.3-70b-versatile',model:'llama-3.3-70b-versatile',object:'model',display_name:'Groq Llama 3.3 70B',provider:'groq',status:'available',route_id:'groq/llama-3.3-70b-versatile',node_id:'groq-candidate',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:!zeroLive,live_e2e_proof:liveProof('groq','llama-3.3-70b-versatile',!zeroLive),cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture verified route.']},
           {id:'configured-writer',model:'configured-writer',object:'model',display_name:'Configured Writer',provider:'fixture',status:'available',route_id:'fixture/configured',node_id:'fixture-b',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture without fresh E2E proof.']},
@@ -323,7 +324,8 @@ async function checkSharedTaxonomy(browser){
     const localReadiness={paired:true,runtimeChatReady:true,chatReady:true,modelIds:['local-model']};
     const signedProof={verified:true,stable_verified:true,no_paid_routes_started:true};
     const hosted={id:'hosted-model',route_type:'external_untrusted_free',cost_class:'free-quota',executable:true,selectable:true,live_e2e_verified:true,live_e2e_proof:signedProof};
-    const supergeni={id:'supergeni',model:'supergeni',route_type:'connected_meta_route',route_state:'connected_meta_route_available',executable:true,selectable:true,live_e2e_verified:false,cost_class:null,no_paid_routes_started:true,live_verified_model_route_count:2};
+    const supergeni={id:'supergeni',model:'supergeni',route_type:'connected_meta_route',route_state:'connected_meta_route_available',executable:true,selectable:true,live_e2e_verified:false,cost_class:null,no_paid_routes_started:true};
+    const supergeniContext={surface:'chat',liveVerifiedIntelligenceRouteCount:2,liveUnderlyingProviderCount:2};
     const status=({
       authenticated=true,
       firstChat=true,
@@ -357,10 +359,15 @@ async function checkSharedTaxonomy(browser){
       noModelProof:taxonomy.classifyModel({...hosted,live_e2e_verified:false},{surface:'chat',status:status()}).key,
       missingProofObject:taxonomy.classifyModel({...hosted,live_e2e_proof:null},{surface:'chat',status:status()}).key,
       noModelCost:taxonomy.classifyModel({...hosted,cost_class:null},{surface:'chat',status:status()}).key,
+      costStateOnly:taxonomy.classifyModel({...hosted,cost_class:null,cost_state:'free-quota'},{surface:'chat',status:status()}).key,
       forgedFreeCost:taxonomy.classifyModel({...hosted,cost_class:'free-paid'},{surface:'chat',status:status()}).key,
-      supergeni:taxonomy.classifyModel(supergeni,{surface:'chat',status:status()}),
-      supergeniNoUnderlying:taxonomy.classifyModel({...supergeni,live_verified_model_route_count:0},{surface:'chat',status:status()}).key,
-      supergeniPaid:taxonomy.classifyModel(supergeni,{surface:'chat',status:status({noPaid:false})}).key,
+      paidCostState:taxonomy.classifyModel({...hosted,cost_state:'paid'},{surface:'chat',status:status()}).key,
+      meteredPricing:taxonomy.classifyModel({...hosted,pricing:'metered'},{surface:'chat',status:status()}).key,
+      billedRouteClass:taxonomy.classifyModel({...hosted,route_class:'owner-billed'},{surface:'chat',status:status()}).key,
+      supergeni:taxonomy.classifyModel(supergeni,{...supergeniContext,status:status()}),
+      supergeniNoInventoryCount:taxonomy.classifyModel(supergeni,{...supergeniContext,liveVerifiedIntelligenceRouteCount:undefined,status:status()}).key,
+      supergeniNoUnderlying:taxonomy.classifyModel(supergeni,{...supergeniContext,liveUnderlyingProviderCount:0,status:status()}).key,
+      supergeniPaid:taxonomy.classifyModel(supergeni,{...supergeniContext,status:status({noPaid:false})}).key,
       firstChatEnum:taxonomy.releaseReadiness(status({readinessState:'first_chat_ready'})).hostedReady,
       compareEnum:taxonomy.releaseReadiness(status({readinessState:'compare_ready'})).hostedReady,
       swarmEnum:taxonomy.releaseReadiness(status()).hostedReady,
@@ -388,8 +395,11 @@ async function checkSharedTaxonomy(browser){
   assert(states.noModelProof==='configured_unavailable','missing exact model E2E proof must fail closed');
   assert(states.missingProofObject==='configured_unavailable','a direct provider flag without its canonical signed proof projection must fail closed');
   assert(states.noModelCost==='configured_unavailable','missing an explicit recognized free cost must fail closed for direct providers');
+  assert(states.costStateOnly==='configured_unavailable','cost_state alone must not establish a canonical free direct-provider route');
   assert(states.forgedFreeCost==='configured_unavailable','an unrecognized free-looking cost must fail closed for direct providers');
+  assert(states.paidCostState==='configured_unavailable'&&states.meteredPricing==='configured_unavailable'&&states.billedRouteClass==='configured_unavailable','any explicit paid, metered or billable cost contradiction must fail closed');
   assert(states.supergeni.key==='free_now'&&states.supergeni.liveE2EVerified===false,'connected Supergeni must be selectable from authenticated underlying route truth without forging per-model E2E proof');
+  assert(states.supergeniNoInventoryCount==='configured_unavailable','connected Supergeni must fail closed without the exact top-level compact inventory live count');
   assert(states.supergeniNoUnderlying==='configured_unavailable','connected Supergeni must fail closed without an explicit live underlying provider count');
   assert(states.supergeniPaid==='configured_unavailable','connected Supergeni must fail closed when no-paid truth is false');
   assert(states.firstChatEnum&&states.compareEnum&&states.swarmEnum,'all three actual positive gateway readiness enums must admit authenticated first chat');
@@ -694,6 +704,15 @@ async function checkReleaseReadinessGate(browser){
   await page.close();
 }
 
+async function checkReadyTrust(browser){
+  const page=await browser.newPage({viewport:{width:1280,height:800}});
+  await routeApi(page,{releaseReady:true});
+  await page.goto(baseUrl+'/tillit/index.html',{waitUntil:'networkidle'});
+  assert(await page.locator('#trust-runtime').getAttribute('data-state')==='ready','Trust must render green from the exact authenticated gateway contract');
+  assert((await page.locator('#trust-runtime').innerText()).includes('ferskt, autentisert produksjonsbevis'),'Trust green must name the authenticated production proof');
+  await page.close();
+}
+
 port=await resolvePort();
 baseUrl=`http://${host}:${port}`;
 const server=startServer();
@@ -710,6 +729,7 @@ try{
   await checkCapabilities(browser);
   await checkCapabilitySchemaFailClosed(browser);
   await checkReleaseReadinessGate(browser);
+  await checkReadyTrust(browser);
   await checkReadyHostedGate(browser);
   await checkKeyboardSendAndStop(browser);
   await checkInventoryMismatchFailsClosed(browser);

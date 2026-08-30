@@ -19,6 +19,8 @@ const nav=read('public/apps/mimir-chat-portal/p0-release-nav.js');
 const navCss=read('public/apps/mimir-chat-portal/p0-release-nav.css');
 const releaseCss=read('public/release-0.2.css');
 const sw=read('public/sw.js');
+const qualityWorkflow=read('.github/workflows/quality.yml');
+const pagesWorkflow=read('.github/workflows/pages.yml');
 const catalogRaw=read('public/capability-catalog.json');
 const catalog=JSON.parse(catalogRaw);
 const overlay=JSON.parse(read('public/capability-ui.json'));
@@ -38,10 +40,11 @@ function publicTextSources(directory){
 assert(mmir.includes('p0-release-nav.css?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation stylesheet');
 assert(mmir.includes('p0-release-nav.js?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation script');
 assert(mmir.includes('p0-chat-shell.css?v=20260815-iphone-send-ready-fill-v1'),'chat must bind the ready-fill corrected shell stylesheet version');
-assert(mmir.includes('p0-chat-shell.js?v=20260816-iphone-webkit-v1'),'chat must bind the WebKit-verified iPhone shell asset version');
+assert(mmir.includes('release-route-taxonomy.js?v=20260830-gateway-release-contract-v2'),'chat must cache-bust the reviewed gateway taxonomy');
+assert(mmir.includes('p0-chat-shell.js?v=20260830-gateway-release-contract-v2'),'chat must bind the reviewed gateway-contract shell asset version');
 assert(mmir.includes('brand-config.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe brand asset version');
-assert(mmir.includes('pwa.js?v=20260810-proof-safe-sw-binding-v1'),'chat must bind the proof-safe PWA registration asset version');
-assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260810-proof-safe-tagline-v1'"),'no-JS shell must register the proof-safe service-worker script version');
+assert(mmir.includes('pwa.js?v=20260830-gateway-release-contract-v2'),'chat must cache-bust the gateway-contract PWA registration asset');
+assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260830-gateway-release-contract-v2'"),'no-JS shell must register the gateway-contract service-worker version');
 assert(nav.includes("'./modeller/'")&&nav.includes("'./kapabiliteter/'")&&nav.includes("'./tillit/'"),'visible P0 shell must link all release information tabs');
 assert(nav.includes("tag.textContent='0.2 Beta'"),'visible shell must identify the beta release honestly');
 assert(!nav.includes('MutationObserver'),'release navigation must not observe the full document tree');
@@ -76,8 +79,10 @@ assert(taxonomy.includes("local_ready:'Lokal · paret node'")&&taxonomy.includes
 assert(taxonomy.includes("byok_unavailable:'BYOK · ikke støttet i 0.2'")&&taxonomy.includes("planned:'Planlagt · ikke tilgjengelig'"),'shared taxonomy must distinguish BYOK and planned routes');
 assert(taxonomy.includes("writer?.classification==='release_ready'")&&taxonomy.includes("writer?.authenticated_release_ready===true")&&taxonomy.includes("journeys?.first_chat_ready===true")&&taxonomy.includes("model?.live_e2e_verified===true"),'free-now truth must require the actual gateway writer enum, authenticated release, first-chat readiness and exact model E2E proof');
 assert(taxonomy.includes("'first_chat_ready'")&&taxonomy.includes("'compare_ready'")&&taxonomy.includes("'swarm_preview_ready'"),'release readiness must accept only the actual positive gateway readiness enums');
-assert(taxonomy.includes("routeType==='connected_meta_route'")&&taxonomy.includes('release.noPaidRoutesStarted===true')&&taxonomy.includes('liveUnderlyingRoutes>=1'),'connected Supergeni must use authenticated underlying route and no-paid truth instead of forged model metadata');
+assert(taxonomy.includes("routeType==='connected_meta_route'")&&taxonomy.includes('release.noPaidRoutesStarted===true')&&taxonomy.includes('inventoryVerifiedRoutes>=1')&&taxonomy.includes('liveUnderlyingProviders>=1'),'connected Supergeni must use exact compact inventory, authenticated underlying-route and no-paid truth instead of forged model metadata');
 assert(taxonomy.includes("proof.no_paid_routes_started===true")&&taxonomy.includes('FREE_COST_CLASSES.has(value)'),'direct providers must require a canonical signed proof projection and one recognized free cost class');
+assert(taxonomy.includes('const canonicalCosts=[\n      model?.cost_class,\n      model?.costClass\n    ]'),'only canonical cost_class fields may establish a free direct-provider route');
+assert(taxonomy.includes('PAID_COST_CONTRADICTION.test(value)'),'an explicit paid, metered, billed or billable cost contradiction must fail closed');
 assert(runtime.includes('RELEASE_ROUTE_TAXONOMY.classifyModel'),'model catalog must consume the shared taxonomy');
 assert(p0Shell.includes('RELEASE_ROUTE_TAXONOMY.releaseReadiness')&&p0Shell.includes('RELEASE_ROUTE_TAXONOMY.hostedTryableNow'),'chat selectability must consume the same shared taxonomy');
 assert(!runtime.includes('inventory.live_selectable_model_count'),'public testability must not inherit the configured inventory count');
@@ -126,6 +131,14 @@ assert(!brandConfig.includes("text('#active-chat-description',config.chat_descri
 assert(!legacyPortal.includes("activeBadge.textContent='Active: '")&&!legacyPortal.includes("activeBadge.textContent='Free chat ready'")&&!legacyPortal.includes('Supergeni answers immediately'),'deferred legacy profile UI must not overwrite canonical chat readiness before live runtime proof');
 assert(mmir.indexOf('release-route-taxonomy.js?v=')<mmir.indexOf('p0-chat-shell.js?v='),'shared taxonomy must load before the public chat shell');
 assert(models.indexOf('release-route-taxonomy.js?v=')<models.indexOf('release-0.2.js?v='),'shared taxonomy must load before the model catalog runtime');
+assert(trust.indexOf('release-route-taxonomy.js?v=20260830-gateway-release-contract-v2')<trust.indexOf('release-0.2.js?v=20260830-gateway-release-contract-v2'),'shared taxonomy must load before the Trust runtime so authenticated green truth is reachable');
+for(const [name,html] of [['models',models],['capabilities',capabilities],['trust',trust]]){
+  assert(html.includes('release-0.2.js?v=20260830-gateway-release-contract-v2'),name+' page must bind the reviewed gateway-contract release runtime version');
+}
+for(const [name,workflow] of [['required quality',qualityWorkflow],['Pages deploy',pagesWorkflow]]){
+  assert(workflow.includes('node scripts/smoke-check-release-0.2-catalogs.js')&&workflow.includes('node scripts/smoke-check-p0-route-tags.js'),name+' workflow must run the non-browser gateway release-contract gates');
+}
+assert(qualityWorkflow.includes('node scripts/render-check-release-0.2-catalogs.mjs'),'required quality workflow must run the browser gateway release-contract suite after Playwright installation');
 
 for(const asset of ['./modeller/','./kapabiliteter/','./tillit/','./release-0.2.css','./release-0.2.js','./release-route-taxonomy.js','./capability-catalog.json','./capability-ui.json','./apps/mimir-chat-portal/p0-release-nav.js']){
   assert(sw.includes("'"+asset+"'"),'service worker must include '+asset);

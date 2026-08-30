@@ -62,7 +62,7 @@ requireIncludes(html, 'mimir-chat-portal.css?v=20260710-model-lifecycle-v1', 'Pu
 requireIncludes(html, 'function hydrateTargetDetails()', 'Public page must hydrate hash-targeted details panels.');
 requireIncludes(html, "window.addEventListener('hashchange',hydrateTargetDetails)", 'Public page must hydrate model library when the hash changes.');
 requireIncludes(html, "if(!hydrateTargetDetails())schedule();", 'Public page must prefer targeted module loading over idle deferred loading.');
-requireIncludes(sw, "const CACHE_NAME='mmir-pwa-d356-20260810-proof-safe-tagline-v1'", 'Service worker cache name must preserve the model catalog action contract runtime and bust for proof-safe public copy.');
+requireIncludes(sw, "const CACHE_NAME='mmir-pwa-d357-20260830-gateway-release-contract-v2'", 'Service worker cache name must preserve the reviewed gateway release-contract runtime.');
 requireIncludes(sw, './apps/mimir-chat-portal/model-catalog-ui.js', 'PWA shell cache must include model catalog action-contract runtime.');
 
 if (manifest.assets?.['model-catalog-ui.js'] !== '20260711-model-action-contract-v1') {

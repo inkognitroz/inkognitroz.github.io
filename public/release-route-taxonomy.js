@@ -24,6 +24,7 @@
     'free-tier',
     'public-free'
   ]));
+  const PAID_COST_CONTRADICTION=/(?:^|[-_])(paid|metered|billed|billable)(?:[-_]|$)/;
 
   function text(value){
     return String(value||'').trim().toLowerCase();
@@ -86,7 +87,7 @@
   }
 
   function isFreeRoute(model){
-    const values=[
+    const explicitValues=[
       model?.cost_class,
       model?.costClass,
       model?.cost_state,
@@ -95,7 +96,12 @@
       model?.route_class,
       model?.routeClass
     ].map(text).filter(Boolean);
-    return values.some(value=>FREE_COST_CLASSES.has(value));
+    if(explicitValues.some(value=>PAID_COST_CONTRADICTION.test(value)))return false;
+    const canonicalCosts=[
+      model?.cost_class,
+      model?.costClass
+    ].map(text).filter(Boolean);
+    return canonicalCosts.some(value=>FREE_COST_CLASSES.has(value));
   }
 
   function releaseReadiness(payload){
@@ -182,17 +188,20 @@
     );
   }
 
-  function hostedTryableNow(model,readiness){
+  function hostedTryableNow(model,readiness,context={}){
     const release=normalizedReadiness(readiness);
     if(isConnectedSupergeni(model)){
-      const liveUnderlyingRoutes=model?.live_verified_model_route_count??model?.liveVerifiedModelRouteCount;
+      const inventoryVerifiedRoutes=context?.liveVerifiedIntelligenceRouteCount??model?.inventoryLiveVerifiedIntelligenceRouteCount;
+      const liveUnderlyingProviders=context?.liveUnderlyingProviderCount??model?.liveUnderlyingProviderCount;
       return Boolean(
         !isDegraded(model)&&
         model?.selectable!==false&&
         model?.executable!==false&&
         (model?.no_paid_routes_started===true||model?.noPaidRoutesStarted===true)&&
-        Number.isSafeInteger(liveUnderlyingRoutes)&&
-        liveUnderlyingRoutes>=1&&
+        Number.isSafeInteger(inventoryVerifiedRoutes)&&
+        inventoryVerifiedRoutes>=1&&
+        Number.isSafeInteger(liveUnderlyingProviders)&&
+        liveUnderlyingProviders>=1&&
         release.hostedReady===true&&
         release.authenticatedFirstChatReady===true&&
         Number.isSafeInteger(release.verifiedRoutes)&&
@@ -240,7 +249,7 @@
       if(localPairedNow(model,context.localReadiness))return result('local_ready',{tryable:true,selectable:true,liveE2EVerified,access:'Lokal maskin · paret node · brukerens compute',reason:'Den lokale modellen er funnet på en paret, chat-klar node.'});
       return result('local_setup',{liveE2EVerified,access:'Lokal maskin · krever installert og paret node',reason:'Lokal modell er ikke testklar før noden er paret og modellen er funnet.'});
     }
-    if(hostedTryableNow(model,readiness))return result('free_now',{
+    if(hostedTryableNow(model,readiness,context))return result('free_now',{
       tryable:true,
       selectable:true,
       freeToTry:true,
