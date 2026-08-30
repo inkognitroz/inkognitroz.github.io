@@ -232,9 +232,11 @@ testApi.state.models.push(
     provider: 'OpenRouter',
     routeClass: 'external-untrusted-free',
     trustLevel: 'external-untrusted-free',
+    costClass: 'free-quota',
     executable: true,
     selectable: true,
     liveE2EVerified: true,
+    liveE2EProof: { verified: true, stable_verified: true, no_paid_routes_started: true },
     score: 86
   },
   {
@@ -245,9 +247,11 @@ testApi.state.models.push(
     provider: 'Google',
     routeClass: 'external-untrusted-free',
     trustLevel: 'external-untrusted-free',
+    costClass: 'free-quota',
     executable: true,
     selectable: true,
     liveE2EVerified: true,
+    liveE2EProof: { verified: true, stable_verified: true, no_paid_routes_started: true },
     score: 86
   },
   {
@@ -258,9 +262,11 @@ testApi.state.models.push(
     provider: 'NVIDIA',
     routeClass: 'external-untrusted-free',
     trustLevel: 'external-untrusted-free',
+    costClass: 'free-quota',
     executable: true,
     selectable: true,
     liveE2EVerified: true,
+    liveE2EProof: { verified: true, stable_verified: true, no_paid_routes_started: true },
     score: 86
   },
   {
@@ -271,12 +277,14 @@ testApi.state.models.push(
     provider: 'Groq',
     routeClass: 'external-untrusted-free',
     trustLevel: 'external-untrusted-free',
+    costClass: 'free-quota',
     routeType: 'external_provider',
     routeState: 'public_untrusted_free_available',
     availability: 'available',
     executable: true,
     selectable: true,
     liveE2EVerified: true,
+    liveE2EProof: { verified: true, stable_verified: true, no_paid_routes_started: true },
     score: 86
   }
 );

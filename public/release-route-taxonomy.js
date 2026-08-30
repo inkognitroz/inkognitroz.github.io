@@ -12,6 +12,18 @@
     planned:'Planlagt · ikke tilgjengelig',
     catalogued:'Katalogført · ikke koblet'
   });
+  const RELEASE_READY_STATES=Object.freeze(new Set([
+    'first_chat_ready',
+    'compare_ready',
+    'swarm_preview_ready'
+  ]));
+  const FREE_COST_CLASSES=Object.freeze(new Set([
+    'free',
+    'free-no-key',
+    'free-quota',
+    'free-tier',
+    'public-free'
+  ]));
 
   function text(value){
     return String(value||'').trim().toLowerCase();
@@ -28,7 +40,27 @@
   }
 
   function modelLiveVerified(model){
-    return model?.live_e2e_verified===true||model?.liveE2EVerified===true;
+    const verified=model?.live_e2e_verified===true||model?.liveE2EVerified===true;
+    if(!verified)return false;
+    const proof=model?.live_e2e_proof||model?.liveE2EProof;
+    return Boolean(
+      proof&&
+      typeof proof==='object'&&
+      !Array.isArray(proof)&&
+      proof.verified===true&&
+      proof.no_paid_routes_started===true
+    );
+  }
+
+  function isConnectedSupergeni(model){
+    const id=text(model?.id||model?.model);
+    const routeType=text(model?.route_type||model?.routeType);
+    const routeState=text(model?.route_state||model?.routeState);
+    return Boolean(
+      (id==='supergeni'||id==='mmir-supergenius')&&
+      routeType==='connected_meta_route'&&
+      routeState==='connected_meta_route_available'
+    );
   }
 
   function isLocal(model){
@@ -54,29 +86,63 @@
   }
 
   function isFreeRoute(model){
-    const cost=[model?.cost_class,model?.cost_state,model?.costState,model?.pricing,model?.route_class,model?.routeClass,model?.trust_level,model?.trustLevel,model?.route_type,model?.routeType].map(text).join(' ');
-    return /(^|[^a-z])(free|no[_ -]?paid|zero[_ -]?cost)([^a-z]|$)/.test(cost);
+    const values=[
+      model?.cost_class,
+      model?.costClass,
+      model?.cost_state,
+      model?.costState,
+      model?.pricing,
+      model?.route_class,
+      model?.routeClass
+    ].map(text).filter(Boolean);
+    return values.some(value=>FREE_COST_CLASSES.has(value));
   }
 
   function releaseReadiness(payload){
     const operator=payload?.operator_readiness;
     const writer=operator?.default_writer_readiness;
     const journeys=operator?.journeys;
-    const verifiedRoutes=Math.max(0,Number(payload?.live_verified_intelligence_route_count)||0);
+    const readinessState=operator?.readiness_state;
+    const exactRouteCount=Number.isSafeInteger(payload?.live_verified_intelligence_route_count)&&payload.live_verified_intelligence_route_count>=0;
+    const verifiedRoutes=exactRouteCount?payload.live_verified_intelligence_route_count:0;
+    const noPaidRoutesStarted=payload?.no_paid_routes_started===true;
+    const blockerCodesValid=Array.isArray(writer?.blocker_codes);
+    const blockerCodes=blockerCodesValid?writer.blocker_codes.filter(Boolean):[];
+    const journeyStateConsistent=Boolean(
+      (readinessState!=='first_chat_ready'||journeys?.compare_ready!==true)&&
+      (!['compare_ready','swarm_preview_ready'].includes(readinessState)||journeys?.compare_ready===true)&&
+      (readinessState!=='swarm_preview_ready'||journeys?.swarm_preview_ready===true)
+    );
     const hostedReady=Boolean(
-      operator?.readiness_state==='ready'&&
-      writer?.classification==='ready'&&
+      payload?.ok===true&&
+      RELEASE_READY_STATES.has(readinessState)&&
+      writer?.classification==='release_ready'&&
       writer?.authenticated_release_ready===true&&
       journeys?.first_chat_ready===true&&
-      verifiedRoutes>=1
+      journeyStateConsistent&&
+      exactRouteCount&&
+      verifiedRoutes>=1&&
+      noPaidRoutesStarted&&
+      blockerCodesValid&&
+      blockerCodes.length===0
     );
-    const blockerCodes=Array.isArray(writer?.blocker_codes)?writer.blocker_codes.filter(Boolean):[];
     return Object.freeze({
       state:hostedReady?'ready':'blocked',
       hostedReady,
-      compareReady:Boolean(hostedReady&&journeys?.compare_ready===true),
-      swarmPreviewReady:Boolean(hostedReady&&journeys?.swarm_preview_ready===true),
+      authenticatedFirstChatReady:hostedReady,
+      compareReady:Boolean(
+        hostedReady&&
+        (readinessState==='compare_ready'||readinessState==='swarm_preview_ready')&&
+        journeys?.compare_ready===true
+      ),
+      swarmPreviewReady:Boolean(
+        hostedReady&&
+        readinessState==='swarm_preview_ready'&&
+        journeys?.swarm_preview_ready===true
+      ),
       verifiedRoutes,
+      noPaidRoutesStarted,
+      readinessState:RELEASE_READY_STATES.has(readinessState)?readinessState:'blocked',
       checkedAt:Date.now(),
       reason:hostedReady
         ? 'Offentlig svarbane er live-verifisert.'
@@ -88,9 +154,12 @@
     return Object.freeze({
       state:'blocked',
       hostedReady:false,
+      authenticatedFirstChatReady:false,
       compareReady:false,
       swarmPreviewReady:false,
       verifiedRoutes:0,
+      noPaidRoutesStarted:false,
+      readinessState:'blocked',
       checkedAt:Date.now(),
       reason
     });
@@ -115,6 +184,22 @@
 
   function hostedTryableNow(model,readiness){
     const release=normalizedReadiness(readiness);
+    if(isConnectedSupergeni(model)){
+      const liveUnderlyingRoutes=model?.live_verified_model_route_count??model?.liveVerifiedModelRouteCount;
+      return Boolean(
+        !isDegraded(model)&&
+        model?.selectable!==false&&
+        model?.executable!==false&&
+        (model?.no_paid_routes_started===true||model?.noPaidRoutesStarted===true)&&
+        Number.isSafeInteger(liveUnderlyingRoutes)&&
+        liveUnderlyingRoutes>=1&&
+        release.hostedReady===true&&
+        release.authenticatedFirstChatReady===true&&
+        Number.isSafeInteger(release.verifiedRoutes)&&
+        release.verifiedRoutes>=1&&
+        release.noPaidRoutesStarted===true
+      );
+    }
     return Boolean(
       !isLocal(model)&&
       !isByok(model)&&
@@ -141,7 +226,8 @@
   function classifyModel(model,context={}){
     const readiness=normalizedReadiness(context.releaseReadiness||context.status||{});
     const liveE2EVerified=modelLiveVerified(model);
-    const supergeni=text(model?.id)==='supergeni'||text(model?.kind)==='orchestrator';
+    const supergeni=['supergeni','mmir-supergenius'].includes(text(model?.id||model?.model))||text(model?.kind)==='orchestrator';
+    const connectedSupergeni=isConnectedSupergeni(model);
 
     if(supergeni&&context.surface!=='chat'){
       if(isDegraded(model))return result('degraded',{liveE2EVerified,access:'MMIR-orkestrator · midlertidig utilgjengelig',reason:'Orkestratoren er degradert og er ikke en språkmodell.'});
@@ -154,10 +240,20 @@
       if(localPairedNow(model,context.localReadiness))return result('local_ready',{tryable:true,selectable:true,liveE2EVerified,access:'Lokal maskin · paret node · brukerens compute',reason:'Den lokale modellen er funnet på en paret, chat-klar node.'});
       return result('local_setup',{liveE2EVerified,access:'Lokal maskin · krever installert og paret node',reason:'Lokal modell er ikke testklar før noden er paret og modellen er funnet.'});
     }
-    if(hostedTryableNow(model,readiness))return result('free_now',{tryable:true,selectable:true,freeToTry:true,liveE2EVerified,access:'Gratis offentlig MMIR-rute · ingen egen API-nøkkel',reason:'Modellen og den autentiserte first-chat-releaseporten er live-verifisert.'});
+    if(hostedTryableNow(model,readiness))return result('free_now',{
+      tryable:true,
+      selectable:true,
+      freeToTry:true,
+      liveE2EVerified,
+      access:connectedSupergeni?'Supergeni · koblet til live-verifiserte gratisruter':'Gratis offentlig MMIR-rute · ingen egen API-nøkkel',
+      reason:connectedSupergeni
+        ? 'Supergeni er klar fordi autentisert first-chat og minst én underliggende gratisrute er live-verifisert.'
+        : 'Modellen og den autentiserte first-chat-releaseporten er live-verifisert.'
+    });
 
     let reason='Ruten finnes i inventory, men kan ikke prøves i den offentlige 0.2-flaten nå.';
-    if(liveE2EVerified&&readiness.hostedReady!==true)reason='Modellen har E2E-bevis, men autentisert release og first-chat er ikke klare.';
+    if(connectedSupergeni)reason='Supergeni krever autentisert first-chat, minst én live-verifisert underliggende rute og bekreftet gratis-policy.';
+    else if(liveE2EVerified&&readiness.hostedReady!==true)reason='Modellen har E2E-bevis, men autentisert release og first-chat er ikke klare.';
     else if(!liveE2EVerified)reason='Ruten mangler ferskt ende-til-ende-bevis.';
     else if(!isFreeRoute(model))reason='Gratis offentlig tilgang er ikke bekreftet.';
     return result('configured_unavailable',{liveE2EVerified,access:'Konfigurert i MMIR · kan ikke prøves nå',reason});
@@ -168,6 +264,7 @@
     releaseReadiness,
     blockedReadiness,
     modelLiveVerified,
+    isConnectedSupergeni,
     localPairedNow,
     hostedTryableNow,
     classifyModel

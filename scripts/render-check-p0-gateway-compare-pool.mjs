@@ -65,10 +65,12 @@ async function fulfillJson(route, body, status = 200) {
 async function installFixtures(page) {
   await page.route('https://api.mmir.ai/status', async route => {
     await fulfillJson(route, {
+      ok: true,
+      no_paid_routes_started: true,
       live_verified_intelligence_route_count: 5,
       operator_readiness: {
-        readiness_state: 'ready',
-        default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+        readiness_state: 'swarm_preview_ready',
+        default_writer_readiness: { classification: 'release_ready', authenticated_release_ready: true, blocker_codes: [] },
         journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
       }
     });
@@ -91,6 +93,7 @@ async function installFixtures(page) {
           route_class: 'free',
           trust_level: 'public-free',
           live_e2e_verified: true,
+          live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
           cost_class: 'free'
         },
         {
@@ -106,6 +109,7 @@ async function installFixtures(page) {
           route_class: 'external-untrusted-free',
           trust_level: 'external-untrusted-free',
           live_e2e_verified: true,
+          live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
           cost_class: 'free'
         },
         {
@@ -121,6 +125,7 @@ async function installFixtures(page) {
           route_class: 'external-untrusted-free',
           trust_level: 'external-untrusted-free',
           live_e2e_verified: true,
+          live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
           cost_class: 'free'
         },
         {
@@ -136,6 +141,7 @@ async function installFixtures(page) {
           route_class: 'external-untrusted-free',
           trust_level: 'external-untrusted-free',
           live_e2e_verified: true,
+          live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
           cost_class: 'free'
         },
         {
@@ -153,6 +159,7 @@ async function installFixtures(page) {
           route_class: 'external-untrusted-free',
           trust_level: 'external-untrusted-free',
           live_e2e_verified: true,
+          live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
           cost_class: 'free-quota'
         }
       ]

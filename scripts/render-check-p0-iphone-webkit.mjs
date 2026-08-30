@@ -63,13 +63,15 @@ function corsHeaders() {
 function statusFixture(releaseReady) {
   return {
     ok: true,
+    no_paid_routes_started: true,
     capabilities: ['chat.completions'],
     live_verified_intelligence_route_count: releaseReady ? 1 : 0,
     operator_readiness: {
-      readiness_state: releaseReady ? 'ready' : 'blocked',
+      readiness_state: releaseReady ? 'swarm_preview_ready' : 'blocked',
       default_writer_readiness: {
-        classification: releaseReady ? 'ready' : 'blocked',
-        authenticated_release_ready: releaseReady
+        classification: releaseReady ? 'release_ready' : 'blocked',
+        authenticated_release_ready: releaseReady,
+        blocker_codes: releaseReady ? [] : ['authenticated_evaluation_failed']
       },
       journeys: {
         first_chat_ready: releaseReady,
@@ -102,6 +104,7 @@ function modelsFixture() {
       selectable: true,
       recommended: true,
       live_e2e_verified: true,
+      live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
       cost_class: 'free',
       capabilities: ['chat.completions'],
       limitations: ['Local WebKit fixture only.']

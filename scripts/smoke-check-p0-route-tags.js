@@ -100,8 +100,8 @@ const qwenTiny = {
 
 const normalizedHosted = testApi.normalizeHostedModels({
   data: [
-    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true, cost_class: 'free' },
-    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true, cost_class: 'free' }
+    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true, live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true }, cost_class: 'free' },
+    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true, live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true }, cost_class: 'free' }
   ]
 });
 assertEqual(normalizedHosted[0].id, 'mmir-supergenius', 'Live supergeni alias must keep the canonical browser route id');

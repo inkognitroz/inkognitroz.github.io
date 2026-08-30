@@ -346,8 +346,9 @@ async function initTrust(){
     const models=modelsResult.value||{};
     const verified=Number(models.live_verified_intelligence_route_count||0);
     const readiness=status.operator_readiness?.readiness_state||'unknown';
-    const releaseReady=status.operator_readiness?.default_writer_readiness?.authenticated_release_ready===true;
-    const productionGreen=readiness==='ready'&&releaseReady&&verified>0;
+    const release=RELEASE_ROUTE_TAXONOMY?.releaseReadiness?.(status)||RELEASE_ROUTE_TAXONOMY?.blockedReadiness?.();
+    const releaseReady=release?.hostedReady===true;
+    const productionGreen=releaseReady&&verified>0;
     banner.dataset.state=productionGreen?'ready':'warning';
     banner.replaceChildren(
       el('strong','',productionGreen?'Offentlig svarbane har ferskt, autentisert produksjonsbevis.':'API-et svarer, men offentlig svarbane er ikke produksjonsgrønn.'),

@@ -74,7 +74,10 @@ assert(taxonomy.includes("free_now:'Gratis å prøve nå'"),'shared taxonomy mus
 assert(taxonomy.includes("configured_unavailable:'Konfigurert · utilgjengelig nå'"),'shared taxonomy must distinguish configured but unavailable routes');
 assert(taxonomy.includes("local_ready:'Lokal · paret node'")&&taxonomy.includes("local_setup:'Lokal · krever paret node'"),'shared taxonomy must distinguish paired and unpaired local models');
 assert(taxonomy.includes("byok_unavailable:'BYOK · ikke støttet i 0.2'")&&taxonomy.includes("planned:'Planlagt · ikke tilgjengelig'"),'shared taxonomy must distinguish BYOK and planned routes');
-assert(taxonomy.includes("writer?.authenticated_release_ready===true")&&taxonomy.includes("journeys?.first_chat_ready===true")&&taxonomy.includes("model?.live_e2e_verified===true"),'free-now truth must require authenticated release, first-chat readiness and exact model E2E proof');
+assert(taxonomy.includes("writer?.classification==='release_ready'")&&taxonomy.includes("writer?.authenticated_release_ready===true")&&taxonomy.includes("journeys?.first_chat_ready===true")&&taxonomy.includes("model?.live_e2e_verified===true"),'free-now truth must require the actual gateway writer enum, authenticated release, first-chat readiness and exact model E2E proof');
+assert(taxonomy.includes("'first_chat_ready'")&&taxonomy.includes("'compare_ready'")&&taxonomy.includes("'swarm_preview_ready'"),'release readiness must accept only the actual positive gateway readiness enums');
+assert(taxonomy.includes("routeType==='connected_meta_route'")&&taxonomy.includes('release.noPaidRoutesStarted===true')&&taxonomy.includes('liveUnderlyingRoutes>=1'),'connected Supergeni must use authenticated underlying route and no-paid truth instead of forged model metadata');
+assert(taxonomy.includes("proof.no_paid_routes_started===true")&&taxonomy.includes('FREE_COST_CLASSES.has(value)'),'direct providers must require a canonical signed proof projection and one recognized free cost class');
 assert(runtime.includes('RELEASE_ROUTE_TAXONOMY.classifyModel'),'model catalog must consume the shared taxonomy');
 assert(p0Shell.includes('RELEASE_ROUTE_TAXONOMY.releaseReadiness')&&p0Shell.includes('RELEASE_ROUTE_TAXONOMY.hostedTryableNow'),'chat selectability must consume the same shared taxonomy');
 assert(!runtime.includes('inventory.live_selectable_model_count'),'public testability must not inherit the configured inventory count');
@@ -89,7 +92,7 @@ assert(runtime.includes("fetchJson('../capability-ui.json')"),'capability editor
 assert(runtime.includes('catalog.semantic_revision===overlay.projection_semantic_revision'),'capability UI must fail closed on semantic revision mismatch');
 assert(runtime.includes("overlay.object==='mmir.capability_ui_overlay'")&&runtime.includes('Object.keys(overlayCopy).every(id=>ids.has(id))'),'capability UI must reject malformed overlays and unknown capability ids');
 assert(runtime.includes('capabilities.length===48'),'capability UI must validate the reviewed public projection shape at runtime');
-assert(runtime.includes("readiness==='ready'&&releaseReady&&verified>0"),'trust green must require operator readiness, authenticated release and live route proof');
+assert(runtime.includes('release?.hostedReady===true')&&runtime.includes('releaseReady&&verified>0'),'trust green must consume the shared authenticated release contract and live route proof');
 assert(taxonomy.includes('model?.live_e2e_verified===true'),'only an explicit E2E flag may classify a model as live verified');
 assert(!runtime.includes('.innerHTML'),'release catalog renderer must use DOM text APIs rather than HTML interpolation');
 assert(!runtime.includes('2026-08-04'),'runtime must not hardcode a verification date');
