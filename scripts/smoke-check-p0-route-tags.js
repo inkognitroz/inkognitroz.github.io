@@ -16,7 +16,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,localAllActiveRoutes,comparePartnerModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,localAllActiveRoutes,comparePartnerModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -32,7 +32,7 @@ const context = {
   setInterval,
   clearInterval,
   performance: { now: () => 0 },
-  location: { href: 'https://mmir.ai/mmir.html', hash: '', search: '' },
+  location: { href: 'https://mmir.ai/mmir.html', hostname: 'mmir.ai', hash: '', search: '' },
   document: { readyState: 'loading', addEventListener() {} },
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
@@ -66,13 +66,16 @@ function assertIncludes(actual, needle, message) {
   if (!String(actual).includes(needle)) fail(`${message}: missing ${needle}`);
 }
 
+assertEqual(testApi.hostedModelsPath(), '/v1/models?view=compact', 'Production chat must request the compact public model inventory contract');
 const hosted = testApi.state.models[0];
 testApi.state.releaseReadiness = {
   state: 'ready',
   hostedReady: true,
+  authenticatedFirstChatReady: true,
   compareReady: true,
   swarmPreviewReady: true,
-  verifiedRoutes: 2
+  verifiedRoutes: 2,
+  noPaidRoutesStarted: true
 };
 hosted.liveE2EVerified = true;
 hosted.executable = true;
@@ -100,12 +103,33 @@ const qwenTiny = {
 
 const normalizedHosted = testApi.normalizeHostedModels({
   data: [
-    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true, cost_class: 'free' },
-    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true, cost_class: 'free' }
+    { id: 'supergeni', display_name: 'Supergeni', provider: 'mmir', executable: true, selectable: true, live_e2e_verified: true, live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true }, cost_class: 'free' },
+    { id: 'cerebras:gpt-oss-120b', display_name: 'Cerebras GPT OSS 120B', provider: 'multi', executable: true, selectable: true, live_e2e_verified: true, live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true }, cost_class: 'free' }
   ]
 });
 assertEqual(normalizedHosted[0].id, 'mmir-supergenius', 'Live supergeni alias must keep the canonical browser route id');
 assertEqual(normalizedHosted[0].model, 'supergeni', 'Canonical browser route must still send the API model alias');
+
+const compactProof = { verified: true, stable_verified: true, no_paid_routes_started: true };
+const compactHosted = testApi.normalizeHostedModels({
+  object: 'list',
+  inventory_view: 'compact',
+  default_model: 'supergeni',
+  live_verified_intelligence_route_count: 2,
+  no_paid_routes_started: true,
+  data: [
+    { id: 'supergeni', model: 'supergeni', object: 'model', provider: 'mmir', route_id: 'supergeni/connected', route_state: 'connected_meta_route_available', route_type: 'connected_meta_route', executable: true, selectable: true, candidate: false, live_e2e_verified: false, live_e2e_proof: null, cost_class: null, cost_state: null, no_paid_routes_started: true },
+    { id: 'mistral-small-latest', model: 'mistral-small-latest', object: 'model', provider: 'mistral', route_state: 'public_untrusted_free_available', route_type: 'external_untrusted_free', executable: true, selectable: true, candidate: false, live_e2e_verified: true, live_e2e_proof: compactProof, cost_class: 'free-quota', cost_state: 'free_guarded', no_paid_routes_started: true },
+    { id: 'llama-3.3-70b-versatile', model: 'llama-3.3-70b-versatile', object: 'model', provider: 'groq', route_state: 'public_untrusted_free_available', route_type: 'external_untrusted_free', executable: true, selectable: true, candidate: false, live_e2e_verified: true, live_e2e_proof: compactProof, cost_class: 'free-quota', cost_state: 'free_guarded', no_paid_routes_started: true },
+    { id: 'contradictory-cost', model: 'contradictory-cost', object: 'model', provider: 'fixture', route_state: 'public_untrusted_free_available', route_type: 'external_untrusted_free', executable: true, selectable: true, candidate: false, live_e2e_verified: true, live_e2e_proof: compactProof, cost_class: 'free-quota', cost_state: 'paid', no_paid_routes_started: true }
+  ]
+});
+const compactSupergeni = compactHosted.find(model => model.id === 'mmir-supergenius');
+const contradictoryCost = compactHosted.find(model => model.id === 'contradictory-cost');
+assertEqual(compactSupergeni?.selectable, true, 'Production compact inventory must keep connected Supergeni selectable from its exact top-level live count plus independently tryable providers');
+assertEqual(compactSupergeni?.liveE2EVerified, false, 'Connected Supergeni must remain explicitly not per-model live verified');
+assertEqual(compactSupergeni?.costClass, null, 'Connected Supergeni must keep its absent per-model cost classification');
+assertEqual(contradictoryCost?.selectable, false, 'Any explicit paid contradiction must block an otherwise live free-looking direct provider');
 
 testApi.state.models = [hosted, gemma, qwenTiny];
 testApi.state.activeModelId = hosted.id;

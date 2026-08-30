@@ -48,10 +48,12 @@ async function installFixtures(page) {
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
+            ok: true,
+            no_paid_routes_started: true,
             live_verified_intelligence_route_count: 1,
             operator_readiness: {
-              readiness_state: 'ready',
-              default_writer_readiness: { classification: 'ready', authenticated_release_ready: true },
+              readiness_state: 'swarm_preview_ready',
+              default_writer_readiness: { classification: 'release_ready', authenticated_release_ready: true, blocker_codes: [] },
               journeys: { first_chat_ready: true, compare_ready: true, swarm_preview_ready: true }
             }
           })
@@ -74,6 +76,7 @@ async function installFixtures(page) {
               availability: 'available',
               route_state: 'managed_provider_available',
               live_e2e_verified: true,
+              live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
               cost_class: 'free'
             }]
           })

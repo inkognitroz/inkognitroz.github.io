@@ -82,7 +82,43 @@ async function waitForServer(){
   throw new Error('Release 0.2 test server did not become ready');
 }
 
-async function routeApi(page,{fail=false,failModels=false,zeroLive=false,degradedSupergeni=false,releaseReady=false,replace=false,delayMs=0}={}){
+function liveProof(provider,model,verified=true){
+  if(!verified)return null;
+  return {
+    verified:true,
+    stable_verified:true,
+    canary_verified:false,
+    structurally_verified:true,
+    stable_structurally_valid:true,
+    canary_structurally_valid:false,
+    status:'recent_bound_public_stable_proof_hmac_verified',
+    source:'runtime_gateway_hmac_admission',
+    route_key:provider+':'+model,
+    evidence_kind:'public-stable-proof',
+    bound_receipt_count:2,
+    distinct_bound_receipt_count:2,
+    verified_at:'2026-08-30T04:00:00.000Z',
+    expires_at:'2026-08-31T04:00:00.000Z',
+    no_paid_routes_started:true
+  };
+}
+
+async function routeApi(page,{
+  fail=false,
+  failModels=false,
+  zeroLive=false,
+  degradedSupergeni=false,
+  releaseReady=false,
+  readinessState,
+  authenticated,
+  noPaidRoutesStarted=true,
+  replace=false,
+  delayMs=0
+}={}){
+  const auth=authenticated??releaseReady;
+  const state=readinessState??(releaseReady?'swarm_preview_ready':'blocked');
+  const firstChat=Boolean(releaseReady&&auth&&state!=='blocked');
+  const liveRouteCount=releaseReady&&!zeroLive?2:0;
   if(replace){
     await page.unroute('https://api.mmir.ai/status');
     await page.unroute('https://api.mmir.ai/v1/models');
@@ -94,18 +130,22 @@ async function routeApi(page,{fail=false,failModels=false,zeroLive=false,degrade
       contentType:'application/json',
       body:fail?JSON.stringify({error:'unavailable'}):JSON.stringify({
         ok:true,
+        no_paid_routes_started:noPaidRoutesStarted,
+        cost_policy:{no_paid_routes_started:noPaidRoutesStarted},
         capabilities:['chat.completions','web.search.execute.safe_live_data_slice'],
-        live_verified_intelligence_route_count:releaseReady?1:0,
+        live_verified_intelligence_route_count:liveRouteCount,
         operator_readiness:{
-          readiness_state:releaseReady?'ready':'blocked',
+          readiness_state:state,
           default_writer_readiness:{
-            classification:releaseReady?'ready':'blocked',
-            authenticated_release_ready:releaseReady
+            classification:releaseReady?'release_ready':'blocked',
+            authenticated_release_ready:auth,
+            blocker_codes:releaseReady?[]:['authenticated_evaluation_failed'],
+            no_paid_routes_started:noPaidRoutesStarted
           },
           journeys:{
-            first_chat_ready:releaseReady,
-            compare_ready:releaseReady,
-            swarm_preview_ready:releaseReady
+            first_chat_ready:firstChat,
+            compare_ready:firstChat&&(state==='compare_ready'||state==='swarm_preview_ready'),
+            swarm_preview_ready:firstChat&&state==='swarm_preview_ready'
           }
         }
       })
@@ -118,15 +158,19 @@ async function routeApi(page,{fail=false,failModels=false,zeroLive=false,degrade
       contentType:'application/json',
       body:fail||failModels?JSON.stringify({error:'unavailable'}):JSON.stringify({
         object:'list',
-        total_visible_model_count:4,
-        live_selectable_model_count:2,
-        live_verified_intelligence_route_count:1,
+        inventory_view:'compact',
+        default_model:'supergeni',
+        no_paid_routes_started:noPaidRoutesStarted,
+        total_visible_model_count:5,
+        live_selectable_model_count:zeroLive?1:3,
+        live_verified_intelligence_route_count:zeroLive?0:2,
         degraded_model_count:1,
         data:[
-          {id:'supergeni',display_name:'Supergeni',provider:'mmir',status:degradedSupergeni?'temporarily_degraded':'available',route_id:'browser-guide/free',node_id:'browser-guide',route_state:degradedSupergeni?'orchestrator_degraded':'available',route_type:'managed_provider',executable:!degradedSupergeni,selectable:false,live_e2e_verified:false,cost_class:'free',capabilities:['chat.completions'],limitations:['Fixture orchestrator.']},
-          {id:'verified-writer',display_name:'Verified Writer',provider:'fixture',status:'available',route_id:'fixture/verified',node_id:'fixture-a',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:!zeroLive,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture verified route.']},
-          {id:'configured-writer',display_name:'Configured Writer',provider:'fixture',status:'available',route_id:'fixture/configured',node_id:'fixture-b',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:false,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture without fresh E2E proof.']},
-          {id:'degraded-writer',display_name:'Degraded Writer',provider:'fixture',status:'temporarily_degraded',route_id:'fixture/degraded',node_id:'fixture-c',route_state:'provider_temporarily_degraded',route_type:'external_untrusted_free',executable:false,selectable:false,live_e2e_verified:false,cost_class:'free-quota',capabilities:['chat.completions'],limitations:['Fixture degraded route.']}
+          {id:'supergeni',model:'supergeni',object:'model',display_name:'Supergeni',provider:'mmir',status:degradedSupergeni?'temporarily_degraded':'available',route_id:'supergeni/connected',node_id:'supergeni',route_state:degradedSupergeni?'orchestrator_degraded':'connected_meta_route_available',route_type:'connected_meta_route',executable:!degradedSupergeni,selectable:!degradedSupergeni,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:null,cost_state:null,no_paid_routes_started:noPaidRoutesStarted,capabilities:['chat.completions'],limitations:['Connected meta-route; not an extra model.']},
+          {id:'mistral-small-latest',model:'mistral-small-latest',object:'model',display_name:'Mistral Small',provider:'mistral',status:'available',route_id:'mistral/mistral-small-latest',node_id:'mistral-candidate',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:!zeroLive,live_e2e_proof:liveProof('mistral','mistral-small-latest',!zeroLive),cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture verified route.']},
+          {id:'llama-3.3-70b-versatile',model:'llama-3.3-70b-versatile',object:'model',display_name:'Groq Llama 3.3 70B',provider:'groq',status:'available',route_id:'groq/llama-3.3-70b-versatile',node_id:'groq-candidate',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:!zeroLive,live_e2e_proof:liveProof('groq','llama-3.3-70b-versatile',!zeroLive),cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture verified route.']},
+          {id:'configured-writer',model:'configured-writer',object:'model',display_name:'Configured Writer',provider:'fixture',status:'available',route_id:'fixture/configured',node_id:'fixture-b',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture without fresh E2E proof.']},
+          {id:'degraded-writer',model:'degraded-writer',object:'model',display_name:'Degraded Writer',provider:'fixture',status:'temporarily_degraded',route_id:'fixture/degraded',node_id:'fixture-c',route_state:'provider_temporarily_degraded',route_type:'external_untrusted_free',executable:false,selectable:false,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture degraded route.']}
         ]
       })
     });
@@ -196,10 +240,10 @@ async function checkChatNav(browser){
   assert(await page.evaluate(()=>document.getElementById('p0-model-menu')?.contains(document.activeElement)),'model dialog must receive focus when opened');
   const modelMenuText=await page.locator('#p0-model-menu').innerText();
   assert(!modelMenuText.includes('Active free routes'),'blocked model menu must not claim active free routes');
-  const verifiedWriterText=await page.locator('#p0-model-menu button').filter({hasText:'Verified Writer'}).innerText();
+  const verifiedWriterText=await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).innerText();
   assert(/Live-bevis/i.test(verifiedWriterText)&&/Port blokkert/i.test(verifiedWriterText),'live-E2E proof must remain visible when only the release port is blocked');
   assert(!/Ikke live/i.test(verifiedWriterText),'a live-E2E route behind a blocked release port must not be mislabeled non-live');
-  await page.locator('#p0-model-menu button').filter({hasText:'Verified Writer'}).evaluate(button=>button.click());
+  await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).evaluate(button=>button.click());
   assert(/har live-bevis.+releaseporten er blokkert/i.test(await page.locator('#p0-status').innerText()),'clicking a verified-but-blocked route must preserve its live proof and name the release block');
   const blockedRouteText=await page.locator('#p0-route').innerText();
   assert(/Live-bevis.+releaseport blokkert/i.test(blockedRouteText),'verified-but-blocked route click must preserve its proof in the route line; got '+blockedRouteText);
@@ -243,11 +287,11 @@ async function checkModels(browser){
   await page.goto(baseUrl+'/modeller/index.html',{waitUntil:'networkidle'});
   await assertProofSafeBrand(page,'.release-brand-copy small','model page');
   assert(await page.locator('#metric-tryable').textContent()==='0','a blocked release must show zero models as free to try now');
-  assert(await page.locator('#metric-configured').textContent()==='2','blocked E2E and configured routes must remain configured but unavailable');
-  assert(await page.locator('#models-grid .catalog-card').count()===4,'model page must render all fixture inventory rows');
+  assert(await page.locator('#metric-configured').textContent()==='3','blocked E2E and configured routes must remain configured but unavailable');
+  assert(await page.locator('#models-grid .catalog-card').count()===5,'model page must render all fixture inventory rows');
   assert(await page.locator('#models-grid .state-orchestrator').count()===1,'Supergeni must render as an orchestrator, not a model');
   assert(await page.locator('#models-grid .state-free_now').count()===0,'blocked release must never render a free-now badge');
-  assert(await page.locator('#models-grid .state-configured_unavailable').count()===2,'blocked verified and configured fixtures need unavailable badges');
+  assert(await page.locator('#models-grid .state-configured_unavailable').count()===3,'blocked verified and configured fixtures need unavailable badges');
   assert(await page.locator('#models-grid .state-degraded').count()===1,'degraded fixture needs one degraded badge');
   assert(await page.locator('#models-grid .card-action').count()===0,'model cards must not expose a misleading generic deep link');
   assert((await page.locator('#models-grid').innerText()).includes('fixture/configured'),'model cards must expose exact route identity');
@@ -262,9 +306,9 @@ async function checkReadyModels(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await routeApi(page,{releaseReady:true});
   await page.goto(baseUrl+'/modeller/index.html',{waitUntil:'networkidle'});
-  assert(await page.locator('#metric-tryable').textContent()==='1','a complete release gate plus model E2E proof must expose one free-now route');
+  assert(await page.locator('#metric-tryable').textContent()==='2','a complete release gate plus per-model E2E proof must expose both free-now provider routes');
   assert(await page.locator('#metric-configured').textContent()==='1','a configured route without E2E proof must remain unavailable');
-  assert(await page.locator('#models-grid .state-free_now').count()===1,'ready verified fixture needs the exact free-now badge');
+  assert(await page.locator('#models-grid .state-free_now').count()===2,'ready verified fixtures need the exact free-now badge');
   assert((await page.locator('#models-primary-cta').innerText()).includes('Prøv en gratis modell nå'),'ready model page CTA must promise only the proven free-now action');
   assert((await page.locator('#models-grid').innerText()).includes('Gratis offentlig MMIR-rute · ingen egen API-nøkkel'),'only the ready E2E route may expose free-now no-key access copy');
   await page.close();
@@ -278,13 +322,29 @@ async function checkSharedTaxonomy(browser){
     const taxonomy=window.MmirReleaseRouteTaxonomy;
     const local={id:'local-model',route:'local',route_type:'local',executable:true,selectable:true};
     const localReadiness={paired:true,runtimeChatReady:true,chatReady:true,modelIds:['local-model']};
-    const hosted={id:'hosted-model',route_type:'external_untrusted_free',cost_class:'free',executable:true,selectable:true,live_e2e_verified:true};
-    const status=(authenticated,firstChat)=>({
-      live_verified_intelligence_route_count:1,
+    const signedProof={verified:true,stable_verified:true,no_paid_routes_started:true};
+    const hosted={id:'hosted-model',route_type:'external_untrusted_free',cost_class:'free-quota',executable:true,selectable:true,live_e2e_verified:true,live_e2e_proof:signedProof};
+    const supergeni={id:'supergeni',model:'supergeni',route_type:'connected_meta_route',route_state:'connected_meta_route_available',executable:true,selectable:true,live_e2e_verified:false,cost_class:null,no_paid_routes_started:true};
+    const supergeniContext={surface:'chat',liveVerifiedIntelligenceRouteCount:2,liveUnderlyingProviderCount:2};
+    const status=({
+      authenticated=true,
+      firstChat=true,
+      liveRoutes=2,
+      readinessState='swarm_preview_ready',
+      noPaid=true,
+      classification='release_ready'
+    }={})=>({
+      ok:true,
+      no_paid_routes_started:noPaid,
+      live_verified_intelligence_route_count:liveRoutes,
       operator_readiness:{
-        readiness_state:'ready',
-        default_writer_readiness:{classification:'ready',authenticated_release_ready:authenticated},
-        journeys:{first_chat_ready:firstChat}
+        readiness_state:readinessState,
+        default_writer_readiness:{classification,authenticated_release_ready:authenticated,blocker_codes:[]},
+        journeys:{
+          first_chat_ready:firstChat,
+          compare_ready:firstChat&&(readinessState==='compare_ready'||readinessState==='swarm_preview_ready'),
+          swarm_preview_ready:firstChat&&readinessState==='swarm_preview_ready'
+        }
       }
     });
     return {
@@ -293,10 +353,35 @@ async function checkSharedTaxonomy(browser){
       byok:taxonomy.classifyModel({id:'key-model',route_type:'byok',requires_api_key:true,executable:true,selectable:true}).key,
       planned:taxonomy.classifyModel({id:'future-model',candidate:true,status:'planned',executable:false,selectable:false}).key,
       degraded:taxonomy.classifyModel({id:'down-model',status:'temporarily_degraded',executable:false,selectable:false}).key,
-      fullGate:taxonomy.classifyModel(hosted,{surface:'chat',status:status(true,true)}).key,
-      noAuth:taxonomy.classifyModel(hosted,{surface:'chat',status:status(false,true)}).key,
-      noFirstChat:taxonomy.classifyModel(hosted,{surface:'chat',status:status(true,false)}).key,
-      noModelProof:taxonomy.classifyModel({...hosted,live_e2e_verified:false},{surface:'chat',status:status(true,true)}).key
+      fullGate:taxonomy.classifyModel(hosted,{surface:'chat',status:status()}).key,
+      noAuth:taxonomy.classifyModel(hosted,{surface:'chat',status:status({authenticated:false})}).key,
+      noFirstChat:taxonomy.classifyModel(hosted,{surface:'chat',status:status({firstChat:false})}).key,
+      noModelProof:taxonomy.classifyModel({...hosted,live_e2e_verified:false},{surface:'chat',status:status()}).key,
+      missingProofObject:taxonomy.classifyModel({...hosted,live_e2e_proof:null},{surface:'chat',status:status()}).key,
+      noModelCost:taxonomy.classifyModel({...hosted,cost_class:null},{surface:'chat',status:status()}).key,
+      costStateOnly:taxonomy.classifyModel({...hosted,cost_class:null,cost_state:'free-quota'},{surface:'chat',status:status()}).key,
+      forgedFreeCost:taxonomy.classifyModel({...hosted,cost_class:'free-paid'},{surface:'chat',status:status()}).key,
+      paidCostState:taxonomy.classifyModel({...hosted,cost_state:'paid'},{surface:'chat',status:status()}).key,
+      meteredPricing:taxonomy.classifyModel({...hosted,pricing:'metered'},{surface:'chat',status:status()}).key,
+      billedRouteClass:taxonomy.classifyModel({...hosted,route_class:'owner-billed'},{surface:'chat',status:status()}).key,
+      supergeni:taxonomy.classifyModel(supergeni,{...supergeniContext,status:status()}),
+      supergeniNoInventoryCount:taxonomy.classifyModel(supergeni,{...supergeniContext,liveVerifiedIntelligenceRouteCount:undefined,status:status()}).key,
+      supergeniNoUnderlying:taxonomy.classifyModel(supergeni,{...supergeniContext,liveUnderlyingProviderCount:0,status:status()}).key,
+      supergeniPaid:taxonomy.classifyModel(supergeni,{...supergeniContext,status:status({noPaid:false})}).key,
+      firstChatEnum:taxonomy.releaseReadiness(status({readinessState:'first_chat_ready'})).hostedReady,
+      compareEnum:taxonomy.releaseReadiness(status({readinessState:'compare_ready'})).hostedReady,
+      swarmEnum:taxonomy.releaseReadiness(status()).hostedReady,
+      legacyReady:taxonomy.releaseReadiness(status({readinessState:'ready'})).hostedReady,
+      unknown:taxonomy.releaseReadiness(status({readinessState:'unknown'})).hostedReady,
+      blocked:taxonomy.releaseReadiness(status({readinessState:'blocked'})).hostedReady,
+      missingOk:taxonomy.releaseReadiness((()=>{const value=status();delete value.ok;return value;})()).hostedReady,
+      wrongClassification:taxonomy.releaseReadiness(status({classification:'ready'})).hostedReady,
+      missingBlockers:taxonomy.releaseReadiness((()=>{const value=status();delete value.operator_readiness.default_writer_readiness.blocker_codes;return value;})()).hostedReady,
+      inconsistentFirstChat:taxonomy.releaseReadiness((()=>{const value=status({readinessState:'first_chat_ready'});value.operator_readiness.journeys.compare_ready=true;return value;})()).hostedReady,
+      inconsistentCompare:taxonomy.releaseReadiness((()=>{const value=status({readinessState:'compare_ready'});value.operator_readiness.journeys.compare_ready=false;return value;})()).hostedReady,
+      inconsistentSwarm:taxonomy.releaseReadiness((()=>{const value=status();value.operator_readiness.journeys.swarm_preview_ready=false;return value;})()).hostedReady,
+      noLive:taxonomy.releaseReadiness(status({liveRoutes:0})).hostedReady,
+      paid:taxonomy.releaseReadiness(status({noPaid:false})).hostedReady
     };
   });
   assert(states.paired==='local_ready','shared taxonomy must identify a genuinely paired local node');
@@ -308,6 +393,22 @@ async function checkSharedTaxonomy(browser){
   assert(states.noAuth==='configured_unavailable','missing authenticated release must fail closed');
   assert(states.noFirstChat==='configured_unavailable','missing first-chat readiness must fail closed');
   assert(states.noModelProof==='configured_unavailable','missing exact model E2E proof must fail closed');
+  assert(states.missingProofObject==='configured_unavailable','a direct provider flag without its canonical signed proof projection must fail closed');
+  assert(states.noModelCost==='configured_unavailable','missing an explicit recognized free cost must fail closed for direct providers');
+  assert(states.costStateOnly==='configured_unavailable','cost_state alone must not establish a canonical free direct-provider route');
+  assert(states.forgedFreeCost==='configured_unavailable','an unrecognized free-looking cost must fail closed for direct providers');
+  assert(states.paidCostState==='configured_unavailable'&&states.meteredPricing==='configured_unavailable'&&states.billedRouteClass==='configured_unavailable','any explicit paid, metered or billable cost contradiction must fail closed');
+  assert(states.supergeni.key==='free_now'&&states.supergeni.liveE2EVerified===false,'connected Supergeni must be selectable from authenticated underlying route truth without forging per-model E2E proof');
+  assert(states.supergeniNoInventoryCount==='configured_unavailable','connected Supergeni must fail closed without the exact top-level compact inventory live count');
+  assert(states.supergeniNoUnderlying==='configured_unavailable','connected Supergeni must fail closed without an explicit live underlying provider count');
+  assert(states.supergeniPaid==='configured_unavailable','connected Supergeni must fail closed when no-paid truth is false');
+  assert(states.firstChatEnum&&states.compareEnum&&states.swarmEnum,'all three actual positive gateway readiness enums must admit authenticated first chat');
+  assert(!states.legacyReady&&!states.unknown&&!states.blocked,'legacy, unknown and blocked readiness states must fail closed');
+  assert(!states.missingOk&&!states.missingBlockers,'incomplete status and writer truth must fail closed');
+  assert(!states.wrongClassification,'legacy writer classification must fail closed');
+  assert(!states.inconsistentFirstChat&&!states.inconsistentCompare&&!states.inconsistentSwarm,'readiness enums that contradict their journey flags must fail closed');
+  assert(!states.noLive,'zero live underlying routes must fail closed');
+  assert(!states.paid,'paid-route truth must fail closed');
   await page.close();
 }
 
@@ -346,6 +447,12 @@ async function checkReadyHostedGate(browser){
   await routeApi(page,{releaseReady:true});
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
+  assert((await page.locator('#p0-model .p0-model-name').innerText()).trim()==='Supergeni','connected Supergeni must remain the default route when the exact gateway contract is green');
+  await page.locator('#p0-model').click();
+  const supergeni=page.locator('#p0-model-menu [data-model-id="mmir-supergenius"]');
+  assert(await supergeni.count()===1,'connected Supergeni must remain visible in the model picker');
+  assert(await supergeni.getAttribute('data-model-selectable')==='true'&&await supergeni.getAttribute('aria-disabled')==='false','connected Supergeni must be selectable without forging a per-model live or cost claim');
+  await page.keyboard.press('Escape');
   assert(!(await page.locator('#p0-send').isDisabled()),'hosted send must enable only after the complete release-readiness contract is green');
   const readySend=await sendVisualState(page);
   assert(readySend.width>=44&&readySend.height>=44,'ready iPhone send control must keep a 44 by 44 CSS pixel target');
@@ -401,7 +508,10 @@ async function checkKeyboardSendAndStop(browser){
 async function checkInventoryMismatchFailsClosed(browser){
   for(const fixture of [
     {name:'failed model inventory',options:{releaseReady:true,failModels:true}},
-    {name:'zero live-verified models',options:{releaseReady:true,zeroLive:true}}
+    {name:'zero live-verified models',options:{releaseReady:true,zeroLive:true}},
+    {name:'unknown readiness enum',options:{releaseReady:true,readinessState:'unknown'}},
+    {name:'unauthenticated writer',options:{releaseReady:true,authenticated:false}},
+    {name:'paid-route policy violation',options:{releaseReady:true,noPaidRoutesStarted:false}}
   ]){
     const page=await browser.newPage({viewport:{width:390,height:844}});
     await routeApi(page,fixture.options);
@@ -440,15 +550,17 @@ async function checkOutOfOrderPreflightFailsClosed(browser){
   let hostedChatCalls=0;
   const greenStatus={
     ok:true,
-    live_verified_intelligence_route_count:1,
+    no_paid_routes_started:true,
+    live_verified_intelligence_route_count:2,
     operator_readiness:{
-      readiness_state:'ready',
-      default_writer_readiness:{classification:'ready',authenticated_release_ready:true},
+      readiness_state:'swarm_preview_ready',
+      default_writer_readiness:{classification:'release_ready',authenticated_release_ready:true,blocker_codes:[]},
       journeys:{first_chat_ready:true,compare_ready:true,swarm_preview_ready:true}
     }
   };
   const blockedStatus={
     ok:true,
+    no_paid_routes_started:true,
     live_verified_intelligence_route_count:0,
     operator_readiness:{
       readiness_state:'blocked',
@@ -458,7 +570,7 @@ async function checkOutOfOrderPreflightFailsClosed(browser){
   };
   const models={
     object:'list',
-    data:[{id:'verified-writer',display_name:'Verified Writer',provider:'fixture',route_id:'fixture/verified',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:true,status:'available'}]
+    data:[{id:'verified-writer',display_name:'Verified Writer',provider:'fixture',route_id:'fixture/verified',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:true,live_e2e_proof:{verified:true,stable_verified:true,no_paid_routes_started:true},cost_class:'free-quota',no_paid_routes_started:true,status:'available'}]
   };
   await page.route('https://api.mmir.ai/status',async route=>{
     const call=++statusCalls;
@@ -502,15 +614,17 @@ async function checkSupersededActionPreflightFailsClosed(browser){
   let hostedChatCalls=0;
   const greenStatus={
     ok:true,
-    live_verified_intelligence_route_count:1,
+    no_paid_routes_started:true,
+    live_verified_intelligence_route_count:2,
     operator_readiness:{
-      readiness_state:'ready',
-      default_writer_readiness:{classification:'ready',authenticated_release_ready:true},
+      readiness_state:'swarm_preview_ready',
+      default_writer_readiness:{classification:'release_ready',authenticated_release_ready:true,blocker_codes:[]},
       journeys:{first_chat_ready:true,compare_ready:true,swarm_preview_ready:true}
     }
   };
   const blockedStatus={
     ok:true,
+    no_paid_routes_started:true,
     live_verified_intelligence_route_count:0,
     operator_readiness:{
       readiness_state:'blocked',
@@ -520,7 +634,7 @@ async function checkSupersededActionPreflightFailsClosed(browser){
   };
   const models={
     object:'list',
-    data:[{id:'verified-writer',display_name:'Verified Writer',provider:'fixture',route_id:'fixture/verified',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:true,status:'available'}]
+    data:[{id:'verified-writer',display_name:'Verified Writer',provider:'fixture',route_id:'fixture/verified',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,live_e2e_verified:true,live_e2e_proof:{verified:true,stable_verified:true,no_paid_routes_started:true},cost_class:'free-quota',no_paid_routes_started:true,status:'available'}]
   };
   await page.route('https://api.mmir.ai/status',async route=>{
     const call=++statusCalls;
@@ -590,6 +704,15 @@ async function checkReleaseReadinessGate(browser){
   await page.close();
 }
 
+async function checkReadyTrust(browser){
+  const page=await browser.newPage({viewport:{width:1280,height:800}});
+  await routeApi(page,{releaseReady:true});
+  await page.goto(baseUrl+'/tillit/index.html',{waitUntil:'networkidle'});
+  assert(await page.locator('#trust-runtime').getAttribute('data-state')==='ready','Trust must render green from the exact authenticated gateway contract');
+  assert((await page.locator('#trust-runtime').innerText()).includes('ferskt, autentisert produksjonsbevis'),'Trust green must name the authenticated production proof');
+  await page.close();
+}
+
 port=await resolvePort();
 baseUrl=`http://${host}:${port}`;
 const server=startServer();
@@ -606,6 +729,7 @@ try{
   await checkCapabilities(browser);
   await checkCapabilitySchemaFailClosed(browser);
   await checkReleaseReadinessGate(browser);
+  await checkReadyTrust(browser);
   await checkReadyHostedGate(browser);
   await checkKeyboardSendAndStop(browser);
   await checkInventoryMismatchFailsClosed(browser);

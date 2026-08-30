@@ -75,8 +75,8 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  "serviceWorkerUrl='./sw.js?v=20260810-proof-safe-tagline-v1'",
-  'The P0 shell must bind the proof-safe service-worker script version outside the skipped legacy queue.'
+  "serviceWorkerUrl='./sw.js?v=20260830-gateway-release-contract-v2'",
+  'The P0 shell must bind the gateway-contract service-worker version outside the skipped legacy queue.'
 );
 requireIncludes(
   html,

@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260816-iphone-webkit-v1';
+  const P0_RUNTIME_VERSION='20260830-gateway-release-contract-v2';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2923,6 +2923,18 @@
 
   function normalizeHostedModels(payload){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+    const inventoryLiveVerifiedIntelligenceRouteCount=(
+      Number.isSafeInteger(payload?.live_verified_intelligence_route_count)&&
+      payload.live_verified_intelligence_route_count>=0
+    )?payload.live_verified_intelligence_route_count:0;
+    const liveUnderlyingProviderCount=raw.filter(model=>
+      RELEASE_ROUTE_TAXONOMY?.isConnectedSupergeni?.(model)!==true&&
+      RELEASE_ROUTE_TAXONOMY?.hostedTryableNow?.(model,state.releaseReadiness)===true
+    ).length;
+    const connectedInventoryContext={
+      liveVerifiedIntelligenceRouteCount:inventoryLiveVerifiedIntelligenceRouteCount,
+      liveUnderlyingProviderCount
+    };
     const normalized=raw
       .filter(visibleHostedModel)
       .filter(model=>String(model?.id||model?.model||'').trim())
@@ -2935,9 +2947,14 @@
         const trustLevel=String(model.trust_level||'').trim();
         const externalUntrustedFree=routeClass==='external-untrusted-free'||trustLevel==='external-untrusted-free'||String(model.route_type||'')==='external_untrusted_free';
         const provider=providerLabel(model.provider);
-        const liveE2EVerified=model.live_e2e_verified===true;
+        const liveE2EVerified=hostedModelLiveVerified(model);
+        const connectedSupergeni=RELEASE_ROUTE_TAXONOMY?.isConnectedSupergeni?.(model)===true;
         const releaseReady=hostedJourneyReady('first_chat');
-        const truth=RELEASE_ROUTE_TAXONOMY?.classifyModel?.(model,{surface:'chat',releaseReadiness:state.releaseReadiness})||{
+        const truth=RELEASE_ROUTE_TAXONOMY?.classifyModel?.(model,{
+          surface:'chat',
+          releaseReadiness:state.releaseReadiness,
+          ...connectedInventoryContext
+        })||{
           key:'configured_unavailable',
           tryable:false,
           reason:'Delt release-taksonomi kunne ikke lastes.'
@@ -2955,7 +2972,9 @@
                   ? [provider,'Live-bevis','Port blokkert']
                   : [provider,'Konfigurert','Utilgjengelig']))));
         const detail=truth.key==='free_now'
-          ? (externalUntrustedFree?'Gratis å prøve nå · verifisert ekstern rute':'Gratis å prøve nå · verifisert hostet rute')
+          ? (connectedSupergeni
+            ? truth.reason
+            : (externalUntrustedFree?'Gratis å prøve nå · verifisert ekstern rute':'Gratis å prøve nå · verifisert hostet rute'))
           : (candidate?candidateDetail(model,provider):truth.reason);
         return {
           id,
@@ -2974,9 +2993,14 @@
           routeState:model.route_state||'managed_provider_available',
           routeType:model.route_type||'managed_provider',
           availability:model.availability||'available',
-          costState:model.cost_state||model.cost_class||'free',
+          costClass:Object.hasOwn(model,'cost_class')?model.cost_class:null,
+          costState:Object.hasOwn(model,'cost_state')?model.cost_state:null,
           nextAction:model.next_action||null,
           liveE2EVerified,
+          liveE2EProof:model.live_e2e_proof||null,
+          noPaidRoutesStarted:model.no_paid_routes_started===true,
+          inventoryLiveVerifiedIntelligenceRouteCount:connectedSupergeni?inventoryLiveVerifiedIntelligenceRouteCount:0,
+          liveUnderlyingProviderCount:connectedSupergeni?liveUnderlyingProviderCount:0,
           configuredSelectable:model.selectable!==false,
           selectable
         };
@@ -3009,14 +3033,18 @@
       : blockedReleaseReadiness('Status for offentlig svarbane kunne ikke verifiseres.');
     if(modelsResult.status==='fulfilled'){
       const payload=modelsResult.value;
-      const models=normalizeHostedModels(payload);
-      const liveModels=models.filter(liveHostedModel);
-      if(!liveModels.length){
+      let models=normalizeHostedModels(payload);
+      const liveUnderlyingModels=models.filter(model=>
+        RELEASE_ROUTE_TAXONOMY?.isConnectedSupergeni?.(model)!==true&&
+        liveHostedModel(model)
+      );
+      if(!liveUnderlyingModels.length){
         state.releaseReadiness=blockedReleaseReadiness(
           state.releaseReadiness.hostedReady===true
             ? 'Modellinventaret mangler en fersk live-verifisert rute.'
             : state.releaseReadiness.reason
         );
+        models=normalizeHostedModels(payload);
         state.routeInventory=modelInventorySummary(payload,models);
         state.models=models.concat(state.models.filter(model=>model.route==='local'));
         state.hostedRouteState='degraded';
@@ -3038,7 +3066,7 @@
       }
       persistActiveModelId();
       writeJson(MODELS_KEY,state.models);
-      state.hostedRouteState=liveModels.length?'ready':'degraded';
+      state.hostedRouteState=liveUnderlyingModels.length?'ready':'degraded';
       renderReleaseReadiness();
       status('Offentlig svarbane er live-verifisert.','ready');
       renderToolbar();
@@ -6455,7 +6483,7 @@
   function selectedRouteReady(){
     const model=activeModel();
     if(model?.route==='local')return localModelReady(model);
-    return Boolean(model&&model.executable!==false&&model.selectable!==false&&hostedModelLiveVerified(model)&&hostedJourneyReady('first_chat'));
+    return Boolean(model&&model.executable!==false&&model.selectable!==false&&liveHostedModel(model)&&hostedJourneyReady('first_chat'));
   }
 
   async function revalidateHostedBoundary(journey='first_chat',model=null,{force=false}={}){

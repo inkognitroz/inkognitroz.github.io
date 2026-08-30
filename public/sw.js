@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d356-20260810-proof-safe-tagline-v1';
+const CACHE_NAME='mmir-pwa-d357-20260830-gateway-release-contract-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
