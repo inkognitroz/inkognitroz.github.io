@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260909-single-writer-readiness-v1';
+  const P0_RUNTIME_VERSION='20260909-single-writer-intent-v2';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -3908,6 +3908,10 @@
     return /@compare|\b(compare|compare answers|best answer|best of|parallel|side by side|both models|two models|multi[- ]?model|sammenlign|beste svar|begge modeller)\b/i.test(String(prompt||''));
   }
 
+  function wantsExplicitCompareRoute(prompt){
+    return /@compare|\b(both models|two models|multi[- ]?model|begge modeller)\b/i.test(String(prompt||''));
+  }
+
   function wantsPrivateRoute(prompt){
     return /\b(private|privacy|local|locally|offline|this mac|my mac|no cloud|privat|lokal|lokalt|denne macen|uten sky)\b/i.test(String(prompt||''));
   }
@@ -3941,8 +3945,13 @@
       }
       return {mode:'private-unavailable',prompt:cleanSmartPrompt(prompt)||prompt};
     }
-    if(partner&&wantsCompareRoute(prompt)){
+    if(wantsExplicitCompareRoute(prompt)){
       return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};
+    }
+    if(partner&&wantsCompareRoute(prompt)){
+      if(hostedJourneyReady('compare')){
+        return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};
+      }
     }
     if(factGuardActive()&&!isCanonicalHostedModel(active)&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
       return {mode:'single',model:defaultHostedModel(),reason:'Kvalitetssikret fakta · nettsøk ved behov',prompt:cleanSmartPrompt(prompt)||prompt};

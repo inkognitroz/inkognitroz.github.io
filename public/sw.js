@@ -1,4 +1,4 @@
-const CACHE_NAME='mmir-pwa-d357-20260909-single-writer-readiness-v1';
+const CACHE_NAME='mmir-pwa-d357-20260909-single-writer-intent-v2';
 const NETWORK_FIRST_EXTENSIONS=new Set(['.css','.html','.js','.json','.webmanifest']);
 const SHELL_ASSETS=[
   './',
