@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260909-ordinary-chat-result-v1';
+  const P0_RUNTIME_VERSION='20260909-calculator-attribution-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -3734,14 +3734,16 @@
     return next;
   }
 
-  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false){
+  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null){
     const full=canonicalBrandText(receipt).trim();
     const model=canonicalBrandText(modelLabel).replace(/\s+/g,' ').trim()||'AI-modell';
     const quietStatus=quietReceiptStatus(full,model,proof);
     const conciseGeneratedStatus=aiGenerated
       ? (receiptParts(quietStatus).find(part=>/^(?:Verifisert|Signert kvittering|Ubekreftet)$/i.test(part))||receiptParts(quietStatus)[0]||'')
       : quietStatus;
-    const statusParts=[
+    const calculatorAnswer=answerWriter?.type==='capability'&&answerWriter?.identity_source==='deterministic-calculator-metadata'&&
+      answerWriter?.model_id==='calculator'&&answerState==='live'&&!aiGenerated;
+    const statusParts=calculatorAnswer?['verktøysvar']:[
       answerDeliveryLabel(answerState),
       conciseGeneratedStatus,
       aiGenerated?'KI-svar · kan ta feil':''
@@ -6437,7 +6439,7 @@
       const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):'';
       const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
       const receiptHtml=message.role==='assistant'
-        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated)
+        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated,message.answerWriter)
         : '';
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
@@ -6789,7 +6791,7 @@
     ];
   }
 
-  function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt=''){
+  function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='',options={}){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
@@ -6798,9 +6800,24 @@
     const systemPrompt=(directWriter
       ? 'You are the language model selected by the user inside MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.')+explicitGroundingInstruction(prompt);
+    const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt);
+    const original=String(displayPrompt||'').trim();
+    const noSavedInstructions=[ROLE_PROFILE_KEY,ANSWER_STYLE_KEY,FACT_GUARD_KEY]
+      .every(key=>readStorageString(key,'')==='');
+    if(options.ordinaryFirstTurn===true&&!directWriter&&model?.route==='hosted'&&!media&&
+      !privateModeActive()&&!writerContinuityState&&noSavedInstructions&&
+      normalizeRoleProfileId(state.roleProfileId)==='default'&&answerStyle()==='short'&&factGuardActive()&&
+      original===String(prompt||'').trim()&&!explicitGroundingInstruction(original)&&
+      /^[0-9+\-*/().×÷ \t]{1,160}$/.test(original)&&/[+\-*/×÷]/.test(original)&&
+      messages.length===2&&messages[0].role==='system'&&messages[0].content===systemPrompt&&
+      messages[1].role==='user'&&messages[1].content===original){
+      // Transport only: the gateway remains the parser and may fall back to its
+      // default model persona for dates, invalid arithmetic or unsupported input.
+      messages.shift();
+    }
     return {
       model:modelId,
-      messages:hostedConversationMessages(prompt,systemPrompt,media,displayPrompt),
+      messages,
       stream:false,
       temperature:0.7,
       max_tokens:answerTokenBudget(),
@@ -6900,7 +6917,9 @@
     }
     const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
     const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
-    let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt));
+    let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt,{
+      ordinaryFirstTurn:ordinaryBasic&&options.emptyPriorHistory===true&&!writerContinuityState
+    }));
     const continuityPlan=continuityEnabled
       ? writerContinuityRequestPlan(payload,writerContinuityState)
       : {payload,applied:false,reason:'disabled',limit_bytes:96*1024};
@@ -7988,6 +8007,7 @@
       : (model?.route==='local'?'local-model':(pendingMedia?'hosted-vision':'ui-local'));
     closeMenus();
     const signal=beginResponse();
+    const emptyPriorHistory=state.messages.length===0;
     const userMessage=append('user',prompt,'You','',{routeProvenance,hostedLineage:directHostedLineage});
     input.value='';
     autosizeInput();
@@ -8023,21 +8043,23 @@
         ? await chatLocal(routePrompt,model,signal)
         : pendingMedia
           ? responseText((hostedData=await chatVisionPreviewData(routePrompt,signal,pendingMedia)))||'Vision-ruten svarte tomt. Prøv igjen med et tydeligere bilde eller en kortere forespørsel.'
-          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat})))||((model?.label||'Hosted route')+' returned an empty response.');
+          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory})))||((model?.label||'Hosted route')+' returned an empty response.');
       if(hostedData)recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;
+      const answerWriter=answerWriterProfile(hostedData,model);
+      const calculatorAnswer=answerWriter.identity_source==='deterministic-calculator-metadata';
       const measuredScore=routeScore(model,routePrompt,answer,elapsedMs);
-      recordRouteBenchmark(model,measuredScore);
+      if(!calculatorAnswer)recordRouteBenchmark(model,measuredScore);
       const elapsed=formatDuration(elapsedMs);
       const connectGuide=responseConnectGuide(hostedData);
       const answerProof=noteAnswerProof(answerProofLine(hostedData));
-      const answerWriter=answerWriterProfile(hostedData,model);
       const answeredRouteProvenance=directHostedLineage&&answerWriter.type==='capability'?'hosted-capability':routeProvenance;
       state.hostedRouteState='ready';
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
         label:answerWriter.model_display_name,
-        receipt:routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':'')+writerContinuityResetReceipt(hostedData),
+        receipt:calculatorAnswer?'Kalkulator · verktøysvar · Ingen modell kalt · '+elapsed:
+          routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':'')+writerContinuityResetReceipt(hostedData),
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(hostedData),
         answerWriter,
@@ -8061,7 +8083,10 @@
         writer_continuity_reset_reason:writerContinuityResetMetadata(hostedData)?.reason||''
       });
       renderModelMenu();
-      if(connectGuide){
+      if(calculatorAnswer){
+        routeStatus('Kalkulator · verktøysvar · Ingen modell kalt',receipt.state);
+        status('Kalkulator · verktøysvar','ready');
+      }else if(connectGuide){
         const routeText=connectGuideRouteText(connectGuide);
         status(connectGuideStatusText(connectGuide)||answerStatus(model,measuredScore,routePrefix),'ready');
         routeStatus(routeText||routePrefix+routeMicroStatus(model),receipt.state);

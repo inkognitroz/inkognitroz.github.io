@@ -8,11 +8,40 @@ let port = Number(process.env.MMIR_TRUTHFUL_STATE_PORT || 8812);
 let baseUrl = `http://${host}:${port}`;
 const screenshotDir = process.env.MMIR_TRUTHFUL_STATE_SCREENSHOTS || 'test-results/p0-truthful-chat-state';
 const failures = [];
+const chatRequests = [];
 let chatMode = 'slow-success';
 let modelsMode = 'ready';
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
+}
+
+function calculatorResponse() {
+  return {
+    object: 'chat.completion', model: 'supergeni', provider: 'mmir-tools',
+    provider_called: false, provider_calls_started: 0, upstream_call_count: 0,
+    choices: [{ message: { role: 'assistant', content: '19 * 37 = 703' }, finish_reason: 'stop' }],
+    mmir: {
+      ordinary_chat: true, answer_source: 'deterministic_tool', tool_used: 'calculator',
+      provider_called: false, provider_calls_started: 0, no_paid_routes_started: true,
+      enhanced: false, live_e2e_verified: false, quality_verified: false,
+      tool_execution: {
+        expression: '19 * 37', exact: true, result_kind: 'integer',
+        numerator_text: '703', denominator_text: '1', result_text: '703'
+      }
+    }
+  };
+}
+
+function ordinaryModelResponse() {
+  return {
+    object: 'chat.completion', model: 'mistral-small-latest',
+    choices: [{ message: { role: 'assistant', content: 'Et vanlig modellsvar.' }, finish_reason: 'stop' }],
+    mmir: {
+      provider_called: true, no_paid_routes_started: true,
+      answer_writer: { object: 'mmir.answer_writer', type: 'llm', provider: 'mistral', model_id: 'mistral-small-latest', model_display_name: 'Mistral Small' }
+    }
+  };
 }
 
 function startServer() {
@@ -37,11 +66,13 @@ async function waitForServer(url) {
   throw new Error(`Server did not become ready at ${url}`);
 }
 
-async function installFixtures(page) {
-  await page.addInitScript(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
+async function installFixtures(page, { resetStorage = true, directWriter = false } = {}) {
+  if (resetStorage) {
+    await page.addInitScript(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+  }
   await page.route('https://api.mmir.ai/status', route => route.fulfill(
     modelsMode === 'ready'
       ? {
@@ -78,7 +109,15 @@ async function installFixtures(page) {
               live_e2e_verified: true,
               live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true },
               cost_class: 'free'
-            }]
+            }, ...(directWriter ? [{
+              id: 'mistral-small-latest', model: 'mistral-small-latest', provider: 'mistral',
+              name: 'Mistral Small', display_name: 'Mistral Small',
+              executable: true, selectable: true, availability: 'available',
+              route_state: 'managed_provider_available', route_type: 'managed_provider',
+              route_class: 'free', trust_level: 'public-free', cost_class: 'free',
+              live_e2e_verified: true,
+              live_e2e_proof: { verified: true, stable_verified: true, no_paid_routes_started: true }
+            }] : [])]
           })
         }
       : modelsMode === 'candidate-only'
@@ -108,6 +147,19 @@ async function installFixtures(page) {
         }
   ));
   await page.route('https://api.mmir.ai/v1/chat/completions', async route => {
+    const request = route.request().postDataJSON() || {};
+    chatRequests.push(request);
+    if (chatMode === 'calculator-success' || chatMode === 'calculator-conflict') {
+      // Model the known server fixture, not another arithmetic parser. A system
+      // message, prior context or another input must never fabricate a tool reply.
+      const calculatorRequest = ['supergeni', 'mmir-supergenius'].includes(request.model) &&
+        request.messages?.length === 1 && request.messages[0].role === 'user' &&
+        request.messages[0].content === '19 * 37';
+      const body = calculatorRequest ? calculatorResponse() : ordinaryModelResponse();
+      if (calculatorRequest && chatMode === 'calculator-conflict') body.provider_called = true;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+      return;
+    }
     if (chatMode === 'slow-success' || chatMode === 'invalid-writer-success') {
       if (chatMode === 'slow-success') await new Promise(resolve => setTimeout(resolve, 1200));
       await route.fulfill({
@@ -313,6 +365,144 @@ try {
     assert(!/\bLive\b/i.test(pendingCompareText), 'rehydrated compare progress must never become Live');
     assert(!/KI-svar · kan ta feil/i.test(pendingCompareText), 'rehydrated compare progress must not carry the generated-answer warning');
     await matrixPage.close();
+
+    const calculatorPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+    await installFixtures(calculatorPage, { resetStorage: false });
+    chatMode = 'calculator-success';
+    await calculatorPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=calculator-attribution#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+    await calculatorPage.waitForSelector('#p0-input');
+    const benchmarksBefore = await calculatorPage.evaluate(() => localStorage.getItem('mmir-p0-route-benchmarks-v1'));
+    await calculatorPage.locator('#p0-input').fill('19 * 37');
+    assert(await calculatorPage.locator('#p0-send').isEnabled(), 'calculator attribution must not gate Send');
+    await calculatorPage.locator('#p0-send').click();
+    await calculatorPage.waitForSelector('.p0-message-assistant .p0-receipt-model:text-is("Kalkulator")');
+    const firstCalculatorRequest = chatRequests.at(-1);
+    assert(firstCalculatorRequest.model === 'mmir-supergenius' && firstCalculatorRequest.messages?.length === 1 &&
+      firstCalculatorRequest.messages[0].role === 'user' && firstCalculatorRequest.messages[0].content === '19 * 37',
+    'real first-turn POST must contain exactly the unmodified user expression and no generated system message');
+    let calculatorMessage = calculatorPage.locator('.p0-message-assistant').last();
+    assert((await calculatorMessage.locator('.p0-message-body').innerText()).trim() === '19 * 37 = 703', 'calculator answer must retain the exact gateway output');
+    let calculatorSummary = await calculatorMessage.locator('summary').getAttribute('aria-label');
+    assert(calculatorSummary.startsWith('Kalkulator · verktøysvar'), 'calculator receipt must identify a tool result');
+    assert(!/\bLive\b|KI-svar|verifisert|signert/i.test(calculatorSummary), 'calculator receipt must not claim live LLM generation or writer verification');
+    assert(await calculatorPage.evaluate(() => localStorage.getItem('mmir-p0-route-benchmarks-v1')) === benchmarksBefore, 'calculator latency must not count as a model benchmark');
+
+    const identities = await calculatorPage.evaluate((base) => {
+      const identity = (payload) => window.MimirP0RouteAdapters.truthfulWriterIdentity(payload);
+      const cases = [
+        ['provider-called', payload => { payload.provider_called = true; }],
+        ['nested-provider-called', payload => { payload.mmir.provider_called = true; }],
+        ['missing-provider-flag', payload => { delete payload.mmir.provider_called; }],
+        ['provider-count', payload => { payload.provider_calls_started = 1; }],
+        ['upstream-count', payload => { payload.upstream_call_count = 1; }],
+        ['provider-identity', payload => { payload.provider = 'mistral'; }],
+        ['not-exact', payload => { payload.mmir.tool_execution.exact = false; }],
+        ['result-mismatch', payload => { payload.mmir.tool_execution.result_text = '704'; }],
+        ['answer-mismatch', payload => { payload.choices[0].message.content = 'Another answer'; }],
+        ['writer-conflict', payload => { payload.mmir.answer_writer = { object: 'mmir.answer_writer', type: 'llm', provider: 'mistral', model_id: 'mistral-small-latest', model_display_name: 'Mistral Small' }; }]
+      ].map(([name, mutate]) => {
+        const payload = structuredClone(base);
+        mutate(payload);
+        return { name, writer: identity(payload) };
+      });
+      const sse = { choices: [{ delta: base.choices[0].message }], mmir: base.mmir };
+      const decimal = structuredClone(base);
+      decimal.choices[0].message.content = '0.1 + 0.2 = 0.3';
+      decimal.mmir.tool_execution = { expression: '0.1 + 0.2', exact: true, result_kind: 'terminating_decimal', numerator_text: '3', denominator_text: '10', result_text: '0.3' };
+      const fraction = structuredClone(base);
+      fraction.choices[0].message.content = '1 / 3 = 1/3';
+      fraction.mmir.tool_execution = { expression: '1 / 3', exact: true, result_kind: 'fraction', numerator_text: '1', denominator_text: '3', result_text: '1/3' };
+      const ordinary = { mmir: { answer_writer: { object: 'mmir.answer_writer', type: 'llm', provider: 'mistral', model_id: 'mistral-small-latest', model_display_name: 'Mistral Small' } } };
+      return { cases, tools: [base, sse, decimal, fraction].map(identity), ordinary: identity(ordinary) };
+    }, calculatorResponse());
+    for (const writer of identities.tools) {
+      assert(writer.type === 'capability' && writer.model_display_name === 'Kalkulator' && writer.identity_verified === false, 'JSON, SSE-shaped, decimal and fraction metadata must identify only the calculator, without LLM verification');
+    }
+    for (const { name, writer } of identities.cases) {
+      assert(writer.type === 'unknown' && writer.identity_verified === false, `${name} must reject conflicting calculator attribution`);
+    }
+    assert(identities.ordinary.type === 'llm' && identities.ordinary.model_display_name === 'Mistral Small', 'ordinary model identity must remain unchanged');
+
+    await calculatorPage.reload({ waitUntil: 'networkidle' });
+    await calculatorPage.waitForSelector('.p0-message-assistant .p0-receipt-model:text-is("Kalkulator")');
+    calculatorMessage = calculatorPage.locator('.p0-message-assistant').last();
+    calculatorSummary = await calculatorMessage.locator('summary').getAttribute('aria-label');
+    assert(calculatorSummary.startsWith('Kalkulator · verktøysvar') && !/KI-svar|\bLive\b/i.test(calculatorSummary), 'history reload must preserve truthful tool attribution');
+
+    chatMode = 'calculator-success';
+    await calculatorPage.locator('#p0-input').fill('19 * 37');
+    assert(await calculatorPage.locator('#p0-send').isEnabled(), 'Send must remain available after calculator history reload');
+    await calculatorPage.locator('#p0-send').click();
+    await calculatorPage.waitForSelector('.p0-message-assistant .p0-receipt-model:text-is("Mistral Small")');
+    const repeatedRequest = chatRequests.at(-1);
+    assert(repeatedRequest.messages?.[0]?.role === 'system' && repeatedRequest.messages.length > 2 &&
+      repeatedRequest.messages.some(message => message.role === 'assistant' && message.content === '19 * 37 = 703'),
+    'arithmetic after a prior turn must retain the generated system and conversation history');
+    const repeatedSummary = await calculatorPage.locator('.p0-message-assistant').last().locator('summary').getAttribute('aria-label');
+    assert(!/Kalkulator|verktøysvar/i.test(repeatedSummary) && /KI-svar · kan ta feil/i.test(repeatedSummary), 'contextual arithmetic must use the unchanged model answer labeling');
+
+    chatMode = 'slow-success';
+    await calculatorPage.locator('#p0-input').fill('Forklar hvorfor himmelen er blå');
+    await calculatorPage.locator('#p0-send').click();
+    await calculatorPage.waitForSelector('text=Et ferdig svar.');
+    const ordinarySummary = await calculatorPage.locator('.p0-message-assistant').last().locator('summary').getAttribute('aria-label');
+    assert(/KI-svar · kan ta feil/i.test(ordinarySummary) && !/Kalkulator|verktøysvar/i.test(ordinarySummary), 'ordinary follow-up answers must keep their existing AI labeling');
+    await calculatorPage.close();
+
+    const controls = [
+      { name: 'prose', prompt: 'Forklar hvorfor himmelen er blå' },
+      { name: 'invalid-shape', prompt: '19 * 37; forklar svaret' },
+      { name: 'grounding', prompt: '19 * 37, vis kilder', system: /explicitly asked for the answer basis/ },
+      { name: 'role', preferences: { 'mmir-p0-role-profile-v1': 'coach' }, system: /friendly coach presence/ },
+      { name: 'style', preferences: { 'mmir-p0-answer-style-v1': 'detailed' }, system: /Give a complete answer/ },
+      { name: 'explicit-default-style', preferences: { 'mmir-p0-answer-style-v1': 'short' } },
+      { name: 'fact-guard', preferences: { 'mmir-p0-fact-guard-v1': 'off' }, absentSystem: /If current facts are uncertain/ },
+      { name: 'direct-model', directWriter: true, system: /language model selected by the user/ },
+      { name: 'local-history', history: [
+        { role: 'user', content: 'Behold mine tidligere instruksjoner.', routeProvenance: 'local-model', hostedLineage: false },
+        { role: 'assistant', content: 'Tidligere lokalt svar.', routeProvenance: 'local-model', hostedLineage: false }
+      ] },
+      { name: 'server-rejected-arithmetic', prompt: '1 / 0', userOnly: true }
+    ];
+    for (const control of controls) {
+      const controlPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+      await installFixtures(controlPage, { resetStorage: false, directWriter: control.directWriter === true });
+      await controlPage.addInitScript(({ preferences, history, name }) => {
+        localStorage.clear();
+        sessionStorage.clear();
+        for (const [key, value] of Object.entries(preferences || {})) localStorage.setItem(key, value);
+        if (history) {
+          const scope = `mmir_qa_session-calculator-${name}`;
+          sessionStorage.setItem(`mmir-p0-chat-history-qa-session-schema:${scope}`, '20260603-clean-first-chat-v40');
+          sessionStorage.setItem(`mmir-p0-chat-history-qa-session-v1:${scope}`, JSON.stringify(history));
+        }
+      }, { preferences: control.preferences, history: control.history, name: control.name });
+      chatMode = 'calculator-success';
+      await controlPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=calculator-${control.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+      await controlPage.waitForSelector('#p0-input');
+      if (control.directWriter) {
+        await controlPage.locator('#p0-model').click();
+        await controlPage.locator('button[data-model-id="mistral-small-latest"]').click();
+      }
+      const controlPrompt = control.prompt || '19 * 37';
+      await controlPage.locator('#p0-input').fill(controlPrompt);
+      assert(await controlPage.locator('#p0-send').isEnabled(), `${control.name}: Send must remain available`);
+      await controlPage.locator('#p0-send').click();
+      await controlPage.waitForSelector('.p0-message-assistant .p0-receipt-model:text-is("Mistral Small")');
+      const body = chatRequests.at(-1);
+      assert(body.messages?.at(-1)?.content === controlPrompt, `${control.name}: real POST must preserve the complete user text`);
+      if (control.userOnly) {
+        assert(body.messages.length === 1 && body.messages[0].role === 'user', 'server rejection stays authoritative; the browser must not evaluate arithmetic');
+      } else {
+        assert(body.messages?.[0]?.role === 'system', `${control.name}: real POST must preserve the generated system instruction`);
+        if (control.system) assert(control.system.test(body.messages[0].content), `${control.name}: explicit instructions must remain in the system message`);
+        if (control.absentSystem) assert(!control.absentSystem.test(body.messages[0].content), `${control.name}: disabled preference must remain disabled`);
+      }
+      if (control.directWriter) assert(body.model === 'mistral-small-latest', 'explicit direct-model selection must not be rewritten to Supergeni');
+      const summary = await controlPage.locator('.p0-message-assistant').last().locator('summary').getAttribute('aria-label');
+      assert(/KI-svar · kan ta feil/i.test(summary) && !/Kalkulator|verktøysvar/i.test(summary), `${control.name}: only an actual calculator result may show tool attribution`);
+      await controlPage.close();
+    }
   } finally {
     await browser.close();
   }

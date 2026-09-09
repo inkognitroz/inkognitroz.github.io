@@ -73,6 +73,9 @@ jobs:
         run: |
           node scripts/smoke-check-release-0.2-catalogs.js
           node scripts/smoke-check-p0-route-tags.js
+          node scripts/smoke-check-p0-route-adapters-boundary.js
+          node scripts/smoke-check-p0-owner-intake-command.js
+          node scripts/smoke-check-p0-provider-candidate-visibility.js
 
       - name: Install responsive browsers
         run: npx playwright install --with-deps chromium webkit
@@ -80,6 +83,7 @@ jobs:
       - name: Browser check gateway release contract
         run: |
           node scripts/render-check-p0-ordinary-chat-availability.mjs
+          node scripts/render-check-p0-truthful-chat-state.mjs
           node scripts/render-check-release-0.2-catalogs.mjs
 
       - name: Responsive P0 render check

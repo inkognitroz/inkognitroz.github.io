@@ -110,7 +110,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='')",
+  "function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='',options={})",
   'Hosted payload must accept the selected hosted model and optional media attachment.'
 );
 requireIncludes(
@@ -125,7 +125,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat})))',
+  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory})))',
   'Selected hosted route text responses must preserve API metadata before extracting answer text.'
 );
 requireIncludes(

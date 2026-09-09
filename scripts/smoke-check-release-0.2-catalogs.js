@@ -41,7 +41,7 @@ assert(mmir.includes('p0-release-nav.css?v=20260804-release-0-2-beta-v1'),'chat 
 assert(mmir.includes('p0-release-nav.js?v=20260804-release-0-2-beta-v1'),'chat must load the release navigation script');
 assert(mmir.includes('p0-chat-shell.css?v=20260815-iphone-send-ready-fill-v1'),'chat must bind the ready-fill corrected shell stylesheet version');
 assert(mmir.includes('release-route-taxonomy.js?v=20260909-ordinary-chat-v1'),'chat must cache-bust the reviewed ordinary-chat taxonomy');
-assert(mmir.includes('p0-chat-shell.js?v=20260909-ordinary-chat-result-v1'),'chat must bind the reviewed ordinary-chat result-label shell asset version');
+assert(mmir.includes('p0-chat-shell.js?v=20260909-calculator-attribution-v1'),'chat must bind the reviewed calculator-attribution shell asset version');
 assert(mmir.includes('brand-config.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe brand asset version');
 assert(mmir.includes('pwa.js?v=20260909-ordinary-chat-v1'),'chat must cache-bust the ordinary-chat PWA registration asset');
 assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260909-ordinary-chat-v1'"),'no-JS shell must register the ordinary-chat service-worker version');
