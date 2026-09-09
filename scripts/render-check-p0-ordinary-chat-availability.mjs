@@ -108,6 +108,10 @@ async function checkBasicChatWithoutProof(browser,fixture){
   let modelCalls=0;
   let compareCalls=0;
   const chatRequests=[];
+  let releaseFailedChatResponse=null;
+  const failedChatResponse=fixture.failChat
+    ? new Promise(resolve=>{releaseFailedChatResponse=resolve;})
+    : null;
 
   await page.route('https://api.mmir.ai/status',route=>{
     statusCalls+=1;
@@ -127,6 +131,13 @@ async function checkBasicChatWithoutProof(browser,fixture){
   });
   await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
     chatRequests.push(route.request().postDataJSON());
+    if(fixture.failChat){
+      return failedChatResponse.then(()=>route.fulfill({
+        status:503,
+        contentType:'application/json',
+        body:'{"error":"ordinary chat unavailable"}'
+      }));
+    }
     return route.fulfill({
       status:200,
       contentType:'application/json',
@@ -159,8 +170,37 @@ async function checkBasicChatWithoutProof(browser,fixture){
   const preflightCounts={statusCalls,modelCalls};
   await page.locator('#p0-input').fill('Kan grunnchat svare uten statusbevis?');
   await page.locator('#p0-send').click();
-  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Grunnchat svarte.')));
-  await page.waitForSelector('#p0-send[data-state="send"]');
+  if(fixture.failChat){
+    await page.waitForFunction(()=>/svar venter/i.test(document.getElementById('p0-route')?.textContent||''));
+    const pendingRoute=(await page.locator('#p0-route').innerText()).replace(/\s+/g,' ').trim();
+    assert(!/\bready\b/i.test(pendingRoute),fixture.name+' pending route must not claim ready');
+    assert(/Supergeni/i.test(pendingRoute)&&/svar venter/i.test(pendingRoute),fixture.name+' pending route must identify an unfinished Supergeni attempt');
+    await page.waitForFunction(()=>{
+      const status=document.getElementById('p0-status');
+      const route=document.getElementById('p0-route');
+      return /jobber fortsatt/i.test(status?.textContent||'')&&/jobber fortsatt/i.test(route?.textContent||'');
+    },undefined,{timeout:16000});
+    const slowStatus=await page.locator('#p0-status').evaluate(element=>({text:element.textContent||'',state:element.dataset.state||''}));
+    const slowRoute=await page.locator('#p0-route').evaluate(element=>({text:element.textContent||'',state:element.dataset.state||'',kind:element.dataset.kind||''}));
+    assert(slowStatus.state==='loading',fixture.name+' slow notice must remain loading while the ordinary answer is pending');
+    assert(slowRoute.state==='hosted'&&slowRoute.kind!=='good',fixture.name+' slow route must remain neutral while the ordinary answer is pending');
+    assert(!/\bready\b/i.test(slowStatus.text)&&!/\bready\b/i.test(slowRoute.text),fixture.name+' slow notice must not claim ready before a response');
+    const slowAnswer=(await page.locator('.p0-message-assistant').last().innerText()).replace(/\s+/g,' ').trim();
+    assert(/jobber fortsatt/i.test(slowAnswer)&&!/\bready\b/i.test(slowAnswer),fixture.name+' slow pending answer must retain a non-ready receipt');
+    releaseFailedChatResponse();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Supergeni svarer ikke akkurat nå.')));
+    await page.waitForSelector('#p0-route[data-state="error"]');
+    await page.waitForSelector('#p0-send[data-state="send"]');
+    const failedRoute=(await page.locator('#p0-route').innerText()).replace(/\s+/g,' ').trim();
+    assert(!/\bready\b/i.test(failedRoute),fixture.name+' failed route must not claim ready');
+    assert(/Supergeni svarte ikke/i.test(failedRoute)&&/feilet/i.test(failedRoute),fixture.name+' failed route must describe the failed attempt');
+    const failedAnswer=(await page.locator('.p0-message-assistant').last().innerText()).replace(/\s+/g,' ').trim();
+    assert(/Supergeni svarer ikke akkurat nå\. Prøv igjen om et øyeblikk\./i.test(failedAnswer),fixture.name+' must keep the canonical honest 503 explanation');
+    assert(!/\bready\b/i.test(failedAnswer),fixture.name+' failed answer receipt must not retain a ready claim');
+  }else{
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Grunnchat svarte.')));
+    await page.waitForSelector('#p0-send[data-state="send"]');
+  }
   assert(chatRequests.length===1,fixture.name+' must make exactly one public chat attempt');
   assert(statusCalls===preflightCounts.statusCalls&&modelCalls===preflightCounts.modelCalls,fixture.name+' must not await a status or inventory preflight on each ordinary prompt');
   const first=chatRequests[0];
@@ -169,7 +209,7 @@ async function checkBasicChatWithoutProof(browser,fixture){
   assert(first?.policy?.paid_routes_allowed===false,fixture.name+' must explicitly forbid paid routes');
   assert(!Object.hasOwn(first?.policy||{},'require_no_paid_receipt'),fixture.name+' must not require a signed quality receipt for ordinary chat');
 
-  if(fixture.followUp){
+  if(fixture.followUp&&!fixture.failChat){
     await page.locator('#p0-input').fill('Fortsett samtalen.');
     await page.locator('#p0-send').click();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Oppfølgingen beholdt samtalen.')));
@@ -199,7 +239,8 @@ try{
   for(const fixture of [
     {name:'status unavailable',failStatus:true,failModels:false,followUp:true},
     {name:'inventory unavailable',failStatus:false,readyStatus:true,failModels:true},
-    {name:'status and inventory unavailable',failStatus:true,failModels:true}
+    {name:'status and inventory unavailable',failStatus:true,failModels:true},
+    {name:'blocked status and backend unavailable',failStatus:false,readyStatus:false,failModels:false,failChat:true}
   ]){
     await checkBasicChatWithoutProof(browser,fixture);
   }

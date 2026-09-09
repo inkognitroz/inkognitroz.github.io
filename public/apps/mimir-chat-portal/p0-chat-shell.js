@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260909-ordinary-chat-v1';
+  const P0_RUNTIME_VERSION='20260909-ordinary-chat-result-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2744,6 +2744,23 @@
 
   function routeReceipt(model=activeModel()){
     return P0_ROUTE_RECEIPTS.receipt(model,{apiLabel:API_LABEL});
+  }
+
+  function ordinaryChatAttemptReceipt(model,outcome='pending'){
+    const receipt=routeReceipt(model);
+    if(!ordinaryHostedChatTryable(model))return receipt;
+    if(outcome==='failed'){
+      return {
+        ...receipt,
+        text:'Supergeni svarte ikke: grunnchat-forsøk feilet',
+        state:'error'
+      };
+    }
+    return {
+      ...receipt,
+      text:'Supergeni: svar venter · live-status ikke bekreftet',
+      state:'hosted'
+    };
   }
 
   function routeDisplayName(model){
@@ -6514,15 +6531,15 @@
     });
   }
 
-  function startSlowResponseNotice(message,{content=CHAT_STATE.slow?.()||'Jobber fortsatt. Dette tar litt lengre tid enn vanlig.',statusText='Supergeni jobber fortsatt …',routeText='Jobber fortsatt · forespørselen er aktiv'}={}){
+  function startSlowResponseNotice(message,{content=CHAT_STATE.slow?.()||'Jobber fortsatt. Dette tar litt lengre tid enn vanlig.',statusText='Supergeni jobber fortsatt …',routeText='Jobber fortsatt · forespørselen er aktiv',statusState='ready',routeState='ready'}={}){
     let shown=false;
     const timer=window.setTimeout(()=>{
       if(shown||!state.busy||stopRequested)return;
       if(!state.messages.includes(message))return;
       shown=true;
       updateMessage(message,content,{slowNotice:true});
-      status(statusText,'ready');
-      routeStatus(routeText,'ready');
+      status(statusText,statusState);
+      routeStatus(routeText,routeState);
     },SLOW_RESPONSE_NOTICE_MS);
     return ()=>{
       window.clearTimeout(timer);
@@ -7985,16 +8002,19 @@
     const guardedRoutePrompt=locationContext?locationContext+'\n\nUser text:\n'+(smart.prompt||prompt):(smart.prompt||prompt);
     const routePrompt=fastAnswer?fastAnswerPrompt(guardedRoutePrompt):guardedRoutePrompt;
     const receipt=routeReceipt(model);
-    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage,answerState:'pending',aiGenerated:false});
+    const pendingReceipt=ordinaryBasicChat?ordinaryChatAttemptReceipt(model):receipt;
+    const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,pendingReceipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage,answerState:'pending',aiGenerated:false});
     const rolePart=normalizeRoleProfileId(state.roleProfileId)==='default'?'':'Role '+roleProfileLabel();
     const routeParts=[fastAnswer?'Fast answer':answerStyleLabel()+' answer',rolePart,smart.reason].filter(Boolean);
     const routePrefix=routeParts.length?routeParts.join(' · ')+' · ':'';
     status(CHAT_STATE.pending?.(model.label)||'Supergeni tenker …','loading');
-    routeStatus(routePrefix+receipt.text,receipt.state);
+    routeStatus(routePrefix+pendingReceipt.text,pendingReceipt.state);
     const stopSlowNotice=startSlowResponseNotice(assistant,{
       content:CHAT_STATE.slow?.()||'Jobber fortsatt. Dette tar litt lengre tid enn vanlig.',
       statusText:'Supergeni jobber fortsatt …',
-      routeText:routePrefix+'Jobber fortsatt · forespørselen er aktiv'
+      routeText:routePrefix+'Jobber fortsatt · forespørselen er aktiv',
+      statusState:ordinaryBasicChat?'loading':'ready',
+      routeState:ordinaryBasicChat?'hosted':'ready'
     });
     try{
       const started=performance.now();
@@ -8136,9 +8156,11 @@
       }else{
         state.hostedRouteState='degraded';
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
+        const failedReceipt=ordinaryBasicChat?ordinaryChatAttemptReceipt(model,'failed'):null;
         updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
-        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
+        if(failedReceipt)routeStatus(routePrefix+failedReceipt.text,failedReceipt.state);
         captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
       }
     }finally{
