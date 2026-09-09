@@ -387,7 +387,7 @@ const sendFlow=runtime.slice(sendStart,sendEnd);
 assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
 const ordinarySelection=sendFlow.indexOf('const ordinaryBasicChat=Boolean(');
 const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){");
-const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat})');
+const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory})');
 assertEqual(ordinarySelection>=0&&firstChatGate>ordinarySelection&&firstChatCall>firstChatGate,true,'Direct canonical basic chat must bypass only the first-chat proof gate and preserve the guarded hosted dispatch');
 
 testApi.state.releaseReadiness={...singleReadiness,singleWriterDegradedReady:false,compareReady:true};

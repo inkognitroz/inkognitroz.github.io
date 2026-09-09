@@ -1,5 +1,5 @@
 (function(){
-  const version='20260718-writer-continuity-v1';
+  const version='20260909-calculator-attribution-v1';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
@@ -225,6 +225,37 @@
     const writerType=String(canonicalWriter?.type||'').trim().toLowerCase();
     const receipt=normalizedWriterContinuityReceipt(payload?.mmir?.writer_continuity_receipt,{now});
     const receiptIdentity=concreteWriterIdentity(receipt,'writer-continuity-receipt',true);
+    const metadata=payload?.mmir;
+    if(metadata?.answer_source==='deterministic_tool'&&metadata?.tool_used==='calculator'){
+      const result=metadata.tool_execution;
+      const expression=publicIdentity(result?.expression,160);
+      const resultText=publicIdentity(result?.result_text,4096);
+      const numerator=publicIdentity(result?.numerator_text,4096);
+      const denominator=publicIdentity(result?.denominator_text,4096);
+      const choice=Array.isArray(payload?.choices)&&payload.choices.length===1?payload.choices[0]:null;
+      const providerAgreement=[payload,metadata].every(value=>
+        (value.provider===undefined||value.provider==='mmir-tools')&&
+        (value.provider_called===undefined||value.provider_called===false)&&
+        (value.provider_calls_started===undefined||value.provider_calls_started===0)&&
+        (value.upstream_call_count===undefined||value.upstream_call_count===0)
+      );
+      const exactResult=result?.exact===true&&/^[0-9+\-*/(). ]+$/.test(expression)&&
+        /^-?\d+$/.test(numerator)&&/^[1-9]\d*$/.test(denominator)&&
+        ((result.result_kind==='integer'&&denominator==='1'&&resultText===numerator)||
+          (result.result_kind==='fraction'&&denominator!=='1'&&resultText===numerator+'/'+denominator)||
+          (result.result_kind==='terminating_decimal'&&denominator!=='1'&&/^-?\d+\.\d+$/.test(resultText)))&&
+        messageText(choice?.message||choice?.delta)===expression+' = '+resultText;
+      const conflictingWriter=Boolean(receiptIdentity||signedBestAnswerWriter(payload)||
+        (topWriter&&(!canonicalWriter||writerType!=='capability'||
+          (canonicalWriter.provider&&canonicalWriter.provider!=='mmir-tools')||
+          (canonicalWriter.model_id&&canonicalWriter.model_id!=='calculator'))));
+      if(conflictingWriter)return unknownWriterIdentity('conflicting-writer-attestations');
+      if(metadata.ordinary_chat!==true||metadata.provider_called!==false||metadata.provider_calls_started!==0||
+        !providerAgreement||!exactResult)return unknownWriterIdentity('invalid-calculator-metadata');
+      // This identifies the declared tool, not a verified LLM or a signed receipt.
+      return {type:'capability',provider:'mmir-tools',model_id:'calculator',model_display_name:'Kalkulator',
+        identity_source:'deterministic-calculator-metadata',identity_verified:false};
+    }
     if(writerType==='capability'){
       if(receiptIdentity)return unknownWriterIdentity('conflicting-writer-attestations');
       const capabilityName=publicIdentity(canonicalWriter?.model_display_name||canonicalWriter?.display_name||canonicalWriter?.name,200);

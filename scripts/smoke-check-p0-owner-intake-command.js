@@ -688,7 +688,7 @@ requireNotIncludes(
 );
 requireIncludes(
   shell,
-  'messages:hostedConversationMessages(prompt,systemPrompt,media,displayPrompt)',
+  'const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt);',
   'Hosted and compare payloads must use the bounded conversation-history helper.'
 );
 requireIncludes(
