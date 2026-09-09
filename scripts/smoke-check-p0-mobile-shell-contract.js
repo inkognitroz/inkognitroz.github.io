@@ -133,10 +133,10 @@ for (const marker of [
 
 for (const marker of [
   "function quietReceiptStatus(receipt,modelLabel='',proof=null)",
-  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false)",
+  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null)",
   '<span class="p0-receipt-model">',
   '<div class="p0-receipt-expanded">',
-  'renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated)'
+  'renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated,message.answerWriter)'
 ]) {
   requireText(runtime, marker, `P0 answer chrome must keep one model-visible receipt line with on-demand details: ${marker}`);
 }
