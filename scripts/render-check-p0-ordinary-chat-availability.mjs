@@ -189,7 +189,7 @@ async function checkBasicChatWithoutProof(browser,fixture){
     assert(/jobber fortsatt/i.test(slowAnswer)&&!/\bready\b/i.test(slowAnswer),fixture.name+' slow pending answer must retain a non-ready receipt');
     releaseFailedChatResponse();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Supergeni svarer ikke akkurat nå.')));
-    await page.waitForSelector('#p0-route[data-state="error"]');
+    await page.waitForSelector('#p0-route[data-state="error"]',{state:'attached'});
     await page.waitForSelector('#p0-send[data-state="send"]');
     const failedRoute=(await page.locator('#p0-route').innerText()).replace(/\s+/g,' ').trim();
     assert(!/\bready\b/i.test(failedRoute),fixture.name+' failed route must not claim ready');
