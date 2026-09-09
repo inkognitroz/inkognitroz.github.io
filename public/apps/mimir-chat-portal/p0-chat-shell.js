@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260830-gateway-release-contract-v2';
+  const P0_RUNTIME_VERSION='20260909-single-writer-readiness-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -3232,7 +3232,7 @@
 	    const boostRouteLabel=compareRouteTotal===activeRouteTotal
 	      ? String(compareRouteTotal)+' gratis AI-kilder'
 	      : String(compareRouteTotal)+' gratis AI-kilder nå ('+String(activeRouteTotal)+' live totalt)';
-    const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
+    const compareReady=Boolean(state.releaseReadiness?.singleWriterDegradedReady!==true&&primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
 	    const scaleLine=[
 	      activeRouteTotal+(hostedJourneyReady('first_chat')?' live AI':' verifiserte/lokale AI'),
@@ -6468,6 +6468,14 @@
     const warning=document.getElementById('p0-release-warning');
     if(!warning)return;
     const readiness=state.releaseReadiness||blockedReleaseReadiness();
+    if(readiness.hostedReady===true&&readiness.singleWriterDegradedReady===true){
+      warning.hidden=false;
+      warning.dataset.state='degraded';
+      warning.innerHTML=''+
+        '<div><strong>Begrenset chat: én verifisert skriver.</strong><span>Sammenligning og sverm er ikke klare. Ikke del sensitiv info.</span></div>'+
+        '<a href="./tillit/" aria-label="Se tillit og driftsbevis">Status</a>';
+      return;
+    }
     if(readiness.hostedReady===true){
       warning.hidden=true;
       warning.dataset.state='ready';

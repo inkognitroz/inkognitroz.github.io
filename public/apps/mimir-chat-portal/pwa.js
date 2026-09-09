@@ -1,6 +1,6 @@
 (function(){
   const root=document.getElementById('pwa-install-root');
-  const SERVICE_WORKER_URL='./sw.js?v=20260830-gateway-release-contract-v2';
+  const SERVICE_WORKER_URL='./sw.js?v=20260909-single-writer-readiness-v1';
   const installPromptState=window.__MimirPwaInstallPrompt||(window.__MimirPwaInstallPrompt={});
   let deferredPrompt=installPromptState.event||null;
   let swRegistration=null;
