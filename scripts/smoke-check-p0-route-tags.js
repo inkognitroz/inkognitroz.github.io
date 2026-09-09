@@ -337,6 +337,50 @@ testApi.state.activeModelId='mmir-supergenius';
 assertEqual(testApi.smartDecision('Skriv et kort dikt om havet.').mode,'single','Ordinary singleton chat must not turn into compare');
 assertEqual(testApi.smartDecision('Skriv et kort dikt om havet.').model.id,'mmir-supergenius','Ordinary singleton chat must preserve the connected meta route');
 
+const ordinaryComparisons=[
+  'Sammenlign sykling og løping.',
+  'Compare cycling and running.',
+  'Gi meg ditt beste svar om sykling og løping.',
+  'Give me the best answer about cycling and running.',
+  'What is parallel processing?',
+  'Compare bicycles side by side.',
+  'Compare answers to the question below.',
+  'Give me the best answer in parallel.'
+];
+for(const prompt of ordinaryComparisons){
+  const decision=testApi.smartDecision(prompt);
+  assertEqual(decision.mode,'single','Singleton must answer ordinary comparison content: '+prompt);
+  assertEqual(decision.model.id,'mmir-supergenius','Ordinary comparison must preserve the selected writer');
+  assertEqual(decision.prompt,prompt,'Ordinary comparison must preserve the user question');
+  assertEqual(testApi.hostedJourneyReady('first_chat'),true,'Ordinary comparison dispatch must retain first-chat readiness');
+}
+for(const prompt of ['@compare cycling and running','Use both models to answer.','Use two models to answer.','Use multi-model answers.','Bruk begge modeller.']){
+  assertEqual(testApi.smartDecision(prompt).mode,'compare','Explicit multi-model intent must not silently downgrade: '+prompt);
+  assertEqual(testApi.hostedJourneyReady('compare'),false,'Singleton must still deny explicit multi-model dispatch');
+}
+const singletonModels=testApi.state.models;
+testApi.state.models=singletonModels.filter(model=>model.id==='mmir-supergenius');
+assertEqual(testApi.smartDecision('@compare this').mode,'compare','Explicit compare must remain guarded even with no discovered partner');
+assertEqual(testApi.smartDecision('@compare this').model,null,'Missing compare partner must not be invented');
+testApi.state.models=singletonModels;
+
+// Exercise the actual decision above; retain the real sendMessage dispatch
+// boundaries below. Transport/fresh status verification is covered separately.
+const sendStart=runtime.indexOf('  async function sendMessage(){');
+const sendEnd=runtime.indexOf('  async function compareLiveRoutes(',sendStart);
+assertEqual(sendStart>=0&&sendEnd>sendStart,true,'Dispatch guard assertions must inspect the actual sendMessage function');
+const sendFlow=runtime.slice(sendStart,sendEnd);
+assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
+const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!await ensureHostedJourneyReady('first_chat',model)){");
+const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true})');
+assertEqual(firstChatGate>=0&&firstChatCall>firstChatGate,true,'Ordinary comparison must retain the first-chat guard before the actual hosted dispatch');
+
+testApi.state.releaseReadiness={...singleReadiness,singleWriterDegradedReady:false,compareReady:true};
+for(const prompt of ordinaryComparisons){
+  assertEqual(testApi.smartDecision(prompt).mode,'compare','Existing ready multi-model lane must retain automatic comparison: '+prompt);
+}
+testApi.state.releaseReadiness=singleReadiness;
+
 const writerModel=singleInventory.data[1];
 for(const override of [
   {provider:'mistral'}, {model:'llama-3.3-70b-versatile'}, {route_id:'groq/wrong'},
