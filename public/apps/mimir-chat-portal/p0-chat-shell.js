@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260909-single-writer-intent-v2';
+  const P0_RUNTIME_VERSION='20260909-ordinary-chat-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -341,24 +341,7 @@
     busy:false,
     fastAnswerOnce:false,
     messages:initialMessages(),
-    models:[
-      {
-        id:'mmir-supergenius',
-        label:'Supergeni',
-        route:'hosted',
-        detail:'Hosted orchestrator · release verification pending',
-        tags:['Beta','Hosted','Not verified'],
-        score:100,
-        model:'mmir-supergenius',
-        executable:false,
-        selectable:false,
-        liveE2EVerified:false,
-        routeState:'release_verification_pending',
-        routeType:'managed_provider',
-        availability:'temporarily_degraded',
-        costState:'free'
-      }
-    ],
+    models:[canonicalOrdinaryChatFallbackModel()],
     activeModelId:readActiveModelId(),
     localChecked:false,
     localError:'',
@@ -370,7 +353,7 @@
     pendingMedia:null,
     routeBenchmarks:readJson(ROUTE_BENCHMARK_KEY,{}),
     routeInventory:{
-      activeRoutes:1,
+      activeRoutes:0,
       futureRoutes:0,
       totalRoutes:1,
       activePublicProviderRoutes:0,
@@ -574,6 +557,50 @@
     return model?.route==='hosted'&&(
       canonicalHostedModelId(model?.id)===CANONICAL_HOSTED_MODEL_ID||
       canonicalHostedModelId(model?.model)===CANONICAL_HOSTED_MODEL_ID
+    );
+  }
+
+  function ordinaryHostedChatTryable(model){
+    return Boolean(
+      isCanonicalHostedModel(model)&&
+      RELEASE_ROUTE_TAXONOMY?.ordinaryHostedChatTryable?.(model)===true
+    );
+  }
+
+  function canonicalOrdinaryChatFallbackModel(){
+    return {
+      id:CANONICAL_HOSTED_MODEL_ID,
+      label:'Supergeni',
+      route:'hosted',
+      detail:'Grunnchat kan prøves · live-status ikke bekreftet',
+      tags:['Beta','Hosted','Grunnchat'],
+      score:100,
+      model:CANONICAL_HOSTED_MODEL_ID,
+      executable:false,
+      selectable:false,
+      ordinaryChatAttemptable:true,
+      liveE2EVerified:false,
+      routeState:'ordinary_chat_status_unknown',
+      routeType:'managed_provider',
+      availability:'unknown',
+      costState:'free',
+      paidRoutesAllowed:false
+    };
+  }
+
+  function ensureCanonicalOrdinaryChatFallback(models=[]){
+    const rows=Array.isArray(models)?models.filter(Boolean):[];
+    const safeCanonical=rows.find(model=>ordinaryHostedChatTryable(model));
+    if(safeCanonical){
+      return [safeCanonical,...rows.filter(model=>model!==safeCanonical)];
+    }
+    return [canonicalOrdinaryChatFallbackModel(),...rows.filter(model=>!isCanonicalHostedModel(model))];
+  }
+
+  function modelSelectableNow(model){
+    return Boolean(
+      ordinaryHostedChatTryable(model)||
+      (model&&model.executable!==false&&model.selectable!==false)
     );
   }
 
@@ -2137,6 +2164,7 @@
       model.candidate!==true &&
       model.executable!==false &&
       model.selectable!==false &&
+      !(model.route==='hosted'&&model.ordinaryChatAttemptable===true&&!liveHostedModel(model))&&
       String(model.availability||'available').toLowerCase()!=='blocked'
     );
   }
@@ -2708,8 +2736,10 @@
 
   function activeModel(){
     const selected=state.models.find(model=>model.id===state.activeModelId);
-    if(selected&&selected.executable!==false&&selected.selectable!==false)return selected;
-    return state.models.find(model=>model.executable!==false&&model.selectable!==false)||state.models[0];
+    if(modelSelectableNow(selected))return selected;
+    return state.models.find(ordinaryHostedChatTryable)||
+      state.models.find(model=>modelSelectableNow(model))||
+      canonicalOrdinaryChatFallbackModel();
   }
 
   function routeReceipt(model=activeModel()){
@@ -2960,8 +2990,11 @@
           reason:'Delt release-taksonomi kunne ikke lastes.'
         };
         const selectable=truth.tryable===true;
+        const ordinaryChatAttemptable=truth.key==='basic_chat';
         const tags=truth.key==='free_now'
           ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Gratis nå']
+          : (truth.key==='basic_chat'
+            ? [provider,'Grunnchat','Status ukjent']
           : (truth.key==='byok_unavailable'
             ? [provider,'BYOK','Ikke støttet i 0.2']
             : (candidate||truth.key==='planned'
@@ -2970,7 +3003,7 @@
                 ? [provider,'Konfigurert','Ikke live']
                 : (!releaseReady
                   ? [provider,'Live-bevis','Port blokkert']
-                  : [provider,'Konfigurert','Utilgjengelig']))));
+                  : [provider,'Konfigurert','Utilgjengelig'])))));
         const detail=truth.key==='free_now'
           ? (connectedSupergeni
             ? truth.reason
@@ -2999,6 +3032,7 @@
           liveE2EVerified,
           liveE2EProof:model.live_e2e_proof||null,
           noPaidRoutesStarted:model.no_paid_routes_started===true,
+          ordinaryChatAttemptable,
           inventoryLiveVerifiedIntelligenceRouteCount:connectedSupergeni?inventoryLiveVerifiedIntelligenceRouteCount:0,
           liveUnderlyingProviderCount:connectedSupergeni?liveUnderlyingProviderCount:0,
           configuredSelectable:model.selectable!==false,
@@ -3033,7 +3067,7 @@
       : blockedReleaseReadiness('Status for offentlig svarbane kunne ikke verifiseres.');
     if(modelsResult.status==='fulfilled'){
       const payload=modelsResult.value;
-      let models=normalizeHostedModels(payload);
+      let models=ensureCanonicalOrdinaryChatFallback(normalizeHostedModels(payload));
       const liveUnderlyingModels=models.filter(model=>
         RELEASE_ROUTE_TAXONOMY?.isConnectedSupergeni?.(model)!==true&&
         liveHostedModel(model)
@@ -3044,12 +3078,12 @@
             ? 'Modellinventaret mangler en fersk live-verifisert rute.'
             : state.releaseReadiness.reason
         );
-        models=normalizeHostedModels(payload);
+        models=ensureCanonicalOrdinaryChatFallback(normalizeHostedModels(payload));
         state.routeInventory=modelInventorySummary(payload,models);
         state.models=models.concat(state.models.filter(model=>model.route==='local'));
         state.hostedRouteState='degraded';
         renderReleaseReadiness();
-        status('Offentlig svarbane er ikke produksjonsklar.','error');
+        status('Grunnchat kan prøves. Avanserte ruter er ikke verifisert.','idle');
         renderToolbar();
         renderTranscript();
         updateSendControl();
@@ -3061,8 +3095,10 @@
       state.models=models.concat(state.models.filter(model=>model.route==='local'));
       state.activeModelId=canonicalHostedModelId(state.activeModelId);
       const selected=state.models.find(model=>model.id===state.activeModelId);
-      if(!activeLocal&&(!selected||selected.executable===false||selected.selectable===false)){
-        state.activeModelId=(state.models.find(model=>model.executable!==false&&model.selectable!==false)||models[0]).id;
+      if(!activeLocal&&!modelSelectableNow(selected)){
+        state.activeModelId=(state.models.find(ordinaryHostedChatTryable)||
+          state.models.find(model=>modelSelectableNow(model))||
+          canonicalOrdinaryChatFallbackModel()).id;
       }
       persistActiveModelId();
       writeJson(MODELS_KEY,state.models);
@@ -3077,12 +3113,12 @@
     }else{
       state.releaseReadiness=blockedReleaseReadiness('Modellinventaret for offentlig svarbane kunne ikke verifiseres.');
       state.hostedRouteState='degraded';
-      state.models=state.models.map(model=>model?.route==='hosted'
+      state.models=ensureCanonicalOrdinaryChatFallback(state.models.map(model=>model?.route==='hosted'
         ? {...model,selectable:false,liveE2EVerified:false,detail:'Konfigurert · modellinventaret kunne ikke verifiseres'}
         : model
-      );
+      ));
       renderReleaseReadiness();
-      status('Offentlig svarbane er ikke produksjonsklar.','error');
+      status('Grunnchat kan prøves. Live-status er ikke bekreftet.','idle');
       renderToolbar();
       renderTranscript();
       updateSendControl();
@@ -3310,10 +3346,11 @@
   }
 
   function defaultHostedModel(){
-    return state.models.find(model=>isCanonicalHostedModel(model)&&model.executable!==false&&model.selectable!==false)||
+    return state.models.find(ordinaryHostedChatTryable)||
+      state.models.find(model=>isCanonicalHostedModel(model)&&model.executable!==false&&model.selectable!==false)||
       state.models.find(model=>model.route==='hosted'&&model.executable!==false&&model.selectable!==false)||
       state.models.find(model=>model.executable!==false&&model.selectable!==false)||
-      state.models[0];
+      canonicalOrdinaryChatFallbackModel();
   }
 
   function clampScore(value){
@@ -3442,6 +3479,13 @@
 
   function routeOperationalState(model){
     const stats=routeBenchmark(model);
+    if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)){
+      return {
+        label:'Grunnchat · status ukjent',
+        detail:'Den kanoniske chatruten kan forsøkes uten nettlesernøkkel. Live-status og avanserte kvalitetsporter er ikke bekreftet.',
+        state:'setup'
+      };
+    }
     if(model?.candidate||model?.executable===false){
       return {
         label:'Future node',
@@ -3525,6 +3569,9 @@
   }
 
   function modelUseCase(model){
+    if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)){
+      return 'Good for: ordinary hosted chat. Limit: current availability and release quality are not verified.';
+    }
     if(model?.candidate||model?.executable===false)return 'Future capacity; not active yet.';
     if(model?.route==='local'){
       if(model.quality==='best-local-starter')return 'Good for: fast private demo and local setup proof. Limit: weak factual recall.';
@@ -3543,7 +3590,8 @@
     if(model?.id===state.activeModelId)badges.push('Selected');
     if(routePinned(model))badges.push('Pinned');
     if(model?.candidate)badges.push('Candidate');
-    if(model?.executable===false)badges.push('Future');
+    if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model))badges.push('Basic');
+    else if(model?.executable===false)badges.push('Future');
     if(model?.route==='hosted'&&!model?.candidate&&(model?.id==='supergeni'||model?.id==='mmir-supergenius'))badges.push('Default');
     else if(model?.route==='hosted'&&!model?.candidate&&model?.routeClass==='external-untrusted-free')badges.push('External');
     if(model?.route==='local')badges.push('Private');
@@ -4806,9 +4854,14 @@
     const hostedActiveModels=rankedModels(state.models.filter(model=>
       model.route==='hosted'&&
       modelVisibleInFilter(model,filter)&&
-      model.executable!==false&&
-      model.selectable!==false&&
+      liveHostedModel(model)&&
       !model.candidate
+    ));
+    const hostedBasicModels=rankedModels(state.models.filter(model=>
+      model.route==='hosted'&&
+      modelVisibleInFilter(model,filter)&&
+      ordinaryHostedChatTryable(model)&&
+      !liveHostedModel(model)
     ));
     const hostedBlockedVerifiedModels=rankedModels(state.models.filter(model=>
       model.route==='hosted'&&
@@ -4823,6 +4876,7 @@
       model.route==='hosted'&&
       modelVisibleInFilter(model,filter)&&
       (model.candidate||model.executable===false||model.selectable===false)&&
+      !ordinaryHostedChatTryable(model)&&
       !hostedBlockedVerifiedModels.some(verified=>verified.id===model.id)
     ));
     const localModels=rankedModels(state.models.filter(model=>model.route==='local'&&modelVisibleInFilter(model,filter)));
@@ -4834,10 +4888,12 @@
         : model.candidate
           ? [routeOperationalHint(model),modelUseCase(model),model.provider,'node-overlevering kreves'].filter(Boolean).join(' · ')
           : [routeOperationalHint(model),modelUseCase(model),rankSummary,(model.routeClass==='external-untrusted-free'||model.trustLevel==='external-untrusted-free')?'Ekstern':'Hostet',benchmark].filter(Boolean).join(' · ');
-      const selectable=model.executable!==false&&model.selectable!==false;
+      const selectable=modelSelectableNow(model);
       const releaseBlockedVerified=model.route==='hosted'&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat');
       const title=selectable
-        ? ('Velg '+model.label)
+        ? (ordinaryHostedChatTryable(model)&&!liveHostedModel(model)
+          ? 'Velg '+model.label+' · grunnchat kan forsøkes uten bekreftet live-status.'
+          : 'Velg '+model.label)
         : (releaseBlockedVerified
           ? 'Live-bevis finnes, men den offentlige releaseporten er blokkert.'
           : (model.nextAction||'Kandidaten er synlig, men kan ikke velges ennå.'));
@@ -4845,10 +4901,11 @@
     }).join('');
     const buttons=''+
       (hostedActiveModels.length?menuSection('Live-verifiserte hostede ruter')+renderButtons(hostedActiveModels):'<div class="p0-menu-note">Ingen hostet rute er produksjonsverifisert nå.</div>')+
+      (hostedBasicModels.length?menuSection('Grunnchat · status ikke bekreftet')+renderButtons(hostedBasicModels):'')+
       (hostedBlockedVerifiedModels.length?menuSection('Live-bevis · releaseport blokkert')+renderButtons(hostedBlockedVerifiedModels):'')+
       (hostedFutureModels.length?menuSection('Konfigurerte eller fremtidige ruter')+renderButtons(hostedFutureModels):'')+
       (localModels.length?menuSection('Private lokale modeller')+renderButtons(localModels):'');
-    const filterHint=(hostedActiveModels.length||hostedBlockedVerifiedModels.length||hostedFutureModels.length||localModels.length)?'':
+    const filterHint=(hostedActiveModels.length||hostedBasicModels.length||hostedBlockedVerifiedModels.length||hostedFutureModels.length||localModels.length)?'':
       '<div class="p0-menu-note">Ingen '+safeText(modelFilterLabel(filter).toLowerCase())+' ruter ennå.</div>';
     const activeFilterHint=filter==='all'?'':'<div class="p0-menu-note">Viser '+safeText(modelFilterLabel(filter).toLowerCase())+' ruter.</div>';
     const scoreHint='<div class="p0-menu-note">Poeng betyr rutetilpasning for forespørselen, ikke sannhetsprosent.</div>';
@@ -4857,7 +4914,7 @@
     menu.querySelectorAll('[data-model-id]').forEach(button=>{
       button.addEventListener('click',()=>{
         const model=state.models.find(item=>item.id===button.getAttribute('data-model-id'));
-        if(!model||model.executable===false||model.selectable===false){
+        if(!modelSelectableNow(model)){
           const label=model?.label||'Leverandørkandidat';
           if(model&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat')){
             status(label+' har live-bevis, men den offentlige releaseporten er blokkert.','error');
@@ -5009,9 +5066,13 @@
     }
     if(model?.route==='local')return {state:'local',label:'Lokal tilkobling aktiv'};
     if(local)return {state:'local',label:'Lokal tilkobling klar · offentlig modus'};
-    return hostedJourneyReady('first_chat')
-      ? {state:'public',label:'Offentlig modus · Supergenis hostede rute er live-verifisert'}
-      : {state:'error',label:'Offentlig modus · hostet rute blokkert til produksjonsbeviset er grønt'};
+    if(hostedJourneyReady('first_chat')){
+      return {state:'public',label:'Offentlig modus · Supergenis hostede rute er live-verifisert'};
+    }
+    if(ordinaryHostedChatTryable(model)){
+      return {state:'setup',label:'Offentlig modus · grunnchat kan prøves · live-status ikke bekreftet'};
+    }
+    return {state:'error',label:'Offentlig modus · valgt avansert rute blokkert til produksjonsbeviset er grønt'};
   }
 
   function renderShieldState(model=activeModel(),local=bestLocalModel()){
@@ -5094,6 +5155,12 @@
     const receipt=routeReceipt(model);
     if(model?.route!=='hosted'||hostedJourneyReady('first_chat')){
       return {text:routeMicroStatus(model),state:receipt.state};
+    }
+    if(ordinaryHostedChatTryable(model)){
+      return {
+        text:'Grunnchat kan prøves · live-status ikke bekreftet · ingen nettlesernøkkel',
+        state:'hosted'
+      };
     }
     if(state.releaseReadiness?.state==='checking'){
       return {text:'Sjekker offentlig svarbane · ingen hosted-rute startet',state:'hosted'};
@@ -6493,13 +6560,14 @@
     warning.hidden=false;
     warning.dataset.state=readiness.state==='checking'?'checking':'blocked';
     warning.innerHTML=''+
-      '<div><strong>Chatten er ikke produksjonsklar.</strong><span>Ikke del sensitiv info eller bruk den til høyrisikoformål.</span></div>'+
+      '<div><strong>Grunnchat kan prøves.</strong><span>Status og avanserte kvalitetsporter er ikke bekreftet. Ikke del sensitiv info eller bruk til høyrisikoformål.</span></div>'+
       '<a href="./tillit/" aria-label="Se tillit og driftsbevis">Status</a>';
   }
 
   function selectedRouteReady(){
     const model=activeModel();
     if(model?.route==='local')return localModelReady(model);
+    if(!state.pendingMedia&&ordinaryHostedChatTryable(model))return true;
     return Boolean(model&&model.executable!==false&&model.selectable!==false&&liveHostedModel(model)&&hostedJourneyReady('first_chat'));
   }
 
@@ -6533,7 +6601,7 @@
     send.classList.toggle('is-stopping',state.busy);
     send.dataset.state=state.busy?'stopping':(canSend?'send':'blocked');
     send.textContent=state.busy?'■':'↑';
-    const blockedLabel=activeModel()?.route==='local'?'Lokal modell er ikke verifisert klar':'Chatten er ikke produksjonsklar ennå';
+    const blockedLabel=activeModel()?.route==='local'?'Lokal modell er ikke verifisert klar':'Den valgte avanserte ruten er ikke klar';
     send.setAttribute('aria-label',state.busy?'Stopp gjeldende svar':(canSend?'Send melding':blockedLabel));
     send.setAttribute('title',state.busy?'Stopp':(canSend?'Send':blockedLabel));
     const releaseWarning=document.getElementById('p0-release-warning');
@@ -6718,7 +6786,8 @@
       messages:hostedConversationMessages(prompt,systemPrompt,media,displayPrompt),
       stream:false,
       temperature:0.7,
-      max_tokens:answerTokenBudget()
+      max_tokens:answerTokenBudget(),
+      ...(isCanonicalHostedModel(model)?{policy:{paid_routes_allowed:false}}:{})
     };
   }
 
@@ -6796,13 +6865,22 @@
   }
 
   async function chatHostedData(prompt,signal,model=defaultHostedModel(),media=null,displayPrompt='',options={}){
-    const verifiedModel=await revalidateHostedBoundary('first_chat',model);
-    if(!verifiedModel){
-      const error=new Error('Hosted release is not production-ready.');
-      error.code='hosted_release_not_ready';
-      throw error;
+    const ordinaryBasic=Boolean(
+      options.ordinaryBasic===true&&
+      !media&&
+      ordinaryHostedChatTryable(model)
+    );
+    if(ordinaryBasic){
+      model={...model,id:CANONICAL_HOSTED_MODEL_ID,model:CANONICAL_HOSTED_MODEL_ID,route:'hosted'};
+    }else{
+      const verifiedModel=await revalidateHostedBoundary('first_chat',model);
+      if(!verifiedModel){
+        const error=new Error('Hosted release is not production-ready.');
+        error.code='hosted_release_not_ready';
+        throw error;
+      }
+      model=verifiedModel;
     }
-    model=verifiedModel;
     const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
     const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
     let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt));
@@ -7871,7 +7949,12 @@
       smart={...smart,model:defaultHostedModel(),reason:'Protected vision boundary'};
     }
     const model=smart.model;
-    if(model?.route==='hosted'&&!await ensureHostedJourneyReady('first_chat',model)){
+    const ordinaryBasicChat=Boolean(
+      model?.route==='hosted'&&
+      !pendingMedia&&
+      ordinaryHostedChatTryable(model)
+    );
+    if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){
       input?.focus();
       return;
     }
@@ -7891,7 +7974,7 @@
     const userMessage=append('user',prompt,'You','',{routeProvenance,hostedLineage:directHostedLineage});
     input.value='';
     autosizeInput();
-    if(!model||model.executable===false||model.selectable===false){
+    if(!model||(!ordinaryBasicChat&&(model.executable===false||model.selectable===false))){
       status((model?.label||'Leverandørkandidat')+' er synlig, men ikke live-verifisert for chat.','error');
       routeStatus('Konfigurert/fremtidig rute · produksjonsbevis kreves','error');
       captureInteraction('chat_blocked',{reason:'future_route',selected_model_id:model?.id||''});
@@ -7920,7 +8003,7 @@
         ? await chatLocal(routePrompt,model,signal)
         : pendingMedia
           ? responseText((hostedData=await chatVisionPreviewData(routePrompt,signal,pendingMedia)))||'Vision-ruten svarte tomt. Prøv igjen med et tydeligere bilde eller en kortere forespørsel.'
-          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true})))||((model?.label||'Hosted route')+' returned an empty response.');
+          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat})))||((model?.label||'Hosted route')+' returned an empty response.');
       if(hostedData)recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;

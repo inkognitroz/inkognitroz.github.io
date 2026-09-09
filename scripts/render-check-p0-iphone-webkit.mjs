@@ -334,23 +334,25 @@ async function checkBlockedIphone(browser) {
   const { context, page, network, browserErrors } = await newIphonePage(browser, { releaseReady: false });
   try {
     await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
-    assert(await page.locator('#p0-send').isDisabled(), 'blocked iPhone send control must be disabled');
+    assert(!(await page.locator('#p0-send').isDisabled()), 'canonical basic chat must remain enabled when advanced release proof is blocked');
     const surface = await sendState(page);
-    assertSendSurface(surface, 'blocked');
-    assert(surface.state === 'blocked', `blocked send control must expose blocked state; got ${surface.state}`);
-    assert(surface.ariaDescribedBy === 'p0-release-warning', 'blocked send control must reference the visible explanation');
+    assertSendSurface(surface, 'basic');
+    assert(surface.state === 'send', `basic send control must expose send state; got ${surface.state}`);
+    assert(surface.ariaDescribedBy === '', 'attemptable basic send must not expose disabled-control description semantics');
 
     const warning = (await page.locator('#p0-release-warning').innerText()).replace(/\s+/g, ' ').trim();
-    assert(warning.length <= 140, `blocked privacy copy must stay compact; got ${warning.length} characters`);
-    assert(/ikke produksjonsklar/i.test(warning) && /sensitiv info/i.test(warning), `blocked copy must keep concise release and privacy truth; got ${warning}`);
-    assert(!/personopplysninger/i.test(warning), 'blocked copy must not repeat the longer personal-data lecture');
+    assert(warning.length <= 180, `basic-chat privacy copy must stay compact; got ${warning.length} characters`);
+    assert(/Grunnchat kan prøves/i.test(warning) && /ikke bekreftet/i.test(warning) && /sensitiv info/i.test(warning), `basic copy must keep attemptability, unverified-status and privacy truth; got ${warning}`);
+    assert(!/personopplysninger/i.test(warning), 'basic copy must not repeat the longer personal-data lecture');
 
-    await page.locator('#p0-input').fill('Denne blokkerte teksten skal ikke sendes');
+    await page.locator('#p0-input').fill('Denne grunnchatten skal kunne forsøkes');
     await page.locator('#p0-input').press('Enter');
-    await page.waitForTimeout(100);
+    await page.waitForSelector('#p0-send[data-state="stopping"]');
+    await waitForCounter(page, () => network.chatCalls, 1, 'basic keyboard chat fixture count');
     await touch(page, '#p0-send');
-    await page.waitForTimeout(100);
-    assert(network.chatCalls === 0, `blocked keyboard and touch paths must make zero chat submissions; got ${network.chatCalls}`);
+    network.releaseNextChat();
+    await page.waitForFunction(() => document.getElementById('p0-send')?.dataset.state === 'send');
+    assert(network.chatCalls === 1, `basic keyboard path must make exactly one locally intercepted chat submission; got ${network.chatCalls}`);
 
     await touch(page, '#p0-add');
     await page.waitForSelector('#p0-add-menu:not([hidden])');
@@ -359,10 +361,10 @@ async function checkBlockedIphone(browser) {
     await page.waitForSelector('#p0-privacy-menu:not([hidden])');
     await assertMenuSafe(page, '#p0-privacy-menu', 'privacy menu');
 
-    assert(network.continuedRequests.length > 0, 'blocked fixture must load the local app through the network fence');
-    assert(network.continuedRequests.every(url => new URL(url).origin === new URL(baseUrl).origin), 'blocked fixture must continue only local static requests');
-    assert(network.unexpectedExternal.length === 0, `blocked fixture saw unexpected external requests: ${network.unexpectedExternal.join(', ')}`);
-    assert(browserErrors.length === 0, `blocked WebKit page must stay free of browser errors: ${browserErrors.join('; ')}`);
+    assert(network.continuedRequests.length > 0, 'basic fixture must load the local app through the network fence');
+    assert(network.continuedRequests.every(url => new URL(url).origin === new URL(baseUrl).origin), 'basic fixture must continue only local static requests');
+    assert(network.unexpectedExternal.length === 0, `basic fixture saw unexpected external requests: ${network.unexpectedExternal.join(', ')}`);
+    assert(browserErrors.length === 0, `basic WebKit page must stay free of browser errors: ${browserErrors.join('; ')}`);
   } finally {
     await context.close();
   }
@@ -440,4 +442,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('P0 iPhone WebKit render check passed: 390x844 blocked, ready, busy, stop, keyboard, touch, menus and network fence.');
+console.log('P0 iPhone WebKit render check passed: 390x844 basic, ready, busy, stop, keyboard, touch, menus and network fence.');

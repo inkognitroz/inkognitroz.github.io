@@ -8,6 +8,7 @@
     local_ready:'Lokal · paret node',
     local_setup:'Lokal · krever paret node',
     byok_unavailable:'BYOK · ikke støttet i 0.2',
+    basic_chat:'Grunnchat · kan prøves',
     degraded:'Midlertidig degradert',
     planned:'Planlagt · ikke tilgjengelig',
     catalogued:'Katalogført · ikke koblet'
@@ -102,6 +103,34 @@
       model?.costClass
     ].map(text).filter(Boolean);
     return canonicalCosts.some(value=>FREE_COST_CLASSES.has(value));
+  }
+
+  // This is permission to attempt the one canonical public chat endpoint, not
+  // evidence that a writer is currently live or that an advanced release gate
+  // is green. The server remains authoritative for route availability and the
+  // request itself explicitly forbids paid routes.
+  function ordinaryHostedChatTryable(model){
+    const id=text(model?.id||model?.model);
+    const route=text(model?.route);
+    const explicitCostValues=[
+      model?.cost_class,
+      model?.costClass,
+      model?.cost_state,
+      model?.costState,
+      model?.pricing,
+      model?.route_class,
+      model?.routeClass
+    ].map(text).filter(Boolean);
+    return Boolean(
+      model&&
+      (id==='supergeni'||id==='mmir-supergenius')&&
+      (!route||route==='hosted')&&
+      !isLocal(model)&&
+      !isByok(model)&&
+      model?.paid_routes_allowed!==true&&
+      model?.paidRoutesAllowed!==true&&
+      !explicitCostValues.some(value=>PAID_COST_CONTRADICTION.test(value))
+    );
   }
 
   // This is first-chat authority only, not a diversity or full-release claim.
@@ -303,6 +332,16 @@
       return result('orchestrator',{liveE2EVerified,access:'MMIR-orkestrator · ikke en språkmodell',reason:'Supergeni velger og kontrollerer ruter; den er ikke selv en modell.'});
     }
     if(isByok(model))return result('byok_unavailable',{liveE2EVerified,access:'Krever egen API-nøkkel · offentlig BYOK-flyt støttes ikke i 0.2',reason:'Nøkkelen kan ikke limes inn eller brukes i den offentlige 0.2-flaten.'});
+    if(context.surface==='chat'&&ordinaryHostedChatTryable(model)&&!hostedTryableNow(model,readiness,context)){
+      return result('basic_chat',{
+        tryable:true,
+        selectable:true,
+        freeToTry:true,
+        liveE2EVerified,
+        access:'Grunnchat via api.mmir.ai · ingen nettlesernøkkel · betalte ruter forbudt',
+        reason:'Den kanoniske Supergeni-grunnchatten kan forsøkes. Live-status og avanserte kvalitetsporter er ikke bekreftet.'
+      });
+    }
     if(isPlanned(model))return result('planned',{liveE2EVerified,access:'Katalogført eller planlagt · kan ikke prøves nå',reason:'Ruten er ikke en aktiv offentlig svarrute.'});
     if(isDegraded(model))return result('degraded',{liveE2EVerified,access:'Midlertidig utilgjengelig · holdes ute av chat',reason:'Ruten er degradert eller ikke kjørbar.'});
     if(isLocal(model)){
@@ -338,6 +377,7 @@
     blockedReadiness,
     modelLiveVerified,
     isConnectedSupergeni,
+    ordinaryHostedChatTryable,
     localPairedNow,
     hostedTryableNow,
     classifyModel

@@ -213,29 +213,29 @@ async function checkChatNav(browser){
   assert(labels.join('|')==='Prøv|Modeller|Kapabiliteter|Tillit','visible chat shell must expose exactly the compact 0.2 tabs');
   assert(await page.locator('.p0-composer').isVisible(),'chat composer must remain visible after nav injection');
   const warning=await page.locator('#p0-release-warning').innerText();
-  assert(/ikke produksjonsklar/i.test(warning),'blocked operator release must be disclosed at the chat entry point');
-  assert(/sensitiv info.+høyrisikoformål/i.test(warning),'blocked chat entry must concisely warn against sensitive and high-risk use');
-  assert(warning.replace(/\s+/g,' ').trim().length<=140,'blocked chat warning must stay concise on a mobile first screen');
-  assert(await page.locator('#p0-send').isDisabled(),'hosted send CTA must fail closed while first chat is blocked');
+  assert(/Grunnchat kan prøves/i.test(warning),'chat entry must separate basic attemptability from the blocked advanced release gate');
+  assert(/ikke bekreftet/i.test(warning)&&/sensitiv info.+høyrisikoformål/i.test(warning),'basic chat entry must keep unverified-status, sensitive-data and high-risk truth');
+  assert(warning.replace(/\s+/g,' ').trim().length<=180,'basic chat warning must stay concise on a mobile first screen');
+  assert(!(await page.locator('#p0-send').isDisabled()),'canonical basic hosted chat must remain attemptable while advanced release proof is blocked');
   const blockedSend=await sendVisualState(page);
   assert(blockedSend.width>=44&&blockedSend.height>=44,'blocked iPhone send control must keep a 44 by 44 CSS pixel target');
   assert(blockedSend.opacity==='1','blocked send control must remain opaque instead of looking transparent');
   assert(contrastRatio(blockedSend.color,blockedSend.background)>=4.5,'blocked send icon must keep WCAG text contrast');
-  assert(blockedSend.ariaDescribedBy==='p0-release-warning','blocked send control must reference the visible release explanation');
+  assert(blockedSend.ariaDescribedBy==='','attemptable basic send must not expose disabled-control description semantics');
   const blockedDefaultRouteText=await page.locator('#p0-route').innerText();
-  assert(/offentlig svarbane blokkert/i.test(blockedDefaultRouteText),'blocked first chat must make the default route line fail closed; got '+blockedDefaultRouteText);
+  assert(/Grunnchat kan prøves/i.test(blockedDefaultRouteText)&&/live-status ikke bekreftet/i.test(blockedDefaultRouteText),'default route line must distinguish basic attemptability from unverified live status; got '+blockedDefaultRouteText);
   assert(!/\bready\b/i.test(blockedDefaultRouteText),'blocked first chat must never label the default route ready; got '+blockedDefaultRouteText);
-  assert(await page.locator('#p0-route').getAttribute('data-state')==='error','blocked default route line must expose error state');
-  assert(await page.locator('#p0-send').evaluate(button=>getComputedStyle(button).cursor)==='not-allowed','blocked send must look unavailable, not loading');
+  assert(await page.locator('#p0-route').getAttribute('data-state')!=='ready','basic route line must not expose a verified-ready state');
+  assert(await page.locator('#p0-send').evaluate(button=>getComputedStyle(button).cursor)!=='not-allowed','basic send must look attemptable');
   if(await page.locator('#p0-superboost').count())assert(await page.locator('#p0-superboost').isDisabled(),'blocked compare gate must disable Superboost');
   if(await page.locator('#p0-council').count())assert(await page.locator('#p0-council').isDisabled(),'blocked swarm gate must disable Council');
-  assert(/blokkert/i.test(await page.locator('#p0-privacy').getAttribute('title')||''),'privacy control must not claim the hosted route is allowed while release is blocked');
+  assert(/grunnchat kan prøves.+live-status ikke bekreftet/i.test(await page.locator('#p0-privacy').getAttribute('title')||''),'privacy control must expose basic attemptability without a live claim');
   assert(await page.locator('#p0-mic').evaluate(button=>button.disabled===false&&button.tabIndex>=0),'unsupported voice control must remain keyboard discoverable');
   assert(await page.locator('#p0-mic').getAttribute('aria-disabled')==='true','unsupported voice control must expose unavailable semantics');
-  await page.locator('#p0-input').fill('Dette skal ikke nå hosted chat');
+  await page.locator('#p0-input').fill('Dette skal forsøke grunnchat');
   await page.locator('#p0-input').press('Enter');
-  await page.waitForTimeout(100);
-  assert(hostedChatCalls===0,'blocked release must not start a hosted chat call from keyboard submit');
+  await page.waitForSelector('#p0-send[data-state="send"]');
+  assert(hostedChatCalls===1,'blocked advanced proof must not suppress one canonical no-paid basic chat attempt');
   await page.locator('#p0-model').click();
   assert(await page.locator('#p0-model-menu').isVisible(),'model menu must open from the real model button');
   assert(await page.locator('#p0-model').getAttribute('aria-expanded')==='true','open model menu must expose expanded state');
@@ -249,7 +249,7 @@ async function checkChatNav(browser){
   assert(/har live-bevis.+releaseporten er blokkert/i.test(await page.locator('#p0-status').innerText()),'clicking a verified-but-blocked route must preserve its live proof and name the release block');
   const blockedRouteText=await page.locator('#p0-route').innerText();
   assert(/Live-bevis.+releaseport blokkert/i.test(blockedRouteText),'verified-but-blocked route click must preserve its proof in the route line; got '+blockedRouteText);
-  assert(hostedChatCalls===0,'clicking a verified-but-blocked route must never start hosted chat');
+  assert(hostedChatCalls===1,'clicking a verified-but-blocked route must not start another hosted chat');
   await page.keyboard.press('Escape');
   assert(await page.locator('#p0-model-menu').isHidden(),'Escape must close the model menu');
   assert(await page.locator('#p0-model').getAttribute('aria-expanded')==='false','Escape must reset model menu expanded state');
@@ -277,7 +277,7 @@ async function checkCheckingFirstPaint(browser){
   await routeApi(page,{delayMs:500});
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   const checkingRouteText=await page.locator('#p0-route').innerText();
-  assert(/sjekker offentlig svarbane/i.test(checkingRouteText),'synchronous first paint must disclose that public readiness is still being checked; got '+checkingRouteText);
+  assert(/Grunnchat kan prøves/i.test(checkingRouteText)&&/live-status ikke bekreftet/i.test(checkingRouteText),'synchronous first paint must expose basic capability without inheriting live readiness; got '+checkingRouteText);
   assert(!/\bready\b/i.test(checkingRouteText),'synchronous first paint must never inherit the legacy ready label; got '+checkingRouteText);
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   await page.close();
@@ -401,9 +401,9 @@ async function checkSharedTaxonomy(browser){
   assert(states.forgedFreeCost==='configured_unavailable','an unrecognized free-looking cost must fail closed for direct providers');
   assert(states.paidCostState==='configured_unavailable'&&states.meteredPricing==='configured_unavailable'&&states.billedRouteClass==='configured_unavailable','any explicit paid, metered or billable cost contradiction must fail closed');
   assert(states.supergeni.key==='free_now'&&states.supergeni.liveE2EVerified===false,'connected Supergeni must be selectable from authenticated underlying route truth without forging per-model E2E proof');
-  assert(states.supergeniNoInventoryCount==='configured_unavailable','connected Supergeni must fail closed without the exact top-level compact inventory live count');
-  assert(states.supergeniNoUnderlying==='configured_unavailable','connected Supergeni must fail closed without an explicit live underlying provider count');
-  assert(states.supergeniPaid==='configured_unavailable','connected Supergeni must fail closed when no-paid truth is false');
+  assert(states.supergeniNoInventoryCount==='basic_chat','connected Supergeni without inventory proof must retain only basic-chat attemptability');
+  assert(states.supergeniNoUnderlying==='basic_chat','connected Supergeni without an underlying live provider must retain only basic-chat attemptability');
+  assert(states.supergeniPaid==='basic_chat','status-level paid-route uncertainty must retain only an explicit no-paid basic request, never advanced readiness');
   assert(states.firstChatEnum&&states.compareEnum&&states.swarmEnum,'all three actual positive gateway readiness enums must admit authenticated first chat');
   assert(!states.legacyReady&&!states.unknown&&!states.blocked,'legacy, unknown and blocked readiness states must fail closed');
   assert(!states.missingOk&&!states.missingBlockers,'incomplete status and writer truth must fail closed');
@@ -560,7 +560,8 @@ async function checkInventoryMismatchFailsClosed(browser){
     await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
     await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
     assert(await page.locator('#p0-release-warning').isVisible(),fixture.name+' must keep the prominent warning visible');
-    assert(await page.locator('#p0-send').isDisabled(),fixture.name+' must keep hosted send disabled');
+    assert(!(await page.locator('#p0-send').isDisabled()),fixture.name+' must keep canonical basic chat attemptable');
+    assert(/Grunnchat kan prøves/i.test(await page.locator('#p0-release-warning').innerText()),fixture.name+' must not be displayed as advanced release readiness');
     await page.close();
   }
 }
@@ -576,12 +577,14 @@ async function checkReadyToBlockedTransition(browser){
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
   assert(!(await page.locator('#p0-send').isDisabled()),'fresh green proof must enable hosted send before degradation');
+  await page.locator('#p0-model').click();
+  await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).click();
   await routeApi(page,{releaseReady:false,replace:true});
   await page.locator('#p0-input').fill('Kontroller porten på nytt før du svarer');
   await page.locator('#p0-send').click();
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   assert(hostedChatCalls===0,'green-to-blocked transition must stop before the hosted provider call');
-  assert(await page.locator('#p0-send').isDisabled(),'degraded preflight must disable subsequent sends');
+  assert(!(await page.locator('#p0-send').isDisabled()),'degraded advanced preflight must return selection to attemptable canonical basic chat');
   await page.close();
 }
 
@@ -630,13 +633,14 @@ async function checkOutOfOrderPreflightFailsClosed(browser){
   });
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#mmir-p0-app');
-  await page.locator('#p0-input').fill('Nyere blokkert preflight skal vinne');
-  await page.locator('#p0-composer').evaluate(form=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
-  await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.dataset.state==='blocked');
+  await page.locator('#p0-input').fill('Use both models to answer.');
+  await page.locator('#p0-input').press('Enter');
+  for(let wait=0;wait<100&&(statusCalls<2||modelCalls<2);wait+=1)await page.waitForTimeout(10);
   await page.waitForTimeout(550);
-  assert(statusCalls>=2&&modelCalls>=2,'race fixture must exercise overlapping readiness refreshes');
+  assert(statusCalls>=2&&modelCalls>=2,'race fixture must exercise overlapping readiness refreshes; got status='+statusCalls+', models='+modelCalls);
+  assert(await page.locator('#p0-release-warning').getAttribute('data-state')==='blocked','newer blocked preflight must remain authoritative after the old response settles; status='+statusCalls+', models='+modelCalls);
   assert(await page.locator('#p0-release-warning').isVisible(),'older delayed green proof must not overwrite the newer blocked state');
-  assert(await page.locator('#p0-send').isDisabled(),'newer blocked preflight must remain authoritative after the old response settles');
+  assert(!(await page.locator('#p0-send').isDisabled()),'newer blocked advanced preflight must not disable canonical basic chat');
   assert(hostedChatCalls===0,'out-of-order readiness responses must stop before hosted chat');
   await page.close();
 }
@@ -645,9 +649,11 @@ async function checkSupersededActionPreflightFailsClosed(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await page.addInitScript(()=>{
     const nativeSetInterval=window.setInterval.bind(window);
-    const nativeSetTimeout=window.setTimeout.bind(window);
     window.setInterval=(handler,delay,...args)=>{
-      if(Number(delay)===30000)return nativeSetTimeout(handler,120,...args);
+      if(Number(delay)===30000){
+        window.__runHostedReadinessRefresh=()=>handler(...args);
+        return 1;
+      }
       return nativeSetInterval(handler,delay,...args);
     };
   });
@@ -680,14 +686,12 @@ async function checkSupersededActionPreflightFailsClosed(browser){
   };
   await page.route('https://api.mmir.ai/status',async route=>{
     const call=++statusCalls;
-    if(call===2)await new Promise(resolve=>setTimeout(resolve,220));
-    if(call===3)await new Promise(resolve=>setTimeout(resolve,500));
+    if(call===2)await new Promise(resolve=>setTimeout(resolve,500));
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(call===3?blockedStatus:greenStatus)});
   });
   await page.route('https://api.mmir.ai/v1/models',async route=>{
     const call=++modelCalls;
-    if(call===2)await new Promise(resolve=>setTimeout(resolve,220));
-    if(call===3)await new Promise(resolve=>setTimeout(resolve,500));
+    if(call===2)await new Promise(resolve=>setTimeout(resolve,500));
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(models)});
   });
   await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
@@ -695,14 +699,23 @@ async function checkSupersededActionPreflightFailsClosed(browser){
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'must not run'}}]})});
   });
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
-  await page.locator('#p0-input').fill('En superseded preflight skal aldri bruke gammel grønn status');
+  await page.waitForFunction(()=>{
+    const warning=document.getElementById('p0-release-warning');
+    return warning?.hidden===true&&warning?.dataset.state==='ready';
+  });
+  await page.locator('#p0-model').click();
+  await page.locator('#p0-model-menu button').filter({hasText:'Verified Writer'}).click();
+  await page.locator('#p0-input').fill('Skriv et kort dikt om sommeren.');
   await page.locator('#p0-composer').evaluate(form=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
-  await page.waitForTimeout(300);
+  for(let wait=0;wait<100&&(statusCalls<2||modelCalls<2);wait+=1)await page.waitForTimeout(10);
+  assert(statusCalls>=2&&modelCalls>=2,'reverse race fixture must start the action preflight before superseding it');
+  await page.evaluate(()=>window.__runHostedReadinessRefresh?.());
+  for(let wait=0;wait<100&&(statusCalls<3||modelCalls<3);wait+=1)await page.waitForTimeout(10);
   assert(statusCalls>=3&&modelCalls>=3,'reverse race fixture must supersede the action preflight with a newer refresh');
   assert(hostedChatCalls===0,'a superseded action preflight must fail closed while newer readiness is unresolved');
-  await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.dataset.state==='blocked');
-  assert(await page.locator('#p0-send').isDisabled(),'newer blocked readiness must remain authoritative after the superseded action returns');
+  await page.waitForTimeout(550);
+  assert(await page.locator('#p0-release-warning').getAttribute('data-state')==='blocked','newer blocked readiness must remain authoritative after the superseded action returns');
+  assert(!(await page.locator('#p0-send').isDisabled()),'newer blocked advanced readiness must not disable canonical basic chat');
   assert(hostedChatCalls===0,'newer blocked readiness must stop hosted chat throughout the reverse-order race');
   await page.close();
 }

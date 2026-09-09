@@ -78,7 +78,9 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Browser check gateway release contract
-        run: node scripts/render-check-release-0.2-catalogs.mjs
+        run: |
+          node scripts/render-check-p0-ordinary-chat-availability.mjs
+          node scripts/render-check-release-0.2-catalogs.mjs
 
       - name: Responsive P0 render check
         run: npm run check:responsive
