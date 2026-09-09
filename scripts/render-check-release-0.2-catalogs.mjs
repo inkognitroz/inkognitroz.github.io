@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { createServer as createNetServer } from 'node:net';
 import { chromium } from '@playwright/test';
+import { singleWriterStatus,singleWriterInventory } from './fixtures/single-writer-readiness.mjs';
 
 const host='127.0.0.1';
 const preferredPort=Number(process.env.MMIR_RELEASE_02_PORT||8820);
@@ -109,6 +110,7 @@ async function routeApi(page,{
   zeroLive=false,
   degradedSupergeni=false,
   releaseReady=false,
+  singleWriter=false,
   readinessState,
   authenticated,
   noPaidRoutesStarted=true,
@@ -128,7 +130,7 @@ async function routeApi(page,{
     return route.fulfill({
       status:fail?503:200,
       contentType:'application/json',
-      body:fail?JSON.stringify({error:'unavailable'}):JSON.stringify({
+      body:fail?JSON.stringify({error:'unavailable'}):JSON.stringify(singleWriter?singleWriterStatus():{
         ok:true,
         no_paid_routes_started:noPaidRoutesStarted,
         cost_policy:{no_paid_routes_started:noPaidRoutesStarted},
@@ -156,7 +158,7 @@ async function routeApi(page,{
     return route.fulfill({
       status:fail||failModels?503:200,
       contentType:'application/json',
-      body:fail||failModels?JSON.stringify({error:'unavailable'}):JSON.stringify({
+      body:fail||failModels?JSON.stringify({error:'unavailable'}):JSON.stringify(singleWriter?singleWriterInventory():{
         object:'list',
         inventory_view:'compact',
         default_model:'supergeni',
@@ -505,6 +507,46 @@ async function checkKeyboardSendAndStop(browser){
   await page.close();
 }
 
+async function checkSingleWriterHostedGate(browser){
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await routeApi(page,{singleWriter:true});
+  const requests=[];
+  let multiwriterCalls=0;
+  await page.route(/https:\/\/api\.mmir\.ai\/v1\/(?:chat\/compare|swarm\/preview)/,route=>{
+    multiwriterCalls+=1;
+    return route.fulfill({status:503,contentType:'application/json',body:'{}'});
+  });
+  await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      choices:[{message:{role:'assistant',content:requests.length===1?'Havet er stille under månens lys.':'Bølgene glitrer mens natten går mot dag.'},finish_reason:'stop'}]
+    })});
+  });
+  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.waitForSelector('#p0-release-warning[data-state="degraded"]');
+  assert(await page.locator('#p0-release-warning').isVisible(),'Singleton first chat must be visibly labelled as limited');
+  assert((await page.locator('#p0-release-warning').innerText()).includes('én verifisert skriver'),'Singleton banner must not claim provider diversity');
+  assert(!(await page.locator('#p0-send').isDisabled()),'Authenticated singleton must enable the actual Send button');
+  assert((await page.locator('#p0-model .p0-model-name').innerText()).trim()==='Supergeni','Singleton must preserve the canonical connected default');
+  await page.locator('#p0-input').fill('Skriv én linje om havet.');
+  await page.locator('#p0-send').click();
+  await page.waitForFunction(()=>document.querySelector('.p0-message-assistant')?.textContent.includes('Havet er stille'));
+  await page.waitForSelector('#p0-send[data-state="send"]');
+  await page.locator('#p0-input').fill('Fortsett med én linje til.');
+  await page.locator('#p0-send').click();
+  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Bølgene glitrer')));
+  await page.waitForSelector('#p0-send[data-state="send"]');
+  assert(requests.length===2,'First chat and follow-up must each make exactly one chat request');
+  assert(requests.every(payload=>['supergeni','mmir-supergenius'].includes(payload.model)&&payload.stream===false),'Singleton UI must preserve the supported canonical nonstreaming API request');
+  assert(requests[1]?.messages.some(message=>message.role==='assistant'&&message.content.includes('Havet er stille')),'Follow-up request must retain the first assistant answer');
+  assert(requests[1]?.messages.some(message=>message.role==='user'&&message.content.includes('Skriv én linje')),'Follow-up request must retain the first user question');
+  assert(multiwriterCalls===0,'Two ordinary singleton messages must not start compare or swarm');
+  await page.goto(baseUrl+'/tillit/index.html',{waitUntil:'networkidle'});
+  assert(await page.locator('#trust-runtime').getAttribute('data-state')==='warning','Working singleton chat must not turn full-release Trust green');
+  assert((await page.locator('#trust-runtime').innerText()).includes('autentisert releaseklar: nei'),'Trust must keep full-release authentication false');
+  await page.close();
+}
+
 async function checkInventoryMismatchFailsClosed(browser){
   for(const fixture of [
     {name:'failed model inventory',options:{releaseReady:true,failModels:true}},
@@ -731,6 +773,7 @@ try{
   await checkReleaseReadinessGate(browser);
   await checkReadyTrust(browser);
   await checkReadyHostedGate(browser);
+  await checkSingleWriterHostedGate(browser);
   await checkKeyboardSendAndStop(browser);
   await checkInventoryMismatchFailsClosed(browser);
   await checkReadyToBlockedTransition(browser);

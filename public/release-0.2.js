@@ -347,11 +347,11 @@ async function initTrust(){
     const verified=Number(models.live_verified_intelligence_route_count||0);
     const readiness=status.operator_readiness?.readiness_state||'unknown';
     const release=RELEASE_ROUTE_TAXONOMY?.releaseReadiness?.(status)||RELEASE_ROUTE_TAXONOMY?.blockedReadiness?.();
-    const releaseReady=release?.hostedReady===true;
+    const releaseReady=release?.authenticatedReleaseReady===true;
     const productionGreen=releaseReady&&verified>0;
     banner.dataset.state=productionGreen?'ready':'warning';
     banner.replaceChildren(
-      el('strong','',productionGreen?'Offentlig svarbane har ferskt, autentisert produksjonsbevis.':'API-et svarer, men offentlig svarbane er ikke produksjonsgrønn.'),
+      el('strong','',productionGreen?'Offentlig svarbane har ferskt, autentisert produksjonsbevis.':release?.singleWriterDegradedReady===true?'Begrenset chat er tilgjengelig; full release er ikke produksjonsgrønn.':'API-et svarer, men offentlig svarbane er ikke produksjonsgrønn.'),
       el('p','',(models.total_visible_model_count||0)+' synlige ruter · '+verified+' live-verifiserte · operator readiness: '+readiness+' · autentisert releaseklar: '+(releaseReady?'ja':'nei')+'. En enkelt rute eller HTTP 200 kan ikke grønnmale releasen.')
     );
   }else{

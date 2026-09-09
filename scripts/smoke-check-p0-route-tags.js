@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
+import { singleWriterStatus,singleWriterInventory } from './fixtures/single-writer-readiness.mjs';
 
 const root = process.cwd();
 const runtimePath = resolve(root, 'public/apps/mimir-chat-portal/p0-chat-shell.js');
@@ -16,7 +17,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,localAllActiveRoutes,comparePartnerModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -266,5 +267,85 @@ assertEqual(testApi.comparePartnerModel(gemma), null, 'Explicit local Compare mu
 const staleLocalAll = await testApi.localAllActiveRoutes('do not send this', new AbortController().signal);
 assertEqual(staleLocalAll.responses.length, 0, 'Stale local readiness must not start Ask All local responses.');
 assertEqual(staleLocalAll.attempts.length, 0, 'Stale local readiness must not start Ask All local attempts.');
+
+const routeTaxonomy=context.MmirReleaseRouteTaxonomy;
+const singleStatus=singleWriterStatus();
+const singleReadiness=routeTaxonomy.releaseReadiness(singleStatus);
+assertEqual(singleReadiness.hostedReady,true,'Authenticated singleton status must open first chat without claiming full release');
+assertEqual(singleReadiness.authenticatedReleaseReady,false,'Singleton first chat must not claim authenticated full release');
+assertEqual(singleReadiness.singleWriterDegradedReady,true,'Singleton readiness must stay explicitly degraded');
+assertEqual(singleReadiness.compareReady,false,'Singleton must not enable compare');
+assertEqual(singleReadiness.swarmPreviewReady,false,'Singleton must not enable swarm');
+const budgetSatisfied=singleWriterStatus();
+budgetSatisfied.operator_readiness.default_writer_readiness.gates.provider_route_budget_release_admission_satisfied=true;
+budgetSatisfied.operator_readiness.default_writer_readiness.blocker_codes=['provider_diversity_not_authenticated'];
+assertEqual(routeTaxonomy.releaseReadiness(budgetSatisfied).hostedReady,true,'Single writer remains first-chat-only when the separate budget gate is ready');
+const historyProofs=singleWriterStatus();
+historyProofs.operator_readiness.default_writer_readiness.counts.evidence_route_count=3;
+historyProofs.operator_readiness.default_writer_readiness.counts.rejected_route_count=1;
+assertEqual(routeTaxonomy.releaseReadiness(historyProofs).hostedReady,true,'Evidence history count need not equal current admitted writer count');
+
+for(const [path,value] of [
+  ['ok',false],['no_paid_routes_started',false],['live_verified_intelligence_route_count',0],
+  ['operator_readiness.readiness_state','blocked'],
+  ['operator_readiness.journeys.first_chat_ready',false],
+  ['operator_readiness.journeys.compare_ready',true],
+  ['operator_readiness.journeys.swarm_preview_ready',true],
+  ...[
+    ['object','unknown'],['schema_version','unknown'],['deploy_readiness_schema_version','unknown'],
+    ['classification','blocked'],['authenticated_release_ready',true],
+    ['authenticated_single_writer_degraded_ready',false],['promotion_bootstrap_ready',true],
+    ['verification_mode','structural'],['authenticated_evaluation_completed',false],['evaluated_at','invalid'],
+    ['gates.fresh_public_proof_authenticated',false],['gates.single_writer_degraded_authenticated',false],
+    ['gates.provider_diversity_authenticated',true],['gates.provider_route_budget_release_admission_satisfied','false'],
+    ['counts.evidence_route_count',0],['counts.fresh_public_provider_count',0],
+    ['counts.admitted_writer_provider_count',0],['counts.admitted_writer_provider_count',2],
+    ['counts.admitted_writer_provider_count',1.5],['counts.rejected_route_count',-1],
+    ['blocker_codes',[]],['blocker_codes',['provider_diversity_not_authenticated','authenticated_evaluation_failed']],
+    ['blocker_codes',['provider_diversity_not_authenticated','fresh_public_proof_not_authenticated']],
+    ['blocker_codes',['provider_diversity_not_authenticated','unknown']],
+    ['provider_calls_started',1],['no_paid_routes_started',false],['secrets_exposed',true]
+  ].map(([key,invalid])=>['operator_readiness.default_writer_readiness.'+key,invalid])
+]){
+  const invalid=singleWriterStatus();
+  const parts=path.split('.');
+  const key=parts.pop();
+  const owner=parts.reduce((object,part)=>object[part],invalid);
+  owner[key]=value;
+  assertEqual(routeTaxonomy.releaseReadiness(invalid).hostedReady,false,'Invalid singleton contract must fail closed: '+path+'='+JSON.stringify(value));
+  delete owner[key];
+  assertEqual(routeTaxonomy.releaseReadiness(invalid).hostedReady,false,'Missing singleton contract must fail closed: '+path);
+}
+
+const singleInventory=singleWriterInventory();
+testApi.state.releaseReadiness=singleReadiness;
+testApi.state.models=testApi.normalizeHostedModels(singleInventory);
+testApi.state.activeModelId='mmir-supergenius';
+assertEqual(testApi.state.models.find(model=>model.id==='mmir-supergenius')?.selectable,true,'Current compact inventory must enable the canonical connected default in singleton mode');
+assertEqual(testApi.selectedRouteReady(),true,'The actual P0 composer predicate must allow singleton first chat');
+assertEqual(testApi.hostedJourneyReady('compare'),false,'Actual P0 compare boundary must remain closed');
+assertEqual(testApi.hostedJourneyReady('swarm_preview'),false,'Actual P0 swarm boundary must remain closed');
+const normalizedGroq=testApi.state.models.find(model=>model.model==='openai/gpt-oss-120b');
+assertEqual(normalizedGroq?.selectable,true,'Raw Groq proof must remain selectable after shell normalization');
+testApi.state.activeModelId=normalizedGroq.id;
+assertEqual(testApi.selectedRouteReady(),true,'Camel-case normalized Groq model must pass the actual composer predicate');
+testApi.state.activeModelId='mmir-supergenius';
+assertEqual(testApi.smartDecision('Skriv et kort dikt om havet.').mode,'single','Ordinary singleton chat must not turn into compare');
+assertEqual(testApi.smartDecision('Skriv et kort dikt om havet.').model.id,'mmir-supergenius','Ordinary singleton chat must preserve the connected meta route');
+
+const writerModel=singleInventory.data[1];
+for(const override of [
+  {provider:'mistral'}, {model:'llama-3.3-70b-versatile'}, {route_id:'groq/wrong'},
+  {live_e2e_verified:false}, {live_e2e_proof:null},
+  {live_e2e_proof:{...writerModel.live_e2e_proof,route_key:'mistral:openai/gpt-oss-120b'}},
+  {live_e2e_proof:{...writerModel.live_e2e_proof,no_paid_routes_started:false}},
+  {cost_state:'paid'}, {executable:false}, {selectable:false}, {candidate:true}, {status:'temporarily_degraded'}
+]){
+  assertEqual(routeTaxonomy.hostedTryableNow({...writerModel,...override},singleReadiness),false,'Singleton must reject wrong, unpaid-unproven, or unavailable writer: '+JSON.stringify(override));
+}
+assertEqual(routeTaxonomy.hostedTryableNow(singleInventory.data[0],singleReadiness,{liveVerifiedIntelligenceRouteCount:1,liveUnderlyingProviderCount:0}),false,'Connected singleton needs an actually tryable underlying writer');
+assertEqual(routeTaxonomy.hostedTryableNow(singleInventory.data[0],singleReadiness,{liveVerifiedIntelligenceRouteCount:1,liveUnderlyingProviderCount:2}),false,'Singleton must not be inflated into a multiwriter meta route');
+testApi.state.releaseReadiness=routeTaxonomy.blockedReadiness('Expired or suppressed runtime proof');
+assertEqual(testApi.selectedRouteReady(),false,'Previously ready composer must close again when runtime proof expires or is suppressed');
 
 console.log('P0 explicit route tag smoke check passed.');

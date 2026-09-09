@@ -104,6 +104,48 @@
     return canonicalCosts.some(value=>FREE_COST_CLASSES.has(value));
   }
 
+  // This is first-chat authority only, not a diversity or full-release claim.
+  // Match the authenticated public runtime projection; configuration alone
+  // cannot enable this lane, and route identity is checked in inventory below.
+  function authenticatedSingleWriterReady(writer){
+    const gates=writer?.gates;
+    const counts=writer?.counts;
+    return Boolean(
+      writer?.object==='mmir.default_writer_runtime_readiness'&&
+      writer?.schema_version==='2026-07-22-default-writer-runtime-readiness-v1'&&
+      writer?.deploy_readiness_schema_version==='2026-07-22-default-writer-deploy-readiness-v1'&&
+      writer?.classification==='single_writer_degraded_ready'&&
+      writer?.authenticated_single_writer_degraded_ready===true&&
+      writer?.authenticated_release_ready===false&&
+      writer?.promotion_bootstrap_ready===false&&
+      writer?.verification_mode==='keyed-hmac'&&
+      writer?.authenticated_evaluation_completed===true&&
+      typeof writer?.evaluated_at==='string'&&Number.isFinite(Date.parse(writer.evaluated_at))&&
+      gates?.fresh_public_proof_authenticated===true&&
+      gates?.single_writer_degraded_authenticated===true&&
+      gates?.provider_diversity_authenticated===false&&
+      typeof gates?.provider_route_budget_release_admission_satisfied==='boolean'&&
+      Number.isSafeInteger(counts?.evidence_route_count)&&counts.evidence_route_count>=1&&
+      counts?.fresh_public_provider_count===1&&
+      counts?.admitted_writer_provider_count===1&&
+      Number.isSafeInteger(counts?.rejected_route_count)&&counts.rejected_route_count>=0&&
+      Array.isArray(writer?.blocker_codes)&&
+      writer.blocker_codes.includes('provider_diversity_not_authenticated')&&
+      writer.blocker_codes.every(code=>code==='provider_diversity_not_authenticated'||code==='provider_route_budget_not_release_ready')&&
+      writer?.provider_calls_started===0&&
+      writer?.no_paid_routes_started===true&&
+      writer?.secrets_exposed===false
+    );
+  }
+
+  function isSingleWriterRoute(model){
+    const proof=model?.live_e2e_proof||model?.liveE2EProof;
+    return text(model?.provider)==='groq'&&
+      text(model?.model||model?.id)==='openai/gpt-oss-120b'&&
+      text(model?.route_id||model?.routeId)==='groq/openai/gpt-oss-120b'&&
+      proof?.route_key==='groq:openai/gpt-oss-120b';
+  }
+
   function releaseReadiness(payload){
     const operator=payload?.operator_readiness;
     const writer=operator?.default_writer_readiness;
@@ -119,7 +161,7 @@
       (!['compare_ready','swarm_preview_ready'].includes(readinessState)||journeys?.compare_ready===true)&&
       (readinessState!=='swarm_preview_ready'||journeys?.swarm_preview_ready===true)
     );
-    const hostedReady=Boolean(
+    const authenticatedReleaseReady=Boolean(
       payload?.ok===true&&
       RELEASE_READY_STATES.has(readinessState)&&
       writer?.classification==='release_ready'&&
@@ -132,25 +174,39 @@
       blockerCodesValid&&
       blockerCodes.length===0
     );
+    const singleWriterDegradedReady=Boolean(
+      payload?.ok===true&&
+      readinessState==='first_chat_degraded_ready'&&
+      authenticatedSingleWriterReady(writer)&&
+      journeys?.first_chat_ready===true&&
+      journeys?.compare_ready===false&&
+      journeys?.swarm_preview_ready===false&&
+      exactRouteCount&&verifiedRoutes>=1&&noPaidRoutesStarted
+    );
+    const hostedReady=authenticatedReleaseReady||singleWriterDegradedReady;
     return Object.freeze({
       state:hostedReady?'ready':'blocked',
       hostedReady,
       authenticatedFirstChatReady:hostedReady,
+      authenticatedReleaseReady,
+      singleWriterDegradedReady,
       compareReady:Boolean(
-        hostedReady&&
+        authenticatedReleaseReady&&
         (readinessState==='compare_ready'||readinessState==='swarm_preview_ready')&&
         journeys?.compare_ready===true
       ),
       swarmPreviewReady:Boolean(
-        hostedReady&&
+        authenticatedReleaseReady&&
         readinessState==='swarm_preview_ready'&&
         journeys?.swarm_preview_ready===true
       ),
       verifiedRoutes,
       noPaidRoutesStarted,
-      readinessState:RELEASE_READY_STATES.has(readinessState)?readinessState:'blocked',
+      readinessState:singleWriterDegradedReady||RELEASE_READY_STATES.has(readinessState)?readinessState:'blocked',
       checkedAt:Date.now(),
-      reason:hostedReady
+      reason:singleWriterDegradedReady
+        ? 'Begrenset chat: én live-verifisert skriver. Sammenligning og sverm er ikke klare.'
+        : hostedReady
         ? 'Offentlig svarbane er live-verifisert.'
         : (blockerCodes.length?blockerCodes.join(', '):'Offentlig svarbane mangler ferskt produksjonsbevis.')
     });
@@ -161,6 +217,8 @@
       state:'blocked',
       hostedReady:false,
       authenticatedFirstChatReady:false,
+      authenticatedReleaseReady:false,
+      singleWriterDegradedReady:false,
       compareReady:false,
       swarmPreviewReady:false,
       verifiedRoutes:0,
@@ -202,6 +260,7 @@
         inventoryVerifiedRoutes>=1&&
         Number.isSafeInteger(liveUnderlyingProviders)&&
         liveUnderlyingProviders>=1&&
+        (release.singleWriterDegradedReady!==true||liveUnderlyingProviders===1)&&
         release.hostedReady===true&&
         release.authenticatedFirstChatReady===true&&
         Number.isSafeInteger(release.verifiedRoutes)&&
@@ -217,6 +276,7 @@
       model?.selectable!==false&&
       modelLiveVerified(model)&&
       isFreeRoute(model)&&
+      (release.singleWriterDegradedReady!==true||isSingleWriterRoute(model))&&
       release.hostedReady===true
     );
   }
@@ -254,8 +314,12 @@
       selectable:true,
       freeToTry:true,
       liveE2EVerified,
-      access:connectedSupergeni?'Supergeni · koblet til live-verifiserte gratisruter':'Gratis offentlig MMIR-rute · ingen egen API-nøkkel',
-      reason:connectedSupergeni
+      access:readiness.singleWriterDegradedReady===true
+        ? (connectedSupergeni?'Supergeni · begrenset chat via én verifisert skriver':'Gratis offentlig MMIR-rute · én verifisert skriver')
+        : connectedSupergeni?'Supergeni · koblet til live-verifiserte gratisruter':'Gratis offentlig MMIR-rute · ingen egen API-nøkkel',
+      reason:readiness.singleWriterDegradedReady===true
+        ? readiness.reason
+        : connectedSupergeni
         ? 'Supergeni er klar fordi autentisert first-chat og minst én underliggende gratisrute er live-verifisert.'
         : 'Modellen og den autentiserte first-chat-releaseporten er live-verifisert.'
     });
