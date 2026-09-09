@@ -325,6 +325,10 @@ assertEqual(testApi.state.models.find(model=>model.id==='mmir-supergenius')?.sel
 assertEqual(testApi.selectedRouteReady(),true,'The actual P0 composer predicate must allow singleton first chat');
 assertEqual(testApi.hostedJourneyReady('compare'),false,'Actual P0 compare boundary must remain closed');
 assertEqual(testApi.hostedJourneyReady('swarm_preview'),false,'Actual P0 swarm boundary must remain closed');
+const singletonPool=testApi.intelligencePoolSummary();
+assertEqual(singletonPool.compareReady,false,'Supergeni and its sole Groq writer must not claim independent Best Answer readiness');
+assertEqual(singletonPool.stateLabel,'Single AI source now','Singleton summary must not advertise Best Answer ready');
+assertIncludes(singletonPool.details,'låse opp parallelt beste svar','Singleton summary must state that parallel Best Answer is still locked');
 const normalizedGroq=testApi.state.models.find(model=>model.model==='openai/gpt-oss-120b');
 assertEqual(normalizedGroq?.selectable,true,'Raw Groq proof must remain selectable after shell normalization');
 testApi.state.activeModelId=normalizedGroq.id;

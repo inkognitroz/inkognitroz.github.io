@@ -3232,7 +3232,7 @@
 	    const boostRouteLabel=compareRouteTotal===activeRouteTotal
 	      ? String(compareRouteTotal)+' gratis AI-kilder'
 	      : String(compareRouteTotal)+' gratis AI-kilder nå ('+String(activeRouteTotal)+' live totalt)';
-    const compareReady=Boolean(primary&&partner&&primary.id!==partner.id);
+    const compareReady=Boolean(state.releaseReadiness?.singleWriterDegradedReady!==true&&primary&&partner&&primary.id!==partner.id);
     const localHardware=state.localHardware?.summary||'';
 	    const scaleLine=[
 	      activeRouteTotal+(hostedJourneyReady('first_chat')?' live AI':' verifiserte/lokale AI'),
