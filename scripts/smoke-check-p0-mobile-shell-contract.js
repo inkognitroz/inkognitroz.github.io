@@ -94,8 +94,9 @@ for (const marker of [
 forbidText(runtime, 'class="p0-menu" role="menu"', 'Generic button popovers must not claim the ARIA menu pattern without menuitem keyboard semantics.');
 
 for (const marker of [
-  'Chatten er ikke produksjonsklar.',
-  'Ikke del sensitiv info eller bruk den til høyrisikoformål.',
+  'Grunnchat kan prøves.',
+  'Status og avanserte kvalitetsporter er ikke bekreftet.',
+  'Ikke del sensitiv info eller bruk til høyrisikoformål.',
   "send.setAttribute('aria-describedby','p0-release-warning')",
   "composer.setAttribute('aria-busy',state.busy?'true':'false')",
   'function positionMenuAboveTrigger(menu,button)',
@@ -245,7 +246,7 @@ for (const marker of [
   'hasTouch: true',
   'isMobile: true',
   "await page.route('**/*'",
-  'network.chatCalls === 0',
+  'network.chatCalls === 1',
   'checkReadyBusyAndStop(browser)'
 ]) {
   requireText(iphoneWebkit, marker, `iPhone WebKit regression must keep its real mobile/network contract: ${marker}`);

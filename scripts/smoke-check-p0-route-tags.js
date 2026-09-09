@@ -17,7 +17,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -82,6 +82,7 @@ hosted.liveE2EVerified = true;
 hosted.executable = true;
 hosted.selectable = true;
 hosted.availability = 'available';
+hosted.ordinaryChatAttemptable = false;
 const gemma = {
   id: 'local-gemma3-270m',
   label: 'gemma3:270m',
@@ -269,6 +270,19 @@ assertEqual(staleLocalAll.responses.length, 0, 'Stale local readiness must not s
 assertEqual(staleLocalAll.attempts.length, 0, 'Stale local readiness must not start Ask All local attempts.');
 
 const routeTaxonomy=context.MmirReleaseRouteTaxonomy;
+const ordinaryFallback=testApi.canonicalOrdinaryChatFallbackModel();
+assertEqual(testApi.ordinaryHostedChatTryable(ordinaryFallback),true,'The exact canonical hosted model must remain attemptable without status proof');
+assertEqual(testApi.modelSelectableNow(ordinaryFallback),true,'The canonical basic route must be selectable without being mislabeled live');
+assertEqual(ordinaryFallback.liveE2EVerified,false,'The basic fallback must not fabricate live verification');
+assertEqual(ordinaryFallback.executable,false,'The basic fallback must not fabricate inventory executability');
+assertEqual(testApi.ordinaryHostedChatTryable({...ordinaryFallback,id:'other-hosted'}),false,'Basic availability must not open an arbitrary hosted model');
+assertEqual(testApi.ordinaryHostedChatTryable({...ordinaryFallback,paidRoutesAllowed:true}),false,'Basic availability must reject an explicit paid-route contradiction');
+assertEqual(testApi.ordinaryHostedChatTryable({...ordinaryFallback,route:'local'}),false,'Basic availability must not bypass local pairing');
+assertEqual(testApi.ensureCanonicalOrdinaryChatFallback([]).length,1,'A missing inventory must retain exactly one canonical basic fallback');
+const basicPayload=testApi.hostedPayload('Hei',ordinaryFallback);
+assertEqual(basicPayload.model,'mmir-supergenius','Basic chat must use only the canonical public model id');
+assertEqual(basicPayload.policy?.paid_routes_allowed,false,'Basic chat must explicitly forbid paid routes');
+assertEqual(Object.hasOwn(basicPayload.policy||{},'require_no_paid_receipt'),false,'Basic chat must not invent a signed-release-receipt prerequisite');
 const singleStatus=singleWriterStatus();
 const singleReadiness=routeTaxonomy.releaseReadiness(singleStatus);
 assertEqual(singleReadiness.hostedReady,true,'Authenticated singleton status must open first chat without claiming full release');
@@ -371,9 +385,10 @@ const sendEnd=runtime.indexOf('  async function compareLiveRoutes(',sendStart);
 assertEqual(sendStart>=0&&sendEnd>sendStart,true,'Dispatch guard assertions must inspect the actual sendMessage function');
 const sendFlow=runtime.slice(sendStart,sendEnd);
 assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
-const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!await ensureHostedJourneyReady('first_chat',model)){");
-const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true})');
-assertEqual(firstChatGate>=0&&firstChatCall>firstChatGate,true,'Ordinary comparison must retain the first-chat guard before the actual hosted dispatch');
+const ordinarySelection=sendFlow.indexOf('const ordinaryBasicChat=Boolean(');
+const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){");
+const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat})');
+assertEqual(ordinarySelection>=0&&firstChatGate>ordinarySelection&&firstChatCall>firstChatGate,true,'Direct canonical basic chat must bypass only the first-chat proof gate and preserve the guarded hosted dispatch');
 
 testApi.state.releaseReadiness={...singleReadiness,singleWriterDegradedReady:false,compareReady:true};
 for(const prompt of ordinaryComparisons){
@@ -394,6 +409,8 @@ for(const override of [
 assertEqual(routeTaxonomy.hostedTryableNow(singleInventory.data[0],singleReadiness,{liveVerifiedIntelligenceRouteCount:1,liveUnderlyingProviderCount:0}),false,'Connected singleton needs an actually tryable underlying writer');
 assertEqual(routeTaxonomy.hostedTryableNow(singleInventory.data[0],singleReadiness,{liveVerifiedIntelligenceRouteCount:1,liveUnderlyingProviderCount:2}),false,'Singleton must not be inflated into a multiwriter meta route');
 testApi.state.releaseReadiness=routeTaxonomy.blockedReadiness('Expired or suppressed runtime proof');
-assertEqual(testApi.selectedRouteReady(),false,'Previously ready composer must close again when runtime proof expires or is suppressed');
+assertEqual(testApi.selectedRouteReady(),true,'Canonical basic chat must remain attemptable when advanced runtime proof expires or is suppressed');
+testApi.state.activeModelId=normalizedGroq.id;
+assertEqual(testApi.selectedRouteReady(),false,'A noncanonical provider route must still close when runtime proof expires or is suppressed');
 
 console.log('P0 explicit route tag smoke check passed.');

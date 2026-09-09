@@ -75,7 +75,7 @@ requireIncludes(
 );
 requireIncludes(
   html,
-  "serviceWorkerUrl='./sw.js?v=20260909-single-writer-intent-v2'",
+  "serviceWorkerUrl='./sw.js?v=20260909-ordinary-chat-v1'",
   'The P0 shell must bind the gateway-contract service-worker version outside the skipped legacy queue.'
 );
 requireIncludes(

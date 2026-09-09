@@ -125,7 +125,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true})))',
+  'responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat})))',
   'Selected hosted route text responses must preserve API metadata before extracting answer text.'
 );
 requireIncludes(

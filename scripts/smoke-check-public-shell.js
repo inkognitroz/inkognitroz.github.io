@@ -337,7 +337,7 @@ requireText(
 );
 requireText(
   serviceWorkerPath,
-  "mmir-pwa-d357-20260909-single-writer-intent-v2",
+  "mmir-pwa-d358-20260909-ordinary-chat-v1",
   "Service worker cache must bust for the reviewed gateway release contract.",
 );
 requireText(
