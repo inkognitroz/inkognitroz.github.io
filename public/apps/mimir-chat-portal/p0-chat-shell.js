@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260914-public-chat-failure-diagnostics-v1';
+  const P0_RUNTIME_VERSION='20260914-reference-count-truth-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -3843,25 +3843,35 @@
     return ' · Writer continuity reset ('+kib+' KiB browser boundary)';
   }
 
+  function referenceCountLabel(value,sources=null){
+    const label=String(value||'');
+    const legacy=label.match(/^Søk\s*·\s*(0|[1-9]\d*)\s+kilder?((?:\s*·\s*.+)?)$/i);
+    if(!legacy)return label;
+    // Source entries can be fetched context, model citations, or title-only references.
+    const count=Array.isArray(sources)?sources.length:Number(legacy[1]);
+    if(!Number.isSafeInteger(count)||count<=0)return '';
+    return 'Referanser · '+count+' '+(count===1?'oppføring':'oppføringer')+legacy[2];
+  }
+
   function connectedIntelligenceLabel(payload){
     const explicit=String(
       payload?.mmir?.scaled_intelligence_label||
       payload?.scaled_intelligence_label||
       ''
     ).replace(/\s+/g,' ').trim().slice(0,120);
-    if(/^(?:Rask|Søk)\s*·/i.test(explicit))return explicit;
-    const writer=answerWriterProfile(payload);
     const sources=Array.isArray(payload?.mmir?.sources)
       ? payload.mmir.sources
-      : (Array.isArray(payload?.sources)?payload.sources:[]);
-    if(writer.type==='llm'&&sources.length){
-      return 'Søk · '+sources.length+' '+(sources.length===1?'kilde':'kilder');
+      : (Array.isArray(payload?.sources)?payload.sources:null);
+    if(/^(?:Rask|Søk)\s*·/i.test(explicit))return referenceCountLabel(explicit,sources);
+    const writer=answerWriterProfile(payload);
+    if(writer.type==='llm'&&sources?.length){
+      return 'Referanser · '+sources.length+' '+(sources.length===1?'oppføring':'oppføringer');
     }
     return '';
   }
 
   function renderConnectedIntelligenceLabel(message){
-    const label=String(message?.intelligenceLabel||'').replace(/\s+/g,' ').trim().slice(0,120);
+    const label=referenceCountLabel(String(message?.intelligenceLabel||'').replace(/\s+/g,' ').trim().slice(0,120));
     if(message?.role!=='assistant'||!label)return '';
     return '<div class="p0-connected-intelligence-label" aria-label="Svarmodus: '+safeAttr(label)+'">'+safeText(label)+'</div>';
   }
@@ -3869,8 +3879,9 @@
   function renderProofLine(message,trustShownInReceipt=false){
     const proof=message?.role==='assistant'?message?.proofLine:null;
     if(!proof)return '';
+    const label=referenceCountLabel(proof.label);
     const trust=trustShownInReceipt?'':proofTrustLabel(proof);
-    const badge=trust&&(!proof.label||!proof.label.toLowerCase().startsWith(trust.toLowerCase()))?trust:'';
+    const badge=trust&&(!label||!label.toLowerCase().startsWith(trust.toLowerCase()))?trust:'';
     const badges=(Array.isArray(proof.sources)?proof.sources:[]).slice(0,3).map(source=>{
       const hint=source.tierLabel?source.name+' · '+source.tierLabel:source.name;
       if(source.url){
@@ -3878,10 +3889,10 @@
       }
       return '<span class="p0-proof-source" title="'+safeAttr(hint)+'">'+safeText(source.name)+'</span>';
     }).join('');
-    if(!badge&&!proof.label&&!badges)return '';
-    return '<div class="p0-proof-line p0-proof-status-'+safeAttr(String(proof.status||'unverified').replace(/[^a-z0-9_-]/gi,''))+'" aria-label="'+safeAttr('Bevislinje: '+(proof.label||proofTrustLabel(proof)||'ingen'))+'">'+
+    if(!badge&&!label&&!badges)return '';
+    return '<div class="p0-proof-line p0-proof-status-'+safeAttr(String(proof.status||'unverified').replace(/[^a-z0-9_-]/gi,''))+'" aria-label="'+safeAttr('Bevislinje: '+(label||proofTrustLabel(proof)||'ingen'))+'">'+
       (badge?'<span class="p0-proof-badge">'+safeText(badge)+'</span>':'')+
-      (proof.label?'<span class="p0-proof-text">'+safeText(proof.label)+'</span>':'')+
+      (label?'<span class="p0-proof-text">'+safeText(label)+'</span>':'')+
       badges+
     '</div>';
   }
