@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260914-latest-message-language-v1';
+  const P0_RUNTIME_VERSION='20260914-public-chat-failure-diagnostics-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2763,6 +2763,45 @@
     };
   }
 
+  function ordinaryChatFailureDiagnostic(value,stored=false){
+    // Public, unsigned diagnostics only: never retain an Error or its raw payload.
+    if(!value||!Number.isInteger(value.status)||value.status<400||value.status>599)return null;
+    const payload=stored?value:value.payload;
+    const diagnostic={status:value.status};
+    const code=stored?payload.code:payload?.error?.code;
+    if(['chat_provider_unavailable','request_cancelled','default_chat_rate_limited'].includes(code))diagnostic.code=code;
+    if(Number.isSafeInteger(payload?.upstream_call_count)&&payload.upstream_call_count>=0)diagnostic.upstream_call_count=payload.upstream_call_count;
+    const classes=['gateway_timeout','gateway_fetch_error','upstream_timeout','upstream_rate_limit','upstream_http_5xx',
+      'upstream_http_4xx','upstream_model_gone','pre_call_deadline_exhausted','local_rate_limit','global_capacity_limit',
+      'capacity_coordinator_unavailable','local_admission_block','invalid_upstream_payload','managed_compute_failure',
+      'model_identity_mismatch','writer_word_limit_exceeded','unknown_provider_failure'];
+    const origins=['provider_configured_timeout','mmir_shared_deadline'];
+    const failures={},timeouts={};
+    if(stored){
+      for(const [field,allowed,counts] of [['failure_counts',classes,failures],['timeout_counts',origins,timeouts]]){
+        for(const key of allowed){
+          const count=payload[field]?.[key];
+          if(Number.isInteger(count)&&count>0&&count<=16)counts[key]=count;
+        }
+        if(Object.values(counts).reduce((total,count)=>total+count,0)>16){
+          for(const key of Object.keys(counts))delete counts[key];
+        }
+      }
+    }else{
+      const rows=payload?.mmir?.ordinary_chat===true?payload.mmir.route_failures:null;
+      // Omit an oversized list entirely, rather than presenting truncated totals.
+      if(Array.isArray(rows)&&rows.length<=16){
+        for(const row of rows){
+          if(classes.includes(row?.failure_class))failures[row.failure_class]=(failures[row.failure_class]||0)+1;
+          if(origins.includes(row?.timeout_origin))timeouts[row.timeout_origin]=(timeouts[row.timeout_origin]||0)+1;
+        }
+      }
+    }
+    if(Object.keys(failures).length)diagnostic.failure_counts=failures;
+    if(Object.keys(timeouts).length)diagnostic.timeout_counts=timeouts;
+    return diagnostic;
+  }
+
   function routeDisplayName(model){
     return P0_ROUTE_RECEIPTS.displayName(model);
   }
@@ -3691,6 +3730,7 @@
 
   function normalizeAnswerTruth(message={}){
     const next={...message};
+    next.failureDiagnostic=next.role==='assistant'?ordinaryChatFailureDiagnostic(next.failureDiagnostic,true):null;
     if(next.role!=='assistant'){
       next.answerState='';
       next.aiGenerated=false;
@@ -3734,7 +3774,7 @@
     return next;
   }
 
-  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null){
+  function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null,failureDiagnostic=null){
     const full=canonicalBrandText(receipt).trim();
     const model=canonicalBrandText(modelLabel).replace(/\s+/g,' ').trim()||'AI-modell';
     const quietStatus=quietReceiptStatus(full,model,proof);
@@ -3754,7 +3794,16 @@
     const trustLabel=proofTrustLabel(proof);
     const trustShown=Boolean(trustLabel&&receiptChromeKey(statusText).includes(receiptChromeKey(trustLabel)));
     const intelligence=String(intelligenceLabel||'').replace(/\s+/g,' ').trim();
-    const hasDetails=Boolean(full||proof||intelligence);
+    const diagnostic=answerState==='degraded'?ordinaryChatFailureDiagnostic(failureDiagnostic,true):null;
+    const diagnosticText=diagnostic?[
+      'HTTP '+diagnostic.status,
+      diagnostic.code?'Gateway-kode: '+diagnostic.code:'',
+      diagnostic.upstream_call_count!==undefined?'Gateway-rapporterte upstream-kall: '+diagnostic.upstream_call_count:'',
+      diagnostic.failure_counts?'Kjente gateway-rapporterte rutefeil: '+Object.entries(diagnostic.failure_counts).map(([key,count])=>key+'='+count).join(', '):'',
+      diagnostic.timeout_counts?'Gateway-rapporterte tidsgrenser: '+Object.entries(diagnostic.timeout_counts).map(([key,count])=>key+'='+count).join(', '):'',
+      'Usignert diagnose, ikke kvalitetsbevis.'
+    ].filter(Boolean).join(' · '):'';
+    const hasDetails=Boolean(full||proof||intelligence||diagnosticText);
     const summary='<span class="p0-receipt-model">'+safeText(model)+'</span>'+
       '<span class="p0-receipt-summary-main">'+safeText(statusText)+'</span>';
     const ariaLabel=[model,statusText,hasDetails?'Vis kvitteringsdetaljer':''].filter(Boolean).join(' · ');
@@ -3767,6 +3816,7 @@
     const trustClass=trustLabel||routeEvidenceReceipt(full)?' p0-message-receipt-trust':'';
     const expanded=[
       full?'<div class="p0-receipt-full">'+safeText(full)+'</div>':'',
+      diagnosticText?'<div class="p0-receipt-failure-diagnostic">'+safeText(diagnosticText)+'</div>':'',
       renderConnectedIntelligenceLabel({role:'assistant',intelligenceLabel:intelligence}),
       renderProofLine({role:'assistant',proofLine:proof},trustShown)
     ].filter(Boolean).join('');
@@ -6439,7 +6489,7 @@
       const visibleLabel=message.role==='assistant'?canonicalBrandText(routeDisplayName({label:message.label||message.role})):'';
       const visibleContent=message.role==='assistant'?canonicalBrandText(message.content):message.content;
       const receiptHtml=message.role==='assistant'
-        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated,message.answerWriter)
+        ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated,message.answerWriter,message.failureDiagnostic)
         : '';
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
@@ -8184,11 +8234,12 @@
         state.hostedRouteState='degraded';
         recordRouteBenchmark(model,routeScore(model,routePrompt,'',0,true));
         const failedReceipt=ordinaryBasicChat?ordinaryChatAttemptReceipt(model,'failed'):null;
+        const failureDiagnostic=ordinaryBasicChat?ordinaryChatFailureDiagnostic(error):null;
         updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
-        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
+        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),failureDiagnostic,answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
         status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
         if(failedReceipt)routeStatus(routePrefix+failedReceipt.text,failedReceipt.state);
-        captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});
+        captureInteraction('chat_failed',{reason:failureDiagnostic?.code||(failureDiagnostic?'http_error':'api_unreachable'),active_model_id:model?.id||'',...(failureDiagnostic?{http_status:failureDiagnostic.status}:{}),...(failureDiagnostic?.upstream_call_count!==undefined?{upstream_call_count:failureDiagnostic.upstream_call_count}:{})});
       }
     }finally{
       stopSlowNotice();
