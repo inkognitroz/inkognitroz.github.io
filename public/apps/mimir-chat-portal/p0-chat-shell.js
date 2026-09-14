@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260914-calculator-effective-defaults-v1';
+  const P0_RUNTIME_VERSION='20260914-latest-message-language-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -6797,9 +6797,12 @@
       : '';
     const modelId=String(model?.model||model?.id||'mmir-supergenius').trim()||'mmir-supergenius';
     const directWriter=!isCanonicalHostedModel(model);
+    const defaultLanguageInstruction=normalizeRoleProfileId(state.roleProfileId)==='default'
+      ? " Answer in the language of the user's latest message unless the user explicitly requests another language."
+      : '';
     const systemPrompt=(directWriter
       ? 'You are the language model selected by the user inside MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
-      : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.')+explicitGroundingInstruction(prompt);
+      : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.'+defaultLanguageInstruction)+explicitGroundingInstruction(prompt);
     const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt);
     const original=String(displayPrompt||'').trim();
     // Effective defaults have the same meaning whether saved explicitly or untouched.

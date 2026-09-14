@@ -9,6 +9,7 @@ let baseUrl = `http://${host}:${port}`;
 const screenshotDir = process.env.MMIR_TRUTHFUL_STATE_SCREENSHOTS || 'test-results/p0-truthful-chat-state';
 const failures = [];
 const chatRequests = [];
+const latestMessageLanguageInstruction = "Answer in the language of the user's latest message unless the user explicitly requests another language.";
 let chatMode = 'slow-success';
 let modelsMode = 'ready';
 
@@ -270,6 +271,13 @@ try {
     assert(state.scrollWidth <= state.clientWidth + 1, 'pending state must not create mobile overflow');
     await screenshot(page, 'mobile-pending');
     await page.waitForSelector('text=Et ferdig svar.');
+    const firstLanguageRequest = chatRequests.at(-1);
+    assert(firstLanguageRequest.messages?.[0]?.role === 'system' &&
+      firstLanguageRequest.messages[0].content.includes(latestMessageLanguageInstruction),
+    'first default-chat POST must instruct latest-message language with explicit user override');
+    assert(firstLanguageRequest.messages?.at(-1)?.content === 'Test ventetilstanden' &&
+      firstLanguageRequest.policy?.paid_routes_allowed === false,
+    'language guidance must preserve the first user message and no-paid policy');
     let completedReceiptText = await page.locator('.p0-message-assistant').last().locator('.p0-message-receipt').innerText();
     assert(/\bLive\b/i.test(completedReceiptText), 'successful hosted completion with missing writer identity must still be labelled Live');
     assert(/KI-svar · kan ta feil/i.test(completedReceiptText), 'successful hosted completion with missing writer identity must retain the AI warning');
@@ -278,6 +286,12 @@ try {
     await page.locator('#p0-input').fill('Test ugyldig svarforfatter');
     await page.locator('#p0-send').click();
     await page.waitForSelector('text=Et svar med ugyldig svarforfatter.');
+    const followupLanguageRequest = chatRequests.at(-1);
+    assert(followupLanguageRequest.messages?.[0]?.content.includes(latestMessageLanguageInstruction),
+      'default-chat follow-up POST must retain latest-message language instruction');
+    assert(followupLanguageRequest.messages?.at(-1)?.content === 'Test ugyldig svarforfatter' &&
+      followupLanguageRequest.messages.some(message => message.role === 'assistant' && message.content === 'Et ferdig svar.'),
+    'language guidance must preserve follow-up text and previous answer context');
     completedReceiptText = await page.locator('.p0-message-assistant').last().locator('.p0-message-receipt').innerText();
     assert(/\bLive\b/i.test(completedReceiptText), 'successful hosted completion with invalid writer identity must still be labelled Live');
     assert(/KI-svar · kan ta feil/i.test(completedReceiptText), 'successful hosted completion with invalid writer identity must retain the AI warning');
@@ -453,9 +467,10 @@ try {
 
     const controls = [
       { name: 'prose', prompt: 'Forklar hvorfor himmelen er blå' },
+      { name: 'explicit-language', prompt: 'Forklar kort hvorfor himmelen er blå, men svar på engelsk.' },
       { name: 'invalid-shape', prompt: '19 * 37; forklar svaret' },
       { name: 'grounding', prompt: '19 * 37, vis kilder', system: /explicitly asked for the answer basis/ },
-      { name: 'role', preferences: { 'mmir-p0-role-profile-v1': 'coach' }, system: /friendly coach presence/ },
+      { name: 'role', preferences: { 'mmir-p0-role-profile-v1': 'coach' }, system: /friendly coach presence/, absentSystem: /Answer in the language of the user's latest message/ },
       { name: 'style', preferences: { 'mmir-p0-answer-style-v1': 'detailed' }, system: /Give a complete answer/ },
       { name: 'explicit-default-style', preferences: { 'mmir-p0-answer-style-v1': 'short' }, calculator: true },
       { name: 'explicit-default-role', preferences: { 'mmir-p0-role-profile-v1': 'default' }, calculator: true },
@@ -466,7 +481,7 @@ try {
         'mmir-p0-fact-guard-v1': 'on'
       }, calculator: true },
       { name: 'fact-guard', preferences: { 'mmir-p0-fact-guard-v1': 'off' }, absentSystem: /If current facts are uncertain/ },
-      { name: 'direct-model', directWriter: true, system: /language model selected by the user/ },
+      { name: 'direct-model', directWriter: true, system: /language model selected by the user/, absentSystem: /Answer in the language of the user's latest message/ },
       { name: 'local-history', history: [
         { role: 'user', content: 'Behold mine tidligere instruksjoner.', routeProvenance: 'local-model', hostedLineage: false },
         { role: 'assistant', content: 'Tidligere lokalt svar.', routeProvenance: 'local-model', hostedLineage: false }
@@ -511,6 +526,10 @@ try {
         `${control.name}: completed answer must identify ${expectedWriter}`);
       const body = chatRequests.at(-1);
       assert(body.messages?.at(-1)?.content === controlPrompt, `${control.name}: real POST must preserve the complete user text`);
+      if (control.name === 'explicit-language') {
+        assert(body.messages?.[0]?.content.includes(latestMessageLanguageInstruction),
+          'explicit-language POST must retain the override instruction without translating or rewriting the user request');
+      }
       if (control.calculator || control.userOnly) {
         assert(body.messages.length === 1 && body.messages[0].role === 'user', `${control.name}: first arithmetic POST must be user-only; the gateway remains the calculator and fallback authority`);
         assert(body.model === 'mmir-supergenius' && body.policy?.paid_routes_allowed === false && body.stream === false,
