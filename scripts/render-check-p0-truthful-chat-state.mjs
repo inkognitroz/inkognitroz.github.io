@@ -12,6 +12,7 @@ const chatRequests = [];
 const latestMessageLanguageInstruction = "Answer in the language of the user's latest message unless the user explicitly requests another language.";
 let chatMode = 'slow-success';
 let modelsMode = 'ready';
+let failureFixture = null;
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
@@ -152,6 +153,11 @@ async function installFixtures(page, { resetStorage = true, directWriter = false
   await page.route('https://api.mmir.ai/v1/chat/completions', async route => {
     const request = route.request().postDataJSON() || {};
     chatRequests.push(request);
+    if (chatMode === 'diagnostic-error') {
+      if (failureFixture.network) await route.abort('failed');
+      else await route.fulfill({ status: failureFixture.status, contentType: 'application/json', body: failureFixture.body });
+      return;
+    }
     if (chatMode === 'calculator-success' || chatMode === 'calculator-conflict') {
       // Model the known server fixture, not another arithmetic parser. A system
       // message, prior context or another input must never fabricate a tool reply.
@@ -331,6 +337,95 @@ try {
     await page.close();
 
     modelsMode = 'ready';
+    const diagnosticCases = [
+      { name: 'reported', status: 503, payload: {
+        error: { code: 'chat_provider_unavailable', message: 'PRIVATE_DIAGNOSTIC_SENTINEL' }, upstream_call_count: 4,
+        mmir: { ordinary_chat: true, route_failures: [
+          { failure_class: 'upstream_rate_limit', provider_status: 429, provider: 'PRIVATE_DIAGNOSTIC_SENTINEL' },
+          { failure_class: 'upstream_rate_limit', model: 'PRIVATE_DIAGNOSTIC_SENTINEL' },
+          { failure_class: 'invalid_upstream_payload', timeout_origin: 'provider_configured_timeout', code: 'PRIVATE_DIAGNOSTIC_SENTINEL', url: 'https://private.invalid/PRIVATE_DIAGNOSTIC_SENTINEL' },
+          { failure_class: 'gateway_timeout', timeout_origin: 'mmir_shared_deadline', headers: { authorization: 'PRIVATE_DIAGNOSTIC_SENTINEL' } }
+        ] }
+      }, expected: ['HTTP 503', 'Gateway-kode: chat_provider_unavailable', 'upstream-kall: 4', 'upstream_rate_limit=2', 'invalid_upstream_payload=1', 'gateway_timeout=1', 'provider_configured_timeout=1', 'mmir_shared_deadline=1'] },
+      { name: 'local-only', status: 503, payload: {
+        error: { code: 'chat_provider_unavailable' }, upstream_call_count: 0,
+        mmir: { ordinary_chat: true, route_failures: [{ failure_class: 'local_rate_limit', provider_status: 429 }] }
+      }, expected: ['HTTP 503', 'upstream-kall: 0', 'local_rate_limit=1'], absent: ['upstream_rate_limit', '429'] },
+      { name: 'missing-count', status: 429, payload: { error: { code: 'default_chat_rate_limited' } },
+        expected: ['HTTP 429', 'Gateway-kode: default_chat_rate_limited'], absent: ['upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
+      { name: 'malformed-json', status: 502, body: '{PRIVATE_DIAGNOSTIC_SENTINEL',
+        expected: ['HTTP 502'], absent: ['Gateway-kode:', 'upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
+      { name: 'null-count', status: 503, payload: { upstream_call_count: null }, expected: ['HTTP 503'], absent: ['upstream-kall:'] },
+      { name: 'unsafe-count', status: 503, payload: { upstream_call_count: Number.MAX_SAFE_INTEGER + 1 }, expected: ['HTTP 503'], absent: ['upstream-kall:'] },
+      { name: 'malformed-fields', status: 504, payload: {
+        status: 401, error: { code: 'PRIVATE_DIAGNOSTIC_SENTINEL' }, upstream_call_count: '0',
+        mmir: { ordinary_chat: true, route_failures: [null, 'PRIVATE_DIAGNOSTIC_SENTINEL', { failure_class: 'PRIVATE_DIAGNOSTIC_SENTINEL', timeout_origin: 'PRIVATE_DIAGNOSTIC_SENTINEL' }] }
+      }, expected: ['HTTP 504'], absent: ['401', 'Gateway-kode:', 'upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
+      { name: 'oversized', status: 503, payload: {
+        error: { code: 'chat_provider_unavailable' }, upstream_call_count: -1,
+        mmir: { ordinary_chat: true, route_failures: Array.from({ length: 17 }, () => ({ failure_class: 'gateway_timeout', timeout_origin: 'provider_configured_timeout' })) }
+      }, expected: ['HTTP 503'], absent: ['upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
+      { name: 'network', network: true, expected: [], absent: ['HTTP', 'Gateway-kode:', 'upstream-kall:'] }
+    ];
+    for (const fixture of diagnosticCases) {
+      const diagnosticPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+      await installFixtures(diagnosticPage, { resetStorage: false });
+      failureFixture = { ...fixture, body: fixture.body ?? JSON.stringify(fixture.payload) };
+      chatMode = 'diagnostic-error';
+      await diagnosticPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=diagnostic-${fixture.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+      const requestsBefore = chatRequests.length;
+      await diagnosticPage.locator('#p0-input').fill('Test en trygg feilmelding');
+      await diagnosticPage.locator('#p0-send').click();
+      await diagnosticPage.waitForFunction(() => {
+        const body = Array.from(document.querySelectorAll('.p0-message-assistant .p0-message-body')).at(-1)?.innerText || '';
+        return /Supergeni svarer ikke akkurat nå|Noe gikk galt mens svaret ble hentet|Kapasitetsgrensen er nådd/.test(body);
+      }, undefined, { timeout: 5000 });
+      assert(chatRequests.length === requestsBefore + 1, `${fixture.name}: failure diagnostics must not retry the actual POST`);
+      const message = diagnosticPage.locator('.p0-message-assistant').last();
+      const summary = await message.locator('summary').innerText();
+      assert(!/HTTP|chat_provider_unavailable|default_chat_rate_limited|upstream-kall|rutefeil|tidsgrenser/.test(summary), `${fixture.name}: diagnostics must stay out of the compact summary`);
+      assert(/Degradert/.test(summary) && !/KI-svar/.test(summary), `${fixture.name}: failure must remain degraded, not a generated answer`);
+      const readDiagnostic = async () => message.locator('.p0-receipt-failure-diagnostic').count()
+        .then(count => count ? message.locator('.p0-receipt-failure-diagnostic').textContent() : '');
+      let diagnostic = await readDiagnostic();
+      for (const expected of fixture.expected) assert(diagnostic.includes(expected), `${fixture.name}: expanded diagnostic must contain ${expected}`);
+      for (const absent of fixture.absent || []) assert(!diagnostic.includes(absent), `${fixture.name}: expanded diagnostic must omit ${absent}`);
+      if (!fixture.network) assert(diagnostic.includes('Usignert diagnose, ikke kvalitetsbevis.'), `${fixture.name}: public accounting must not claim receipt or quality proof`);
+      assert(!await message.locator('.p0-receipt-failure-diagnostic').isVisible(), `${fixture.name}: details must initially be collapsed`);
+      await message.locator('summary').click();
+      const stored = await diagnosticPage.evaluate(name => ({
+        history: sessionStorage.getItem(`mmir-p0-chat-history-qa-session-v1:mmir_qa_session-diagnostic-${name}`) || '',
+        events: localStorage.getItem('mmir-p0-interaction-events-v1') || ''
+      }), fixture.name);
+      assert(!/PRIVATE_DIAGNOSTIC_SENTINEL|private\.invalid/.test((await message.innerHTML()) + stored.history + stored.events), `${fixture.name}: raw payload fields must not reach DOM, history or telemetry`);
+      const event = JSON.parse(stored.events || '[]').filter(item => item.event_name === 'chat_failed').at(-1);
+      const knownCode = ['chat_provider_unavailable', 'default_chat_rate_limited'].includes(fixture.payload?.error?.code) ? fixture.payload.error.code : '';
+      assert(event?.metadata?.reason === (fixture.network ? 'api_unreachable' : knownCode || 'http_error'), `${fixture.name}: failure telemetry must preserve a known public reason, not invent api_unreachable`);
+      if (fixture.name === 'reported') {
+        await diagnosticPage.evaluate(() => {
+          const key = 'mmir-p0-chat-history-qa-session-v1:mmir_qa_session-diagnostic-reported';
+          const history = JSON.parse(sessionStorage.getItem(key));
+          Object.assign(history.at(-1).failureDiagnostic || (history.at(-1).failureDiagnostic = {}), {
+            raw: 'PRIVATE_DIAGNOSTIC_SENTINEL', payload: { secret: 'PRIVATE_DIAGNOSTIC_SENTINEL' }
+          });
+          sessionStorage.setItem(key, JSON.stringify(history));
+        });
+        await diagnosticPage.reload({ waitUntil: 'networkidle' });
+        diagnostic = await readDiagnostic();
+        for (const expected of fixture.expected) assert(diagnostic.includes(expected), `rehydrated diagnostic must retain ${expected}`);
+        assert(!/PRIVATE_DIAGNOSTIC_SENTINEL/.test(await message.innerHTML()), 'rehydrated diagnostic must discard unknown persisted fields');
+        chatMode = 'invalid-writer-success';
+        await diagnosticPage.locator('#p0-input').fill('Test neste normale melding');
+        await diagnosticPage.locator('#p0-send').click();
+        await diagnosticPage.waitForSelector('text=Et svar med ugyldig svarforfatter.');
+        const cleanHistory = await diagnosticPage.evaluate(() => sessionStorage.getItem('mmir-p0-chat-history-qa-session-v1:mmir_qa_session-diagnostic-reported'));
+        assert(!/PRIVATE_DIAGNOSTIC_SENTINEL/.test(cleanHistory), 'normal save must retain only sanitized rehydrated diagnostic fields');
+        assert(!/HTTP 503|chat_provider_unavailable|PRIVATE_DIAGNOSTIC_SENTINEL/.test(JSON.stringify(chatRequests.at(-1))), 'failure diagnostics must never enter the follow-up model payload');
+      }
+      await diagnosticPage.close();
+    }
+    console.log(`Public failure diagnostic transport/DOM cases completed: ${diagnosticCases.length}`);
+
     const matrixPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
     await installFixtures(matrixPage);
     await matrixPage.addInitScript(({ schema, messages }) => {

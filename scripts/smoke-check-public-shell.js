@@ -902,7 +902,7 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null)",
+  "function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null,failureDiagnostic=null)",
   "P0 route receipts must keep full audit details available on click.",
 );
 requireText(
