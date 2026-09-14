@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260914-reference-count-truth-v1';
+  const P0_RUNTIME_VERSION='20260914-public-failure-route-details-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2799,6 +2799,33 @@
     }
     if(Object.keys(failures).length)diagnostic.failure_counts=failures;
     if(Object.keys(timeouts).length)diagnostic.timeout_counts=timeouts;
+    const ordinary=stored||payload?.mmir?.ordinary_chat===true;
+    const retrieval=stored?payload.retrieval_status:payload?.mmir?.source_grounding?.retrieval_status;
+    if(ordinary&&['retrieved','unavailable_or_unsupported','not_attempted'].includes(retrieval))diagnostic.retrieval_status=retrieval;
+    const rows=stored?payload.route_failures:ordinary?payload?.mmir?.route_failures:null;
+    const total=stored?payload.route_failure_count:rows?.length;
+    if(Array.isArray(rows)&&rows.length>0&&rows.length<=(stored?4:16)&&
+      Number.isInteger(total)&&total>=rows.length&&total<=16){
+      const codes=['provider_route_failed','provider_rate_limited','provider_model_gone','provider_model_identity_mismatch',
+        'writer_word_limit_exceeded','no_paid_provider_request_limit_reached','shared_compare_deadline_exhausted',
+        'provider_capacity_coordinator_unavailable','provider_global_capacity_unavailable','provider_speculative_attempt_cancelled'];
+      diagnostic.route_failure_count=total;
+      diagnostic.route_failures=rows.slice(0,4).map(row=>{
+        const clean={};
+        if(['nvidia','groq','google','mistral','openrouter','cerebras','cohere','sambanova','cloudflare'].includes(row?.provider))clean.provider=row.provider;
+        // Keep only bounded public identifiers; never transform a URL, key or prose into a model name.
+        if(clean.provider&&typeof row?.model==='string'&&row.model.length<=160&&
+          /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/.test(row.model)&&!row.model.includes('://')&&
+          !/(?:^|[/:])(?:gsk_|nvapi-|sk-|Users\/|home\/)/i.test(row.model)&&redactShareText(row.model)===row.model)clean.model=row.model;
+        if(codes.includes(row?.code))clean.code=row.code;
+        if(Number.isInteger(row?.provider_status)&&(row.provider_status===0||row.provider_status>=100&&row.provider_status<=599))clean.provider_status=row.provider_status;
+        for(const field of ['latency_ms','provider_timeout_ms']){
+          if(typeof row?.[field]==='number'&&Number.isFinite(row[field])&&row[field]>=0&&row[field]<=120000)clean[field]=row[field];
+        }
+        if(['none',...origins].includes(row?.timeout_origin))clean.timeout_origin=row.timeout_origin;
+        return clean;
+      });
+    }
     return diagnostic;
   }
 
@@ -3801,6 +3828,17 @@
       diagnostic.upstream_call_count!==undefined?'Gateway-rapporterte upstream-kall: '+diagnostic.upstream_call_count:'',
       diagnostic.failure_counts?'Kjente gateway-rapporterte rutefeil: '+Object.entries(diagnostic.failure_counts).map(([key,count])=>key+'='+count).join(', '):'',
       diagnostic.timeout_counts?'Gateway-rapporterte tidsgrenser: '+Object.entries(diagnostic.timeout_counts).map(([key,count])=>key+'='+count).join(', '):'',
+      diagnostic.retrieval_status?'Gateway-rapportert kildehenting: '+diagnostic.retrieval_status:'',
+      diagnostic.route_failures?'Gateway-rapporterte rutefeildetaljer (viser '+diagnostic.route_failures.length+' av '+diagnostic.route_failure_count+' oppføringer; rutestatus er ikke nødvendigvis observert upstream-HTTP): '+diagnostic.route_failures.map((row,index)=>[
+        'Oppføring '+(index+1),
+        'leverandør: '+(row.provider||'ukjent'),
+        'modell: '+(row.model||'ukjent'),
+        'kode: '+(row.code||'ukjent'),
+        'rutestatus: '+(row.provider_status||'ukjent'),
+        'latens: '+(row.latency_ms!==undefined?row.latency_ms+' ms':'ukjent'),
+        'tidsgrense: '+(row.provider_timeout_ms!==undefined?row.provider_timeout_ms+' ms':'ukjent'),
+        'tidsgrenseopprinnelse: '+(row.timeout_origin||'ukjent')
+      ].join(', ')).join(' | '):'',
       'Usignert diagnose, ikke kvalitetsbevis.'
     ].filter(Boolean).join(' · '):'';
     const hasDetails=Boolean(full||proof||intelligence||diagnosticText);
@@ -3816,7 +3854,7 @@
     const trustClass=trustLabel||routeEvidenceReceipt(full)?' p0-message-receipt-trust':'';
     const expanded=[
       full?'<div class="p0-receipt-full">'+safeText(full)+'</div>':'',
-      diagnosticText?'<div class="p0-receipt-failure-diagnostic">'+safeText(diagnosticText)+'</div>':'',
+      diagnosticText?'<div class="p0-receipt-failure-diagnostic p0-receipt-full">'+safeText(diagnosticText)+'</div>':'',
       renderConnectedIntelligenceLabel({role:'assistant',intelligenceLabel:intelligence}),
       renderProofLine({role:'assistant',proofLine:proof},trustShown)
     ].filter(Boolean).join('');
