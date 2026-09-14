@@ -340,17 +340,27 @@ try {
     const diagnosticCases = [
       { name: 'reported', status: 503, payload: {
         error: { code: 'chat_provider_unavailable', message: 'PRIVATE_DIAGNOSTIC_SENTINEL' }, upstream_call_count: 4,
-        mmir: { ordinary_chat: true, route_failures: [
-          { failure_class: 'upstream_rate_limit', provider_status: 429, provider: 'PRIVATE_DIAGNOSTIC_SENTINEL' },
-          { failure_class: 'upstream_rate_limit', model: 'PRIVATE_DIAGNOSTIC_SENTINEL' },
-          { failure_class: 'invalid_upstream_payload', timeout_origin: 'provider_configured_timeout', code: 'PRIVATE_DIAGNOSTIC_SENTINEL', url: 'https://private.invalid/PRIVATE_DIAGNOSTIC_SENTINEL' },
-          { failure_class: 'gateway_timeout', timeout_origin: 'mmir_shared_deadline', headers: { authorization: 'PRIVATE_DIAGNOSTIC_SENTINEL' } }
+        mmir: { ordinary_chat: true, source_grounding: { retrieval_status: 'retrieved', prompt: 'PRIVATE_DIAGNOSTIC_SENTINEL' }, route_failures: [
+          { provider: 'groq', model: 'openai/gpt-oss-120b', code: 'provider_rate_limited', failure_class: 'upstream_rate_limit', provider_status: 429, latency_ms: 83, timeout_origin: 'none', route_id: 'PRIVATE_DIAGNOSTIC_SENTINEL' },
+          { provider: 'google', model: 'gemini-2.5-flash-lite', code: 'provider_rate_limited', failure_class: 'upstream_rate_limit', provider_status: 429, latency_ms: 218, timeout_origin: 'none' },
+          { provider: 'mistral', model: 'mistral-small-latest', code: 'provider_route_failed', provider_status: 403, latency_ms: 151, failure_class: 'invalid_upstream_payload', timeout_origin: 'provider_configured_timeout', url: 'https://private.invalid/PRIVATE_DIAGNOSTIC_SENTINEL' },
+          { provider: 'nvidia', model: 'openai/gpt-oss-20b', code: 'provider_route_failed', provider_status: 0, latency_ms: 12050, provider_timeout_ms: 12000, failure_class: 'gateway_timeout', timeout_origin: 'mmir_shared_deadline', headers: { authorization: 'PRIVATE_DIAGNOSTIC_SENTINEL' } }
         ] }
-      }, expected: ['HTTP 503', 'Gateway-kode: chat_provider_unavailable', 'upstream-kall: 4', 'upstream_rate_limit=2', 'invalid_upstream_payload=1', 'gateway_timeout=1', 'provider_configured_timeout=1', 'mmir_shared_deadline=1'] },
+      }, expected: ['HTTP 503', 'Gateway-kode: chat_provider_unavailable', 'upstream-kall: 4', 'upstream_rate_limit=2', 'invalid_upstream_payload=1', 'gateway_timeout=1', 'provider_configured_timeout=1', 'mmir_shared_deadline=1',
+        'kildehenting: retrieved', 'viser 4 av 4 oppføringer', 'rutestatus er ikke nødvendigvis observert upstream-HTTP',
+        'leverandør: groq, modell: openai/gpt-oss-120b, kode: provider_rate_limited, rutestatus: 429, latens: 83 ms',
+        'leverandør: google, modell: gemini-2.5-flash-lite', 'leverandør: mistral, modell: mistral-small-latest, kode: provider_route_failed, rutestatus: 403, latens: 151 ms',
+        'leverandør: nvidia, modell: openai/gpt-oss-20b, kode: provider_route_failed, rutestatus: ukjent, latens: 12050 ms, tidsgrense: 12000 ms'], absent: ['rutestatus: 0'] },
       { name: 'local-only', status: 503, payload: {
         error: { code: 'chat_provider_unavailable' }, upstream_call_count: 0,
-        mmir: { ordinary_chat: true, route_failures: [{ failure_class: 'local_rate_limit', provider_status: 429 }] }
-      }, expected: ['HTTP 503', 'upstream-kall: 0', 'local_rate_limit=1'], absent: ['upstream_rate_limit', '429'] },
+        mmir: { ordinary_chat: true, source_grounding: { retrieval_status: 'not_attempted' }, route_failures: [{ provider: 'sambanova', failure_class: 'local_rate_limit', provider_status: 429, latency_ms: 0, provider_timeout_ms: 0 }] }
+      }, expected: ['HTTP 503', 'upstream-kall: 0', 'local_rate_limit=1', 'kildehenting: not_attempted', 'leverandør: sambanova, modell: ukjent, kode: ukjent, rutestatus: 429, latens: 0 ms, tidsgrense: 0 ms', 'rutestatus er ikke nødvendigvis observert upstream-HTTP'], absent: ['upstream_rate_limit'] },
+      { name: 'partial-list', status: 503, payload: {
+        error: { code: 'chat_provider_unavailable' }, upstream_call_count: 4,
+        mmir: { ordinary_chat: true, source_grounding: { retrieval_status: 'unavailable_or_unsupported' }, route_failures: Array.from({ length: 5 }, (_, index) => ({
+          provider: 'nvidia', model: index === 4 ? 'omitted-fifth-model' : 'openai/gpt-oss-20b', failure_class: 'gateway_timeout', timeout_origin: 'provider_configured_timeout'
+        })) }
+      }, expected: ['viser 4 av 5 oppføringer', 'gateway_timeout=5', 'provider_configured_timeout=5', 'kildehenting: unavailable_or_unsupported', 'latens: ukjent'], absent: ['omitted-fifth-model', 'Oppføring 5', 'latens: 0 ms'] },
       { name: 'missing-count', status: 429, payload: { error: { code: 'default_chat_rate_limited' } },
         expected: ['HTTP 429', 'Gateway-kode: default_chat_rate_limited'], absent: ['upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
       { name: 'malformed-json', status: 502, body: '{PRIVATE_DIAGNOSTIC_SENTINEL',
@@ -359,12 +369,15 @@ try {
       { name: 'unsafe-count', status: 503, payload: { upstream_call_count: Number.MAX_SAFE_INTEGER + 1 }, expected: ['HTTP 503'], absent: ['upstream-kall:'] },
       { name: 'malformed-fields', status: 504, payload: {
         status: 401, error: { code: 'PRIVATE_DIAGNOSTIC_SENTINEL' }, upstream_call_count: '0',
-        mmir: { ordinary_chat: true, route_failures: [null, 'PRIVATE_DIAGNOSTIC_SENTINEL', { failure_class: 'PRIVATE_DIAGNOSTIC_SENTINEL', timeout_origin: 'PRIVATE_DIAGNOSTIC_SENTINEL' }] }
-      }, expected: ['HTTP 504'], absent: ['401', 'Gateway-kode:', 'upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
+        mmir: { ordinary_chat: true, source_grounding: { retrieval_status: 'PRIVATE_DIAGNOSTIC_SENTINEL' }, route_failures: [null, 'PRIVATE_DIAGNOSTIC_SENTINEL',
+          { provider: 'nvidia', model: 'https://private.invalid/PRIVATE_DIAGNOSTIC_SENTINEL', code: 'PRIVATE_DIAGNOSTIC_SENTINEL', provider_status: '429', latency_ms: '0', provider_timeout_ms: '12000', failure_class: 'PRIVATE_DIAGNOSTIC_SENTINEL', timeout_origin: 'PRIVATE_DIAGNOSTIC_SENTINEL' },
+          { provider: 'groq', model: 'gsk_PRIVATE_DIAGNOSTIC_SENTINEL', provider_status: null, latency_ms: -1, provider_timeout_ms: 120001 }
+        ] }
+      }, expected: ['HTTP 504', 'modell: ukjent', 'rutestatus: ukjent', 'latens: ukjent', 'tidsgrense: ukjent'], absent: ['401', 'Gateway-kode:', 'upstream-kall:', 'rutefeil:', 'tidsgrenser:', 'kildehenting:', 'latens: 0 ms', 'rutestatus: 429', 'tidsgrense: 12000'] },
       { name: 'oversized', status: 503, payload: {
         error: { code: 'chat_provider_unavailable' }, upstream_call_count: -1,
         mmir: { ordinary_chat: true, route_failures: Array.from({ length: 17 }, () => ({ failure_class: 'gateway_timeout', timeout_origin: 'provider_configured_timeout' })) }
-      }, expected: ['HTTP 503'], absent: ['upstream-kall:', 'rutefeil:', 'tidsgrenser:'] },
+      }, expected: ['HTTP 503'], absent: ['upstream-kall:', 'rutefeil:', 'tidsgrenser:', 'rutefeildetaljer', 'Oppføring'] },
       { name: 'network', network: true, expected: [], absent: ['HTTP', 'Gateway-kode:', 'upstream-kall:'] }
     ];
     for (const fixture of diagnosticCases) {
@@ -383,7 +396,7 @@ try {
       assert(chatRequests.length === requestsBefore + 1, `${fixture.name}: failure diagnostics must not retry the actual POST`);
       const message = diagnosticPage.locator('.p0-message-assistant').last();
       const summary = await message.locator('summary').innerText();
-      assert(!/HTTP|chat_provider_unavailable|default_chat_rate_limited|upstream-kall|rutefeil|tidsgrenser/.test(summary), `${fixture.name}: diagnostics must stay out of the compact summary`);
+      assert(!/HTTP|chat_provider_unavailable|default_chat_rate_limited|upstream-kall|rutefeil|tidsgrenser|kildehenting|gpt-oss|gemini|mistral-small|Oppføring/.test(summary), `${fixture.name}: diagnostics must stay out of the compact summary`);
       assert(/Degradert/.test(summary) && !/KI-svar/.test(summary), `${fixture.name}: failure must remain degraded, not a generated answer`);
       const readDiagnostic = async () => message.locator('.p0-receipt-failure-diagnostic').count()
         .then(count => count ? message.locator('.p0-receipt-failure-diagnostic').textContent() : '');
@@ -399,6 +412,7 @@ try {
       }), fixture.name);
       assert(!/PRIVATE_DIAGNOSTIC_SENTINEL|private\.invalid/.test((await message.innerHTML()) + stored.history + stored.events), `${fixture.name}: raw payload fields must not reach DOM, history or telemetry`);
       const event = JSON.parse(stored.events || '[]').filter(item => item.event_name === 'chat_failed').at(-1);
+      assert(!/route_failures|retrieval_status|gpt-oss|gemini-2.5|mistral-small/.test(JSON.stringify(event)), `${fixture.name}: route and retrieval details must not expand telemetry`);
       const knownCode = ['chat_provider_unavailable', 'default_chat_rate_limited'].includes(fixture.payload?.error?.code) ? fixture.payload.error.code : '';
       assert(event?.metadata?.reason === (fixture.network ? 'api_unreachable' : knownCode || 'http_error'), `${fixture.name}: failure telemetry must preserve a known public reason, not invent api_unreachable`);
       if (fixture.name === 'reported') {
@@ -408,6 +422,10 @@ try {
           Object.assign(history.at(-1).failureDiagnostic || (history.at(-1).failureDiagnostic = {}), {
             raw: 'PRIVATE_DIAGNOSTIC_SENTINEL', payload: { secret: 'PRIVATE_DIAGNOSTIC_SENTINEL' }
           });
+          for (const row of history.at(-1).failureDiagnostic.route_failures || []) {
+            row.headers = { authorization: 'PRIVATE_DIAGNOSTIC_SENTINEL' };
+            row.route_id = 'PRIVATE_DIAGNOSTIC_SENTINEL';
+          }
           sessionStorage.setItem(key, JSON.stringify(history));
         });
         await diagnosticPage.reload({ waitUntil: 'networkidle' });
@@ -420,7 +438,8 @@ try {
         await diagnosticPage.waitForSelector('text=Et svar med ugyldig svarforfatter.');
         const cleanHistory = await diagnosticPage.evaluate(() => sessionStorage.getItem('mmir-p0-chat-history-qa-session-v1:mmir_qa_session-diagnostic-reported'));
         assert(!/PRIVATE_DIAGNOSTIC_SENTINEL/.test(cleanHistory), 'normal save must retain only sanitized rehydrated diagnostic fields');
-        assert(!/HTTP 503|chat_provider_unavailable|PRIVATE_DIAGNOSTIC_SENTINEL/.test(JSON.stringify(chatRequests.at(-1))), 'failure diagnostics must never enter the follow-up model payload');
+        assert(!/HTTP 503|chat_provider_unavailable|PRIVATE_DIAGNOSTIC_SENTINEL|route_failures|retrieval_status|gpt-oss/.test(JSON.stringify(chatRequests.at(-1))), 'failure diagnostics must never enter the follow-up model payload');
+        assert(await message.locator('.p0-receipt-failure-diagnostic').count() === 0, 'next healthy response must not inherit previous failure details');
       }
       await diagnosticPage.close();
     }
@@ -447,7 +466,12 @@ try {
         { id: 'truth-degraded', role: 'assistant', content: 'Fallback answer', label: 'Fallback Writer', receipt: 'Hosted fallback', answerState: 'degraded', aiGenerated: true, routeProvenance: 'hosted-fallback' },
         { id: 'truth-synthesis-fallback-failed', role: 'assistant', content: 'Existing generated answer reused after synthesis failed', label: 'Fallback Writer', receipt: 'Best answer synthesis · failed', answerState: 'degraded', aiGenerated: true, variant: 'compare', routeProvenance: 'synthesis-fallback' },
         { id: 'truth-pending-compare', role: 'assistant', content: 'Best Answer is still working.', label: 'Pending Writer', receipt: 'Best Answer · live progress', answerState: 'pending', aiGenerated: false, variant: 'compare', routeProvenance: 'ui-local' },
-        { id: 'truth-rehydrated', role: 'assistant', content: 'Rehydrated answer', label: 'History Writer', receipt: 'Hosted route', answerWriter: { type: 'llm', model_display_name: 'History Writer' }, routeProvenance: 'hosted-chat', hostedLineage: true }
+        { id: 'truth-rehydrated', role: 'assistant', content: 'Rehydrated answer', label: 'History Writer', receipt: 'Hosted route', answerWriter: { type: 'llm', model_display_name: 'History Writer' }, routeProvenance: 'hosted-chat', hostedLineage: true },
+        { id: 'truth-legacy-diagnostic', role: 'assistant', content: 'Old failed answer', receipt: 'Hosted failed', answerState: 'degraded', failureDiagnostic: { status: 503, upstream_call_count: 4, failure_counts: { gateway_timeout: 1 } } },
+        { id: 'truth-unsafe-diagnostic', role: 'assistant', content: 'Saved failed answer', receipt: 'Hosted failed', answerState: 'degraded', failureDiagnostic: {
+          status: 503, retrieval_status: 'PRIVATE_DIAGNOSTIC_SENTINEL', route_failure_count: 1,
+          route_failures: [{ provider: 'nvidia', model: 'nvapi-PRIVATE_DIAGNOSTIC_SENTINEL', code: 'PRIVATE_DIAGNOSTIC_SENTINEL', provider_status: '403', latency_ms: null, provider_timeout_ms: null, timeout_origin: 'PRIVATE_DIAGNOSTIC_SENTINEL', raw: 'PRIVATE_DIAGNOSTIC_SENTINEL' }]
+        } }
       ]
     });
     await matrixPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=answer-truth-matrix#mimir-chat-runtime`, { waitUntil: 'networkidle' });
@@ -475,6 +499,10 @@ try {
     assert(/Pågår/i.test(pendingCompareText), 'rehydrated compare progress must remain in progress');
     assert(!/\bLive\b/i.test(pendingCompareText), 'rehydrated compare progress must never become Live');
     assert(!/KI-svar · kan ta feil/i.test(pendingCompareText), 'rehydrated compare progress must not carry the generated-answer warning');
+    const legacyDiagnostic = await matrixPage.locator('[data-p0-message-id="truth-legacy-diagnostic"] .p0-receipt-failure-diagnostic').textContent();
+    assert(legacyDiagnostic.includes('upstream-kall: 4') && legacyDiagnostic.includes('gateway_timeout=1') && !/rutefeildetaljer|kildehenting/.test(legacyDiagnostic), 'old saved aggregate-only diagnostics must remain intact without invented rows or retrieval');
+    const unsafeDiagnostic = await matrixPage.locator('.p0-message[data-p0-message-id="truth-unsafe-diagnostic"]').innerHTML();
+    assert(!/PRIVATE_DIAGNOSTIC_SENTINEL|rutestatus: 403|latens: 0 ms|kildehenting:/.test(unsafeDiagnostic) && /modell: ukjent/.test(unsafeDiagnostic), 'saved route fields must pass the same secret, type and retrieval validation as actual API fields');
     await matrixPage.close();
 
     const calculatorPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
