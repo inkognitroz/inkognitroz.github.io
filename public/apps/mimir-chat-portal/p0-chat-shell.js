@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260909-calculator-attribution-v1';
+  const P0_RUNTIME_VERSION='20260914-calculator-effective-defaults-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -6802,10 +6802,9 @@
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.')+explicitGroundingInstruction(prompt);
     const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt);
     const original=String(displayPrompt||'').trim();
-    const noSavedInstructions=[ROLE_PROFILE_KEY,ANSWER_STYLE_KEY,FACT_GUARD_KEY]
-      .every(key=>readStorageString(key,'')==='');
+    // Effective defaults have the same meaning whether saved explicitly or untouched.
     if(options.ordinaryFirstTurn===true&&!directWriter&&model?.route==='hosted'&&!media&&
-      !privateModeActive()&&!writerContinuityState&&noSavedInstructions&&
+      !privateModeActive()&&!writerContinuityState&&
       normalizeRoleProfileId(state.roleProfileId)==='default'&&answerStyle()==='short'&&factGuardActive()&&
       original===String(prompt||'').trim()&&!explicitGroundingInstruction(original)&&
       /^[0-9+\-*/().×÷ \t]{1,160}$/.test(original)&&/[+\-*/×÷]/.test(original)&&

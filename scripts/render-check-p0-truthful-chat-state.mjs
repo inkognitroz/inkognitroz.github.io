@@ -67,6 +67,8 @@ async function waitForServer(url) {
 }
 
 async function installFixtures(page, { resetStorage = true, directWriter = false } = {}) {
+  // Never let an unexpected API route escape this mocked browser check.
+  await page.route('https://api.mmir.ai/**', route => route.abort());
   if (resetStorage) {
     await page.addInitScript(() => {
       localStorage.clear();
@@ -455,7 +457,14 @@ try {
       { name: 'grounding', prompt: '19 * 37, vis kilder', system: /explicitly asked for the answer basis/ },
       { name: 'role', preferences: { 'mmir-p0-role-profile-v1': 'coach' }, system: /friendly coach presence/ },
       { name: 'style', preferences: { 'mmir-p0-answer-style-v1': 'detailed' }, system: /Give a complete answer/ },
-      { name: 'explicit-default-style', preferences: { 'mmir-p0-answer-style-v1': 'short' } },
+      { name: 'explicit-default-style', preferences: { 'mmir-p0-answer-style-v1': 'short' }, calculator: true },
+      { name: 'explicit-default-role', preferences: { 'mmir-p0-role-profile-v1': 'default' }, calculator: true },
+      { name: 'explicit-default-fact-guard', preferences: { 'mmir-p0-fact-guard-v1': 'on' }, calculator: true },
+      { name: 'explicit-all-defaults', preferences: {
+        'mmir-p0-answer-style-v1': 'short',
+        'mmir-p0-role-profile-v1': 'default',
+        'mmir-p0-fact-guard-v1': 'on'
+      }, calculator: true },
       { name: 'fact-guard', preferences: { 'mmir-p0-fact-guard-v1': 'off' }, absentSystem: /If current facts are uncertain/ },
       { name: 'direct-model', directWriter: true, system: /language model selected by the user/ },
       { name: 'local-history', history: [
@@ -488,11 +497,24 @@ try {
       await controlPage.locator('#p0-input').fill(controlPrompt);
       assert(await controlPage.locator('#p0-send').isEnabled(), `${control.name}: Send must remain available`);
       await controlPage.locator('#p0-send').click();
-      await controlPage.waitForSelector('.p0-message-assistant .p0-receipt-model:text-is("Mistral Small")');
+      const expectedWriter = control.calculator ? 'Kalkulator' : 'Mistral Small';
+      try {
+        await controlPage.waitForFunction(() => {
+          const body = Array.from(document.querySelectorAll('.p0-message-assistant .p0-message-body')).at(-1);
+          return ['19 * 37 = 703', 'Et vanlig modellsvar.'].includes(body?.innerText.trim());
+        }, undefined, { timeout: 5000 });
+      } catch (error) {
+        const bodyTexts = await controlPage.locator('.p0-message-assistant .p0-message-body').allInnerTexts();
+        throw new Error(`${control.name}: completed fixture answer not observed; body texts=${JSON.stringify(bodyTexts)}`, { cause: error });
+      }
+      assert(await controlPage.locator('.p0-message-assistant').last().locator('.p0-receipt-model').innerText() === expectedWriter,
+        `${control.name}: completed answer must identify ${expectedWriter}`);
       const body = chatRequests.at(-1);
       assert(body.messages?.at(-1)?.content === controlPrompt, `${control.name}: real POST must preserve the complete user text`);
-      if (control.userOnly) {
-        assert(body.messages.length === 1 && body.messages[0].role === 'user', 'server rejection stays authoritative; the browser must not evaluate arithmetic');
+      if (control.calculator || control.userOnly) {
+        assert(body.messages.length === 1 && body.messages[0].role === 'user', `${control.name}: first arithmetic POST must be user-only; the gateway remains the calculator and fallback authority`);
+        assert(body.model === 'mmir-supergenius' && body.policy?.paid_routes_allowed === false && body.stream === false,
+          `${control.name}: canonical ordinary no-paid transport must remain unchanged`);
       } else {
         assert(body.messages?.[0]?.role === 'system', `${control.name}: real POST must preserve the generated system instruction`);
         if (control.system) assert(control.system.test(body.messages[0].content), `${control.name}: explicit instructions must remain in the system message`);
@@ -500,7 +522,16 @@ try {
       }
       if (control.directWriter) assert(body.model === 'mistral-small-latest', 'explicit direct-model selection must not be rewritten to Supergeni');
       const summary = await controlPage.locator('.p0-message-assistant').last().locator('summary').getAttribute('aria-label');
-      assert(/KI-svar · kan ta feil/i.test(summary) && !/Kalkulator|verktøysvar/i.test(summary), `${control.name}: only an actual calculator result may show tool attribution`);
+      if (control.calculator) {
+        const answer = await controlPage.locator('.p0-message-assistant').last().locator('.p0-message-body').innerText();
+        assert(answer.trim() === '19 * 37 = 703', `${control.name}: saved defaults must preserve the exact gateway calculator answer`);
+        assert(summary.startsWith('Kalkulator · verktøysvar') && !/\bLive\b|KI-svar|verifisert|signert/i.test(summary),
+          `${control.name}: actual calculator metadata must retain tool attribution without quality claims`);
+        const storedPreferences = await controlPage.evaluate(keys => Object.fromEntries(keys.map(key => [key, localStorage.getItem(key)])), Object.keys(control.preferences));
+        assert(JSON.stringify(storedPreferences) === JSON.stringify(control.preferences), `${control.name}: calculator transport must not clear or rewrite saved preferences`);
+      } else {
+        assert(/KI-svar · kan ta feil/i.test(summary) && !/Kalkulator|verktøysvar/i.test(summary), `${control.name}: only an actual calculator result may show tool attribution`);
+      }
       await controlPage.close();
     }
   } finally {
