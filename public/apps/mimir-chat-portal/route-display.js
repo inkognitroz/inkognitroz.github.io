@@ -63,8 +63,28 @@
     if(!raw)return fallback;
     if(nodeType==='browser'||/browser node|browser model|browser webgpu|webgpu/i.test(raw))return 'Browser Node';
     if(nodeType==='local'||nodeType==='local-adapter'||/127\.0\.0\.1|localhost|private local|local node|local adapter|ollama|lm studio|llama\.cpp|vllm/i.test(raw))return 'MMIR Local Node';
-    if(/api\.mmir\.ai|hosted/i.test(raw))return 'api.mmir.ai free route';
+    if(/api\.mmir\.ai|hosted/i.test(raw))return 'api.mmir.ai free route'+servedModelSuffix(receipt);
     return displayLabel(raw,fallback);
+  }
+
+  // Which model actually answered, and whether it is the one that was asked for.
+  //
+  // The receipt carries both sides already -- `requested_model_id` is what the
+  // caller named and `model_id` is what replied -- so the comparison needs no
+  // knowledge of the picker's state. Before this, every hosted answer collapsed
+  // to "api.mmir.ai free route" and the model identity was discarded, which
+  // made a substitution invisible: ask for Mistral, read an answer from Groq,
+  // and nothing on screen said so.
+  //
+  // This does not change routing. It states what routing did.
+  function servedModelSuffix(receipt){
+    const served=text(receipt?.model_display_name||receipt?.model_id||'');
+    if(!served)return '';
+    const requested=text(receipt?.requested_model_alias||receipt?.requested_model_id||'');
+    const substituted=Boolean(requested)&&requested!==served
+      &&requested!==text(receipt?.model_id||'')
+      &&!/^supergeni/i.test(requested);
+    return ' · '+clip(served)+(substituted?' (du valgte '+clip(requested)+')':'');
   }
 
   function receiptTrustLabel(receipt){
