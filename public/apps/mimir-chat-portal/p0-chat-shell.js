@@ -3122,14 +3122,24 @@
           selectable
         };
       });
+    // Every executable route is offered. The previous .slice(0,24) silently
+    // dropped 2 of the 26 models that /v1/models reports as executable on
+    // 2026-09-15 -- a cap that shrinks as the fleet grows, and that gave no
+    // sign it had removed anything. A caller who cannot see a model cannot
+    // choose it, and choosing between models is the point of this list.
     const active=normalized
-      .filter(model=>model.executable!==false&&model.selectable!==false&&!model.candidate)
-      .slice(0,24);
-    const future=normalized
-      .filter(model=>model.candidate||model.executable===false||model.selectable===false)
-      .slice(0,4);
+      .filter(model=>model.executable!==false&&model.selectable!==false&&!model.candidate);
+    // Non-executable routes stay bounded: they are shown so the fleet is
+    // visible, not so they can be picked. The count is carried alongside so
+    // the truncation is stated rather than silent.
+    const futureAll=normalized
+      .filter(model=>model.candidate||model.executable===false||model.selectable===false);
+    const future=futureAll.slice(0,4);
+    hostedModelTruncation={shown:future.length,total:futureAll.length};
     return active.concat(future);
   }
+
+  let hostedModelTruncation={shown:0,total:0};
 
   function hostedModelsPath(){
     const host=String(window.location?.hostname||'').toLowerCase();
