@@ -1,8 +1,9 @@
 (function(){
-  const version='20260909-calculator-attribution-v1';
+  const version='20260916-backend-url-switch-v1';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
+  const LOOPBACK_HOSTNAMES=['127.0.0.1','localhost','[::1]'];
   const CHAT_PATH='/v1/chat/completions';
   const ROUTE_SCORE_PATH='/routing/score';
   const TOKEN_KEY='mmir-p0-local-token';
@@ -34,12 +35,49 @@
     'signed_receipt_schema_version'
   ]);
 
-  function apiUrlForCurrentHost(){
+  function hostDefaultApiUrl(){
     try{
       return String(location.hostname||'').toLowerCase()==='staging.mmir.ai'?STAGING_API_URL:PROD_API_URL;
     }catch(error){
       return PROD_API_URL;
     }
+  }
+
+  // Backend-layer switch (ADR 0013). Off by default: with no flag set this resolves to
+  // exactly the host default above, so nothing changes for users until someone sets one.
+  // Only an origin is accepted, and only https (or loopback http for local development),
+  // so a flag can never point the public shell at a credentialed or downgraded URL.
+  function normalizedBackendUrl(value){
+    if(typeof value!=='string')return '';
+    const raw=value.trim();
+    if(!raw)return '';
+    let parsed=null;
+    try{parsed=new URL(raw);}catch(error){return '';}
+    if(parsed.username||parsed.password)return '';
+    if(parsed.search||parsed.hash)return '';
+    if(parsed.pathname&&parsed.pathname!=='/')return '';
+    if(parsed.protocol==='http:'&&!LOOPBACK_HOSTNAMES.includes(parsed.hostname))return '';
+    if(parsed.protocol!=='https:'&&parsed.protocol!=='http:')return '';
+    return parsed.origin;
+  }
+
+  function backendUrlFlag(){
+    let global='';
+    try{global=normalizedBackendUrl(window.MMIR_BACKEND_URL);}catch(error){global='';}
+    if(global)return {url:global,source:'flag:global'};
+    let brand='';
+    try{brand=normalizedBackendUrl(window.MimirBrandConfig?.backend_url);}catch(error){brand='';}
+    if(brand)return {url:brand,source:'flag:brand'};
+    return {url:'',source:'host-default'};
+  }
+
+  function resolvedApiUrl(){
+    const flag=backendUrlFlag();
+    return flag.url?flag:{url:hostDefaultApiUrl(),source:'host-default'};
+  }
+
+  function apiUrlForCurrentHost(){
+    return resolvedApiUrl().url;
   }
 
   function apiHostLabel(url){
@@ -705,10 +743,12 @@
   }
 
   function config(){
-    const apiUrl=apiUrlForCurrentHost();
+    const resolved=resolvedApiUrl();
+    const apiUrl=resolved.url;
     return {
       apiUrl,
       apiLabel:apiHostLabel(apiUrl),
+      apiUrlSource:resolved.source,
       localUrl:LOCAL_URL,
       chatPath:CHAT_PATH,
       routeScorePath:ROUTE_SCORE_PATH
@@ -725,6 +765,10 @@
     TOKEN_KEY,
     config,
     apiUrlForCurrentHost,
+    hostDefaultApiUrl,
+    resolvedApiUrl,
+    normalizedBackendUrl,
+    backendUrlFlag,
     apiHostLabel,
     fetchOptions,
     fetchJson,
@@ -761,6 +805,7 @@
       no_paid_routes_started:true,
       provider_secrets_in_browser:false,
       request_truth_guard:true,
+      backend_url_switch_available:true,
       system_memory_truth_guard:true,
       factual_verification_claimed:false
     }

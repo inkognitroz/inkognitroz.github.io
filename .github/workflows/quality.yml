@@ -74,6 +74,7 @@ jobs:
           node scripts/smoke-check-release-0.2-catalogs.js
           node scripts/smoke-check-p0-route-tags.js
           node scripts/smoke-check-p0-route-adapters-boundary.js
+          node scripts/smoke-check-p0-backend-url-switch.js
           node scripts/smoke-check-p0-owner-intake-command.js
           node scripts/smoke-check-p0-provider-candidate-visibility.js
 
