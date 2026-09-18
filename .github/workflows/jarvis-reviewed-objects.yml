@@ -1,0 +1,53 @@
+name: Prepare reviewed Jarvis source objects
+on:
+  push:
+    branches: [fix/jarvis-voice-reliability-20260918]
+    paths: [.github/workflows/jarvis-reviewed-objects.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'inkognitroz/inkognitroz.github.io' && github.ref == 'refs/heads/fix/jarvis-voice-reliability-20260918'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Verify reviewed patch and prepare unreferenced blobs only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,subprocess,urllib.request
+          patch=pathlib.Path('.github/jarvis-review/core.patch')
+          assert hashlib.sha256(patch.read_bytes()).hexdigest()=='3b4bc24922e400ea1e92634eedcad9bd9eefe0889e43c7a4b6d185f06163b6ad','Patch differs from reviewed input'
+          subprocess.run(['git','apply','--check',str(patch)],check=True)
+          subprocess.run(['git','apply',str(patch)],check=True)
+          expected={
+            'public/apps/mimir-chat-portal/asset-versions.json':'4dbc74efedcf2c848719c2c29976c27454acea02995af8e8d7d758a16d342127',
+            'public/apps/mimir-chat-portal/p0-chat-shell.js':'2bf9f962578539e99a244f326ed9eecb93ac407ac22d21945aa543d2bd2334a8',
+            'public/apps/mimir-chat-portal/p0-release-nav.js':'42a5463ef9202b5f8a3a3f351b24b703485f905f450b78f577ea93ebf6afddec',
+            'public/apps/mimir-chat-portal/p0-route-adapters.js':'18c7be146237ba9b2365f07c9a640511cde04c8a4d85397f2813b74baf1e8b1a',
+            'public/mmir.html':'09c58726f7be9b817c0e10e4343c7b3898c752fa19f9c15fe2816d2b99077d4e'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed==set(expected),'Unexpected path changed'
+          for name,digest in expected.items():
+            assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()==digest,name
+            if name.endswith('.js'):subprocess.run(['node','--check',name],check=True)
+          results=[]
+          for name,digest in expected.items():
+            request=urllib.request.Request('https://api.github.com/repos/inkognitroz/inkognitroz.github.io/git/blobs',data=json.dumps({'content':pathlib.Path(name).read_text(),'encoding':'utf-8'}).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},method='POST')
+            with urllib.request.urlopen(request,timeout=30) as response:created=json.load(response)
+            results.append({'path':name,'sha':created['sha'],'sha256':digest})
+          pathlib.Path('/tmp/jarvis-reviewed-blobs.json').write_text(json.dumps(results,indent=2))
+          print(json.dumps(results,indent=2))
+          # No commit, ref update, merge, deployment, personal key or private runner.
+          # This temporary workflow is removed from the final review tree; the
+          # normal public boundary and required read-only quality gates remain.
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-reviewed-blob-identities
+          path: /tmp/jarvis-reviewed-blobs.json
+          retention-days: 1
