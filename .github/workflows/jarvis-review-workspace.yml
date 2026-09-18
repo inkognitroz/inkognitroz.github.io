@@ -1,0 +1,23 @@
+name: Jarvis review workspace
+on:
+  push:
+    branches: [fix/jarvis-voice-reliability-20260918]
+    paths: [.github/workflows/jarvis-review-workspace.yml]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    if: github.repository == 'inkognitroz/inkognitroz.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Export tracked source only
+        run: git archive --format=tar HEAD > /tmp/jarvis-review-source.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-review-source
+          path: /tmp/jarvis-review-source.tar
+          retention-days: 1
