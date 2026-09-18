@@ -20,21 +20,23 @@ jobs:
         run: |
           python3 - <<'PY'
           import hashlib,json,os,pathlib,subprocess,urllib.request
-          patch=pathlib.Path('.github/jarvis-review/core.patch')
-          assert hashlib.sha256(patch.read_bytes()).hexdigest()=='3b4bc24922e400ea1e92634eedcad9bd9eefe0889e43c7a4b6d185f06163b6ad','Patch differs from reviewed input'
+          patch=pathlib.Path('.github/jarvis-review/test-adapters.patch')
+          assert hashlib.sha256(patch.read_bytes()).hexdigest()=='e594519c710804188b30dd1f45a9672b870c1cfc61034de2539d637599d5b0f5','Patch differs from reviewed input'
           subprocess.run(['git','apply','--check',str(patch)],check=True)
           subprocess.run(['git','apply',str(patch)],check=True)
           expected={
-            'public/apps/mimir-chat-portal/asset-versions.json':'4dbc74efedcf2c848719c2c29976c27454acea02995af8e8d7d758a16d342127',
-            'public/apps/mimir-chat-portal/p0-chat-shell.js':'2bf9f962578539e99a244f326ed9eecb93ac407ac22d21945aa543d2bd2334a8',
-            'public/apps/mimir-chat-portal/p0-release-nav.js':'42a5463ef9202b5f8a3a3f351b24b703485f905f450b78f577ea93ebf6afddec',
-            'public/apps/mimir-chat-portal/p0-route-adapters.js':'18c7be146237ba9b2365f07c9a640511cde04c8a4d85397f2813b74baf1e8b1a',
-            'public/mmir.html':'09c58726f7be9b817c0e10e4343c7b3898c752fa19f9c15fe2816d2b99077d4e'}
+            'scripts/smoke-check-p0-api-offline-recovery.js':'4563655dd3fe399029fcce96692c820bc5b46eb5790a7559e5decb0f2b402980',
+            'scripts/smoke-check-p0-compare-best-answer-ux.js':'ed814a102653ab6997876926a2d2bf73579ae8faf2f62cdc2f6339499bbca0f4',
+            'scripts/smoke-check-p0-route-adapters-boundary.js':'c3377de5951a73298981f207ca5bc9291b160e18b9760c53c6a2866beb49bce7',
+            'scripts/smoke-check-p0-route-tags.js':'71d4777934a8ce9cc9010abb232e7f4a728a84b1657d0c73478293539cc29d5b',
+            'scripts/smoke-check-release-0.2-catalogs.js':'fb472eb214e3d6adf839c95c9318f5cc09493794c50eba6e660456dcf6567e1b',
+            'scripts/render-check-p0-jarvis-full-shell.mjs':'0a401a640c23ad0d907ce28e88c41a7c08155d2d22c78d365f86923de86f8fe7',
+            'package.json':'99027155e62d32d5b32ca2ce9f9df161b2d6a868cd6f141d7d7b13852838bc2b'}
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed==set(expected),'Unexpected path changed'
           for name,digest in expected.items():
             assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()==digest,name
-            if name.endswith('.js'):subprocess.run(['node','--check',name],check=True)
+            if name.endswith(('.js','.mjs')):subprocess.run(['node','--check',name],check=True)
           results=[]
           for name,digest in expected.items():
             request=urllib.request.Request('https://api.github.com/repos/inkognitroz/inkognitroz.github.io/git/blobs',data=json.dumps({'content':pathlib.Path(name).read_text(),'encoding':'utf-8'}).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},method='POST')
@@ -43,8 +45,7 @@ jobs:
           pathlib.Path('/tmp/jarvis-reviewed-blobs.json').write_text(json.dumps(results,indent=2))
           print(json.dumps(results,indent=2))
           # No commit, ref update, merge, deployment, personal key or private runner.
-          # This temporary workflow is removed from the final review tree; the
-          # normal public boundary and required read-only quality gates remain.
+          # Removed from the final review tree; required read-only gates remain.
           PY
       - uses: actions/upload-artifact@v4
         with:
