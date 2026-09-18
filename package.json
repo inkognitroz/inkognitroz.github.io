@@ -13,7 +13,8 @@
     "check:iphone-webkit": "node scripts/render-check-p0-iphone-webkit.mjs",
     "check:generated-image-render": "node scripts/render-check-p0-generated-image-card.mjs",
     "smoke:staging-council-live": "node scripts/smoke-check-staging-council-live.mjs",
-    "serve": "node scripts/serve-public.mjs 4173"
+    "serve": "node scripts/serve-public.mjs 4173",
+    "check:jarvis": "node --test scripts/test-jarvis-contracts.mjs && node scripts/render-check-p0-jarvis-skin.mjs && node scripts/render-check-p0-jarvis-full-shell.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0"

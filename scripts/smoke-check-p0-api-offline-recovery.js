@@ -37,7 +37,7 @@ function requireOrdered(source, needles, message) {
 
 const sendFlow = sliceBetween(
   runtime,
-  'async function sendMessage(){',
+  'async function sendMessageImpl(requestId){',
   'async function compareLiveRoutes(',
   'sendMessage flow'
 );
@@ -50,23 +50,23 @@ const retryFlow = sliceBetween(
 
 requireIncludes(
   sendFlow,
-  "const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,receipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage,answerState:'pending',aiGenerated:false});",
+  "const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,pendingReceipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage,answerState:'pending',aiGenerated:false});",
   'Hosted chat must retain the original prompt on the assistant message before the request starts.'
 );
 requireIncludes(
   sendFlow,
-  "updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});",
+  "updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),failureDiagnostic,answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});",
   'Hosted API failure must replace pending copy with a safe visible error that points to Retry.'
 );
 requireIncludes(
   sendFlow,
-  "captureInteraction('chat_failed',{reason:'api_unreachable',active_model_id:model?.id||''});",
+  "captureInteraction('chat_failed',{reason:failureDiagnostic?.code||(failureDiagnostic?'http_error':'api_unreachable'),active_model_id:model?.id||''",
   'Hosted API failure must emit a sanitized api_unreachable signal.'
 );
 requireOrdered(
   sendFlow,
   [
-    "captureInteraction('chat_failed',{reason:'api_unreachable'",
+    "captureInteraction('chat_failed',{reason:failureDiagnostic?.code",
     '}finally{',
     'stopSlowNotice();',
     'finishResponse();',

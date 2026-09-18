@@ -23,7 +23,10 @@ function functionBody(source, name) {
   const startNeedle = `function ${name}(`;
   const start = source.indexOf(startNeedle);
   if (start < 0) fail(`Could not find ${name}`);
-  const brace = source.indexOf('{', start);
+  // Skip default argument objects such as options={} before the body.
+  const signatureEnd = source.indexOf('){', start);
+  if (signatureEnd < 0) fail(`Could not find compact signature end for ${name}`);
+  const brace = signatureEnd + 1;
   let depth = 0;
   for (let index = brace; index < source.length; index += 1) {
     const char = source[index];

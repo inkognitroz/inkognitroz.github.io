@@ -380,11 +380,12 @@ testApi.state.models=singletonModels;
 
 // Exercise the actual decision above; retain the real sendMessage dispatch
 // boundaries below. Transport/fresh status verification is covered separately.
-const sendStart=runtime.indexOf('  async function sendMessage(){');
+const sendStart=runtime.indexOf('  async function sendMessageImpl(requestId){');
+assertIncludes(runtime,'await sendMessageImpl(requestId)','Submission wrapper delegates to the tested guarded flow');
 const sendEnd=runtime.indexOf('  async function compareLiveRoutes(',sendStart);
 assertEqual(sendStart>=0&&sendEnd>sendStart,true,'Dispatch guard assertions must inspect the actual sendMessage function');
 const sendFlow=runtime.slice(sendStart,sendEnd);
-assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
+assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;\n      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
 const ordinarySelection=sendFlow.indexOf('const ordinaryBasicChat=Boolean(');
 const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){");
 const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory})');

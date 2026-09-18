@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260914-public-failure-route-details-v1';
+  const P0_RUNTIME_VERSION='20260918-jarvis-v3';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -394,6 +394,11 @@
   let hostedReadinessRefreshGeneration=0;
   let menuReturnFocusElement=null;
   let stopRequested=false;
+  let presentationSubmitting=false;
+  const presentation=window.MmirP0ConversationEvents?.create(()=>({
+    privacyMode:privacyMode(),busy:state.busy,route:activeModel()
+  }));
+  if(presentation)window.MmirP0Conversation=Object.freeze({...presentation.reader,stop:stopActiveResponse});
   if(privateModeActive())clearWriterContinuityState();
   const SLOW_RESPONSE_NOTICE_MS=12000;
   const TOOLBAR_TOOL_DEFINITIONS=[
@@ -2001,6 +2006,7 @@
   }
 
   function recordTokenUsage(payload,source=''){
+    presentation?.payload(payload);
     const tokens=responseTokenUsage(payload);
     state.tokenCounter.last=tokens;
     state.tokenCounter.source=String(source||'').slice(0,40);
@@ -3096,6 +3102,9 @@
           id,
           label:routeDisplayName(model),
           route:'hosted',
+          // Streaming is opt-in only when the same gateway advertises support,
+          // including its final writer-continuity envelope. Unknown stays JSON.
+          streamingSupported:model.capabilities?.streaming===true&&model.capabilities?.streaming_writer_continuity===true,
           detail,
           tags,
           score:candidate?25:(externalUntrustedFree?86:(model.recommended?100:(90-index))),
@@ -5147,6 +5156,7 @@
   function setPrivacyMode(mode){
     state.privacyMode=normalizePrivacyMode(mode);
     writePrivacyMode(state.privacyMode);
+    presentation?.policyChanged();
     if(privateModeActive())clearWriterContinuityState();
     if(superPrivateModeActive())clearPersistedHistory();
     renderToolbar();
@@ -5398,6 +5408,7 @@
   }
 
   function freshStart(){
+    stopActiveResponse(); presentation?.reset();
     const input=document.getElementById('p0-input');
     state.fastAnswerOnce=false;
     state.messages=[];
@@ -6619,6 +6630,7 @@
       createdAt:new Date().toISOString()
     });
     state.messages.push(message);
+    presentation?.attach(message);
     state.messages=state.messages.slice(-MAX_HISTORY);
     saveHistory();
     renderTranscript();
@@ -6630,6 +6642,7 @@
   }
 
   function updateMessage(message,content,updates={}){
+    if(!state.messages.includes(message))return; // Discard late updates after a conversation reset.
     message.content=String(content||'');
     Object.assign(message,updates);
     Object.assign(message,normalizeAnswerTruth(message));
@@ -6658,6 +6671,7 @@
   }
 
   function clearChat(){
+    stopActiveResponse(); presentation?.reset();
     state.messages=[];
     clearWriterContinuityState();
     lastDemoTranscriptHash='';
@@ -6746,12 +6760,14 @@
     noteAnswerProof(null);
     activeChatController=new AbortController();
     state.busy=true;
+    presentation?.begin();
     updateSendControl();
     return activeChatController.signal;
   }
 
   function finishResponse(){
     state.busy=false;
+    presentation?.complete(messageById(presentation.messageId()),stopRequested);
     activeChatController=null;
     updateSendControl();
     const route=document.getElementById('p0-route');
@@ -6759,6 +6775,7 @@
   }
 
   function stopActiveResponse(){
+    presentation?.cancel();
     if(!state.busy||!activeChatController)return;
     stopRequested=true;
     activeChatController.abort();
@@ -7038,10 +7055,14 @@
     const continuityApplied=continuityPlan.applied===true;
     const requestContinuityReset=continuityEnabled&&continuityPlan.reason==='continuity-payload-limit-exceeded';
     if(continuityEnabled&&writerContinuityState&&!continuityApplied)clearWriterContinuityState();
+    const presentationId=window.MmirP0Conversation?.snapshot().turnId;
+    const streaming=Boolean(model.streamingSupported&&window.MmirJarvisSkin?.wantsStreaming?.());
+    if(streaming)payload={...payload,stream:true};
     const response=await fetchJson(API_URL+CHAT_PATH,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
+      onDelta:streaming?(delta)=>{if(presentation?.isCurrent(presentationId))presentation.delta(delta);}:undefined,
       timeoutMs:45000,
       signal
     });
@@ -7995,12 +8016,27 @@
   }
 
   async function sendMessage(){
+    if(state.busy){stopActiveResponse();return;}
+    if(presentationSubmitting){status('Forrige forespørsel behandles. Utkastet er beholdt.','loading');return;}
+    if(!String(document.getElementById('p0-input')?.value||'').trim())return;
+    presentationSubmitting=true;
+    const requestId=presentation?.request();
+    try{return await sendMessageImpl(requestId);}
+    finally{
+      presentationSubmitting=false;
+      presentation?.endRequest(requestId,document.getElementById('p0-status')?.textContent||'');
+    }
+  }
+
+  async function sendMessageImpl(requestId){
     if(state.busy){
       stopActiveResponse();
       return;
     }
     const input=document.getElementById('p0-input');
     const prompt=String(input?.value||'').trim();
+    const originalDraft=input?.value;
+    const draftPreserved=()=>{if(input?.value===originalDraft)return true;status('Utkastet ble endret under kontrollen. Ingenting nytt er sendt.','ready');return false;};
     if(!prompt){
       input?.focus();
       return;
@@ -8008,6 +8044,7 @@
     if(await handleOwnerPingCommand(prompt,input))return;
     if(await handleOwnerSuggestionCommand(prompt,input))return;
     if(await handleFeedbackMentionCommand(prompt,input))return;
+    if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
     const frictionSignal=promptFrictionSignal(prompt);
     if(frictionSignal){
@@ -8046,7 +8083,8 @@
         input?.focus();
         return;
       }
-      compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
+      if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
+      await compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
       return;
     }
     if(explicit?.mode==='missing-local'){
@@ -8088,7 +8126,8 @@
         input?.focus();
         return;
       }
-      compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
+      if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
+      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
       return;
     }
     const pendingMedia=state.pendingMedia;
@@ -8112,6 +8151,7 @@
       input?.focus();
       return;
     }
+    if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
     const directHostedLineage=Boolean(model?.route==='hosted'&&!pendingMedia);
     const routeProvenance=directHostedLineage
       ? 'hosted-chat'
@@ -8126,6 +8166,7 @@
       status((model?.label||'Leverandørkandidat')+' er synlig, men ikke live-verifisert for chat.','error');
       routeStatus('Konfigurert/fremtidig rute · produksjonsbevis kreves','error');
       captureInteraction('chat_blocked',{reason:'future_route',selected_model_id:model?.id||''});
+      finishResponse();
       input?.focus();
       return;
     }
