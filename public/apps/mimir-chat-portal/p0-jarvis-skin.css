@@ -1,0 +1,41 @@
+/* Scoped presentation only. Keep original transcript, composer, route receipts
+   and privacy/release warnings visible. No third-party fonts or media. */
+#mmir-p0-app[data-mmir-skin="jarvis"] { --jarvis-ink:#c9f6ff; --jarvis-accent:#54d9f6; background:#07121e; color:var(--jarvis-ink); }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-main-shell { background:radial-gradient(ellipse at 50% 20%,#103445 0,transparent 62%),#07121e; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-chat { display:flex; flex-direction:column; min-height:0; }
+#mmir-p0-app[data-mmir-skin="jarvis"] #p0-transcript { flex:1 1 auto; min-height:100px; overflow-y:auto; }
+#mmir-p0-app .mmir-jarvis-panel[hidden] { display:none !important; }
+#mmir-p0-app .mmir-jarvis-panel { box-sizing:border-box; display:flex; align-items:center; gap:24px; flex:0 0 auto; max-width:950px; width:100%; margin:0 auto; padding:20px 24px; color:#dbf8ff; border-bottom:1px solid #366372; }
+.mmir-jarvis-info { min-width:0; flex:1; }
+.mmir-jarvis-kicker { font:600 11px/1.5 ui-monospace,monospace; letter-spacing:.25em; margin:0 0 4px; color:#9fdfec; }
+.mmir-jarvis-info h2 { font-size:clamp(17px,2vw,24px); margin:0; line-height:1.35; }
+.mmir-jarvis-status { font-size:13px; line-height:1.5; margin:8px 0; min-height:20px; }
+.mmir-jarvis-actions { display:flex; flex-wrap:wrap; gap:8px; }
+#mmir-p0-app .mmir-jarvis-actions button { min-height:44px; border:1px solid #5ea7bc; border-radius:8px; background:#0f2b3b; color:#e9fcff; padding:9px 12px; cursor:pointer; font:inherit; font-size:13px; touch-action:manipulation; }
+#mmir-p0-app .mmir-jarvis-actions button:hover { background:#184255; }
+#mmir-p0-app .mmir-jarvis-actions button:focus-visible,#mmir-p0-app .mmir-jarvis-consent input:focus-visible { outline:3px solid #c1f4ff; outline-offset:3px; }
+.mmir-jarvis-consent { display:flex; align-items:flex-start; gap:8px; font-size:11px; line-height:1.45; margin-top:9px; max-width:640px; color:#bcdce5; }
+.mmir-jarvis-consent input { flex:0 0 auto; width:18px; height:18px; margin:0; accent-color:#54d9f6; }
+.mmir-jarvis-reactor { position:relative; flex:0 0 116px; width:116px; height:116px; border:2px solid #4b9daf; border-radius:50%; box-shadow:0 0 25px #48d8f62b,inset 0 0 26px #48d8f628; }
+.mmir-jarvis-reactor::before,.mmir-jarvis-reactor::after { content:''; position:absolute; border-radius:50%; inset:10px; border:6px dashed #71d3e7; opacity:.8; }
+.mmir-jarvis-reactor::after { inset:27px; border:1px solid #92e9f8; }
+.mmir-jarvis-reactor span { position:absolute; inset:38px; background:#d8ffff; clip-path:polygon(0 10%,100% 10%,50% 100%); box-shadow:0 0 20px #5cddf7; }
+.mmir-jarvis-panel[data-phase="listening"] .mmir-jarvis-reactor { animation:jarvis-breathe 1.4s ease-in-out infinite; }
+.mmir-jarvis-panel[data-phase="thinking"] .mmir-jarvis-reactor::before { animation:jarvis-spin 7s linear infinite; }
+.mmir-jarvis-panel[data-phase="speaking"] .mmir-jarvis-reactor { animation:jarvis-breathe .7s ease-in-out infinite alternate; }
+@keyframes jarvis-breathe { 50% { box-shadow:0 0 34px #48d8f66b,inset 0 0 26px #48d8f659; } }
+@keyframes jarvis-spin { to { transform:rotate(360deg); } }
+@media(max-width:600px) { #mmir-p0-app .mmir-jarvis-panel { padding:12px; gap:12px; align-items:flex-start; } .mmir-jarvis-reactor { flex-basis:54px; width:54px; height:54px; } .mmir-jarvis-reactor::before { inset:5px; border-width:3px; } .mmir-jarvis-reactor::after { inset:13px; } .mmir-jarvis-reactor span { inset:18px; } .mmir-jarvis-info h2 { font-size:16px; } .mmir-jarvis-actions { gap:5px; } #mmir-p0-app .mmir-jarvis-actions button { padding:7px 9px; font-size:12px; } }
+@media(max-height:680px) { #mmir-p0-app .mmir-jarvis-panel { padding-block:8px; } .mmir-jarvis-reactor { display:none; } .mmir-jarvis-info h2,.mmir-jarvis-kicker { display:none; } }
+@media(prefers-reduced-motion:reduce) { .mmir-jarvis-reactor,.mmir-jarvis-reactor::before { animation:none !important; } }
+
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-topbar { background:#0a2130; color:#d4f3fd; border-bottom:1px solid #315260; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-brand,
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-topbar-truth,
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-release-nav a:not([aria-current]),
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-release-tag,
+#mmir-p0-app[data-mmir-skin="jarvis"] #mmir-jarvis-switch-status { color:#bcdce5; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-composer-wrap { background:#0a2130; color:#d4f3fd; border-top:1px solid #315260; }
+#mmir-p0-app[data-mmir-skin="jarvis"] #p0-input { background:#0c2938; color:#e5faff; border-color:#73aabd; }
+#mmir-p0-app[data-mmir-skin="jarvis"] #p0-input::placeholder { color:#b4ccd6; }
+#mmir-p0-app[data-mmir-skin="jarvis"] #p0-route { color:#b4ccd6; }
