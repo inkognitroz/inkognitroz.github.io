@@ -5,7 +5,7 @@
   'use strict';
   if (w.MmirJarvisSkin) return;
   const source = d.currentScript && d.currentScript.src;
-  const VERSION = '20260918-jarvis-v1';
+  const VERSION = '20260918-jarvis-v2';
   let app, panel, message, talk, consent, autoListen, recognition = null;
   let enabled = false, session = false, generation = 0, speaking = false;
   let pending = null, timer = null, speechTimer = null, observer = null;
@@ -48,7 +48,8 @@
   }
   function ordinaryMicIdle() {
     const state = byId('p0-mic')?.dataset.voiceState;
-    return ['available', 'unavailable', 'error', 'denied', 'blocked', 'transcribed'].includes(state);
+    return w.MmirJarvisCoreVoice?.isIdle() === true &&
+      ['available', 'unavailable', 'error', 'denied', 'blocked', 'transcribed'].includes(state);
   }
   function prepareTurn() {
     w.clearTimeout(turnDeadline);

@@ -39,3 +39,11 @@
 #mmir-p0-app[data-mmir-skin="jarvis"] #p0-input { background:#0c2938; color:#e5faff; border-color:#73aabd; }
 #mmir-p0-app[data-mmir-skin="jarvis"] #p0-input::placeholder { color:#b4ccd6; }
 #mmir-p0-app[data-mmir-skin="jarvis"] #p0-route { color:#b4ccd6; }
+
+/* The real P0 body sets an explicit dark foreground; override it only for
+   assistant turns on the dark skin, leaving light user bubbles unchanged. */
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-message-assistant .p0-message-body { color:#e5faff; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-message-assistant .p0-message-body a { color:#8fe6ff; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-message-assistant .p0-message-body code { background:#153748; color:#e5faff; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-message-assistant :is(.p0-proof-line,.p0-message-receipt,.p0-receipt-model,.p0-receipt-summary-main,.p0-receipt-details,.p0-connected-intelligence-label) { color:#b4ccd6; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-proof-status-verified .p0-proof-text { color:#7be0b8; }

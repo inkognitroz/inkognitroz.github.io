@@ -6,6 +6,15 @@
   let forwarding=false;
   let notice=null;
   let toggle=null;
+  // P0's data-voice-state reports capability, NOT active recording. Track its
+  // real lifecycle events from navigation boot, before the skin is lazy-loaded.
+  let coreVoiceState='idle';
+  window.addEventListener('mmir-p0-voice-state-updated',event=>{
+    coreVoiceState=String(event.detail?.state||'unknown');
+  });
+  window.MmirJarvisCoreVoice=Object.freeze({
+    isIdle:()=>['idle','stopped','failed','transcribed','unavailable'].includes(coreVoiceState)
+  });
   const parse=value=>String(value||'').match(/^\s*@(jarvis|chat)(?=\s|$)\s*([\s\S]*)$/i);
   function inform(text){if(notice)notice.textContent=text;}
   function loadSkin(){
@@ -13,7 +22,7 @@
     if(skinModule)return skinModule;
     skinModule=new Promise((resolve,reject)=>{
       const script=document.createElement('script');
-      script.src=new URL('p0-jarvis-skin.js?v=20260918-jarvis-v1',scriptUrl).href;
+      script.src=new URL('p0-jarvis-skin.js?v=20260918-jarvis-v2',scriptUrl).href;
       script.async=true;
       const timeout=setTimeout(()=>{script.remove();reject(new Error('Jarvis tok for lang tid å laste.'));},10000);
       script.onload=()=>{
