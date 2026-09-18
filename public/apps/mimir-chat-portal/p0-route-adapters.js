@@ -1,5 +1,5 @@
 (function(){
-  const version='20260916-backend-url-switch-v1';
+  const version='20260918-jarvis-v3';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
@@ -674,11 +674,15 @@
       if(externalSignal.aborted)controller.abort();
       else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
     }
-    const {timeoutMs:ignored,signal:ignoredSignal,...rest}=requestOptions;
+    const {timeoutMs:ignored,signal:ignoredSignal,onDelta,...rest}=requestOptions;
     try{
       const response=await fetch(url,fetchOptions(url,{...rest,signal:controller.signal}));
       let data=null;
-      try{data=await response.json();}catch(error){data=null;}
+      if(response.ok&&typeof onDelta==='function'&&window.MmirP0StreamReader){
+        data=await window.MmirP0StreamReader.read(response,{signal:controller.signal,onDelta});
+      }else{
+        try{data=await response.json();}catch(error){data=null;}
+      }
       if(!response.ok){
         const err=new Error(data?.error?.message||('Request failed with '+response.status));
         err.status=response.status;

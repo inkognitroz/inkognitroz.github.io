@@ -17,26 +17,31 @@
   });
   const parse=value=>String(value||'').match(/^\s*@(jarvis|chat)(?=\s|$)\s*([\s\S]*)$/i);
   function inform(text){if(notice)notice.textContent=text;}
+  function loadScript(file,ready){
+    if(ready())return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src=new URL(file+'?v=20260918-jarvis-v3',scriptUrl).href;
+      script.async=true;
+      const fail=message=>{clearTimeout(timeout);script.remove();reject(new Error(message));};
+      const timeout=setTimeout(()=>fail('Jarvis tok for lang tid å laste.'),10000);
+      script.onload=()=>{clearTimeout(timeout);if(ready())resolve();else fail('Jarvis-modulen svarte ikke.');};
+      script.onerror=()=>fail('Jarvis kunne ikke lastes. Vanlig chat er beholdt.');
+      document.head.appendChild(script);
+    });
+  }
   function loadSkin(){
     if(window.MmirJarvisSkin)return Promise.resolve(window.MmirJarvisSkin);
     if(skinModule)return skinModule;
-    skinModule=new Promise((resolve,reject)=>{
-      const script=document.createElement('script');
-      script.src=new URL('p0-jarvis-skin.js?v=20260918-jarvis-v2',scriptUrl).href;
-      script.async=true;
-      const timeout=setTimeout(()=>{script.remove();reject(new Error('Jarvis tok for lang tid å laste.'));},10000);
-      script.onload=()=>{
-        clearTimeout(timeout);
-        if(window.MmirJarvisSkin)resolve(window.MmirJarvisSkin);
-        else reject(new Error('Jarvis-modulen svarte ikke.'));
-      };
-      script.onerror=()=>{clearTimeout(timeout);script.remove();reject(new Error('Jarvis kunne ikke lastes. Vanlig chat er beholdt.'));};
-      document.head.appendChild(script);
-    }).catch(error=>{skinModule=null;throw error;});
+    skinModule=loadScript('p0-speech-utils.js',()=>Boolean(window.MmirSpeechUtils))
+      .then(()=>loadScript('p0-jarvis-skin.js',()=>Boolean(window.MmirJarvisSkin)))
+      .then(()=>window.MmirJarvisSkin)
+      .catch(error=>{skinModule=null;throw error;});
     return skinModule;
   }
   async function choose(skin,draft=null,tail=''){
     const ticket=++intent;
+    if(skin==='chat'){try{window.localStorage.removeItem('mmir-preferred-skin');}catch(_){}}
     const input=document.getElementById('p0-input');
     inform(skin==='jarvis'?'Åpner Jarvis …':'Bytter til chat …');
     try{
@@ -111,6 +116,7 @@
       const jarvis=event.detail?.skin==='jarvis';
       toggle.textContent=jarvis?'Chat':'Jarvis';toggle.setAttribute('aria-pressed',jarvis?'true':'false');
     });
+    try{if(window.localStorage.getItem('mmir-preferred-skin')==='jarvis')choose('jarvis');}catch(_){}
     return true;
   }
   if(!install())window.addEventListener('DOMContentLoaded',install,{once:true});

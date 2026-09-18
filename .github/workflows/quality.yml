@@ -87,8 +87,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p test-results/jarvis
+          node --test scripts/test-jarvis-contracts.mjs | tee test-results/jarvis/unit-results.txt
           node scripts/render-check-p0-jarvis-skin.mjs | tee test-results/jarvis/contract-results.txt
           node scripts/render-check-p0-jarvis-full-shell.mjs | tee test-results/jarvis/full-shell-results.txt
+
+      - name: Full public regression suite
+        run: npm run check
 
       - name: Browser check gateway release contract
         run: |

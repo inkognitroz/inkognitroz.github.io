@@ -47,3 +47,53 @@
 #mmir-p0-app[data-mmir-skin="jarvis"] .p0-message-assistant .p0-message-body code { background:#153748; color:#e5faff; }
 #mmir-p0-app[data-mmir-skin="jarvis"] .p0-message-assistant :is(.p0-proof-line,.p0-message-receipt,.p0-receipt-model,.p0-receipt-summary-main,.p0-receipt-details,.p0-connected-intelligence-label) { color:#b4ccd6; }
 #mmir-p0-app[data-mmir-skin="jarvis"] .p0-proof-status-verified .p0-proof-text { color:#7be0b8; }
+
+/* V3: compact, keyboard-safe voice workspace. The normal composer and privacy
+   controls remain in their original flow. Scrolling never hides the stop row. */
+#mmir-p0-app .mmir-jarvis-panel { max-height:min(48vh,430px); overflow:auto; overscroll-behavior:contain; align-items:flex-start; }
+#mmir-p0-app .mmir-jarvis-info { width:100%; }
+#mmir-p0-app .mmir-jarvis-info > .mmir-jarvis-actions { position:sticky; top:-1px; z-index:2; background:#071b28; padding:6px 0; }
+#mmir-p0-app .mmir-jarvis-info > .mmir-jarvis-actions [data-jarvis="pause"] { font-weight:700; border-width:2px; }
+#mmir-p0-app .mmir-jarvis-panel details { margin-top:9px; border-top:1px solid #315260; padding-top:6px; }
+#mmir-p0-app .mmir-jarvis-panel summary { cursor:pointer; font-size:13px; padding:8px 2px; min-height:36px; box-sizing:border-box; }
+#mmir-p0-app .mmir-jarvis-panel details p { font-size:12px; line-height:1.55; overflow-wrap:anywhere; }
+#mmir-p0-app .mmir-jarvis-settings { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:12px 0; }
+#mmir-p0-app .mmir-jarvis-settings label,#mmir-p0-app .mmir-jarvis-capture label { font-size:12px; display:flex; flex-direction:column; gap:4px; min-width:0; }
+#mmir-p0-app .mmir-jarvis-panel select,#mmir-p0-app .mmir-jarvis-panel textarea { box-sizing:border-box; width:100%; min-width:0; background:#102b3b; color:#e9fcff; border:1px solid #5ea7bc; border-radius:6px; padding:9px; font:inherit; font-size:16px; min-height:44px; }
+#mmir-p0-app .mmir-jarvis-panel textarea { resize:vertical; line-height:1.5; max-height:140px; }
+#mmir-p0-app .mmir-jarvis-panel :is(button,select,textarea,summary):focus-visible { outline:3px solid #c1f4ff; outline-offset:2px; }
+#mmir-p0-app .mmir-jarvis-panel [hidden] { display:none !important; }
+#mmir-p0-app .mmir-jarvis-mic-state { display:inline-block; font-size:12px; font-weight:700; border:1px solid #6aacbb; padding:3px 7px; border-radius:5px; margin:4px 0; }
+#mmir-p0-app .mmir-jarvis-mic-state[data-active="true"] { background:#265367; border-color:#b0f3ff; }
+#mmir-p0-app .mmir-jarvis-capture { margin-top:8px; }
+#mmir-p0-app .mmir-jarvis-truth dl { display:grid; grid-template-columns:85px minmax(0,1fr); gap:6px; font-size:12px; line-height:1.5; margin:6px 0; }
+#mmir-p0-app .mmir-jarvis-truth dd { margin:0; overflow-wrap:anywhere; }
+#mmir-p0-app .mmir-jarvis-truth dt { color:#9fdfec; }
+@media(max-width:600px) {
+  #mmir-p0-app .mmir-jarvis-panel { max-height:min(43vh,380px); gap:8px; padding:10px; }
+  #mmir-p0-app .mmir-jarvis-reactor { display:none; }
+  #mmir-p0-app .mmir-jarvis-settings { grid-template-columns:minmax(0,1fr); }
+  #mmir-p0-app .mmir-jarvis-info > .mmir-jarvis-actions { gap:5px; }
+  #mmir-p0-app .mmir-jarvis-info > .mmir-jarvis-actions button { flex:1 1 auto; }
+  #mmir-p0-app .mmir-jarvis-panel summary { min-height:44px; }
+  #mmir-p0-app[data-mmir-skin="jarvis"] #p0-composer { padding-bottom:max(8px,env(safe-area-inset-bottom)); }
+}
+@supports(height:1dvh) { #mmir-p0-app .mmir-jarvis-panel { max-height:min(43dvh,430px); } }
+#mmir-p0-app[data-mmir-skin="jarvis"] .mmir-jarvis-panel { max-height:min(430px,calc(var(--jarvis-viewport-height,100vh) * .43)); }
+@media(max-height:500px) {
+  #mmir-p0-app[data-mmir-skin="jarvis"] .mmir-jarvis-panel { max-height:34vh; }
+  #mmir-p0-app .mmir-jarvis-status { margin:3px 0; }
+}
+
+#mmir-p0-app .mmir-jarvis-mic-state { position:sticky; top:0; z-index:3; background:#071b28; }
+#mmir-p0-app .mmir-jarvis-info > .mmir-jarvis-actions { top:27px; }
+
+/* The virtual keyboard may shrink visualViewport without changing 100dvh.
+   Resize the actual grid, not only the voice panel, so the composer stays above
+   the keyboard. These rules never change the ordinary chat layout. */
+#mmir-p0-app[data-mmir-skin="jarvis"] { height:var(--jarvis-viewport-height,100dvh); min-height:var(--jarvis-viewport-height,100dvh); }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-first-session :is(h1,p,strong,small) { color:#d4f3fd; }
+#mmir-p0-app[data-mmir-skin="jarvis"] .p0-first-session small { color:#b4ccd6; }
+#mmir-p0-app[data-mmir-skin="jarvis"][data-jarvis-cramped="true"] .mmir-jarvis-panel { flex:1 1 auto; max-height:100%; min-height:0; padding-block:4px; }
+#mmir-p0-app[data-mmir-skin="jarvis"][data-jarvis-cramped="true"] #p0-transcript { flex:0 1 0; min-height:0; padding-block:0; }
+#mmir-p0-app[data-mmir-skin="jarvis"][data-jarvis-cramped="true"] :is(.mmir-jarvis-info h2,.mmir-jarvis-kicker,.mmir-jarvis-reactor) { display:none; }
