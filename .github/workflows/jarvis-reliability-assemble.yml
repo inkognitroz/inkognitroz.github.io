@@ -1,0 +1,54 @@
+name: Assemble reviewed Jarvis reliability patch
+on:
+  push:
+    branches: [fix/jarvis-voice-reliability-20260919]
+    paths: [.mmir-jarvis-transfer.json]
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/jarvis-voice-reliability-20260919
+          fetch-depth: 0
+      - name: Apply exact locally tested sources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, gzip, hashlib, json, pathlib, subprocess
+          data = json.loads(pathlib.Path('.mmir-jarvis-transfer.json').read_text())
+          assert data['base_sha'] == 'b18da1dbc9561e285b029040424ad243c677e1ff'
+          subprocess.run(['git','merge-base','--is-ancestor',data['base_sha'],'HEAD'],check=True)
+          allowed = {'JARVIS-RELIABILITY.md','public/apps/mimir-chat-portal/asset-versions.json','public/apps/mimir-chat-portal/p0-jarvis-skin.js','public/apps/mimir-chat-portal/p0-release-nav.js','public/apps/mimir-chat-portal/p0-speech-utils.js','public/mmir.html','scripts/check-jarvis-live.mjs','scripts/jarvis-full-shell-reliability.mjs','scripts/jarvis-reliability-scenarios.mjs','scripts/render-check-p0-jarvis-full-shell.mjs','scripts/render-check-p0-jarvis-skin.mjs','scripts/test-jarvis-contracts.mjs','scripts/test-jarvis-reliability.mjs'}
+          assert set(data['files']) == allowed
+          patch = gzip.decompress(base64.b64decode(data['patch_gzip_base64'],validate=True))
+          assert len(patch) < 2000000
+          assert hashlib.sha256(patch).hexdigest() == data['patch_sha256']
+          subprocess.run(['git','apply','--check','-'],input=patch,check=True)
+          subprocess.run(['git','apply','-'],input=patch,check=True)
+          for name, digest in data['files'].items():
+              path = pathlib.Path(name)
+              assert path.is_file() and not path.is_symlink()
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, name
+          print('Verified exact SHA256 for all 13 reviewed source files.')
+          subprocess.run(['git','add','--',*sorted(allowed)],check=True)
+          subprocess.run(['git','rm','--','.mmir-jarvis-transfer.json','.github/workflows/jarvis-reliability-assemble.yml'],check=True)
+          subprocess.run(['git','diff','--cached','--check'],check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(jarvis): preserve spoken meaning and isolate recording drafts; add reliability regressions'
+          git push origin HEAD:fix/jarvis-voice-reliability-20260919
+      - name: Synthetic live MMIR transport probe (not microphone certification)
+        continue-on-error: true
+        run: node scripts/check-jarvis-live.mjs --chat > /tmp/jarvis-live-transport.json
+      - name: Keep redacted transport report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-live-transport
+          path: /tmp/jarvis-live-transport.json
+          if-no-files-found: ignore
