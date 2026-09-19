@@ -60,8 +60,8 @@ voice service merely because automated checks pass.
 
 ## Automated verification
 
-`npm run check:jarvis` remains the entry point. This revision adds 28 unit, 18
-browser and 7 actual-shell checks to the prior 122 (175 checks total). HTTP/model
+`npm run check:jarvis` remains the entry point. This revision adds 30 unit, 18
+browser and 7 actual-shell checks to the prior 122 (177 checks total). HTTP/model
 and browser speech are mocked in these tests. Actual HTML/CSS/core is used in
 full-shell tests. The full required public CI suite remains mandatory before
 merging. No new runtime dependencies or package-lock changes are introduced.

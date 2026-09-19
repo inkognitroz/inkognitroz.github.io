@@ -319,7 +319,7 @@
     rec.lang = 'nb-NO'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
     const finals = new Map(); let finalText = '';
     rec.onspeechend = () => { if (ticket === epoch && capture === recording) recording.speechEndedAt = clock(); };
-    rec.onstart = () => { if (ticket === epoch) notify('Lytter … ' + (prefs.inputMode === 'review' ? 'du ser over teksten før sending.' : 'ett spørsmål sendes når du er ferdig.'), 'listening'); };
+    rec.onstart = () => { if (ticket === epoch && capture === recording) notify('Lytter … ' + (recording.practice ? 'diktatprøve, ingen automatisk sending til MMIR.' : prefs.inputMode === 'review' ? 'du ser over teksten før sending.' : 'ett spørsmål sendes når du er ferdig.'), 'listening'); };
     rec.onresult = event => {
       if (ticket !== epoch || !active() || capture !== recording || recognition !== rec) return;
       const interim = [];

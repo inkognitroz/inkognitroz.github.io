@@ -34,8 +34,8 @@
       .replace(/^\s*\|.*\|\s*$/gm, 'Tabellrad står i chatten.')
       .replace(/(?:Tabellrad står i chatten\.\s*)+/g, 'Tabellen står i chatten.\n')
       .replace(/^ {0,3}#{1,6} +/gm, '')
-      // Do not erase signs in "- 5 °C" or operators in "2 * 3 * 4".
-      .replace(/^ {0,3}[-*+] +(?=[^\d\s])/gm, '')
+      // Ambiguous list markers may also be unary signs or pointer operators.
+      // Preserve them rather than silently change mathematical meaning.
       .replace(/(^|[\s(])(\*\*|__)(\S(?:[^\n]*?\S)?)\2(?=$|[\s).,!?:;])/g, '$1$3')
       .replace(/(^|[\s(])([*_])(\S(?:[^\n]*?\S)?)\2(?=$|[\s).,!?:;])/g, '$1$3')
       .replace(/`([^`\n]+)`/g, '$1')
