@@ -21,7 +21,7 @@
     if(ready())return Promise.resolve();
     return new Promise((resolve,reject)=>{
       const script=document.createElement('script');
-      script.src=new URL(file+'?v=20260918-jarvis-v3',scriptUrl).href;
+      script.src=new URL(file+'?v=20260919-jarvis-v3-1',scriptUrl).href;
       script.async=true;
       const fail=message=>{clearTimeout(timeout);script.remove();reject(new Error(message));};
       const timeout=setTimeout(()=>fail('Jarvis tok for lang tid å laste.'),10000);

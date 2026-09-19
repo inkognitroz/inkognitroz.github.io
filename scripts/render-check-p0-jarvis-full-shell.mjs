@@ -1,3 +1,4 @@
+import { fullShellReliability } from './jarvis-full-shell-reliability.mjs';
 /** Actual P0 HTML/JS, with in-memory HTTP/model/speech fixtures only.
  * No live providers or hardware. Run from a full checkout.
  */
@@ -16,7 +17,7 @@ const inventory={object:'list',inventory_view:'compact',default_model:'supergeni
 const browser=await chromium.launch({headless:true,...(process.env.MMIR_CHROMIUM_EXECUTABLE?{executablePath:process.env.MMIR_CHROMIUM_EXECUTABLE}:{})});
 const context=await browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});
 const page=await context.newPage();page.setDefaultTimeout(8000);
-const calls=[],errors=[],assets=[];
+const calls=[],errors=[],assets=[];let replyOverride=null,replyFinish='stop';
 page.on('pageerror',error=>errors.push(error.message));
 const installSpeechFixture=()=>{
  window.jarvisProof={recognitions:[],spoken:[],cancelled:0};
@@ -33,7 +34,7 @@ await context.route('**/*',async route=>{
   if(url.pathname==='/v1/models')return route.fulfill({json:inventory});
   if(url.pathname==='/v1/chat/completions'){
    calls.push(route.request().postDataJSON());
-   return route.fulfill({json:{choices:[{message:{role:'assistant',content:calls.length===1?'Test: Bergen er byen vi planlegger å besøke.':'Test: Ja, Bergen er fortsatt byen i samme samtale.'},finish_reason:'stop'}]}});
+   return route.fulfill({json:{choices:[{message:{role:'assistant',content:replyOverride??(calls.length===1?'Test: Bergen er byen vi planlegger å besøke.':'Test: Ja, Bergen er fortsatt byen i samme samtale.')},finish_reason:replyFinish}]}});
   }
   return route.fulfill({status:503,json:{error:'Fixture: endpoint not configured'}});
  }
@@ -149,6 +150,7 @@ try {
  await page.evaluate(()=>{window.testViewportHeight=844;visualViewport.dispatchEvent(new Event('resize'))});
  await command('@chat');await page.waitForSelector('[data-mmir-skin="chat"]');
  assert.equal(await page.locator('#mmir-p0-app').evaluate(el=>el.style.getPropertyValue('--jarvis-viewport-height')),'');pass('leaving Jarvis removes its keyboard sizing override');
+ await fullShellReliability({page,command,finishSpeech,calls,pass,setReply:(text,reason='stop')=>{replyOverride=text;replyFinish=reason;}});
  assert.deepEqual(errors,[]);pass('no uncaught errors in actual P0 shell');
  console.log(`PASS ${checks} full-shell integration checks. Actual UI/core, mocked HTTP/model/speech; not production or physical microphone proof.`);
 }finally{await browser.close()}
