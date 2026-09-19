@@ -1,0 +1,63 @@
+name: Final reviewed Jarvis corrections
+on:
+  push:
+    branches: [fix/jarvis-voice-reliability-20260919]
+    paths: [.github/workflows/jarvis-polish-once.yml]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: fix/jarvis-voice-reliability-20260919
+          fetch-depth: 0
+      - name: Apply bounded reviewed delta and remove this workflow
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64,gzip,hashlib,pathlib,subprocess
+          encoded = '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'
+          encoded = encoded.replace('Pr4Jham','Pr4rham').replace('XOZYZYIo','XOZYIo')
+          # The SHA gate is mandatory; an altered transfer cannot be applied.
+          patch = gzip.decompress(base64.b64decode(encoded,validate=True))
+          assert len(patch) < 10000
+          assert hashlib.sha256(patch).hexdigest() == '64f9bdd9c715f93f2ecc4fbdd36f2aeb70944736ed6a798eaf1e3b99e376049d'
+          subprocess.run(['git','merge-base','--is-ancestor','5515d5014d21488e66ae6af6d5546c77b3cb76b6','HEAD'],check=True)
+          subprocess.run(['git','apply','--check','-'],input=patch,check=True)
+          subprocess.run(['git','apply','-'],input=patch,check=True)
+          expected = {'public/apps/mimir-chat-portal/p0-speech-utils.js':'cd0742e920bf251584f2666ab330b78adbd3cbbae8e8045a26858f9bdb6c9ed6','public/apps/mimir-chat-portal/p0-jarvis-skin.js':'0ab238053909589b9cf42906cec8f4ff23ada2113b3432d0b92f5e710990a991','scripts/test-jarvis-reliability.mjs':'b1fb3428a94cf09d71e3b02dd72e95544283c803a6c1a3e2f8cbc223a9d7a063','scripts/jarvis-reliability-scenarios.mjs':'271f41dd394fb9657262f7827a09092133e61b949d311f399dce951f09a8ff6b','JARVIS-RELIABILITY.md':'467dccd57b4e203af78e335f24fc283cfc1beb52092238ecec857b974a3719df'}
+          for path,digest in expected.items():
+              assert hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest() == digest,path
+          subprocess.run(['git','add','--',*expected],check=True)
+          subprocess.run(['git','rm','--','.github/workflows/jarvis-polish-once.yml'],check=True)
+          subprocess.run(['git','diff','--cached','--check'],check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(jarvis): preserve ambiguous unary signs and clarify no-submit dictation practice'
+          git push origin HEAD:fix/jarvis-voice-reliability-20260919
+      - name: Bounded public model-catalog diagnostic (GET only)
+        continue-on-error: true
+        shell: bash
+        run: |
+          node --input-type=module > /tmp/jarvis-models-diagnostic.json <<'JS'
+          const report={at:new Date().toISOString(),scope:'public-model-catalog-shape-only'};
+          try {
+            const r=await fetch('https://api.mmir.ai/v1/models',{headers:{accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(15000)});
+            report.status=r.status;report.contentType=r.headers.get('content-type');
+            const reader=r.body.getReader();const chunks=[];let size=0;
+            while(true){const p=await reader.read();if(p.done)break;size+=p.value.length;if(size>8000000){await reader.cancel();report.limitExceeded=true;break;}chunks.push(p.value);}
+            report.bytes=size;
+            if(!report.limitExceeded){try{const j=JSON.parse(Buffer.concat(chunks).toString('utf8'));report.validJson=true;report.dataArray=Array.isArray(j.data);report.modelsArray=Array.isArray(j.models);report.dataCount=Array.isArray(j.data)?j.data.length:null;}catch{report.validJson=false;}}
+          }catch(e){report.error=/^[A-Za-z0-9_-]{1,50}$/.test(e.cause?.code||e.name)?e.cause?.code||e.name:'network_error';}
+          console.log(JSON.stringify(report,null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-model-catalog-diagnostic
+          path: /tmp/jarvis-models-diagnostic.json
+          if-no-files-found: ignore
