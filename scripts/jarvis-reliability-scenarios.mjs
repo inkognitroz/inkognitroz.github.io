@@ -75,7 +75,10 @@ export async function reliabilityScenarios({page,check,jarvis,command,finishSpee
  });
  await check('R12 dictation test requires consent and does not auto-send to a model',async()=>{
   await jarvis();await control('test-dictation').click();assert.equal(await page.evaluate(()=>fixture.recognitions.length),0);
-  await control('consent').check();await control('test-dictation').click();assert.match(await page.locator('.mmir-jarvis-status').textContent(),/diktatprøve, ingen automatisk sending/);await finishSpeech('MMIR og Jarvis: 12,5 prosent, ikke 15.');
+  await control('consent').check();await control('test-dictation').click();
+  // Recognition start is asynchronous; wait for its real UI event, not elapsed time.
+  await page.waitForFunction(()=>document.querySelector('.mmir-jarvis-status')?.textContent.includes('diktatprøve, ingen automatisk sending'),null,{timeout:5000});
+  assert.match(await page.locator('.mmir-jarvis-status').textContent(),/diktatprøve, ingen automatisk sending/);await finishSpeech('MMIR og Jarvis: 12,5 prosent, ikke 15.');
   assert.equal(await page.evaluate(()=>fixture.requests.length),0);assert.equal(await control('transcript').inputValue(),'MMIR og Jarvis: 12,5 prosent, ikke 15.');
   assert.match(await page.locator('.mmir-jarvis-status').textContent(),/Diktatprøven er klar/);
  });
