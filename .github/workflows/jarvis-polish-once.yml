@@ -14,24 +14,30 @@ jobs:
         with:
           ref: fix/jarvis-voice-reliability-20260919
           fetch-depth: 0
-      - name: Apply bounded reviewed delta and remove this workflow
+      - name: Apply bounded reviewed changes and remove this workflow
         shell: bash
         run: |
           python3 - <<'PY'
-          import base64,gzip,hashlib,pathlib,subprocess
-          encoded = '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'
-          encoded = encoded.replace('Pr4Jham','Pr4rham').replace('XOZYZYIo','XOZYIo')
-          # The SHA gate is mandatory; an altered transfer cannot be applied.
-          patch = gzip.decompress(base64.b64decode(encoded,validate=True))
-          assert len(patch) < 10000
-          assert hashlib.sha256(patch).hexdigest() == '64f9bdd9c715f93f2ecc4fbdd36f2aeb70944736ed6a798eaf1e3b99e376049d'
+          import hashlib,pathlib,subprocess
           subprocess.run(['git','merge-base','--is-ancestor','5515d5014d21488e66ae6af6d5546c77b3cb76b6','HEAD'],check=True)
-          subprocess.run(['git','apply','--check','-'],input=patch,check=True)
-          subprocess.run(['git','apply','-'],input=patch,check=True)
+          changes = {
+            'public/apps/mimir-chat-portal/p0-speech-utils.js': [("      // Do not erase signs in \"- 5 °C\" or operators in \"2 * 3 * 4\".\n      .replace(/^ {0,3}[-*+] +(?=[^\\d\\s])/gm, '')\n", "      // Ambiguous list markers may also be unary signs or pointer operators.\n      // Preserve them rather than silently change mathematical meaning.\n")],
+            'public/apps/mimir-chat-portal/p0-jarvis-skin.js': [("rec.onstart = () => { if (ticket === epoch) notify('Lytter … ' + (prefs.inputMode === 'review' ? 'du ser over teksten før sending.' : 'ett spørsmål sendes når du er ferdig.'), 'listening'); };", "rec.onstart = () => { if (ticket === epoch && capture === recording) notify('Lytter … ' + (recording.practice ? 'diktatprøve, ingen automatisk sending til MMIR.' : prefs.inputMode === 'review' ? 'du ser over teksten før sending.' : 'ett spørsmål sendes når du er ferdig.'), 'listening'); };")],
+            'scripts/test-jarvis-reliability.mjs': [("'Viktig\\nIkke slett.\\nBehold utkastet.'", "'Viktig\\n- Ikke slett.\\n- Behold utkastet.'"), (" ['2 * 3 * 4 = 24; 2*3*4=24','2 * 3 * 4 = 24; 2*3*4=24'],", " ['2 * 3 * 4 = 24; 2*3*4=24','2 * 3 * 4 = 24; 2*3*4=24'],\n ['- x\\n+ y','- x\\n+ y'],\n ['* p\\n- MMIR','* p\\n- MMIR'],")],
+            'scripts/jarvis-reliability-scenarios.mjs': [("await control('consent').check();await control('test-dictation').click();await finishSpeech('MMIR og Jarvis: 12,5 prosent, ikke 15.');", "await control('consent').check();await control('test-dictation').click();assert.match(await page.locator('.mmir-jarvis-status').textContent(),/diktatprøve, ingen automatisk sending/);await finishSpeech('MMIR og Jarvis: 12,5 prosent, ikke 15.');")],
+            'JARVIS-RELIABILITY.md': [('adds 28 unit, 18','adds 30 unit, 18'), ('(175 checks total)','(177 checks total)')]
+          }
           expected = {'public/apps/mimir-chat-portal/p0-speech-utils.js':'cd0742e920bf251584f2666ab330b78adbd3cbbae8e8045a26858f9bdb6c9ed6','public/apps/mimir-chat-portal/p0-jarvis-skin.js':'0ab238053909589b9cf42906cec8f4ff23ada2113b3432d0b92f5e710990a991','scripts/test-jarvis-reliability.mjs':'b1fb3428a94cf09d71e3b02dd72e95544283c803a6c1a3e2f8cbc223a9d7a063','scripts/jarvis-reliability-scenarios.mjs':'271f41dd394fb9657262f7827a09092133e61b949d311f399dce951f09a8ff6b','JARVIS-RELIABILITY.md':'467dccd57b4e203af78e335f24fc283cfc1beb52092238ecec857b974a3719df'}
-          for path,digest in expected.items():
-              assert hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest() == digest,path
-          subprocess.run(['git','add','--',*expected],check=True)
+          assert set(changes) == set(expected)
+          for name,replacements in changes.items():
+              p=pathlib.Path(name);assert p.is_file() and not p.is_symlink()
+              text=p.read_text()
+              for old,new in replacements:
+                  assert text.count(old)==1,name
+                  text=text.replace(old,new)
+              p.write_text(text)
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==expected[name],name
+          subprocess.run(['git','add','--',*changes],check=True)
           subprocess.run(['git','rm','--','.github/workflows/jarvis-polish-once.yml'],check=True)
           subprocess.run(['git','diff','--cached','--check'],check=True)
           PY
