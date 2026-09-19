@@ -23,8 +23,10 @@ jobs:
           assert data['base_sha'] == 'b18da1dbc9561e285b029040424ad243c677e1ff'
           subprocess.run(['git','merge-base','--is-ancestor',data['base_sha'],'HEAD'],check=True)
           allowed = {'JARVIS-RELIABILITY.md','public/apps/mimir-chat-portal/asset-versions.json','public/apps/mimir-chat-portal/p0-jarvis-skin.js','public/apps/mimir-chat-portal/p0-release-nav.js','public/apps/mimir-chat-portal/p0-speech-utils.js','public/mmir.html','scripts/check-jarvis-live.mjs','scripts/jarvis-full-shell-reliability.mjs','scripts/jarvis-reliability-scenarios.mjs','scripts/render-check-p0-jarvis-full-shell.mjs','scripts/render-check-p0-jarvis-skin.mjs','scripts/test-jarvis-contracts.mjs','scripts/test-jarvis-reliability.mjs'}
-          assert set(data['files']) == allowed
-          patch = gzip.decompress(base64.b64decode(data['patch_gzip_base64'],validate=True))
+          assert set(data['files']) == allowed and data['patch_parts'] == 4
+          encoded = ''.join(pathlib.Path('.mmir-jarvis-transfer/part-'+str(i)+'.txt').read_text().strip() for i in range(4))
+          assert len(encoded) < 100000
+          patch = gzip.decompress(base64.b64decode(encoded,validate=True))
           assert len(patch) < 2000000
           assert hashlib.sha256(patch).hexdigest() == data['patch_sha256']
           subprocess.run(['git','apply','--check','-'],input=patch,check=True)
@@ -35,7 +37,7 @@ jobs:
               assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, name
           print('Verified exact SHA256 for all 13 reviewed source files.')
           subprocess.run(['git','add','--',*sorted(allowed)],check=True)
-          subprocess.run(['git','rm','--','.mmir-jarvis-transfer.json','.github/workflows/jarvis-reliability-assemble.yml'],check=True)
+          subprocess.run(['git','rm','-r','--','.mmir-jarvis-transfer','.mmir-jarvis-transfer.json','.github/workflows/jarvis-reliability-assemble.yml'],check=True)
           subprocess.run(['git','diff','--cached','--check'],check=True)
           PY
           git config user.name 'github-actions[bot]'
