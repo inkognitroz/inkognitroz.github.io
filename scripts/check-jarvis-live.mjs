@@ -13,11 +13,19 @@ async function request(path, body) {
    headers: body ? { 'content-type': 'application/json', accept: 'application/json' } : { accept: 'application/json' },
    ...(body ? { body: JSON.stringify(body) } : {})
   });
-  let data = null;
+  // Public /v1/models is currently larger than 1 MB. Bound the actual stream,
+  // not just JSON parsing after an unbounded read, and disclose size failures.
+  const reader = response.body?.getReader(), chunks = []; let bytes = 0;
+  if (reader) while (true) {
+   const part = await reader.read(); if (part.done) break;
+   bytes += part.value.byteLength;
+   if (bytes > 4000000) { await reader.cancel(); return { ok: false, status: response.status, elapsedMs: Math.round(performance.now() - started), bytes, error: 'body_too_large', data: null }; }
+   chunks.push(part.value);
+  }
+  let data = null, error = null;
   // Never log a raw upstream body: it can contain identifiers or debug details.
-  const raw = await response.text();
-  if (raw.length <= 1000000) { try { data = JSON.parse(raw); } catch (_) {} }
-  return { ok: response.ok, status: response.status, elapsedMs: Math.round(performance.now() - started), data };
+  try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (_) { error = 'invalid_json'; }
+  return { ok: response.ok && !error, status: response.status, elapsedMs: Math.round(performance.now() - started), bytes, error, data };
  } catch (error) {
   const code = String(error.cause?.code || error.name || 'network_error');
   return { ok: false, status: null, elapsedMs: Math.round(performance.now() - started), error: /^[A-Za-z0-9_-]{1,50}$/.test(code) ? code : 'network_error', data: null };
@@ -25,7 +33,8 @@ async function request(path, body) {
 }
 for (const path of ['/status', '/v1/models']) {
  const result = await request(path);
- report.checks.push({ path, ok: result.ok && Boolean(result.data), status: result.status, elapsedMs: result.elapsedMs, error: result.error || null });
+ const shapeOk = path === '/v1/models' ? Array.isArray(result.data?.data) : result.data !== null && typeof result.data === 'object' && !Array.isArray(result.data);
+ report.checks.push({ path, ok: result.ok && shapeOk, status: result.status, elapsedMs: result.elapsedMs, bytes: result.bytes ?? null, error: result.error || (!shapeOk ? 'unexpected_shape' : null) });
 }
 if (report.chatRequested) {
  const result = await request('/v1/chat/completions', {
@@ -34,7 +43,7 @@ if (report.chatRequested) {
   policy: { paid_routes_allowed: false }
  });
  const text = result.data?.choices?.[0]?.message?.content;
- report.checks.push({ path: '/v1/chat/completions', status: result.status, elapsedMs: result.elapsedMs, error: result.error || null,
+ report.checks.push({ path: '/v1/chat/completions', status: result.status, elapsedMs: Math.round(result.elapsedMs), error: result.error || null,
   ok: result.ok && typeof text === 'string' && text.length > 0,
   answerReceived: typeof text === 'string' && text.length > 0,
   identityVerified: false, identityNote: 'This transport probe does not verify signed MMIR writer receipts.',
