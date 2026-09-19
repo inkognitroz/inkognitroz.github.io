@@ -66,6 +66,12 @@ and browser speech are mocked in these tests. Actual HTML/CSS/core is used in
 full-shell tests. The full required public CI suite remains mandatory before
 merging. No new runtime dependencies or package-lock changes are introduced.
 
+The release asset token is `20260919-jarvis-v3-1`, using the existing allowed
+hyphenated format consistently in navigation, HTML, manifest and its exact test.
+The version-format gate is unchanged. The dictation regression explicitly waits
+for the recording-start UI event before checking its no-auto-submit message;
+it does not assume that an asynchronous speech event has already fired.
+
 ## Live transport smoke (optional, not voice proof)
 
 `node scripts/check-jarvis-live.mjs` makes only public GET requests to the existing
