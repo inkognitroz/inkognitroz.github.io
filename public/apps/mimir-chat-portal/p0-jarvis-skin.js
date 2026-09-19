@@ -4,7 +4,7 @@
 (function (w, d) {
   'use strict';
   if (w.MmirJarvisSkin) return;
-  const VERSION = '20260918-jarvis-v3';
+  const VERSION = '20260919-jarvis-v3.1';
   const source = d.currentScript?.src, U = w.MmirSpeechUtils;
   const byId = id => d.getElementById(id);
   const timers = { mic: null, answer: null, resume: null, speech: null, voices: null };
@@ -12,6 +12,8 @@
   let enabled = false, epoch = 0, session = false, recognition = null, probing = false;
   let speaking = false, output = null, current = null, capture = null, waitingVoice = null;
   let cssPromise = null, skinRequest = 0, lastMetrics = null, lastWriter = null;
+  let captureSequence = 0, savedCapture = null, captureTiming = null;
+  let outcome = 'idle', lastError = null, localAvailability = 'not-checked';
   let backend = null, prefs = { voice: '', rate: 1, inputMode: 'send', processing: 'auto', readMode: 'full', early: true };
   const active = () => enabled && d.visibilityState !== 'hidden';
   const busy = () => backend?.snapshot().busy || backend?.snapshot().phase === 'preflight' || byId('p0-composer')?.getAttribute('aria-busy') === 'true';
@@ -38,15 +40,20 @@
     talk.setAttribute('aria-pressed', recognition ? 'true' : 'false');
     field('mic-state').textContent = recognition ? 'Mikrofon på' : 'Mikrofon av';
     field('mic-state').dataset.active = recognition ? 'true' : 'false';
+    syncCapture();
   }
   function stopAudio() {
     epoch++;
     for (const key of ['mic', 'speech', 'resume', 'voices']) clear(key);
     if (waitingVoice) { const cancel = waitingVoice; waitingVoice = null; cancel(); }
     const old = recognition; recognition = null; probing = false;
+    if (capture && !capture.sent && transcript?.dataset.captureId === capture.id) {
+      capture.text = transcript.value;
+      if (old) { capture.ready = Boolean(capture.text.trim()); capture.phase = 'review'; }
+    }
     if (old) { old.onstart = old.onresult = old.onerror = old.onend = null; try { old.abort(); } catch (_) {} }
     if (speaking || output) { try { w.speechSynthesis?.cancel(); } catch (_) {} }
-    speaking = false; output = null;
+    speaking = false; output = null; syncCapture();
   }
   function pause(text = 'Tale er stoppet. Samtalen og utkastet er beholdt.') {
     session = false; current = null; clear('answer'); stopAudio(); notify(text);
@@ -101,6 +108,11 @@
     const m = lastMetrics;
     field('latency').textContent = m ? 'Svar: ' + (m.elapsedMs / 1000).toFixed(1) + ' s' + (m.firstTextMs != null ? ' · første tekst: ' + (m.firstTextMs / 1000).toFixed(1) + ' s' : '') + (m.firstAudioMs != null ? ' · første lyd: ' + (m.firstAudioMs / 1000).toFixed(1) + ' s' : '') : 'Svartid: ikke målt';
     field('usage').textContent = 'Tokens: ' + (typeof m?.tokens === 'number' ? m.tokens + ' (rapportert)' : 'ikke tilgjengelig') + ' · kostnad: ikke tilgjengelig';
+    const labels = { idle: 'Ingen forespørsel', pending: 'Forespørsel i MMIR', complete: 'Ferdig svar', truncated: 'Avkortet svar – se fortsettelse i chatten', failed: 'Forespørselen feilet', rejected: 'Ikke sendt av MMIR', cancelled: 'Stopp bedt om i MMIR-klienten; leverandørstopp ikke bekreftet' };
+    field('outcome').textContent = labels[outcome] || labels.idle;
+    field('stop-task').disabled = !busy();
+    field('speech-timing').textContent = m?.speechToTextMs != null ? 'Taleslutt til tekst: ' + (m.speechToTextMs / 1000).toFixed(1) + ' s' : 'Taleslutt til tekst: ikke målt';
+    if (m?.speechToAudioMs != null) field('speech-timing').textContent += ' · taleslutt til første lyd: ' + (m.speechToAudioMs / 1000).toFixed(1) + ' s';
   }
   async function drain() {
     const item = output;
@@ -115,7 +127,7 @@
     const part = item.queue.shift();
     if (!part) {
       item.running = false; speaking = false;
-      if (item.done) { output = null; notify('Svaret er ferdig.'); resume(); }
+      if (item.done) { output = null; notify(outcome === 'truncated' ? 'Svaret er avkortet. Se fortsettelse i chatten.' : 'Svaret er ferdig.'); resume(); }
       else notify('Venter på neste setning fra MMIR …', 'thinking');
       return;
     }
@@ -125,7 +137,11 @@
     utterance.onstart = () => {
       if (item !== output || item.epoch !== epoch) return;
       if (current && current.firstAudioMs == null) current.firstAudioMs = clock() - current.startedAt;
-      if (lastMetrics && current?.firstAudioMs != null) { lastMetrics.firstAudioMs = current.firstAudioMs; renderTruth(); }
+      if (lastMetrics && current?.firstAudioMs != null) {
+        lastMetrics.firstAudioMs = current.firstAudioMs;
+        if (current.speechEndedAt != null) lastMetrics.speechToAudioMs = current.startedAt + current.firstAudioMs - current.speechEndedAt;
+        renderTruth();
+      }
     };
     utterance.onend = () => { if (item === output && item.epoch === epoch) { clear('speech'); item.running = false; drain(); } };
     utterance.onerror = () => { if (item === output && item.epoch === epoch) pause('Opplesningen feilet. Svaret er bevart. Prøv Test stemmen eller les i chatten.'); };
@@ -146,11 +162,22 @@
   }
   function onCore(event) {
     if (!enabled) return;
-    if (event.type === 'conversation-changed') { lastMetrics = lastWriter = null; capture = null; showCapture(''); pause('Ny samtale. Mikrofonen er av.'); renderTruth(); return; }
+    const snapshot = backend.snapshot();
+    if (event.conversationId === snapshot.conversationId && event.turnId === snapshot.turnId) {
+      if (event.type === 'turn-requested') { outcome = 'pending'; lastError = null; }
+      if (event.type === 'answer-final') outcome = event.truncated ? 'truncated' : 'complete';
+      if (event.type === 'turn-rejected') { outcome = 'rejected'; lastError = 'turn-rejected'; }
+      if (event.type === 'turn-failed') { outcome = 'failed'; lastError = 'turn-failed'; }
+      if (event.type === 'turn-cancelled') outcome = 'cancelled';
+      // Metadata still updates after Stop speech; no stopped audio is resumed.
+      renderTruth();
+    }
+    if (event.type === 'conversation-changed') { lastMetrics = lastWriter = null; capture = savedCapture = captureTiming = null; outcome = 'idle'; lastError = null; showCapture(''); pause('Ny samtale. Mikrofonen er av.'); renderTruth(); return; }
     if (event.type === 'policy-changed') { pause('Personvernmodus er endret. Tale er stoppet. Start på nytt med den nye policyen.'); renderTruth(); return; }
     if (event.type === 'turn-requested') {
       stopAudio(); clear('answer');
-      current = { turnId: event.turnId, conversationId: event.conversationId, messageId: null, startedAt: event.at, firstAudioMs: null, received: '', rest: '', streamed: false };
+      current = { turnId: event.turnId, conversationId: event.conversationId, messageId: null, startedAt: event.at, firstAudioMs: null, received: '', rest: '', streamed: false, speechEndedAt: captureTiming?.speechEndedAt ?? null, speechToTextMs: captureTiming?.speechToTextMs ?? null };
+      captureTiming = null;
       lastWriter = lastMetrics = null;
       const ticket = current;
       timers.answer = w.setTimeout(() => { if (current === ticket) pause('Ingen ferdig svartekst innen tre minutter. Kontroller MMIR-ruten i chatten.'); }, 180000);
@@ -178,7 +205,7 @@
     if (event.type === 'answer-final') {
       if (current.finalized) return;
       current.finalized = true; clear('answer');
-      lastMetrics = { ...event.metrics, firstAudioMs: current.firstAudioMs }; lastWriter = event.writer; renderTruth();
+      lastMetrics = { ...event.metrics, firstAudioMs: current.firstAudioMs, speechToTextMs: current.speechToTextMs, speechToAudioMs: current.speechEndedAt != null && current.firstAudioMs != null ? current.startedAt + current.firstAudioMs - current.speechEndedAt : null }; lastWriter = event.writer; renderTruth();
       if (!ttsConsent.checked) { session = false; notify('Svaret står i samtalen. Lokal opplesning er av.'); return; }
       let text = event.text;
       if (current.streamed) {
@@ -195,22 +222,52 @@
     const input = byId('p0-input'); if (!input) return false;
     input.value = text; input.dispatchEvent(new w.Event('input', { bubbles: true })); return true;
   }
+  function syncCapture() {
+    if (!panel || !transcript) return;
+    const owns = capture && transcript.dataset.captureId === capture.id && capture.conversation === backend?.snapshot().conversationId;
+    const ready = owns && capture.ready && !capture.sent && !recognition && !probing;
+    transcript.readOnly = !ready;
+    for (const name of ['send-capture', 'draft-capture']) { field(name).hidden = !ready; field(name).disabled = !ready; }
+    field('saved-capture').hidden = !savedCapture;
+    field('saved-text').value = savedCapture?.text || '';
+    field('restore-capture').disabled = Boolean(recognition || probing);
+    field('discard-saved').disabled = Boolean(recognition || probing);
+  }
   function showCapture(text, final = false) {
-    transcript.value = text; transcript.readOnly = !final;
-    field('capture').hidden = !text; field('send-capture').hidden = !final; field('draft-capture').hidden = !final;
+    transcript.value = text;
+    transcript.dataset.captureId = capture?.id || '';
+    if (capture) { capture.text = text; capture.ready = final; }
+    field('capture').hidden = !text;
+    syncCapture();
+  }
+  function eligibleCapture() {
+    return capture && !capture.sent && capture.ready && !recognition && !probing && active() &&
+      transcript.dataset.captureId === capture.id && capture.conversation === backend.snapshot().conversationId;
+  }
+  function restoreCapture() {
+    if (recognition || probing || !savedCapture || savedCapture.conversation !== backend.snapshot().conversationId) return;
+    const previous = capture && !capture.sent && transcript.value.trim() ? { ...capture, text: transcript.value } : null;
+    capture = savedCapture; savedCapture = previous;
+    showCapture(capture.text, true);
+    notify('Det tidligere taleutkastet er hentet frem. Se over før sending.', 'review');
   }
   function submitCapture() {
-    if (!capture || capture.sent || !active() || capture.conversation !== backend.snapshot().conversationId) return;
+    // A click from an older recording must never submit under the new recording.
+    if (!eligibleCapture()) return;
     const text = transcript.value.trim(), input = byId('p0-input');
     if (!text) return;
+    if (w.navigator.onLine === false && backend.snapshot().selectedRoute.kind !== 'local') return notify('Nettleseren er frakoblet. Taleteksten er bevart i denne fanen; ingen ny forespørsel er sendt.', 'attention');
     if (!input || input.value !== capture.originalDraft) return notify('Utkastet ble endret. Taleteksten er bevart separat og er ikke sendt.', 'attention');
     if (busy()) return notify('MMIR svarer fortsatt. Taleteksten er bevart; vent før du sender.', 'attention');
     if (!micConsent.checked || !policy().localSTT) return pause('Samtykke eller personvernpolicy er endret. Taleteksten er ikke sendt.');
     if (/^(?:jarvis[, ]+)?(?:tilbake til (?:vanlig )?chat|avslutt jarvis)[.!?]*$/i.test(text)) { setSkin('chat'); return; }
-    setDraft(text); capture.sent = true;
     const form = byId('p0-composer'), send = byId('p0-send');
+    setDraft(text); capture.text = text; capture.sent = true; capture.phase = 'composer'; syncCapture();
     if (!form?.requestSubmit || !send || send.disabled) { session = false; return notify('Taleteksten ligger i skrivefeltet. Kontroller ruten før du trykker Send.', 'attention'); }
-    form.requestSubmit(); // All privacy, routing, context and spend gates remain in P0.
+    captureTiming = { speechEndedAt: capture.speechEndedAt ?? null, speechToTextMs: capture.speechEndedAt != null && capture.finalAt >= capture.speechEndedAt ? capture.finalAt - capture.speechEndedAt : null };
+    capture.phase = 'handed-to-core';
+    form.requestSubmit(); // Core owns history, privacy, routing, single-flight and spend.
+    captureTiming = null; // Only the synchronous core request may consume this metric.
   }
   async function verifyLocal(Recognition, rec) {
     if (!('processLocally' in rec) || typeof Recognition.available !== 'function') return 'unsupported';
@@ -218,7 +275,7 @@
     try { return await Promise.race([Recognition.available({ langs: ['nb-NO'], processLocally: true, quality: 'dictation' }), new Promise(resolve => { timer = w.setTimeout(() => resolve('unknown'), 2500); })]); }
     catch (_) { return 'unknown'; } finally { w.clearTimeout(timer); }
   }
-  async function listen() {
+  async function listen(config = {}) {
     if (!active()) return;
     // Stopping owned output always precedes ALL draft, permission and mic gates.
     if (recognition || probing) return pause();
@@ -237,10 +294,10 @@
     let rec;
     try { rec = new Recognition(); } catch (_) { return pause('Mikrofonen kunne ikke klargjøres. Bruk tekst.'); }
     probing = true; notify('Kontrollerer norsk talegjenkjenning …', 'preparing');
-    const local = await verifyLocal(Recognition, rec);
+    const local = await verifyLocal(Recognition, rec); localAvailability = local;
     if (ticket !== epoch || !active() || !micConsent.checked || backend.snapshot().conversationId !== conversation) return;
     probing = false;
-    const mustBeLocal = prefs.processing === 'local' || !policy().remoteSTT;
+    const mustBeLocal = prefs.processing === 'local' || !policy().remoteSTT || w.navigator.onLine === false;
     if (local === 'available') {
       try { rec.processLocally = true; } catch (_) { return pause('Nettleseren avviste lokal behandling. Ingen lyd er sendt.'); }
       if (rec.processLocally !== true) return pause('Lokal behandling kunne ikke bekreftes. Ingen lyd er sendt.');
@@ -252,30 +309,39 @@
       field('provider').textContent = 'Tale inn: nettleserens tjeneste – lyd kan sendes eksternt';
     }
     if (!ordinaryMicIdle() || busy() || input.value.trim()) return pause('Chatten eller mikrofonen endret tilstand. Utkastet er beholdt; prøv igjen.');
-    session = true; recognition = rec; capture = { originalDraft: input.value, sent: false, conversation };
+    if (capture && !capture.sent && transcript.value.trim()) {
+      if (savedCapture) return pause('Du har to usendte taleutkast. Send, hent frem eller forkast det tidligere utkastet før flere opptak.');
+      savedCapture = { ...capture, text: transcript.value };
+    }
+    session = true; recognition = rec;
+    const recording = { id: String(++captureSequence), originalDraft: input.value, text: '', ready: false, sent: false, phase: 'recording', conversation, practice: config.practice === true, speechEndedAt: null, finalAt: null };
+    capture = recording; showCapture('');
     rec.lang = 'nb-NO'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
     const finals = new Map(); let finalText = '';
+    rec.onspeechend = () => { if (ticket === epoch && capture === recording) recording.speechEndedAt = clock(); };
     rec.onstart = () => { if (ticket === epoch) notify('Lytter … ' + (prefs.inputMode === 'review' ? 'du ser over teksten før sending.' : 'ett spørsmål sendes når du er ferdig.'), 'listening'); };
     rec.onresult = event => {
-      if (ticket !== epoch || !active()) return;
+      if (ticket !== epoch || !active() || capture !== recording || recognition !== rec) return;
       const interim = [];
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
-        if (result.isFinal) finals.set(i, result[0].transcript); else interim.push(result[0].transcript);
+        if (result.isFinal) { finals.set(i, result[0].transcript); recording.finalAt = clock(); } else interim.push(result[0].transcript);
       }
       finalText = [...finals.entries()].sort((a, b) => a[0] - b[0]).map(([, value]) => value).join(' ').trim();
       showCapture([finalText, ...interim].filter(Boolean).join(' '));
     };
     rec.onerror = event => {
-      if (ticket !== epoch) return;
+      if (ticket !== epoch || capture !== recording) return;
+      lastError = Object.hasOwn(U.errors, event.error) ? event.error : 'recognition-error';
       showCapture(transcript.value, Boolean(transcript.value));
       pause(U.errors[event.error] || 'Talegjenkjenningen feilet. Teksten er bevart; prøv et nytt opptak eller skriv i chatten.');
     };
     rec.onend = () => {
-      if (ticket !== epoch || !active()) return;
+      if (ticket !== epoch || !active() || capture !== recording || recognition !== rec) return;
       recognition = null; clear('mic'); rec.onresult = rec.onend = rec.onerror = null;
       if (!finalText) { showCapture(transcript.value, Boolean(transcript.value)); return pause(U.errors['no-speech']); }
-      showCapture(finalText, true);
+      recording.phase = 'review'; showCapture(finalText, true);
+      if (recording.practice) { session = false; return notify('Diktatprøven er klar. Kontroller navn, tall og «ikke». Ingen modellforespørsel er sendt.', 'review'); }
       if (prefs.inputMode === 'review') { session = false; notify('Se over taleteksten før du sender.', 'review'); }
       else submitCapture();
     };
@@ -291,8 +357,34 @@
     let permission = 'ukjent – kontrolleres ved oppstart';
     try { permission = (await w.navigator.permissions.query({ name: 'microphone' })).state; } catch (_) {}
     if (ticket !== epoch || !active()) return;
+    localAvailability = local;
     field('diagnostic').textContent = 'HTTPS: ' + (w.isSecureContext ? 'ja' : 'nei') + ' · gjenkjenning: ' + (Recognition ? 'støttet' : 'ikke støttet') + ' · norsk lokalt: ' + local + ' · lokale norske stemmer: ' + localVoices().length + ' · mikrofontillatelse: ' + permission + '. Ingen opptak eller modellkall er startet.';
     renderTruth(); refreshVoices();
+  }
+  function diagnostics() {
+    const s = backend.snapshot(), metrics = {};
+    for (const key of ['elapsedMs', 'firstTextMs', 'firstAudioMs', 'speechToTextMs', 'speechToAudioMs', 'tokens']) {
+      const value = lastMetrics?.[key];
+      metrics[key] = typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.round(value) : null;
+    }
+    return { version: VERSION, secureContext: w.isSecureContext === true,
+      privacy: s.policy.mode, onlineHint: w.navigator.onLine !== false,
+      recognitionSupported: Boolean(w.SpeechRecognition || w.webkitSpeechRecognition),
+      localNorwegian: ['available', 'downloadable', 'downloading', 'unavailable', 'unsupported', 'unknown'].includes(localAvailability) ? localAvailability : 'not-checked',
+      localNorwegianVoices: localVoices().length, microphoneActive: Boolean(recognition),
+      outcome, lastError, writerVerified: lastWriter?.identity_verified === true, metrics,
+      providerCancellation: 'not-confirmed',
+      verification: { hardware: 'not-certified-by-this-report', liveModel: 'not-certified-by-this-report' } };
+  }
+  async function copyDiagnostics() {
+    const text = JSON.stringify(diagnostics(), null, 2);
+    try { await w.navigator.clipboard.writeText(text); field('copy-status').textContent = 'Diagnostikk kopiert. Ingen samtaletekst, lyd, modellnavn, adresser eller nøkler er med.'; }
+    catch (_) { field('diagnostic-copy').hidden = false; field('diagnostic-copy').value = text; field('copy-status').textContent = 'Kopiering ble blokkert. Kopier den tekstfrie diagnostikken i feltet.'; }
+  }
+  function stopTask() {
+    pause('Tale er stoppet.');
+    if (busy()) { backend.stop?.(); outcome = 'cancelled'; notify('Stopp er bedt om hos MMIR. Leverandørens behandling og ressursbruk er ikke bekreftet stoppet.'); }
+    renderTruth();
   }
   function mount() {
     app = byId('mmir-p0-app'); backend = w.MmirP0Conversation;
@@ -303,9 +395,10 @@
     panel.innerHTML = '<div class="mmir-jarvis-reactor" aria-hidden="true"><span></span></div><div class="mmir-jarvis-info">' +
       '<p class="mmir-jarvis-kicker">J.A.R.V.I.S. / MMIR</p><h2>Samme samtale. Med stemme.</h2><span class="mmir-jarvis-mic-state" data-jarvis="mic-state">Mikrofon av</span>' +
       '<div class="mmir-jarvis-actions">' +
-      '<button type="button" data-jarvis="talk">Snakk med MMIR</button><button type="button" data-jarvis="pause">Stopp tale</button><button type="button" data-jarvis="chat">Tilbake til chat</button></div><p class="mmir-jarvis-status" role="status" aria-live="polite">Mikrofonen er av.</p>' +
+      '<button type="button" data-jarvis="talk">Snakk med MMIR</button><button type="button" data-jarvis="pause">Stopp tale</button><button type="button" data-jarvis="stop-task" disabled>Stopp oppgaven</button><button type="button" data-jarvis="chat">Tilbake til chat</button></div><p class="mmir-jarvis-status" role="status" aria-live="polite">Mikrofonen er av.</p>' +
       '<div class="mmir-jarvis-capture" data-jarvis="capture" hidden><label>Dette hører Jarvis<textarea data-jarvis="transcript" rows="2" readonly aria-live="off"></textarea></label>' +
       '<div class="mmir-jarvis-actions"><button type="button" data-jarvis="send-capture" hidden>Send taleteksten</button><button type="button" data-jarvis="draft-capture" hidden>Legg i skrivefeltet</button></div></div>' +
+      '<details data-jarvis="saved-capture" hidden><summary>Tidligere usendt taleutkast</summary><textarea data-jarvis="saved-text" rows="2" readonly aria-label="Tidligere taleutkast"></textarea><button type="button" data-jarvis="restore-capture">Hent frem tidligere utkast</button><button type="button" data-jarvis="discard-saved">Forkast tidligere utkast</button></details>' +
       '<details data-jarvis="options" open><summary>Talevalg og samtykke</summary>' +
       '<label class="mmir-jarvis-consent"><input type="checkbox" data-jarvis="consent"> Tillat mikrofon i denne økten. I offentlig modus kan nettleseren sende lyd til sin taleleverandør. Ferdig tekst sendes gjennom den valgte MMIR-ruten.</label>' +
       '<label class="mmir-jarvis-consent"><input type="checkbox" data-jarvis="tts"> Les svar med en lokal norsk stemme (ingen ekstern taletjeneste).</label>' +
@@ -316,17 +409,23 @@
       '<label>Opplesning<select data-jarvis="read-mode"><option value="full">Hele svaret</option><option value="excerpt">Første avsnitt (merket utdrag)</option></select></label></div>' +
       '<label class="mmir-jarvis-consent"><input type="checkbox" data-jarvis="early"> Les komplette setninger fortløpende når MMIR-ruten bekrefter støtte.</label>' +
       '<label class="mmir-jarvis-consent"><input type="checkbox" data-jarvis="remember"> Husk Jarvis-visningen. Samtykke lagres aldri, og mikrofonen starter aldri automatisk ved åpning.</label>' +
-      '<div class="mmir-jarvis-actions"><button type="button" data-jarvis="doctor">Kontroller tale</button><button type="button" data-jarvis="test-voice">Test stemmen</button></div><p data-jarvis="diagnostic"></p></details>' +
+      '<div class="mmir-jarvis-actions"><button type="button" data-jarvis="doctor">Kontroller tale</button><button type="button" data-jarvis="test-voice">Test stemmen</button><button type="button" data-jarvis="test-dictation">Test norsk diktat (uten modell)</button></div><p data-jarvis="diagnostic"></p><p>Prøvesetning: «MMIR og Jarvis bruker GitHub. Tallet er 12,5 prosent, ikke 15. Vi møtes 19. september.» Diktatprøven bruker valgt talebehandling og sender ikke et spørsmål til modellen. Kontroller teksten selv.</p></details>' +
       '<details class="mmir-jarvis-truth"><summary>MMIR-status</summary><dl>' +
-      '<dt>Personvern</dt><dd data-jarvis="privacy"></dd><dt>Ruting</dt><dd data-jarvis="route"></dd><dt>Faktisk svar</dt><dd data-jarvis="writer"></dd><dt>Identitet</dt><dd data-jarvis="conversation"></dd><dt>Tale</dt><dd data-jarvis="provider">Tale inn: ikke startet · tale ut: kun lokal norsk</dd><dt>Tid</dt><dd data-jarvis="latency"></dd><dt>Ressurser</dt><dd data-jarvis="usage"></dd></dl></details></div>';
+      '<dt>Resultat</dt><dd data-jarvis="outcome"></dd><dt>Personvern</dt><dd data-jarvis="privacy"></dd><dt>Ruting</dt><dd data-jarvis="route"></dd><dt>Faktisk svar</dt><dd data-jarvis="writer"></dd><dt>Identitet</dt><dd data-jarvis="conversation"></dd><dt>Tale</dt><dd data-jarvis="provider">Tale inn: ikke startet · tale ut: kun lokal norsk</dd><dt>Tid</dt><dd data-jarvis="latency"></dd><dt>Taleventetid</dt><dd data-jarvis="speech-timing"></dd><dt>Ressurser</dt><dd data-jarvis="usage"></dd></dl><button type="button" data-jarvis="copy-diagnostics">Kopier diagnostikk uten samtaletekst</button><p data-jarvis="copy-status" role="status"></p><textarea data-jarvis="diagnostic-copy" readonly hidden aria-label="Diagnostikk uten samtaletekst"></textarea></details></div>';
     app.querySelector('.p0-chat').prepend(panel);
     status = panel.querySelector('.mmir-jarvis-status'); talk = field('talk'); micConsent = field('consent'); ttsConsent = field('tts'); auto = field('auto'); transcript = field('transcript'); options = field('options');
     talk.addEventListener('click', listen); field('pause').addEventListener('click', () => pause()); field('chat').addEventListener('click', () => setSkin('chat'));
     field('send-capture').addEventListener('click', submitCapture);
+    transcript.addEventListener('input', () => { if (capture && transcript.dataset.captureId === capture.id && !recognition && !probing) capture.text = transcript.value; });
+    field('restore-capture').addEventListener('click', restoreCapture);
+    field('discard-saved').addEventListener('click', () => { if (!recognition && !probing) { savedCapture = null; syncCapture(); } });
+    field('stop-task').addEventListener('click', stopTask);
+    field('copy-diagnostics').addEventListener('click', copyDiagnostics);
+    field('test-dictation').addEventListener('click', () => listen({ practice: true }));
     field('draft-capture').addEventListener('click', () => {
-      if (!capture || capture.conversation !== backend.snapshot().conversationId) return;
+      if (!eligibleCapture()) return;
       if (byId('p0-input')?.value.trim()) return notify('Det eksisterende utkastet er beholdt. Kopier taleteksten manuelt eller send utkastet først.', 'attention');
-      setDraft(transcript.value); notify('Taleteksten ligger i skrivefeltet. Ingen melding er sendt.');
+      setDraft(transcript.value); capture.sent = true; capture.phase = 'composer'; syncCapture(); notify('Taleteksten ligger i skrivefeltet. Ingen melding er sendt.');
     });
     for (const box of [micConsent, ttsConsent]) box.addEventListener('change', () => {
       if (!box.checked) pause();
@@ -356,6 +455,11 @@
     w.addEventListener('mmir-p0-voice-state-updated', () => { if (enabled && !ordinaryMicIdle() && recognition) pause('Den vanlige mikrofonfunksjonen tok over. Jarvis-opptaket er stoppet.'); });
     d.addEventListener('visibilitychange', () => { if (d.visibilityState === 'hidden') pause(); });
     w.addEventListener('pagehide', () => pause());
+    w.addEventListener('offline', () => { if (enabled) { lastError = 'browser-offline'; pause('Nettleseren melder frakoblet. Tale er stoppet og utkast er bevart i denne fanen. Ingen forespørsel sendes om igjen automatisk.'); } });
+    w.addEventListener('online', () => { if (enabled) { if (!recognition && !probing) notify('Nettleseren melder forbindelse igjen. Kontroller siste svar før du prøver igjen. Mikrofonen er av.'); renderTruth(); } });
+    w.addEventListener('beforeunload', event => {
+      if (savedCapture?.text || (capture && !capture.sent && transcript.value.trim())) { event.preventDefault(); event.returnValue = ''; }
+    });
     w.addEventListener('resize', updateViewport);
     if (w.visualViewport) {
       w.visualViewport.addEventListener('resize', updateViewport);

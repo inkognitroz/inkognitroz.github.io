@@ -1,3 +1,4 @@
+import './test-jarvis-reliability.mjs';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
