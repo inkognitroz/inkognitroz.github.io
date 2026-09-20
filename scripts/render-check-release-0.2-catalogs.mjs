@@ -677,9 +677,15 @@ async function checkLocalMentionBoundaries(browser){
       }
       return JSON.stringify(state.pendingMedia);
     },fixture);
+    const feedbackBefore=await page.evaluate(()=>localStorage.getItem('mmir-p0-feedback-inbox-v1'));
     const prompt=(fixture.handle?'@'+fixture.handle+' ':'')+'The model is broken.';
     await page.locator('#p0-input').fill(prompt);
     await page.locator('#p0-send').click();
+    // Implicit feedback stores its draft synchronously before starting fetch;
+    // this catches capture even if the network-route callback has not fired.
+    if(await page.evaluate(()=>localStorage.getItem('mmir-p0-feedback-inbox-v1'))!==feedbackBefore){
+      throw new Error('Local/private intent must not create an implicit feedback draft: '+JSON.stringify(fixture));
+    }
     const expected=fixture.connected?'Bilder støttes ikke':fixture.privateMode?'needs a local model':'Ingen lokal modell er koblet til';
     await page.waitForFunction(expected=>document.getElementById('p0-status')?.textContent.includes(expected),expected);
     assert(outbound.length===0,'Local/private intent must not submit feedback, hosted/vision or local provider requests: '+JSON.stringify(fixture));
