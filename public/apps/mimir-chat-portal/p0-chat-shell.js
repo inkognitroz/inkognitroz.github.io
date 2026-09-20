@@ -2770,7 +2770,7 @@
     }
     return {
       ...receipt,
-      text:requestedLabel+': svar venter · live-status ikke bekreftet',
+      text:requestedLabel+': svar venter · '+(hostedModelLiveVerified(model)?'live-bevis finnes':'live-status ikke bekreftet'),
       state:'hosted'
     };
   }
@@ -3099,7 +3099,7 @@
         const tags=truth.key==='free_now'
           ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Gratis nå']
           : (truth.key==='basic_chat'
-            ? [provider,'Grunnchat','Status ukjent']
+            ? (liveE2EVerified?[provider,'Grunnchat','Live-bevis','Port blokkert']:[provider,'Grunnchat','Status ukjent'])
           : (truth.key==='byok_unavailable'
             ? [provider,'BYOK','Ikke støttet i 0.2']
             : (candidate||truth.key==='planned'
@@ -3602,8 +3602,8 @@
     const stats=routeBenchmark(model);
     if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)){
       return {
-        label:'Grunnchat · status ukjent',
-        detail:'Den kanoniske chatruten kan forsøkes uten nettlesernøkkel. Live-status og avanserte kvalitetsporter er ikke bekreftet.',
+        label:hostedModelLiveVerified(model)?'Grunnchat · Live-bevis · Port blokkert':'Grunnchat · status ukjent',
+        detail:model.detail||'Grunnchat kan forsøkes uten nettlesernøkkel. Avanserte kvalitetsporter er ikke bekreftet.',
         state:'setup'
       };
     }
@@ -3691,7 +3691,9 @@
 
   function modelUseCase(model){
     if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)){
-      return 'Good for: ordinary hosted chat. Limit: current availability and release quality are not verified.';
+      return hostedModelLiveVerified(model)
+        ? 'Good for: ordinary hosted chat. Route proof exists; advanced release quality is not verified.'
+        : 'Good for: ordinary hosted chat. Limit: current availability and release quality are not verified.';
     }
     if(model?.candidate||model?.executable===false)return 'Future capacity; not active yet.';
     if(model?.route==='local'){
@@ -5048,7 +5050,7 @@
       const releaseBlockedVerified=model.route==='hosted'&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat');
       const title=selectable
         ? (ordinaryHostedChatTryable(model)&&!liveHostedModel(model)
-          ? 'Velg '+model.label+' · grunnchat kan forsøkes uten bekreftet live-status.'
+          ? 'Velg '+model.label+' · '+(hostedModelLiveVerified(model)?'grunnchat kan forsøkes; live-bevis finnes, avansert releaseport blokkert.':'grunnchat kan forsøkes uten bekreftet live-status.')
           : 'Velg '+model.label)
         : (releaseBlockedVerified
           ? 'Live-bevis finnes, men den offentlige releaseporten er blokkert.'
@@ -5057,7 +5059,7 @@
     }).join('');
     const buttons=''+
       (hostedActiveModels.length?menuSection('Live-verifiserte hostede ruter')+renderButtons(hostedActiveModels):'<div class="p0-menu-note">Ingen hostet rute er produksjonsverifisert nå.</div>')+
-      (hostedBasicModels.length?menuSection('Grunnchat · status ikke bekreftet')+renderButtons(hostedBasicModels):'')+
+      (hostedBasicModels.length?menuSection('Grunnchat · kan prøves')+renderButtons(hostedBasicModels):'')+
       (hostedBlockedVerifiedModels.length?menuSection('Live-bevis · releaseport blokkert')+renderButtons(hostedBlockedVerifiedModels):'')+
       (hostedFutureModels.length?menuSection('Konfigurerte eller fremtidige ruter')+renderButtons(hostedFutureModels):'')+
       (localModels.length?menuSection('Private lokale modeller')+renderButtons(localModels):'');
@@ -5085,7 +5087,9 @@
         persistActiveModelId();
         closeMenus();
         renderToolbar();
-        status(model.label+' er valgt.','ready');
+        status(model.label+(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)&&hostedModelLiveVerified(model)
+          ? ' er valgt for grunnchat · live-bevis finnes, men avansert releaseport er blokkert.'
+          : ' er valgt.'),'ready');
       });
     });
   }
@@ -5227,7 +5231,7 @@
       return {state:'public',label:'Offentlig modus · Supergenis hostede rute er live-verifisert'};
     }
     if(ordinaryHostedChatTryable(model)){
-      return {state:'setup',label:'Offentlig modus · grunnchat kan prøves · live-status ikke bekreftet'};
+      return {state:'setup',label:'Offentlig modus · grunnchat kan prøves · '+(hostedModelLiveVerified(model)?'live-bevis finnes · avansert releaseport blokkert':'live-status ikke bekreftet')};
     }
     return {state:'error',label:'Offentlig modus · valgt avansert rute blokkert til produksjonsbeviset er grønt'};
   }
@@ -5315,7 +5319,7 @@
     }
     if(ordinaryHostedChatTryable(model)){
       return {
-        text:'Grunnchat kan prøves · live-status ikke bekreftet · ingen nettlesernøkkel',
+        text:'Grunnchat kan prøves · '+(hostedModelLiveVerified(model)?'Live-bevis; avansert releaseport blokkert':'live-status ikke bekreftet')+' · ingen nettlesernøkkel',
         state:'hosted'
       };
     }

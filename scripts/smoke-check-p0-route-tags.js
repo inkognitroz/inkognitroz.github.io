@@ -437,6 +437,12 @@ const compactNode={id:availableNode.id,model:availableNode.model,provider:'multi
   cost_class:'free-quota',cost_state:'free-quota',no_paid_routes_started:true,live_e2e_verified:false};
 const compactNvidia={...compactNode,id:availableWriter.id,model:availableWriter.model,provider:'nvidia',
   route_id:availableWriter.route_id,route_type:'external_untrusted_free',route_state:'public_untrusted_free_available',route_scope:'public_provider'};
+const proofWriter=testApi.normalizeHostedModels({data:[{...availableWriter,live_e2e_verified:true,
+  live_e2e_proof:{verified:true,no_paid_routes_started:true}}]})[0];
+assertEqual(proofWriter.selectable,true,'Existing model proof and ordinary permission must coexist behind a blocked advanced release');
+assertEqual(proofWriter.tags.includes('Live-bevis')&&proofWriter.tags.includes('Port blokkert'),true,'Basic route tags must retain existing proof and the separate advanced block');
+assertEqual(proofWriter.tags.includes('Status ukjent'),false,'Existing proof must not be replaced by unknown-status copy');
+assertIncludes(testApi.ordinaryChatAttemptReceipt(proofWriter).text,'live-bevis finnes','Pending ordinary attempt must retain its existing proof without claiming the new answer succeeded');
 for(const override of [
   {selectable:false},{selectable:undefined},{executable:false},{executable:undefined},
   {candidate:true},{candidate:undefined},{status:'temporarily_degraded'},{availability:'unavailable'},

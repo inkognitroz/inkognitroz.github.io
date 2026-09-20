@@ -350,7 +350,9 @@
         access:'Grunnchat via api.mmir.ai · ingen nettlesernøkkel · betalte ruter forbudt',
         reason:supergeni
           ? 'Den kanoniske Supergeni-grunnchatten kan forsøkes. Live-status og avanserte kvalitetsporter er ikke bekreftet.'
-          : 'Serveren tillater et grunnchat-forsøk med denne rutepreferansen. Gatewayen kan bruke en annen skriver; live-status er ikke bekreftet.'
+          : (liveE2EVerified
+            ? 'Serveren tillater grunnchat, og ruten har live-bevis. Avansert releaseport er ikke bekreftet; gatewayen kan bruke en annen skriver.'
+            : 'Serveren tillater et grunnchat-forsøk med denne rutepreferansen. Gatewayen kan bruke en annen skriver; live-status er ikke bekreftet.')
       });
     }
     if(isPlanned(model))return result('planned',{liveE2EVerified,access:'Katalogført eller planlagt · kan ikke prøves nå',reason:'Ruten er ikke en aktiv offentlig svarrute.'});

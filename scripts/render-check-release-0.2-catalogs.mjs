@@ -114,6 +114,7 @@ async function routeApi(page,{
   readinessState,
   authenticated,
   noPaidRoutesStarted=true,
+  writerOverrides={},
   replace=false,
   delayMs=0
 }={}){
@@ -173,7 +174,7 @@ async function routeApi(page,{
           {id:'llama-3.3-70b-versatile',model:'llama-3.3-70b-versatile',object:'model',display_name:'Groq Llama 3.3 70B',provider:'groq',status:'available',route_id:'groq/llama-3.3-70b-versatile',node_id:'groq-candidate',route_state:'public_untrusted_free_available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:!zeroLive,live_e2e_proof:liveProof('groq','llama-3.3-70b-versatile',!zeroLive),cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture verified route.']},
           {id:'configured-writer',model:'configured-writer',object:'model',display_name:'Configured Writer',provider:'fixture',status:'available',route_id:'fixture/configured',node_id:'fixture-b',route_state:'available',route_type:'external_untrusted_free',executable:true,selectable:true,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture without fresh E2E proof.']},
           {id:'degraded-writer',model:'degraded-writer',object:'model',display_name:'Degraded Writer',provider:'fixture',status:'temporarily_degraded',route_id:'fixture/degraded',node_id:'fixture-c',route_state:'provider_temporarily_degraded',route_type:'external_untrusted_free',executable:false,selectable:false,candidate:false,live_e2e_verified:false,live_e2e_proof:null,cost_class:'free-quota',cost_state:'free_guarded',no_paid_routes_started:true,capabilities:['chat.completions'],limitations:['Fixture degraded route.']}
-        ]
+        ].map(model=>model.id==='mistral-small-latest'?{...model,...writerOverrides}:model)
       })
     });
   });
@@ -246,10 +247,13 @@ async function checkChatNav(browser){
   assert(/Live-bevis/i.test(verifiedWriterText)&&/Port blokkert/i.test(verifiedWriterText),'live-E2E proof must remain visible when only the release port is blocked');
   assert(!/Ikke live/i.test(verifiedWriterText),'a live-E2E route behind a blocked release port must not be mislabeled non-live');
   await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).evaluate(button=>button.click());
-  assert(/har live-bevis.+releaseporten er blokkert/i.test(await page.locator('#p0-status').innerText()),'clicking a verified-but-blocked route must preserve its live proof and name the release block');
+  assert(/valgt for grunnchat.+live-bevis.+avansert releaseport er blokkert/i.test(await page.locator('#p0-status').innerText()),'selecting an eligible ordinary route must preserve its live proof and name the advanced release block');
   const blockedRouteText=await page.locator('#p0-route').innerText();
   assert(/Live-bevis.+releaseport blokkert/i.test(blockedRouteText),'verified-but-blocked route click must preserve its proof in the route line; got '+blockedRouteText);
   assert(hostedChatCalls===1,'clicking a verified-but-blocked route must not start another hosted chat');
+  assert(await page.locator('#p0-model-menu').isHidden(),'selecting an eligible ordinary route must close the model menu');
+  await page.locator('#p0-model').click();
+  assert(await page.locator('#p0-model-menu').isVisible(),'Escape must be tested on a reopened model menu');
   await page.keyboard.press('Escape');
   assert(await page.locator('#p0-model-menu').isHidden(),'Escape must close the model menu');
   assert(await page.locator('#p0-model').getAttribute('aria-expanded')==='false','Escape must reset model menu expanded state');
@@ -568,10 +572,15 @@ async function checkInventoryMismatchFailsClosed(browser){
 
 async function checkReadyToBlockedTransition(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
-  let hostedChatCalls=0;
+  const hostedRequests=[];
+  let advancedCalls=0;
   await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
-    hostedChatCalls+=1;
-    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'must not run'}}]})});
+    hostedRequests.push(route.request().postDataJSON());
+    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'Ordinary route fixture answer'}}]})});
+  });
+  await page.route('https://api.mmir.ai/chat/**',route=>{
+    advancedCalls+=1;
+    return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'advanced route must not run'})});
   });
   await routeApi(page,{releaseReady:true});
   await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
@@ -580,12 +589,50 @@ async function checkReadyToBlockedTransition(browser){
   await page.locator('#p0-model').click();
   await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).click();
   await routeApi(page,{releaseReady:false,replace:true});
-  await page.locator('#p0-input').fill('Kontroller porten på nytt før du svarer');
+  await page.locator('#p0-input').fill('Use both models to compare cycling and running.');
   await page.locator('#p0-send').click();
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
-  assert(hostedChatCalls===0,'green-to-blocked transition must stop before the hosted provider call');
-  assert(!(await page.locator('#p0-send').isDisabled()),'degraded advanced preflight must return selection to attemptable canonical basic chat');
+  assert(hostedRequests.length===0&&advancedCalls===0,'green-to-blocked advanced transition must stop compare before any provider call');
+  assert(!(await page.locator('#p0-send').isDisabled()),'blocked advanced release must retain explicitly eligible ordinary chat');
+  await page.locator('#p0-input').fill('Svar med den valgte vanlige rutepreferansen');
+  await page.locator('#p0-send').click();
+  await page.waitForSelector('#p0-send[data-state="send"]');
+  assert(hostedRequests.length===1,'advanced release block must permit exactly one eligible ordinary request');
+  assert(hostedRequests[0]?.model==='mistral/mistral-small-latest','ordinary request must retain its exact selected route preference after advanced release blocks');
+  assert(hostedRequests[0]?.policy?.paid_routes_allowed===false,'ordinary request after advanced release blocks must explicitly forbid paid routes');
+  assert(advancedCalls===0,'ordinary permission must never open compare or swarm');
   await page.close();
+}
+
+async function checkDeniedOrdinarySelection(browser){
+  for(const [name,writerOverrides,visible] of [
+    ['unavailable',{status:'temporarily_degraded',executable:false,selectable:false},false],
+    ['degraded but visible',{status:'temporarily_degraded'},true],
+    ['paid',{cost_class:'paid',cost_state:'paid'},true],
+    ['missing explicit eligibility',{selectable:undefined},true],
+    ['BYOK security boundary',{requires_api_key:true},true]
+  ]){
+    const page=await browser.newPage({viewport:{width:390,height:844}});
+    let hostedCalls=0;
+    await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
+      hostedCalls+=1;
+      return route.fulfill({status:503,contentType:'application/json',body:'{}'});
+    });
+    await routeApi(page,{writerOverrides});
+    await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+    await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
+    await page.locator('#p0-model').click();
+    const denied=page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'});
+    assert(await denied.count()===(visible?1:0),name+' route must preserve the existing inventory visibility projection');
+    if(visible){
+      assert(await denied.getAttribute('data-model-selectable')==='false'&&await denied.getAttribute('aria-disabled')==='true',name+' route must remain explicitly unselectable despite existing proof');
+      await denied.evaluate(button=>button.click());
+    }
+    assert((await page.locator('#p0-model .p0-model-name').innerText()).trim()==='Supergeni',name+' route must not replace the safe canonical default');
+    assert(await page.locator('#p0-model-menu').isVisible(),name+' denied click must not act like a successful selection');
+    assert(hostedCalls===0,name+' denied selection must not dispatch a provider request');
+    await page.close();
+  }
 }
 
 async function checkOutOfOrderPreflightFailsClosed(browser){
@@ -775,6 +822,16 @@ let browser;
 try{
   await waitForServer();
   browser=await chromium.launch({headless:true});
+  const newPage=browser.newPage.bind(browser);
+  browser.newPage=async options=>{
+    const page=await newPage({...options,serviceWorkers:'block'});
+    // Specific fixtures registered later take precedence; nothing else may
+    // reach an external API (including feedback intake) or local connector.
+    await page.route('**/*',route=>new URL(route.request().url()).origin===baseUrl
+      ? route.continue()
+      : route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'unmocked request blocked'})}));
+    return page;
+  };
   await checkCheckingFirstPaint(browser);
   await checkChatNav(browser);
   await checkModels(browser);
@@ -790,6 +847,7 @@ try{
   await checkKeyboardSendAndStop(browser);
   await checkInventoryMismatchFailsClosed(browser);
   await checkReadyToBlockedTransition(browser);
+  await checkDeniedOrdinarySelection(browser);
   await checkOutOfOrderPreflightFailsClosed(browser);
   await checkSupersededActionPreflightFailsClosed(browser);
   await checkFailClosed(browser);
