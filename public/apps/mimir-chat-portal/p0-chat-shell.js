@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260918-jarvis-v3';
+  const P0_RUNTIME_VERSION='20260921-ordinary-route-preference-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
