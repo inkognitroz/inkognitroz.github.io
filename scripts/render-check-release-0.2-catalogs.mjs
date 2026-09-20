@@ -574,6 +574,11 @@ async function checkReadyToBlockedTransition(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const hostedRequests=[];
   let advancedCalls=0;
+  let feedbackCalls=0;
+  await page.route('https://api.mmir.ai/feedback/intake',route=>{
+    feedbackCalls+=1;
+    return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'routing mention must not enter feedback intake'})});
+  });
   await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
     hostedRequests.push(route.request().postDataJSON());
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'Ordinary route fixture answer'}}]})});
@@ -589,10 +594,11 @@ async function checkReadyToBlockedTransition(browser){
   await page.locator('#p0-model').click();
   await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).click();
   await routeApi(page,{releaseReady:false,replace:true});
-  await page.locator('#p0-input').fill('Use both models to compare cycling and running.');
+  await page.locator('#p0-input').fill('@compare cycling and running.');
   await page.locator('#p0-send').click();
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   assert(hostedRequests.length===0&&advancedCalls===0,'green-to-blocked advanced transition must stop compare before any provider call');
+  assert(feedbackCalls===0,'The built-in @compare must reach the advanced gate without a feedback intake POST');
   assert(!(await page.locator('#p0-send').isDisabled()),'blocked advanced release must retain explicitly eligible ordinary chat');
   await page.locator('#p0-input').fill('Svar med den valgte vanlige rutepreferansen');
   await page.locator('#p0-send').click();
@@ -601,6 +607,7 @@ async function checkReadyToBlockedTransition(browser){
   assert(hostedRequests[0]?.model==='mistral/mistral-small-latest','ordinary request must retain its exact selected route preference after advanced release blocks');
   assert(hostedRequests[0]?.policy?.paid_routes_allowed===false,'ordinary request after advanced release blocks must explicitly forbid paid routes');
   assert(advancedCalls===0,'ordinary permission must never open compare or swarm');
+  assert(feedbackCalls===0,'The routing command and following ordinary message must not be captured as feedback');
   await page.close();
 }
 
@@ -631,6 +638,59 @@ async function checkDeniedOrdinarySelection(browser){
     assert((await page.locator('#p0-model .p0-model-name').innerText()).trim()==='Supergeni',name+' route must not replace the safe canonical default');
     assert(await page.locator('#p0-model-menu').isVisible(),name+' denied click must not act like a successful selection');
     assert(hostedCalls===0,name+' denied selection must not dispatch a provider request');
+    await page.close();
+  }
+}
+
+async function checkLocalMentionBoundaries(browser){
+  const cases=['private','local','gemma'].flatMap(handle=>[
+    {handle,connected:false},{handle,connected:true}
+  ]).concat([{handle:null,connected:false,privateMode:true}]);
+  for(const fixture of cases){
+    const page=await browser.newPage({viewport:{width:390,height:844}});
+    const outbound=[];
+    const deny=route=>{
+      outbound.push(route.request().url());
+      return route.fulfill({status:503,contentType:'application/json',body:'{}'});
+    };
+    await page.route(/^https:\/\/api\.mmir\.ai\/(?:feedback\/|v1\/chat\/|chat\/)/,deny);
+    await page.route(/^http:\/\/127\.0\.0\.1:3000\/v1\/chat\/completions/,deny);
+    // Arrange state only in this isolated test response, without pairing a
+    // real connector, choosing an actual image, or adding a production API.
+    await page.route('**/p0-chat-shell.js?*',async route=>{
+      const response=await route.fetch();
+      const source=await response.text();
+      const marker='  function boot(){';
+      if(!source.includes(marker))throw new Error('Local-intent fixture cannot locate shell boot');
+      await route.fulfill({response,body:source.replace(marker,'  window.__localIntentFixture={state};\n'+marker)});
+    });
+    await routeApi(page,{releaseReady:true});
+    await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
+    const mediaBefore=await page.evaluate(fixture=>{
+      const state=window.__localIntentFixture.state;
+      state.privacyMode=fixture.privateMode?'private':'public';
+      if(fixture.connected){
+        state.models.push({id:'local-fixture',model:'gemma3:270m',label:'Local fixture',route:'local',executable:true,selectable:true});
+        state.localReadiness={paired:true,runtimeChatReady:true,chatReady:true,modelIds:['gemma3:270m']};
+        state.pendingMedia={data_url:'data:image/png;base64,AA==',type:'image/png',source:'fixture'};
+      }
+      return JSON.stringify(state.pendingMedia);
+    },fixture);
+    const feedbackBefore=await page.evaluate(()=>localStorage.getItem('mmir-p0-feedback-inbox-v1'));
+    const prompt=(fixture.handle?'@'+fixture.handle+' ':'')+'The model is broken.';
+    await page.locator('#p0-input').fill(prompt);
+    await page.locator('#p0-send').click();
+    // Implicit feedback stores its draft synchronously before starting fetch;
+    // this catches capture even if the network-route callback has not fired.
+    if(await page.evaluate(()=>localStorage.getItem('mmir-p0-feedback-inbox-v1'))!==feedbackBefore){
+      throw new Error('Local/private intent must not create an implicit feedback draft: '+JSON.stringify(fixture));
+    }
+    const expected=fixture.connected?'Bilder støttes ikke':fixture.privateMode?'needs a local model':'Ingen lokal modell er koblet til';
+    await page.waitForFunction(expected=>document.getElementById('p0-status')?.textContent.includes(expected),expected);
+    assert(outbound.length===0,'Local/private intent must not submit feedback, hosted/vision or local provider requests: '+JSON.stringify(fixture));
+    if(fixture.handle)assert(await page.locator('#p0-input').inputValue()===prompt,'Rejected explicit local intent must retain its draft');
+    assert(await page.evaluate(()=>JSON.stringify(window.__localIntentFixture.state.pendingMedia))===mediaBefore,'Rejected local media must retain the attachment');
     await page.close();
   }
 }
@@ -848,6 +908,7 @@ try{
   await checkInventoryMismatchFailsClosed(browser);
   await checkReadyToBlockedTransition(browser);
   await checkDeniedOrdinarySelection(browser);
+  await checkLocalMentionBoundaries(browser);
   await checkOutOfOrderPreflightFailsClosed(browser);
   await checkSupersededActionPreflightFailsClosed(browser);
   await checkFailClosed(browser);

@@ -827,7 +827,7 @@ requireText(
 );
 	requireText(
 	  join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-	  "Oppdater AI først, så kan @supergeni @gemma sammenlignes.",
+	  "Ingen lokal modell er koblet til. Oppdater lokal AI før du bruker lokale rutekommandoer.",
 	  "P0 shell must fail clearly when a local route tag is used before local discovery.",
 	);
 requireText(

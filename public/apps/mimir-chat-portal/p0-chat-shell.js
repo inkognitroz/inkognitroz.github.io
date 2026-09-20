@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260921-ordinary-route-preference-v1';
+  const P0_RUNTIME_VERSION='20260921-routing-mentions-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -784,10 +784,13 @@
   function feedbackMentionCommand(prompt){
     const match=String(prompt||'').trim().match(/^@([a-z0-9][a-z0-9_.-]{1,39})\b\s+([\s\S]+)$/i);
     if(!match)return null;
+    const target=String(match[1]).toLowerCase();
+    // Only the exact leading routing handle is reserved, never body keywords.
+    if(['compare','supergeni','supergenius','supergenious','super','hosted','mmir','gemma','gemma3','qwen','llama','local','private'].includes(target))return null;
     const suggestion=redactOwnerSuggestionText(match[2]);
     if(!suggestion)return null;
     return {
-      target:String(match[1]||'feedback').toLowerCase(),
+      target,
       suggestion
     };
   }
@@ -7031,7 +7034,7 @@
     if(hostedRequested&&localModel){
       return {mode:'compare',model:localModel,prompt:cleaned};
     }
-    if(hostedRequested&&localRequested&&!localModel){
+    if(localRequested&&!localModel){
       return {mode:'missing-local',prompt:cleaned};
     }
     if(localModel){
@@ -8070,7 +8073,7 @@
     if(await handleFeedbackMentionCommand(prompt,input))return;
     if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
-    const frictionSignal=promptFrictionSignal(prompt);
+    const frictionSignal=localModelMentioned(prompt)||privateModeActive()?null:promptFrictionSignal(prompt);
     if(frictionSignal){
       captureInteraction('chat_guidance_signal',{
         feedback_kind:frictionSignal.kind,
@@ -8102,6 +8105,13 @@
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
+    if(state.pendingMedia&&localModelMentioned(prompt)){
+      captureInteraction('chat_blocked',{reason:'explicit_local_media_unsupported'});
+      status('Bilder støttes ikke for eksplisitte lokale rutekommandoer. Utkast og bilde er beholdt.','error');
+      routeStatus('Lokalt bilde ikke støttet · ingen rute startet','error');
+      input?.focus();
+      return;
+    }
     if(explicit?.mode==='compare'&&!privateModeActive()){
       if(!await ensureHostedJourneyReady('compare')){
         input?.focus();
@@ -8113,7 +8123,7 @@
     }
     if(explicit?.mode==='missing-local'){
       captureInteraction('chat_blocked',{reason:'missing_local_model'});
-      status('Oppdater AI først, så kan @supergeni @gemma sammenlignes.','error');
+      status('Ingen lokal modell er koblet til. Oppdater lokal AI før du bruker lokale rutekommandoer.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
       return;
