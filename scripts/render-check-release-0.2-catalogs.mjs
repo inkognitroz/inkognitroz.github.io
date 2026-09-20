@@ -642,6 +642,53 @@ async function checkDeniedOrdinarySelection(browser){
   }
 }
 
+async function checkLocalMentionBoundaries(browser){
+  const cases=['private','local','gemma'].flatMap(handle=>[
+    {handle,connected:false},{handle,connected:true}
+  ]).concat([{handle:null,connected:false,privateMode:true}]);
+  for(const fixture of cases){
+    const page=await browser.newPage({viewport:{width:390,height:844}});
+    const outbound=[];
+    const deny=route=>{
+      outbound.push(route.request().url());
+      return route.fulfill({status:503,contentType:'application/json',body:'{}'});
+    };
+    await page.route(/^https:\/\/api\.mmir\.ai\/(?:feedback\/|v1\/chat\/|chat\/)/,deny);
+    await page.route(/^http:\/\/127\.0\.0\.1:3000\/v1\/chat\/completions/,deny);
+    // Arrange state only in this isolated test response, without pairing a
+    // real connector, choosing an actual image, or adding a production API.
+    await page.route('**/p0-chat-shell.js?*',async route=>{
+      const response=await route.fetch();
+      const source=await response.text();
+      const marker='  function boot(){';
+      if(!source.includes(marker))throw new Error('Local-intent fixture cannot locate shell boot');
+      await route.fulfill({response,body:source.replace(marker,'  window.__localIntentFixture={state};\n'+marker)});
+    });
+    await routeApi(page,{releaseReady:true});
+    await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
+    const mediaBefore=await page.evaluate(fixture=>{
+      const state=window.__localIntentFixture.state;
+      state.privacyMode=fixture.privateMode?'private':'public';
+      if(fixture.connected){
+        state.models.push({id:'local-fixture',model:'gemma3:270m',label:'Local fixture',route:'local',executable:true,selectable:true});
+        state.localReadiness={paired:true,runtimeChatReady:true,chatReady:true,modelIds:['gemma3:270m']};
+        state.pendingMedia={data_url:'data:image/png;base64,AA==',type:'image/png',source:'fixture'};
+      }
+      return JSON.stringify(state.pendingMedia);
+    },fixture);
+    const prompt=(fixture.handle?'@'+fixture.handle+' ':'')+'The model is broken.';
+    await page.locator('#p0-input').fill(prompt);
+    await page.locator('#p0-send').click();
+    const expected=fixture.connected?'Bilder støttes ikke':fixture.privateMode?'needs a local model':'Ingen lokal modell er koblet til';
+    await page.waitForFunction(expected=>document.getElementById('p0-status')?.textContent.includes(expected),expected);
+    assert(outbound.length===0,'Local/private intent must not submit feedback, hosted/vision or local provider requests: '+JSON.stringify(fixture));
+    if(fixture.handle)assert(await page.locator('#p0-input').inputValue()===prompt,'Rejected explicit local intent must retain its draft');
+    assert(await page.evaluate(()=>JSON.stringify(window.__localIntentFixture.state.pendingMedia))===mediaBefore,'Rejected local media must retain the attachment');
+    await page.close();
+  }
+}
+
 async function checkOutOfOrderPreflightFailsClosed(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   let statusCalls=0;
@@ -855,6 +902,7 @@ try{
   await checkInventoryMismatchFailsClosed(browser);
   await checkReadyToBlockedTransition(browser);
   await checkDeniedOrdinarySelection(browser);
+  await checkLocalMentionBoundaries(browser);
   await checkOutOfOrderPreflightFailsClosed(browser);
   await checkSupersededActionPreflightFailsClosed(browser);
   await checkFailClosed(browser);

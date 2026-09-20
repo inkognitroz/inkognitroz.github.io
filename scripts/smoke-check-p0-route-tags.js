@@ -259,6 +259,10 @@ const directCreative = testApi.smartDecision('Skriv et kort dikt om havet.');
 assertEqual(directCreative.model.id, cerebras.id, 'Non-factual creative prompts must still honor the manually selected writer');
 
 testApi.state.models = [hosted];
+testApi.state.activeModelId = hosted.id;
+for(const handle of ['private','local','gemma','gemma3','qwen','llama']){
+  assertEqual(testApi.explicitMentionDecision('@'+handle+' the model is broken')?.mode,'missing-local','Explicit local intent must fail closed without a local model: @'+handle);
+}
 const singleRoutePool = testApi.intelligencePoolSummary();
 assertEqual(singleRoutePool.liveRoutes, 1, 'Hosted-only intelligence pool must stay single-route');
 assertEqual(singleRoutePool.compareReady, false, 'Hosted-only intelligence pool must not claim parallel readiness');
@@ -268,6 +272,11 @@ assertEqual(missingLocal.mode, 'missing-local', 'Explicit compare must fail clea
 
 testApi.state.models = [hosted, gemma];
 testApi.state.activeModelId = hosted.id;
+for(const handle of ['private','local','gemma']){
+  const localIntent=testApi.explicitMentionDecision('@'+handle+' Skriv et kort dikt.');
+  assertEqual(localIntent.mode,'single','A connected explicit local route must retain single-route behavior');
+  assertEqual(localIntent.model.id,gemma.id,'A connected explicit local route must remain local: @'+handle);
+}
 testApi.state.localReadiness = { paired: true, runtimeChatReady: true, chatReady: false, modelIds: [gemma.model] };
 const staleLocalCompare = testApi.smartDecision('Give me the best answer in parallel: what is the capital of Japan?');
 assertEqual(staleLocalCompare.mode, 'single', 'Stale local readiness must not enter compare execution.');

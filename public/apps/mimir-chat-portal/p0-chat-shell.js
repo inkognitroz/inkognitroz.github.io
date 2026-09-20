@@ -7034,7 +7034,7 @@
     if(hostedRequested&&localModel){
       return {mode:'compare',model:localModel,prompt:cleaned};
     }
-    if(hostedRequested&&localRequested&&!localModel){
+    if(localRequested&&!localModel){
       return {mode:'missing-local',prompt:cleaned};
     }
     if(localModel){
@@ -8073,7 +8073,7 @@
     if(await handleFeedbackMentionCommand(prompt,input))return;
     if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
     if(handleLocalKnowledgeCommand(prompt,input))return;
-    const frictionSignal=promptFrictionSignal(prompt);
+    const frictionSignal=localModelMentioned(prompt)||privateModeActive()?null:promptFrictionSignal(prompt);
     if(frictionSignal){
       captureInteraction('chat_guidance_signal',{
         feedback_kind:frictionSignal.kind,
@@ -8105,6 +8105,13 @@
     const fastAnswer=Boolean(state.fastAnswerOnce);
     state.fastAnswerOnce=false;
     const explicit=explicitMentionDecision(prompt);
+    if(state.pendingMedia&&localModelMentioned(prompt)){
+      captureInteraction('chat_blocked',{reason:'explicit_local_media_unsupported'});
+      status('Bilder støttes ikke for eksplisitte lokale rutekommandoer. Utkast og bilde er beholdt.','error');
+      routeStatus('Lokalt bilde ikke støttet · ingen rute startet','error');
+      input?.focus();
+      return;
+    }
     if(explicit?.mode==='compare'&&!privateModeActive()){
       if(!await ensureHostedJourneyReady('compare')){
         input?.focus();
@@ -8116,7 +8123,7 @@
     }
     if(explicit?.mode==='missing-local'){
       captureInteraction('chat_blocked',{reason:'missing_local_model'});
-      status('Oppdater AI først, så kan @supergeni @gemma sammenlignes.','error');
+      status('Ingen lokal modell er koblet til. Oppdater lokal AI før du bruker lokale rutekommandoer.','error');
       routeStatus('Local model not connected yet','error');
       input?.focus();
       return;
