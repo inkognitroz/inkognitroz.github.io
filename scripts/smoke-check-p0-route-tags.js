@@ -17,13 +17,15 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
 }
 
 const storage = new Map();
+const hostedRequests=[];
+const fallbackResponse={model:'fallback-model',mmir:{fallback_used:true,receipt:{provider:'fallback-provider',model_id:'fallback-model'}}};
 const context = {
   console,
   URL,
@@ -35,6 +37,12 @@ const context = {
   performance: { now: () => 0 },
   location: { href: 'https://mmir.ai/mmir.html', hostname: 'mmir.ai', hash: '', search: '' },
   document: { readyState: 'loading', addEventListener() {} },
+  MimirP0RouteAdapters: {
+    async fetchJson(url,options){
+      hostedRequests.push({url,options,body:JSON.parse(options.body)});
+      return fallbackResponse;
+    }
+  },
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, String(value)),
@@ -412,6 +420,91 @@ assertEqual(routeTaxonomy.hostedTryableNow(singleInventory.data[0],singleReadine
 testApi.state.releaseReadiness=routeTaxonomy.blockedReadiness('Expired or suppressed runtime proof');
 assertEqual(testApi.selectedRouteReady(),true,'Canonical basic chat must remain attemptable when advanced runtime proof expires or is suppressed');
 testApi.state.activeModelId=normalizedGroq.id;
-assertEqual(testApi.selectedRouteReady(),false,'A noncanonical provider route must still close when runtime proof expires or is suppressed');
+assertEqual(testApi.selectedRouteReady(),true,'Explicit server eligibility may permit ordinary chat without an advanced runtime proof');
+
+const availableWriter={
+  id:'openai/gpt-oss-120b',model:'openai/gpt-oss-120b',provider:'nvidia',
+  route_id:'nvidia/openai/gpt-oss-120b',route_class:'external-untrusted-free',
+  executable:true,selectable:true,candidate:false,status:'available',availability:'available',
+  cost_class:'free-quota',cost_state:'free-quota',cost:{mode:'free-quota',requires_approval:false},
+  no_paid_routes_started:true,live_e2e_verified:false
+};
+const availableNode={...availableWriter,id:'google/gemma-4-31b-it:free',model:'google/gemma-4-31b-it:free',
+  provider:'multi',route_id:'multi/google-gemma-4-31b-it:free',route_class:'external-node-untrusted-free'};
+const compactNode={id:availableNode.id,model:availableNode.model,provider:'multi',route_id:availableNode.route_id,
+  route_type:'external_node',route_state:'external_node_available',route_scope:'external_node',
+  node_id:'mmir-node-multi',trust_boundary:'server_side_node_endpoint',executable:true,selectable:true,candidate:false,
+  cost_class:'free-quota',cost_state:'free-quota',no_paid_routes_started:true,live_e2e_verified:false};
+const compactNvidia={...compactNode,id:availableWriter.id,model:availableWriter.model,provider:'nvidia',
+  route_id:availableWriter.route_id,route_type:'external_untrusted_free',route_state:'public_untrusted_free_available',route_scope:'public_provider'};
+const proofWriter=testApi.normalizeHostedModels({data:[{...availableWriter,live_e2e_verified:true,
+  live_e2e_proof:{verified:true,no_paid_routes_started:true}}]})[0];
+assertEqual(proofWriter.selectable,true,'Existing model proof and ordinary permission must coexist behind a blocked advanced release');
+assertEqual(proofWriter.tags.includes('Live-bevis')&&proofWriter.tags.includes('Port blokkert'),true,'Basic route tags must retain existing proof and the separate advanced block');
+assertEqual(proofWriter.tags.includes('Status ukjent'),false,'Existing proof must not be replaced by unknown-status copy');
+assertIncludes(testApi.ordinaryChatAttemptReceipt(proofWriter).text,'live-bevis finnes','Pending ordinary attempt must retain its existing proof without claiming the new answer succeeded');
+for(const override of [
+  {selectable:false},{selectable:undefined},{executable:false},{executable:undefined},
+  {candidate:true},{candidate:undefined},{status:'temporarily_degraded'},{availability:'unavailable'},
+  {cost_class:'paid'},{cost_state:'paid'},{cost_class:null},{cost:{requires_approval:true}},{cost:{mode:'paid'}},
+  {no_paid_routes_started:false},{no_paid_routes_started:undefined},{paid_routes_allowed:true},
+  {route_id:''},{route_id:undefined},{route_id:{}},{provider:{}},{requires_api_key:true},{route:'local'}
+]){
+  const denied={...availableWriter,...override};
+  assertEqual(routeTaxonomy.ordinaryHostedChatTryable(denied),false,'Ordinary selection must fail closed: '+JSON.stringify(override));
+  const normalized=testApi.normalizeHostedModels({data:[denied]})[0];
+  if(normalized)assertEqual(testApi.modelSelectableNow(normalized),false,'Normalization must not manufacture eligibility: '+JSON.stringify(override));
+}
+testApi.state.models=testApi.ensureCanonicalOrdinaryChatFallback(testApi.normalizeHostedModels({data:[
+  availableWriter,{...availableWriter,provider:'groq',route_id:'groq/openai/gpt-oss-120b'},availableNode
+]}));
+assertEqual(new Set(testApi.state.models.map(model=>model.id)).size,testApi.state.models.length,'Duplicate model names must have distinct picker identities');
+assertEqual(testApi.defaultHostedModel().id,'mmir-supergenius','Server-eligible providers must not replace the Supergeni default');
+for(const [provider,selector,temperature] of [
+  ['NVIDIA','nvidia/openai/gpt-oss-120b',0.7],['Groq','groq/openai/gpt-oss-120b',0.7],
+  ['Multi','multi/google-gemma-4-31b-it:free',0]
+]){
+  const model=testApi.state.models.find(item=>item.routeId===selector);
+  assertEqual(model?.selectable,true,'Server-eligible route must be selectable without a live badge: '+selector);
+  assertEqual(model.liveE2EVerified,false,'Ordinary selection must not manufacture live proof');
+  testApi.state.activeModelId=model.id;
+  assertEqual(testApi.activeModel().provider,provider,'Picker identity must preserve the chosen provider');
+  assertEqual(testApi.selectedRouteReady(),true,'Eligible ordinary text route must reach the composer');
+  assertEqual(testApi.hostedJourneyReady('compare'),false,'Ordinary selection must not enable compare');
+  assertEqual(testApi.hostedJourneyReady('swarm_preview'),false,'Ordinary selection must not enable swarm');
+  assertIncludes(testApi.ordinaryChatAttemptReceipt(model).text,model.label,'Pending receipt must describe the requested route');
+  assertIncludes(testApi.ordinaryChatAttemptReceipt(model,'failed').text,model.label,'Failure receipt must describe the requested route');
+  const response=await testApi.chatHostedData('Hei',null,model,null,'',{ordinaryBasic:true});
+  const request=hostedRequests.at(-1);
+  assertEqual(request.body.model,selector,'Actual ordinary dispatch must preserve the route preference, including duplicate model IDs');
+  assertEqual(request.body.policy?.paid_routes_allowed,false,'Every ordinary route must forbid paid routes');
+  assertEqual(request.body.temperature,temperature,'Only external-node ordinary requests need deterministic temperature');
+  assertEqual(Object.hasOwn(request.body,'provider'),false,'Provider must not be added as an unsupported node selector');
+  assertEqual(request.body.messages.every(message=>typeof message.content==='string'&&Object.keys(message).sort().join(',')==='content,role'),true,'Ordinary text messages must retain the supported role/content shape');
+  assertEqual(response,fallbackResponse,'Actual fallback writer metadata must not be replaced by the requested preference');
+  const completed=testApi.ordinaryChatAttemptReceipt(model,'completed',response).text;
+  assertIncludes(completed,'Ønsket rute: '+model.label,'Completed receipt must distinguish route preference from actual writer');
+  assertIncludes(completed,'Reserve brukt','An explicit server fallback must remain visible');
+  assertEqual(testApi.ordinaryChatAttemptReceipt(model,'completed',{mmir:{fallback_used:false}}).text.includes('Reserve brukt'),false,'Do not invent fallback without the server flag');
+}
+assertEqual(hostedRequests.length,3,'Each ordinary request must dispatch once without fanout');
+for(const [entry,temperature] of [[compactNode,0],[compactNvidia,0.7]]){
+  const model=testApi.normalizeHostedModels({data:[entry]})[0];
+  assertEqual(model.selectable,true,'Production compact inventory must authorize ordinary text without full-only fields');
+  await testApi.chatHostedData('Hei',null,model,null,'',{ordinaryBasic:true});
+  const payload=hostedRequests.at(-1).body;
+  assertEqual(payload.model,entry.route_id,'Compact inventory dispatch must preserve the exact route preference');
+  assertEqual(payload.temperature,temperature,'Compact external_node type must use a supported temperature');
+  assertEqual(payload.policy?.paid_routes_allowed,false,'Compact ordinary routes must preserve the no-paid policy');
+  assertEqual(testApi.hostedPayload('Hei',{...model,ordinaryChatAttemptable:false}).model,entry.model,'Nonordinary payload model contract must remain unchanged');
+  assertEqual(testApi.hostedPayload('Hei',model,{data_url:'data:image/png;base64,AA=='}).model,entry.model,'Media payload model contract must remain unchanged');
+}
+assertEqual(hostedRequests.length,5,'Compact ordinary requests must not add fanout');
+const duplicateRoutes=testApi.normalizeHostedModels({data:[availableWriter,{...availableWriter,provider:'groq'}]});
+assertEqual(duplicateRoutes.every(model=>!testApi.modelSelectableNow(model)),true,'Ambiguous duplicate route IDs must fail closed, not select the first provider');
+const wantedNvidia=testApi.state.models.find(model=>model.provider==='NVIDIA');
+testApi.state.releaseReadiness=singleReadiness;
+testApi.state.models=testApi.normalizeHostedModels(singleInventory);
+assertEqual(testApi.matchingLiveHostedModel(wantedNvidia),null,'Advanced revalidation must not substitute a same-model Groq proof for NVIDIA');
 
 console.log('P0 explicit route tag smoke check passed.');

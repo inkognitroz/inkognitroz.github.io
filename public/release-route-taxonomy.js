@@ -105,10 +105,9 @@
     return canonicalCosts.some(value=>FREE_COST_CLASSES.has(value));
   }
 
-  // This is permission to attempt the one canonical public chat endpoint, not
-  // evidence that a writer is currently live or that an advanced release gate
-  // is green. The server remains authoritative for route availability and the
-  // request itself explicitly forbids paid routes.
+  // Ordinary chat permission is separate from live proof and advanced gates.
+  // Noncanonical preferences need explicit server eligibility; the gateway may
+  // still fall back and remains authoritative for the actual response writer.
   function ordinaryHostedChatTryable(model){
     const id=text(model?.id||model?.model);
     const route=text(model?.route);
@@ -121,15 +120,25 @@
       model?.route_class,
       model?.routeClass
     ].map(text).filter(Boolean);
-    return Boolean(
+    const safeHosted=Boolean(
       model&&
-      (id==='supergeni'||id==='mmir-supergenius')&&
       (!route||route==='hosted')&&
       !isLocal(model)&&
       !isByok(model)&&
       model?.paid_routes_allowed!==true&&
       model?.paidRoutesAllowed!==true&&
       !explicitCostValues.some(value=>PAID_COST_CONTRADICTION.test(value))
+    );
+    if(!safeHosted)return false;
+    if(id==='supergeni'||id==='mmir-supergenius')return true;
+    return Boolean(
+      model.executable===true&&model.selectable===true&&model.candidate===false&&
+      !isPlanned(model)&&!isDegraded(model)&&isFreeRoute(model)&&
+      (model.no_paid_routes_started===true||model.noPaidRoutesStarted===true)&&
+      model.cost?.requires_approval!==true&&model.costRequiresApproval!==true&&
+      !PAID_COST_CONTRADICTION.test(text(model.cost?.mode))&&
+      typeof (model.route_id||model.routeId)==='string'&&String(model.route_id||model.routeId).trim()&&
+      typeof model.provider==='string'&&model.provider.trim()
     );
   }
 
@@ -339,7 +348,11 @@
         freeToTry:true,
         liveE2EVerified,
         access:'Grunnchat via api.mmir.ai · ingen nettlesernøkkel · betalte ruter forbudt',
-        reason:'Den kanoniske Supergeni-grunnchatten kan forsøkes. Live-status og avanserte kvalitetsporter er ikke bekreftet.'
+        reason:supergeni
+          ? 'Den kanoniske Supergeni-grunnchatten kan forsøkes. Live-status og avanserte kvalitetsporter er ikke bekreftet.'
+          : (liveE2EVerified
+            ? 'Serveren tillater grunnchat, og ruten har live-bevis. Avansert releaseport er ikke bekreftet; gatewayen kan bruke en annen skriver.'
+            : 'Serveren tillater et grunnchat-forsøk med denne rutepreferansen. Gatewayen kan bruke en annen skriver; live-status er ikke bekreftet.')
       });
     }
     if(isPlanned(model))return result('planned',{liveE2EVerified,access:'Katalogført eller planlagt · kan ikke prøves nå',reason:'Ruten er ikke en aktiv offentlig svarrute.'});

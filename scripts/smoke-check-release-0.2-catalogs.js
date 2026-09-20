@@ -40,8 +40,8 @@ function publicTextSources(directory){
 assert(mmir.includes('p0-release-nav.css?v=20260918-jarvis-v2'),'chat must load the release navigation stylesheet');
 assert(mmir.includes('p0-release-nav.js?v=20260919-jarvis-v3-1'),'chat must load the release navigation script');
 assert(mmir.includes('p0-chat-shell.css?v=20260815-iphone-send-ready-fill-v1'),'chat must bind the ready-fill corrected shell stylesheet version');
-assert(mmir.includes('release-route-taxonomy.js?v=20260909-ordinary-chat-v1'),'chat must cache-bust the reviewed ordinary-chat taxonomy');
-assert(mmir.includes('p0-chat-shell.js?v=20260918-jarvis-v3'),'chat must bind the reviewed public failure route-details shell asset version');
+assert(mmir.includes('release-route-taxonomy.js?v=20260921-ordinary-route-preference-v1'),'chat must cache-bust the reviewed ordinary-chat taxonomy');
+assert(mmir.includes('p0-chat-shell.js?v=20260921-ordinary-route-preference-v1'),'chat must bind the reviewed ordinary route-preference shell asset version');
 assert(mmir.includes('brand-config.js?v=20260810-proof-safe-tagline-v1'),'chat must bind the proof-safe brand asset version');
 assert(mmir.includes('pwa.js?v=20260909-ordinary-chat-v1'),'chat must cache-bust the ordinary-chat PWA registration asset');
 assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260909-ordinary-chat-v1'"),'no-JS shell must register the ordinary-chat service-worker version');
@@ -131,7 +131,9 @@ assert(!brandConfig.includes("text('#active-chat-description',config.chat_descri
 assert(!legacyPortal.includes("activeBadge.textContent='Active: '")&&!legacyPortal.includes("activeBadge.textContent='Free chat ready'")&&!legacyPortal.includes('Supergeni answers immediately'),'deferred legacy profile UI must not overwrite canonical chat readiness before live runtime proof');
 assert(mmir.indexOf('release-route-taxonomy.js?v=')<mmir.indexOf('p0-chat-shell.js?v='),'shared taxonomy must load before the public chat shell');
 assert(models.indexOf('release-route-taxonomy.js?v=')<models.indexOf('release-0.2.js?v='),'shared taxonomy must load before the model catalog runtime');
-assert(trust.indexOf('release-route-taxonomy.js?v=20260909-ordinary-chat-v1')<trust.indexOf('release-0.2.js?v=20260909-single-writer-intent-v2'),'shared taxonomy must load before the Trust runtime so authenticated green truth is reachable');
+const trustTaxonomyIndex=trust.indexOf('release-route-taxonomy.js?v=20260921-ordinary-route-preference-v1');
+const trustRuntimeIndex=trust.indexOf('release-0.2.js?v=20260909-single-writer-intent-v2');
+assert(trustTaxonomyIndex>=0&&trustRuntimeIndex>=0&&trustTaxonomyIndex<trustRuntimeIndex,'shared taxonomy must be present and load before the Trust runtime so authenticated green truth is reachable');
 for(const [name,html] of [['models',models],['capabilities',capabilities],['trust',trust]]){
   assert(html.includes('release-0.2.js?v=20260909-single-writer-intent-v2'),name+' page must bind the reviewed gateway-contract release runtime version');
 }

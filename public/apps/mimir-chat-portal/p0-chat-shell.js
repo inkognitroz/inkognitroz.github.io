@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260918-jarvis-v3';
+  const P0_RUNTIME_VERSION='20260921-ordinary-route-preference-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -567,7 +567,8 @@
 
   function ordinaryHostedChatTryable(model){
     return Boolean(
-      isCanonicalHostedModel(model)&&
+      model?.route==='hosted'&&
+      (isCanonicalHostedModel(model)||model.ordinaryChatAttemptable===true)&&
       RELEASE_ROUTE_TAXONOMY?.ordinaryHostedChatTryable?.(model)===true
     );
   }
@@ -595,7 +596,7 @@
 
   function ensureCanonicalOrdinaryChatFallback(models=[]){
     const rows=Array.isArray(models)?models.filter(Boolean):[];
-    const safeCanonical=rows.find(model=>ordinaryHostedChatTryable(model));
+    const safeCanonical=rows.find(model=>isCanonicalHostedModel(model)&&ordinaryHostedChatTryable(model));
     if(safeCanonical){
       return [safeCanonical,...rows.filter(model=>model!==safeCanonical)];
     }
@@ -2743,7 +2744,7 @@
   function activeModel(){
     const selected=state.models.find(model=>model.id===state.activeModelId);
     if(modelSelectableNow(selected))return selected;
-    return state.models.find(ordinaryHostedChatTryable)||
+    return state.models.find(model=>isCanonicalHostedModel(model)&&ordinaryHostedChatTryable(model))||
       state.models.find(model=>modelSelectableNow(model))||
       canonicalOrdinaryChatFallbackModel();
   }
@@ -2752,19 +2753,24 @@
     return P0_ROUTE_RECEIPTS.receipt(model,{apiLabel:API_LABEL});
   }
 
-  function ordinaryChatAttemptReceipt(model,outcome='pending'){
+  function ordinaryChatAttemptReceipt(model,outcome='pending',response=null){
     const receipt=routeReceipt(model);
     if(!ordinaryHostedChatTryable(model))return receipt;
+    const requestedLabel=isCanonicalHostedModel(model)?'Supergeni':'Ønsket rute: '+String(model.label||model.model||'Valgt rute');
+    if(outcome==='completed')return isCanonicalHostedModel(model)?receipt:{
+      ...receipt,
+      text:requestedLabel+(response?.mmir?.fallback_used===true?' · Reserve brukt':'')
+    };
     if(outcome==='failed'){
       return {
         ...receipt,
-        text:'Supergeni svarte ikke: grunnchat-forsøk feilet',
+        text:isCanonicalHostedModel(model)?'Supergeni svarte ikke: grunnchat-forsøk feilet':requestedLabel+': grunnchat-forsøk feilet',
         state:'error'
       };
     }
     return {
       ...receipt,
-      text:'Supergeni: svar venter · live-status ikke bekreftet',
+      text:requestedLabel+': svar venter · '+(hostedModelLiveVerified(model)?'live-bevis finnes':'live-status ikke bekreftet'),
       state:'hosted'
     };
   }
@@ -2896,13 +2902,14 @@
     if(!model||model.route!=='hosted')return null;
     const wantedId=canonicalHostedModelId(model.id||model.model||'');
     const wantedModel=String(model.model||model.id||'').trim();
+    const wantedRoute=String(model.routeId||'').trim();
     return state.models.find(item=>
       item?.route==='hosted'&&
       liveHostedModel(item)&&
-      (
+      (wantedRoute?String(item.routeId||'').trim()===wantedRoute:(
         canonicalHostedModelId(item.id||item.model||'')===wantedId||
         String(item.model||item.id||'').trim()===wantedModel
-      )
+      ))
     )||null;
   }
 
@@ -3042,6 +3049,11 @@
 
   function normalizeHostedModels(payload){
     const raw=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+    const pickerIds=raw.map(model=>{
+      const id=canonicalHostedModelId(model?.id||model?.model);
+      const routeId=String(model?.route_id||model?.routeId||'').trim();
+      return id===CANONICAL_HOSTED_MODEL_ID||!routeId?id:('hosted-route:'+routeId);
+    });
     const inventoryLiveVerifiedIntelligenceRouteCount=(
       Number.isSafeInteger(payload?.live_verified_intelligence_route_count)&&
       payload.live_verified_intelligence_route_count>=0
@@ -3059,7 +3071,10 @@
       .filter(model=>String(model?.id||model?.model||'').trim())
       .map((model,index)=>{
         const rawModelId=String(model.id||model.model).trim();
-        const id=canonicalHostedModelId(rawModelId);
+        const canonicalId=canonicalHostedModelId(rawModelId);
+        const routeId=String(model.route_id||model.routeId||'').trim();
+        const id=canonicalId===CANONICAL_HOSTED_MODEL_ID||!routeId?canonicalId:('hosted-route:'+routeId);
+        const uniqueRoute=pickerIds.filter(pickerId=>pickerId===id).length===1;
         const executable=executableHostedModel(model);
         const candidate=hostedCandidateModel(model);
         const routeClass=String(model.route_class||'').trim();
@@ -3078,12 +3093,13 @@
           tryable:false,
           reason:'Delt release-taksonomi kunne ikke lastes.'
         };
-        const selectable=truth.tryable===true;
-        const ordinaryChatAttemptable=truth.key==='basic_chat';
+        const selectable=truth.tryable===true&&uniqueRoute;
+        // Preserve the raw API decision before normalization supplies defaults.
+        const ordinaryChatAttemptable=uniqueRoute&&RELEASE_ROUTE_TAXONOMY?.ordinaryHostedChatTryable?.(model)===true;
         const tags=truth.key==='free_now'
           ? [provider,externalUntrustedFree?'Ekstern':'Hostet','Gratis nå']
           : (truth.key==='basic_chat'
-            ? [provider,'Grunnchat','Status ukjent']
+            ? (liveE2EVerified?[provider,'Grunnchat','Live-bevis','Port blokkert']:[provider,'Grunnchat','Status ukjent'])
           : (truth.key==='byok_unavailable'
             ? [provider,'BYOK','Ikke støttet i 0.2']
             : (candidate||truth.key==='planned'
@@ -3114,12 +3130,15 @@
           provider,
           routeClass,
           trustLevel,
-          routeId:model.route_id||model.routeId||id,
+          routeId:routeId||canonicalId,
+          status:model.status||'',
           routeState:model.route_state||'managed_provider_available',
           routeType:model.route_type||'managed_provider',
           availability:model.availability||'available',
           costClass:Object.hasOwn(model,'cost_class')?model.cost_class:null,
           costState:Object.hasOwn(model,'cost_state')?model.cost_state:null,
+          costRequiresApproval:model.cost?.requires_approval===true,
+          paidRoutesAllowed:model.paid_routes_allowed===true||model.paidRoutesAllowed===true,
           nextAction:model.next_action||null,
           liveE2EVerified,
           liveE2EProof:model.live_e2e_proof||null,
@@ -3448,7 +3467,7 @@
   }
 
   function defaultHostedModel(){
-    return state.models.find(ordinaryHostedChatTryable)||
+    return state.models.find(model=>isCanonicalHostedModel(model)&&ordinaryHostedChatTryable(model))||
       state.models.find(model=>isCanonicalHostedModel(model)&&model.executable!==false&&model.selectable!==false)||
       state.models.find(model=>model.route==='hosted'&&model.executable!==false&&model.selectable!==false)||
       state.models.find(model=>model.executable!==false&&model.selectable!==false)||
@@ -3583,8 +3602,8 @@
     const stats=routeBenchmark(model);
     if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)){
       return {
-        label:'Grunnchat · status ukjent',
-        detail:'Den kanoniske chatruten kan forsøkes uten nettlesernøkkel. Live-status og avanserte kvalitetsporter er ikke bekreftet.',
+        label:hostedModelLiveVerified(model)?'Grunnchat · Live-bevis · Port blokkert':'Grunnchat · status ukjent',
+        detail:model.detail||'Grunnchat kan forsøkes uten nettlesernøkkel. Avanserte kvalitetsporter er ikke bekreftet.',
         state:'setup'
       };
     }
@@ -3672,7 +3691,9 @@
 
   function modelUseCase(model){
     if(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)){
-      return 'Good for: ordinary hosted chat. Limit: current availability and release quality are not verified.';
+      return hostedModelLiveVerified(model)
+        ? 'Good for: ordinary hosted chat. Route proof exists; advanced release quality is not verified.'
+        : 'Good for: ordinary hosted chat. Limit: current availability and release quality are not verified.';
     }
     if(model?.candidate||model?.executable===false)return 'Future capacity; not active yet.';
     if(model?.route==='local'){
@@ -5029,7 +5050,7 @@
       const releaseBlockedVerified=model.route==='hosted'&&hostedModelLiveVerified(model)&&!hostedJourneyReady('first_chat');
       const title=selectable
         ? (ordinaryHostedChatTryable(model)&&!liveHostedModel(model)
-          ? 'Velg '+model.label+' · grunnchat kan forsøkes uten bekreftet live-status.'
+          ? 'Velg '+model.label+' · '+(hostedModelLiveVerified(model)?'grunnchat kan forsøkes; live-bevis finnes, avansert releaseport blokkert.':'grunnchat kan forsøkes uten bekreftet live-status.')
           : 'Velg '+model.label)
         : (releaseBlockedVerified
           ? 'Live-bevis finnes, men den offentlige releaseporten er blokkert.'
@@ -5038,7 +5059,7 @@
     }).join('');
     const buttons=''+
       (hostedActiveModels.length?menuSection('Live-verifiserte hostede ruter')+renderButtons(hostedActiveModels):'<div class="p0-menu-note">Ingen hostet rute er produksjonsverifisert nå.</div>')+
-      (hostedBasicModels.length?menuSection('Grunnchat · status ikke bekreftet')+renderButtons(hostedBasicModels):'')+
+      (hostedBasicModels.length?menuSection('Grunnchat · kan prøves')+renderButtons(hostedBasicModels):'')+
       (hostedBlockedVerifiedModels.length?menuSection('Live-bevis · releaseport blokkert')+renderButtons(hostedBlockedVerifiedModels):'')+
       (hostedFutureModels.length?menuSection('Konfigurerte eller fremtidige ruter')+renderButtons(hostedFutureModels):'')+
       (localModels.length?menuSection('Private lokale modeller')+renderButtons(localModels):'');
@@ -5066,7 +5087,9 @@
         persistActiveModelId();
         closeMenus();
         renderToolbar();
-        status(model.label+' er valgt.','ready');
+        status(model.label+(ordinaryHostedChatTryable(model)&&!liveHostedModel(model)&&hostedModelLiveVerified(model)
+          ? ' er valgt for grunnchat · live-bevis finnes, men avansert releaseport er blokkert.'
+          : ' er valgt.'),'ready');
       });
     });
   }
@@ -5208,7 +5231,7 @@
       return {state:'public',label:'Offentlig modus · Supergenis hostede rute er live-verifisert'};
     }
     if(ordinaryHostedChatTryable(model)){
-      return {state:'setup',label:'Offentlig modus · grunnchat kan prøves · live-status ikke bekreftet'};
+      return {state:'setup',label:'Offentlig modus · grunnchat kan prøves · '+(hostedModelLiveVerified(model)?'live-bevis finnes · avansert releaseport blokkert':'live-status ikke bekreftet')};
     }
     return {state:'error',label:'Offentlig modus · valgt avansert rute blokkert til produksjonsbeviset er grønt'};
   }
@@ -5296,7 +5319,7 @@
     }
     if(ordinaryHostedChatTryable(model)){
       return {
-        text:'Grunnchat kan prøves · live-status ikke bekreftet · ingen nettlesernøkkel',
+        text:'Grunnchat kan prøves · '+(hostedModelLiveVerified(model)?'Live-bevis; avansert releaseport blokkert':'live-status ikke bekreftet')+' · ingen nettlesernøkkel',
         state:'hosted'
       };
     }
@@ -6921,8 +6944,9 @@
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
-    const modelId=String(model?.model||model?.id||'mmir-supergenius').trim()||'mmir-supergenius';
     const directWriter=!isCanonicalHostedModel(model);
+    const ordinary=ordinaryHostedChatTryable(model);
+    const modelId=String((ordinary&&directWriter&&!media?model?.routeId:null)||model?.model||model?.id||'mmir-supergenius').trim()||'mmir-supergenius';
     const defaultLanguageInstruction=normalizeRoleProfileId(state.roleProfileId)==='default'
       ? " Answer in the language of the user's latest message unless the user explicitly requests another language."
       : '';
@@ -6947,9 +6971,9 @@
       model:modelId,
       messages,
       stream:false,
-      temperature:0.7,
+      temperature:ordinary&&!media&&(model?.routeType==='external_node'||model?.routeClass==='external-node-untrusted-free')?0:0.7,
       max_tokens:answerTokenBudget(),
-      ...(isCanonicalHostedModel(model)?{policy:{paid_routes_allowed:false}}:{})
+      ...(isCanonicalHostedModel(model)||ordinary?{policy:{paid_routes_allowed:false}}:{})
     };
   }
 
@@ -7032,9 +7056,9 @@
       !media&&
       ordinaryHostedChatTryable(model)
     );
-    if(ordinaryBasic){
+    if(ordinaryBasic&&isCanonicalHostedModel(model)){
       model={...model,id:CANONICAL_HOSTED_MODEL_ID,model:CANONICAL_HOSTED_MODEL_ID,route:'hosted'};
-    }else{
+    }else if(!ordinaryBasic){
       const verifiedModel=await revalidateHostedBoundary('first_chat',model);
       if(!verifiedModel){
         const error=new Error('Hosted release is not production-ready.');
@@ -8211,7 +8235,7 @@
       updateMessage(assistant,withTruncationGuard(answer,hostedData),{
         label:answerWriter.model_display_name,
         receipt:calculatorAnswer?'Kalkulator · verktøysvar · Ingen modell kalt · '+elapsed:
-          routePrefix+receipt.text+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':'')+writerContinuityResetReceipt(hostedData),
+          routePrefix+(ordinaryBasicChat?ordinaryChatAttemptReceipt(model,'completed',hostedData).text:receipt.text)+' · '+elapsed+' · '+latencyTargetReceipt(model,elapsedMs)+' · Score '+effectiveModelScore(model)+(hostedTruncated?' · truncated guard':'')+writerContinuityResetReceipt(hostedData),
         proofLine:answerProof,
         intelligenceLabel:connectedIntelligenceLabel(hostedData),
         answerWriter,
