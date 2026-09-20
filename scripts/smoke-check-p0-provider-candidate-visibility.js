@@ -115,8 +115,8 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "const modelId=String(model?.model||model?.id||'mmir-supergenius')",
-  'Hosted payload must send the selected model id to api.mmir.ai.'
+  "const modelId=String((ordinary&&directWriter&&!media?model?.routeId:null)||model?.model||model?.id||'mmir-supergenius')",
+  'Hosted payload must preserve the selected provider route preference before falling back to its model id.'
 );
 requireIncludes(
   shell,
