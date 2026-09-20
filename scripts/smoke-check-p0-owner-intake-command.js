@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import vm from 'node:vm';
 
 const root = resolve(new URL('..', import.meta.url).pathname);
 const portalDir = join(root, 'public', 'apps', 'mimir-chat-portal');
@@ -17,6 +18,37 @@ function requireIncludes(haystack, needle, message) {
 function requireNotIncludes(haystack, needle, message) {
   if (haystack.includes(needle)) errors.push(message);
 }
+
+// Run the real parsers and redactor without booting the UI or exposing I/O.
+function sourceBetween(start,end){
+  const first=shell.indexOf(start),last=shell.indexOf(end,first+start.length);
+  if(first<0||last<=first)throw new Error('Intake behavior check cannot locate '+start);
+  return shell.slice(first,last);
+}
+const commands=vm.runInNewContext([
+  ...(shell.match(/^  const OWNER_(?:SECRETISH|PROVIDER_KEY)_RE=.*;$/gm)||[]),
+  sourceBetween('  function ownerSuggestionCommand(prompt){','  function promptFrictionSignal(prompt){'),
+  sourceBetween('  function redactOwnerSuggestionText(value){','  function feedbackPreviousTurnContext(){'),
+  '({ownerSuggestionCommand,feedbackMentionCommand})'
+].join('\n'));
+const reservedHandles=['compare','supergeni','supergenius','supergenious','super','hosted','mmir','gemma','gemma3','qwen','llama','local','private'];
+for(const handle of reservedHandles){
+  for(const prompt of ['@'+handle+' Skriv et kort dikt.','  @'+handle.toUpperCase()+'\nCompare virker ikke.  ']){
+    if(commands.feedbackMentionCommand(prompt)!==null)errors.push('Built-in routing handle must not enter feedback intake: @'+handle);
+  }
+}
+for(const alias of ['inkognitroz','nilsk','amanda','compare2','compare-fan','supergeni-team','superman','hosted.team','mmir_tools','gemma30','qwen-helper','llama_notes','localhost','private-feedback','admin']){
+  const body='Compare virker ikke; @compare og @private blir feil.';
+  const parsed=commands.feedbackMentionCommand('  @'+alias.toUpperCase()+' '+body+'  ');
+  if(parsed?.target!==alias||parsed?.suggestion!==body)errors.push('Exact feedback alias and body must remain intact: @'+alias);
+}
+for(const prompt of ['@compare','@private','Hei @compare to svar','/admin FIXTURE_CODE Compare virker ikke.']){
+  if(commands.feedbackMentionCommand(prompt)!==null)errors.push('Non-feedback input must not be captured: '+prompt);
+}
+const admin=commands.ownerSuggestionCommand('/admin FIXTURE_CODE Compare virker ikke.');
+if(admin?.code!=='FIXTURE_CODE'||admin?.suggestion!=='Compare virker ikke.')errors.push('/admin parsing must remain unchanged');
+const redacted=commands.feedbackMentionCommand('@amanda Compare API_KEY=notARealSecretFixture123');
+if(redacted?.target!=='amanda'||redacted?.suggestion!=='Compare [redacted-secret-like-value]')errors.push('Feedback redaction must remain unchanged');
 
 requireIncludes(
   shell,

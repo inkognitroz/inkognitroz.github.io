@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260921-ordinary-route-preference-v1';
+  const P0_RUNTIME_VERSION='20260921-routing-mentions-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -784,10 +784,13 @@
   function feedbackMentionCommand(prompt){
     const match=String(prompt||'').trim().match(/^@([a-z0-9][a-z0-9_.-]{1,39})\b\s+([\s\S]+)$/i);
     if(!match)return null;
+    const target=String(match[1]).toLowerCase();
+    // Only the exact leading routing handle is reserved, never body keywords.
+    if(['compare','supergeni','supergenius','supergenious','super','hosted','mmir','gemma','gemma3','qwen','llama','local','private'].includes(target))return null;
     const suggestion=redactOwnerSuggestionText(match[2]);
     if(!suggestion)return null;
     return {
-      target:String(match[1]||'feedback').toLowerCase(),
+      target,
       suggestion
     };
   }

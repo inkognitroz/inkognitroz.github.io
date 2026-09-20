@@ -574,6 +574,11 @@ async function checkReadyToBlockedTransition(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const hostedRequests=[];
   let advancedCalls=0;
+  let feedbackCalls=0;
+  await page.route('https://api.mmir.ai/feedback/intake',route=>{
+    feedbackCalls+=1;
+    return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'routing mention must not enter feedback intake'})});
+  });
   await page.route('https://api.mmir.ai/v1/chat/completions',route=>{
     hostedRequests.push(route.request().postDataJSON());
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'Ordinary route fixture answer'}}]})});
@@ -589,10 +594,11 @@ async function checkReadyToBlockedTransition(browser){
   await page.locator('#p0-model').click();
   await page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'}).click();
   await routeApi(page,{releaseReady:false,replace:true});
-  await page.locator('#p0-input').fill('Use both models to compare cycling and running.');
+  await page.locator('#p0-input').fill('@compare cycling and running.');
   await page.locator('#p0-send').click();
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   assert(hostedRequests.length===0&&advancedCalls===0,'green-to-blocked advanced transition must stop compare before any provider call');
+  assert(feedbackCalls===0,'The built-in @compare must reach the advanced gate without a feedback intake POST');
   assert(!(await page.locator('#p0-send').isDisabled()),'blocked advanced release must retain explicitly eligible ordinary chat');
   await page.locator('#p0-input').fill('Svar med den valgte vanlige rutepreferansen');
   await page.locator('#p0-send').click();
@@ -601,6 +607,7 @@ async function checkReadyToBlockedTransition(browser){
   assert(hostedRequests[0]?.model==='mistral/mistral-small-latest','ordinary request must retain its exact selected route preference after advanced release blocks');
   assert(hostedRequests[0]?.policy?.paid_routes_allowed===false,'ordinary request after advanced release blocks must explicitly forbid paid routes');
   assert(advancedCalls===0,'ordinary permission must never open compare or swarm');
+  assert(feedbackCalls===0,'The routing command and following ordinary message must not be captured as feedback');
   await page.close();
 }
 
