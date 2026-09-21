@@ -15,11 +15,12 @@ const taxonomyPath = resolve(root, 'public/release-route-taxonomy.js');
 const stateCopyPath = resolve(root, 'public/apps/mimir-chat-portal/chat-state-copy.js');
 const storagePath = resolve(root, 'public/apps/mimir-chat-portal/p0-storage.js');
 const routeReceiptsPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-receipts.js');
+const routeAdaptersPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-adapters.js');
 const routeBenchmarksPath = resolve(root, 'public/apps/mimir-chat-portal/p0-route-benchmarks.js');
 const historyPath = resolve(root, 'public/apps/mimir-chat-portal/p0-history.js');
 const runtime = readFileSync(runtimePath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0ProofLineTest={state,answerProofLine,proofTrustLabel,trustValueSummary,quietReceiptStatus,renderProofLine,renderReceipt,answerStatus,noteAnswerProof};";
+const exportBlock = "  globalThis.__p0ProofLineTest={state,answerProofLine,proofTrustLabel,trustValueSummary,quietReceiptStatus,renderProofLine,renderReceipt,answerStatus,noteAnswerProof,hostedConversationMessages};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 answer-proof-line smoke cannot find boot block.');
@@ -30,6 +31,9 @@ const context = {
   console,
   URL,
   URLSearchParams,
+  TextEncoder,
+  CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
+  dispatchEvent() {},
   setTimeout,
   clearTimeout,
   setInterval,
@@ -53,6 +57,7 @@ vm.runInContext(readFileSync(storagePath, 'utf8'), context, { filename: storageP
 vm.runInContext(readFileSync(routeReceiptsPath, 'utf8'), context, { filename: routeReceiptsPath });
 vm.runInContext(readFileSync(routeBenchmarksPath, 'utf8'), context, { filename: routeBenchmarksPath });
 vm.runInContext(readFileSync(historyPath, 'utf8'), context, { filename: historyPath });
+vm.runInContext(readFileSync(routeAdaptersPath, 'utf8'), context, { filename: routeAdaptersPath });
 vm.runInContext(runtime.replace(bootBlock, exportBlock), context, { filename: runtimePath });
 
 const api = context.__p0ProofLineTest;
@@ -180,4 +185,60 @@ const dedupedHtml = api.renderProofLine({ role: 'assistant', proofLine: consensu
 if (dedupedHtml.includes('p0-proof-badge')) fail('Proof row must not duplicate the badge already shown in the receipt.');
 if (!dedupedHtml.includes('Bevis: 1/3 enige')) fail('Proof row must keep the gateway evidence label.');
 
-console.log('P0 answer-proof-line smoke passed.');
+// 8) Ordinary source-retrieval observations are separate from independent proof claims.
+const grounding = { retrieval_attempted: false, retrieval_performed: false, retrieval_status: 'not_attempted', source_count: 0, sources: [] };
+const ordinaryPayload = (sourceGrounding = grounding, extra = {}) => ({ mmir: { ordinary_chat: true, source_grounding: sourceGrounding, ...extra } });
+const receiptSummary = proof => api.renderReceipt('Supergeni · hosted route', proof, 'Mistral Small', '', 'live', true).match(/<summary[^>]*>(.*?)<\/summary>/)?.[1] || '';
+const notices = [
+  [grounding, 'not_attempted', 'Kilden ble ikke hentet'],
+  [{ ...grounding, retrieval_attempted: true, retrieval_status: 'unavailable_or_unsupported' }, 'unavailable_or_unsupported', 'Kildeinnhold utilgjengelig']
+];
+for (const [observation, status, copy] of notices) {
+  const proof = api.answerProofLine(ordinaryPayload(observation));
+  if (proof?.sourceRetrievalStatus !== status || proof.status !== 'unverified') fail('Explicit ordinary retrieval observation must survive without fabricating proof.');
+  const summary = receiptSummary(JSON.parse(JSON.stringify(proof)));
+  if (!summary.includes(copy) || !summary.includes('Ubekreftet') || summary.includes(status)) fail('History-restored generated answer must visibly disclose fixed retrieval copy, not a technical enum.');
+  if (summary.includes(notices.find(row => row[1] !== status)[2])) fail('Not attempted and attempted-unavailable must stay distinct.');
+  for (const independent of [capabilityPayload, consensusPayload, { answer_proof_line: { status: 'verified', label: 'Deterministisk bevis' } }, { answer_proof_line: { status: 'signed', label: 'Signert bevis' } }]) {
+    const original = api.answerProofLine(independent);
+    const combined = api.answerProofLine({ ...independent, mmir: { ...independent.mmir, ordinary_chat: true, source_grounding: observation } });
+    const { sourceRetrievalStatus, ...unchanged } = combined;
+    if (sourceRetrievalStatus !== status || JSON.stringify(unchanged) !== JSON.stringify(original)) fail('Retrieval notice must preserve independent proof status, label, consensus and references.');
+    if (!receiptSummary(combined).includes(copy) || !receiptSummary(combined).includes(api.proofTrustLabel(original))) fail('Retrieval notice and independent trust must both remain visible.');
+  }
+}
+const invalidGrounding = [null, [], 'not_attempted', {},
+  { retrieval_attempted: true, retrieval_performed: true, retrieval_status: 'retrieved', source_count: 1, sources: [{ title: 'Retrieved source' }] },
+  ...[undefined, null, true, 'false'].map(retrieval_performed => ({ ...grounding, retrieval_performed })),
+  ...[undefined, null, true, 'false'].map(retrieval_attempted => ({ ...grounding, retrieval_attempted })),
+  ...[undefined, null, '', 'retrieved', 'unknown', 'unavailable_or_unsupported'].map(retrieval_status => ({ ...grounding, retrieval_status })),
+  ...[1, -1, '0', null, undefined].map(source_count => ({ ...grounding, source_count })),
+  ...[[{}], {}, '[]', null, undefined].map(sources => ({ ...grounding, sources }))
+];
+for (const invalid of invalidGrounding) {
+  if (api.answerProofLine(ordinaryPayload(invalid)) !== null) fail('Missing, malformed, unknown or contradictory retrieval metadata must remain a nonobservation.');
+  const withProof = api.answerProofLine(ordinaryPayload(invalid, { answer_proof_line: 'Verifisert med live-kilde', sources: capabilityPayload.mmir.sources }));
+  if (JSON.stringify(withProof) !== JSON.stringify(capabilityProof)) fail('Invalid retrieval metadata must not alter an independent proof.');
+}
+for (const ordinary_chat of [undefined, false, 'true', 1]) {
+  if (api.answerProofLine(ordinaryPayload(grounding, { ordinary_chat })) !== null) fail('Only explicit ordinary_chat true may carry this disclosure.');
+}
+const minimalGrounding = { retrieval_attempted: false, retrieval_performed: false, retrieval_status: 'not_attempted' };
+if (!receiptSummary(api.answerProofLine(ordinaryPayload(minimalGrounding))).includes('Kilden ble ikke hentet')) fail('Absent optional source lists/counts must not suppress an explicit negative observation.');
+const hostileGrounding = { ...grounding, label: '<img src=x onerror=alert(1)>', url: 'javascript:alert(1)', prompt: 'UPSTREAM_PROMPT_SENTINEL' };
+const safeGroundingProof = api.answerProofLine(ordinaryPayload(hostileGrounding));
+if (JSON.stringify(safeGroundingProof).includes('SENTINEL') || /<img|javascript:/.test(receiptSummary(safeGroundingProof))) fail('Only the allowlisted enum may survive source metadata into display/history.');
+if (/img|HOSTILE_ENUM_SENTINEL/.test(receiptSummary({ ...safeGroundingProof, sourceRetrievalStatus: '<img src=HOSTILE_ENUM_SENTINEL>' }))) fail('Restored malformed disclosure enum must never become text or markup.');
+
+// 9) The actual hosted-history mapper keeps proof metadata out of subsequent prompts.
+api.state.messages = [
+  { role: 'user', content: 'Original question', hostedLineage: true, routeProvenance: 'hosted-chat' },
+  { role: 'assistant', content: 'Original answer', hostedLineage: true, routeProvenance: 'hosted-chat' }
+];
+const beforeMetadata = JSON.stringify(api.hostedConversationMessages('Follow-up', 'System instruction'));
+if (!beforeMetadata.includes('Original answer')) fail('Prompt-path regression must exercise retained assistant history.');
+api.state.messages[1].proofLine = safeGroundingProof;
+api.state.messages[1].source_grounding = hostileGrounding;
+if (JSON.stringify(api.hostedConversationMessages('Follow-up', 'System instruction')) !== beforeMetadata) fail('Received source metadata must not change or enter outgoing messages or memory context.');
+
+console.log(`P0 answer-proof-line smoke passed (2 retrieval states, ${invalidGrounding.length} invalid metadata cases, 4 nonordinary cases, preserved proof/render/history/prompt checks).`);
