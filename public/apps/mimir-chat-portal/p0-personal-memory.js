@@ -6,6 +6,8 @@
   let dialog=null;
   let selectedId='';
   let gate=0;
+  let consentIntent=0;
+  let useSuspended=false;
   let canUseRemote=()=>false;
   let mutations=Promise.resolve();
 
@@ -29,9 +31,9 @@
   }
   function mutate(task){const next=mutations.then(task,task);mutations=next.catch(()=>{});return next;}
   function controls(enabled,known=true){
-    dialog?.querySelectorAll('[data-personal-memory-requires-consent]').forEach(node=>{node.disabled=!enabled;});
+    dialog?.querySelectorAll('[data-personal-memory-requires-consent]').forEach(node=>{node.disabled=!enabled||useSuspended;});
     const label=dialog?.querySelector('[data-personal-memory-state]');
-    if(label)label.textContent=enabled?'Remote storage is enabled for this anonymous tab session.':(known?'Remote storage is off. Local /remember stays in this browser.':'Remote storage state is unknown. Nothing will be copied into chat.');
+    if(label)label.textContent=enabled&&useSuspended?'Disable requested. Nothing will be copied into chat.':(enabled?'Remote storage is enabled for this anonymous tab session.':(known?'Remote storage is off. Local /remember stays in this browser.':'Remote storage state is unknown. Nothing will be copied into chat.'));
   }
   function itemButton(item){
     const button=document.createElement('button');
@@ -57,23 +59,28 @@
       status(enabled?'Remote personal memory refreshed.':'Storage is off. Saved notes remain inspectable and deletable.');
     }catch(error){controls(false,false);status(error.message||'Remote storage state is unavailable.',true);}
   }
-  function enable(){return mutate(async()=>{
-    const token=++gate; status('Enabling remote storage…');
+  function enable(){
+    const intent=++consentIntent;
+    ++gate;
+    return mutate(async()=>{
+    status('Enabling remote storage…');
     try{
       await request('/consent',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory:true})});
-      if(token!==gate||!canUseRemote())return;
+      if(intent!==consentIntent||!canUseRemote())return;
       const enabled=await consent();
-      if(token!==gate||!canUseRemote())return;
+      if(intent!==consentIntent||!canUseRemote())return;
       if(!enabled)throw new Error('Storage enablement was not confirmed.');
+      useSuspended=false;
       controls(true); status('Remote storage enabled. Save only notes you want this anonymous tab session to use.');
     }catch(error){controls(false,false);status(error.message||'Storage was not enabled.',true);}
   });}
   function disable(){
-    ++gate; selectedId=''; controls(false); status('Disabling remote storage…');
+    ++gate; ++consentIntent; useSuspended=true; selectedId=''; controls(false,false); status('Disabling remote storage…');
     return mutate(async()=>{
     try{
       await request('/consent',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory:false})});
       if(await consent())throw new Error('Storage disablement was not confirmed.');
+      controls(false);
       status('Remote storage disabled. Saved notes were not deleted and nothing will be copied into chat.');
     }catch(error){controls(false,false);status(error.message||'Could not confirm disablement; nothing will be copied into chat.',true);}
     });}
@@ -84,6 +91,7 @@
     if(!value||!TYPES.includes(type)){status('Enter a note and choose a supported type.',true);return;}
     return mutate(async()=>{
     try{
+      if(useSuspended){status('Storage disablement was requested; note was not sent.',true);return;}
       if(!await consent()){controls(false);status('Storage is off; note was not sent.',true);return;}
       status('Saving remote note…');
       const created=await request('/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:value,type,tags:[]})});
@@ -108,10 +116,10 @@
     status('Checking consent before copying…');
     try{
       const initialConsent=await consent();
-      if(!initialConsent||token!==gate||!canUseRemote()){controls(false);status('Storage is off; nothing was copied.',true);return;}
+      if(!initialConsent||token!==gate||useSuspended||!canUseRemote()){controls(false);status('Storage is off; nothing was copied.',true);return;}
       const body=await request('/memory/'+encodeURIComponent(id),{method:'GET',headers:{Accept:'application/json'}});
       const finalConsent=await consent();
-      if(token!==gate||!finalConsent||!canUseRemote()){controls(false);status('Storage changed; nothing was copied.',true);return;}
+      if(token!==gate||!finalConsent||useSuspended||!canUseRemote()){controls(false);status('Storage changed; nothing was copied.',true);return;}
       const note=text(body?.data?.text);
       if(body?.object!=='memory.item'||body?.data?.id!==id||!TYPES.includes(body?.data?.type)||!note){status('Selected note is unavailable.',true);return;}
       const composer=document.getElementById('p0-input');
