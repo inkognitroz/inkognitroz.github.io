@@ -4197,7 +4197,7 @@
         return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};
       }
     }
-    if(factGuardActive()&&!isCanonicalHostedModel(active)&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
+    if(factGuardActive()&&active.route!=='hosted'&&!isCanonicalHostedModel(active)&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
       return {mode:'single',model:defaultHostedModel(),reason:'Kvalitetssikret fakta · nettsøk ved behov',prompt:cleanSmartPrompt(prompt)||prompt};
     }
     if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
@@ -7097,13 +7097,17 @@
     if(ordinaryBasic&&isCanonicalHostedModel(model)){
       model={...model,id:CANONICAL_HOSTED_MODEL_ID,model:CANONICAL_HOSTED_MODEL_ID,route:'hosted'};
     }else if(!ordinaryBasic){
+      const requestedModel=model;
       const verifiedModel=await revalidateHostedBoundary('first_chat',model);
       if(!verifiedModel){
         const error=new Error('Hosted release is not production-ready.');
         error.code='hosted_release_not_ready';
         throw error;
       }
-      model=verifiedModel;
+      // A selected non-canonical route remains the writer for follow-ups.
+      // Revalidation may refresh the inventory and return the canonical
+      // fallback; that must not silently change the route shown as selected.
+      model=isCanonicalHostedModel(requestedModel)?verifiedModel:requestedModel;
     }
     const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
     const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
