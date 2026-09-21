@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260921-routing-mentions-v1';
+  const P0_RUNTIME_VERSION='20260921-source-disclosure-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2368,25 +2368,47 @@
     return records;
   }
 
+  function ordinarySourceRetrievalStatus(payload){
+    const grounding=payload?.mmir?.source_grounding;
+    if(payload?.mmir?.ordinary_chat!==true||!grounding||typeof grounding!=='object'||Array.isArray(grounding))return '';
+    if(grounding.retrieval_performed!==false)return '';
+    if('source_count' in grounding&&grounding.source_count!==0)return '';
+    if('sources' in grounding&&(!Array.isArray(grounding.sources)||grounding.sources.length!==0))return '';
+    if(grounding.retrieval_attempted===false&&grounding.retrieval_status==='not_attempted')return 'not_attempted';
+    if(grounding.retrieval_attempted===true&&grounding.retrieval_status==='unavailable_or_unsupported')return 'unavailable_or_unsupported';
+    return '';
+  }
+
+  function sourceRetrievalLabel(proof){
+    if(proof?.sourceRetrievalStatus==='not_attempted')return 'Ingen kilde hentet';
+    if(proof?.sourceRetrievalStatus==='unavailable_or_unsupported')return 'Kildeinnhold utilgjengelig';
+    return '';
+  }
+
   function answerProofLine(payload){
     const raw=payload?.mmir?.answer_proof_line??payload?.answer_proof_line??null;
+    const sourceRetrievalStatus=ordinarySourceRetrievalStatus(payload);
+    const disclosure=sourceRetrievalStatus?{sourceRetrievalStatus}:{};
+    const unproven=sourceRetrievalStatus?{status:'unverified',label:'',consensusLabel:'',sources:proofSourceRecords(payload,null),...disclosure}:null;
     if(typeof raw==='string'){
       const label=raw.replace(/\s+/g,' ').trim().slice(0,160);
-      if(!label)return null;
+      if(!label)return unproven;
       return {
         status:/^verifisert\b/i.test(label)?'verified':'stated',
         label,
         consensusLabel:'',
-        sources:proofSourceRecords(payload,null)
+        sources:proofSourceRecords(payload,null),
+        ...disclosure
       };
     }
-    if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return unproven;
     const status=String(raw.status||'').trim().toLowerCase();
     return {
       status:['verified','consensus_signed','signed'].includes(status)?status:'unverified',
       label:String(raw.label||'').replace(/\s+/g,' ').trim().slice(0,160),
       consensusLabel:String(raw.consensus?.public_ui_label||'').replace(/\s+/g,' ').trim().slice(0,120),
-      sources:proofSourceRecords(payload,raw)
+      sources:proofSourceRecords(payload,raw),
+      ...disclosure
     };
   }
 
@@ -3856,6 +3878,7 @@
     const statusParts=calculatorAnswer?['verktøysvar']:[
       answerDeliveryLabel(answerState),
       conciseGeneratedStatus,
+      sourceRetrievalLabel(proof),
       aiGenerated?'KI-svar · kan ta feil':''
     ].filter(Boolean);
     const statusText=statusParts
