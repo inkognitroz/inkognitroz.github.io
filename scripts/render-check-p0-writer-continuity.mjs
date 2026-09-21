@@ -224,9 +224,9 @@ async function installFixtures(page,{selectedModelId=''}={}){
     latestLlmReceiptId=responseReceipt.id;
     await fulfillJson(route,{
       object:'chat.completion',
-      choices:[{message:{role:'assistant',content:groqRequest?( /Fix sum/.test(current)?'const sum = (a, b) => a + b':'Result for 19 and 37 is 703'):`Hosted svar ${answerCount}`},finish_reason:'stop'}],
+      choices:[{message:{role:'assistant',content:groqRequest?( /Fix sum/.test(current)?'const sum = (a, b) => a + b':'Result for 19 and 37 is 56'):`Hosted svar ${answerCount}`},finish_reason:'stop'}],
       mmir:{
-        answer_writer:{object:'mmir.answer_writer',type:'llm',provider:groqRequest?'groq':'nvidia',model_id:groqRequest?groqModel:model,model_display_name:groqRequest?'Groq: openai/gpt-oss-120b':'Mistral Small 4'},
+        ...(groqRequest||answerCount!==1?{answer_writer:{object:'mmir.answer_writer',type:'llm',provider:groqRequest?'groq':'nvidia',model_id:groqRequest?groqModel:model,model_display_name:groqRequest?'Groq: openai/gpt-oss-120b':'Mistral Small 4'}}:{}),
         writer_continuity_receipt:groqRequest?writerReceipt((body.messages?.length||0)+1,answerCount,groqModel):responseReceipt,
         no_paid_routes_started:true,
         provider_secrets_in_browser:false
@@ -319,7 +319,7 @@ try{
     await sendAndWait(groqPage,'Fix sum=(a,b)=>a-b to add.',/const sum/);
     const groqFirst=chatRequests.at(-1);
     const groqFirstAnswer='const sum = (a, b) => a + b';
-    await sendAndWait(groqPage,'What is the result for 19 and 37?',/Result for 19 and 37 is 703|Hosted svar/);
+    await sendAndWait(groqPage,'What is the result for 19 and 37?',/Result for 19 and 37 is 56/);
     const groqSecond=chatRequests.at(-1);
     assert(groqFirst?.model===groqModel,'Explicit Groq first turn must use the selected Groq route.');
     assert(groqSecond?.model===groqModel,'Explicit Groq follow-up must keep the selected Groq route.');
