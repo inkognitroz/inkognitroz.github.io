@@ -112,6 +112,10 @@ async function checkBasicChatWithoutProof(browser,fixture){
   const failedChatResponse=fixture.failChat
     ? new Promise(resolve=>{releaseFailedChatResponse=resolve;})
     : null;
+  let releaseReserveResponse=null;
+  const reserveResponse=fixture.reserveSuccess
+    ? new Promise(resolve=>{releaseReserveResponse=resolve;})
+    : null;
 
   await page.route('https://api.mmir.ai/status',route=>{
     statusCalls+=1;
@@ -138,10 +142,56 @@ async function checkBasicChatWithoutProof(browser,fixture){
         body:'{"error":"ordinary chat unavailable"}'
       }));
     }
+    const reserveAnswer={
+      object:'chat.completion',
+      model:'mistral-small-latest',
+      model_display_name:'mistral-small-latest',
+      provider:'mistral',
+      provider_called:true,
+      provider_secrets_in_browser:false,
+      no_paid_routes_started:true,
+      choices:[{
+        message:{role:'assistant',content:'Reserve svarte etter at primærruten feilet.'},
+        finish_reason:'stop'
+      }],
+      mmir:{
+        ordinary_chat:true,
+        fallback_used:true,
+        provider_called:true,
+        no_paid_routes_started:true,
+        provider_secrets_in_browser:false,
+        answer_writer:{
+          object:'mmir.answer_writer',
+          type:'llm',
+          provider:'mistral',
+          model_id:'mistral-small-latest',
+          model_display_name:'mistral-small-latest',
+          route_id:'mistral/mistral-small-latest'
+        },
+        route_failures:[{
+          provider:'groq',
+          model:'openai/gpt-oss-120b',
+          route_id:'groq/openai/gpt-oss-120b',
+          failure_class:'upstream_http_5xx',
+          code:'provider_route_failed',
+          provider_status:503,
+          latency_ms:120,
+          provider_timeout_ms:1000,
+          timeout_origin:'none'
+        }]
+      }
+    };
+    if(fixture.reserveSuccess){
+      return reserveResponse.then(()=>route.fulfill({
+        status:200,
+        contentType:'application/json',
+        body:JSON.stringify(reserveAnswer)
+      }));
+    }
     return route.fulfill({
       status:200,
       contentType:'application/json',
-      body:JSON.stringify({
+      body:JSON.stringify(fixture.reserveSuccess?reserveAnswer:{
         choices:[{
           message:{role:'assistant',content:chatRequests.length===1?'Grunnchat svarte.':'Oppfølgingen beholdt samtalen.'},
           finish_reason:'stop'
@@ -197,6 +247,25 @@ async function checkBasicChatWithoutProof(browser,fixture){
     const failedAnswer=(await page.locator('.p0-message-assistant').last().innerText()).replace(/\s+/g,' ').trim();
     assert(/Supergeni svarer ikke akkurat nå\. Prøv igjen om et øyeblikk\./i.test(failedAnswer),fixture.name+' must keep the canonical honest 503 explanation');
     assert(!/\bready\b/i.test(failedAnswer),fixture.name+' failed answer receipt must not retain a ready claim');
+  }else if(fixture.reserveSuccess){
+    await page.waitForFunction(()=>{
+      const answer=document.querySelector('.p0-message-assistant:last-of-type');
+      return /tenker|svar venter/i.test(answer?.textContent||'');
+    });
+    assert(!(await page.locator('.p0-message-body').last().innerText()).includes('Reserve svarte etter at primærruten feilet.'),fixture.name+' must not render the completed reserve answer before the response is released');
+    releaseReserveResponse();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Reserve svarte etter at primærruten feilet.')));
+    await page.waitForSelector('#p0-send[data-state="send"]');
+    const answer=page.locator('.p0-message-assistant').last();
+    assert((await answer.locator('.p0-message-body').innerText()).trim()==='Reserve svarte etter at primærruten feilet.',fixture.name+' must render the reserve answer body');
+    assert((await answer.locator('.p0-receipt-model').innerText()).trim()==='mistral-small-latest',fixture.name+' must render the gateway-declared reserve writer identity');
+    const visibleState=await page.evaluate(()=>({
+      status:document.getElementById('p0-status')?.dataset.state||'',
+      route:document.getElementById('p0-route')?.dataset.state||'',
+      failureReceipt:document.querySelectorAll('.p0-receipt-failure-diagnostic').length
+    }));
+    assert(visibleState.status!=='error'&&visibleState.route!=='error',fixture.name+' must keep the successful reserve response out of failure UI');
+    assert(visibleState.failureReceipt===0,fixture.name+' must not render an HTTP failure diagnostic for a 200 reserve response');
   }else{
     await page.waitForFunction(()=>Array.from(document.querySelectorAll('.p0-message-assistant')).some(message=>message.textContent.includes('Grunnchat svarte.')));
     await page.waitForSelector('#p0-send[data-state="send"]');
@@ -240,7 +309,8 @@ try{
     {name:'status unavailable',failStatus:true,failModels:false,followUp:true},
     {name:'inventory unavailable',failStatus:false,readyStatus:true,failModels:true},
     {name:'status and inventory unavailable',failStatus:true,failModels:true},
-    {name:'blocked status and backend unavailable',failStatus:false,readyStatus:false,failModels:false,failChat:true}
+    {name:'blocked status and backend unavailable',failStatus:false,readyStatus:false,failModels:false,failChat:true},
+    {name:'primary route failed and reserve answered',failStatus:false,readyStatus:true,failModels:false,reserveSuccess:true}
   ]){
     await checkBasicChatWithoutProof(browser,fixture);
   }
