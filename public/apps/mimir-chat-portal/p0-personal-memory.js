@@ -1,6 +1,5 @@
 (function(){
   'use strict';
-  const ORIGIN='https://backend.mmir.ai';
   const TYPES=['note','fact','preference','task'];
   const MAX_TEXT=1000;
   const MAX_LIST=30;
@@ -29,10 +28,10 @@
     return body.memory;
   }
   function mutate(task){const next=mutations.then(task,task);mutations=next.catch(()=>{});return next;}
-  function controls(enabled){
+  function controls(enabled,known=true){
     dialog?.querySelectorAll('[data-personal-memory-requires-consent]').forEach(node=>{node.disabled=!enabled;});
     const label=dialog?.querySelector('[data-personal-memory-state]');
-    if(label)label.textContent=enabled?'Remote storage is enabled for this anonymous tab session.':'Remote storage is off. Local /remember stays in this browser.';
+    if(label)label.textContent=enabled?'Remote storage is enabled for this anonymous tab session.':(known?'Remote storage is off. Local /remember stays in this browser.':'Remote storage state is unknown. Nothing will be copied into chat.');
   }
   function itemButton(item){
     const button=document.createElement('button');
@@ -56,27 +55,31 @@
       if(!items.length){status(enabled?'No remote personal memory saved for this tab session yet.':'Storage is off. Saved notes remain inspectable and deletable.');return;}
       items.forEach(item=>{if(item?.id&&TYPES.includes(item.type)&&text(item.text))list.appendChild(itemButton(item));});
       status(enabled?'Remote personal memory refreshed.':'Storage is off. Saved notes remain inspectable and deletable.');
-    }catch(error){controls(false);status(error.message||'Remote storage is unavailable.',true);}
+    }catch(error){controls(false,false);status(error.message||'Remote storage state is unavailable.',true);}
   }
   function enable(){return mutate(async()=>{
     const token=++gate; status('Enabling remote storage…');
     try{
       await request('/consent',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory:true})});
       if(token!==gate||!canUseRemote())return;
-      if(!(await consent()))throw new Error('Storage enablement was not confirmed.');
+      const enabled=await consent();
+      if(token!==gate||!canUseRemote())return;
+      if(!enabled)throw new Error('Storage enablement was not confirmed.');
       controls(true); status('Remote storage enabled. Save only notes you want this anonymous tab session to use.');
-    }catch(error){controls(false);status(error.message||'Storage was not enabled.',true);}
+    }catch(error){controls(false,false);status(error.message||'Storage was not enabled.',true);}
   });}
-  function disable(){return mutate(async()=>{
+  function disable(){
     ++gate; selectedId=''; controls(false); status('Disabling remote storage…');
+    return mutate(async()=>{
     try{
       await request('/consent',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory:false})});
       if(await consent())throw new Error('Storage disablement was not confirmed.');
       status('Remote storage disabled. Saved notes were not deleted and nothing will be copied into chat.');
     }catch(error){status(error.message||'Could not confirm disablement; nothing will be copied into chat.',true);}
-  });}
+    });}
   async function save(){
-    const value=text(dialog.querySelector('[data-personal-memory-text]')?.value);
+    const input=dialog.querySelector('[data-personal-memory-text]');
+    const value=text(input?.value);
     const type=dialog.querySelector('[data-personal-memory-type]')?.value;
     if(!value||!TYPES.includes(type)){status('Enter a note and choose a supported type.',true);return;}
     return mutate(async()=>{
@@ -84,17 +87,18 @@
       if(!await consent()){controls(false);status('Storage is off; note was not sent.',true);return;}
       status('Saving remote note…');
       const created=await request('/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:value,type,tags:[]})});
-      if(!created?.data?.id||!text(created.data.text)||!TYPES.includes(created.data.type))throw new Error('Personal storage returned an invalid saved note.');
+      if(created?.object!=='memory'||!created?.data?.id||created.data.type!==type||text(created.data.text)!==value)throw new Error('Personal storage returned an invalid saved note.');
       if(!canUseRemote()||!(await consent()))throw new Error('Storage changed; note was not claimed as saved.');
-      dialog.querySelector('[data-personal-memory-text]').value=''; status('Remote note saved.'); await refresh();
+      if(text(input?.value)===value)input.value=''; status('Remote note saved.'); await refresh();
     }catch(error){status(error.message||'Note was not saved.',true);}
     });
   }
   async function remove(){
-    if(!selectedId){status('Select a saved note first.',true);return;}
+    const id=selectedId;
+    if(!id){status('Select a saved note first.',true);return;}
     return mutate(async()=>{
     status('Deleting selected note…');
-    try{const deleted=await request('/memory/'+encodeURIComponent(selectedId),{method:'DELETE'});if(!deleted?.data?.id)throw new Error('Personal storage returned an invalid delete response.');selectedId='';status('Selected remote note deleted.');await refresh();}
+    try{const deleted=await request('/memory/'+encodeURIComponent(id),{method:'DELETE'});if(deleted?.object!=='memory.deleted'||deleted.id!==id||deleted.deleted!==true)throw new Error('Personal storage returned an invalid delete response.');if(selectedId===id)selectedId='';status('Selected remote note deleted.');await refresh();}
     catch(error){status(error.message||'Note was not deleted.',true);}
     });
   }
@@ -109,7 +113,7 @@
       const finalConsent=await consent();
       if(token!==gate||!finalConsent||!canUseRemote()){controls(false);status('Storage changed; nothing was copied.',true);return;}
       const note=text(body?.data?.text);
-      if(!note){status('Selected note is unavailable.',true);return;}
+      if(body?.object!=='memory'||body?.data?.id!==id||!TYPES.includes(body?.data?.type)||!note){status('Selected note is unavailable.',true);return;}
       const composer=document.getElementById('p0-input');
       if(!composer){status('Composer is unavailable.',true);return;}
       const labelled='[Personal memory you selected: "'+note.replaceAll('"','\\"')+'"]';
