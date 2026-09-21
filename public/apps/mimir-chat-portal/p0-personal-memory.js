@@ -87,7 +87,7 @@
       if(!await consent()){controls(false);status('Storage is off; note was not sent.',true);return;}
       status('Saving remote note…');
       const created=await request('/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:value,type,tags:[]})});
-      if(created?.object!=='memory'||!created?.data?.id||created.data.type!==type||text(created.data.text)!==value)throw new Error('Personal storage returned an invalid saved note.');
+      if(created?.object!=='memory.item'||!created?.data?.id||created.data.type!==type||text(created.data.text)!==value)throw new Error('Personal storage returned an invalid saved note.');
       if(!canUseRemote()||!(await consent()))throw new Error('Storage changed; note was not claimed as saved.');
       if(text(input?.value)===value)input.value=''; status('Remote note saved.'); await refresh();
     }catch(error){status(error.message||'Note was not saved.',true);}
@@ -113,7 +113,7 @@
       const finalConsent=await consent();
       if(token!==gate||!finalConsent||!canUseRemote()){controls(false);status('Storage changed; nothing was copied.',true);return;}
       const note=text(body?.data?.text);
-      if(body?.object!=='memory'||body?.data?.id!==id||!TYPES.includes(body?.data?.type)||!note){status('Selected note is unavailable.',true);return;}
+      if(body?.object!=='memory.item'||body?.data?.id!==id||!TYPES.includes(body?.data?.type)||!note){status('Selected note is unavailable.',true);return;}
       const composer=document.getElementById('p0-input');
       if(!composer){status('Composer is unavailable.',true);return;}
       const labelled='[Personal memory you selected: "'+note.replaceAll('"','\\"')+'"]';
