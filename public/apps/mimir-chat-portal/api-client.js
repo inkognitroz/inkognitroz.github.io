@@ -3,7 +3,13 @@
   const ACTIVE_KEY='mimir-chat-active-backend';
   const TOKEN_PREFIX='mimir-local-node-token:';
   const PAIRING_CODE_PREFIX='mimir-local-node-pairing-code:';
+  const BACKEND_IDENTITY_ORIGIN='https://backend.mmir.ai';
+  const BACKEND_SESSION_PREFIX='mimir-backend-identity-session:';
+  const BACKEND_ROTATION_WINDOW_MS=24*60*60*1000;
+  const BACKEND_OPERATION_TIMEOUT_MS=5000;
   const managedSessionTokens=new Map();
+  const backendSessionFlights=new Map();
+  const backendSessionStorageFailures=new Set();
 
   function readProfiles(){
     try{
@@ -25,6 +31,209 @@
 
   function cleanUrl(value){
     return String(value||'').trim().replace(/\/$/,'');
+  }
+
+  function normalizedOrigin(value){
+    if(typeof value!=='string')return '';
+    try{
+      const url=new URL(value.trim());
+      if(url.username||url.password||url.search||url.hash||url.pathname!=='/'||url.protocol!=='https:')return '';
+      return url.origin;
+    }catch(error){return '';}
+  }
+
+  function explicitBackendOptIn(){
+    let global='';
+    let brand='';
+    try{global=normalizedOrigin(window.MMIR_BACKEND_URL);}catch(error){}
+    try{brand=normalizedOrigin(window.MimirBrandConfig?.backend_url);}catch(error){}
+    const url=global||brand;
+    return url===BACKEND_IDENTITY_ORIGIN;
+  }
+
+  function backendIdentityScope(url,options={}){
+    if(!explicitBackendOptIn())return false;
+    let parsed;
+    try{parsed=new URL(String(url||''),window.location.href);}catch(error){return false;}
+    const method=String(options.method||'GET').toUpperCase();
+    if(parsed.origin!==BACKEND_IDENTITY_ORIGIN||parsed.search||parsed.hash)return false;
+    return (method==='GET'&&parsed.pathname==='/status')||
+      (method==='POST'&&parsed.pathname==='/v1/chat/completions');
+  }
+
+  function backendIdentityError(message,code='backend_identity_error',status=0){
+    const error=new Error(message);
+    error.code=code;
+    if(status)error.status=status;
+    return error;
+  }
+
+  function backendSessionKey(origin=BACKEND_IDENTITY_ORIGIN){
+    return BACKEND_SESSION_PREFIX+origin;
+  }
+
+  function backendStorage(){
+    if(backendSessionStorageFailures.has(BACKEND_IDENTITY_ORIGIN)){
+      throw backendIdentityError('Backend identity storage is unavailable.','backend_identity_storage_unavailable');
+    }
+    try{
+      if(!window.sessionStorage||typeof window.sessionStorage.getItem!=='function')throw new Error('missing sessionStorage');
+      return window.sessionStorage;
+    }catch(error){
+      backendSessionStorageFailures.add(BACKEND_IDENTITY_ORIGIN);
+      throw backendIdentityError('Backend identity storage is unavailable.','backend_identity_storage_unavailable');
+    }
+  }
+
+  function validSessionRecord(value,{now=Date.now()}={}){
+    if(!value||typeof value!=='object'||Array.isArray(value))return {record:null,reason:'malformed'};
+    const token=typeof value.token==='string'?value.token.trim():'';
+    const identityId=typeof value.identity_id==='string'?value.identity_id.trim():'';
+    const issuedAt=Date.parse(String(value.issued_at||''));
+    const expiresAt=Date.parse(String(value.expires_at||''));
+    if(!token||token.length>8192||/[\u0000-\u001f\u007f]/.test(token)||!identityId||identityId.length>256||/[\u0000-\u001f\u007f]/.test(identityId)||!Number.isFinite(issuedAt)||!Number.isFinite(expiresAt)||expiresAt<=issuedAt||expiresAt<=0){
+      return {record:null,reason:'malformed'};
+    }
+    const record={token,identity_id:identityId,issued_at:new Date(issuedAt).toISOString(),expires_at:new Date(expiresAt).toISOString()};
+    return expiresAt<=now?{record,reason:'expired'}:{record,reason:'valid'};
+  }
+
+  function readBackendSession({now=Date.now()}={}){
+    const storage=backendStorage();
+    let raw;
+    try{raw=storage.getItem(backendSessionKey());}
+    catch(error){
+      backendSessionStorageFailures.add(BACKEND_IDENTITY_ORIGIN);
+      throw backendIdentityError('Backend identity storage is unavailable.','backend_identity_storage_unavailable');
+    }
+    if(raw===null)return {record:null,reason:'missing'};
+    let parsed;
+    try{parsed=JSON.parse(raw);}catch(error){parsed=null;}
+    const result=validSessionRecord(parsed,{now});
+    if(result.reason!=='valid')return result;
+    return result;
+  }
+
+  function writeBackendSession(record){
+    const storage=backendStorage();
+    try{storage.setItem(backendSessionKey(),JSON.stringify(record));}
+    catch(error){
+      backendSessionStorageFailures.add(BACKEND_IDENTITY_ORIGIN);
+      throw backendIdentityError('Backend identity storage is unavailable.','backend_identity_storage_unavailable');
+    }
+  }
+
+  function sessionResponse(value,{now=Date.now()}={}){
+    if(!value||value.object!=='mmir.identity_session'||value.anonymous!==true){
+      throw backendIdentityError('Backend returned an invalid identity session.','backend_identity_invalid_response');
+    }
+    const result=validSessionRecord(value,{now});
+    if(result.reason!=='valid')throw backendIdentityError('Backend returned an invalid identity session.','backend_identity_invalid_response');
+    return result.record;
+  }
+
+  async function backendJson(url,{method='GET',body,signal,fetchImpl=window.fetch}={}){
+    if(typeof fetchImpl!=='function')throw backendIdentityError('Backend identity transport is unavailable.','backend_identity_transport_unavailable');
+    let response;
+    try{
+      response=await fetchImpl(url,{method,headers:{Accept:'application/json','Content-Type':'application/json'},body,signal,credentials:'omit'});
+    }catch(error){throw error;}
+    if(!response?.ok)throw backendIdentityError('Backend identity request failed.','backend_identity_request_failed',Number(response?.status)||0);
+    try{return await response.json();}catch(error){throw backendIdentityError('Backend returned invalid identity JSON.','backend_identity_invalid_response');}
+  }
+
+  function abortError(){
+    const error=new Error('The backend identity request was aborted.');
+    error.name='AbortError';
+    return error;
+  }
+
+  function awaitFlight(entry,signal){
+    entry.waiters+=1;
+    let active=true;
+    const release=()=>{
+      if(!active)return;
+      active=false;
+      entry.waiters=Math.max(0,entry.waiters-1);
+      if(!entry.settled&&entry.waiters===0)entry.controller.abort();
+    };
+    if(signal?.aborted){
+      release();
+      return Promise.reject(abortError());
+    }
+    return new Promise((resolve,reject)=>{
+      const onAbort=()=>{
+        release();
+        reject(abortError());
+      };
+      if(signal)signal.addEventListener('abort',onAbort,{once:true});
+      entry.promise.then(
+        value=>{release();if(signal)signal.removeEventListener('abort',onAbort);resolve(value);},
+        error=>{release();if(signal)signal.removeEventListener('abort',onAbort);reject(error);}
+      );
+    });
+  }
+
+  async function ensureBackendSession({signal,fetchImpl=window.fetch,now=Date.now()}={}){
+    if(signal?.aborted)throw abortError();
+    const existingFlight=backendSessionFlights.get(BACKEND_IDENTITY_ORIGIN);
+    if(existingFlight)return awaitFlight(existingFlight,signal);
+    const operationController=new AbortController();
+    const operationTimeout=setTimeout(()=>operationController.abort(),BACKEND_OPERATION_TIMEOUT_MS);
+    const flight=(async()=>{
+      try{
+        const current=readBackendSession({now});
+        if(current.reason==='malformed')throw backendIdentityError('Stored backend identity is malformed.','backend_identity_malformed');
+        if(current.reason==='expired')throw backendIdentityError('Stored backend identity has expired.','backend_identity_expired');
+        if(current.record){
+          const expiresAt=Date.parse(current.record.expires_at);
+          if(expiresAt-now>BACKEND_ROTATION_WINDOW_MS)return current.record;
+          const rotated=await backendJson(BACKEND_IDENTITY_ORIGIN+'/identity/session',{
+            method:'POST',body:JSON.stringify({prior_token:current.record.token}),signal:operationController.signal,fetchImpl
+          });
+          const next=sessionResponse(rotated,{now});
+          if(next.identity_id!==current.record.identity_id)throw backendIdentityError('Backend identity rotation changed identity.','backend_identity_rotation_mismatch');
+          writeBackendSession(next);
+          return next;
+        }
+        const health=await backendJson(BACKEND_IDENTITY_ORIGIN+'/health',{signal:operationController.signal,fetchImpl});
+        const capabilities=Array.isArray(health?.capabilities)?health.capabilities:[];
+        if(health?.status!=='online'||health?.service!=='mmir-orchestrator'||health?.layer!=='backend'||!capabilities.includes('identity')||!capabilities.includes('proxy.chat_completions')){
+          throw backendIdentityError('Backend health contract is unavailable.','backend_identity_health_unavailable');
+        }
+        const issued=await backendJson(BACKEND_IDENTITY_ORIGIN+'/identity/session',{
+          method:'POST',body:'{}',signal:operationController.signal,fetchImpl
+        });
+        const next=sessionResponse(issued,{now});
+        writeBackendSession(next);
+        return next;
+      }finally{clearTimeout(operationTimeout);}
+    })();
+    const entry={promise:flight,controller:operationController,waiters:0,settled:false};
+    backendSessionFlights.set(BACKEND_IDENTITY_ORIGIN,entry);
+    flight.then(
+      ()=>{entry.settled=true;if(backendSessionFlights.get(BACKEND_IDENTITY_ORIGIN)===entry)backendSessionFlights.delete(BACKEND_IDENTITY_ORIGIN);},
+      ()=>{entry.settled=true;if(backendSessionFlights.get(BACKEND_IDENTITY_ORIGIN)===entry)backendSessionFlights.delete(BACKEND_IDENTITY_ORIGIN);}
+    );
+    return awaitFlight(entry,signal);
+  }
+
+  function copyHeaders(input){
+    const headers={};
+    if(Array.isArray(input))input.forEach(pair=>{if(Array.isArray(pair)&&pair.length>1)headers[String(pair[0])]=pair[1];});
+    else if(input&&typeof input.forEach==='function')input.forEach((value,key)=>{headers[key]=value;});
+    else if(input&&typeof input==='object')Object.assign(headers,input);
+    Object.keys(headers).forEach(key=>{if(key.toLowerCase()==='authorization')delete headers[key];});
+    return headers;
+  }
+
+  async function prepareBackendRequest(url,options={}){
+    if(!backendIdentityScope(url,options))return options;
+    const {identityFetch,...requestOptions}=options;
+    const session=await ensureBackendSession({signal:options.signal,fetchImpl:identityFetch||window.fetch});
+    const headers=copyHeaders(requestOptions.headers);
+    headers.Authorization='Bearer '+session.token;
+    return {...requestOptions,headers};
   }
 
   function loopbackUrl(value){
@@ -216,6 +425,9 @@
     activeManagedSession,
     setManagedSessionToken,
     clearManagedSessionToken,
+    prepareBackendRequest,
+    backendIdentityScope,
+    backendSessionKey,
     fetchJson,
     pairIfNeeded,
     authHeaders,
