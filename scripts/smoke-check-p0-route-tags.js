@@ -253,8 +253,8 @@ const cerebras = normalizedHosted[1];
 testApi.state.models = [cerebras, normalizedHosted[0], gemma];
 testApi.state.activeModelId = cerebras.id;
 const groundedPerson = testApi.smartDecision('Hvem er Sverre Stoltz?');
-assertEqual(groundedPerson.model.id, 'mmir-supergenius', 'Person lookups must use the canonical grounded route even when a direct hosted model remains selected');
-assertIncludes(groundedPerson.reason, 'nettsøk ved behov', 'Grounded person lookups must explain the automatic search-capable route');
+assertEqual(groundedPerson.model.id, cerebras.id, 'Person lookups must preserve an explicitly selected hosted writer');
+assertEqual(groundedPerson.reason, '', 'Explicit hosted writer selection must not claim an automatic search-capable override');
 const directCreative = testApi.smartDecision('Skriv et kort dikt om havet.');
 assertEqual(directCreative.model.id, cerebras.id, 'Non-factual creative prompts must still honor the manually selected writer');
 

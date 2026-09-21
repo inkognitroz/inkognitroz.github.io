@@ -4197,11 +4197,7 @@
         return {mode:'compare',model:partner,prompt:cleanSmartPrompt(prompt)||prompt};
       }
     }
-    const explicitGroqSelection=active.route==='hosted'&&(
-      String(active.provider||'').toLowerCase()==='groq'||
-      String(active.routeId||'').toLowerCase().startsWith('groq/')
-    );
-    if(factGuardActive()&&!explicitGroqSelection&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
+    if(factGuardActive()&&active.route!=='hosted'&&!isCanonicalHostedModel(active)&&wantsPublicFactRoute(prompt)&&!wantsPrivateRoute(prompt)){
       return {mode:'single',model:defaultHostedModel(),reason:'Kvalitetssikret fakta · nettsøk ved behov',prompt:cleanSmartPrompt(prompt)||prompt};
     }
     if(local&&active.route==='hosted'&&wantsPrivateRoute(prompt)){
