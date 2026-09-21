@@ -190,7 +190,7 @@ const grounding = { retrieval_attempted: false, retrieval_performed: false, retr
 const ordinaryPayload = (sourceGrounding = grounding, extra = {}) => ({ mmir: { ordinary_chat: true, source_grounding: sourceGrounding, ...extra } });
 const receiptSummary = proof => api.renderReceipt('Supergeni · hosted route', proof, 'Mistral Small', '', 'live', true).match(/<summary[^>]*>(.*?)<\/summary>/)?.[1] || '';
 const notices = [
-  [grounding, 'not_attempted', 'Kilden ble ikke hentet'],
+  [grounding, 'not_attempted', 'Ingen kilde hentet'],
   [{ ...grounding, retrieval_attempted: true, retrieval_status: 'unavailable_or_unsupported' }, 'unavailable_or_unsupported', 'Kildeinnhold utilgjengelig']
 ];
 for (const [observation, status, copy] of notices) {
@@ -224,7 +224,7 @@ for (const ordinary_chat of [undefined, false, 'true', 1]) {
   if (api.answerProofLine(ordinaryPayload(grounding, { ordinary_chat })) !== null) fail('Only explicit ordinary_chat true may carry this disclosure.');
 }
 const minimalGrounding = { retrieval_attempted: false, retrieval_performed: false, retrieval_status: 'not_attempted' };
-if (!receiptSummary(api.answerProofLine(ordinaryPayload(minimalGrounding))).includes('Kilden ble ikke hentet')) fail('Absent optional source lists/counts must not suppress an explicit negative observation.');
+if (!receiptSummary(api.answerProofLine(ordinaryPayload(minimalGrounding))).includes('Ingen kilde hentet')) fail('Absent optional source lists/counts must not suppress an explicit negative observation.');
 const hostileGrounding = { ...grounding, label: '<img src=x onerror=alert(1)>', url: 'javascript:alert(1)', prompt: 'UPSTREAM_PROMPT_SENTINEL' };
 const safeGroundingProof = api.answerProofLine(ordinaryPayload(hostileGrounding));
 if (JSON.stringify(safeGroundingProof).includes('SENTINEL') || /<img|javascript:/.test(receiptSummary(safeGroundingProof))) fail('Only the allowlisted enum may survive source metadata into display/history.');

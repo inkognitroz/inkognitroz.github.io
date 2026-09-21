@@ -2380,7 +2380,7 @@
   }
 
   function sourceRetrievalLabel(proof){
-    if(proof?.sourceRetrievalStatus==='not_attempted')return 'Kilden ble ikke hentet';
+    if(proof?.sourceRetrievalStatus==='not_attempted')return 'Ingen kilde hentet';
     if(proof?.sourceRetrievalStatus==='unavailable_or_unsupported')return 'Kildeinnhold utilgjengelig';
     return '';
   }
