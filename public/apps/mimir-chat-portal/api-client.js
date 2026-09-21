@@ -236,6 +236,46 @@
     return {...requestOptions,headers};
   }
 
+  function personalMemoryScope(path,method){
+    const normalized=String(path||'');
+    const item=/^\/memory\/[^/?#]+$/.test(normalized);
+    return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item))||
+      (method==='PUT'&&normalized==='/consent')||
+      (method==='POST'&&normalized==='/memory')||
+      (method==='DELETE'&&item);
+  }
+
+  // This is intentionally separate from the public chat route switch. It is
+  // callable only from an explicit personal-memory panel action, and cannot
+  // send the session bearer to a configured profile or arbitrary origin.
+  async function personalMemoryRequest(path,options={}){
+    const method=String(options.method||'GET').toUpperCase();
+    if(!personalMemoryScope(path,method))throw backendIdentityError('Personal memory endpoint is not allowed.','personal_memory_endpoint_not_allowed');
+    const {identityFetch,timeoutMs=5000,signal:externalSignal,...requestOptions}=options;
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+    const abortFromExternal=()=>controller.abort();
+    if(externalSignal){
+      if(externalSignal.aborted)controller.abort();
+      else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
+    }
+    try{
+    const session=await ensureBackendSession({signal:controller.signal,fetchImpl:identityFetch||window.fetch});
+    const headers=copyHeaders(requestOptions.headers);
+    headers.Authorization='Bearer '+session.token;
+    let response;
+    try{response=await (identityFetch||window.fetch)(BACKEND_IDENTITY_ORIGIN+path,fetchInitFor(BACKEND_IDENTITY_ORIGIN+path,{...requestOptions,method,headers,signal:controller.signal}));}
+    catch(error){if(error?.name==='AbortError')throw error;throw backendIdentityError('Personal memory request failed.','personal_memory_request_failed');}
+    let data=null;
+    try{data=await response.json();}catch(error){}
+    if(!response.ok)throw backendIdentityError(data?.error?.message||'Personal memory request failed.','personal_memory_request_failed',Number(response.status)||0);
+    return data;
+    }finally{
+      clearTimeout(timeout);
+      if(externalSignal)externalSignal.removeEventListener('abort',abortFromExternal);
+    }
+  }
+
   function loopbackUrl(value){
     try{
       const url=new URL(String(value||''),window.location.href);
@@ -426,6 +466,7 @@
     setManagedSessionToken,
     clearManagedSessionToken,
     prepareBackendRequest,
+    personalMemoryRequest,
     backendIdentityScope,
     backendSessionKey,
     fetchJson,
