@@ -188,6 +188,16 @@ if (!dedupedHtml.includes('Bevis: 1/3 enige')) fail('Proof row must keep the gat
 // 8) Ordinary source-retrieval observations are separate from independent proof claims.
 const grounding = { retrieval_attempted: false, retrieval_performed: false, retrieval_status: 'not_attempted', source_count: 0, sources: [] };
 const ordinaryPayload = (sourceGrounding = grounding, extra = {}) => ({ mmir: { ordinary_chat: true, source_grounding: sourceGrounding, ...extra } });
+const retrievedSource = { title: 'Example Domains', url: 'https://www.iana.org/help/example-domains' };
+const retrievedGrounding = { retrieval_attempted: true, retrieval_performed: true, retrieval_status: 'retrieved', source_count: 1, sources: [retrievedSource], sources_attached_to_answer: true };
+const retrievedProof = api.answerProofLine(ordinaryPayload(retrievedGrounding, { sources: [retrievedSource] }));
+if (retrievedProof?.sourceRetrievalStatus !== 'retrieved' || retrievedProof.status !== 'unverified') fail('Retrieved ordinary sources must render as explicitly unverified, never as answer verification.');
+if (retrievedProof.sources.length !== 1 || retrievedProof.sources[0].url !== retrievedSource.url) fail('Retrieved ordinary source metadata must remain available for safe linking.');
+const mismatchedRetrievedProof = api.answerProofLine(ordinaryPayload(retrievedGrounding, { sources: [{ title: 'Model citation only', url: 'https://example.invalid/model-citation' }] }));
+if (mismatchedRetrievedProof.sources[0]?.url !== retrievedSource.url || JSON.stringify(mismatchedRetrievedProof).includes('example.invalid')) fail('Retrieved source proof must use grounding sources, not a mismatched model-cited URL.');
+const retrievedHtml = api.renderProofLine({ role: 'assistant', proofLine: retrievedProof });
+if (!retrievedHtml.includes('Ubekreftet') || !retrievedHtml.includes('<a class="p0-proof-source"') || !retrievedHtml.includes(retrievedSource.url)) fail('Retrieved ordinary sources must render one unverified clickable source.');
+if (api.renderReceipt('Supergeni · hosted route', retrievedProof, 'Mistral Small', '', 'live', true).includes('Verifisert')) fail('Retrieved ordinary sources must never inflate the receipt to Verifisert.');
 const receiptSummary = proof => api.renderReceipt('Supergeni · hosted route', proof, 'Mistral Small', '', 'live', true).match(/<summary[^>]*>(.*?)<\/summary>/)?.[1] || '';
 const notices = [
   [grounding, 'not_attempted', 'Ingen kilde hentet'],
@@ -220,8 +230,11 @@ for (const invalid of invalidGrounding) {
   const withProof = api.answerProofLine(ordinaryPayload(invalid, { answer_proof_line: 'Verifisert med live-kilde', sources: capabilityPayload.mmir.sources }));
   if (JSON.stringify(withProof) !== JSON.stringify(capabilityProof)) fail('Invalid retrieval metadata must not alter an independent proof.');
 }
+const unsafeRetrievedSource = { title: '<img src=x onerror=alert(1)>', url: 'javascript:alert(1)' };
+const unsafeRetrieved = ordinaryPayload({ ...retrievedGrounding, sources: [unsafeRetrievedSource] }, { sources: [unsafeRetrievedSource] });
+if (api.answerProofLine(unsafeRetrieved) !== null) fail('Retrieved metadata without a safe URL must fail closed instead of creating source proof.');
 for (const ordinary_chat of [undefined, false, 'true', 1]) {
-  if (api.answerProofLine(ordinaryPayload(grounding, { ordinary_chat })) !== null) fail('Only explicit ordinary_chat true may carry this disclosure.');
+  if (api.answerProofLine(ordinaryPayload(retrievedGrounding, { ordinary_chat, sources: [retrievedSource] })) !== null) fail('Only explicit ordinary_chat true may carry this disclosure.');
 }
 const minimalGrounding = { retrieval_attempted: false, retrieval_performed: false, retrieval_status: 'not_attempted' };
 if (!receiptSummary(api.answerProofLine(ordinaryPayload(minimalGrounding))).includes('Ingen kilde hentet')) fail('Absent optional source lists/counts must not suppress an explicit negative observation.');
@@ -241,4 +254,4 @@ api.state.messages[1].proofLine = safeGroundingProof;
 api.state.messages[1].source_grounding = hostileGrounding;
 if (JSON.stringify(api.hostedConversationMessages('Follow-up', 'System instruction')) !== beforeMetadata) fail('Received source metadata must not change or enter outgoing messages or memory context.');
 
-console.log(`P0 answer-proof-line smoke passed (2 retrieval states, ${invalidGrounding.length} invalid metadata cases, 4 nonordinary cases, preserved proof/render/history/prompt checks).`);
+console.log(`P0 answer-proof-line smoke passed (3 retrieval states, ${invalidGrounding.length} invalid metadata cases, 4 nonordinary cases, preserved proof/render/history/prompt checks).`);

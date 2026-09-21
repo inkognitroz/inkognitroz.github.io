@@ -169,6 +169,29 @@ async function installFixtures(page, { resetStorage = true, directWriter = false
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
       return;
     }
+    if (chatMode === 'retrieved-source-success') {
+      const source = { title: 'Example Domains', url: 'https://www.iana.org/help/example-domains' };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          object: 'chat.completion',
+          model: 'openai/gpt-oss-120b',
+          choices: [{ message: { role: 'assistant', content: 'Kildebasert svar (https://www.iana.org/help/example-domains).' }, finish_reason: 'stop' }],
+          mmir: {
+            ordinary_chat: true,
+            no_paid_routes_started: true,
+            answer_writer: { object: 'mmir.answer_writer', type: 'llm', provider: 'groq', model_id: 'openai/gpt-oss-120b', model_display_name: 'openai/gpt-oss-120b' },
+            source_grounding: {
+              object: 'mmir.pre_synthesis_grounding', retrieval_attempted: true, retrieval_performed: true,
+              retrieval_status: 'retrieved', source_count: 1, sources: [source], sources_attached_to_answer: true
+            },
+            sources: [source]
+          }
+        })
+      });
+      return;
+    }
     if (chatMode === 'slow-success' || chatMode === 'invalid-writer-success') {
       if (chatMode === 'slow-success') await new Promise(resolve => setTimeout(resolve, 1200));
       await route.fulfill({
@@ -301,6 +324,20 @@ try {
     completedReceiptText = await page.locator('.p0-message-assistant').last().locator('.p0-message-receipt').innerText();
     assert(/\bLive\b/i.test(completedReceiptText), 'successful hosted completion with invalid writer identity must still be labelled Live');
     assert(/KI-svar · kan ta feil/i.test(completedReceiptText), 'successful hosted completion with invalid writer identity must retain the AI warning');
+
+    chatMode = 'retrieved-source-success';
+    await page.locator('#p0-input').fill('Vis en hentet kilde.');
+    await page.locator('#p0-send').click();
+    await page.waitForSelector('text=Kildebasert svar');
+    const retrievedAnswer = page.locator('.p0-message-assistant').last();
+    const retrievedReceipt = retrievedAnswer.locator(':scope > .p0-message-receipt');
+    await retrievedReceipt.locator('summary').click();
+    const retrievedSource = retrievedAnswer.locator('a.p0-proof-source[href="https://www.iana.org/help/example-domains"]');
+    assert(await retrievedSource.count() === 1, 'retrieved ordinary source must render exactly one proof link');
+    assert(await retrievedSource.isVisible(), 'retrieved ordinary proof link must be visible when receipt details are open');
+    const retrievedReceiptText = await retrievedReceipt.innerText();
+    assert(/Ubekreftet/i.test(retrievedReceiptText), 'retrieved ordinary source must remain explicitly unverified');
+    assert(!/Verifisert|Signert kvittering/i.test(retrievedReceiptText), 'retrieved ordinary source must never claim answer verification');
 
     chatMode = 'error';
     await page.locator('#p0-input').fill('Test feiltilstanden');

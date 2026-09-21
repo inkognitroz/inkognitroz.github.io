@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260921-source-disclosure-v1';
+  const P0_RUNTIME_VERSION='20260921-source-disclosure-v2';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2331,7 +2331,10 @@
     for(const source of rawSources){
       if(records.length>=3)break;
       const rawUrl=String(source?.url||source?.href||'').trim();
-      const url=/^https?:\/\//i.test(rawUrl)?rawUrl:'';
+      let url='';
+      if(/^https?:\/\//i.test(rawUrl)){
+        try{if(new URL(rawUrl).hostname)url=rawUrl;}catch(error){}
+      }
       let host='';
       if(url){
         try{host=new URL(url).hostname.replace(/^www\./i,'');}catch(error){host='';}
@@ -2371,6 +2374,11 @@
   function ordinarySourceRetrievalStatus(payload){
     const grounding=payload?.mmir?.source_grounding;
     if(payload?.mmir?.ordinary_chat!==true||!grounding||typeof grounding!=='object'||Array.isArray(grounding))return '';
+    const groundingSources=Array.isArray(grounding.sources)?grounding.sources:[];
+    const groundingRecords=proofSourceRecords({mmir:{sources:groundingSources}},null);
+    if(grounding.retrieval_attempted===true&&grounding.retrieval_performed===true&&grounding.retrieval_status==='retrieved'&&
+      grounding.sources_attached_to_answer===true&&Number.isSafeInteger(grounding.source_count)&&grounding.source_count===groundingSources.length&&
+      grounding.source_count>0&&groundingRecords.some(source=>source.url))return 'retrieved';
     if(grounding.retrieval_performed!==false)return '';
     if('source_count' in grounding&&grounding.source_count!==0)return '';
     if('sources' in grounding&&(!Array.isArray(grounding.sources)||grounding.sources.length!==0))return '';
@@ -2382,6 +2390,7 @@
   function sourceRetrievalLabel(proof){
     if(proof?.sourceRetrievalStatus==='not_attempted')return 'Ingen kilde hentet';
     if(proof?.sourceRetrievalStatus==='unavailable_or_unsupported')return 'Kildeinnhold utilgjengelig';
+    if(proof?.sourceRetrievalStatus==='retrieved')return 'Kilder hentet';
     return '';
   }
 
@@ -2389,7 +2398,10 @@
     const raw=payload?.mmir?.answer_proof_line??payload?.answer_proof_line??null;
     const sourceRetrievalStatus=ordinarySourceRetrievalStatus(payload);
     const disclosure=sourceRetrievalStatus?{sourceRetrievalStatus}:{};
-    const unproven=sourceRetrievalStatus?{status:'unverified',label:'',consensusLabel:'',sources:proofSourceRecords(payload,null),...disclosure}:null;
+    const retrievalSources=sourceRetrievalStatus==='retrieved'
+      ? proofSourceRecords({mmir:{sources:Array.isArray(payload?.mmir?.source_grounding?.sources)?payload.mmir.source_grounding.sources:[]}},null)
+      : proofSourceRecords(payload,null);
+    const unproven=sourceRetrievalStatus?{status:'unverified',label:'',consensusLabel:'',sources:retrievalSources,...disclosure}:null;
     if(typeof raw==='string'){
       const label=raw.replace(/\s+/g,' ').trim().slice(0,160);
       if(!label)return unproven;
