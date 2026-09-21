@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260922-personal-memory-v1';
+  const P0_RUNTIME_VERSION='20260922-privacy-menu-reflow-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -5252,6 +5252,14 @@
       menuSeparator()+
       menuButton('personal-memory','Personlig minne','Velg eksplisitt om anonyme tab-notater lagres og brukes eksternt.')+
       demoControls;
+    if(!menu.hidden){
+      const button=document.getElementById('p0-privacy');
+      menu.scrollTop=0;
+      if(button){
+        positionMenuAboveTrigger(menu,button);
+        requestAnimationFrame(()=>positionMenuAboveTrigger(menu,button));
+      }
+    }
   }
 
   function shieldStateFor(model,local){
