@@ -1,5 +1,5 @@
 (function(){
-  const version='20260918-jarvis-v3';
+  const version='20260921-backend-session-v1';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
@@ -676,7 +676,11 @@
     }
     const {timeoutMs:ignored,signal:ignoredSignal,onDelta,...rest}=requestOptions;
     try{
-      const response=await fetch(url,fetchOptions(url,{...rest,signal:controller.signal}));
+      const prepared=typeof window.MimirApiClient?.prepareBackendRequest==='function'
+        ? await window.MimirApiClient.prepareBackendRequest(url,{...rest,signal:controller.signal,identityFetch:fetch})
+        : rest;
+      const {identityFetch:ignoredIdentityFetch,...fetchable}=prepared;
+      const response=await fetch(url,fetchOptions(url,{...fetchable,signal:controller.signal}));
       let data=null;
       if(response.ok&&typeof onDelta==='function'&&window.MmirP0StreamReader){
         data=await window.MmirP0StreamReader.read(response,{signal:controller.signal,onDelta});
