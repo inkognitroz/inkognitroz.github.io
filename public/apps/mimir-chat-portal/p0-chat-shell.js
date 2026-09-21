@@ -5253,7 +5253,9 @@
       menuButton('personal-memory','Personlig minne','Velg eksplisitt om anonyme tab-notater lagres og brukes eksternt.')+
       demoControls;
     if(!menu.hidden){
-      const button=document.getElementById('p0-privacy');
+      const button=menuReturnFocusElement?.isConnected
+        ? menuReturnFocusElement
+        : document.getElementById('p0-privacy');
       menu.scrollTop=0;
       if(button){
         positionMenuAboveTrigger(menu,button);
