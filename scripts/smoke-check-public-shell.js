@@ -797,8 +797,8 @@ requireText(
 );
 requireText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
-  "factGuardActive()",
-  "P0 fact guard must remain available while explicit hosted model selection stays with the selected route.",
+  "Kvalitetssikret fakta · nettsøk ved behov",
+  "P0 quality guard must label the canonical search-capable route for public facts.",
 );
 forbidText(
   join(publicDir, "apps", "mimir-chat-portal", "p0-chat-shell.js"),
