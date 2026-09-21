@@ -4,7 +4,7 @@
   "description": "Capacitor store-app wrapper for the Supergeni PWA (mmir.ai)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/test-dependency-compatibility.cjs",
     "sync": "cap sync",
     "assets": "capacitor-assets generate --ios --android --iconBackgroundColor '#0f172a' --iconBackgroundColorDark '#0f172a' --splashBackgroundColor '#0f172a' --splashBackgroundColorDark '#0f172a'"
   },
@@ -24,5 +24,10 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5"
+  },
+  "overrides": {
+    "replace": {
+      "minimatch": "3.1.4"
+    }
   }
 }
