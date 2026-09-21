@@ -10,7 +10,7 @@
   let mutations=Promise.resolve();
 
   function api(){return window.MimirApiClient;}
-  function text(value,max=MAX_TEXT){return String(value||'').replace(/\s+/g,' ').trim().slice(0,max);}
+  function text(value,max=MAX_TEXT){return String(value||'').trim().slice(0,max);}
   function clear(node){while(node?.firstChild)node.removeChild(node.firstChild);}
   function status(message,error=false){
     const node=dialog?.querySelector('[data-personal-memory-status]');
@@ -75,7 +75,7 @@
       await request('/consent',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory:false})});
       if(await consent())throw new Error('Storage disablement was not confirmed.');
       status('Remote storage disabled. Saved notes were not deleted and nothing will be copied into chat.');
-    }catch(error){status(error.message||'Could not confirm disablement; nothing will be copied into chat.',true);}
+    }catch(error){controls(false,false);status(error.message||'Could not confirm disablement; nothing will be copied into chat.',true);}
     });}
   async function save(){
     const input=dialog.querySelector('[data-personal-memory-text]');
