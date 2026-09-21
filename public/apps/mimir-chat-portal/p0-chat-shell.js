@@ -4948,6 +4948,9 @@
     const bottom=Math.max(12,window.innerHeight-rect.top+8);
     menu.style.left=left+'px';
     menu.style.bottom=bottom+'px';
+    menu.style.maxHeight='';
+    const cssMaxHeight=getComputedStyle(menu).maxHeight;
+    menu.style.maxHeight='min('+(cssMaxHeight==='none'?'100vh':cssMaxHeight)+', '+Math.max(0,window.innerHeight-bottom-14)+'px)';
   }
 
   function toggleMenu(name,button,returnFocus=button){
