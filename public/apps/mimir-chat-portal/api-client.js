@@ -241,7 +241,7 @@
     const item=/^\/memory\/[^/?#]+$/.test(normalized);
     return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item))||
       (method==='PUT'&&normalized==='/consent')||
-      (method==='POST'&&normalized==='/memory')||
+      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'))||
       (method==='DELETE'&&item);
   }
 
