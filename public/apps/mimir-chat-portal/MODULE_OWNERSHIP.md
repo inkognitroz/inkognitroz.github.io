@@ -34,8 +34,7 @@ These files own the first public chat experience and need the highest caution:
 | Public composer CSS | `chat-workspace.css` | Owns `.mimir-public-chat` composer/chip overrides. `chat-runtime.css` owns only base unscoped runtime/composer primitives. |
 | Asset versions | `asset-versions.json` | Owns launch-critical `?v=` values for `public/mmir.html`; update the manifest and keep `smoke-check-asset-version-manifest.js` green. |
 | Model picker | `composer-model-picker.js`, `composer-model-picker.css`, `model-selection.js`, `model-catalog-ui.js` | Show proven routes first; do not present planned/offline routes as active. |
-| Privacy/control | `privacy-controls.js`, `privacy-controls.css`, `route-display.js`, `active-node-strip.js`, `route-chips.js` | Keep route, privacy, cost and node truth consistent. |
-| Voice | `voice-controls.js`, `voice-controls.css` | Mic must respond truthfully; no silent dead control. |
+| Privacy/control | `route-display.js`, `active-node-strip.js`, `route-chips.js` | Keep route, privacy, cost and node truth consistent. |
 
 ## Receipts, Routing And Compare
 
@@ -53,22 +52,22 @@ Runtime hotfix retirement rule: `runtime-controls-fix.js` may temporarily coordi
 | Area | Files | Rule |
 | --- | --- | --- |
 | Local connector | `local-connector.js`, `node-dashboard.js`, `node-dashboard.css` | Keep local model names private until paired. Preserve one-command Mac path. |
-| Onboarding | `onboarding.js`, `onboarding.css`, `repair-resume.css` | Prefer chat-native guidance; external install page is fallback. |
-| Platform status | `platform-status.js`, `platform-status.css`, `provider-status.js` | Keep public-safe; no hidden provider/spend claims. |
+| Onboarding | `repair-resume.css` | Prefer chat-native guidance; external install page is fallback. |
+| Platform status | `platform-status.js`, `platform-status.css` | Keep public-safe; no hidden provider/spend claims. |
 
 ## Advanced / Hidden Until Proven
 
-These modules must stay hidden, advanced or secondary unless the linked user story is green:
+27 of these modules were deleted on 2026-09-22: no page loaded them, and the capabilities they
+sketched (memory, knowledge, identity) belong to the backend layer now (ADR 0013). What remains is
+still parked — hidden, advanced or secondary — until the linked user story is green.
+`smoke-check-advanced-module-loading-boundary.js` keeps the deleted names deleted and the parked
+names out of the public first-chat launch surface.
 
 | Area | Files |
 | --- | --- |
-| Workflows/tools | `workflow-builder.*`, `tool-runner.*`, `scheduled-tasks.*`, `use-case-templates.*` |
-| Memory/knowledge/RAG-like surfaces | `memory.*`, `knowledge.*`, `knowledge-connectors.js`, `dataset-manager.js`, `prompt-registry.*` |
-| Data/artifacts/code | `data-analysis.*`, `artifact-workspace.*`, `code-sandbox.*` |
-| Admin/identity/governance | `admin-governance.*`, `identity-org.*`, `access-control.*`, `backend-profiles-critical.js` |
-| Research/web/vision/sharing | `research-planner.*`, `web-search.*`, `vision-input.*`, `sharing-center.*` |
-| Assistants/context/corrections | `assistant-builder.*`, `context-*`, `message-actions.js`, `role-presets.js` |
-| Growth/PWA/migration/training | `beta-signup.js`, `demo-growth.js`, `free-value-loops.*`, `pwa.*`, `migration-portability.*`, `training-automation.js`, `workspaces.*`, `conversation-manager.*`, `activation-*` |
+| Admin/identity/governance | `backend-profiles-critical.js` |
+| Assistants/context/corrections | `context-*`, `message-actions.js` |
+| Growth/PWA/migration/training | `beta-signup.js`, `demo-growth.js`, `pwa.*`, `conversation-manager.*`, `activation-*` |
 
 ## Cleanup Sequence
 

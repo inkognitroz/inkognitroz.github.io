@@ -1,23 +1,32 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+
+const portalDir = join(process.cwd(), 'public', 'apps', 'mimir-chat-portal');
 
 const root = process.cwd();
 const html = readFileSync(join(root, 'public', 'mmir.html'), 'utf8');
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const failures = [];
 
+// Parked modules that still exist: they must never load in the public first-chat launch surface.
 const advancedModuleNames = [
+  'beta-signup.js',
+  'demo-growth.js'
+];
+
+// Deleted 2026-09-22: never referenced by any page, and the capabilities they drew belong to the
+// backend layer now (ADR 0013). They must stay deleted — reintroducing a file here is a decision,
+// not a side effect.
+const deletedModuleNames = [
   'access-control.js',
   'admin-governance.js',
   'artifact-workspace.js',
   'assistant-builder.js',
-  'beta-signup.js',
   'code-sandbox.js',
   'connector-catalog.js',
   'data-analysis.js',
   'dataset-manager.js',
-  'demo-growth.js',
   'free-value-loops.js',
   'identity-org.js',
   'image-boundary.js',
@@ -70,6 +79,12 @@ for (const ref of publicLaunchRefs) {
   const name = assetName(ref);
   if (advancedModuleNames.includes(name)) {
     fail(`Advanced/parked module must not load in the public first-chat launch surface: ${name}`);
+  }
+}
+
+for (const name of deletedModuleNames) {
+  if (existsSync(join(portalDir, name))) {
+    fail(`Deleted portal module must stay deleted: ${name}`);
   }
 }
 
