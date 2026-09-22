@@ -10,6 +10,7 @@
   let selectedId='';
   let selectedDocumentId='';
   let selectedDocumentName='';
+  let lastImportedName='';
   let gate=0;
   let consentIntent=0;
   let useSuspended=false;
@@ -68,7 +69,10 @@
       if(String(input?.value||'')!==before){importStatus('The note draft changed while the file was read; import was not applied.',true);return;}
       input.value=imported;
       input.dispatchEvent(new Event('input',{bubbles:true}));
-      importStatus('Local text imported into the note draft. Review it, then choose Save note to store it remotely.');
+      lastImportedName=text(file.name,160);
+      const documentName=dialog?.querySelector('[data-personal-knowledge-name]');
+      if(documentName&&!text(documentName.value))documentName.value=lastImportedName;
+      importStatus('Local text imported into the draft. Review it, then choose Save note to keep it as a note, or Save as knowledge document to store it as a document.');
     }catch(error){
       if(token===gate&&dialog?.open)importStatus(error?.message==='This text is longer than 1000 characters and was not imported.'?error.message:'Could not read this UTF-8 plain-text file.',true);
     }
@@ -213,6 +217,37 @@
       composer.dispatchEvent(new Event('input',{bubbles:true})); composer.focus(); dialog.close();
     }catch(error){if(token===gate)status(error.message||'Nothing was copied.',true);}
   }
+  // The same draft the note save uses. A document is the other thing you can do
+  // with it, so the draft's 1000-character limit bounds the document too: the
+  // client never has to carry the store's own size limit.
+  async function saveDocument(){
+    const input=dialog.querySelector('[data-personal-memory-text]');
+    const nameInput=dialog.querySelector('[data-personal-knowledge-name]');
+    const value=text(input?.value);
+    const name=text(nameInput?.value)||lastImportedName||'document';
+    if(!value){documentStatus('Enter or import text before saving it as a document.',true);return;}
+    return mutate(async()=>{
+    try{
+      if(useSuspended){documentStatus('Storage disablement was requested; document was not sent.',true);return;}
+      if(!await consent()){controls(false);documentStatus('Storage is off; document was not sent.',true);return;}
+      documentStatus('Saving knowledge document…');
+      const created=await request('/knowledge/documents',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace_id:activeWorkspaceId(),name,text:value,type:'text/plain',source_type:'upload'})});
+      const stored=created?.data;
+      if(created?.object!=='knowledge.document'||!stored?.id)throw new Error('Personal storage returned an invalid stored document.');
+      // size_chars is what the store kept. If it kept less than was sent, the
+      // document was shortened, and the user is told so from the response
+      // rather than from a limit guessed in this client.
+      const kept=Number(stored.size_chars);
+      const shortened=Number.isFinite(kept)&&kept<value.length;
+      if(text(input?.value)===value)input.value='';
+      if(nameInput)nameInput.value='';
+      lastImportedName='';
+      documentStatus(shortened
+        ?'Stored “'+text(stored.name||name,120)+'”, but only the first '+kept+' of '+value.length+' characters were kept.'
+        :'Stored “'+text(stored.name||name,120)+'” as a knowledge document. Search documents to find it.');
+    }catch(error){documentStatus(error.message||'Document was not stored.',true);}
+    });
+  }
   function documentButton(document_){
     const button=document.createElement('button');
     button.type='button'; button.className='p0-menu-button'; button.dataset.personalKnowledgeId=document_.id;
@@ -279,10 +314,13 @@
   function button(label,action,requires=false){const node=document.createElement('button');node.type='button';node.textContent=label;node.dataset.personalMemoryAction=action;if(requires)node.dataset.personalMemoryRequiresConsent='';return node;}
   function build(){
     dialog=document.createElement('dialog'); dialog.className='p0-menu'; dialog.setAttribute('aria-label','Personal memory');
-    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><p>Import a local UTF-8 plain-text .txt file of up to 1000 characters / 4000 bytes. It only fills this editable draft; Save note is separate.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><h3>Your stored documents</h3><p>Documents stored at MMIR for this session can be used to answer you. Search them by word, then delete one to remove it and its chunks. Deleting works even when remote storage is off.</p><label>Search stored documents <input type="search" data-personal-knowledge-query maxlength="1000"></label><div data-personal-knowledge-buttons></div><p data-personal-knowledge-status aria-live="polite"></p><div data-personal-knowledge-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
+    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><p>Import a local UTF-8 plain-text .txt file of up to 1000 characters / 4000 bytes. It only fills this editable draft. Saving is separate: keep it as a note, or store it as a knowledge document below.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><h3>Your stored documents</h3><p>Documents stored at MMIR for this session can be used to answer you. Store the draft above as a document, search your documents by word, and delete one to remove it and its chunks. Storing needs remote storage on; deleting works even when it is off.</p><label>Document name <input type="text" data-personal-knowledge-name maxlength="160"></label><div data-personal-knowledge-save></div><label>Search stored documents <input type="search" data-personal-knowledge-query maxlength="1000"></label><div data-personal-knowledge-buttons></div><p data-personal-knowledge-status aria-live="polite"></p><div data-personal-knowledge-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
     const actions=dialog.querySelector('[data-personal-memory-actions]');
     [['Enable remote storage','enable',false],['Save note','save',true],['Search notes','search',true],['Clear search','clear-search',false],['Refresh','refresh',false],['Use in next message','use',true],['Delete selected','delete',false],['Disable remote storage','disable',false],['Close','close',false]].forEach(([label,action,requires])=>actions.appendChild(button(label,action,requires)));
     actions.addEventListener('click',event=>{const action=event.target?.dataset?.personalMemoryAction;if(action==='enable')enable();if(action==='save')save();if(action==='search')search();if(action==='clear-search')clearSearch();if(action==='refresh')refresh();if(action==='use')useSelected();if(action==='delete')remove();if(action==='disable')disable();if(action==='close')dialog.close();});
+    const documentSave=dialog.querySelector('[data-personal-knowledge-save]');
+    documentSave.appendChild(button('Save as knowledge document','save-document',true));
+    documentSave.addEventListener('click',event=>{if(event.target?.dataset?.personalMemoryAction==='save-document')saveDocument();});
     const documentButtons=dialog.querySelector('[data-personal-knowledge-buttons]');
     [['Search documents','search-documents'],['Delete selected document','delete-document']].forEach(([label,action])=>documentButtons.appendChild(button(label,action)));
     documentButtons.addEventListener('click',event=>{const action=event.target?.dataset?.personalMemoryAction;if(action==='search-documents')searchDocuments();if(action==='delete-document')removeDocument();});

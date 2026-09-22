@@ -35,7 +35,7 @@ async function browserProof(){
     let backendCalls=0; let memoryCalls=0; let searchCalls=0; let consentCalls=0; let chatCalls=0; let mode='normal'; const backendPaths=[]; const searchPayloads=[];
     const records=new Map(); let consent=false; let nextId=0;
     const knowledgeDocuments=new Map([['doc-fixture-1','Quarterly plan.txt'],['doc-fixture-2','Old draft.txt']]);
-    let knowledgeSearchCalls=0; const knowledgeDeletes=[]; const knowledgeSearchPayloads=[];
+    let knowledgeSearchCalls=0; const knowledgeDeletes=[]; const knowledgeSearchPayloads=[]; const knowledgeWrites=[]; let nextDocumentId=2;
     let deferredReadyResolve=null; let deferredRelease=null; let deferredConsentReads=0;
     const check=()=>{if(Date.now()>=deadline)throw new Error('personal-memory browser proof exceeded 60s');if(serverError||serverExit)throw new Error(`Personal-memory fixture server exited during browser proof: ${JSON.stringify(serverExit||serverError)}; stderr=${serverErrorOutput}`);};
     await page.route('**/*',async route=>{
@@ -79,6 +79,17 @@ async function browserProof(){
         const terms=String(input.query||'').toLowerCase().split(/\s+/).filter(Boolean);
         const data=[...records.values()].flatMap(item=>{const matched_terms=terms.filter(term=>(item.text+' '+item.tags.join(' ')).toLowerCase().includes(term));return matched_terms.length?[{...item,score:matched_terms.length/terms.length,matched_terms,why_used:['Matched saved-note words.']}]:[];}).slice(0,8);
         return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'list',data})});
+      }
+      if(path==='/knowledge/documents'&&method==='POST'){
+        const input=JSON.parse(route.request().postData()||'{}'); knowledgeWrites.push(input);
+        if(mode==='document-limit'){mode='normal';return route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({error:{code:'document_limit_reached',message:'This identity already holds 100 documents.'}})});}
+        if(!consent)return route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({error:{code:'consent_required',message:'This identity has not consented to storage. Nothing was written.'}})});
+        // The store keeps at most what mode says: 'shortened-document' mimics the
+        // store trimming text it will not hold in full.
+        const kept=mode==='shortened-document'?(mode='normal',4):String(input.text||'').length;
+        const id='doc-fixture-'+(++nextDocumentId);
+        knowledgeDocuments.set(id,String(input.name||'document'));
+        return route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({object:'knowledge.document',data:{id,workspace_id:input.workspace_id,name:input.name,type:input.type,source_type:input.source_type,size_chars:kept,chunk_count:1,metadata:{},created_at:now}})});
       }
       if(path==='/knowledge/search'&&method==='POST'){
         knowledgeSearchCalls+=1; const input=JSON.parse(route.request().postData()||'{}'); knowledgeSearchPayloads.push(input);
@@ -129,6 +140,28 @@ async function browserProof(){
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releaseDisableImport=null;Blob.prototype.arrayBuffer=function(){if(this.name==='disable.txt')return new Promise(resolve=>{window.__releaseDisableImport=()=>original.call(this).then(resolve);});return original.call(this);};window.__restoreDisableImport=()=>{Blob.prototype.arrayBuffer=original;};});
     await noteDraft.fill('Draft before disable'); page.once('dialog',prompt=>prompt.accept()); await importInput.setInputFiles({name:'disable.txt',mimeType:'text/plain',buffer:Buffer.from('Late disable replacement')}); await page.waitForFunction(()=>typeof window.__releaseDisableImport==='function'); await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click(); await page.getByText(/Remote storage disabled/).waitFor(); await page.evaluate(()=>window.__releaseDisableImport?.()); await page.waitForTimeout(20); if(await noteDraft.inputValue()!=='Draft before disable')failures.push('Disable during a pending local file read must prevent a stale draft replacement.'); await page.evaluate(()=>window.__restoreDisableImport?.()); await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await page.getByText(/Remote storage enabled/).waitFor();
     await dialog.locator('[data-personal-memory-text]').fill('Synthetic note'); await dialog.getByRole('button',{name:'Save note',exact:true}).click(); await dialog.getByRole('button',{name:/note: Synthetic note/}).waitFor();
+    // Storing a document reuses the note draft and the .txt import: the same
+    // text, a second choice about where it goes.
+    const documentName=dialog.locator('[data-personal-knowledge-name]'); const documentStatusLine=dialog.locator('[data-personal-knowledge-status]');
+    await noteDraft.fill(''); await documentName.fill('');
+    await importInput.setInputFiles({name:'briefing.txt',mimeType:'text/plain',buffer:Buffer.from('Imported document body')});
+    await page.waitForFunction(()=>document.querySelector('[data-personal-memory-text]')?.value==='Imported document body');
+    if(await documentName.inputValue()!=='briefing.txt')failures.push(`Importing a .txt must offer its file name as the document name (${JSON.stringify(await documentName.inputValue())}).`);
+    if(knowledgeWrites.length!==0)failures.push('Importing a file must not store a document by itself.');
+    await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
+    await documentStatusLine.getByText(/Stored “briefing.txt” as a knowledge document/).waitFor();
+    const write=knowledgeWrites.at(-1);
+    if(knowledgeWrites.length!==1||write?.text!=='Imported document body'||write?.name!=='briefing.txt'||write?.type!=='text/plain'||write?.source_type!=='upload'||!write?.workspace_id)failures.push(`Saving a document must send the draft text, the name, text/plain and a workspace id (${JSON.stringify(write)}).`);
+    if(await noteDraft.inputValue()!==''||await documentName.inputValue()!=='')failures.push('A stored document must clear the draft and the name it consumed.');
+    if(records.size!==1)failures.push('Saving a document must not also create a memory note.');
+    mode='shortened-document'; await noteDraft.fill('Longer than the store keeps'); await documentName.fill('trimmed.txt');
+    await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
+    await documentStatusLine.getByText(/only the first 4 of 27 characters were kept/).waitFor();
+    mode='document-limit'; await noteDraft.fill('One document too many'); await documentName.fill('overflow.txt');
+    await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
+    // The sentence is the backend's own: the client does not carry the limit.
+    await documentStatusLine.getByText('This identity already holds 100 documents.').waitFor();
+    await noteDraft.fill(''); await documentName.fill('');
     const query=dialog.locator('[data-personal-memory-query]'); await query.fill('Synthetic'); if(searchCalls!==0)failures.push('Typing a query must not search automatically.'); await dialog.getByRole('button',{name:'Search notes',exact:true}).click(); await dialog.locator('[data-personal-memory-search-status]').getByText(/1 lexical match/).waitFor(); if(searchCalls!==1||searchPayloads[0]?.query!=='Synthetic'||searchPayloads[0]?.limit!==8)failures.push('Explicit search must send the exact query with limit 8.');
     const searchResult=dialog.locator('[data-personal-memory-search-results] button'); await searchResult.getByText(/Lexical match/).waitFor(); await searchResult.click(); const beforeUse=await composer.inputValue(); await dialog.getByRole('button',{name:'Use in next message',exact:true}).click(); await page.waitForFunction(()=>document.getElementById('p0-input')?.value.includes('[Personal memory you selected: "Synthetic note"]')); if(chatCalls!==0||!(await composer.inputValue()).startsWith('Keep this draft'))failures.push(`Use must insert selected search result without auto-send or draft loss (chat ${chatCalls}, before ${JSON.stringify(beforeUse)}, after ${JSON.stringify(await composer.inputValue())}).`); await page.waitForFunction(()=>!document.querySelector('#mmir-p0-app dialog[aria-label="Personal memory"]')?.open); await page.locator('#p0-sidebar-settings').click(); await page.getByText('Personlig minne',{exact:true}).click(); await dialog.waitFor({state:'visible'});
     await query.fill('notpresentxyz'); await dialog.getByRole('button',{name:'Search notes',exact:true}).click(); await dialog.locator('[data-personal-memory-search-status]').getByText('No lexical matches.').waitFor(); if(await dialog.locator('[data-personal-memory-search-results] button').count())failures.push('No-match search must not show saved notes.');
@@ -142,7 +175,10 @@ async function browserProof(){
     await composer.fill('Keep this draft'); const disabledDraft=await composer.inputValue(); await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click(); await page.getByText(/Remote storage disabled/).waitFor(); if(!(await dialog.getByRole('button',{name:'Use in next message',exact:true}).isDisabled())||await composer.inputValue()!==disabledDraft)failures.push('Disabled use must preserve draft and block insertion.');
     // Deleting a stored document runs here on purpose: remote storage is off at
     // this point in the proof, and removing your own data must work anyway.
-    const documentQuery=dialog.locator('[data-personal-knowledge-query]'); const documentStatusLine=dialog.locator('[data-personal-knowledge-status]');
+    const documentQuery=dialog.locator('[data-personal-knowledge-query]');
+    const beforeDisabledWrite=knowledgeWrites.length;
+    if(!(await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).isDisabled()))failures.push('Storing a document must be disabled while remote storage is off.');
+    if(knowledgeWrites.length!==beforeDisabledWrite)failures.push('A disabled document save must not write.');
     await documentQuery.fill('Quarterly'); if(knowledgeSearchCalls!==0)failures.push('Typing a document query must not search automatically.');
     await dialog.getByRole('button',{name:'Search documents',exact:true}).click(); await documentStatusLine.getByText(/1 stored document matched/).waitFor();
     if(knowledgeSearchCalls!==1||knowledgeSearchPayloads[0]?.query!=='Quarterly'||knowledgeSearchPayloads[0]?.limit!==8||!knowledgeSearchPayloads[0]?.workspace_id)failures.push(`Document search must send the exact query, limit 8 and a workspace id (${JSON.stringify(knowledgeSearchPayloads[0])}).`);
