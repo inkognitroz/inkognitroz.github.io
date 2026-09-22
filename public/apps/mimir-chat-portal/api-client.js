@@ -239,10 +239,14 @@
   function personalMemoryScope(path,method){
     const normalized=String(path||'');
     const item=normalized!=='/memory/search'&&/^\/memory\/[^/?#]+$/.test(normalized);
+    // The panel also reaches the identity's own knowledge documents: searching
+    // them is how the user finds one, and DELETE is the only way to remove a
+    // document that the backend can already feed into an answer.
+    const document=/^\/knowledge\/documents\/[^/?#]+$/.test(normalized);
     return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item))||
       (method==='PUT'&&normalized==='/consent')||
-      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'))||
-      (method==='DELETE'&&item);
+      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'||normalized==='/knowledge/search'))||
+      (method==='DELETE'&&(item||document));
   }
 
   // This is intentionally separate from the public chat route switch. It is

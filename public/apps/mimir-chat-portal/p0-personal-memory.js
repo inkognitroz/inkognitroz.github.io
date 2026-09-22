@@ -4,8 +4,12 @@
   const MAX_TEXT=1000;
   const MAX_IMPORT_BYTES=4000;
   const MAX_LIST=30;
+  const WORKSPACE_KEY='mimir-active-workspace-v1';
+  const DEFAULT_WORKSPACE_ID='personal';
   let dialog=null;
   let selectedId='';
+  let selectedDocumentId='';
+  let selectedDocumentName='';
   let gate=0;
   let consentIntent=0;
   let useSuspended=false;
@@ -26,6 +30,19 @@
   function clearSearchResults(message=''){
     clear(dialog?.querySelector('[data-personal-memory-search-results]'));
     if(message)searchStatus(message);
+  }
+  function documentStatus(message,error=false){
+    const node=dialog?.querySelector('[data-personal-knowledge-status]');
+    if(node){node.textContent=message;node.dataset.state=error?'error':'ready';}
+  }
+  function clearDocumentResults(message=''){
+    clear(dialog?.querySelector('[data-personal-knowledge-results]'));
+    selectedDocumentId=''; selectedDocumentName='';
+    if(message)documentStatus(message);
+  }
+  function activeWorkspaceId(){
+    try{return localStorage.getItem(WORKSPACE_KEY)||DEFAULT_WORKSPACE_ID;}
+    catch(error){return DEFAULT_WORKSPACE_ID;}
   }
   function clearSelection(){
     selectedId='';
@@ -196,18 +213,84 @@
       composer.dispatchEvent(new Event('input',{bubbles:true})); composer.focus(); dialog.close();
     }catch(error){if(token===gate)status(error.message||'Nothing was copied.',true);}
   }
+  function documentButton(document_){
+    const button=document.createElement('button');
+    button.type='button'; button.className='p0-menu-button'; button.dataset.personalKnowledgeId=document_.id;
+    button.textContent='Document: '+text(document_.name,120);
+    button.addEventListener('click',()=>{
+      selectedDocumentId=document_.id; selectedDocumentName=document_.name;
+      dialog.querySelectorAll('[data-personal-knowledge-id]').forEach(node=>node.dataset.selected=String(node.dataset.personalKnowledgeId===selectedDocumentId));
+      documentStatus('Selected “'+text(document_.name,120)+'”. Choose “Delete selected document” to remove it and its chunks.');
+    });
+    return button;
+  }
+  // The backend can feed a stored document into an answer (chat-runtime.js:710
+  // searches it on every send), so the user needs a way to find one and remove
+  // it. Search is how you find it; the spec has no list operation.
+  async function searchDocuments(){
+    const input=dialog.querySelector('[data-personal-knowledge-query]');
+    const query=text(input?.value);
+    const token=++gate;
+    clearDocumentResults();
+    if(!query){documentStatus('Enter words to search your stored documents.',true);return;}
+    documentStatus('Searching stored documents…');
+    try{
+      const body=await request('/knowledge/search',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({workspace_id:activeWorkspaceId(),query,limit:8})});
+      if(token!==gate||!canUseRemote())return;
+      if(!Array.isArray(body?.data))throw new Error('Personal storage returned an invalid document search response.');
+      const documents=[];
+      body.data.forEach(hit=>{
+        const id=text(hit?.document?.id,200), name=text(hit?.document?.name,200);
+        if(id&&name&&!documents.some(item=>item.id===id))documents.push({id,name});
+      });
+      if(!documents.length){documentStatus('No stored documents matched those words.');return;}
+      const container=dialog.querySelector('[data-personal-knowledge-results]');
+      documents.forEach(item=>container.appendChild(documentButton(item)));
+      documentStatus(documents.length+' stored '+(documents.length===1?'document':'documents')+' matched. This is word matching, not semantic search.');
+    }catch(error){if(token===gate)documentStatus(error.message||'Document search failed; nothing was deleted.',true);}
+  }
+  // Deleting is deliberately not behind the consent switch: the delete exists so
+  // a user can remove their own data, and that must work when storage is off.
+  async function removeDocument(){
+    const id=selectedDocumentId, name=selectedDocumentName;
+    if(!id){documentStatus('Select a stored document first.',true);return;}
+    if(window.confirm&&!window.confirm('Delete “'+text(name,120)+'” and its chunks? This cannot be undone.')){documentStatus('Deletion cancelled; the document was kept.');return;}
+    return mutate(async()=>{
+    documentStatus('Deleting stored document…');
+    try{
+      await request('/knowledge/documents/'+encodeURIComponent(id),{method:'DELETE'});
+      if(selectedDocumentId===id){selectedDocumentId=''; selectedDocumentName='';}
+      documentStatus('Deleted “'+text(name,120)+'”. Search again to confirm it is gone.');
+      dialog?.querySelectorAll('[data-personal-knowledge-id="'+CSS.escape(id)+'"]').forEach(node=>node.remove());
+    }catch(error){
+      // 404 is the backend saying this identity has no such document: it is
+      // already gone, or it never belonged to this identity. Either way the
+      // user's data is not there, so this is not an error to act on.
+      if(Number(error?.status)===404){
+        if(selectedDocumentId===id){selectedDocumentId=''; selectedDocumentName='';}
+        documentStatus('That document is already gone.');
+        dialog?.querySelectorAll('[data-personal-knowledge-id="'+CSS.escape(id)+'"]').forEach(node=>node.remove());
+        return;
+      }
+      documentStatus(error.message||'Document was not deleted.',true);
+    }
+    });
+  }
   function button(label,action,requires=false){const node=document.createElement('button');node.type='button';node.textContent=label;node.dataset.personalMemoryAction=action;if(requires)node.dataset.personalMemoryRequiresConsent='';return node;}
   function build(){
     dialog=document.createElement('dialog'); dialog.className='p0-menu'; dialog.setAttribute('aria-label','Personal memory');
-    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><p>Import a local UTF-8 plain-text .txt file of up to 1000 characters / 4000 bytes. It only fills this editable draft; Save note is separate.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
+    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><p>Import a local UTF-8 plain-text .txt file of up to 1000 characters / 4000 bytes. It only fills this editable draft; Save note is separate.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><h3>Your stored documents</h3><p>Documents stored at MMIR for this session can be used to answer you. Search them by word, then delete one to remove it and its chunks. Deleting works even when remote storage is off.</p><label>Search stored documents <input type="search" data-personal-knowledge-query maxlength="1000"></label><div data-personal-knowledge-buttons></div><p data-personal-knowledge-status aria-live="polite"></p><div data-personal-knowledge-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
     const actions=dialog.querySelector('[data-personal-memory-actions]');
     [['Enable remote storage','enable',false],['Save note','save',true],['Search notes','search',true],['Clear search','clear-search',false],['Refresh','refresh',false],['Use in next message','use',true],['Delete selected','delete',false],['Disable remote storage','disable',false],['Close','close',false]].forEach(([label,action,requires])=>actions.appendChild(button(label,action,requires)));
     actions.addEventListener('click',event=>{const action=event.target?.dataset?.personalMemoryAction;if(action==='enable')enable();if(action==='save')save();if(action==='search')search();if(action==='clear-search')clearSearch();if(action==='refresh')refresh();if(action==='use')useSelected();if(action==='delete')remove();if(action==='disable')disable();if(action==='close')dialog.close();});
+    const documentButtons=dialog.querySelector('[data-personal-knowledge-buttons]');
+    [['Search documents','search-documents'],['Delete selected document','delete-document']].forEach(([label,action])=>documentButtons.appendChild(button(label,action)));
+    documentButtons.addEventListener('click',event=>{const action=event.target?.dataset?.personalMemoryAction;if(action==='search-documents')searchDocuments();if(action==='delete-document')removeDocument();});
     const fileInput=dialog.querySelector('[data-personal-memory-import]');
     dialog.querySelector('[data-personal-memory-import-button]')?.addEventListener('click',()=>fileInput?.click());
     fileInput?.addEventListener('change',()=>{const file=fileInput.files?.[0];fileInput.value='';if(file)importTextFile(file);});
     (document.getElementById('mmir-p0-app')||document.body).appendChild(dialog);
-    const invalidate=()=>{++gate;clearSelection();clearSearchResults('Search cleared when the panel closed.');};
+    const invalidate=()=>{++gate;clearSelection();clearSearchResults('Search cleared when the panel closed.');clearDocumentResults('Document search cleared when the panel closed.');const documentQuery=dialog?.querySelector('[data-personal-knowledge-query]');if(documentQuery)documentQuery.value='';};
     dialog.addEventListener('close',invalidate);
     dialog.addEventListener('cancel',invalidate);
   }
