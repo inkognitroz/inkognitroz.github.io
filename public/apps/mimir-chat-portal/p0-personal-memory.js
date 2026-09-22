@@ -1,8 +1,18 @@
 (function(){
   'use strict';
   const TYPES=['note','fact','preference','task'];
+  // A note stays at 1000 characters: that is the memory contract's own limit.
   const MAX_TEXT=1000;
-  const MAX_IMPORT_BYTES=4000;
+  // A document may be longer, up to what the knowledge store itself holds:
+  // knowledge-store.js caps a document at 20000 characters with trim/slice
+  // (mmir-orchestrator main 9d9d640, maxCharsPerDocument). Counted the same way
+  // the store counts, in JS string units. The product API exposes no limit
+  // field, so this is a documented feature constant, separate from MAX_TEXT,
+  // not a second copy of the memory limit (ROOT, control#1299, 2026-09-22).
+  const MAX_DOCUMENT_TEXT=20000;
+  // A UTF-8 encoding never needs more than 3 bytes per JS string unit, so this
+  // rejects a file that cannot fit before it is read, without guessing.
+  const MAX_IMPORT_BYTES=MAX_DOCUMENT_TEXT*3;
   const MAX_LIST=30;
   const WORKSPACE_KEY='mimir-active-workspace-v1';
   const DEFAULT_WORKSPACE_ID='personal';
@@ -57,7 +67,7 @@
     const input=dialog?.querySelector('[data-personal-memory-text]');
     const token=++gate;
     if(!validTextFile(file)){importStatus('Choose a UTF-8 plain-text .txt file.',true);return;}
-    if(file.size>MAX_IMPORT_BYTES){importStatus('This file is too large. Import accepts up to 1000 characters / 4000 bytes without truncation.',true);return;}
+    if(file.size>MAX_IMPORT_BYTES){importStatus('This file is too large. Import accepts up to '+MAX_DOCUMENT_TEXT+' characters / '+MAX_IMPORT_BYTES+' bytes without truncation.',true);return;}
     const before=String(input?.value||'');
     if(before&&window.confirm&&!window.confirm('Replace the current note draft with this local text file?')){importStatus('Import cancelled; the existing draft was kept.');return;}
     importStatus('Reading local text file…');
@@ -65,16 +75,20 @@
       const bytes=await file.arrayBuffer();
       if(token!==gate||!dialog?.open||!canUseRemote())return;
       const imported=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
-      if(imported.length>MAX_TEXT)throw new Error('This text is longer than 1000 characters and was not imported.');
+      // Refused, never trimmed: an import that does not fit is told so before
+      // anything is saved.
+      if(imported.length>MAX_DOCUMENT_TEXT)throw new Error('This text is '+imported.length+' characters, longer than the '+MAX_DOCUMENT_TEXT+'-character document limit, and was not imported.');
       if(String(input?.value||'')!==before){importStatus('The note draft changed while the file was read; import was not applied.',true);return;}
       input.value=imported;
       input.dispatchEvent(new Event('input',{bubbles:true}));
       lastImportedName=text(file.name,160);
       const documentName=dialog?.querySelector('[data-personal-knowledge-name]');
       if(documentName&&!text(documentName.value))documentName.value=lastImportedName;
-      importStatus('Local text imported into the draft. Review it, then choose Save note to keep it as a note, or Save as knowledge document to store it as a document.');
+      importStatus(imported.length>MAX_TEXT
+        ?'Local text imported into the draft ('+imported.length+' characters). It is longer than the '+MAX_TEXT+'-character note limit, so store it as a knowledge document.'
+        :'Local text imported into the draft. Review it, then choose Save note to keep it as a note, or Save as knowledge document to store it as a document.');
     }catch(error){
-      if(token===gate&&dialog?.open)importStatus(error?.message==='This text is longer than 1000 characters and was not imported.'?error.message:'Could not read this UTF-8 plain-text file.',true);
+      if(token===gate&&dialog?.open)importStatus(/was not imported\.$/.test(String(error?.message||''))?error.message:'Could not read this UTF-8 plain-text file.',true);
     }
   }
   async function request(path,options={}){
@@ -171,9 +185,13 @@
     });}
   async function save(){
     const input=dialog.querySelector('[data-personal-memory-text]');
+    const drafted=text(input?.value,MAX_DOCUMENT_TEXT);
     const value=text(input?.value);
     const type=dialog.querySelector('[data-personal-memory-type]')?.value;
     if(!value||!TYPES.includes(type)){status('Enter a note and choose a supported type.',true);return;}
+    // A draft too long to be a note is refused here. Saving it would have
+    // silently turned a document into its first 1000 characters.
+    if(drafted.length>MAX_TEXT){status('This draft is '+drafted.length+' characters. A note holds '+MAX_TEXT+'; save it as a knowledge document instead.',true);return;}
     return mutate(async()=>{
     try{
       if(useSuspended){status('Storage disablement was requested; note was not sent.',true);return;}
@@ -217,13 +235,13 @@
       composer.dispatchEvent(new Event('input',{bubbles:true})); composer.focus(); dialog.close();
     }catch(error){if(token===gate)status(error.message||'Nothing was copied.',true);}
   }
-  // The same draft the note save uses. A document is the other thing you can do
-  // with it, so the draft's 1000-character limit bounds the document too: the
-  // client never has to carry the store's own size limit.
+  // The same draft the note save uses, read up to the document limit rather
+  // than the note limit. The store still has the last word: size_chars below
+  // tells the user if it kept less than was sent.
   async function saveDocument(){
     const input=dialog.querySelector('[data-personal-memory-text]');
     const nameInput=dialog.querySelector('[data-personal-knowledge-name]');
-    const value=text(input?.value);
+    const value=text(input?.value,MAX_DOCUMENT_TEXT);
     const name=text(nameInput?.value)||lastImportedName||'document';
     if(!value){documentStatus('Enter or import text before saving it as a document.',true);return;}
     return mutate(async()=>{
@@ -314,7 +332,7 @@
   function button(label,action,requires=false){const node=document.createElement('button');node.type='button';node.textContent=label;node.dataset.personalMemoryAction=action;if(requires)node.dataset.personalMemoryRequiresConsent='';return node;}
   function build(){
     dialog=document.createElement('dialog'); dialog.className='p0-menu'; dialog.setAttribute('aria-label','Personal memory');
-    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><p>Import a local UTF-8 plain-text .txt file of up to 1000 characters / 4000 bytes. It only fills this editable draft. Saving is separate: keep it as a note, or store it as a knowledge document below.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><h3>Your stored documents</h3><p>Documents stored at MMIR for this session can be used to answer you. Store the draft above as a document, search your documents by word, and delete one to remove it and its chunks. Storing needs remote storage on; deleting works even when it is off.</p><label>Document name <input type="text" data-personal-knowledge-name maxlength="160"></label><div data-personal-knowledge-save></div><label>Search stored documents <input type="search" data-personal-knowledge-query maxlength="1000"></label><div data-personal-knowledge-buttons></div><p data-personal-knowledge-status aria-live="polite"></p><div data-personal-knowledge-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
+    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note or document text <textarea data-personal-memory-text maxlength="'+MAX_DOCUMENT_TEXT+'" rows="3"></textarea></label><p>A note holds up to '+MAX_TEXT+' characters; a knowledge document holds up to '+MAX_DOCUMENT_TEXT+'. Import a local UTF-8 plain-text .txt file of up to '+MAX_DOCUMENT_TEXT+' characters / '+MAX_IMPORT_BYTES+' bytes. It only fills this editable draft. Saving is separate: keep it as a note, or store it as a knowledge document below.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><h3>Your stored documents</h3><p>Documents stored at MMIR for this session can be used to answer you. Store the draft above as a document, search your documents by word, and delete one to remove it and its chunks. Storing needs remote storage on; deleting works even when it is off.</p><label>Document name <input type="text" data-personal-knowledge-name maxlength="160"></label><div data-personal-knowledge-save></div><label>Search stored documents <input type="search" data-personal-knowledge-query maxlength="1000"></label><div data-personal-knowledge-buttons></div><p data-personal-knowledge-status aria-live="polite"></p><div data-personal-knowledge-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
     const actions=dialog.querySelector('[data-personal-memory-actions]');
     [['Enable remote storage','enable',false],['Save note','save',true],['Search notes','search',true],['Clear search','clear-search',false],['Refresh','refresh',false],['Use in next message','use',true],['Delete selected','delete',false],['Disable remote storage','disable',false],['Close','close',false]].forEach(([label,action,requires])=>actions.appendChild(button(label,action,requires)));
     actions.addEventListener('click',event=>{const action=event.target?.dataset?.personalMemoryAction;if(action==='enable')enable();if(action==='save')save();if(action==='search')search();if(action==='clear-search')clearSearch();if(action==='refresh')refresh();if(action==='use')useSelected();if(action==='delete')remove();if(action==='disable')disable();if(action==='close')dialog.close();});
