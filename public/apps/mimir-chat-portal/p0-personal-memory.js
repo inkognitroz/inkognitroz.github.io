@@ -64,7 +64,7 @@
     searchStatus('Searching saved notes…');
     try{
       const body=await request('/memory/search',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query,limit:8})});
-      if(token!==gate)return;
+      if(token!==gate||!canUseRemote()||useSuspended)return;
       if(body?.object!=='list'||!Array.isArray(body.data))throw new Error('Personal storage returned an invalid search response.');
       const results=body.data.filter(item=>item?.id&&TYPES.includes(item.type)&&text(item.text));
       if(!results.length){searchStatus('No lexical matches.');return;}

@@ -238,7 +238,7 @@
 
   function personalMemoryScope(path,method){
     const normalized=String(path||'');
-    const item=/^\/memory\/[^/?#]+$/.test(normalized);
+    const item=normalized!=='/memory/search'&&/^\/memory\/[^/?#]+$/.test(normalized);
     return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item))||
       (method==='PUT'&&normalized==='/consent')||
       (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'))||
