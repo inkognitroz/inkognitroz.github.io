@@ -1,5 +1,5 @@
 (function(){
-  const version='20260714-safe-markdown-v1';
+  const version='20260922-safe-bare-urls-v1';
 
   function safeText(value){
     return String(value||'').replace(/[&<>"']/g,(char)=>({
@@ -26,7 +26,7 @@
 
   function inline(text){
     const source=String(text||'');
-    const token=/(`[^`\n]+`)|(!?\[[^\]\n]+\]\([^\s)]+\))|(\*\*[^*\n]+\*\*)|(__[^_\n]+__)|(\*[^*\n]+\*)|(_[^_\n]+_)/g;
+    const token=/(`[^`\n]+`)|(!?\[[^\]\n]+\]\([^\s)]+\))|(https?:\/\/[^\s<>"'`]+)|(\*\*[^*\n]+\*\*)|(__[^_\n]+__)|(\*[^*\n]+\*)|(_[^_\n]+_)/g;
     let html='';
     let index=0;
     let match;
@@ -41,6 +41,10 @@
         const link=value.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
         const url=safeUrl(link?.[2]);
         html+=url?'<a href="'+safeAttr(url)+'" target="_blank" rel="noopener noreferrer">'+safeText(link[1])+'</a>':safeText(value);
+      }else if(/^https?:\/\//i.test(value)){
+        const punctuation=value.match(/[.,!?;:]+$/)?.[0]||'';
+        const url=safeUrl(value.slice(0,value.length-punctuation.length));
+        html+=url?'<a href="'+safeAttr(url)+'" target="_blank" rel="noopener noreferrer">'+safeText(url)+'</a>'+safeText(punctuation):safeText(value);
       }else if(value.startsWith('**')||value.startsWith('__')){
         html+='<strong>'+safeText(value.slice(2,-2))+'</strong>';
       }else{
