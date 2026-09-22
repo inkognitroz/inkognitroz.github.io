@@ -7,14 +7,27 @@ const root=resolve(process.cwd());
 const failures=[];
 async function browserProof(){
   const port=8799;
-  const server=spawn(process.execPath,['scripts/serve-public.mjs'],{cwd:root,env:{...process.env,HOST:'127.0.0.1',PORT:String(port)},stdio:'ignore'});
+  const server=spawn(process.execPath,['scripts/serve-public.mjs'],{cwd:root,env:{...process.env,HOST:'127.0.0.1',PORT:String(port)},stdio:['ignore','pipe','pipe']});
   const deadline=Date.now()+60000;
+  const startupLine=`Serving public at http://127.0.0.1:${port}/mmir.html`;
+  let serverOutput=''; let serverErrorOutput=''; let serverExit=null; let serverError=null;
+  const captureTail=(current,chunk)=>(current+chunk.toString()).slice(-4096);
+  server.stdout.on('data',chunk=>{serverOutput=captureTail(serverOutput,chunk);});
+  server.stderr.on('data',chunk=>{serverErrorOutput=captureTail(serverErrorOutput,chunk);});
+  server.once('error',error=>{serverError=error;});
+  server.once('exit',(code,signal)=>{serverExit={code,signal};});
   let browser=null;
   let context=null;
   try{
-    let ready=false;
-    while(Date.now()<deadline){try{if((await fetch(`http://127.0.0.1:${port}/mmir.html`)).ok){ready=true;break;}}catch(error){} await new Promise(resolve=>setTimeout(resolve,100));}
-    if(!ready)throw new Error('Personal-memory browser fixture server did not start.');
+    await new Promise((resolve,reject)=>{
+      let settled=false;
+      const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);server.stdout.off('data',onOutput);server.off('error',onError);server.off('exit',onExit);error?reject(error):resolve();};
+      const onOutput=()=>{if(serverOutput.includes(startupLine))finish();};
+      const onError=error=>finish(new Error(`Personal-memory fixture server failed to start: ${error.message}; stderr=${serverErrorOutput}`));
+      const onExit=(code,signal)=>finish(new Error(`Personal-memory fixture server exited before readiness (code ${code}, signal ${signal}); stderr=${serverErrorOutput}`));
+      const timer=setTimeout(()=>finish(new Error(`Personal-memory fixture server readiness timed out; stdout=${serverOutput}; stderr=${serverErrorOutput}`)),Math.max(1,Math.min(10000,deadline-Date.now())));
+      server.stdout.on('data',onOutput);server.once('error',onError);server.once('exit',onExit);onOutput();
+    });
     browser=await chromium.launch({headless:true});
     context=await browser.newContext({serviceWorkers:'block'});
     const page=await context.newPage();
@@ -22,7 +35,7 @@ async function browserProof(){
     let backendCalls=0; let memoryCalls=0; let searchCalls=0; let consentCalls=0; let chatCalls=0; let mode='normal'; const backendPaths=[]; const searchPayloads=[];
     const records=new Map(); let consent=false; let nextId=0;
     let deferredReadyResolve=null; let deferredRelease=null; let deferredConsentReads=0;
-    const check=()=>{if(Date.now()>=deadline)throw new Error('personal-memory browser proof exceeded 60s');};
+    const check=()=>{if(Date.now()>=deadline)throw new Error('personal-memory browser proof exceeded 60s');if(serverError||serverExit)throw new Error(`Personal-memory fixture server exited during browser proof: ${JSON.stringify(serverExit||serverError)}; stderr=${serverErrorOutput}`);};
     await page.route('**/*',async route=>{
       check();
       const url=route.request().url();
@@ -96,8 +109,8 @@ async function browserProof(){
     mode='malformed'; await dialog.getByRole('button',{name:'Refresh',exact:true}).click(); await page.getByText(/invalid consent response|Personal storage returned an invalid/).waitFor();
     const beforeRejected=backendCalls; const rejected=await page.evaluate(async()=>{for(const [path,method] of [['https://evil.invalid/memory','PATCH'],['/memory/search','GET'],['/memory/search','DELETE'],['/memory/search/item','POST']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;}); if(!rejected||backendCalls!==beforeRejected)failures.push(`Arbitrary origins and non-POST/invalid search paths must reject before backend access (before ${beforeRejected}, after ${backendCalls}).`);
     await dialog.getByRole('button',{name:'Close',exact:true}).click(); await page.locator('#p0-sidebar-settings').click(); await page.getByText('Privat',{exact:true}).click(); const beforePrivate=backendCalls; await page.locator('#p0-privacy-menu [data-p0-action="personal-memory"]').click(); await page.getByText(/unavailable in private or superprivate mode/).waitFor(); if(backendCalls!==beforePrivate)failures.push('Private mode panel action must not contact personal cloud storage.');
-    await browser.close(); browser=null; context=null;
-  }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
+    check(); await browser.close(); browser=null; context=null; check();
+  }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});if(server.exitCode===null&&!server.killed)try{server.kill('SIGTERM');}catch(error){}}
 }
 
 await browserProof();
