@@ -124,11 +124,20 @@ async function browserProof(){
     if(backendCalls===0)failures.push('Explicit panel action must contact only the personal backend.');
     const beforeDisabled=memoryCalls; const disabledSave=dialog.getByRole('button',{name:'Save note',exact:true}); const disabledDraftValue=await composer.inputValue(); if(!(await disabledSave.isDisabled())||!(await dialog.getByRole('button',{name:'Search notes',exact:true}).isDisabled()))failures.push('Save and search must be disabled before consent.'); if(memoryCalls!==beforeDisabled||searchCalls!==0||await composer.inputValue()!==disabledDraftValue)failures.push(`Disabled save/search must preserve draft and avoid remote writes (memory ${memoryCalls-beforeDisabled}, search ${searchCalls}, draft ${JSON.stringify(await composer.inputValue())}).`);
     const noteDraft=dialog.locator('[data-personal-memory-text]'); const importInput=dialog.locator('[data-personal-memory-import]'); const beforeImportCalls=backendCalls;
-    if(!(await dialog.getByText('1000 characters / 4000 bytes').count()))failures.push('Text import must disclose its no-truncation limit before file selection.');
+    if(!(await dialog.getByText('20000 characters / 60000 bytes').count()))failures.push('Text import must disclose its no-truncation limit before file selection.');
+    if(!(await dialog.getByText('A note holds up to 1000 characters; a knowledge document holds up to 20000.').count()))failures.push('The panel must state both limits before anything is written.');
     await importInput.setInputFiles({name:'personal-note.txt',mimeType:'text/plain',buffer:Buffer.from('Imported local note')}); await page.waitForFunction(()=>document.querySelector('[data-personal-memory-text]')?.value==='Imported local note');
     if(await noteDraft.inputValue()!=='Imported local note'||backendCalls!==beforeImportCalls||records.size!==0)failures.push('A valid local .txt import must only fill the editable draft, with no remote request or auto-save.');
     await noteDraft.fill('Keep existing draft'); page.once('dialog',prompt=>prompt.dismiss()); await importInput.setInputFiles({name:'replacement.txt',mimeType:'text/plain',buffer:Buffer.from('Replacement')}); await page.getByText(/Import cancelled/).waitFor(); if(await noteDraft.inputValue()!=='Keep existing draft')failures.push('Cancelling replacement must preserve an existing note draft.');
-    await importInput.setInputFiles({name:'too-large.txt',mimeType:'text/plain',buffer:Buffer.alloc(4001,65)}); await page.getByText(/too large/i).waitFor(); if(await noteDraft.inputValue()!=='Keep existing draft')failures.push('Oversize text import must reject without truncating or replacing the draft.');
+    // Boundaries, from the file that cannot fit down to the note limit. A note
+    // holds NOTE_LIMIT characters; a document holds DOCUMENT_LIMIT, which is the
+    // knowledge store's own cap (knowledge-store.js maxCharsPerDocument, 20000).
+    const NOTE_LIMIT=1000, DOCUMENT_LIMIT=20000, IMPORT_BYTE_LIMIT=DOCUMENT_LIMIT*3;
+    await importInput.setInputFiles({name:'too-many-bytes.txt',mimeType:'text/plain',buffer:Buffer.alloc(IMPORT_BYTE_LIMIT+1,65)}); await page.getByText(/too large/i).waitFor(); if(await noteDraft.inputValue()!=='Keep existing draft')failures.push('A file past the byte limit must reject without truncating or replacing the draft.');
+    page.once('dialog',prompt=>prompt.accept()); await importInput.setInputFiles({name:'one-over.txt',mimeType:'text/plain',buffer:Buffer.alloc(DOCUMENT_LIMIT+1,66)}); await dialog.locator('[data-personal-memory-status]').getByText(new RegExp(`${DOCUMENT_LIMIT+1} characters, longer than the ${DOCUMENT_LIMIT}-character document limit`)).waitFor(); if(await noteDraft.inputValue()!=='Keep existing draft')failures.push('One character past the document limit must reject the whole import, not trim it.');
+    page.once('dialog',prompt=>prompt.accept()); await importInput.setInputFiles({name:'exactly-at.txt',mimeType:'text/plain',buffer:Buffer.alloc(DOCUMENT_LIMIT,67)}); await page.waitForFunction(limit=>document.querySelector('[data-personal-memory-text]')?.value.length===limit,DOCUMENT_LIMIT); if((await noteDraft.inputValue()).length!==DOCUMENT_LIMIT)failures.push('A file exactly at the document limit must import in full.');
+    page.once('dialog',prompt=>prompt.accept()); await importInput.setInputFiles({name:'one-under.txt',mimeType:'text/plain',buffer:Buffer.alloc(DOCUMENT_LIMIT-1,68)}); await page.waitForFunction(limit=>document.querySelector('[data-personal-memory-text]')?.value.length===limit-1,DOCUMENT_LIMIT); await dialog.locator('[data-personal-memory-status]').getByText(new RegExp(`longer than the ${NOTE_LIMIT}-character note limit`)).waitFor();
+    await noteDraft.fill('Keep existing draft');
     await importInput.setInputFiles({name:'not-text.pdf',mimeType:'application/pdf',buffer:Buffer.from('not a text document')}); await dialog.locator('[data-personal-memory-status]').getByText('Choose a UTF-8 plain-text .txt file.').waitFor(); if(await noteDraft.inputValue()!=='Keep existing draft')failures.push('Non-.txt import must reject without replacing the draft.');
     page.once('dialog',prompt=>prompt.accept()); await importInput.setInputFiles({name:'invalid-utf8.txt',mimeType:'text/plain',buffer:Buffer.from([0xc3,0x28])}); await dialog.locator('[data-personal-memory-status]').getByText('Could not read this UTF-8 plain-text file.').waitFor(); if(await noteDraft.inputValue()!=='Keep existing draft')failures.push('Invalid UTF-8 import must reject without replacing the draft.');
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releaseSlowTextImport=null;window.__slowTextImportSeen=false;Blob.prototype.arrayBuffer=function(){if(this.name==='slow.txt'){window.__slowTextImportSeen=true;return new Promise(resolve=>{window.__releaseSlowTextImport=()=>original.call(this).then(resolve);});}return original.call(this);};window.__restoreTextArrayBuffer=()=>{Blob.prototype.arrayBuffer=original;};});
@@ -142,6 +151,19 @@ async function browserProof(){
     await dialog.locator('[data-personal-memory-text]').fill('Synthetic note'); await dialog.getByRole('button',{name:'Save note',exact:true}).click(); await dialog.getByRole('button',{name:/note: Synthetic note/}).waitFor();
     // Storing a document reuses the note draft and the .txt import: the same
     // text, a second choice about where it goes.
+    // The note limit, from both sides. One character past it must be refused,
+    // never saved as its first NOTE_LIMIT characters.
+    const beforeNoteBoundary=records.size;
+    await noteDraft.fill('E'.repeat(NOTE_LIMIT+1)); await dialog.getByRole('button',{name:'Save note',exact:true}).click();
+    await dialog.locator('[data-personal-memory-status]').getByText(new RegExp(`This draft is ${NOTE_LIMIT+1} characters. A note holds ${NOTE_LIMIT}`)).waitFor();
+    if(records.size!==beforeNoteBoundary)failures.push('A draft past the note limit must not be written as a truncated note.');
+    await noteDraft.fill('F'.repeat(NOTE_LIMIT)); await dialog.getByRole('button',{name:'Save note',exact:true}).click();
+    await page.waitForFunction(count=>document.querySelectorAll('[data-personal-memory-list] button').length===count,beforeNoteBoundary+1);
+    const atLimitNote=[...records.values()].find(item=>item.text.length===NOTE_LIMIT);
+    if(!atLimitNote)failures.push('A draft exactly at the note limit must be saved whole.');
+    // Removed from the fixture so the later delete proof still starts from one note.
+    if(atLimitNote)records.delete(atLimitNote.id);
+    await dialog.getByRole('button',{name:'Refresh',exact:true}).click(); await page.waitForFunction(()=>document.querySelectorAll('[data-personal-memory-list] button').length===1);
     const documentName=dialog.locator('[data-personal-knowledge-name]'); const documentStatusLine=dialog.locator('[data-personal-knowledge-status]');
     await noteDraft.fill(''); await documentName.fill('');
     await importInput.setInputFiles({name:'briefing.txt',mimeType:'text/plain',buffer:Buffer.from('Imported document body')});
@@ -154,6 +176,10 @@ async function browserProof(){
     if(knowledgeWrites.length!==1||write?.text!=='Imported document body'||write?.name!=='briefing.txt'||write?.type!=='text/plain'||write?.source_type!=='upload'||!write?.workspace_id)failures.push(`Saving a document must send the draft text, the name, text/plain and a workspace id (${JSON.stringify(write)}).`);
     if(await noteDraft.inputValue()!==''||await documentName.inputValue()!=='')failures.push('A stored document must clear the draft and the name it consumed.');
     if(records.size!==1)failures.push('Saving a document must not also create a memory note.');
+    await noteDraft.fill('G'.repeat(DOCUMENT_LIMIT)); await documentName.fill('full-size.txt');
+    await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
+    await documentStatusLine.getByText(/Stored “full-size.txt” as a knowledge document/).waitFor();
+    if(knowledgeWrites.at(-1)?.text?.length!==DOCUMENT_LIMIT)failures.push(`A document at the limit must be sent whole (${knowledgeWrites.at(-1)?.text?.length}).`);
     mode='shortened-document'; await noteDraft.fill('Longer than the store keeps'); await documentName.fill('trimmed.txt');
     await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
     await documentStatusLine.getByText(/only the first 4 of 27 characters were kept/).waitFor();
