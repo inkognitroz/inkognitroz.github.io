@@ -34,6 +34,8 @@ async function browserProof(){
     page.setDefaultTimeout(5000);
     let backendCalls=0; let memoryCalls=0; let searchCalls=0; let consentCalls=0; let chatCalls=0; let mode='normal'; const backendPaths=[]; const searchPayloads=[];
     const records=new Map(); let consent=false; let nextId=0;
+    const knowledgeDocuments=new Map([['doc-fixture-1','Quarterly plan.txt'],['doc-fixture-2','Old draft.txt']]);
+    let knowledgeSearchCalls=0; const knowledgeDeletes=[]; const knowledgeSearchPayloads=[];
     let deferredReadyResolve=null; let deferredRelease=null; let deferredConsentReads=0;
     const check=()=>{if(Date.now()>=deadline)throw new Error('personal-memory browser proof exceeded 60s');if(serverError||serverExit)throw new Error(`Personal-memory fixture server exited during browser proof: ${JSON.stringify(serverExit||serverError)}; stderr=${serverErrorOutput}`);};
     await page.route('**/*',async route=>{
@@ -77,6 +79,22 @@ async function browserProof(){
         const terms=String(input.query||'').toLowerCase().split(/\s+/).filter(Boolean);
         const data=[...records.values()].flatMap(item=>{const matched_terms=terms.filter(term=>(item.text+' '+item.tags.join(' ')).toLowerCase().includes(term));return matched_terms.length?[{...item,score:matched_terms.length/terms.length,matched_terms,why_used:['Matched saved-note words.']}]:[];}).slice(0,8);
         return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'list',data})});
+      }
+      if(path==='/knowledge/search'&&method==='POST'){
+        knowledgeSearchCalls+=1; const input=JSON.parse(route.request().postData()||'{}'); knowledgeSearchPayloads.push(input);
+        const terms=String(input.query||'').toLowerCase().split(/\s+/).filter(Boolean);
+        const data=[...knowledgeDocuments.entries()]
+          .filter(([,name])=>terms.some(term=>name.toLowerCase().includes(term)))
+          .map(([id,name])=>({snippet:'Fixture snippet from '+name,chunk_id:id+'-chunk-1',document:{id,name}}));
+        return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data})});
+      }
+      if(path.startsWith('/knowledge/documents/')&&method==='DELETE'){
+        const documentId=decodeURIComponent(path.split('/').at(-1)||'');
+        knowledgeDeletes.push(documentId);
+        if(mode==='gone-document'){mode='normal';return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({error:{code:'not_found'}})});}
+        if(!knowledgeDocuments.has(documentId))return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({error:{code:'not_found'}})});
+        knowledgeDocuments.delete(documentId);
+        return route.fulfill({status:204,body:''});
       }
       const itemId=decodeURIComponent(path.split('/').at(-1)||'');
       if(path==='/memory'&&method==='GET')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'list',data:[...records.values()]})});
@@ -122,6 +140,27 @@ async function browserProof(){
     await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await page.getByText(/Remote storage enabled/).waitFor(); const raceNote=dialog.getByRole('button',{name:/note: Synthetic note/}); await raceNote.click(); await composer.fill('Deferred consent draft'); const beforeDeferredUse=await composer.inputValue(); const beforeDeferredChat=chatCalls; deferredConsentReads=0; mode='defer-final-consent'; const finalConsentReady=new Promise(resolve=>{deferredReadyResolve=resolve;}); await dialog.getByRole('button',{name:'Use in next message',exact:true}).click(); await Promise.race([finalConsentReady,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Deferred final consent read was not reached.')),5000))]); await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click(); await dialog.locator('[data-personal-memory-status]').getByText(/Remote storage disabled/).waitFor(); deferredRelease?.(); await dialog.locator('[data-personal-memory-status]').getByText(/Remote storage disabled/).waitFor(); if(await composer.inputValue()!==beforeDeferredUse||chatCalls!==beforeDeferredChat)failures.push('Disable during the final consent read must preserve the composer and prevent a chat POST.');
     const selectedNote=dialog.getByRole('button',{name:/note: Synthetic note/}); await selectedNote.click(); await dialog.getByRole('button',{name:'Delete selected',exact:true}).click(); await page.waitForFunction(()=>!document.querySelector('[data-personal-memory-list] button')); if(records.size!==0)failures.push('Delete must remove only the selected synthetic note.');
     await composer.fill('Keep this draft'); const disabledDraft=await composer.inputValue(); await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click(); await page.getByText(/Remote storage disabled/).waitFor(); if(!(await dialog.getByRole('button',{name:'Use in next message',exact:true}).isDisabled())||await composer.inputValue()!==disabledDraft)failures.push('Disabled use must preserve draft and block insertion.');
+    // Deleting a stored document runs here on purpose: remote storage is off at
+    // this point in the proof, and removing your own data must work anyway.
+    const documentQuery=dialog.locator('[data-personal-knowledge-query]'); const documentStatusLine=dialog.locator('[data-personal-knowledge-status]');
+    await documentQuery.fill('Quarterly'); if(knowledgeSearchCalls!==0)failures.push('Typing a document query must not search automatically.');
+    await dialog.getByRole('button',{name:'Search documents',exact:true}).click(); await documentStatusLine.getByText(/1 stored document matched/).waitFor();
+    if(knowledgeSearchCalls!==1||knowledgeSearchPayloads[0]?.query!=='Quarterly'||knowledgeSearchPayloads[0]?.limit!==8||!knowledgeSearchPayloads[0]?.workspace_id)failures.push(`Document search must send the exact query, limit 8 and a workspace id (${JSON.stringify(knowledgeSearchPayloads[0])}).`);
+    if(await dialog.locator('[data-personal-knowledge-results] button').count()!==1)failures.push('Document search must list only matching documents.');
+    const beforeCancelledDelete=knowledgeDeletes.length; await dialog.locator('[data-personal-knowledge-results] button').first().click();
+    page.once('dialog',prompt=>prompt.dismiss()); await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click(); await documentStatusLine.getByText('Deletion cancelled; the document was kept.').waitFor();
+    if(knowledgeDeletes.length!==beforeCancelledDelete||!knowledgeDocuments.has('doc-fixture-1'))failures.push('Cancelling the confirmation must not send a delete.');
+    page.once('dialog',prompt=>prompt.accept()); await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click(); await documentStatusLine.getByText(/Deleted “Quarterly plan.txt”/).waitFor();
+    if(knowledgeDeletes.at(-1)!=='doc-fixture-1'||knowledgeDocuments.has('doc-fixture-1'))failures.push(`Confirmed delete must remove exactly the selected document (${knowledgeDeletes.join(', ')}).`);
+    if(await dialog.locator('[data-personal-knowledge-results] button').count())failures.push('A deleted document must disappear from the result list.');
+    if(chatCalls!==0)failures.push('Deleting a stored document must not start a model call.');
+    await documentQuery.fill('Quarterly'); await dialog.getByRole('button',{name:'Search documents',exact:true}).click(); await documentStatusLine.getByText('No stored documents matched those words.').waitFor();
+    mode='gone-document'; await documentQuery.fill('Old'); await dialog.getByRole('button',{name:'Search documents',exact:true}).click(); await documentStatusLine.getByText(/1 stored document matched/).waitFor();
+    await dialog.locator('[data-personal-knowledge-results] button').first().click(); page.once('dialog',prompt=>prompt.accept()); await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();
+    await documentStatusLine.getByText('That document is already gone.').waitFor();
+    if(await dialog.locator('[data-personal-knowledge-results] button').count())failures.push('A 404 delete must also clear the stale result.');
+    const beforeDocumentReject=backendCalls; const documentRejected=await page.evaluate(async()=>{for(const [path,method] of [['/knowledge/documents','DELETE'],['/knowledge/documents/a/b','DELETE'],['/knowledge/search','GET'],['/knowledge/documents/a','GET']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;});
+    if(!documentRejected||backendCalls!==beforeDocumentReject)failures.push(`Only the exact document delete and document search paths may reach the backend (before ${beforeDocumentReject}, after ${backendCalls}).`);
     mode='malformed'; await dialog.getByRole('button',{name:'Refresh',exact:true}).click(); await page.getByText(/invalid consent response|Personal storage returned an invalid/).waitFor();
     const beforeRejected=backendCalls; const rejected=await page.evaluate(async()=>{for(const [path,method] of [['https://evil.invalid/memory','PATCH'],['/memory/search','GET'],['/memory/search','DELETE'],['/memory/search/item','POST']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;}); if(!rejected||backendCalls!==beforeRejected)failures.push(`Arbitrary origins and non-POST/invalid search paths must reject before backend access (before ${beforeRejected}, after ${backendCalls}).`);
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releasePrivateImport=null;Blob.prototype.arrayBuffer=function(){if(this.name==='private.txt')return new Promise(resolve=>{window.__releasePrivateImport=()=>original.call(this).then(resolve);});return original.call(this);};window.__restorePrivateImport=()=>{Blob.prototype.arrayBuffer=original;};});
