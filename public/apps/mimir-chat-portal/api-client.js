@@ -245,7 +245,7 @@
     const document=/^\/knowledge\/documents\/[^/?#]+$/.test(normalized);
     return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item))||
       (method==='PUT'&&normalized==='/consent')||
-      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'||normalized==='/knowledge/search'))||
+      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'||normalized==='/knowledge/search'||normalized==='/knowledge/documents'))||
       (method==='DELETE'&&(item||document));
   }
 
