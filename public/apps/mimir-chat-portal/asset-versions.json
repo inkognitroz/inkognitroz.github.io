@@ -45,7 +45,7 @@
     "p0-route-receipts.js": "20260614-first-user-route-receipts-v1",
     "p0-route-benchmarks.js": "20260611-b0-06-27-demotion-receipts-v1",
     "p0-storage.js": "20260606-b1-06-p0-storage-v2",
-    "p0-text.js": "20260922-safe-bare-urls-v1",
+    "p0-text.js": "20260922-safe-bare-urls-v2",
     "platform-status.js": "20260627-status-card-dedupe-v1",
     "pwa.js": "20260909-ordinary-chat-v1",
     "public-launch-guard.js": "20260604-hidden-capability-inert-v1",

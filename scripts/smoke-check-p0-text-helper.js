@@ -26,7 +26,7 @@ function requireOrder(source, before, after, message) {
   if (beforeIndex < 0 || afterIndex < 0 || beforeIndex > afterIndex) fail(message);
 }
 
-requireIncludes(helper, "version='20260922-safe-bare-urls-v1'", 'P0 text helper version must be explicit.');
+requireIncludes(helper, "version='20260922-safe-bare-urls-v2'", 'P0 text helper version must be explicit.');
 requireIncludes(helper, 'safeText', 'P0 text helper must expose safeText.');
 requireIncludes(helper, 'paragraphs', 'P0 text helper must expose paragraphs.');
 requireIncludes(helper, 'markdown', 'P0 text helper must expose the safe markdown renderer.');
@@ -35,9 +35,9 @@ requireIncludes(shell, 'const P0_TEXT=window.MimirP0Text||{};', 'P0 shell must r
 requireIncludes(shell, 'P0_TEXT.safeText?.(value)', 'P0 shell safeText must delegate to the helper.');
 requireIncludes(shell, 'P0_TEXT.paragraphs?.(text)', 'P0 shell paragraphs must delegate to the helper.');
 requireIncludes(shell, 'P0_TEXT.formatDuration', 'P0 shell duration formatting must delegate to the helper.');
-requireIncludes(html, 'p0-text.js?v=20260922-safe-bare-urls-v1', 'Public MMIR shell must load p0-text.js with a cache-busted version.');
-requireOrder(html, 'p0-text.js?v=20260922-safe-bare-urls-v1', 'p0-chat-shell.js?v=', 'P0 text helper must load before the P0 shell.');
-requireIncludes(manifest, '"p0-text.js": "20260922-safe-bare-urls-v1"', 'Asset manifest must track p0-text.js.');
+requireIncludes(html, 'p0-text.js?v=20260922-safe-bare-urls-v2', 'Public MMIR shell must load p0-text.js with a cache-busted version.');
+requireOrder(html, 'p0-text.js?v=20260922-safe-bare-urls-v2', 'p0-chat-shell.js?v=', 'P0 text helper must load before the P0 shell.');
+requireIncludes(manifest, '"p0-text.js": "20260922-safe-bare-urls-v2"', 'Asset manifest must track p0-text.js.');
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-text-helper.js')) {
   fail('npm run check must include smoke-check-p0-text-helper.js.');
 }
@@ -61,7 +61,7 @@ vm.createContext(context);
 vm.runInContext(helper, context, { filename: 'p0-text.js' });
 
 const api = context.window.MimirP0Text;
-if (!api || api.version !== '20260922-safe-bare-urls-v1') fail('P0 text helper must register on window.');
+if (!api || api.version !== '20260922-safe-bare-urls-v2') fail('P0 text helper must register on window.');
 if (api.safeText('<script>&"\'') !== '&lt;script&gt;&amp;&quot;&#39;') fail('safeText must HTML-escape special characters.');
 if (api.safeAttr('"route"') !== '&quot;route&quot;') fail('safeAttr must delegate to safeText.');
 if (api.paragraphs('one\n\ntwo') !== '<p>one</p><p>two</p>') fail('paragraphs must render escaped paragraph HTML.');
@@ -74,6 +74,12 @@ if (api.markdown('[Farlig](javascript:alert(1))').includes('<a ')) fail('markdow
 const nrkUrl='https://www.nrk.no/sport/stale-solbakken-refser-kommentator_-_-syltynn-artikkel-1.18031899';
 const bareNrk=api.markdown(`Kilde: ${nrkUrl}.`);
 if (!bareNrk.includes(`href="${nrkUrl}"`) || !bareNrk.includes(`>${nrkUrl}</a>.`)) fail('bare HTTPS URLs must remain clickable with exact underscore-preserving hrefs and trailing punctuation outside the link.');
+const parenthesizedRss='https://www.nrk.no/toppsaker.rss';
+const bareRss=api.markdown(`**Kilde**: NRK topp-saker RSS-feed (${parenthesizedRss}), hentet i dag.`);
+if (!bareRss.includes(`href="${parenthesizedRss}"`) || !bareRss.includes(`>${parenthesizedRss}</a>),`)) fail('a bare URL wrapped in prose parentheses must leave the unmatched closing parenthesis outside its exact href.');
+const balancedUrl='https://example.test/guide_(revised)?part=(one)#section';
+const bareBalanced=api.markdown(`Kilde: ${balancedUrl}.`);
+if (!bareBalanced.includes(`href="${balancedUrl}"`) || !bareBalanced.includes(`>${balancedUrl}</a>.`)) fail('balanced parentheses within a bare URL must remain part of its href.');
 if (api.markdown('`https://example.com/_code_`').includes('<a ')) fail('inline code URLs must not become links.');
 if (api.markdown('javascript:alert(1)').includes('<a ')) fail('unsafe bare schemes must remain text.');
 if (api.markdown('![Alt](https://example.com/image.png)').includes('<img')) fail('markdown images must remain inert.');
