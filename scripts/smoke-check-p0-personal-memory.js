@@ -91,6 +91,7 @@ async function browserProof(){
     await page.getByText('Personlig minne',{exact:true}).click();
     const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');
     if(!(await dialog.isVisible()))failures.push('Personal memory dialog must be reachable and visible inside the P0 app.');
+    await dialog.locator('[data-personal-memory-status]').getByText('Storage is off. Saved notes remain inspectable and deletable.').waitFor();
     if(backendCalls===0)failures.push('Explicit panel action must contact only the personal backend.');
     const beforeDisabled=memoryCalls; const disabledSave=dialog.getByRole('button',{name:'Save note',exact:true}); const disabledDraftValue=await composer.inputValue(); if(!(await disabledSave.isDisabled())||!(await dialog.getByRole('button',{name:'Search notes',exact:true}).isDisabled()))failures.push('Save and search must be disabled before consent.'); if(memoryCalls!==beforeDisabled||searchCalls!==0||await composer.inputValue()!==disabledDraftValue)failures.push(`Disabled save/search must preserve draft and avoid remote writes (memory ${memoryCalls-beforeDisabled}, search ${searchCalls}, draft ${JSON.stringify(await composer.inputValue())}).`);
     const noteDraft=dialog.locator('[data-personal-memory-text]'); const importInput=dialog.locator('[data-personal-memory-import]'); const beforeImportCalls=backendCalls;
