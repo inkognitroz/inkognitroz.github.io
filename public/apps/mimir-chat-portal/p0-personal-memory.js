@@ -2,6 +2,7 @@
   'use strict';
   const TYPES=['note','fact','preference','task'];
   const MAX_TEXT=1000;
+  const MAX_IMPORT_BYTES=4000;
   const MAX_LIST=30;
   let dialog=null;
   let selectedId='';
@@ -29,6 +30,31 @@
   function clearSelection(){
     selectedId='';
     dialog?.querySelectorAll('[data-personal-memory-id]').forEach(node=>delete node.dataset.selected);
+  }
+  function importStatus(message,error=false){status(message,error);}
+  function validTextFile(file){
+    return file&&/\.txt$/i.test(String(file.name||''))&&(!file.type||file.type==='text/plain');
+  }
+  async function importTextFile(file){
+    const input=dialog?.querySelector('[data-personal-memory-text]');
+    const token=++gate;
+    if(!validTextFile(file)){importStatus('Choose a UTF-8 plain-text .txt file.',true);return;}
+    if(file.size>MAX_IMPORT_BYTES){importStatus('This file is too large. Import accepts up to 1000 characters / 4000 bytes without truncation.',true);return;}
+    const before=String(input?.value||'');
+    if(before&&window.confirm&&!window.confirm('Replace the current note draft with this local text file?')){importStatus('Import cancelled; the existing draft was kept.');return;}
+    importStatus('Reading local text file…');
+    try{
+      const bytes=await file.arrayBuffer();
+      if(token!==gate||!dialog?.open||!canUseRemote())return;
+      const imported=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+      if(imported.length>MAX_TEXT)throw new Error('This text is longer than 1000 characters and was not imported.');
+      if(String(input?.value||'')!==before){importStatus('The note draft changed while the file was read; import was not applied.',true);return;}
+      input.value=imported;
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      importStatus('Local text imported into the note draft. Review it, then choose Save note to store it remotely.');
+    }catch(error){
+      if(token===gate&&dialog?.open)importStatus(error?.message==='This text is longer than 1000 characters and was not imported.'?error.message:'Could not read this UTF-8 plain-text file.',true);
+    }
   }
   async function request(path,options={}){
     const client=api();
@@ -173,10 +199,13 @@
   function button(label,action,requires=false){const node=document.createElement('button');node.type='button';node.textContent=label;node.dataset.personalMemoryAction=action;if(requires)node.dataset.personalMemoryRequiresConsent='';return node;}
   function build(){
     dialog=document.createElement('dialog'); dialog.className='p0-menu'; dialog.setAttribute('aria-label','Personal memory');
-    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
+    dialog.innerHTML='<h2>Personal memory</h2><p>Remote notes are stored at MMIR for this anonymous tab session. Closing this session can lose access; this is not account or cross-device recovery.</p><p data-personal-memory-state></p><label>Type <select data-personal-memory-type><option value="note">Note</option><option value="fact">Fact</option><option value="preference">Preference</option><option value="task">Task</option></select></label><label>Note <textarea data-personal-memory-text maxlength="1000" rows="3"></textarea></label><p>Import a local UTF-8 plain-text .txt file of up to 1000 characters / 4000 bytes. It only fills this editable draft; Save note is separate.</p><input data-personal-memory-import type="file" accept=".txt,text/plain" hidden><button type="button" data-personal-memory-import-button>Import .txt to draft</button><h3>Search saved notes (lexical)</h3><p>Matches words in saved notes; this is not semantic search.</p><label>Search saved notes <input type="search" data-personal-memory-query maxlength="1000"></label><p data-personal-memory-search-status aria-live="polite"></p><div data-personal-memory-search-results aria-live="polite"></div><div data-personal-memory-actions></div><div data-personal-memory-list></div><p data-personal-memory-status aria-live="polite"></p>';
     const actions=dialog.querySelector('[data-personal-memory-actions]');
     [['Enable remote storage','enable',false],['Save note','save',true],['Search notes','search',true],['Clear search','clear-search',false],['Refresh','refresh',false],['Use in next message','use',true],['Delete selected','delete',false],['Disable remote storage','disable',false],['Close','close',false]].forEach(([label,action,requires])=>actions.appendChild(button(label,action,requires)));
     actions.addEventListener('click',event=>{const action=event.target?.dataset?.personalMemoryAction;if(action==='enable')enable();if(action==='save')save();if(action==='search')search();if(action==='clear-search')clearSearch();if(action==='refresh')refresh();if(action==='use')useSelected();if(action==='delete')remove();if(action==='disable')disable();if(action==='close')dialog.close();});
+    const fileInput=dialog.querySelector('[data-personal-memory-import]');
+    dialog.querySelector('[data-personal-memory-import-button]')?.addEventListener('click',()=>fileInput?.click());
+    fileInput?.addEventListener('change',()=>{const file=fileInput.files?.[0];fileInput.value='';if(file)importTextFile(file);});
     (document.getElementById('mmir-p0-app')||document.body).appendChild(dialog);
     const invalidate=()=>{++gate;clearSelection();clearSearchResults('Search cleared when the panel closed.');};
     dialog.addEventListener('close',invalidate);
