@@ -243,9 +243,14 @@
     // them is how the user finds one, and DELETE is the only way to remove a
     // document that the backend can already feed into an answer.
     const document=/^\/knowledge\/documents\/[^/?#]+$/.test(normalized);
-    return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item))||
+    // Missions: the list (with its workspace query), one mission, and the single
+    // transition operation the product API exposes. Nothing else under /missions.
+    const missionList=normalized==='/missions'||/^\/missions\?workspace_id=[^/?#&]*$/.test(normalized);
+    const mission=/^\/missions\/[^/?#]+$/.test(normalized);
+    const missionTransition=/^\/missions\/[^/?#]+\/transitions$/.test(normalized);
+    return (method==='GET'&&(normalized==='/consent'||normalized==='/memory'||item||missionList||mission))||
       (method==='PUT'&&normalized==='/consent')||
-      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'||normalized==='/knowledge/search'||normalized==='/knowledge/documents'))||
+      (method==='POST'&&(normalized==='/memory'||normalized==='/memory/search'||normalized==='/knowledge/search'||normalized==='/knowledge/documents'||(missionList&&normalized==='/missions')||missionTransition))||
       (method==='DELETE'&&(item||document));
   }
 

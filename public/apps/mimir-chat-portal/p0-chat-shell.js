@@ -70,7 +70,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260922-privacy-menu-reflow-v1';
+  const P0_RUNTIME_VERSION='20260923-missions-panel-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -5254,6 +5254,7 @@
       menuButton('set-privacy-mode:superprivate','Superprivat',privacyModeDetail('superprivate'),{badge:selected==='superprivate'?'Valgt':''})+
       menuSeparator()+
       menuButton('personal-memory','Personlig minne','Velg eksplisitt om anonyme tab-notater lagres og brukes eksternt.')+
+      menuButton('missions','Oppdrag','Se oppdrag som overlever avbrudd, og send pause, fortsett, fullfør eller avbryt.')+
       demoControls;
     if(!menu.hidden){
       const button=menuReturnFocusElement?.isConnected
@@ -6133,6 +6134,11 @@
     if(action==='personal-memory'){
       closeMenus();
       window.MmirP0PersonalMemory?.open?.({canUseRemote:()=>!privateModeActive()});
+      return true;
+    }
+    if(action==='missions'){
+      closeMenus();
+      window.MmirP0Missions?.open?.({canUseRemote:()=>!privateModeActive()});
       return true;
     }
     if(action==='role-profile-menu'){
