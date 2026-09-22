@@ -11,6 +11,7 @@ const model='mistralai/mistral-small-4-119b-2603';
 let answerCount=0;
 let latestLlmReceiptId='';
 const groqModel='groq/openai/gpt-oss-120b';
+const mistralRoute='mistral/mistral-small-latest';
 
 function assert(condition,message){if(!condition)failures.push(message);}
 
@@ -38,6 +39,8 @@ function writerReceipt(prefixCount,sequence,routeModel=model){
   const issuedAt=new Date(Date.now()-60_000);
   const expiresAt=new Date(issuedAt.getTime()+60*60*1000);
   const suffix=String(sequence).padStart(12,'0');
+  const groq=routeModel.startsWith('groq/');
+  const mistral=routeModel===mistralRoute;
   return {
     object:'mmir.writer_continuity_receipt',
     schema_version:'2026-07-18-writer-continuity-v1',
@@ -46,11 +49,11 @@ function writerReceipt(prefixCount,sequence,routeModel=model){
     issued_at:issuedAt.toISOString(),
     expires_at:expiresAt.toISOString(),
     writer_type:'llm',
-    provider:routeModel.startsWith('groq/')?'groq':'nvidia',
-    model_id:routeModel,
-    model_display_name:routeModel.startsWith('groq/')?'Groq: openai/gpt-oss-120b':'Mistral Small 4',
-    writer_request_model_id:routeModel.startsWith('groq/')?routeModel:'mistral-small-latest',
-    writer_route_id:routeModel.startsWith('groq/')?routeModel:`nvidia/${routeModel}`,
+    provider:groq?'groq':mistral?'mistral':'nvidia',
+    model_id:mistral?'mistral-small-latest':routeModel,
+    model_display_name:groq?'Groq: openai/gpt-oss-120b':mistral?'Mistral Small':'Mistral Small 4',
+    writer_request_model_id:groq?routeModel:'mistral-small-latest',
+    writer_route_id:groq||mistral?routeModel:`nvidia/${routeModel}`,
     conversation_prefix_version:'2026-07-18-conversation-prefix-v1',
     conversation_prefix_count:prefixCount,
     conversation_prefix_hash:'hmac-sha256:'+'b'.repeat(64),
@@ -118,6 +121,25 @@ async function installFixtures(page,{selectedModelId=''}={}){
           live_e2e_proof:{verified:true,stable_verified:true,no_paid_routes_started:true},
           cost_class:'free'
         },{
+          id:'mistral-small-latest',
+          name:'mistral-small-latest',
+          display_name:'Mistral Small',
+          provider:'mistral',
+          route_id:mistralRoute,
+          executable:true,
+          selectable:true,
+          availability:'available',
+          route_state:'public_untrusted_free_available',
+          route_type:'external_untrusted_free',
+          route_class:'free',
+          candidate:false,
+          trust_level:'public-free',
+          live_e2e_verified:true,
+          live_e2e_proof:{verified:true,stable_verified:true,no_paid_routes_started:true},
+          cost_class:'free-quota',
+          cost_state:'free_guarded',
+          no_paid_routes_started:true
+        },{
           id:groqModel,
           name:groqModel,
           display_name:'Groq: openai/gpt-oss-120b',
@@ -167,6 +189,7 @@ async function installFixtures(page,{selectedModelId=''}={}){
     chatRequests.push(body);
     answerCount+=1;
     const groqRequest=String(body.model||'')===groqModel;
+    const mistralRequest=String(body.model||'')===mistralRoute;
     const current=String(body.messages?.at(-1)?.content||'');
     if(/17\s*\*\s*23/.test(current)){
       await fulfillJson(route,{
@@ -224,10 +247,10 @@ async function installFixtures(page,{selectedModelId=''}={}){
     latestLlmReceiptId=responseReceipt.id;
     await fulfillJson(route,{
       object:'chat.completion',
-      choices:[{message:{role:'assistant',content:groqRequest?( /Fix sum/.test(current)?'const sum = (a, b) => a + b':'Result for 19 and 37 is 56'):`Hosted svar ${answerCount}`},finish_reason:'stop'}],
+      choices:[{message:{role:'assistant',content:groqRequest?( /Fix sum/.test(current)?'const sum = (a, b) => a + b':'Result for 19 and 37 is 56'):mistralRequest?'Mistral continuation answer.':`Hosted svar ${answerCount}`},finish_reason:'stop'}],
       mmir:{
-        ...(groqRequest||answerCount!==1?{answer_writer:{object:'mmir.answer_writer',type:'llm',provider:groqRequest?'groq':'nvidia',model_id:groqRequest?groqModel:model,model_display_name:groqRequest?'Groq: openai/gpt-oss-120b':'Mistral Small 4'}}:{}),
-        writer_continuity_receipt:groqRequest?writerReceipt((body.messages?.length||0)+1,answerCount,groqModel):responseReceipt,
+        ...(groqRequest||mistralRequest||answerCount!==1?{answer_writer:{object:'mmir.answer_writer',type:'llm',provider:groqRequest?'groq':mistralRequest?'mistral':'nvidia',model_id:groqRequest?groqModel:mistralRequest?'mistral-small-latest':model,model_display_name:groqRequest?'Groq: openai/gpt-oss-120b':mistralRequest?'Mistral Small':'Mistral Small 4'}}:{}),
+        writer_continuity_receipt:groqRequest||mistralRequest?writerReceipt((body.messages?.length||0)+1,answerCount,groqRequest?groqModel:mistralRoute):responseReceipt,
         no_paid_routes_started:true,
         provider_secrets_in_browser:false
       }
@@ -238,10 +261,15 @@ async function installFixtures(page,{selectedModelId=''}={}){
 async function sendAndWait(page,prompt,answerPattern){
   await page.locator('#p0-input').fill(prompt);
   await page.locator('#p0-send').click();
-  await page.waitForFunction(
-    pattern=>new RegExp(pattern.source,pattern.flags).test(document.getElementById('p0-transcript')?.innerText||''),
-    {source:answerPattern.source,flags:answerPattern.flags}
-  );
+  try{
+    await page.waitForFunction(
+      pattern=>new RegExp(pattern.source,pattern.flags).test(document.getElementById('p0-transcript')?.innerText||''),
+      {source:answerPattern.source,flags:answerPattern.flags}
+    );
+  }catch(error){
+    const tail=(await page.locator('#p0-transcript').innerText().catch(()=>'' )).slice(-500);
+    throw new Error(`Timed out waiting for ${answerPattern}: last model=${chatRequests.at(-1)?.model||'none'}; transcript=${tail}`,{cause:error});
+  }
 }
 
 port=await resolveRenderPort({
@@ -313,18 +341,26 @@ try{
     assert(!afterOversizeRequest.writer_continuity_receipt,'The first request after an oversized-response reset must not echo the discarded receipt.');
 
     const groqPage=await browser.newPage({viewport:{width:1280,height:800}});
-    await installFixtures(groqPage,{selectedModelId:`hosted-route:${groqModel}`});
+    await installFixtures(groqPage);
     await groqPage.goto(`${baseUrl}/mmir.html?writer_continuity_groq_e2e=1#mimir-chat-runtime`,{waitUntil:'networkidle'});
     await groqPage.waitForSelector('#p0-input');
+    await groqPage.locator('#p0-model').click();
+    await groqPage.locator(`button[data-model-id="hosted-route:${groqModel}"]`).click();
     await sendAndWait(groqPage,'Fix sum=(a,b)=>a-b to add.',/const sum/);
     const groqFirst=chatRequests.at(-1);
     const groqFirstAnswer='const sum = (a, b) => a + b';
-    await sendAndWait(groqPage,'What is the result for 19 and 37?',/Result for 19 and 37 is 56/);
-    const groqSecond=chatRequests.at(-1);
+    const groqReceipt=(await groqPage.locator('.p0-message-assistant').last().locator('.p0-receipt-model').innerText()).trim();
+    await groqPage.locator('#p0-model').click();
+    await groqPage.locator(`button[data-model-id="hosted-route:${mistralRoute}"]`).click();
+    await sendAndWait(groqPage,'Continue from the previous answer and name the selected model.',/Mistral continuation answer/);
+    const mistralSecond=chatRequests.at(-1);
+    const mistralReceipt=(await groqPage.locator('.p0-message-assistant').last().locator('.p0-receipt-model').innerText()).trim();
     assert(groqFirst?.model===groqModel,'Explicit Groq first turn must use the selected Groq route.');
-    assert(groqSecond?.model===groqModel,'Explicit Groq follow-up must keep the selected Groq route.');
-    assert(groqSecond?.messages?.some(message=>message.role==='user'&&message.content==='Fix sum=(a,b)=>a-b to add.'),'Groq follow-up must retain the first user turn.');
-    assert(groqFirstAnswer&&groqSecond?.messages?.some(message=>message.role==='assistant'&&message.content===groqFirstAnswer),'Groq follow-up must retain the first assistant answer.');
+    assert(mistralSecond?.model===mistralRoute,'Second explicitly selected Mistral route must use a distinct configured free-provider model.');
+    assert(mistralSecond?.messages?.some(message=>message.role==='user'&&message.content==='Fix sum=(a,b)=>a-b to add.'),'Cross-route follow-up must retain the first user turn.');
+    assert(groqFirstAnswer&&mistralSecond?.messages?.some(message=>message.role==='assistant'&&message.content===groqFirstAnswer),'Cross-route follow-up must retain the first Groq answer.');
+    assert(groqReceipt==='Groq: openai/gpt-oss-120b','First selected Groq answer must render its actual writer identity.');
+    assert(mistralReceipt==='Mistral Small','Switched Mistral answer must render its distinct writer identity.');
     await groqPage.close();
   }finally{
     await browser.close();
