@@ -1,5 +1,5 @@
 (function(){
-  const version='20260921-backend-session-v1';
+  const version='20260923-chat-via-backend-v1';
   const PROD_API_URL='https://api.mmir.ai';
   const STAGING_API_URL='https://api-staging.mmir.ai';
   const LOCAL_URL='http://127.0.0.1:3000';
@@ -69,6 +69,31 @@
     try{brand=normalizedBackendUrl(window.MimirBrandConfig?.backend_url);}catch(error){brand='';}
     if(brand)return {url:brand,source:'flag:brand'};
     return {url:'',source:'host-default'};
+  }
+
+  // F1-1 (kart C): the ordinary chat send may go to the backend layer instead of the
+  // gateway, behind its own flag. Exactly true turns it on — a truthy string or a 1
+  // does not — and it moves nothing else: every other call keeps using apiUrl. The
+  // backend origin is read from the identity client rather than written again here,
+  // so there is one place that says where the backend is.
+  function chatViaBackendFlag(){
+    try{if(window.MMIR_CHAT_VIA_BACKEND===true)return {on:true,source:'flag:global'};}catch(error){}
+    try{if(window.MimirBrandConfig?.chat_via_backend===true)return {on:true,source:'flag:brand'};}catch(error){}
+    return {on:false,source:'off'};
+  }
+
+  function backendChatOrigin(){
+    try{return normalizedBackendUrl(window.MimirApiClient?.backendIdentityOrigin);}catch(error){return '';}
+  }
+
+  function resolvedChatApiUrl(){
+    const flag=chatViaBackendFlag();
+    const origin=flag.on?backendChatOrigin():'';
+    return origin?{url:origin,source:flag.source}:{url:resolvedApiUrl().url,source:'api'};
+  }
+
+  function chatApiUrl(){
+    return resolvedChatApiUrl().url;
   }
 
   function resolvedApiUrl(){
@@ -757,6 +782,9 @@
       apiUrl,
       apiLabel:apiHostLabel(apiUrl),
       apiUrlSource:resolved.source,
+      chatApiUrl:resolvedChatApiUrl().url,
+      chatApiUrlSource:resolvedChatApiUrl().source,
+      chatViaBackend:chatViaBackendFlag().on,
       localUrl:LOCAL_URL,
       chatPath:CHAT_PATH,
       routeScorePath:ROUTE_SCORE_PATH
@@ -777,6 +805,8 @@
     resolvedApiUrl,
     normalizedBackendUrl,
     backendUrlFlag,
+    chatViaBackendFlag,
+    chatApiUrl,
     apiHostLabel,
     fetchOptions,
     fetchJson,
