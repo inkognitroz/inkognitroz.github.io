@@ -262,10 +262,11 @@
       if(text(input?.value)===value)input.value='';
       if(nameInput)nameInput.value='';
       lastImportedName='';
-      documentStatus(shortened
+      const savedMessage=shortened
         ?'Stored “'+text(stored.name||name,120)+'”, but only the first '+kept+' of '+value.length+' characters were kept.'
-        :'Stored “'+text(stored.name||name,120)+'” as a knowledge document. Search documents to find it.');
-      await refreshDocuments();
+        :'Stored “'+text(stored.name||name,120)+'” as a knowledge document. Search documents to find it.';
+      documentStatus(savedMessage);
+      await refreshDocuments(savedMessage);
     }catch(error){documentStatus(error.message||'Document was not stored.',true);}
     });
   }
@@ -280,7 +281,7 @@
     });
     return button;
   }
-  async function refreshDocuments(){
+  async function refreshDocuments(finalStatus=''){
     const token=gate;
     clearDocumentResults();
     if(!canUseRemote()||useSuspended)return;
@@ -291,10 +292,10 @@
       if(body?.object!=='list'||!Array.isArray(body.data))throw new Error('Personal storage returned an invalid document list.');
       const documents=[];
       body.data.forEach(item=>{const id=text(item?.id,200),name=text(item?.name,200);if(id&&name&&!documents.some(document=>document.id===id))documents.push({id,name});});
-      if(!documents.length){documentStatus('No stored documents yet.');return;}
+      if(!documents.length){documentStatus(finalStatus||'No stored documents yet.');return;}
       const container=dialog.querySelector('[data-personal-knowledge-results]');
       documents.forEach(item=>container.appendChild(documentButton(item)));
-      documentStatus(documents.length+' stored '+(documents.length===1?'document':'documents')+'. Search to narrow the list.');
+      documentStatus(finalStatus||documents.length+' stored '+(documents.length===1?'document':'documents')+'. Search to narrow the list.');
     }catch(error){if(token===gate)documentStatus(error.message||'Stored document list is unavailable.',true);}
   }
 
