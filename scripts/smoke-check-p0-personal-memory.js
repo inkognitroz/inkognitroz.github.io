@@ -91,6 +91,12 @@ async function browserProof(){
         knowledgeDocuments.set(id,String(input.name||'document'));
         return route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({object:'knowledge.document',data:{id,workspace_id:input.workspace_id,name:input.name,type:input.type,source_type:input.source_type,size_chars:kept,chunk_count:1,metadata:{},created_at:now}})});
       }
+      if(path==='/knowledge/documents'&&method==='GET'){
+        const workspace=new URL(url).searchParams.get('workspace_id');
+        if(!workspace)return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:{code:'invalid_request'}})});
+        const data=[...knowledgeDocuments.entries()].map(([id,name])=>({id,workspace_id:workspace,name,type:'text/plain',source_type:'upload',size_chars:name.length,chunk_count:1,metadata:{},created_at:now}));
+        return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'list',user_id:'usr_fixture',data})});
+      }
       if(path==='/knowledge/search'&&method==='POST'){
         knowledgeSearchCalls+=1; const input=JSON.parse(route.request().postData()||'{}'); knowledgeSearchPayloads.push(input);
         const terms=String(input.query||'').toLowerCase().split(/\s+/).filter(Boolean);
@@ -221,8 +227,10 @@ async function browserProof(){
     await dialog.locator('[data-personal-knowledge-results] button').first().click(); page.once('dialog',prompt=>prompt.accept()); await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();
     await documentStatusLine.getByText('That document is already gone.').waitFor();
     if(await dialog.locator('[data-personal-knowledge-results] button').count())failures.push('A 404 delete must also clear the stale result.');
-    const beforeDocumentReject=backendCalls; const documentRejected=await page.evaluate(async()=>{for(const [path,method] of [['/knowledge/documents','DELETE'],['/knowledge/documents/a/b','DELETE'],['/knowledge/search','GET'],['/knowledge/documents/a','GET']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;});
-    if(!documentRejected||backendCalls!==beforeDocumentReject)failures.push(`Only the exact document delete and document search paths may reach the backend (before ${beforeDocumentReject}, after ${backendCalls}).`);
+    const listedDocuments=await page.evaluate(()=>window.MimirApiClient.personalMemoryRequest('/knowledge/documents?workspace_id=personal',{method:'GET'}));
+    if(listedDocuments?.object!=='list'||!Array.isArray(listedDocuments.data))failures.push('The explicit workspace document list must return metadata.');
+    const beforeDocumentReject=backendCalls; const documentRejected=await page.evaluate(async()=>{for(const [path,method] of [['/knowledge/documents','GET'],['/knowledge/documents?workspace_id=','GET'],['/knowledge/documents','DELETE'],['/knowledge/documents/a/b','DELETE'],['/knowledge/search','GET'],['/knowledge/documents/a','GET']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;});
+    if(!documentRejected||backendCalls!==beforeDocumentReject)failures.push(`Only an explicit workspace document list, exact document delete and document search paths may reach the backend (before ${beforeDocumentReject}, after ${backendCalls}).`);
     mode='malformed'; await dialog.getByRole('button',{name:'Refresh',exact:true}).click(); await page.getByText(/invalid consent response|Personal storage returned an invalid/).waitFor();
     const beforeRejected=backendCalls; const rejected=await page.evaluate(async()=>{for(const [path,method] of [['https://evil.invalid/memory','PATCH'],['/memory/search','GET'],['/memory/search','DELETE'],['/memory/search/item','POST']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;}); if(!rejected||backendCalls!==beforeRejected)failures.push(`Arbitrary origins and non-POST/invalid search paths must reject before backend access (before ${beforeRejected}, after ${backendCalls}).`);
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releasePrivateImport=null;Blob.prototype.arrayBuffer=function(){if(this.name==='private.txt')return new Promise(resolve=>{window.__releasePrivateImport=()=>original.call(this).then(resolve);});return original.call(this);};window.__restorePrivateImport=()=>{Blob.prototype.arrayBuffer=original;};});
