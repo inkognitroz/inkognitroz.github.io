@@ -53,10 +53,24 @@ requireIncludes(
   "const assistant=append('assistant',CHAT_STATE.pending?.(model.label)||'Supergeni tenker …',model.label,pendingReceipt.text,{retryPrompt:prompt,routeProvenance,hostedLineage:directHostedLineage,answerState:'pending',aiGenerated:false});",
   'Hosted chat must retain the original prompt on the assistant message before the request starts.'
 );
+// The failure copy moved behind chatFailureText (F1-1): with the chat send on the
+// backend layer the API's own sentence is shown, because a house phrase would hide
+// what the backend said. The safety property this pinned is unchanged and is pinned
+// below instead of in the call site: every other failure still gets the generic copy.
 requireIncludes(
   sendFlow,
-  "updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),failureDiagnostic,answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});",
+  "updateMessage(assistant,chatFailureText(error),{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),failureDiagnostic,answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});",
   'Hosted API failure must replace pending copy with a safe visible error that points to Retry.'
+);
+requireIncludes(
+  runtime,
+  "const generic=CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.';",
+  'The failure copy must keep the safe generic sentence as its floor.'
+);
+requireIncludes(
+  runtime,
+  'if(!chatViaBackend())return generic;',
+  'The gateway path must keep the generic failure copy, unchanged by the backend flag.'
 );
 requireIncludes(
   sendFlow,

@@ -8,6 +8,24 @@
   const API_LABEL=ROUTE_ADAPTER_CONFIG.apiLabel||'api.mmir.ai';
   const LOCAL_URL=ROUTE_ADAPTER_CONFIG.localUrl||'http://127.0.0.1:3000';
   const CHAT_PATH=ROUTE_ADAPTER_CONFIG.chatPath||'/v1/chat/completions';
+  // With the chat send on the backend layer, a failure is reported with the API's own
+  // sentence rather than the shell's generic one: the flag exists to measure that
+  // route, and a house phrase would hide what the backend actually said. The generic
+  // copy still applies to the gateway path and to failures with no message at all.
+  function chatFailureText(error){
+    const generic=CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.';
+    if(!chatViaBackend())return generic;
+    const fromApi=String(error?.payload?.error?.message||'').trim();
+    return fromApi||generic;
+  }
+  function chatViaBackend(){
+    try{return P0_ROUTE_ADAPTERS.chatViaBackendFlag?.().on===true;}catch(error){return false;}
+  }
+  // Resolved per send, not once at load, so the flag can be set before the first send.
+  function chatEndpoint(){
+    const url=typeof P0_ROUTE_ADAPTERS.chatApiUrl==='function'?P0_ROUTE_ADAPTERS.chatApiUrl():'';
+    return (url||API_URL)+CHAT_PATH;
+  }
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
@@ -70,7 +88,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260923-missions-panel-v1';
+  const P0_RUNTIME_VERSION='20260923-chat-via-backend-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -7150,7 +7168,11 @@
     const presentationId=window.MmirP0Conversation?.snapshot().turnId;
     const streaming=Boolean(model.streamingSupported&&window.MmirJarvisSkin?.wantsStreaming?.());
     if(streaming)payload={...payload,stream:true};
-    const response=await fetchJson(API_URL+CHAT_PATH,{
+    // The only call in this file that may leave the gateway: with chatViaBackend on it
+    // goes to the backend layer with the same identity token the other panels use, and
+    // when that fails the failure is shown, never retried against api.mmir.ai — a silent
+    // fallback would hide exactly what the flag exists to measure.
+    const response=await fetchJson(chatEndpoint(),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
@@ -8435,8 +8457,8 @@
         const failedReceipt=ordinaryBasicChat?ordinaryChatAttemptReceipt(model,'failed'):null;
         const failureDiagnostic=ordinaryBasicChat?ordinaryChatFailureDiagnostic(error):null;
         updateMessage(userMessage,userMessage.content,{routeProvenance:'hosted-failed',hostedLineage:false});
-        updateMessage(assistant,CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.',{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),failureDiagnostic,answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
-        status(CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.','error');
+        updateMessage(assistant,chatFailureText(error),{...(failedReceipt?{receipt:routePrefix+failedReceipt.text}:{}),failureDiagnostic,answerState:'degraded',aiGenerated:false,routeProvenance:'hosted-failed',hostedLineage:false});
+        status(chatFailureText(error),'error');
         if(failedReceipt)routeStatus(routePrefix+failedReceipt.text,failedReceipt.state);
         captureInteraction('chat_failed',{reason:failureDiagnostic?.code||(failureDiagnostic?'http_error':'api_unreachable'),active_model_id:model?.id||'',...(failureDiagnostic?{http_status:failureDiagnostic.status}:{}),...(failureDiagnostic?.upstream_call_count!==undefined?{upstream_call_count:failureDiagnostic.upstream_call_count}:{})});
       }

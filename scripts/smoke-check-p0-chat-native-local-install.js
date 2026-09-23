@@ -133,10 +133,18 @@ requireIncludes(
   "routeStatus('Copy install command · local setup','hosted')",
   'Install assistant must update the compact route/status line instead of opening another page.'
 );
+// The URL moved behind chatEndpoint (F1-1) so the ordinary send can go to the backend
+// layer behind a flag. The metadata this pinned is unchanged: it is the same call with
+// the same body, and with the flag off chatEndpoint resolves to API_URL+CHAT_PATH.
 requireIncludes(
   chatHostedDataSource,
-  'const response=await fetchJson(API_URL+CHAT_PATH',
+  'const response=await fetchJson(chatEndpoint()',
   'Hosted chat must keep raw API metadata available for chat-native connect guidance.'
+);
+requireIncludes(
+  p0Shell,
+  'return (url||API_URL)+CHAT_PATH;',
+  'The chat endpoint must fall back to the gateway URL when no chat flag resolves.'
 );
 requireIncludes(
   responseConnectGuideSource,

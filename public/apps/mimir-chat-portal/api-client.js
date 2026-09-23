@@ -51,8 +51,16 @@
     return url===BACKEND_IDENTITY_ORIGIN;
   }
 
+  // The chat-via-backend flag (p0-route-adapters.js) opts the ordinary chat send in on
+  // its own, without pointing every other call at the backend. Exactly true, like there.
+  function chatViaBackendOptIn(){
+    try{if(window.MMIR_CHAT_VIA_BACKEND===true)return true;}catch(error){}
+    try{if(window.MimirBrandConfig?.chat_via_backend===true)return true;}catch(error){}
+    return false;
+  }
+
   function backendIdentityScope(url,options={}){
-    if(!explicitBackendOptIn())return false;
+    if(!explicitBackendOptIn()&&!chatViaBackendOptIn())return false;
     let parsed;
     try{parsed=new URL(String(url||''),window.location.href);}catch(error){return false;}
     const method=String(options.method||'GET').toUpperCase();
@@ -477,6 +485,7 @@
     prepareBackendRequest,
     personalMemoryRequest,
     backendIdentityScope,
+    backendIdentityOrigin:BACKEND_IDENTITY_ORIGIN,
     backendSessionKey,
     fetchJson,
     pairIfNeeded,
