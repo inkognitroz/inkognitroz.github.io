@@ -22,7 +22,9 @@ function assertNoLeak(value, label) {
   }
 }
 
-if (!helper.includes("version='20260614-first-user-route-receipts-v1'")) {
+// Bumpet for beviskortet under svaret. Versjonen pinnes fortsatt eksakt: den er
+// cache-nøkkelen brukerne får hjelperen på.
+if (!helper.includes("version='20260924-answer-proof-card-v1'")) {
   fail('P0 route receipts helper version must be explicit.');
 }
 if (!helper.includes("'Supergeni ready · hosted'")) {
@@ -46,13 +48,13 @@ if (!shell.includes('P0_ROUTE_RECEIPTS.hostedRouteLabel(API_LABEL)')) {
 if (!shell.includes('P0_ROUTE_RECEIPTS.receipt(model,{apiLabel:API_LABEL})')) {
   fail('P0 shell route receipts must delegate to helper.');
 }
-if (!html.includes('p0-route-receipts.js?v=20260614-first-user-route-receipts-v1')) {
+if (!html.includes('p0-route-receipts.js?v=20260924-answer-proof-card-v1')) {
   fail('Public MMIR shell must load p0-route-receipts.js with a cache-busted version.');
 }
-if (html.indexOf('p0-route-receipts.js?v=20260614-first-user-route-receipts-v1') > html.indexOf('p0-chat-shell.js?v=')) {
+if (html.indexOf('p0-route-receipts.js?v=20260924-answer-proof-card-v1') > html.indexOf('p0-chat-shell.js?v=')) {
   fail('P0 route receipts helper must load before the P0 shell.');
 }
-if (!manifest.includes('"p0-route-receipts.js": "20260614-first-user-route-receipts-v1"')) {
+if (!manifest.includes('"p0-route-receipts.js": "20260924-answer-proof-card-v1"')) {
   fail('Asset manifest must track p0-route-receipts.js.');
 }
 if (!String(packageJson.scripts?.check || '').includes('smoke-check-p0-route-receipts-helper.js')) {
@@ -77,7 +79,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(helper, context, { filename: 'p0-route-receipts.js' });
 const api = context.window.MimirP0RouteReceipts;
-if (!api || api.version !== '20260614-first-user-route-receipts-v1') fail('P0 route receipts helper must register on window.');
+if (!api || api.version !== '20260924-answer-proof-card-v1') fail('P0 route receipts helper must register on window.');
 if (api.hostedRouteLabel('api-staging.mmir.ai') !== 'Supergeni ready · hosted') fail('Hosted route label must stay clean for first-time users.');
 if (api.displayName({ name: 'Route Name' }) !== 'Route Name') fail('displayName must normalize route names.');
 if (api.displayName({ name: 'https://candidate.example/v1?token=sk-live-leaky-value' }) !== 'Supergeni') fail('displayName must fall back on tokenized URLs.');
