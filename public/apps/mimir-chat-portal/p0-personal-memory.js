@@ -153,9 +153,10 @@
       if(token!==gate)return;
       if(body?.object!=='list'||!Array.isArray(body.data))throw new Error('Personal storage returned an invalid memory list.');
       const items=body.data.slice(-MAX_LIST);
-      if(!items.length){status(enabled?'No remote personal memory saved for this tab session yet.':'Storage is off. Saved notes remain inspectable and deletable.');return;}
+      if(!items.length){status(enabled?'No remote personal memory saved for this tab session yet.':'Storage is off. Saved notes remain inspectable and deletable.');if(enabled)await refreshDocuments();return;}
       items.forEach(item=>{if(item?.id&&TYPES.includes(item.type)&&text(item.text))list.appendChild(itemButton(item));});
       status(enabled?'Remote personal memory refreshed.':'Storage is off. Saved notes remain inspectable and deletable.');
+      if(enabled)await refreshDocuments();
     }catch(error){if(token===gate){controls(false,false);status(error.message||'Remote storage state is unavailable.',true);}}
   }
   function enable(){
@@ -171,6 +172,7 @@
       if(!enabled)throw new Error('Storage enablement was not confirmed.');
       useSuspended=false;
       controls(true); status('Remote storage enabled. Save only notes you want this anonymous tab session to use.');
+      await refreshDocuments();
     }catch(error){controls(false,false);status(error.message||'Storage was not enabled.',true);}
   });}
   function disable(){
@@ -260,9 +262,11 @@
       if(text(input?.value)===value)input.value='';
       if(nameInput)nameInput.value='';
       lastImportedName='';
-      documentStatus(shortened
+      const savedMessage=shortened
         ?'Stored “'+text(stored.name||name,120)+'”, but only the first '+kept+' of '+value.length+' characters were kept.'
-        :'Stored “'+text(stored.name||name,120)+'” as a knowledge document. Search documents to find it.');
+        :'Stored “'+text(stored.name||name,120)+'” as a knowledge document. Search documents to find it.';
+      documentStatus(savedMessage);
+      await refreshDocuments(savedMessage);
     }catch(error){documentStatus(error.message||'Document was not stored.',true);}
     });
   }
@@ -277,9 +281,24 @@
     });
     return button;
   }
-  // The backend can feed a stored document into an answer (chat-runtime.js:710
-  // searches it on every send), so the user needs a way to find one and remove
-  // it. Search is how you find it; the spec has no list operation.
+  async function refreshDocuments(finalStatus=''){
+    const token=gate;
+    clearDocumentResults();
+    if(!canUseRemote()||useSuspended)return;
+    documentStatus('Loading stored documents…');
+    try{
+      const body=await request('/knowledge/documents?workspace_id='+encodeURIComponent(activeWorkspaceId()),{method:'GET',headers:{Accept:'application/json'}});
+      if(token!==gate||!canUseRemote()||useSuspended)return;
+      if(body?.object!=='list'||!Array.isArray(body.data))throw new Error('Personal storage returned an invalid document list.');
+      const documents=[];
+      body.data.forEach(item=>{const id=text(item?.id,200),name=text(item?.name,200);if(id&&name&&!documents.some(document=>document.id===id))documents.push({id,name});});
+      if(!documents.length){documentStatus(finalStatus||'No stored documents yet.');return;}
+      const container=dialog.querySelector('[data-personal-knowledge-results]');
+      documents.forEach(item=>container.appendChild(documentButton(item)));
+      documentStatus(finalStatus||documents.length+' stored '+(documents.length===1?'document':'documents')+'. Search to narrow the list.');
+    }catch(error){if(token===gate)documentStatus(error.message||'Stored document list is unavailable.',true);}
+  }
+
   async function searchDocuments(){
     const input=dialog.querySelector('[data-personal-knowledge-query]');
     const query=text(input?.value);
