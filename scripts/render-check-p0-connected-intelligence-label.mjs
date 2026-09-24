@@ -12,6 +12,9 @@ const answerText = 'Her er et kort og vennlig forslag til naboen.';
 const feed = { title: 'Hentet RSS-feed', url: 'https://example.no/feed', source_kind: 'retrieved_live_feed', retrieval_verified: true };
 const cited = [1, 2, 3].map(index => ({ title: `Artikkelreferanse ${index}`, url: `https://example.no/artikkel-${index}`, source_kind: 'model_cited_url', verification_state: 'claimed_not_fetched' }));
 const mixed = [feed, ...cited];
+const ordinaryRssFeed = { title: 'NRK toppsaker', url: 'https://www.nrk.no/toppsaker.rss', source_kind: 'retrieved_live_feed', retrieval_verified: true };
+const ordinaryRssAnswer = 'Tre overskrifter fra feeden. Kilde: https://www.nrk.no/toppsaker.rss. Artikkelreferanse: https://www.nrk.no/nyheter/sak-1. Artikkelsider ble ikke hentet.';
+const ordinaryRssProof = { status: 'unverified', label: 'Kilder hentet · Artikkelsider ikke hentet' };
 const fixtures = [
   { name: 'original-explicit', label: 'Søk · 1 kilde · Mistral Small', sources: [{ title: 'Eksempelkilde', url: 'https://example.no/kilde' }], expected: 'Referanser · 1 oppføring · Mistral Small' },
   { name: 'mixed-explicit', label: 'Søk · 99 kilder · Mistral Small', sources: mixed, expected: 'Referanser · 4 oppføringer · Mistral Small', proof: 'Søk · 4 kilder · Mistral Small', expectedProof: 'Referanser · 4 oppføringer · Mistral Small' },
@@ -27,7 +30,8 @@ const fixtures = [
   { name: 'verified-proof-unchanged', proof: { status: 'verified', label: 'Verifisert med eksakt verktøy' }, expectedProof: 'Verifisert med eksakt verktøy', proofStatus: 'verified', expected: '' },
   { name: 'signed-proof-unchanged', proof: { status: 'signed', label: 'Signert kvittering · egen etikett' }, expectedProof: 'Signert kvittering · egen etikett', proofStatus: 'signed', expected: '' },
   { name: 'calculator-unchanged', calculator: true, expected: '' },
-  { name: 'persisted-legacy', persisted: true, label: 'Søk · 4 kilder · Mistral Small', expected: 'Referanser · 4 oppføringer · Mistral Small', proof: { status: 'unverified', label: 'Søk · 4 kilder · Mistral Small' }, expectedProof: 'Referanser · 4 oppføringer · Mistral Small', proofStatus: 'unverified' }
+  { name: 'persisted-legacy', persisted: true, label: 'Søk · 4 kilder · Mistral Small', expected: 'Referanser · 4 oppføringer · Mistral Small', proof: { status: 'unverified', label: 'Søk · 4 kilder · Mistral Small' }, expectedProof: 'Referanser · 4 oppføringer · Mistral Small', proofStatus: 'unverified' },
+  { name: 'ordinary-rss-source-boundary', answer: ordinaryRssAnswer, sources: [ordinaryRssFeed], proof: ordinaryRssProof, grounding: { retrieval_attempted: true, retrieval_performed: true, retrieval_status: 'retrieved', source_count: 1, sources: [ordinaryRssFeed], sources_attached_to_answer: true }, expected: 'Referanser · 1 oppføring', expectedProof: ordinaryRssProof.label, proofStatus: 'unverified', expectedSourceUrl: ordinaryRssFeed.url, forbiddenSourceUrl: 'https://www.nrk.no/nyheter/sak-1' }
 ];
 
 function assert(condition, message) {
@@ -73,7 +77,7 @@ async function installFixtures(page, fixture, requests) {
         object: 'chat.completion',
         model: 'mistral-small-latest',
         model_display_name: 'Mistral Small',
-        choices: [{ index: 0, message: { role: 'assistant', content: fixture.calculator ? '19 * 37 = 703' : answerText }, finish_reason: 'stop' }],
+        choices: [{ index: 0, message: { role: 'assistant', content: fixture.calculator ? '19 * 37 = 703' : (fixture.answer || answerText) }, finish_reason: 'stop' }],
         mmir: {
           ...(fixture.label === undefined ? {} : { scaled_intelligence_label: fixture.label }),
           answer_writer: {
@@ -85,6 +89,7 @@ async function installFixtures(page, fixture, requests) {
           },
           ...(fixture.sources === undefined ? {} : { sources: fixture.sources }),
           ...(fixture.proof === undefined ? {} : { answer_proof_line: fixture.proof }),
+          ...(fixture.grounding === undefined ? {} : { ordinary_chat: true, source_grounding: fixture.grounding }),
           no_paid_routes_started: true,
           provider_secrets_in_browser: false
         }
@@ -131,12 +136,12 @@ async function check(browser, viewport, fixture) {
     }
   }, { fixture, answerText });
   await page.goto(`${baseUrl}/mmir.html?mmir_qa_session=connected-label`, { waitUntil: 'networkidle' });
-  const prompt = fixture.calculator ? '19 * 37' : 'Skriv en kort e-post til naboen.';
+  const prompt = fixture.calculator ? '19 * 37' : (fixture.name === 'ordinary-rss-source-boundary' ? 'Hva er de tre første sakene i NRKs RSS-feed akkurat nå?' : 'Skriv en kort e-post til naboen.');
   if (!fixture.persisted) {
     await page.locator('#p0-input').fill(prompt);
     await page.locator('#p0-send').click();
   }
-  const expectedAnswer = fixture.calculator ? '19 * 37 = 703' : answerText;
+  const expectedAnswer = fixture.calculator ? '19 * 37 = 703' : (fixture.answer || answerText);
   await page.waitForFunction(text => {
     const bodies = document.querySelectorAll('.p0-message-assistant .p0-message-body');
     return bodies[bodies.length - 1]?.innerText.trim() === text;
@@ -164,6 +169,13 @@ async function check(browser, viewport, fixture) {
     assert(await proof.locator('.p0-proof-text').innerText() === fixture.expectedProof, `${fixture.name}: proof display wording`);
     assert(await proof.getAttribute('aria-label') === 'Bevislinje: ' + fixture.expectedProof, `${fixture.name}: proof aria wording`);
     assert((await proof.getAttribute('class')).includes('p0-proof-status-' + (fixture.proofStatus || 'stated')), `${fixture.name}: proof status must remain unchanged`);
+  }
+  if (fixture.expectedSourceUrl) {
+    const sourceLink = answer.locator(`.p0-proof-source[href="${fixture.expectedSourceUrl}"]`);
+    assert(await sourceLink.count() === 1, `${fixture.name}: visible source must match fetched feed URL`);
+    assert((await answer.locator('.p0-message-body').innerText()).includes(fixture.forbiddenSourceUrl), `${fixture.name}: negative article-reference fixture must remain in the model answer`);
+    assert(await answer.locator(`.p0-proof-source[href="${fixture.forbiddenSourceUrl}"]`).count() === 0, `${fixture.name}: non-fetched article must not render as a fetched source`);
+    assert((await answer.locator('.p0-proof-line').innerText()).includes('Artikkelsider ikke hentet'), `${fixture.name}: non-fetched article disclosure must remain visible`);
   }
   assert(await page.locator('script[src*="/chat-runtime.js"]').count() === deferredBefore, 'Opening an answer receipt must not load deferred panel runtimes.');
   assert(!(await page.locator('#p0-transcript').innerText()).includes('Spør 3 AI - beste vinner'), 'Internal swarm marketing copy must not enter the answer surface.');
