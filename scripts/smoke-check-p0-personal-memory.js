@@ -35,7 +35,7 @@ async function browserProof(){
     let backendCalls=0; let memoryCalls=0; let searchCalls=0; let consentCalls=0; let chatCalls=0; let mode='normal'; const backendPaths=[]; const searchPayloads=[];
     const records=new Map(); let consent=false; let nextId=0;
     const knowledgeDocuments=new Map([['doc-fixture-1','Quarterly plan.txt'],['doc-fixture-2','Old draft.txt']]);
-    let knowledgeSearchCalls=0; const knowledgeDeletes=[]; const knowledgeSearchPayloads=[]; const knowledgeWrites=[]; let nextDocumentId=2;
+    let knowledgeSearchCalls=0; let knowledgeListCalls=0; const knowledgeListPayloads=[]; const knowledgeDeletes=[]; const knowledgeSearchPayloads=[]; const knowledgeWrites=[]; let nextDocumentId=2;
     let deferredReadyResolve=null; let deferredRelease=null; let deferredConsentReads=0;
     const check=()=>{if(Date.now()>=deadline)throw new Error('personal-memory browser proof exceeded 60s');if(serverError||serverExit)throw new Error(`Personal-memory fixture server exited during browser proof: ${JSON.stringify(serverExit||serverError)}; stderr=${serverErrorOutput}`);};
     await page.route('**/*',async route=>{
@@ -95,6 +95,7 @@ async function browserProof(){
         const workspace=new URL(url).searchParams.get('workspace_id');
         if(!workspace)return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:{code:'invalid_request'}})});
         const data=[...knowledgeDocuments.entries()].map(([id,name])=>({id,workspace_id:workspace,name,type:'text/plain',source_type:'upload',size_chars:name.length,chunk_count:1,metadata:{},created_at:now}));
+        knowledgeListCalls+=1; knowledgeListPayloads.push({workspace_id:workspace,ids:data.map(item=>item.id),names:data.map(item=>item.name)});
         return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'list',user_id:'usr_fixture',data})});
       }
       if(path==='/knowledge/search'&&method==='POST'){
@@ -118,6 +119,7 @@ async function browserProof(){
       if(path.startsWith('/memory/')){if(!records.has(itemId))return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({error:{code:'not_found'}})});if(method==='DELETE'){records.delete(itemId);return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'memory.deleted',id:itemId,deleted:true})});}return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({object:'memory.item',data:records.get(itemId)})});}
       return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:{code:'unexpected_fixture_route'}})});
     });
+    const waitForKnowledgeList=()=>page.waitForResponse(response=>{const responseUrl=new URL(response.url());return responseUrl.origin==='https://backend.mmir.ai'&&responseUrl.pathname==='/knowledge/documents'&&response.request().method()==='GET'&&response.status()===200;});
     await page.goto(`http://127.0.0.1:${port}/mmir.html`,{waitUntil:'domcontentloaded'});
     await page.locator('#p0-sidebar-settings').waitFor();
     if(consentCalls!==0)failures.push(`Opening public P0 must not contact personal memory endpoints before a user action (${backendPaths.join(', ')}).`);
@@ -149,7 +151,7 @@ async function browserProof(){
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releaseSlowTextImport=null;window.__slowTextImportSeen=false;Blob.prototype.arrayBuffer=function(){if(this.name==='slow.txt'){window.__slowTextImportSeen=true;return new Promise(resolve=>{window.__releaseSlowTextImport=()=>original.call(this).then(resolve);});}return original.call(this);};window.__restoreTextArrayBuffer=()=>{Blob.prototype.arrayBuffer=original;};});
     await noteDraft.fill('Draft before close'); page.once('dialog',prompt=>prompt.accept()); await importInput.setInputFiles({name:'slow.txt',mimeType:'text/plain',buffer:Buffer.from('Late replacement')}); await page.waitForFunction(()=>window.__slowTextImportSeen===true); await dialog.getByRole('button',{name:'Close',exact:true}).click(); await page.evaluate(()=>window.__releaseSlowTextImport?.()); await page.waitForTimeout(20); if(await noteDraft.inputValue()!=='Draft before close')failures.push('Closing during a pending local file read must prevent a stale draft replacement.'); await page.evaluate(()=>window.__restoreTextArrayBuffer?.());
     await page.locator('#p0-sidebar-settings').click(); await page.getByText('Personlig minne',{exact:true}).click(); await dialog.waitFor({state:'visible'});
-    await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await page.getByText(/Remote storage enabled/).waitFor();
+    const initialKnowledgeList=waitForKnowledgeList(); await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await page.getByText(/Remote storage enabled/).waitFor(); const initialKnowledgeListBody=await (await initialKnowledgeList).json(); if(initialKnowledgeListBody?.object!=='list'||!Array.isArray(initialKnowledgeListBody.data)||knowledgeListCalls!==1)failures.push('Enable must await and validate the completed initial document list response.');
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releaseFirstImport=null;Blob.prototype.arrayBuffer=function(){if(this.name==='first.txt')return new Promise(resolve=>{window.__releaseFirstImport=()=>original.call(this).then(resolve);});return original.call(this);};window.__restoreFirstImport=()=>{Blob.prototype.arrayBuffer=original;};});
     await noteDraft.fill(''); await importInput.setInputFiles({name:'first.txt',mimeType:'text/plain',buffer:Buffer.from('Stale first')}); await page.waitForFunction(()=>typeof window.__releaseFirstImport==='function'); await importInput.setInputFiles({name:'second.txt',mimeType:'text/plain',buffer:Buffer.from('Second selection')}); await page.waitForFunction(()=>document.querySelector('[data-personal-memory-text]')?.value==='Second selection'); await page.evaluate(()=>window.__releaseFirstImport?.()); await page.waitForTimeout(20); if(await noteDraft.inputValue()!=='Second selection')failures.push('A second file selection must win over a stale first read.'); await page.evaluate(()=>window.__restoreFirstImport?.());
     await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;window.__releaseDisableImport=null;Blob.prototype.arrayBuffer=function(){if(this.name==='disable.txt')return new Promise(resolve=>{window.__releaseDisableImport=()=>original.call(this).then(resolve);});return original.call(this);};window.__restoreDisableImport=()=>{Blob.prototype.arrayBuffer=original;};});
@@ -169,14 +171,14 @@ async function browserProof(){
     if(!atLimitNote)failures.push('A draft exactly at the note limit must be saved whole.');
     // Removed from the fixture so the later delete proof still starts from one note.
     if(atLimitNote)records.delete(atLimitNote.id);
-    await dialog.getByRole('button',{name:'Refresh',exact:true}).click(); await page.waitForFunction(()=>document.querySelectorAll('[data-personal-memory-list] button').length===1);
+    const refreshedKnowledgeList=waitForKnowledgeList(); await dialog.getByRole('button',{name:'Refresh',exact:true}).click(); await refreshedKnowledgeList; await page.waitForFunction(()=>document.querySelectorAll('[data-personal-memory-list] button').length===1);
     const documentName=dialog.locator('[data-personal-knowledge-name]'); const documentStatusLine=dialog.locator('[data-personal-knowledge-status]');
     await noteDraft.fill(''); await documentName.fill('');
     await importInput.setInputFiles({name:'briefing.txt',mimeType:'text/plain',buffer:Buffer.from('Imported document body')});
     await page.waitForFunction(()=>document.querySelector('[data-personal-memory-text]')?.value==='Imported document body');
     if(await documentName.inputValue()!=='briefing.txt')failures.push(`Importing a .txt must offer its file name as the document name (${JSON.stringify(await documentName.inputValue())}).`);
     if(knowledgeWrites.length!==0)failures.push('Importing a file must not store a document by itself.');
-    await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
+    const savedKnowledgeList=waitForKnowledgeList(); await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click(); const savedKnowledgeListBody=await (await savedKnowledgeList).json(); const savedDocumentId=[...knowledgeDocuments.keys()].at(-1); if(savedKnowledgeListBody?.object!=='list'||!savedKnowledgeListBody.data?.some(item=>item.id===savedDocumentId))failures.push('Document save must be followed by a completed list response containing the saved document.');
     await documentStatusLine.getByText(/Stored “briefing.txt” as a knowledge document/).waitFor();
     const write=knowledgeWrites.at(-1);
     if(knowledgeWrites.length!==1||write?.text!=='Imported document body'||write?.name!=='briefing.txt'||write?.type!=='text/plain'||write?.source_type!=='upload'||!write?.workspace_id)failures.push(`Saving a document must send the draft text, the name, text/plain and a workspace id (${JSON.stringify(write)}).`);
