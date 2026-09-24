@@ -88,7 +88,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260924-answer-proof-card-v1';
+  const P0_RUNTIME_VERSION='20260924-nordstjerne-forside-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -3898,6 +3898,70 @@
 
   // Beviskortet: hva svarte, ble en betalt rute startet, og hvilke kilder ble brukt.
   // Alt sammen felter svaret selv bar med seg. Uten kvittering blir det ikke noe kort.
+  // ── Nordstjernen: ett brukertall på førstesiden ─────────────────────────────
+  // Hentet fra sløyfas egen offentlige observasjon (north-star, /status/observasjon).
+  // ETT kall per sidelast: førsteskjermen rendres på nytt ved hver tilstandsendring,
+  // og dette tallet skal ikke polles.
+  const NORDSTJERNE_URL='https://mmir-north-star-sloyfe.halvord-vinger.workers.dev/status/observasjon';
+  // Sløyfa tillater denne lesingen fra nøyaktig disse opphavene (north-star#96).
+  // Spør vi fra et annet opphav, blokkerer nettleseren svaret og legger igjen en
+  // CORS-feil i konsollet — på en side som ellers er ren. Da lar vi være å spørre.
+  const NORDSTJERNE_OPPHAV=['https://mmir.ai','https://staging.mmir.ai'];
+  let nordstjerneHentet=false;
+  // Teksten bor her, ikke i DOM-en: førsteskjermen rendres på nytt ved hver
+  // tilstandsendring, og en linje skrevet rett inn i elementet ville blitt vasket bort
+  // ved neste render.
+  let nordstjerneTekstCache='';
+
+  // Samme nøkkel sløyfa skriver: datoen i UTC, ikke nettleserens lokale dato. En
+  // bruker i Oslo ville ellers spurt etter «i morgen» etter midnatt lokal tid.
+  function nordstjerneUtcDato(forskyvDoegn=0){
+    const d=new Date();
+    d.setUTCDate(d.getUTCDate()+forskyvDoegn);
+    return d.toISOString().slice(0,10);
+  }
+
+  function nordstjerneTekst(observasjon){
+    const perDag=observasjon?.per_dag;
+    if(!perDag||typeof perDag!=='object')return '';
+    for(const [dato,merkelapp] of [[nordstjerneUtcDato(0),'hittil i dag'],[nordstjerneUtcDato(-1),'i går']]){
+      const rad=perDag[dato];
+      if(!rad)continue;
+      const ekte=Number(rad.ekte);
+      if(!Number.isFinite(ekte)||ekte<=0)continue;
+      // Andelen vises BARE når feiltellingen er renset. `syntetiske_feilede` er
+      // markøren for at sløyfa skiller probenes feil fra brukernes (north-star#96);
+      // uten den kan `feilede` inneholde probefeil, og andelen ville vært et gulv.
+      const renset=Object.prototype.hasOwnProperty.call(rad,'syntetiske_feilede');
+      const feilede=Number(rad.feilede);
+      if(!renset||!Number.isFinite(feilede)){
+        return ekte+' ekte spørsmål '+merkelapp+' (UTC). Andelen uten feil vises når sløyfa skiller probenes feil fra brukernes.';
+      }
+      const utenFeil=Math.round(((ekte-feilede)/ekte)*1000)/10;
+      return ekte+' ekte spørsmål '+merkelapp+' (UTC), '+utenFeil+' % svart uten feil.';
+    }
+    return '';
+  }
+
+  async function visNordstjerne(){
+    if(nordstjerneHentet)return;
+    nordstjerneHentet=true;
+    if(!NORDSTJERNE_OPPHAV.includes(location.origin))return;
+    let tekst='';
+    try{
+      const svar=await fetch(NORDSTJERNE_URL,{headers:{accept:'application/json'},cache:'no-store'});
+      if(!svar.ok)return;
+      tekst=nordstjerneTekst(await svar.json());
+    }catch(error){
+      // Tallet er et tillegg, ikke en forutsetning: er sløyfa nede, står linja tom i
+      // stedet for å vise en feil brukeren ikke kan gjøre noe med.
+      return;
+    }
+    if(!tekst)return;
+    nordstjerneTekstCache=tekst;
+    renderTranscript();
+  }
+
   function renderProofCard(envelope){
     const card=P0_ROUTE_RECEIPTS.proofCard?.(envelope);
     if(!card)return '';
@@ -6680,7 +6744,13 @@
           '<h1 id="p0-first-session-title">Hva vil du vite?</h1>'+
           '<p>Du chatter med <strong>Supergeni, en kunstig intelligens</strong>. Svar kan være feil.'+privacyReminder+'</p>'+
           '<small>'+safeText(stateDetail)+' Faktisk svarforfatter og eventuelle kilder vises under svaret.</small>'+
+          // Nordstjernen: ett brukertall, hentet fra sløyfas observasjon. Tomt til
+          // tallet faktisk er lest — ingen plassholder som ser ut som en måling.
+          (nordstjerneTekstCache
+            ? '<p id="mmir-nordstjerne" class="p0-nordstjerne" aria-live="polite">'+safeText(nordstjerneTekstCache)+'</p>'
+            : '<p id="mmir-nordstjerne" class="p0-nordstjerne" aria-live="polite" hidden></p>')+
         '</section>';
+      visNordstjerne();
       return;
     }
     root.innerHTML=state.messages.map(message=>{
