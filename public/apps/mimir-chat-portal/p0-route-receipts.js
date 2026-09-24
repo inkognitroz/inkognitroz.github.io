@@ -1,5 +1,5 @@
 (function(){
-  const version='20260614-first-user-route-receipts-v1';
+  const version='20260924-answer-proof-card-v1';
 
   const secretValuePatterns=[
     /\bsk-[A-Za-z0-9_-]{12,}\b/i,
@@ -63,11 +63,49 @@
     };
   }
 
+  // Beviskortet under svaret: bygget KUN av felter svaret allerede bærer
+  // (mmir.route_receipt). Ingen nytt kall, ingen utledning, ingen pynt.
+  //
+  // Fail-closed: uten en brukbar kvittering returneres null, og kortet vises ikke.
+  // Et kort som dukker opp uten kvittering ville vært verre enn ingen kort — det er
+  // nettopp fraværet av bevis brukeren skal kunne se.
+  function proofCard(envelope){
+    if(!envelope||typeof envelope!=='object'||Array.isArray(envelope))return null;
+    const modelId=String(envelope.model_id||envelope.model||'').replace(/\s+/g,' ').trim();
+    if(!modelId||hasUnsafeDisplayValue(modelId))return null;
+    // `no_paid_routes_started` er en påstand om penger. Den vises bare når den faktisk
+    // står i kvitteringen som en boolsk verdi; «mangler» er ikke det samme som «nei».
+    const noPaid=typeof envelope.no_paid_routes_started==='boolean'
+      ? envelope.no_paid_routes_started
+      : null;
+    const raaKilder=Array.isArray(envelope.sources_used)?envelope.sources_used
+      :Array.isArray(envelope.sources)?envelope.sources
+      :Array.isArray(envelope.knowledge_sources)?envelope.knowledge_sources
+      :[];
+    const sources=raaKilder
+      .map(kilde=>String(kilde&&typeof kilde==='object'?(kilde.name||kilde.title||kilde.id||''):kilde||'').replace(/\s+/g,' ').trim())
+      .filter(kilde=>kilde&&!hasUnsafeDisplayValue(kilde))
+      .slice(0,6);
+    return {
+      // Modell-id-en vises som kvitteringen skrev den. Den pyntede visningsetiketten
+      // (`safeRouteDisplayName`) setter «mmir-» foran en id som alt starter med det, og
+      // «mmir-mmir-supergenius» i nettopp dette kortet ville undergravd hele poenget.
+      // Kortet gjengir feltet, det tolker det ikke.
+      model:modelId,
+      model_id:modelId,
+      no_paid:noPaid,
+      sources,
+      // Hva kortet IKKE påstår, sagt i kortet selv.
+      caveat:noPaid===null?'Kvitteringen sier ikke om en betalt rute ble startet.':''
+    };
+  }
+
   window.MimirP0RouteReceipts={
     version,
     hostedRouteLabel,
     displayName,
-    receipt
+    receipt,
+    proofCard
   };
 
   window.dispatchEvent?.(new CustomEvent('mimir-p0-route-receipts-ready',{detail:{version}}));
