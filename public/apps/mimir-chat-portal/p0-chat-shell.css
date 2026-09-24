@@ -1680,3 +1680,41 @@ a.p0-proof-source:focus-visible {
 #mmir-p0-app.p0-launch-shell #p0-add {
   font-size: 0.88rem;
 }
+
+/* Beviskortet under svaret. Rolig, ikke reklame: det står der for å kunne
+   ettergås, og vises bare når svaret faktisk kom med en kvittering. */
+.p0-proof-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin: 0.55rem 0 0;
+  padding: 0.6rem 0.75rem;
+  background: #f9fafb;
+}
+
+.p0-proof-card h3 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.35rem;
+}
+
+.p0-proof-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.p0-proof-card li {
+  font-size: 0.82rem;
+  color: #4b5563;
+  overflow-wrap: anywhere;
+}
+
+.p0-proof-card small {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.76rem;
+  color: #6b7280;
+}

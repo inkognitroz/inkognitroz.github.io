@@ -88,7 +88,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260923-chat-via-backend-v1';
+  const P0_RUNTIME_VERSION='20260924-answer-proof-card-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -3896,6 +3896,30 @@
     return next;
   }
 
+  // Beviskortet: hva svarte, ble en betalt rute startet, og hvilke kilder ble brukt.
+  // Alt sammen felter svaret selv bar med seg. Uten kvittering blir det ikke noe kort.
+  function renderProofCard(envelope){
+    const card=P0_ROUTE_RECEIPTS.proofCard?.(envelope);
+    if(!card)return '';
+    const pengelinje=card.no_paid===true
+      ? 'Ingen betalt rute startet'
+      : card.no_paid===false
+        ? 'Betalt rute startet'
+        : 'Betalt rute: ikke oppgitt';
+    const kilder=card.sources.length
+      ? '<li>Kilder brukt: '+card.sources.map(kilde=>safeText(kilde)).join(', ')+'</li>'
+      : '<li>Ingen kilder oppgitt i kvitteringen</li>';
+    return '<aside class="p0-proof-card" data-p0-proof-card="'+safeAttr(card.model_id)+'">'+
+      '<h3>Bevis for dette svaret</h3>'+
+      '<ul>'+
+        '<li>Svarte: '+safeText(card.model)+'</li>'+
+        '<li>'+safeText(pengelinje)+'</li>'+
+        kilder+
+      '</ul>'+
+      (card.caveat?'<small>'+safeText(card.caveat)+'</small>':'')+
+    '</aside>';
+  }
+
   function renderReceipt(receipt,proof,modelLabel='',intelligenceLabel='',answerState='',aiGenerated=false,answerWriter=null,failureDiagnostic=null){
     const full=canonicalBrandText(receipt).trim();
     const model=canonicalBrandText(modelLabel).replace(/\s+/g,' ').trim()||'AI-modell';
@@ -6666,9 +6690,11 @@
       const receiptHtml=message.role==='assistant'
         ? renderReceipt(message.receipt,message.proofLine,visibleLabel,message.intelligenceLabel,message.answerState,message.aiGenerated,message.answerWriter,message.failureDiagnostic)
         : '';
+      const proofCardHtml=message.role==='assistant'?renderProofCard(message.routeReceipt):'';
       return '<article class="p0-message p0-message-'+safeText(message.role)+(message.variant?' p0-message-'+safeText(message.variant):'')+'" data-p0-message-id="'+safeAttr(message.id||'')+'"'+focusAttr+'>'+
         '<div class="p0-message-body">'+renderMessageBody(message,visibleContent)+'</div>'+
         receiptHtml+
+        proofCardHtml+
         renderMessageActions(message)+
       '</article>';
     }).join('');
@@ -6715,6 +6741,9 @@
       label:role==='assistant'?routeDisplayName({label:label||role}):(label||role),
       receipt:receipt||'',
       proofLine:meta.proofLine||null,
+      // Kvitteringen svaret kom med, båret videre urørt. Kortet bygges av den; uten
+      // den vises ikke noe kort (fail-closed, p0-route-receipts.js:proofCard).
+      routeReceipt:meta.routeReceipt||null,
       intelligenceLabel:meta.intelligenceLabel||'',
       answerWriter:meta.answerWriter||null,
       answerState:meta.answerState||'',
@@ -8072,6 +8101,7 @@
         aiGenerated:answerWriter.type!=='capability',
         routeProvenance:'hosted-compare',
         hostedLineage:true,
+        routeReceipt:responseReceiptEnvelope(data),
         truncated,
         continuationLabel:truncated?gatewayContinuationActionLabel(data):'',
         continuationSuggestedMessage:truncated?gatewayContinuationSuggestedMessage(data):'',
@@ -8341,6 +8371,7 @@
         truncated:hostedTruncated,
         routeProvenance:answeredRouteProvenance,
         hostedLineage:directHostedLineage,
+        routeReceipt:responseReceiptEnvelope(hostedData),
         ...connectGuideMessageUpdates(connectGuide)
       });
       if(pendingMedia&&state.pendingMedia===pendingMedia)state.pendingMedia=null;
