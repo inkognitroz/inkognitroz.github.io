@@ -37,6 +37,7 @@ async function browserProof() {
       const page = await context.newPage();
       page.setDefaultTimeout(8000);
       const chatCalls = [];
+      const knowledgeCalls = [];
       const raw = flagOn ? true : flagValue;
       if (raw !== undefined) await page.addInitScript((value) => { window.MMIR_CHAT_VIA_BACKEND = value; }, raw);
       await page.route('**/*', async (route) => {
@@ -52,8 +53,12 @@ async function browserProof() {
           if (pathname === '/identity/session') {
             return json(200, { object: 'mmir.identity_session', anonymous: true, token: 'synthetic-session-token', identity_id: 'usr_fixture', issued_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString() });
           }
+          if (pathname === '/knowledge/search') {
+            knowledgeCalls.push({ origin, authorization: route.request().headers().authorization || '', body: route.request().postDataJSON() });
+            return json(200, { object: 'list', data: [{ chunk_id: 'chunk-offline-proof', snippet: 'ORBITAL-CEDAR-447 synthetic retrieval proof', document: { id: 'doc-offline-proof', name: 'offline-proof.txt' } }] });
+          }
           if (pathname === '/v1/chat/completions') {
-            chatCalls.push({ origin, authorization: route.request().headers().authorization || '' });
+            chatCalls.push({ origin, authorization: route.request().headers().authorization || '', body: route.request().postDataJSON() });
             if (backendStatus !== 200) return json(backendStatus, { error: { code: 'backend_chat_unavailable', message: 'The backend chat proxy is unavailable right now.' } });
             return json(200, { id: 'chatcmpl-backend', model: 'mmir-supergenius', choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: 'Backend answered.' } }] });
           }
@@ -83,7 +88,7 @@ async function browserProof() {
       const shown = await page.evaluate(() => document.body.innerText);
       await page.close();
       await context.close(); context = null;
-      return { chatCalls, shown };
+      return { chatCalls, knowledgeCalls, shown };
     }
 
     // Flag off: unchanged. The send goes to the gateway, and nothing reaches the backend.
@@ -100,6 +105,11 @@ async function browserProof() {
     if (on.chatCalls.some((call) => call.origin === 'https://api.mmir.ai')) fail('With the flag on the chat send must not also reach api.mmir.ai.');
     if (!/^Bearer /.test(onChat[0]?.authorization || '')) fail('The backend chat send must carry the identity bearer the other panels use.');
     if (!on.shown.includes('Backend answered.')) fail('With the flag on the backend answer must be shown.');
+    if (on.knowledgeCalls.length !== 1) fail(`With the flag on the backend knowledge search must run exactly once (${JSON.stringify(on.knowledgeCalls)}).`);
+    const injectedContext = onChat[0]?.body?.messages?.filter((message) => message?.role === 'system').map((message) => String(message.content || '')).join('\n') || '';
+    if (!injectedContext.includes('offline-proof.txt') || !injectedContext.includes('ORBITAL-CEDAR-447 synthetic retrieval proof')) {
+      fail('The backend chat payload must contain the retrieved protected-document source and snippet.');
+    }
 
     // Only exactly true turns it on. A truthy string is a configuration mistake, and
     // treating it as consent would move the chat route by accident.
