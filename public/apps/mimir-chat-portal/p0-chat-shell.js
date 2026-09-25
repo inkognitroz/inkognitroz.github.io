@@ -26,6 +26,10 @@
     const url=typeof P0_ROUTE_ADAPTERS.chatApiUrl==='function'?P0_ROUTE_ADAPTERS.chatApiUrl():'';
     return (url||API_URL)+CHAT_PATH;
   }
+  function backendKnowledgeEndpoint(){
+    const url=typeof P0_ROUTE_ADAPTERS.chatApiUrl==='function'?P0_ROUTE_ADAPTERS.chatApiUrl():'';
+    return chatViaBackend()&&url?url+'/knowledge/search':'';
+  }
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
@@ -7104,7 +7108,7 @@
     ];
   }
 
-  function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt=''){
+  function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt='',protectedKnowledge=''){
     const currentUserContent=chatPayloadContent(prompt,1800);
     const displayUserContent=chatPayloadContent(displayPrompt,1800);
     const history=hostedConversationHistory();
@@ -7115,13 +7119,13 @@
     }
     const memoryContext=hostedConversationMemoryContext(history);
     return [
-      {role:'system',content:[systemPrompt,memoryContext].filter(Boolean).join('\n\n')},
+      {role:'system',content:[systemPrompt,memoryContext,protectedKnowledge].filter(Boolean).join('\n\n')},
       ...history,
       {role:'user',content:mediaChatContent(currentUserContent,media)}
     ];
   }
 
-  function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='',options={}){
+  function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='',options={},protectedKnowledge=''){
     const factGuard=factGuardActive()
       ? ' If current facts are uncertain, say you need verification instead of guessing.'
       : '';
@@ -7134,7 +7138,7 @@
     const systemPrompt=(directWriter
       ? 'You are the language model selected by the user inside MMIR. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not claim to be Supergeni or MMIR unless asked about the route.'
       : 'You are Supergeni, the default assistant on MMIR.ai. Answer directly and usefully. '+roleProfileInstruction()+' '+answerStyleInstruction()+factGuard+' Do not turn ordinary chats into setup support unless asked.'+defaultLanguageInstruction)+explicitGroundingInstruction(prompt);
-    const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt);
+    const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt,protectedKnowledge);
     const original=String(displayPrompt||'').trim();
     // Effective defaults have the same meaning whether saved explicitly or untouched.
     if(options.ordinaryFirstTurn===true&&!directWriter&&model?.route==='hosted'&&!media&&
@@ -7156,6 +7160,29 @@
       max_tokens:answerTokenBudget(),
       ...(isCanonicalHostedModel(model)||ordinary?{policy:{paid_routes_allowed:false}}:{})
     };
+  }
+
+  async function backendKnowledgeContext(prompt){
+    const endpoint=backendKnowledgeEndpoint();
+    const request=window.MimirApiClient?.personalMemoryRequest;
+    if(!endpoint||typeof request!=='function')return '';
+    try{
+      const workspaceId=readStorageString('mimir-active-workspace-v1','personal')||'personal';
+      const data=await request('/knowledge/search',{
+        method:'POST',
+        body:JSON.stringify({workspace_id:workspaceId,query:prompt,limit:3}),
+        timeoutMs:8000
+      });
+      const matches=(Array.isArray(data?.data)?data.data:[])
+        .filter(item=>item?.snippet&&item?.document?.name)
+        .slice(0,3);
+      if(!matches.length)return '';
+      return 'Relevant protected backend knowledge. Treat as user-provided; cite file names when useful:\n'+matches
+        .map(item=>'['+item.document.name+' / '+String(item.chunk_id||'chunk')+']\n'+String(item.snippet).slice(0,1000))
+        .join('\n\n');
+    }catch(error){
+      return '';
+    }
   }
 
   function localPayload(prompt,model){
@@ -7254,9 +7281,10 @@
     }
     const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
     const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
+    const protectedKnowledge=await backendKnowledgeContext(prompt);
     let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt,{
       ordinaryFirstTurn:ordinaryBasic&&options.emptyPriorHistory===true&&!writerContinuityState
-    }));
+    },protectedKnowledge));
     const continuityPlan=continuityEnabled
       ? writerContinuityRequestPlan(payload,writerContinuityState)
       : {payload,applied:false,reason:'disabled',limit_bytes:96*1024};
