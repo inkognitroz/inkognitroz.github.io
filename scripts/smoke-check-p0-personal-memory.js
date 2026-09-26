@@ -229,6 +229,47 @@ async function browserProof(){
     await dialog.locator('[data-personal-knowledge-results] button').first().click(); page.once('dialog',prompt=>prompt.accept()); await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();
     await documentStatusLine.getByText('That document is already gone.').waitFor();
     if(await dialog.locator('[data-personal-knowledge-results] button').count())failures.push('A 404 delete must also clear the stale result.');
+    // A browser journey can fail after a document has been accepted. Keep this
+    // recovery proof inside the original page/context: an anonymous identity is
+    // bearer-bound, so a later context must never be expected to clean it up.
+    let recoveryDocumentId=''; let recoveryFailureObserved=false; let recoveryDeleted=false; let recoveryDisabled=false; let recoveryCleanupError='';
+    try{
+      await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();
+      await dialog.locator('[data-personal-memory-status]').getByText(/Remote storage enabled/).waitFor();
+      await noteDraft.fill('Cleanup fixture document'); await documentName.fill('cleanup-fixture.txt');
+      const createdForCleanup=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);
+      await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();
+      await createdForCleanup;
+      recoveryDocumentId=[...knowledgeDocuments.keys()].at(-1)||'';
+      if(!recoveryDocumentId)throw new Error('cleanup fixture document id was not recorded');
+      throw new Error('synthetic journey failure after document write');
+    }catch(error){
+      recoveryFailureObserved=String(error?.message||'').includes('synthetic journey failure');
+    }finally{
+      try{
+        if(recoveryDocumentId){
+          const recoveryButton=dialog.locator('[data-personal-knowledge-id="'+recoveryDocumentId+'"]').first();
+          await recoveryButton.click(); page.once('dialog',prompt=>prompt.accept());
+          // Register only as the click is issued. Arming it before the journey
+          // creates the same unhandled timeout that this recovery path avoids.
+          const deletedForCleanup=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(recoveryDocumentId)&&response.request().method()==='DELETE'&&response.status()===204);
+          await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();
+          await deletedForCleanup;
+          recoveryDeleted=!knowledgeDocuments.has(recoveryDocumentId);
+        }
+      }catch(error){
+        recoveryCleanupError=String(error?.message||'cleanup delete failed');
+      }finally{
+        try{
+          await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();
+          await dialog.locator('[data-personal-memory-status]').getByText(/Remote storage disabled/).waitFor();
+          recoveryDisabled=true;
+        }catch(error){
+          recoveryCleanupError=recoveryCleanupError||String(error?.message||'cleanup disable failed');
+        }
+      }
+    }
+    if(!recoveryFailureObserved||!recoveryDeleted||!recoveryDisabled||recoveryCleanupError)failures.push(`A failed document journey must delete its own fixture and disable storage in the original context (failure ${recoveryFailureObserved}, deleted ${recoveryDeleted}, disabled ${recoveryDisabled}, cleanup ${recoveryCleanupError||'ok'}).`);
     const listedDocuments=await page.evaluate(()=>window.MimirApiClient.personalMemoryRequest('/knowledge/documents?workspace_id=personal',{method:'GET'}));
     if(listedDocuments?.object!=='list'||!Array.isArray(listedDocuments.data))failures.push('The explicit workspace document list must return metadata.');
     const beforeDocumentReject=backendCalls; const documentRejected=await page.evaluate(async()=>{for(const [path,method] of [['/knowledge/documents','GET'],['/knowledge/documents?workspace_id=','GET'],['/knowledge/documents','DELETE'],['/knowledge/documents/a/b','DELETE'],['/knowledge/search','GET'],['/knowledge/documents/a','GET']]){try{await window.MimirApiClient.personalMemoryRequest(path,{method});return false;}catch{}}return true;});
