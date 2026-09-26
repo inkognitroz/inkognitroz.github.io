@@ -10,10 +10,30 @@ const failures=[];
 const PUBLISHED_PAGE='https://mmir.ai/mmir.html';
 const BACKEND_ORIGIN='https://backend.mmir.ai';
 const GATEWAY_ORIGIN='https://api.mmir.ai';
-const DOCUMENT_ACCEPTANCE_ROUTE='hosted-route:groq/openai/gpt-oss-120b';
+const DOCUMENT_ACCEPTANCE_PICKER_ROUTE='hosted-route:groq/openai/gpt-oss-120b';
+const DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE='groq/openai/gpt-oss-120b';
+const DOCUMENT_ACCEPTANCE_MODEL_ID='openai/gpt-oss-120b';
+function documentAcceptancePickerRoute(model){
+  const rawModelId=String(model?.id||model?.model||'').trim();
+  const routeId=String(model?.route_id||model?.routeId||'').trim();
+  return rawModelId==='mmir-supergenius'||!routeId?rawModelId:'hosted-route:'+routeId;
+}
+function documentAcceptanceCatalogRoute(payload){
+  const rows=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.models)?payload.models:[];
+  const model=rows.find(item=>
+    documentAcceptancePickerRoute(item)===DOCUMENT_ACCEPTANCE_PICKER_ROUTE&&
+    String(item?.id||item?.model||'').trim()===DOCUMENT_ACCEPTANCE_MODEL_ID&&
+    String(item?.route_id||item?.routeId||'').trim()===DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE&&
+    item?.selectable===true&&item?.executable===true&&item?.candidate===false&&
+    item?.availability==='available'&&item?.route_class==='external-untrusted-free'&&
+    item?.cost_class==='free-quota'&&item?.no_paid_routes_started===true&&
+    item?.provider==='groq'&&item?.cost?.requires_approval===false
+  );
+  return model?{pickerRoute:DOCUMENT_ACCEPTANCE_PICKER_ROUTE,gatewayRoute:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE}:null;
+}
 function publishedBackendAllowed(method,path,documentId=''){
   if(method==='DELETE')return Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId);
-  return ['GET /health','POST /identity/session','GET /identity/session','GET /consent','PUT /consent','GET /memory','GET /knowledge/documents','POST /knowledge/documents','POST /knowledge/search'].includes(method+' '+path);
+  return ['GET /health','GET /status','POST /identity/session','GET /identity/session','GET /consent','PUT /consent','GET /memory','GET /knowledge/documents','POST /knowledge/documents','POST /knowledge/search'].includes(method+' '+path);
 }
 async function interceptPublishedRequest(route,{documentId,onChat,pageOrigin='https://mmir.ai',backendHandler=null,gatewayHandler=null}){
   const request=route.request(),url=new URL(request.url()),json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
@@ -25,19 +45,22 @@ async function interceptPublishedRequest(route,{documentId,onChat,pageOrigin='ht
   if(backendHandler)return backendHandler(route);
   return route.continue();
 }
-async function interceptDocumentAcceptanceGatewayRequest(route,forwardChat){
+async function interceptDocumentAcceptanceRequest(route,{forwardChat,forwardCatalog}){
   const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;
-  if(url.origin!==GATEWAY_ORIGIN)return false;
+  if(url.origin===GATEWAY_ORIGIN){
+    if(method==='GET'&&path==='/v1/models'){
+      await forwardCatalog(route);
+      return true;
+    }
+    await route.abort();
+    return true;
+  }
+  if(url.origin!==BACKEND_ORIGIN)return false;
   if(method==='POST'&&path==='/v1/chat/completions'){
     await forwardChat(route);
     return true;
   }
-  if(method==='GET'&&['/health','/status','/v1/models'].includes(path)){
-    await route.continue();
-    return true;
-  }
-  await route.abort();
-  return true;
+  return false;
 }
 
 function publishedOptions(){
@@ -51,7 +74,7 @@ function documentAcceptanceOptions(){
   if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE!=='1')return null;
   if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_CONFIRM!=='one-no-spend-document-acceptance')throw new Error('Document acceptance requires the exact one-run confirmation.');
   if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_URL!==PUBLISHED_PAGE)throw new Error('Document acceptance requires the exact published-page allowlist entry.');
-  if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_ROUTE!==DOCUMENT_ACCEPTANCE_ROUTE)throw new Error('Document acceptance requires the exact forced free route.');
+  if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_ROUTE!==DOCUMENT_ACCEPTANCE_PICKER_ROUTE)throw new Error('Document acceptance requires the exact forced free picker route.');
   const receipt=resolve(String(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_RECEIPT_PATH||''));
   if(!String(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_RECEIPT_PATH||'')||!receipt.startsWith('/tmp/'))throw new Error('Document acceptance requires a receipt path under /tmp/.');
   return {receipt};
@@ -76,7 +99,7 @@ async function atomicReceipt(path,value){
   await rename(pending,path);
 }
 function documentAcceptanceReceipt({runId,documentId='',phase,backendRequests=0,searchRequests=0,modelRequests=0,modelStatus=null,noPaid=null,answerGrounded=false,cleanupStatus=null,consentDisabled=false,publicProvenance=unknownPublicProvenance(),error=''}){
-  return {object:'mmir.l2.document_acceptance_receipt',run_id:runId,document_id:documentId,phase,route:DOCUMENT_ACCEPTANCE_ROUTE,limits:{backend_requests:backendRequests,knowledge_search_requests:searchRequests,model_requests:modelRequests,max_tokens:512,retries:0},model_status:modelStatus,no_paid_receipt:noPaid,answer_grounded:answerGrounded,public_provenance:publicProvenance,cleanup:{delete_status:cleanupStatus,consent_disabled:consentDisabled},error,raw_document_included:false,bearer_included:false};
+  return {object:'mmir.l2.document_acceptance_receipt',run_id:runId,document_id:documentId,phase,picker_route:DOCUMENT_ACCEPTANCE_PICKER_ROUTE,gateway_route:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE,limits:{backend_requests:backendRequests,knowledge_search_requests:searchRequests,model_requests:modelRequests,max_tokens:512,retries:0},model_status:modelStatus,no_paid_receipt:noPaid,answer_grounded:answerGrounded,public_provenance:publicProvenance,cleanup:{delete_status:cleanupStatus,consent_disabled:consentDisabled},error,raw_document_included:false,bearer_included:false};
 }
 function unknownPublicProvenance(){return {evidence:'public_asset_manifest',availability:'unknown',p0_chat_shell_version:'unknown',p0_personal_memory_version:'unknown',api_client_version:'unknown',deploy_source_sha:'unknown'};}
 function safePublicAssetVersion(value){const version=String(value||'').trim();return /^[A-Za-z0-9._-]{1,120}$/.test(version)?version:'unknown';}
@@ -122,10 +145,18 @@ async function publishedRecoveryProtocolProof(){
   if(allowedDelete.action()!=='continue')failures.push('Published interceptor must pass the captured document DELETE to the backend.');
   const otherDelete=mockRoute('DELETE','/knowledge/documents/11111111-1111-1111-1111-111111111111'); await interceptPublishedRequest(otherDelete,{documentId:()=>captured,onChat:()=>{}});
   if(otherDelete.action()!=='abort')failures.push('Published interceptor must reject a different document DELETE.');
-  const gatewayChat=mockRoute('POST','/v1/chat/completions',GATEWAY_ORIGIN);let chatForwarded=false;
-  if(!(await interceptDocumentAcceptanceGatewayRequest(gatewayChat,async route=>{chatForwarded=true;await route.fulfill({status:200,body:'{}'});} ))||!chatForwarded||gatewayChat.action()!=='fulfill')failures.push('Document acceptance must reach its guarded gateway chat branch before the non-GET gateway reject.');
-  const otherGatewayPost=mockRoute('POST','/v1/other',GATEWAY_ORIGIN);await interceptDocumentAcceptanceGatewayRequest(otherGatewayPost,async()=>{failures.push('Unexpected gateway POST reached the chat branch.');});
-  if(otherGatewayPost.action()!=='abort')failures.push('Document acceptance must still reject non-chat gateway POST requests.');
+  const handlers={forwardChat:async route=>{chatForwarded=true;await route.fulfill({status:200,body:'{}'});},forwardCatalog:async route=>{catalogForwarded=true;await route.fulfill({status:200,body:'{}'});}};let chatForwarded=false,catalogForwarded=false;
+  const backendChat=mockRoute('POST','/v1/chat/completions',BACKEND_ORIGIN);
+  if(!(await interceptDocumentAcceptanceRequest(backendChat,handlers))||!chatForwarded||backendChat.action()!=='fulfill')failures.push('Document acceptance must reach its guarded backend chat branch before the generic backend reject.');
+  const catalogGet=mockRoute('GET','/v1/models',GATEWAY_ORIGIN);
+  if(!(await interceptDocumentAcceptanceRequest(catalogGet,handlers))||!catalogForwarded||catalogGet.action()!=='fulfill')failures.push('Document acceptance must permit only its gateway model catalog GET before the backend boundary.');
+  const otherBackendPost=mockRoute('POST','/v1/other',BACKEND_ORIGIN);if(await interceptDocumentAcceptanceRequest(otherBackendPost,handlers))failures.push('Document acceptance must only recognize the exact backend chat POST.');
+  const gatewayChat=mockRoute('POST','/v1/chat/completions',GATEWAY_ORIGIN);if(!(await interceptDocumentAcceptanceRequest(gatewayChat,handlers))||gatewayChat.action()!=='abort')failures.push('Document acceptance must reject a direct gateway chat POST.');
+  const catalogFixture={id:DOCUMENT_ACCEPTANCE_MODEL_ID,route_id:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE,selectable:true,executable:true,candidate:false,availability:'available',route_class:'external-untrusted-free',cost_class:'free-quota',no_paid_routes_started:true,provider:'groq',cost:{requires_approval:false}};
+  const catalogRoute=documentAcceptanceCatalogRoute({data:[catalogFixture]});
+  if(!catalogRoute||catalogRoute.pickerRoute!==DOCUMENT_ACCEPTANCE_PICKER_ROUTE||catalogRoute.gatewayRoute!==DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE)failures.push('Document acceptance must resolve the existing picker alias to its catalog gateway route ID.');
+  if(documentAcceptanceCatalogRoute({data:[{...catalogFixture,selectable:false}]}))failures.push('Document acceptance must reject a non-selectable catalog route.');
+  if(documentAcceptanceCatalogRoute({data:[{...catalogFixture,cost:{requires_approval:true}}]}))failures.push('Document acceptance must reject a catalog route requiring approval.');
   const knownProvenance=await publicReceiptProvenance(async()=>({assets:{'p0-chat-shell.js':'20260924-nordstjerne-forside-v1','p0-personal-memory.js':'20260924-knowledge-document-list-v1','api-client.js':'20260924-knowledge-document-list-v1'}}));
   const unknownProvenance=await publicReceiptProvenance(async()=>null);
   const provenanceReceipt=documentAcceptanceReceipt({runId:'run-fixture',phase:'started',publicProvenance:knownProvenance});
@@ -182,9 +213,40 @@ async function publishedBrowserProof(options){
     await recoverableJourney({runId,createdAt,diagnostics,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();cleanupDocumentId=String(body?.data?.id||'');return cleanupDocumentId;},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const messages=chatPayload?.messages||[],systemText=messages.filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n'),userText=messages.filter(message=>message?.role==='user').map(message=>String(message.content||'')).join('\n');if(systemText.includes(name)||systemText.includes(marker)||!userText.includes(name)||!userText.includes(marker))throw new Error('grounding trust boundary absent');diagnostics.groundingPassed=true;},deleteDocument:async(id,cleanup)=>{cleanup.deleteStage='reopen_modal';if(!(await dialogIsOpen(dialog))){const listed=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='GET');await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});cleanup.deleteStage='await_document_list';diagnostics.responses.document_list=await safeResponseSummary(await listed,id);}diagnostics.documentDom=await safeDocumentDom(dialog,id);cleanup.documentDom=diagnostics.documentDom;cleanup.deleteStage='select_document';await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());cleanup.deleteStage='dispatch_delete';const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE');await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();cleanup.deleteStage='await_delete_response';const response=await deleted;cleanup.deleteStatus=response.status();if(response.status()!==204)throw new Error('document delete response was not 204');},disableStorage:async()=>{if(!(await dialogIsOpen(dialog)))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
   }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
 }
+async function documentAcceptanceRoutingProof(){
+  const port=8804,origin=`http://127.0.0.1:${port}`,documentId='22222222-2222-2222-2222-222222222222',marker='document-routing-fixture';
+  const server=spawn(process.execPath,['scripts/serve-public.mjs'],{cwd:root,env:{...process.env,HOST:'127.0.0.1',PORT:String(port)},stdio:['ignore','pipe','pipe']});
+  let output='';server.stdout.on('data',chunk=>{output=(output+chunk).slice(-2048);});
+  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('document routing fixture server readiness timed out')),10000);server.stdout.on('data',()=>{if(output.includes(`Serving public at ${origin}/mmir.html`)){clearTimeout(timer);resolve();}});server.once('error',error=>{clearTimeout(timer);reject(error);});server.once('exit',()=>{clearTimeout(timer);reject(new Error('document routing fixture server exited before readiness'));});});
+  let browser=null,context=null;
+  try{
+    browser=await chromium.launch({headless:true});context=await browser.newContext({serviceWorkers:'block'});const page=await context.newPage();page.setDefaultTimeout(5000);await page.addInitScript(()=>{window.MMIR_CHAT_VIA_BACKEND=true;});
+    let consent=false,stored=false,deleted=false,chatCalls=0,chatPayload=null;const backendPaths=[];const now=()=>new Date().toISOString();const json=(route,status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
+    await page.route('**/*',async route=>{const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;
+      if(url.origin===origin)return route.continue();
+      if(await interceptDocumentAcceptanceRequest(route,{forwardChat:async activeRoute=>{chatCalls+=1;chatPayload=request.postDataJSON();if(chatCalls!==1)return activeRoute.abort();return json(activeRoute,200,{id:'synthetic-document-route',model:'locally-fulfilled-no-model',choices:[{message:{role:'assistant',content:marker}}]});},forwardCatalog:async activeRoute=>json(activeRoute,200,{object:'list',data:[{id:DOCUMENT_ACCEPTANCE_MODEL_ID,route_id:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE,selectable:true,executable:true,candidate:false,availability:'available',route_class:'external-untrusted-free',cost_class:'free-quota',no_paid_routes_started:true,provider:'groq',cost:{requires_approval:false}}]})}))return;
+      if(url.origin!==BACKEND_ORIGIN)return route.abort();
+      backendPaths.push(method+' '+path);
+      if(path==='/status'&&method==='GET')return json(route,200,{status:'online'});
+      if(path==='/health'&&method==='GET')return json(route,200,{status:'online',service:'mmir-orchestrator',layer:'backend',capabilities:['identity','proxy.chat_completions'],ordering_authority:'bound'});
+      if(path==='/identity/session')return json(route,200,{object:'mmir.identity_session',anonymous:true,token:'synthetic-session-token',identity_id:'usr_fixture',issued_at:now(),expires_at:new Date(Date.now()+86400000).toISOString()});
+      if(path==='/consent'&&method==='PUT'){consent=JSON.parse(request.postData()||'{}').memory===true;return json(route,200,{object:'consent',memory:consent});}
+      if(path==='/consent'&&method==='GET')return json(route,200,{object:'consent',memory:consent});
+      if(path==='/memory'&&method==='GET')return json(route,200,{object:'list',data:[]});
+      if(path==='/knowledge/documents'&&method==='POST'){if(!consent)return json(route,403,{error:{code:'consent_required'}});stored=true;return json(route,201,{object:'knowledge.document',data:{id:documentId,workspace_id:'personal',name:'fixture.txt',type:'text/plain',source_type:'upload',size_chars:marker.length,chunk_count:1,metadata:{},created_at:now()}});}
+      if(path==='/knowledge/documents'&&method==='GET')return json(route,200,{object:'list',data:stored?[{id:documentId,workspace_id:'personal',name:'fixture.txt',type:'text/plain',source_type:'upload',size_chars:marker.length,chunk_count:1,metadata:{},created_at:now()}]:[]});
+      if(path==='/knowledge/search'&&method==='POST')return json(route,200,{data:stored?[{snippet:marker,chunk_id:'fixture-chunk',document:{id:documentId,name:'fixture.txt'}}]:[]});
+      if(path==='/knowledge/documents/'+documentId&&method==='DELETE'){deleted=stored;stored=false;return route.fulfill({status:204,body:''});}
+      return route.abort();
+    });
+    await page.goto(origin+'/mmir.html',{waitUntil:'domcontentloaded'});await page.locator('#p0-model').click();await page.locator('button[data-model-id="'+DOCUMENT_ACCEPTANCE_PICKER_ROUTE+'"][data-model-selectable="true"]').click();await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');await dialog.waitFor({state:'visible'});await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();const storageStatus=dialog.locator('[data-personal-memory-status]');try{await page.waitForFunction(()=>document.querySelector('[data-personal-memory-status]')?.textContent?.includes('Remote storage enabled'),null,{timeout:2000});}catch(error){throw new Error('document routing fixture could not enable storage: '+String(await storageStatus.textContent()).slice(0,160)+'; backend='+backendPaths.join(','));}await dialog.locator('[data-personal-memory-text]').fill(marker);await dialog.locator('[data-personal-knowledge-name]').fill('fixture.txt');await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();await dialog.locator('[data-personal-knowledge-id="'+documentId+'"]').waitFor();await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill('What is the fixture marker?');await page.locator('#p0-send').click();await page.getByText(marker,{exact:true}).waitFor();
+    const users=(chatPayload?.messages||[]).filter(message=>message?.role==='user').map(message=>String(message.content||'')).join('\n');if(chatCalls!==1||chatPayload?.model!==DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE||!users.includes(marker))failures.push('Document acceptance must use the browser backend-chat opt-in once with the raw catalog route ID and lower-trust document context.');
+    await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});await dialog.locator('[data-personal-knowledge-id="'+documentId+'"]').click();page.once('dialog',prompt=>prompt.accept());await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();if(!deleted||consent)failures.push('Document acceptance routing fixture must delete its captured document and disable storage.');
+  }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});if(server.exitCode===null)server.kill('SIGTERM');}
+}
 async function documentAcceptanceProof(options){
   const runId='l2-document-'+randomUUID(),marker='Synthetic document '+runId,documentName=runId+'.txt',deadline=Date.now()+90000;
-  let browser=null,context=null,page=null,documentId='',backendRequests=0,searchRequests=0,modelRequests=0,modelStatus=null,noPaid=null,answerGrounded=false,cleanupStatus=null,consentDisabled=false,publicProvenance=unknownPublicProvenance(),primaryError='';
+  let browser=null,context=null,page=null,documentId='',backendRequests=0,searchRequests=0,modelRequests=0,modelStatus=null,noPaid=null,answerGrounded=false,cleanupStatus=null,consentDisabled=false,publicProvenance=unknownPublicProvenance(),selectedRoute=null,primaryError='';
   const remaining=()=>Math.max(1,Math.min(15000,deadline-Date.now()));
   const receipt=(phase)=>atomicReceipt(options.receipt,documentAcceptanceReceipt({runId,documentId,phase,backendRequests,searchRequests,modelRequests,modelStatus,noPaid,answerGrounded,cleanupStatus,consentDisabled,publicProvenance,error:primaryError}));
   await receipt('started');
@@ -193,21 +255,21 @@ async function documentAcceptanceProof(options){
     await page.route('**/*',async route=>{const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;
       if(Date.now()>=deadline)return route.abort();
       if(url.origin===PUBLISHED_PAGE.replace('/mmir.html',''))return route.continue();
-      if(await interceptDocumentAcceptanceGatewayRequest(route,async route=>{
+      if(await interceptDocumentAcceptanceRequest(route,{forwardChat:async route=>{
         if(++modelRequests>1)return route.abort();
         const incoming=request.postDataJSON(),messages=Array.isArray(incoming?.messages)?incoming.messages:[],system=messages.filter(item=>item?.role==='system').map(item=>String(item.content||'')).join('\n'),user=messages.filter(item=>item?.role==='user').map(item=>String(item.content||'')).join('\n');
-        if(incoming?.model!==DOCUMENT_ACCEPTANCE_ROUTE||system.includes(marker)||!user.includes(marker))throw new Error('document grounding or forced route absent before egress');
+        if(incoming?.model!==selectedRoute?.gatewayRoute||system.includes(marker)||!user.includes(marker))throw new Error('document grounding or forced route absent before egress');
         const payload={...incoming,max_tokens:512,stream:false,synthetic_probe:true,persist_feedback_store:false,policy:{...(incoming.policy||{}),paid_routes_allowed:false,require_no_paid_receipt:true}};
         const response=await route.fetch({postData:JSON.stringify(payload),timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();modelStatus=response.status();let parsed={};try{parsed=JSON.parse(body);}catch{}const metadata=parsed?.mmir||{};noPaid=metadata.no_paid_routes_started??parsed.no_paid_routes_started??null;answerGrounded=response.status()===200&&String(parsed?.choices?.[0]?.message?.content||'').includes(marker);return route.fulfill({response,body});
-      }))return;
+      },forwardCatalog:async route=>{const response=await route.fetch({timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();return route.fulfill({response,body});}}))return;
       if(url.origin!==BACKEND_ORIGIN)return route.abort();
-      const allowed=(method==='GET'&&['/health','/consent','/memory','/knowledge/documents','/v1/models'].includes(path))||(method==='POST'&&['/identity/session','/knowledge/documents','/knowledge/search'].includes(path))||(method==='PUT'&&path==='/consent')||(method==='DELETE'&&Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId));
+      const allowed=(method==='GET'&&['/health','/status','/consent','/memory','/knowledge/documents','/v1/models'].includes(path))||(method==='POST'&&['/identity/session','/knowledge/documents','/knowledge/search'].includes(path))||(method==='PUT'&&path==='/consent')||(method==='DELETE'&&Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId));
       if(!allowed||++backendRequests>20)return route.abort();
       if(path==='/knowledge/search')searchRequests+=1;
       return route.fetch({timeout:remaining(),maxRetries:0,maxRedirects:0}).then(response=>response.text().then(body=>route.fulfill({response,body})));
     });
-    await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded',timeout:remaining()});publicProvenance=await publicReceiptProvenance(()=>page.evaluate(async()=>{const response=await fetch('./apps/mimir-chat-portal/asset-versions.json',{cache:'no-store'});return response.ok?response.json():null;}));const catalogue=page.waitForResponse(response=>new URL(response.url()).origin===GATEWAY_ORIGIN&&new URL(response.url()).pathname==='/v1/models',{timeout:remaining()});await catalogue;
-    await page.locator('#p0-model').click();await page.locator('button[data-model-id="'+DOCUMENT_ACCEPTANCE_ROUTE+'"][data-model-selectable="true"]').click();await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');await dialog.waitFor({state:'visible'});await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();await dialog.getByText(/Remote storage enabled/).waitFor();await dialog.locator('[data-personal-memory-text]').fill(marker);await dialog.locator('[data-personal-knowledge-name]').fill(documentName);
+    await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded',timeout:remaining()});publicProvenance=await publicReceiptProvenance(()=>page.evaluate(async()=>{const response=await fetch('./apps/mimir-chat-portal/asset-versions.json',{cache:'no-store'});return response.ok?response.json():null;}));const catalogue=page.waitForResponse(response=>new URL(response.url()).origin===GATEWAY_ORIGIN&&new URL(response.url()).pathname==='/v1/models',{timeout:remaining()});const catalogPayload=await (await catalogue).json();selectedRoute=documentAcceptanceCatalogRoute(catalogPayload);if(!selectedRoute)throw new Error('exact selectable free catalog route unavailable');
+    await page.locator('#p0-model').click();await page.locator('button[data-model-id="'+selectedRoute.pickerRoute+'"][data-model-selectable="true"]').click();await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');await dialog.waitFor({state:'visible'});await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();await dialog.getByText(/Remote storage enabled/).waitFor();await dialog.locator('[data-personal-memory-text]').fill(marker);await dialog.locator('[data-personal-knowledge-name]').fill(documentName);
     const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201,{timeout:remaining()});await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const createBody=await (await created).json();documentId=String(createBody?.data?.id||'');if(!documentId)throw new Error('created document id missing');await receipt('created');await dialog.locator('[data-personal-knowledge-id="'+documentId+'"]').waitFor({timeout:remaining()});await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill('What exact synthetic document marker was saved?');await page.locator('#p0-send').click();await page.waitForFunction(value=>[...document.querySelectorAll('.p0-message-assistant .p0-message-body')].some(node=>node.textContent.includes(value)),marker,{timeout:remaining()});if(modelRequests!==1||searchRequests<1||modelStatus!==200||noPaid!==true||!answerGrounded)throw new Error('bounded no-spend grounded answer contract failed');
   }catch(error){primaryError=safeErrorCategory(error);}
   finally{
@@ -500,6 +562,7 @@ await publishedRecoveryProtocolProof();
 await publishedModalRecoveryProof();
 await publishedModalRecoveryProof('delayed');
 await publishedModalRecoveryProof('missing-chat');
+await documentAcceptanceRoutingProof();
 for(const mode of ['invalid','empty']){try{await publishedModalRecoveryProof(mode);failures.push('Published modal '+mode+' list unexpectedly selected a document.');}catch(error){if(safeErrorCategory(error)!=='timeout')failures.push('Published modal '+mode+' list did not retain the selector failure category.');}}
 const published=publishedOptions();
 if(published)await publishedBrowserProof(published);
