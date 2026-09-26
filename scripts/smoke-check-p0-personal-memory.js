@@ -25,6 +25,20 @@ async function interceptPublishedRequest(route,{documentId,onChat,pageOrigin='ht
   if(backendHandler)return backendHandler(route);
   return route.continue();
 }
+async function interceptDocumentAcceptanceGatewayRequest(route,forwardChat){
+  const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;
+  if(url.origin!==GATEWAY_ORIGIN)return false;
+  if(method==='POST'&&path==='/v1/chat/completions'){
+    await forwardChat(route);
+    return true;
+  }
+  if(method==='GET'&&['/health','/status','/v1/models'].includes(path)){
+    await route.continue();
+    return true;
+  }
+  await route.abort();
+  return true;
+}
 
 function publishedOptions(){
   if(process.env.MMIR_L4_PUBLISHED_MODE!=='1')return null;
@@ -94,11 +108,15 @@ async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,c
 }
 async function publishedRecoveryProtocolProof(){
   const captured='6aa412ca-94f6-4e5d-9194-9ca5556f8f52';
-  const mockRoute=(method,path)=>{let action='';return {action:()=>action,request:()=>({url:()=>BACKEND_ORIGIN+path,method:()=>method,postDataJSON:()=>({})}),continue:async()=>{action='continue';},abort:async()=>{action='abort';},fulfill:async()=>{action='fulfill';}};};
+  const mockRoute=(method,path,origin=BACKEND_ORIGIN)=>{let action='';return {action:()=>action,request:()=>({url:()=>origin+path,method:()=>method,postDataJSON:()=>({})}),continue:async()=>{action='continue';},abort:async()=>{action='abort';},fulfill:async()=>{action='fulfill';}};};
   const allowedDelete=mockRoute('DELETE','/knowledge/documents/'+captured); await interceptPublishedRequest(allowedDelete,{documentId:()=>captured,onChat:()=>{}});
   if(allowedDelete.action()!=='continue')failures.push('Published interceptor must pass the captured document DELETE to the backend.');
   const otherDelete=mockRoute('DELETE','/knowledge/documents/11111111-1111-1111-1111-111111111111'); await interceptPublishedRequest(otherDelete,{documentId:()=>captured,onChat:()=>{}});
   if(otherDelete.action()!=='abort')failures.push('Published interceptor must reject a different document DELETE.');
+  const gatewayChat=mockRoute('POST','/v1/chat/completions',GATEWAY_ORIGIN);let chatForwarded=false;
+  if(!(await interceptDocumentAcceptanceGatewayRequest(gatewayChat,async route=>{chatForwarded=true;await route.fulfill({status:200,body:'{}'});} ))||!chatForwarded||gatewayChat.action()!=='fulfill')failures.push('Document acceptance must reach its guarded gateway chat branch before the non-GET gateway reject.');
+  const otherGatewayPost=mockRoute('POST','/v1/other',GATEWAY_ORIGIN);await interceptDocumentAcceptanceGatewayRequest(otherGatewayPost,async()=>{failures.push('Unexpected gateway POST reached the chat branch.');});
+  if(otherGatewayPost.action()!=='abort')failures.push('Document acceptance must still reject non-chat gateway POST requests.');
   for(const [method,path] of [['GET','/knowledge/documents/'+captured],['DELETE','/knowledge/documents/a/b'],['POST','/v1/chat/completions']])if(publishedBackendAllowed(method,path,captured))failures.push(`Published mode must reject ${method} ${path}.`);
   const safe=()=>{};
   const cases=[
@@ -161,17 +179,18 @@ async function documentAcceptanceProof(options){
     await page.route('**/*',async route=>{const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;
       if(Date.now()>=deadline)return route.abort();
       if(url.origin===PUBLISHED_PAGE.replace('/mmir.html',''))return route.continue();
-      if(url.origin===GATEWAY_ORIGIN){if(method==='GET'&&['/health','/status','/v1/models'].includes(path))return route.continue();return route.abort();}
+      if(await interceptDocumentAcceptanceGatewayRequest(route,async route=>{
+        if(++modelRequests>1)return route.abort();
+        const incoming=request.postDataJSON(),messages=Array.isArray(incoming?.messages)?incoming.messages:[],system=messages.filter(item=>item?.role==='system').map(item=>String(item.content||'')).join('\n'),user=messages.filter(item=>item?.role==='user').map(item=>String(item.content||'')).join('\n');
+        if(incoming?.model!==DOCUMENT_ACCEPTANCE_ROUTE||system.includes(marker)||!user.includes(marker))throw new Error('document grounding or forced route absent before egress');
+        const payload={...incoming,max_tokens:512,stream:false,synthetic_probe:true,persist_feedback_store:false,policy:{...(incoming.policy||{}),paid_routes_allowed:false,require_no_paid_receipt:true}};
+        const response=await route.fetch({postData:JSON.stringify(payload),timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();modelStatus=response.status();let parsed={};try{parsed=JSON.parse(body);}catch{}const metadata=parsed?.mmir||{};noPaid=metadata.no_paid_routes_started??parsed.no_paid_routes_started??null;answerGrounded=response.status()===200&&String(parsed?.choices?.[0]?.message?.content||'').includes(marker);return route.fulfill({response,body});
+      }))return;
       if(url.origin!==BACKEND_ORIGIN)return route.abort();
-      const allowed=(method==='GET'&&['/health','/consent','/memory','/knowledge/documents','/v1/models'].includes(path))||(method==='POST'&&['/identity/session','/knowledge/documents','/knowledge/search','/v1/chat/completions'].includes(path))||(method==='PUT'&&path==='/consent')||(method==='DELETE'&&Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId));
+      const allowed=(method==='GET'&&['/health','/consent','/memory','/knowledge/documents','/v1/models'].includes(path))||(method==='POST'&&['/identity/session','/knowledge/documents','/knowledge/search'].includes(path))||(method==='PUT'&&path==='/consent')||(method==='DELETE'&&Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId));
       if(!allowed||++backendRequests>20)return route.abort();
       if(path==='/knowledge/search')searchRequests+=1;
-      if(path!=='/v1/chat/completions')return route.fetch({timeout:remaining(),maxRetries:0,maxRedirects:0}).then(response=>response.text().then(body=>route.fulfill({response,body})));
-      if(++modelRequests>1)return route.abort();
-      const incoming=request.postDataJSON(),messages=Array.isArray(incoming?.messages)?incoming.messages:[],system=messages.filter(item=>item?.role==='system').map(item=>String(item.content||'')).join('\n'),user=messages.filter(item=>item?.role==='user').map(item=>String(item.content||'')).join('\n');
-      if(incoming?.model!==DOCUMENT_ACCEPTANCE_ROUTE||system.includes(marker)||!user.includes(marker))throw new Error('document grounding or forced route absent before egress');
-      const payload={...incoming,max_tokens:512,stream:false,synthetic_probe:true,persist_feedback_store:false,policy:{...(incoming.policy||{}),paid_routes_allowed:false,require_no_paid_receipt:true}};
-      const response=await route.fetch({postData:JSON.stringify(payload),timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();modelStatus=response.status();let parsed={};try{parsed=JSON.parse(body);}catch{}const metadata=parsed?.mmir||{};noPaid=metadata.no_paid_routes_started??parsed.no_paid_routes_started??null;answerGrounded=response.status()===200&&String(parsed?.choices?.[0]?.message?.content||'').includes(marker);return route.fulfill({response,body});
+      return route.fetch({timeout:remaining(),maxRetries:0,maxRedirects:0}).then(response=>response.text().then(body=>route.fulfill({response,body})));
     });
     await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded',timeout:remaining()});const catalogue=page.waitForResponse(response=>new URL(response.url()).origin===GATEWAY_ORIGIN&&new URL(response.url()).pathname==='/v1/models',{timeout:remaining()});await catalogue;
     await page.locator('#p0-model').click();await page.locator('button[data-model-id="'+DOCUMENT_ACCEPTANCE_ROUTE+'"][data-model-selectable="true"]').click();await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');await dialog.waitFor({state:'visible'});await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();await dialog.getByText(/Remote storage enabled/).waitFor();await dialog.locator('[data-personal-memory-text]').fill(marker);await dialog.locator('[data-personal-knowledge-name]').fill(documentName);
