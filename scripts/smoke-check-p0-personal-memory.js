@@ -10,6 +10,19 @@ const failures=[];
 const PUBLISHED_PAGE='https://mmir.ai/mmir.html';
 const BACKEND_ORIGIN='https://backend.mmir.ai';
 const GATEWAY_ORIGIN='https://api.mmir.ai';
+function publishedBackendAllowed(method,path,documentId=''){
+  if(method==='DELETE')return Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId);
+  return ['GET /health','POST /identity/session','GET /identity/session','GET /consent','PUT /consent','GET /knowledge/documents','POST /knowledge/documents','POST /knowledge/search'].includes(method+' '+path);
+}
+async function interceptPublishedRequest(route,{documentId,onChat}){
+  const request=route.request(),url=new URL(request.url()),json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
+  if(url.origin==='https://mmir.ai')return route.continue();
+  if(url.origin===GATEWAY_ORIGIN){if(request.method()==='POST')return route.abort();return json(200,url.pathname==='/v1/models'?{object:'list',data:[{id:'mmir-supergenius',executable:true,selectable:true,availability:'available'}]}:{ok:true,object:'list',data:[]});}
+  if(url.origin!==BACKEND_ORIGIN)return route.abort();
+  if(url.pathname==='/v1/chat/completions'){onChat(request.postDataJSON());return json(200,{id:'synthetic-l4-chat',model:'locally-fulfilled-no-model',choices:[{message:{role:'assistant',content:'Synthetic local receipt.'}}]});}
+  if(!publishedBackendAllowed(request.method(),url.pathname,documentId()))return route.abort();
+  return route.continue();
+}
 
 function publishedOptions(){
   if(process.env.MMIR_L4_PUBLISHED_MODE!=='1')return null;
@@ -45,6 +58,13 @@ async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,c
   if(primary||deleteFailed||disableFailed||receiptFailed)throw new Error('synthetic journey did not complete with verified cleanup');
 }
 async function publishedRecoveryProtocolProof(){
+  const captured='6aa412ca-94f6-4e5d-9194-9ca5556f8f52';
+  const mockRoute=(method,path)=>{let action='';return {action:()=>action,request:()=>({url:()=>BACKEND_ORIGIN+path,method:()=>method,postDataJSON:()=>({})}),continue:async()=>{action='continue';},abort:async()=>{action='abort';},fulfill:async()=>{action='fulfill';}};};
+  const allowedDelete=mockRoute('DELETE','/knowledge/documents/'+captured); await interceptPublishedRequest(allowedDelete,{documentId:()=>captured,onChat:()=>{}});
+  if(allowedDelete.action()!=='continue')failures.push('Published interceptor must pass the captured document DELETE to the backend.');
+  const otherDelete=mockRoute('DELETE','/knowledge/documents/11111111-1111-1111-1111-111111111111'); await interceptPublishedRequest(otherDelete,{documentId:()=>captured,onChat:()=>{}});
+  if(otherDelete.action()!=='abort')failures.push('Published interceptor must reject a different document DELETE.');
+  for(const [method,path] of [['GET','/knowledge/documents/'+captured],['DELETE','/knowledge/documents/a/b'],['POST','/v1/chat/completions']])if(publishedBackendAllowed(method,path,captured))failures.push(`Published mode must reject ${method} ${path}.`);
   const safe=()=>{};
   const cases=[
     {name:'receipt-after-create',write:async receipt=>{if(receipt.phase==='created')throw new Error('fixture receipt failure');},expect:{deleted:true,disabled:true}},
@@ -64,23 +84,15 @@ async function publishedRecoveryProtocolProof(){
 async function publishedBrowserProof(options){
   const runId='l4-'+randomUUID(); const createdAt=new Date().toISOString();
   await atomicReceipt(options.receipt,receiptBody({runId,createdAt,phase:'started'}));
-  let browser=null,context=null,page=null,dialog=null,chatPayload=null;
+  let browser=null,context=null,page=null,dialog=null,chatPayload=null,cleanupDocumentId='';
   try{
     browser=await chromium.launch({headless:true}); context=await browser.newContext({serviceWorkers:'block'}); page=await context.newPage(); page.setDefaultTimeout(15000);
     await page.addInitScript(()=>{window.MMIR_CHAT_VIA_BACKEND=true;});
-    await page.route('**/*',async route=>{
-      const request=route.request(),url=new URL(request.url()),json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
-      if(url.origin==='https://mmir.ai')return route.continue();
-      if(url.origin===GATEWAY_ORIGIN){if(request.method()==='POST')return route.abort();return json(200,url.pathname==='/v1/models'?{object:'list',data:[{id:'mmir-supergenius',executable:true,selectable:true,availability:'available'}]}:{ok:true,object:'list',data:[]});}
-      if(url.origin!==BACKEND_ORIGIN)return route.abort();
-      if(url.pathname==='/v1/chat/completions'){chatPayload=request.postDataJSON();return json(200,{id:'synthetic-l4-chat',model:'locally-fulfilled-no-model',choices:[{message:{role:'assistant',content:'Synthetic local receipt.'}}]});}
-      if(!['/health','/identity/session','/consent','/knowledge/documents','/knowledge/search'].includes(url.pathname))return route.abort();
-      return route.continue();
-    });
+    await page.route('**/*',route=>interceptPublishedRequest(route,{documentId:()=>cleanupDocumentId,onChat:payload=>{chatPayload=payload;}}));
     await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded'}); await page.locator('#p0-sidebar-settings').click(); await page.getByText('Personlig minne',{exact:true}).click(); dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]'); await dialog.waitFor({state:'visible'});
     await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await dialog.getByText(/Remote storage enabled/).waitFor();
     const marker='L4 synthetic '+runId; const name=runId+'.txt'; await dialog.locator('[data-personal-memory-text]').fill(marker); await dialog.locator('[data-personal-knowledge-name]').fill(name);
-    await recoverableJourney({runId,createdAt,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();return String(body?.data?.id||'');},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const contextText=(chatPayload?.messages||[]).filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n');if(!contextText.includes(name)||!contextText.includes(marker))throw new Error('grounded document context absent');},deleteDocument:async id=>{if(!(await dialog.isVisible())){await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});}await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE'&&response.status()===204);await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();await deleted;},disableStorage:async()=>{if(!(await dialog.isVisible()))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
+    await recoverableJourney({runId,createdAt,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();cleanupDocumentId=String(body?.data?.id||'');return cleanupDocumentId;},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const contextText=(chatPayload?.messages||[]).filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n');if(!contextText.includes(name)||!contextText.includes(marker))throw new Error('grounded document context absent');},deleteDocument:async id=>{if(!(await dialog.isVisible())){await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});}await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE'&&response.status()===204);await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();await deleted;},disableStorage:async()=>{if(!(await dialog.isVisible()))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
   }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
 }
 async function browserProof(){
