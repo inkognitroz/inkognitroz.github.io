@@ -1,10 +1,88 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { resolve } from 'node:path';
+import { mkdir, rename, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { chromium } from '@playwright/test';
 
 const root=resolve(process.cwd());
 const failures=[];
+const PUBLISHED_PAGE='https://mmir.ai/mmir.html';
+const BACKEND_ORIGIN='https://backend.mmir.ai';
+const GATEWAY_ORIGIN='https://api.mmir.ai';
+
+function publishedOptions(){
+  if(process.env.MMIR_L4_PUBLISHED_MODE!=='1')return null;
+  if(process.env.MMIR_L4_PUBLISHED_URL!==PUBLISHED_PAGE)throw new Error('Published mode requires the exact MMIR_L4_PUBLISHED_URL allowlist entry.');
+  const receipt=resolve(String(process.env.MMIR_L4_RECEIPT_PATH||''));
+  if(!String(process.env.MMIR_L4_RECEIPT_PATH||'')||!receipt.startsWith('/tmp/'))throw new Error('Published mode requires MMIR_L4_RECEIPT_PATH under /tmp/.');
+  return {receipt};
+}
+function receiptBody({runId,documentId='',createdAt,phase,deleted=false,disabled=false,chat='not_started'}){
+  return {object:'mmir.l4.synthetic_receipt',run_id:runId,document_id:documentId,created_at:createdAt,phase,chat,cleanup:{document_deleted:deleted,consent_disabled:disabled},raw_document_included:false,bearer_included:false};
+}
+async function atomicReceipt(path,value){
+  const serialized=JSON.stringify(value)+'\n';
+  if(/Bearer\s|mmiru1\.|Cleanup fixture document/i.test(serialized))throw new Error('receipt attempted to store forbidden content');
+  await mkdir(dirname(path),{recursive:true});
+  const pending=path+'.tmp-'+process.pid+'-'+randomUUID();
+  await writeFile(pending,serialized,{encoding:'utf8',mode:0o600});
+  await rename(pending,path);
+}
+async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,chat,deleteDocument,disableStorage}){
+  let documentId=''; let primary=null; let deleteFailed=false; let disableFailed=false; let receiptFailed=false;
+  try{
+    documentId=String(await createDocument()||'');
+    if(!documentId)throw new Error('document id missing after create');
+    await writeReceipt(receiptBody({runId,documentId,createdAt,phase:'created'}));
+    await chat(documentId);
+  }catch(error){primary=error;}
+  finally{
+    if(documentId)try{await deleteDocument(documentId);}catch(error){deleteFailed=true;}
+    try{await disableStorage();}catch(error){disableFailed=true;}
+    try{await writeReceipt(receiptBody({runId,documentId,createdAt,phase:primary?'failed':'complete',deleted:!!documentId&&!deleteFailed,disabled:!disableFailed,chat:'locally_fulfilled'}));}catch(error){receiptFailed=true;}
+  }
+  if(primary||deleteFailed||disableFailed||receiptFailed)throw new Error('synthetic journey did not complete with verified cleanup');
+}
+async function publishedRecoveryProtocolProof(){
+  const safe=()=>{};
+  const cases=[
+    {name:'receipt-after-create',write:async receipt=>{if(receipt.phase==='created')throw new Error('fixture receipt failure');},expect:{deleted:true,disabled:true}},
+    {name:'delete',write:async()=>{},delete:async()=>{throw new Error('fixture delete failure');},expect:{deleted:true,disabled:true}},
+    {name:'disable',write:async()=>{},disable:async()=>{throw new Error('fixture disable failure');},expect:{deleted:true,disabled:true}}
+  ];
+  for(const item of cases){
+    let deleted=false,disabled=false; const receipts=[];
+    try{await recoverableJourney({runId:'run-fixture',createdAt:'2026-09-26T00:00:00.000Z',writeReceipt:async receipt=>{receipts.push(receipt);await item.write(receipt);},createDocument:async()=> 'doc-fixture',chat:async()=>safe(),deleteDocument:item.delete||(async()=>{deleted=true;}),disableStorage:item.disable||(async()=>{disabled=true;})});failures.push('Published recovery fixture '+item.name+' unexpectedly passed.');}catch(error){}
+    const text=JSON.stringify(receipts);
+    if(item.name==='receipt-after-create'&&(!deleted||!disabled))failures.push('A receipt-write failure after create must still delete and disable.');
+    if(item.name==='delete'&&(!disabled||receipts.at(-1)?.cleanup?.document_deleted!==false))failures.push('A delete failure must still disable and record failed cleanup.');
+    if(item.name==='disable'&&(!deleted||receipts.at(-1)?.cleanup?.consent_disabled!==false))failures.push('A disable failure must retain its failed cleanup receipt.');
+    if(/Bearer\s|mmiru1\.|Cleanup fixture document/i.test(text))failures.push('Published recovery receipts must not contain a bearer or document text.');
+  }
+}
+async function publishedBrowserProof(options){
+  const runId='l4-'+randomUUID(); const createdAt=new Date().toISOString();
+  await atomicReceipt(options.receipt,receiptBody({runId,createdAt,phase:'started'}));
+  let browser=null,context=null,page=null,dialog=null,chatPayload=null;
+  try{
+    browser=await chromium.launch({headless:true}); context=await browser.newContext({serviceWorkers:'block'}); page=await context.newPage(); page.setDefaultTimeout(15000);
+    await page.addInitScript(()=>{window.MMIR_CHAT_VIA_BACKEND=true;});
+    await page.route('**/*',async route=>{
+      const request=route.request(),url=new URL(request.url()),json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
+      if(url.origin==='https://mmir.ai')return route.continue();
+      if(url.origin===GATEWAY_ORIGIN){if(request.method()==='POST')return route.abort();return json(200,url.pathname==='/v1/models'?{object:'list',data:[{id:'mmir-supergenius',executable:true,selectable:true,availability:'available'}]}:{ok:true,object:'list',data:[]});}
+      if(url.origin!==BACKEND_ORIGIN)return route.abort();
+      if(url.pathname==='/v1/chat/completions'){chatPayload=request.postDataJSON();return json(200,{id:'synthetic-l4-chat',model:'locally-fulfilled-no-model',choices:[{message:{role:'assistant',content:'Synthetic local receipt.'}}]});}
+      if(!['/health','/identity/session','/consent','/knowledge/documents','/knowledge/search'].includes(url.pathname))return route.abort();
+      return route.continue();
+    });
+    await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded'}); await page.locator('#p0-sidebar-settings').click(); await page.getByText('Personlig minne',{exact:true}).click(); dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]'); await dialog.waitFor({state:'visible'});
+    await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await dialog.getByText(/Remote storage enabled/).waitFor();
+    const marker='L4 synthetic '+runId; const name=runId+'.txt'; await dialog.locator('[data-personal-memory-text]').fill(marker); await dialog.locator('[data-personal-knowledge-name]').fill(name);
+    await recoverableJourney({runId,createdAt,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();return String(body?.data?.id||'');},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const contextText=(chatPayload?.messages||[]).filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n');if(!contextText.includes(name)||!contextText.includes(marker))throw new Error('grounded document context absent');},deleteDocument:async id=>{if(!(await dialog.isVisible())){await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});}await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE'&&response.status()===204);await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();await deleted;},disableStorage:async()=>{if(!(await dialog.isVisible()))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
+  }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
+}
 async function browserProof(){
   const port=8799;
   const server=spawn(process.execPath,['scripts/serve-public.mjs'],{cwd:root,env:{...process.env,HOST:'127.0.0.1',PORT:String(port)},stdio:['ignore','pipe','pipe']});
@@ -284,4 +362,7 @@ async function browserProof(){
 }
 
 await browserProof();
+await publishedRecoveryProtocolProof();
+const published=publishedOptions();
+if(published)await publishedBrowserProof(published);
 if(failures.length){console.error('P0 personal-memory smoke failed:');failures.forEach(item=>console.error('- '+item));process.exit(1);}
