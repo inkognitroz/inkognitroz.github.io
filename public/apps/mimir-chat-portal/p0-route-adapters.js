@@ -699,11 +699,16 @@
       if(externalSignal.aborted)controller.abort();
       else externalSignal.addEventListener('abort',abortFromExternal,{once:true});
     }
-    const {timeoutMs:ignored,signal:ignoredSignal,onDelta,...rest}=requestOptions;
+    const {timeoutMs:ignored,signal:ignoredSignal,onDelta,beforeFetch,...rest}=requestOptions;
     try{
       const prepared=typeof window.MimirApiClient?.prepareBackendRequest==='function'
         ? await window.MimirApiClient.prepareBackendRequest(url,{...rest,signal:controller.signal,identityFetch:fetch})
         : rest;
+      if(typeof beforeFetch==='function'&&beforeFetch()===false){
+        const error=new Error('The request was stopped before protected context could be sent.');
+        error.code='protected_context_send_stopped';
+        throw error;
+      }
       const {identityFetch:ignoredIdentityFetch,...fetchable}=prepared;
       const response=await fetch(url,fetchOptions(url,{...fetchable,signal:controller.signal}));
       let data=null;
