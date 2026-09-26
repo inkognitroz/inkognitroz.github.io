@@ -40,8 +40,8 @@ function safeErrorCategory(error){
   if(name==='Error')return 'operation_error';
   return 'unknown_error';
 }
-function receiptBody({runId,documentId='',createdAt,phase,deleted=false,disabled=false,chatCalled=false,groundingPassed=false,primaryError='',deleteStage='not_started',deleteStatus=null,deleteError='',disableStage='not_started',disableError='',responses={},documentDom={}}){
-  return {object:'mmir.l4.synthetic_receipt',run_id:runId,document_id:documentId,created_at:createdAt,phase,chat_called:chatCalled,grounding_passed:groundingPassed,primary_error:primaryError,cleanup:{document_deleted:deleted,consent_disabled:disabled,delete_stage:deleteStage,delete_status:deleteStatus,delete_error:deleteError,disable_stage:disableStage,disable_error:disableError,responses,document_dom:documentDom},raw_document_included:false,bearer_included:false};
+function receiptBody({runId,documentId='',createdAt,phase,deleted=false,disabled=false,chatCalled=false,groundingPassed=false,primaryError='',deleteStage='not_started',deleteStatus=null,deleteError='',fallbackStage='not_needed',fallbackStatus=null,fallbackError='',disableStage='not_started',disableError='',responses={},documentDom={}}){
+  return {object:'mmir.l4.synthetic_receipt',run_id:runId,document_id:documentId,created_at:createdAt,phase,chat_called:chatCalled,grounding_passed:groundingPassed,primary_error:primaryError,cleanup:{document_deleted:deleted,ui_cleanup_passed:deleted,consent_disabled:disabled,delete_stage:deleteStage,delete_status:deleteStatus,delete_error:deleteError,fallback_stage:fallbackStage,fallback_status:fallbackStatus,fallback_error:fallbackError,disable_stage:disableStage,disable_error:disableError,responses,document_dom:documentDom},raw_document_included:false,bearer_included:false};
 }
 async function atomicReceipt(path,value){
   const serialized=JSON.stringify(value)+'\n';
@@ -62,8 +62,9 @@ async function safeDocumentDom(dialog,id){
   const text=await status.textContent().catch(()=>''),category=/Loading stored documents/.test(text)?'loading':/No stored documents/.test(text)?'empty':/invalid document list/.test(text)?'invalid_list':/unavailable|failed|request/i.test(text)?'unavailable':(text?'other':'missing');
   return {status_state:state||'missing',status_category:category,selector_count:await dialog.locator('[data-personal-knowledge-id="'+id+'"]').count().catch(()=>0)};
 }
-async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,chat,deleteDocument,disableStorage,diagnostics={}}){
-  let documentId=''; let primary=null; let deleteFailed=false; let disableFailed=false; let receiptFailed=false; const cleanup={deleteStage:'not_started',deleteStatus:null,deleteError:'',disableStage:'not_started',disableError:'',responses:diagnostics.responses||{},documentDom:diagnostics.documentDom||{}};
+async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,chat,deleteDocument,fallbackDelete,disableStorage,diagnostics={}}){
+  let documentId=''; let primary=null; let deleteFailed=false; let disableFailed=false; let receiptFailed=false; const cleanup={deleteStage:'not_started',deleteStatus:null,deleteError:'',fallbackStage:'not_needed',fallbackStatus:null,fallbackError:'',disableStage:'not_started',disableError:'',responses:diagnostics.responses||{},documentDom:diagnostics.documentDom||{}};
+  const directFallback=fallbackDelete||diagnostics.fallbackDelete;
   try{
     documentId=String(await createDocument()||'');
     if(!documentId)throw new Error('document id missing after create');
@@ -71,7 +72,7 @@ async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,c
     await chat(documentId);diagnostics.chatCalled=true;diagnostics.groundingPassed=true;
   }catch(error){primary=error;diagnostics.primaryError=safeErrorCategory(error);}
   finally{
-    if(documentId)try{await deleteDocument(documentId,cleanup);cleanup.deleteStage='deleted';}catch(error){deleteFailed=true;cleanup.deleteError=safeErrorCategory(error);}
+    if(documentId)try{await deleteDocument(documentId,cleanup);cleanup.deleteStage='deleted';}catch(error){deleteFailed=true;cleanup.deleteError=safeErrorCategory(error);if(directFallback)try{cleanup.fallbackStage='dispatch';cleanup.fallbackStatus=await directFallback(documentId);cleanup.fallbackStage='deleted';}catch(fallbackError){cleanup.fallbackStage='failed';cleanup.fallbackError=safeErrorCategory(fallbackError);}}
     try{cleanup.disableStage='disabling';await disableStorage();cleanup.disableStage='disabled';}catch(error){disableFailed=true;cleanup.disableError=safeErrorCategory(error);}
     try{await writeReceipt(receiptBody({runId,documentId,createdAt,phase:primary||deleteFailed||disableFailed?'failed':'complete',deleted:!!documentId&&!deleteFailed,disabled:!disableFailed,chatCalled:diagnostics.chatCalled===true,groundingPassed:diagnostics.groundingPassed===true,primaryError:diagnostics.primaryError||'',...cleanup}));}catch(error){receiptFailed=true;}
   }
@@ -89,15 +90,19 @@ async function publishedRecoveryProtocolProof(){
   const cases=[
     {name:'receipt-after-create',write:async receipt=>{if(receipt.phase==='created')throw new Error('fixture receipt failure');},expect:{deleted:true,disabled:true}},
     {name:'delete',write:async()=>{},delete:async()=>{throw new Error('fixture delete failure');},expect:{deleted:true,disabled:true}},
-    {name:'disable',write:async()=>{},disable:async()=>{throw new Error('fixture disable failure');},expect:{deleted:true,disabled:true}}
+    {name:'disable',write:async()=>{},disable:async()=>{throw new Error('fixture disable failure');},expect:{deleted:true,disabled:true}},
+    {name:'fallback-204',write:async()=>{},delete:async()=>{throw new Error('fixture ui delete failure');},fallback:async id=>id==='doc-fixture'?204:Promise.reject(new Error('wrong id')),expect:{deleted:false,disabled:true}},
+    {name:'fallback-error',write:async()=>{},delete:async()=>{throw new Error('fixture ui delete failure');},fallback:async()=>{throw new Error('fixture fallback failure');},expect:{deleted:false,disabled:true}}
   ];
   for(const item of cases){
     let deleted=false,disabled=false; const receipts=[];
-    try{await recoverableJourney({runId:'run-fixture',createdAt:'2026-09-26T00:00:00.000Z',writeReceipt:async receipt=>{receipts.push(receipt);await item.write(receipt);},createDocument:async()=> 'doc-fixture',chat:async()=>safe(),deleteDocument:item.delete||(async()=>{deleted=true;}),disableStorage:item.disable||(async()=>{disabled=true;})});failures.push('Published recovery fixture '+item.name+' unexpectedly passed.');}catch(error){}
+    try{await recoverableJourney({runId:'run-fixture',createdAt:'2026-09-26T00:00:00.000Z',writeReceipt:async receipt=>{receipts.push(receipt);await item.write(receipt);},createDocument:async()=> 'doc-fixture',chat:async()=>safe(),deleteDocument:item.delete||(async()=>{deleted=true;}),fallbackDelete:item.fallback,disableStorage:item.disable||(async()=>{disabled=true;})});failures.push('Published recovery fixture '+item.name+' unexpectedly passed.');}catch(error){}
     const text=JSON.stringify(receipts);
     if(item.name==='receipt-after-create'&&(!deleted||!disabled))failures.push('A receipt-write failure after create must still delete and disable.');
     if(item.name==='delete'&&(!disabled||receipts.at(-1)?.cleanup?.document_deleted!==false))failures.push('A delete failure must still disable and record failed cleanup.');
     if(item.name==='disable'&&(!deleted||receipts.at(-1)?.cleanup?.consent_disabled!==false))failures.push('A disable failure must retain its failed cleanup receipt.');
+    if(item.name==='fallback-204'&&(receipts.at(-1)?.phase!=='failed'||receipts.at(-1)?.cleanup?.ui_cleanup_passed!==false||receipts.at(-1)?.cleanup?.fallback_status!==204))failures.push('Fallback 204 must clean only after UI failure without making the journey pass.');
+    if(item.name==='fallback-error'&&(receipts.at(-1)?.cleanup?.fallback_stage!=='failed'||receipts.at(-1)?.cleanup?.fallback_error!=='operation_error'))failures.push('Fallback failure must remain separately diagnosable.');
     if(/Bearer\s|mmiru1\.|Cleanup fixture document/i.test(text))failures.push('Published recovery receipts must not contain a bearer or document text.');
   }
 }
@@ -126,6 +131,7 @@ async function publishedBrowserProof(options){
     await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded'}); await page.locator('#p0-sidebar-settings').click(); await page.getByText('Personlig minne',{exact:true}).click(); dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]'); await dialog.waitFor({state:'visible'});
     await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await dialog.getByText(/Remote storage enabled/).waitFor();
     const marker='L4 synthetic '+runId; const name=runId+'.txt'; await dialog.locator('[data-personal-memory-text]').fill(marker); await dialog.locator('[data-personal-knowledge-name]').fill(name);
+    diagnostics.fallbackDelete=async id=>{if(id!==cleanupDocumentId)throw new Error('fallback id mismatch');const result=await page.evaluate(async capturedId=>window.MimirApiClient.personalMemoryRequest('/knowledge/documents/'+encodeURIComponent(capturedId),{method:'DELETE'}),id);if(result!==null)throw new Error('fallback delete response was not 204');return 204;};
     await recoverableJourney({runId,createdAt,diagnostics,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();cleanupDocumentId=String(body?.data?.id||'');return cleanupDocumentId;},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const messages=chatPayload?.messages||[],systemText=messages.filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n'),userText=messages.filter(message=>message?.role==='user').map(message=>String(message.content||'')).join('\n');if(systemText.includes(name)||systemText.includes(marker)||!userText.includes(name)||!userText.includes(marker))throw new Error('grounding trust boundary absent');diagnostics.groundingPassed=true;},deleteDocument:async(id,cleanup)=>{cleanup.deleteStage='reopen_modal';if(!(await dialog.isVisible())){const listed=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='GET');await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});cleanup.deleteStage='await_document_list';diagnostics.responses.document_list=await safeResponseSummary(await listed,id);}diagnostics.documentDom=await safeDocumentDom(dialog,id);cleanup.documentDom=diagnostics.documentDom;cleanup.deleteStage='select_document';await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());cleanup.deleteStage='dispatch_delete';const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE');await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();cleanup.deleteStage='await_delete_response';const response=await deleted;cleanup.deleteStatus=response.status();if(response.status()!==204)throw new Error('document delete response was not 204');},disableStorage:async()=>{if(!(await dialog.isVisible()))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
   }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
 }
