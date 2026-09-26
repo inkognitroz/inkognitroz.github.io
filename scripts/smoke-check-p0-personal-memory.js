@@ -10,6 +10,7 @@ const failures=[];
 const PUBLISHED_PAGE='https://mmir.ai/mmir.html';
 const BACKEND_ORIGIN='https://backend.mmir.ai';
 const GATEWAY_ORIGIN='https://api.mmir.ai';
+const DOCUMENT_ACCEPTANCE_ROUTE='hosted-route:groq/openai/gpt-oss-120b';
 function publishedBackendAllowed(method,path,documentId=''){
   if(method==='DELETE')return Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId);
   return ['GET /health','POST /identity/session','GET /identity/session','GET /consent','PUT /consent','GET /memory','GET /knowledge/documents','POST /knowledge/documents','POST /knowledge/search'].includes(method+' '+path);
@@ -32,6 +33,15 @@ function publishedOptions(){
   if(!String(process.env.MMIR_L4_RECEIPT_PATH||'')||!receipt.startsWith('/tmp/'))throw new Error('Published mode requires MMIR_L4_RECEIPT_PATH under /tmp/.');
   return {receipt};
 }
+function documentAcceptanceOptions(){
+  if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE!=='1')return null;
+  if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_CONFIRM!=='one-no-spend-document-acceptance')throw new Error('Document acceptance requires the exact one-run confirmation.');
+  if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_URL!==PUBLISHED_PAGE)throw new Error('Document acceptance requires the exact published-page allowlist entry.');
+  if(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_ROUTE!==DOCUMENT_ACCEPTANCE_ROUTE)throw new Error('Document acceptance requires the exact forced free route.');
+  const receipt=resolve(String(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_RECEIPT_PATH||''));
+  if(!String(process.env.MMIR_L2_DOCUMENT_ACCEPTANCE_RECEIPT_PATH||'')||!receipt.startsWith('/tmp/'))throw new Error('Document acceptance requires a receipt path under /tmp/.');
+  return {receipt};
+}
 function safeErrorCategory(error){
   const status=Number(error?.status||0),name=String(error?.name||'');
   if(status>=400&&status<600)return 'http_'+status;
@@ -50,6 +60,9 @@ async function atomicReceipt(path,value){
   const pending=path+'.tmp-'+process.pid+'-'+randomUUID();
   await writeFile(pending,serialized,{encoding:'utf8',mode:0o600});
   await rename(pending,path);
+}
+function documentAcceptanceReceipt({runId,documentId='',phase,backendRequests=0,searchRequests=0,modelRequests=0,modelStatus=null,noPaid=null,answerGrounded=false,cleanupStatus=null,consentDisabled=false,error=''}){
+  return {object:'mmir.l2.document_acceptance_receipt',run_id:runId,document_id:documentId,phase,route:DOCUMENT_ACCEPTANCE_ROUTE,limits:{backend_requests:backendRequests,knowledge_search_requests:searchRequests,model_requests:modelRequests,max_tokens:512,retries:0},model_status:modelStatus,no_paid_receipt:noPaid,answer_grounded:answerGrounded,cleanup:{delete_status:cleanupStatus,consent_disabled:consentDisabled},error,raw_document_included:false,bearer_included:false};
 }
 async function safeResponseSummary(response,capturedId=''){
   const summary={status:response.status(),object_list:false,data_array:false,data_count:0,captured_id_present:false};
@@ -136,6 +149,40 @@ async function publishedBrowserProof(options){
     diagnostics.fallbackDelete=async id=>{if(id!==cleanupDocumentId)throw new Error('fallback id mismatch');const result=await page.evaluate(async capturedId=>window.MimirApiClient.personalMemoryRequest('/knowledge/documents/'+encodeURIComponent(capturedId),{method:'DELETE'}),id);if(result!==null)throw new Error('fallback delete response was not 204');return 204;};
     await recoverableJourney({runId,createdAt,diagnostics,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();cleanupDocumentId=String(body?.data?.id||'');return cleanupDocumentId;},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const messages=chatPayload?.messages||[],systemText=messages.filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n'),userText=messages.filter(message=>message?.role==='user').map(message=>String(message.content||'')).join('\n');if(systemText.includes(name)||systemText.includes(marker)||!userText.includes(name)||!userText.includes(marker))throw new Error('grounding trust boundary absent');diagnostics.groundingPassed=true;},deleteDocument:async(id,cleanup)=>{cleanup.deleteStage='reopen_modal';if(!(await dialogIsOpen(dialog))){const listed=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='GET');await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});cleanup.deleteStage='await_document_list';diagnostics.responses.document_list=await safeResponseSummary(await listed,id);}diagnostics.documentDom=await safeDocumentDom(dialog,id);cleanup.documentDom=diagnostics.documentDom;cleanup.deleteStage='select_document';await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());cleanup.deleteStage='dispatch_delete';const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE');await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();cleanup.deleteStage='await_delete_response';const response=await deleted;cleanup.deleteStatus=response.status();if(response.status()!==204)throw new Error('document delete response was not 204');},disableStorage:async()=>{if(!(await dialogIsOpen(dialog)))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
   }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
+}
+async function documentAcceptanceProof(options){
+  const runId='l2-document-'+randomUUID(),marker='Synthetic document '+runId,documentName=runId+'.txt',deadline=Date.now()+90000;
+  let browser=null,context=null,page=null,documentId='',backendRequests=0,searchRequests=0,modelRequests=0,modelStatus=null,noPaid=null,answerGrounded=false,cleanupStatus=null,consentDisabled=false,primaryError='';
+  const remaining=()=>Math.max(1,Math.min(15000,deadline-Date.now()));
+  const receipt=(phase)=>atomicReceipt(options.receipt,documentAcceptanceReceipt({runId,documentId,phase,backendRequests,searchRequests,modelRequests,modelStatus,noPaid,answerGrounded,cleanupStatus,consentDisabled,error:primaryError}));
+  await receipt('started');
+  try{
+    browser=await chromium.launch({headless:true,timeout:10000});context=await browser.newContext({serviceWorkers:'block'});page=await context.newPage();page.setDefaultTimeout(5000);await page.addInitScript(()=>{window.MMIR_CHAT_VIA_BACKEND=true;});
+    await page.route('**/*',async route=>{const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;
+      if(Date.now()>=deadline)return route.abort();
+      if(url.origin===PUBLISHED_PAGE.replace('/mmir.html',''))return route.continue();
+      if(url.origin===GATEWAY_ORIGIN){if(method==='GET'&&['/health','/status','/v1/models'].includes(path))return route.continue();return route.abort();}
+      if(url.origin!==BACKEND_ORIGIN)return route.abort();
+      const allowed=(method==='GET'&&['/health','/consent','/memory','/knowledge/documents','/v1/models'].includes(path))||(method==='POST'&&['/identity/session','/knowledge/documents','/knowledge/search','/v1/chat/completions'].includes(path))||(method==='PUT'&&path==='/consent')||(method==='DELETE'&&Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId));
+      if(!allowed||++backendRequests>20)return route.abort();
+      if(path==='/knowledge/search')searchRequests+=1;
+      if(path!=='/v1/chat/completions')return route.fetch({timeout:remaining(),maxRetries:0,maxRedirects:0}).then(response=>response.text().then(body=>route.fulfill({response,body})));
+      if(++modelRequests>1)return route.abort();
+      const incoming=request.postDataJSON(),messages=Array.isArray(incoming?.messages)?incoming.messages:[],system=messages.filter(item=>item?.role==='system').map(item=>String(item.content||'')).join('\n'),user=messages.filter(item=>item?.role==='user').map(item=>String(item.content||'')).join('\n');
+      if(incoming?.model!==DOCUMENT_ACCEPTANCE_ROUTE||system.includes(marker)||!user.includes(marker))throw new Error('document grounding or forced route absent before egress');
+      const payload={...incoming,max_tokens:512,stream:false,synthetic_probe:true,persist_feedback_store:false,policy:{...(incoming.policy||{}),paid_routes_allowed:false,require_no_paid_receipt:true}};
+      const response=await route.fetch({postData:JSON.stringify(payload),timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();modelStatus=response.status();let parsed={};try{parsed=JSON.parse(body);}catch{}const metadata=parsed?.mmir||{};noPaid=metadata.no_paid_routes_started??parsed.no_paid_routes_started??null;answerGrounded=response.status()===200&&String(parsed?.choices?.[0]?.message?.content||'').includes(marker);return route.fulfill({response,body});
+    });
+    await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded',timeout:remaining()});const catalogue=page.waitForResponse(response=>new URL(response.url()).origin===GATEWAY_ORIGIN&&new URL(response.url()).pathname==='/v1/models',{timeout:remaining()});await catalogue;
+    await page.locator('#p0-model').click();await page.locator('button[data-model-id="'+DOCUMENT_ACCEPTANCE_ROUTE+'"][data-model-selectable="true"]').click();await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');await dialog.waitFor({state:'visible'});await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();await dialog.getByText(/Remote storage enabled/).waitFor();await dialog.locator('[data-personal-memory-text]').fill(marker);await dialog.locator('[data-personal-knowledge-name]').fill(documentName);
+    const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201,{timeout:remaining()});await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const createBody=await (await created).json();documentId=String(createBody?.data?.id||'');if(!documentId)throw new Error('created document id missing');await receipt('created');await dialog.locator('[data-personal-knowledge-id="'+documentId+'"]').waitFor({timeout:remaining()});await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill('What exact synthetic document marker was saved?');await page.locator('#p0-send').click();await page.waitForFunction(value=>[...document.querySelectorAll('.p0-message-assistant .p0-message-body')].some(node=>node.textContent.includes(value)),marker,{timeout:remaining()});if(modelRequests!==1||searchRequests<1||modelStatus!==200||noPaid!==true||!answerGrounded)throw new Error('bounded no-spend grounded answer contract failed');
+  }catch(error){primaryError=safeErrorCategory(error);}
+  finally{
+    if(page&&documentId)try{const result=await page.evaluate(async id=>window.MimirApiClient.personalMemoryRequest('/knowledge/documents/'+encodeURIComponent(id),{method:'DELETE'}),documentId);if(result!==null)throw new Error('delete response was not 204');cleanupStatus=204;}catch(error){cleanupStatus=0;primaryError=primaryError||safeErrorCategory(error);}
+    if(page)try{await page.evaluate(()=>window.MimirApiClient.personalMemoryRequest('/consent',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory:false})}));consentDisabled=true;}catch(error){primaryError=primaryError||safeErrorCategory(error);}
+    await receipt(primaryError||cleanupStatus!==204||!consentDisabled?'failed':'complete').catch(()=>{});if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});
+  }
+  if(primaryError||cleanupStatus!==204||!consentDisabled)throw new Error('document acceptance did not complete with verified cleanup');
 }
 async function browserProof(){
   const port=8799;
@@ -423,4 +470,6 @@ await publishedModalRecoveryProof('missing-chat');
 for(const mode of ['invalid','empty']){try{await publishedModalRecoveryProof(mode);failures.push('Published modal '+mode+' list unexpectedly selected a document.');}catch(error){if(safeErrorCategory(error)!=='timeout')failures.push('Published modal '+mode+' list did not retain the selector failure category.');}}
 const published=publishedOptions();
 if(published)await publishedBrowserProof(published);
+const documentAcceptance=documentAcceptanceOptions();
+if(documentAcceptance)await documentAcceptanceProof(documentAcceptance);
 if(failures.length){console.error('P0 personal-memory smoke failed:');failures.forEach(item=>console.error('- '+item));process.exit(1);}
