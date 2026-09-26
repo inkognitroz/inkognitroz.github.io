@@ -12,15 +12,16 @@ const BACKEND_ORIGIN='https://backend.mmir.ai';
 const GATEWAY_ORIGIN='https://api.mmir.ai';
 function publishedBackendAllowed(method,path,documentId=''){
   if(method==='DELETE')return Boolean(documentId)&&path==='/knowledge/documents/'+encodeURIComponent(documentId);
-  return ['GET /health','POST /identity/session','GET /identity/session','GET /consent','PUT /consent','GET /knowledge/documents','POST /knowledge/documents','POST /knowledge/search'].includes(method+' '+path);
+  return ['GET /health','POST /identity/session','GET /identity/session','GET /consent','PUT /consent','GET /memory','GET /knowledge/documents','POST /knowledge/documents','POST /knowledge/search'].includes(method+' '+path);
 }
-async function interceptPublishedRequest(route,{documentId,onChat}){
+async function interceptPublishedRequest(route,{documentId,onChat,pageOrigin='https://mmir.ai',backendHandler=null,gatewayHandler=null}){
   const request=route.request(),url=new URL(request.url()),json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
-  if(url.origin==='https://mmir.ai')return route.continue();
-  if(url.origin===GATEWAY_ORIGIN){if(request.method()==='POST')return route.abort();return json(200,url.pathname==='/v1/models'?{object:'list',data:[{id:'mmir-supergenius',executable:true,selectable:true,availability:'available'}]}:{ok:true,object:'list',data:[]});}
+  if(url.origin===pageOrigin)return route.continue();
+  if(url.origin===GATEWAY_ORIGIN){if(gatewayHandler)return gatewayHandler(route);if(request.method()==='POST')return route.abort();return json(200,url.pathname==='/v1/models'?{object:'list',data:[{id:'mmir-supergenius',executable:true,selectable:true,availability:'available'}]}:{ok:true,object:'list',data:[]});}
   if(url.origin!==BACKEND_ORIGIN)return route.abort();
   if(url.pathname==='/v1/chat/completions'){onChat(request.postDataJSON());return json(200,{id:'synthetic-l4-chat',model:'locally-fulfilled-no-model',choices:[{message:{role:'assistant',content:'Synthetic local receipt.'}}]});}
   if(!publishedBackendAllowed(request.method(),url.pathname,documentId()))return route.abort();
+  if(backendHandler)return backendHandler(route);
   return route.continue();
 }
 
@@ -31,8 +32,8 @@ function publishedOptions(){
   if(!String(process.env.MMIR_L4_RECEIPT_PATH||'')||!receipt.startsWith('/tmp/'))throw new Error('Published mode requires MMIR_L4_RECEIPT_PATH under /tmp/.');
   return {receipt};
 }
-function receiptBody({runId,documentId='',createdAt,phase,deleted=false,disabled=false,chat='not_started'}){
-  return {object:'mmir.l4.synthetic_receipt',run_id:runId,document_id:documentId,created_at:createdAt,phase,chat,cleanup:{document_deleted:deleted,consent_disabled:disabled},raw_document_included:false,bearer_included:false};
+function receiptBody({runId,documentId='',createdAt,phase,deleted=false,disabled=false,chat='not_started',deleteStage='not_started',deleteStatus=null,disableStage='not_started'}){
+  return {object:'mmir.l4.synthetic_receipt',run_id:runId,document_id:documentId,created_at:createdAt,phase,chat,cleanup:{document_deleted:deleted,consent_disabled:disabled,delete_stage:deleteStage,delete_status:deleteStatus,disable_stage:disableStage},raw_document_included:false,bearer_included:false};
 }
 async function atomicReceipt(path,value){
   const serialized=JSON.stringify(value)+'\n';
@@ -43,7 +44,7 @@ async function atomicReceipt(path,value){
   await rename(pending,path);
 }
 async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,chat,deleteDocument,disableStorage}){
-  let documentId=''; let primary=null; let deleteFailed=false; let disableFailed=false; let receiptFailed=false;
+  let documentId=''; let primary=null; let deleteFailed=false; let disableFailed=false; let receiptFailed=false; const cleanup={deleteStage:'not_started',deleteStatus:null,disableStage:'not_started'};
   try{
     documentId=String(await createDocument()||'');
     if(!documentId)throw new Error('document id missing after create');
@@ -51,9 +52,9 @@ async function recoverableJourney({runId,createdAt,writeReceipt,createDocument,c
     await chat(documentId);
   }catch(error){primary=error;}
   finally{
-    if(documentId)try{await deleteDocument(documentId);}catch(error){deleteFailed=true;}
-    try{await disableStorage();}catch(error){disableFailed=true;}
-    try{await writeReceipt(receiptBody({runId,documentId,createdAt,phase:primary?'failed':'complete',deleted:!!documentId&&!deleteFailed,disabled:!disableFailed,chat:'locally_fulfilled'}));}catch(error){receiptFailed=true;}
+    if(documentId)try{await deleteDocument(documentId,cleanup);cleanup.deleteStage='deleted';}catch(error){deleteFailed=true;}
+    try{cleanup.disableStage='disabling';await disableStorage();cleanup.disableStage='disabled';}catch(error){disableFailed=true;}
+    try{await writeReceipt(receiptBody({runId,documentId,createdAt,phase:primary||deleteFailed||disableFailed?'failed':'complete',deleted:!!documentId&&!deleteFailed,disabled:!disableFailed,chat:'locally_fulfilled',...cleanup}));}catch(error){receiptFailed=true;}
   }
   if(primary||deleteFailed||disableFailed||receiptFailed)throw new Error('synthetic journey did not complete with verified cleanup');
 }
@@ -81,6 +82,20 @@ async function publishedRecoveryProtocolProof(){
     if(/Bearer\s|mmiru1\.|Cleanup fixture document/i.test(text))failures.push('Published recovery receipts must not contain a bearer or document text.');
   }
 }
+async function publishedModalRecoveryProof(){
+  const port=8800,origin=`http://127.0.0.1:${port}`,documentId='11111111-1111-1111-1111-111111111111';
+  const server=spawn(process.execPath,['scripts/serve-public.mjs'],{cwd:root,env:{...process.env,HOST:'127.0.0.1',PORT:String(port)},stdio:['ignore','pipe','pipe']});
+  let output='';server.stdout.on('data',chunk=>{output=(output+chunk).slice(-2048);});
+  const ready=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('published modal fixture server readiness timed out')),10000);server.stdout.on('data',()=>{if(output.includes(`Serving public at ${origin}/mmir.html`)){clearTimeout(timer);resolve();}});server.once('error',error=>{clearTimeout(timer);reject(error);});server.once('exit',()=>{clearTimeout(timer);reject(new Error('published modal fixture server exited before readiness'));});});
+  let browser=null,context=null;
+  try{
+    browser=await chromium.launch({headless:true});context=await browser.newContext({serviceWorkers:'block'});const page=await context.newPage();page.setDefaultTimeout(5000);await page.addInitScript(()=>{window.MMIR_CHAT_VIA_BACKEND=true;});
+    let consent=false,deleted=false,chatPayload=null;const now=()=>new Date().toISOString();
+    const json=(route,status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
+    await page.route('**/*',route=>interceptPublishedRequest(route,{pageOrigin:origin,documentId:()=>documentId,onChat:payload=>{chatPayload=payload;},backendHandler:async route=>{const request=route.request(),url=new URL(request.url()),method=request.method(),path=url.pathname;if(path==='/health')return json(route,200,{status:'online',service:'mmir-orchestrator',layer:'backend',capabilities:['identity','proxy.chat_completions']});if(path==='/identity/session')return json(route,200,{object:'mmir.identity_session',anonymous:true,token:'synthetic-session-token',identity_id:'usr_fixture',issued_at:now(),expires_at:new Date(Date.now()+86400000).toISOString()});if(path==='/consent'&&method==='PUT'){consent=JSON.parse(request.postData()||'{}').memory===true;return json(route,200,{object:'consent',memory:consent});}if(path==='/consent')return json(route,200,{object:'consent',memory:consent});if(path==='/memory')return json(route,200,{object:'list',data:[]});if(path==='/knowledge/documents'&&method==='POST')return json(route,201,{object:'knowledge.document',data:{id:documentId,workspace_id:'personal',name:'fixture.txt',type:'text/plain',source_type:'upload',size_chars:12,chunk_count:1,metadata:{},created_at:now()}});if(path==='/knowledge/documents'&&method==='GET')return json(route,200,{object:'list',user_id:'usr_fixture',data:deleted?[]:[{id:documentId,workspace_id:'personal',name:'fixture.txt',type:'text/plain',source_type:'upload',size_chars:12,chunk_count:1,metadata:{},created_at:now()}]});if(path==='/knowledge/search')return json(route,200,{data:[{snippet:'fixture marker',chunk_id:'fixture-chunk',document:{id:documentId,name:'fixture.txt'}}]});if(path==='/knowledge/documents/'+documentId&&method==='DELETE'){deleted=true;return route.fulfill({status:204,body:''});}return route.abort();}}));
+    await page.goto(origin+'/mmir.html',{waitUntil:'domcontentloaded'});await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');await dialog.waitFor({state:'visible'});await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click();await dialog.getByText(/Remote storage enabled/).waitFor();await dialog.locator('[data-personal-memory-text]').fill('fixture marker');await dialog.locator('[data-personal-knowledge-name]').fill('fixture.txt');const created=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();await created;await dialog.locator('[data-personal-knowledge-id="'+documentId+'"]').waitFor();await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill('fixture');await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});await dialog.locator('[data-personal-knowledge-id="'+documentId+'"]').click();page.once('dialog',prompt=>prompt.accept());const removed=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+documentId&&response.request().method()==='DELETE');await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();if((await removed).status()!==204)throw new Error('published modal recovery delete did not return 204');await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();if(!deleted||consent||!chatPayload)failures.push('Published modal recovery must reopen, select its captured document, delete it, disable storage, and intercept chat locally.');
+  }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});if(server.exitCode===null)server.kill('SIGTERM');}
+}
 async function publishedBrowserProof(options){
   const runId='l4-'+randomUUID(); const createdAt=new Date().toISOString();
   await atomicReceipt(options.receipt,receiptBody({runId,createdAt,phase:'started'}));
@@ -92,7 +107,7 @@ async function publishedBrowserProof(options){
     await page.goto(PUBLISHED_PAGE,{waitUntil:'domcontentloaded'}); await page.locator('#p0-sidebar-settings').click(); await page.getByText('Personlig minne',{exact:true}).click(); dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]'); await dialog.waitFor({state:'visible'});
     await dialog.getByRole('button',{name:'Enable remote storage',exact:true}).click(); await dialog.getByText(/Remote storage enabled/).waitFor();
     const marker='L4 synthetic '+runId; const name=runId+'.txt'; await dialog.locator('[data-personal-memory-text]').fill(marker); await dialog.locator('[data-personal-knowledge-name]').fill(name);
-    await recoverableJourney({runId,createdAt,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();cleanupDocumentId=String(body?.data?.id||'');return cleanupDocumentId;},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const contextText=(chatPayload?.messages||[]).filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n');if(!contextText.includes(name)||!contextText.includes(marker))throw new Error('grounded document context absent');},deleteDocument:async id=>{if(!(await dialog.isVisible())){await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});}await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE'&&response.status()===204);await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();await deleted;},disableStorage:async()=>{if(!(await dialog.isVisible()))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
+    await recoverableJourney({runId,createdAt,writeReceipt:value=>atomicReceipt(options.receipt,value),createDocument:async()=>{const created=page.waitForResponse(response=>new URL(response.url()).origin===BACKEND_ORIGIN&&new URL(response.url()).pathname==='/knowledge/documents'&&response.request().method()==='POST'&&response.status()===201);await dialog.getByRole('button',{name:'Save as knowledge document',exact:true}).click();const body=await (await created).json();cleanupDocumentId=String(body?.data?.id||'');return cleanupDocumentId;},chat:async()=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('#p0-input').fill(runId);await page.locator('#p0-send').click();await page.getByText('Synthetic local receipt.').waitFor();const contextText=(chatPayload?.messages||[]).filter(message=>message?.role==='system').map(message=>String(message.content||'')).join('\n');if(!contextText.includes(name)||!contextText.includes(marker))throw new Error('grounded document context absent');},deleteDocument:async(id,cleanup)=>{cleanup.deleteStage='reopen_modal';if(!(await dialog.isVisible())){await page.locator('#p0-sidebar-settings').click();await page.getByText('Personlig minne',{exact:true}).click();await dialog.waitFor({state:'visible'});}cleanup.deleteStage='select_document';await dialog.locator('[data-personal-knowledge-id="'+id+'"]').click();page.once('dialog',prompt=>prompt.accept());cleanup.deleteStage='dispatch_delete';const deleted=page.waitForResponse(response=>new URL(response.url()).pathname==='/knowledge/documents/'+encodeURIComponent(id)&&response.request().method()==='DELETE');await dialog.getByRole('button',{name:'Delete selected document',exact:true}).click();cleanup.deleteStage='await_delete_response';const response=await deleted;cleanup.deleteStatus=response.status();if(response.status()!==204)throw new Error('document delete response was not 204');},disableStorage:async()=>{if(!(await dialog.isVisible()))return;await dialog.getByRole('button',{name:'Disable remote storage',exact:true}).click();await dialog.getByText(/Remote storage disabled/).waitFor();}});
   }finally{if(context)await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
 }
 async function browserProof(){
@@ -375,6 +390,7 @@ async function browserProof(){
 
 await browserProof();
 await publishedRecoveryProtocolProof();
+await publishedModalRecoveryProof();
 const published=publishedOptions();
 if(published)await publishedBrowserProof(published);
 if(failures.length){console.error('P0 personal-memory smoke failed:');failures.forEach(item=>console.error('- '+item));process.exit(1);}
