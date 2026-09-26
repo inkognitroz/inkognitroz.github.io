@@ -31,6 +31,7 @@ requireIncludes(helper, 'window.MimirP0RouteAdapters', 'P0 route adapter helper 
 requireIncludes(helper, 'targetAddressSpace=\'loopback\'', 'P0 route adapter helper must own Local Network Access loopback hints.');
 requireIncludes(helper, 'provider_secrets_in_browser:false', 'P0 route adapter helper must publish no-secret evidence.');
 requireIncludes(helper, 'sanitizeChatRequestOptions', 'P0 route adapter helper must own public chat request sanitization.');
+requireIncludes(helper, "error.code='protected_context_send_stopped'", 'P0 route adapter must stop an unsent protected-context payload when its final gate closes.');
 requireIncludes(helper, 'sanitizeSystemMemoryContent', 'P0 route adapter helper must sanitize synthetic system-memory echoes.');
 requireIncludes(helper, 'system_memory_truth_guard:true', 'P0 route adapter helper must publish system-memory truth evidence.');
 requireIncludes(helper, 'request_truth_guard:true', 'P0 route adapter helper must publish request-truth evidence.');
@@ -114,6 +115,28 @@ if (api.fetchOptions('http://127.0.0.1:3000/health', {}).targetAddressSpace !== 
 if (api.localHeaders('abc')['x-mmir-local-token'] !== 'abc') fail('P0 route adapter helper must build local connector headers.');
 await api.fetchJson('http://127.0.0.1:3000/health', { timeoutMs: 1000 });
 if (lastFetch?.init?.targetAddressSpace !== 'loopback') fail('P0 route adapter helper fetchJson must apply loopback fetch options.');
+
+let releasePrepared = null;
+let protectedContextOpen = true;
+context.window.MimirApiClient = {
+  prepareBackendRequest: () => new Promise((resolve) => { releasePrepared = resolve; })
+};
+const fetchBeforeGate = lastFetch;
+const stoppedProtectedContext = api.fetchJson('https://backend.mmir.ai/v1/chat/completions', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ model: 'mmir-supergenius', messages: [{ role: 'user', content: 'fixture' }] }),
+  beforeFetch: () => protectedContextOpen
+});
+await Promise.resolve();
+protectedContextOpen = false;
+releasePrepared({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'mmir-supergenius', messages: [{ role: 'user', content: 'fixture' }] }) });
+await stoppedProtectedContext.then(
+  () => fail('A final closed protected-context gate must stop the request before fetch.'),
+  (error) => { if (error?.code !== 'protected_context_send_stopped') fail('A closed protected-context gate must report the bounded stop code.'); }
+);
+if (lastFetch !== fetchBeforeGate) fail('A final closed protected-context gate must not issue a fetch after delayed identity preparation.');
+delete context.window.MimirApiClient;
 
 const currentPrompt = 'Hvor mange minutter er det i 2,5 timer?';
 await api.fetchJson('https://api-staging.mmir.ai/v1/chat/completions', {

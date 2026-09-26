@@ -110,7 +110,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='',options={})",
+  "function hostedPayload(prompt,model=defaultHostedModel(),media=null,displayPrompt='',options={},protectedKnowledge='')",
   'Hosted payload must accept the selected hosted model and optional media attachment.'
 );
 requireIncludes(

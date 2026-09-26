@@ -30,6 +30,9 @@
     const url=typeof P0_ROUTE_ADAPTERS.chatApiUrl==='function'?P0_ROUTE_ADAPTERS.chatApiUrl():'';
     return chatViaBackend()&&url?url+'/knowledge/search':'';
   }
+  function protectedKnowledgeAllowed(){
+    return !privateModeActive()&&window.MmirP0PersonalMemory?.isUseSuspended?.()!==true;
+  }
   const ROUTE_SCORE_PATH=ROUTE_ADAPTER_CONFIG.routeScorePath||'/routing/score';
   const COMPARE_PATH=ROUTE_ADAPTER_CONFIG.comparePath||'/chat/compare';
   const SWARM_PREVIEW_PATH=ROUTE_ADAPTER_CONFIG.swarmPreviewPath||'/chat/swarm/preview';
@@ -7165,17 +7168,17 @@
   async function backendKnowledgeContext(prompt){
     const endpoint=backendKnowledgeEndpoint();
     const request=window.MimirApiClient?.personalMemoryRequest;
-    if(!endpoint||typeof request!=='function'||privateModeActive()||window.MmirP0PersonalMemory?.isUseSuspended?.()===true)return '';
+    if(!endpoint||typeof request!=='function'||!protectedKnowledgeAllowed())return '';
     try{
       const workspaceId=readStorageString('mimir-active-workspace-v1','personal')||'personal';
       const consent=await request('/consent',{method:'GET',headers:{Accept:'application/json'},timeoutMs:8000});
-      if(consent?.object!=='consent'||consent.memory!==true||privateModeActive()||window.MmirP0PersonalMemory?.isUseSuspended?.()===true)return '';
+      if(consent?.object!=='consent'||consent.memory!==true||!protectedKnowledgeAllowed())return '';
       const data=await request('/knowledge/search',{
         method:'POST',
         body:JSON.stringify({workspace_id:workspaceId,query:prompt,limit:3}),
         timeoutMs:8000
       });
-      if(privateModeActive()||window.MmirP0PersonalMemory?.isUseSuspended?.()===true)return '';
+      if(!protectedKnowledgeAllowed())return '';
       const matches=(Array.isArray(data?.data)?data.data:[])
         .filter(item=>item?.snippet&&item?.document?.name)
         .slice(0,3);
@@ -7307,6 +7310,7 @@
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
       onDelta:streaming?(delta)=>{if(presentation?.isCurrent(presentationId))presentation.delta(delta);}:undefined,
+      beforeFetch:()=>!protectedKnowledge||protectedKnowledgeAllowed(),
       timeoutMs:45000,
       signal
     });
