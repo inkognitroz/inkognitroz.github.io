@@ -32,7 +32,7 @@ async function browserProof() {
     // A fresh context per flag state: the flag is read from the page's own window, and
     // a shared context would carry the previous case's stored conversation into the
     // next one's transcript.
-    async function chatOnce({ flagOn, flagValue, backendStatus = 200 }) {
+    async function chatOnce({ flagOn, flagValue, backendStatus = 200, memoryEnabled = true, suspendUse = false }) {
       context = await browser.newContext({ serviceWorkers: 'block' });
       const page = await context.newPage();
       page.setDefaultTimeout(8000);
@@ -52,6 +52,9 @@ async function browserProof() {
           }
           if (pathname === '/identity/session') {
             return json(200, { object: 'mmir.identity_session', anonymous: true, token: 'synthetic-session-token', identity_id: 'usr_fixture', issued_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString() });
+          }
+          if (pathname === '/consent') {
+            return json(200, { object: 'consent', memory: memoryEnabled, updated_at: new Date().toISOString() });
           }
           if (pathname === '/knowledge/search') {
             knowledgeCalls.push({ origin, authorization: route.request().headers().authorization || '', body: route.request().postDataJSON() });
@@ -80,6 +83,7 @@ async function browserProof() {
       });
       await page.goto(`http://127.0.0.1:${port}/mmir.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#p0-input').waitFor();
+      if (suspendUse) await page.evaluate(() => { window.MmirP0PersonalMemory = { isUseSuspended: () => true }; });
       await page.locator('#p0-input').fill('Si noe kort.');
       await page.locator('#p0-send').click();
       await page.waitForFunction(() => document.body.innerText.includes('Backend answered.')
@@ -110,6 +114,16 @@ async function browserProof() {
     if (!injectedContext.includes('offline-proof.txt') || !injectedContext.includes('ORBITAL-CEDAR-447 synthetic retrieval proof')) {
       fail('The backend chat payload must contain the retrieved protected-document source and snippet.');
     }
+
+    // A revoked consent is an opt-out: the backend chat may still answer, but
+    // no protected-document lookup or snippet may enter its payload.
+    const optedOut = await chatOnce({ flagOn: true, memoryEnabled: false });
+    if (optedOut.knowledgeCalls.length !== 0) fail('With memory consent off the shell must not search protected documents.');
+    const optedOutSystem = optedOut.chatCalls[0]?.body?.messages?.filter((message) => message?.role === 'system').map((message) => String(message.content || '')).join('\n') || '';
+    if (optedOutSystem.includes('offline-proof.txt') || optedOutSystem.includes('ORBITAL-CEDAR-447 synthetic retrieval proof')) fail('With memory consent off no protected-document text may enter the chat payload.');
+
+    const disabling = await chatOnce({ flagOn: true, suspendUse: true });
+    if (disabling.knowledgeCalls.length !== 0) fail('While a storage disable is pending the shell must not search protected documents.');
 
     // Only exactly true turns it on. A truthy string is a configuration mistake, and
     // treating it as consent would move the chat route by accident.

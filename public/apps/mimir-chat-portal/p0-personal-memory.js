@@ -370,5 +370,7 @@
     dialog.addEventListener('cancel',invalidate);
   }
   async function open(options={}){if(!dialog)build();canUseRemote=typeof options.canUseRemote==='function'?options.canUseRemote:()=>false;dialog.showModal();controls(false);if(!canUseRemote()){status('Personal cloud storage is unavailable in private or superprivate mode.',true);return;}await refresh();}
-  window.MmirP0PersonalMemory=Object.freeze({open});
+  // The shell uses this only to stop an in-flight consent revocation from
+  // copying document text into a chat request before the server confirms it.
+  window.MmirP0PersonalMemory=Object.freeze({open,isUseSuspended:()=>useSuspended});
 })();

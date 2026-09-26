@@ -695,7 +695,7 @@ requireIncludes(
 );
 requireIncludes(
   shell,
-  "function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt='')",
+  "function hostedConversationMessages(prompt,systemPrompt,media=null,displayPrompt='',protectedKnowledge='')",
   'Hosted chat payloads must carry bounded conversation context instead of only the latest prompt.'
 );
 requireIncludes(
@@ -720,7 +720,7 @@ requireNotIncludes(
 );
 requireIncludes(
   shell,
-  'const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt);',
+  'const messages=hostedConversationMessages(prompt,systemPrompt,media,displayPrompt,protectedKnowledge);',
   'Hosted and compare payloads must use the bounded conversation-history helper.'
 );
 requireIncludes(

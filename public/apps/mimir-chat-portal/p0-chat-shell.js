@@ -7165,14 +7165,17 @@
   async function backendKnowledgeContext(prompt){
     const endpoint=backendKnowledgeEndpoint();
     const request=window.MimirApiClient?.personalMemoryRequest;
-    if(!endpoint||typeof request!=='function')return '';
+    if(!endpoint||typeof request!=='function'||privateModeActive()||window.MmirP0PersonalMemory?.isUseSuspended?.()===true)return '';
     try{
       const workspaceId=readStorageString('mimir-active-workspace-v1','personal')||'personal';
+      const consent=await request('/consent',{method:'GET',headers:{Accept:'application/json'},timeoutMs:8000});
+      if(consent?.object!=='consent'||consent.memory!==true||privateModeActive()||window.MmirP0PersonalMemory?.isUseSuspended?.()===true)return '';
       const data=await request('/knowledge/search',{
         method:'POST',
         body:JSON.stringify({workspace_id:workspaceId,query:prompt,limit:3}),
         timeoutMs:8000
       });
+      if(privateModeActive()||window.MmirP0PersonalMemory?.isUseSuspended?.()===true)return '';
       const matches=(Array.isArray(data?.data)?data.data:[])
         .filter(item=>item?.snippet&&item?.document?.name)
         .slice(0,3);
