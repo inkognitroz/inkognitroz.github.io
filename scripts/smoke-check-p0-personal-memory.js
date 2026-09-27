@@ -95,15 +95,28 @@ function safeErrorCategory(error){
   if(name==='Error')return 'operation_error';
   return 'unknown_error';
 }
+const SAFE_CHAT_ERROR_CODES=new Set(['chat_provider_unavailable','gateway_not_configured','provider_route_failed','provider_rate_limited','provider_model_gone','provider_route_temporarily_degraded','provider_timeout','provider_capacity_unavailable','provider_global_capacity_unavailable','provider_capacity_coordinator_unavailable','no_paid_provider_request_limit_reached','request_cancelled','invalid_request']);
+const SAFE_CHAT_ERROR_TYPES=new Set(['api_error']);
+const SAFE_CHAT_FAILURE_CLASSES=new Set(['gateway_timeout','gateway_fetch_error','upstream_timeout','upstream_rate_limit','upstream_http_5xx','upstream_http_4xx','upstream_model_gone','pre_call_deadline_exhausted','local_rate_limit','global_capacity_limit','capacity_coordinator_unavailable','provider_capacity_unavailable','provider_global_capacity_unavailable','provider_capacity_coordinator_unavailable','local_admission_block','invalid_upstream_payload','managed_compute_failure','model_identity_mismatch','writer_word_limit_exceeded','unknown_provider_failure']);
+function safeChatResponseDiagnostic(body,status){
+  const payload=body&&typeof body==='object'&&!Array.isArray(body)?body:{};
+  const error=payload.error&&typeof payload.error==='object'&&!Array.isArray(payload.error)?payload.error:{};
+  const count=payload.upstream_call_count;
+  const failures=Array.isArray(payload.mmir?.route_failures)?payload.mmir.route_failures:[];
+  const classes=[...new Set(failures.map(item=>String(item?.failure_class||'')).filter(item=>SAFE_CHAT_FAILURE_CLASSES.has(item)))].slice(0,4);
+  const route=String(payload.route_id||failures[0]?.route_id||'').trim();
+  return {status:Number.isInteger(status)&&status>=100&&status<=599?status:null,body_type:payload===body&&body&&typeof body==='object'&&!Array.isArray(body)?'json_object':'non_json',error_code:SAFE_CHAT_ERROR_CODES.has(String(error.code||''))?String(error.code):null,error_type:SAFE_CHAT_ERROR_TYPES.has(String(error.type||''))?String(error.type):null,failure_classes:classes,provider_called:typeof payload.provider_called==='boolean'?payload.provider_called:null,upstream_call_count:typeof count==='number'&&Number.isSafeInteger(count)&&count>=0&&count<=20?count:null,route_id:/^[A-Za-z0-9._:/@-]{1,160}$/.test(route)&&!route.includes('://')?route:null};
+}
 function acceptancePathTemplate(path,documentId=''){
   const normalized=String(path||'').split('?')[0];
   if(normalized==='/knowledge/documents/'+encodeURIComponent(documentId)&&documentId)return '/knowledge/documents/:captured';
   if(normalized.startsWith('/knowledge/documents/'))return '/knowledge/documents/:captured';
   return ['/health','/status','/consent','/memory','/knowledge/documents','/knowledge/search','/identity/session','/v1/models','/v1/chat/completions'].includes(normalized)?normalized:'other';
 }
-function acceptanceDiagnostics(){return {phase:'started',firstFailurePhase:'',createDispatched:false,createResponded:false,events:[]};}
+function acceptanceDiagnostics(){return {phase:'started',firstFailurePhase:'',createDispatched:false,createResponded:false,events:[],event_count:0,chat_response:null};}
 function acceptanceEvent(diagnostics,method,path,outcome,status=null,error=''){
-  if(diagnostics.events.length>=24)return;
+  diagnostics.event_count+=1;
+  if(diagnostics.events.length>=20)diagnostics.events.shift();
   diagnostics.events.push({method,path:acceptancePathTemplate(path),outcome,status:status===null?null:Number(status)||null,error:error||null});
 }
 function acceptanceFailure(diagnostics,phase,error){if(!diagnostics.firstFailurePhase)diagnostics.firstFailurePhase=phase;return safeErrorCategory(error);}
@@ -119,7 +132,7 @@ async function atomicReceipt(path,value){
   await rename(pending,path);
 }
 function documentAcceptanceReceipt({runId,documentId='',phase,backendRequests=0,searchRequests=0,modelRequests=0,modelStatus=null,noPaid=null,answerGrounded=false,cleanupStatus=null,consentDisabled=false,publicProvenance=unknownPublicProvenance(),error='',diagnostics=acceptanceDiagnostics()}){
-  return {object:'mmir.l2.document_acceptance_receipt',run_id:runId,document_id:documentId,phase,picker_route:DOCUMENT_ACCEPTANCE_PICKER_ROUTE,gateway_route:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE,limits:{backend_requests:backendRequests,knowledge_search_requests:searchRequests,model_requests:modelRequests,max_tokens:512,retries:0},model_status:modelStatus,no_paid_receipt:noPaid,answer_grounded:answerGrounded,public_provenance:publicProvenance,diagnostics:{phase:diagnostics.phase,first_failure_phase:diagnostics.firstFailurePhase||null,create_dispatched:diagnostics.createDispatched===true,create_responded:diagnostics.createResponded===true,request_events:diagnostics.events},cleanup:{delete_status:cleanupStatus,consent_disabled:consentDisabled},error,raw_document_included:false,bearer_included:false};
+  return {object:'mmir.l2.document_acceptance_receipt',run_id:runId,document_id:documentId,phase,picker_route:DOCUMENT_ACCEPTANCE_PICKER_ROUTE,gateway_route:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE,limits:{backend_requests:backendRequests,knowledge_search_requests:searchRequests,model_requests:modelRequests,max_tokens:512,retries:0},model_status:modelStatus,no_paid_receipt:noPaid,answer_grounded:answerGrounded,public_provenance:publicProvenance,diagnostics:{phase:diagnostics.phase,first_failure_phase:diagnostics.firstFailurePhase||null,create_dispatched:diagnostics.createDispatched===true,create_responded:diagnostics.createResponded===true,event_count:diagnostics.event_count,request_events:diagnostics.events,chat_response:diagnostics.chat_response},cleanup:{delete_status:cleanupStatus,consent_disabled:consentDisabled},error,raw_document_included:false,bearer_included:false};
 }
 function unknownPublicProvenance(){return {evidence:'public_asset_manifest',availability:'unknown',p0_chat_shell_version:'unknown',p0_personal_memory_version:'unknown',api_client_version:'unknown',deploy_source_sha:'unknown'};}
 function safePublicAssetVersion(value){const version=String(value||'').trim();return /^[A-Za-z0-9._-]{1,120}$/.test(version)?version:'unknown';}
@@ -196,6 +209,9 @@ async function publishedRecoveryProtocolProof(){
   const provenanceReceipt=documentAcceptanceReceipt({runId:'run-fixture',phase:'started',publicProvenance:knownProvenance});
   if(provenanceReceipt.public_provenance?.availability!=='reported'||provenanceReceipt.public_provenance?.p0_chat_shell_version!=='20260924-nordstjerne-forside-v1'||provenanceReceipt.public_provenance?.deploy_source_sha!=='unknown')failures.push('Document acceptance receipts must retain only public asset versions and an honest unknown deploy source SHA.');
   if(unknownProvenance.availability!=='unknown'||Object.values(unknownProvenance).some(value=>value!=='unknown'&&value!=='public_asset_manifest'))failures.push('Document acceptance receipts must mark unavailable public provenance as unknown.');
+  const known503=safeChatResponseDiagnostic({error:{code:'gateway_not_configured',type:'api_error'},provider_called:true,upstream_call_count:1,mmir:{route_failures:[{route_id:'groq/openai/gpt-oss-120b',failure_class:'provider_capacity_unavailable'}]},secret:'must-not-retain'},503);
+  if(known503.status!==503||known503.error_code!=='gateway_not_configured'||known503.error_type!=='api_error'||known503.failure_classes[0]!=='provider_capacity_unavailable'||known503.provider_called!==true||known503.upstream_call_count!==1||known503.route_id!=='groq/openai/gpt-oss-120b'||JSON.stringify(known503).includes('must-not-retain'))failures.push('A known 503 response must retain only bounded safe diagnostics.');
+  for(const value of [null,false,'',undefined]){const unknown503=safeChatResponseDiagnostic({error:{code:'private-code',type:'private-type'},upstream_call_count:value},503);if(unknown503.status!==503||unknown503.error_code!==null||unknown503.error_type!==null||unknown503.provider_called!==null||unknown503.upstream_call_count!==null)failures.push('Missing or unknown 503 diagnostics must remain explicitly unknown.');}
   for(const [method,path] of [['GET','/knowledge/documents/'+captured],['DELETE','/knowledge/documents/a/b'],['POST','/v1/chat/completions']])if(publishedBackendAllowed(method,path,captured))failures.push(`Published mode must reject ${method} ${path}.`);
   const safe=()=>{};
   const cases=[
@@ -294,7 +310,7 @@ async function documentAcceptanceProof(options){
         const incoming=request.postDataJSON(),messages=Array.isArray(incoming?.messages)?incoming.messages:[],system=messages.filter(item=>item?.role==='system').map(item=>String(item.content||'')).join('\n'),user=messages.filter(item=>item?.role==='user').map(item=>String(item.content||'')).join('\n');
         if(incoming?.model!==selectedRoute?.gatewayRoute||system.includes(marker)||!user.includes(marker))throw new Error('document grounding or forced route absent before egress');
         const payload={...incoming,max_tokens:512,stream:false,synthetic_probe:true,persist_feedback_store:false,policy:{...(incoming.policy||{}),paid_routes_allowed:false,require_no_paid_receipt:true}};acceptanceEvent(diagnostics,method,path,'dispatched');
-        try{const response=await route.fetch({postData:JSON.stringify(payload),timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();modelStatus=response.status();acceptanceEvent(diagnostics,method,path,'responded',modelStatus);let parsed={};try{parsed=JSON.parse(body);}catch{}const metadata=parsed?.mmir||{};noPaid=metadata.no_paid_routes_started??parsed.no_paid_routes_started??null;answerGrounded=response.status()===200&&String(parsed?.choices?.[0]?.message?.content||'').includes(marker);return route.fulfill({response,body});}catch(error){acceptanceEvent(diagnostics,method,path,'failed',null,safeErrorCategory(error));throw error;}
+        try{const response=await route.fetch({postData:JSON.stringify(payload),timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();modelStatus=response.status();let parsed={};try{parsed=JSON.parse(body);}catch{}diagnostics.chat_response=safeChatResponseDiagnostic(parsed,response.status());acceptanceEvent(diagnostics,method,path,'responded',modelStatus);const metadata=parsed?.mmir||{};noPaid=metadata.no_paid_routes_started??parsed.no_paid_routes_started??null;answerGrounded=response.status()===200&&String(parsed?.choices?.[0]?.message?.content||'').includes(marker);return route.fulfill({response,body});}catch(error){acceptanceEvent(diagnostics,method,path,'failed',null,safeErrorCategory(error));throw error;}
       },forwardCatalog:async route=>{acceptanceEvent(diagnostics,method,path,'dispatched');try{const response=await route.fetch({timeout:remaining(),maxRetries:0,maxRedirects:0}),body=await response.text();acceptanceEvent(diagnostics,method,path,'responded',response.status());return route.fulfill({response,body});}catch(error){acceptanceEvent(diagnostics,method,path,'failed',null,safeErrorCategory(error));throw error;}}}))return;
       if(url.origin!==BACKEND_ORIGIN){acceptanceEvent(diagnostics,method,path,'blocked',null,'origin');return route.abort();}
       const allowed=documentAcceptanceBackendAllowed(method,path,documentId);
