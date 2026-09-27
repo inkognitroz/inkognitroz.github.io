@@ -8,13 +8,13 @@
   const API_LABEL=ROUTE_ADAPTER_CONFIG.apiLabel||'api.mmir.ai';
   const LOCAL_URL=ROUTE_ADAPTER_CONFIG.localUrl||'http://127.0.0.1:3000';
   const CHAT_PATH=ROUTE_ADAPTER_CONFIG.chatPath||'/v1/chat/completions';
-  // With the chat send on the backend layer, a failure is reported with the API's own
-  // sentence rather than the shell's generic one: the flag exists to measure that
-  // route, and a house phrase would hide what the backend actually said. The generic
-  // copy still applies to the gateway path and to failures with no message at all.
+  // Backend failures may carry useful API text, but source-grounding refusal has a
+  // user-facing copy contract shared with the gateway path. Do not expose the raw
+  // backend sentence for that structured code: it can describe an unverified cause.
   function chatFailureText(error){
     const generic=CHAT_STATE.errorText?.(error)||'Noe gikk galt mens svaret ble hentet. Prøv igjen.';
     if(!chatViaBackend())return generic;
+    if(error?.payload?.error?.code==='required_source_grounding_unavailable')return generic;
     const fromApi=String(error?.payload?.error?.message||'').trim();
     return fromApi||generic;
   }
@@ -95,7 +95,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260924-nordstjerne-forside-v1';
+  const P0_RUNTIME_VERSION='20260928-source-grounding-error-copy-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
