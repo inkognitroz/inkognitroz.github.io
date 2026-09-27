@@ -2412,17 +2412,32 @@
     return '';
   }
 
+  function ordinarySourceEvidenceStatus(payload){
+    const grounding=payload?.mmir?.source_grounding;
+    if(!grounding||typeof grounding!=='object'||Array.isArray(grounding))return '';
+    const sources=Array.isArray(grounding.sources)?grounding.sources:[];
+    const explicit=grounding.answer_evidence_verified;
+    if(explicit===true&&sources.length>0&&sources.every(source=>source?.answer_evidence_verified===true&&source?.verified!==false))return 'verified';
+    if(explicit===false||sources.some(source=>source?.answer_evidence_verified===false||source?.verified===false))return 'unverified';
+    return sources.length?'unknown':'';
+  }
+
   function sourceRetrievalLabel(proof){
     if(proof?.sourceRetrievalStatus==='not_attempted')return 'Ingen kilde hentet';
     if(proof?.sourceRetrievalStatus==='unavailable_or_unsupported')return 'Kildeinnhold utilgjengelig';
-    if(proof?.sourceRetrievalStatus==='retrieved')return 'Kilder hentet';
+    if(proof?.sourceRetrievalStatus==='retrieved'){
+      if(proof?.sourceEvidenceStatus==='verified')return 'Kilder hentet';
+      if(proof?.sourceEvidenceStatus==='unverified')return 'Kilde hentet · svar ubekreftet';
+      return 'Kilde hentet · svarstatus ukjent';
+    }
     return '';
   }
 
   function answerProofLine(payload){
     const raw=payload?.mmir?.answer_proof_line??payload?.answer_proof_line??null;
     const sourceRetrievalStatus=ordinarySourceRetrievalStatus(payload);
-    const disclosure=sourceRetrievalStatus?{sourceRetrievalStatus}:{};
+    const sourceEvidenceStatus=ordinarySourceEvidenceStatus(payload);
+    const disclosure=sourceRetrievalStatus?{sourceRetrievalStatus,...(sourceEvidenceStatus?{sourceEvidenceStatus}:{})}:{};
     const retrievalSources=sourceRetrievalStatus==='retrieved'
       ? proofSourceRecords({mmir:{sources:Array.isArray(payload?.mmir?.source_grounding?.sources)?payload.mmir.source_grounding.sources:[]}},null)
       : proofSourceRecords(payload,null);
