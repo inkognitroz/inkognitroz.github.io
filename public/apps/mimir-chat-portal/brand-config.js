@@ -1,5 +1,5 @@
 !function(w,d){
-  const VERSION='20260810-proof-safe-tagline-v1';
+  const VERSION='20260927-brand-backend-optin-v1';
   const REQUIRED_FIELDS=[
     'name',
     'tagline',
