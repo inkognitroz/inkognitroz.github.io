@@ -7169,7 +7169,7 @@
       stream:false,
       temperature:ordinary&&!media&&(model?.routeType==='external_node'||model?.routeClass==='external-node-untrusted-free')?0:0.7,
       max_tokens:answerTokenBudget(),
-      ...(isCanonicalHostedModel(model)||ordinary?{policy:{paid_routes_allowed:false}}:{})
+      ...(isCanonicalHostedModel(model)||ordinary?{policy:{paid_routes_allowed:false,require_no_paid_receipt:true}}:{})
     };
   }
 
