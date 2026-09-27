@@ -167,16 +167,13 @@ async function publishedRecoveryProtocolProof(){
   if(!(await interceptDocumentAcceptanceRequest(backendChat,handlers))||!chatForwarded||backendChat.action()!=='fulfill')failures.push('Document acceptance must reach its guarded backend chat branch before the generic backend reject.');
   const catalogGet=mockRoute('GET','/v1/models',GATEWAY_ORIGIN);
   if(!(await interceptDocumentAcceptanceRequest(catalogGet,handlers))||!catalogForwarded||catalogGet.action()!=='fulfill')failures.push('Document acceptance must permit only its gateway model catalog GET before the backend boundary.');
-  let catalogListener=null,catalogResolved=false;
   const earlyCatalog={url:()=>GATEWAY_ORIGIN+'/v1/models'};
-  const catalogPage={waitForResponse:(predicate)=>new Promise(resolve=>{catalogListener=response=>{if(predicate(response)){catalogResolved=true;resolve(response);}};}),goto:async()=>{catalogListener?.(earlyCatalog);},evaluate:async()=>null};
-  const armedCatalog=waitForDocumentAcceptanceCatalog(catalogPage,1000);await catalogPage.goto(PUBLISHED_PAGE);await armedCatalog.response();
-  if(!catalogResolved)failures.push('Document acceptance must arm its catalog listener before navigation so a fast catalog response is not lost.');
-  let lateCatalogListener=null,lateCatalogResolved=false,lateCatalogReject=null;
-  const lateCatalogPage={waitForResponse:(predicate)=>new Promise((resolve,reject)=>{lateCatalogReject=reject;lateCatalogListener=response=>{if(predicate(response)){lateCatalogResolved=true;resolve(response);}};}),goto:async()=>{lateCatalogListener?.(earlyCatalog);}};
-  await lateCatalogPage.goto(PUBLISHED_PAGE);const lateCatalog=waitForDocumentAcceptanceCatalog(lateCatalogPage,1000);lateCatalogReject(new Error('catalog fixture timeout'));
+  const catalogFixturePage=()=>{let catalogListener=null,catalogResolved=false,catalogDelivered=false;return {catalogResolved:()=>catalogResolved,page:{waitForResponse:(predicate,{timeout})=>new Promise((resolve,reject)=>{if(timeout!==1000){reject(new Error('catalog fixture timeout argument'));return;}if(catalogDelivered){queueMicrotask(()=>reject(new Error('catalog fixture timeout')));return;}catalogListener=response=>{if(predicate(response)){catalogResolved=true;resolve(response);}};}),goto:async()=>{catalogDelivered=true;catalogListener?.(earlyCatalog);},evaluate:async()=>null}};};
+  const earlyCatalogPage=catalogFixturePage();const armedCatalog=waitForDocumentAcceptanceCatalog(earlyCatalogPage.page,1000);await earlyCatalogPage.page.goto(PUBLISHED_PAGE);await armedCatalog.response();
+  if(!earlyCatalogPage.catalogResolved())failures.push('Document acceptance must arm its catalog listener before navigation so a fast catalog response is not lost.');
+  const lateCatalogPage=catalogFixturePage();await lateCatalogPage.page.goto(PUBLISHED_PAGE);const lateCatalog=waitForDocumentAcceptanceCatalog(lateCatalogPage.page,1000);
   try{await lateCatalog.response();failures.push('The race fixture must retain a missed catalog response as a deterministic failure.');}catch(error){if(!String(error?.message||'').includes('catalog fixture timeout'))failures.push('The catalog fixture must report its observed failure when consumed.');}
-  if(lateCatalogResolved)failures.push('The race fixture must prove that a listener armed after navigation cannot recover an already-delivered catalog response.');
+  if(lateCatalogPage.catalogResolved())failures.push('The race fixture must prove that a listener armed after navigation cannot recover an already-delivered catalog response.');
   if(!documentAcceptanceBackendAllowed('GET','/identity/session')||documentAcceptanceBackendAllowed('GET','/identity/session/other'))failures.push('Document acceptance must preserve the established identity-session read contract without widening the backend allowlist.');
   const otherBackendPost=mockRoute('POST','/v1/other',BACKEND_ORIGIN);if(await interceptDocumentAcceptanceRequest(otherBackendPost,handlers))failures.push('Document acceptance must only recognize the exact backend chat POST.');
   const gatewayChat=mockRoute('POST','/v1/chat/completions',GATEWAY_ORIGIN);if(!(await interceptDocumentAcceptanceRequest(gatewayChat,handlers))||gatewayChat.action()!=='abort')failures.push('Document acceptance must reject a direct gateway chat POST.');
