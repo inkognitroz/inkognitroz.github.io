@@ -258,7 +258,7 @@ async function checkViewport(browser, viewport) {
     localStorage.clear();
     sessionStorage.clear();
   });
-  await firstSessionPage.goto(`${baseUrl}/mmir.html?first_session_truth=${viewport.name}#mimir-chat-runtime`, {
+  await firstSessionPage.goto(`${baseUrl}/mmir.html?brand=supergeni&first_session_truth=${viewport.name}#mimir-chat-runtime`, {
     waitUntil: 'networkidle'
   });
   await firstSessionPage.waitForSelector('.p0-first-session[data-answer-state="live"]');
@@ -306,7 +306,7 @@ async function checkViewport(browser, viewport) {
   page.on('pageerror', error => messages.push(`pageerror: ${error.message}`));
   await installApiFixtures(page);
   await seedBrowserState(page);
-  await page.goto(`${baseUrl}/mmir.html?responsive_guard=${viewport.name}#mimir-chat-runtime`, {
+  await page.goto(`${baseUrl}/mmir.html?brand=supergeni&responsive_guard=${viewport.name}#mimir-chat-runtime`, {
     waitUntil: 'networkidle'
   });
   await page.waitForSelector('#mmir-p0-app');
