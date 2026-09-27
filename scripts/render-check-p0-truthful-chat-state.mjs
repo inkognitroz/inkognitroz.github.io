@@ -153,6 +153,7 @@ async function installFixtures(page, { resetStorage = true, directWriter = false
   await page.route('https://api.mmir.ai/v1/chat/completions', async route => {
     const request = route.request().postDataJSON() || {};
     chatRequests.push(request);
+    if (chatMode === 'calculator-pending') return;
     if (chatMode === 'diagnostic-error') {
       if (failureFixture.network) await route.abort('failed');
       else await route.fulfill({ status: failureFixture.status, contentType: 'application/json', body: failureFixture.body });
@@ -252,6 +253,21 @@ async function visibleState(page) {
 async function screenshot(page, name) {
   await mkdir(screenshotDir, { recursive: true });
   await page.screenshot({ path: `${screenshotDir}/${name}.png`, fullPage: false });
+}
+
+async function waitForCompletedAssistant(page, expectedText, timeoutMs = 5000) {
+  const started = Date.now();
+  try {
+    await page.waitForFunction(({ expected }) => {
+      const body = Array.from(document.querySelectorAll('.p0-message-assistant .p0-message-body')).at(-1);
+      const text = body?.innerText?.trim() || '';
+      return Boolean(text) && !/tenker|pågår|svar venter/i.test(text)
+        && (!expected || text === expected);
+    }, { expected: expectedText }, { timeout: timeoutMs });
+    return { status: 'completed', elapsed_ms: Date.now() - started };
+  } catch {
+    return { status: 'inconclusive', elapsed_ms: Date.now() - started };
+  }
 }
 
 port = await resolveRenderPort({
@@ -562,6 +578,17 @@ try {
     assert(calculatorSummary.startsWith('Kalkulator · verktøysvar'), 'calculator receipt must identify a tool result');
     assert(!/\bLive\b|KI-svar|verifisert|signert/i.test(calculatorSummary), 'calculator receipt must not claim live LLM generation or writer verification');
     assert(await calculatorPage.evaluate(() => localStorage.getItem('mmir-p0-route-benchmarks-v1')) === benchmarksBefore, 'calculator latency must not count as a model benchmark');
+
+    const pendingCalculatorPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+    await installFixtures(pendingCalculatorPage, { resetStorage: true });
+    chatMode = 'calculator-pending';
+    await pendingCalculatorPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=calculator-pending#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+    await pendingCalculatorPage.locator('#p0-input').fill('19 * 37');
+    await pendingCalculatorPage.locator('#p0-send').click();
+    const pendingResult = await waitForCompletedAssistant(pendingCalculatorPage, '19 * 37 = 703', 1000);
+    assert(pendingResult.status === 'inconclusive', 'pending placeholder must not count as a completed calculator answer');
+    assert(Number.isFinite(pendingResult.elapsed_ms), 'pending/no-response result must retain bounded elapsed_ms');
+    await pendingCalculatorPage.close();
 
     const identities = await calculatorPage.evaluate((base) => {
       const identity = (payload) => window.MimirP0RouteAdapters.truthfulWriterIdentity(payload);
