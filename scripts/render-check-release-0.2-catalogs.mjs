@@ -204,7 +204,7 @@ async function checkChatNav(browser){
     return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'release blocked fixture'})});
   });
   await routeApi(page);
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#mmir-p0-app .p0-release-nav');
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   await assertProofSafeBrand(page,'.p0-brand-text > span','chat shell');
@@ -279,7 +279,7 @@ async function checkChatNav(browser){
 async function checkCheckingFirstPaint(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await routeApi(page,{delayMs:500});
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   const checkingRouteText=await page.locator('#p0-route').innerText();
   assert(/Grunnchat kan prøves/i.test(checkingRouteText)&&/live-status ikke bekreftet/i.test(checkingRouteText),'synchronous first paint must expose basic capability without inheriting live readiness; got '+checkingRouteText);
   assert(!/\bready\b/i.test(checkingRouteText),'synchronous first paint must never inherit the legacy ready label; got '+checkingRouteText);
@@ -451,7 +451,7 @@ async function checkCapabilities(browser){
 async function checkReadyHostedGate(browser){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await routeApi(page,{releaseReady:true});
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
   assert((await page.locator('#p0-model .p0-model-name').innerText()).trim()==='Supergeni','connected Supergeni must remain the default route when the exact gateway contract is green');
   await page.locator('#p0-model').click();
@@ -491,7 +491,7 @@ async function checkKeyboardSendAndStop(browser){
       await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'stopped fixture'}}]})});
     }catch(error){}
   });
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
   await page.locator('#p0-input').fill('Start og stopp med tastaturet');
   await page.locator('#p0-input').press('Enter');
@@ -526,7 +526,7 @@ async function checkSingleWriterHostedGate(browser){
       choices:[{message:{role:'assistant',content:requests.length===1?'Havet er stille under månens lys.':'Bølgene glitrer mens natten går mot dag.'},finish_reason:'stop'}]
     })});
   });
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#p0-release-warning[data-state="degraded"]');
   assert(await page.locator('#p0-release-warning').isVisible(),'Singleton first chat must be visibly labelled as limited');
   assert((await page.locator('#p0-release-warning').innerText()).includes('én verifisert skriver'),'Singleton banner must not claim provider diversity');
@@ -561,7 +561,7 @@ async function checkInventoryMismatchFailsClosed(browser){
   ]){
     const page=await browser.newPage({viewport:{width:390,height:844}});
     await routeApi(page,fixture.options);
-    await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+    await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
     await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
     assert(await page.locator('#p0-release-warning').isVisible(),fixture.name+' must keep the prominent warning visible');
     assert(!(await page.locator('#p0-send').isDisabled()),fixture.name+' must keep canonical basic chat attemptable');
@@ -588,7 +588,7 @@ async function checkReadyToBlockedTransition(browser){
     return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'advanced route must not run'})});
   });
   await routeApi(page,{releaseReady:true});
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
   assert(!(await page.locator('#p0-send').isDisabled()),'fresh green proof must enable hosted send before degradation');
   await page.locator('#p0-model').click();
@@ -626,7 +626,7 @@ async function checkDeniedOrdinarySelection(browser){
       return route.fulfill({status:503,contentType:'application/json',body:'{}'});
     });
     await routeApi(page,{writerOverrides});
-    await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+    await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
     await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
     await page.locator('#p0-model').click();
     const denied=page.locator('#p0-model-menu button').filter({hasText:'Mistral Small'});
@@ -665,7 +665,7 @@ async function checkLocalMentionBoundaries(browser){
       await route.fulfill({response,body:source.replace(marker,'  window.__localIntentFixture={state};\n'+marker)});
     });
     await routeApi(page,{releaseReady:true});
-    await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+    await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('p0-release-warning')?.hidden===true);
     const mediaBefore=await page.evaluate(fixture=>{
       const state=window.__localIntentFixture.state;
@@ -738,7 +738,7 @@ async function checkOutOfOrderPreflightFailsClosed(browser){
     hostedChatCalls+=1;
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'must not run'}}]})});
   });
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#mmir-p0-app');
   await page.locator('#p0-input').fill('Use both models to answer.');
   await page.locator('#p0-input').press('Enter');
@@ -805,7 +805,7 @@ async function checkSupersededActionPreflightFailsClosed(browser){
     hostedChatCalls+=1;
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'must not run'}}]})});
   });
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>{
     const warning=document.getElementById('p0-release-warning');
     return warning?.hidden===true&&warning?.dataset.state==='ready';

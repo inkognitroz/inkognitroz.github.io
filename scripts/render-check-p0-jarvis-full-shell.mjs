@@ -27,6 +27,7 @@ const installSpeechFixture=()=>{
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices(){return [{name:'Norsk teststemme',lang:'nb-NO',localService:true}]},speak(utterance){window.jarvisProof.spoken.push(utterance.text);setTimeout(()=>utterance.onend?.(),10)},cancel(){window.jarvisProof.cancelled++}}});
 };
 await context.addInitScript(installSpeechFixture);
+await context.addInitScript(()=>{const setBrand=()=>{if(!document.documentElement)return false;document.documentElement.dataset.mimirBrand='supergeni';return true};if(!setBrand()){const observer=new MutationObserver(()=>{if(setBrand())observer.disconnect()});observer.observe(document,{childList:true});}});
 await context.route('**/*',async route=>{
  const url=new URL(route.request().url());
  if(url.origin==='https://api.mmir.ai'){
@@ -65,7 +66,7 @@ try {
   });
   const html=await readFile(resolve(root,'public/mmir.html'),'utf8');
   await page.setContent(html.replace('<head>','<head><base href="'+origin+'/">'),{waitUntil:'domcontentloaded'});
- }else await page.goto(origin+'/mmir.html',{waitUntil:'domcontentloaded'});
+ }else await page.goto(origin+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>document.getElementById('p0-send')?.disabled===false);
  await page.waitForSelector('#mmir-jarvis-toggle');
  assert.ok(assets.some(a=>a.includes('p0-chat-shell.js')));pass('actual P0 shell and new versioned navigation load');

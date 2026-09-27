@@ -288,7 +288,7 @@ try{
   try{
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     await installFixtures(page);
-    await page.goto(`${baseUrl}/mmir.html?writer_continuity_e2e=1#mimir-chat-runtime`,{waitUntil:'networkidle'});
+    await page.goto(`${baseUrl}/mmir.html?brand=supergeni&writer_continuity_e2e=1#mimir-chat-runtime`,{waitUntil:'networkidle'});
     await page.waitForSelector('#p0-input');
 
     await sendAndWait(page,'HOSTED-TURN-1',/Hosted svar 1/);
@@ -342,7 +342,7 @@ try{
 
     const groqPage=await browser.newPage({viewport:{width:1280,height:800}});
     await installFixtures(groqPage);
-    await groqPage.goto(`${baseUrl}/mmir.html?writer_continuity_groq_e2e=1#mimir-chat-runtime`,{waitUntil:'networkidle'});
+    await groqPage.goto(`${baseUrl}/mmir.html?brand=supergeni&writer_continuity_groq_e2e=1#mimir-chat-runtime`,{waitUntil:'networkidle'});
     await groqPage.waitForSelector('#p0-input');
     await groqPage.locator('#p0-model').click();
     await groqPage.locator(`button[data-model-id="hosted-route:${groqModel}"]`).click();

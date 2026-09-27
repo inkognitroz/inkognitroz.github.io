@@ -157,7 +157,7 @@ try {
       localStorage.clear();
       sessionStorage.clear();
     });
-    await page.goto(`${baseUrl}/mmir.html?mmir_demo=1#mmir-chat-runtime`, { waitUntil: 'networkidle' });
+    await page.goto(`${baseUrl}/mmir.html?brand=supergeni&mmir_demo=1#mmir-chat-runtime`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#mmir-p0-app');
 
     await sendPrompt(page, 'Hva er 2+2?');

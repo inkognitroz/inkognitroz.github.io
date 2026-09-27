@@ -318,7 +318,7 @@ async function checkViewport(browser, viewport) {
   await installApiFixtures(page);
   await installVoiceFixture(page);
   await clearBrowserState(page);
-  await page.goto(`${baseUrl}/mmir.html?first_click_guard=${viewport.name}#mimir-chat-runtime`, {
+  await page.goto(`${baseUrl}/mmir.html?brand=supergeni&first_click_guard=${viewport.name}#mimir-chat-runtime`, {
     waitUntil: 'networkidle'
   });
   await page.waitForSelector('#mmir-p0-app');

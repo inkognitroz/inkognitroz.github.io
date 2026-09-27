@@ -59,7 +59,7 @@ async function browserProof() {
         }
         return json({ object: 'list', data: [] });
       });
-      await page.goto(`http://127.0.0.1:${port}/mmir.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`http://127.0.0.1:${port}/mmir.html?brand=supergeni`, { waitUntil: 'domcontentloaded' });
       await page.locator('#p0-input').waitFor();
       await page.locator('#p0-input').fill('Si noe kort.');
       await page.locator('#p0-send').click();

@@ -1,5 +1,5 @@
 !function(w,d){
-  const VERSION='20260810-proof-safe-tagline-v1';
+  const VERSION='20260927-brand-backend-optin-v1';
   const REQUIRED_FIELDS=[
     'name',
     'tagline',
@@ -25,7 +25,7 @@
         'Find fresh sources before answering this.',
         'Compare active routes and explain why the best answer won.'
       ],
-      feature_flags:{model_catalog:true,feedback:true,vision:true,proof_line:true,council:true},
+      feature_flags:{model_catalog:true,feedback:true,vision:true,proof_line:true,council:true,chat_via_backend:true},
       policy_profile:'public-demo-learning',
       default_route_label:'Supergeni',
       default_model_label:'Supergeni',
@@ -157,6 +157,7 @@
       default_route_label:config.default_route_label,
       default_model_label:config.default_model_label,
       feature_flags:{...config.feature_flags},
+      chat_via_backend:config.feature_flags?.chat_via_backend===true,
       policy_profile:config.policy_profile,
       no_provider_secrets_in_browser:true,
       no_orchestration_decisions_in_browser:true
