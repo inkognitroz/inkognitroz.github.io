@@ -265,7 +265,8 @@ async function waitForCompletedAssistant(page, expectedText, timeoutMs = 5000) {
         && (!expected || text === expected);
     }, { expected: expectedText }, { timeout: timeoutMs });
     return { status: 'completed', elapsed_ms: Date.now() - started };
-  } catch {
+  } catch (error) {
+    if (error?.name !== 'TimeoutError') throw error;
     return { status: 'inconclusive', elapsed_ms: Date.now() - started };
   }
 }
@@ -567,6 +568,8 @@ try {
     await calculatorPage.locator('#p0-input').fill('19 * 37');
     assert(await calculatorPage.locator('#p0-send').isEnabled(), 'calculator attribution must not gate Send');
     await calculatorPage.locator('#p0-send').click();
+    const completedCalculator = await waitForCompletedAssistant(calculatorPage, '19 * 37 = 703', 5000);
+    assert(completedCalculator.status === 'completed', 'completed calculator fixture must produce a completed answer');
     await calculatorPage.waitForSelector('.p0-message-assistant .p0-receipt-model:text-is("Kalkulator")');
     const firstCalculatorRequest = chatRequests.at(-1);
     assert(firstCalculatorRequest.model === 'mmir-supergenius' && firstCalculatorRequest.messages?.length === 1 &&
