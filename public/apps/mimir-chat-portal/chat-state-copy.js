@@ -1,5 +1,5 @@
 (function(){
-  const version='20260714-truthful-chat-state-v1';
+  const version='20260928-source-grounding-error-copy-v1';
 
   function code(error){
     const value=Number(error?.status||error?.statusCode||error?.payload?.status||0);
@@ -33,6 +33,7 @@
   function errorText(error){
     if(stopped(error))return stoppedText();
     const status=code(error);
+    if(error?.payload?.error?.code==='required_source_grounding_unavailable')return 'Nettsøket ga ingen brukbare, verifiserte kilder til dette spørsmålet. Prøv igjen senere.';
     if(status===401||status===403)return 'Tilkoblingen må fornyes. Prøv igjen.';
     if(status===413)return 'Meldingen eller vedlegget er for stort. Gjør det litt mindre og prøv igjen.';
     if(status===429)return 'Kapasitetsgrensen er nådd akkurat nå. Vent litt og prøv igjen.';
