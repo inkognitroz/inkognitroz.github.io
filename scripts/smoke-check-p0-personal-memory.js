@@ -27,7 +27,10 @@ function documentAcceptanceCatalogRoute(payload){
     item?.selectable===true&&item?.executable===true&&item?.candidate===false&&
     item?.route_type==='external_untrusted_free'&&
     item?.cost_class==='free-quota'&&item?.cost_state==='free-quota'&&
-    item?.no_paid_routes_started===true&&item?.provider==='groq'
+    item?.no_paid_routes_started===true&&item?.provider==='groq'&&
+    (item?.availability===undefined||item.availability==='available')&&
+    (item?.route_class===undefined||item.route_class==='external-untrusted-free')&&
+    (item?.cost?.requires_approval===undefined||item.cost.requires_approval===false)
   );
   return model?{pickerRoute:DOCUMENT_ACCEPTANCE_PICKER_ROUTE,gatewayRoute:DOCUMENT_ACCEPTANCE_GATEWAY_ROUTE}:null;
 }
@@ -183,6 +186,7 @@ async function publishedRecoveryProtocolProof(){
   if(documentAcceptanceCatalogRoute({data:[{...catalogFixture,selectable:false}]}))failures.push('Document acceptance must reject a non-selectable catalog route.');
   if(documentAcceptanceCatalogRoute({data:[{...catalogFixture,cost_state:'paid'}]}))failures.push('Document acceptance must reject a paid catalog route.');
   if(documentAcceptanceCatalogRoute({data:[{...catalogFixture,route_type:'unknown'}]}))failures.push('Document acceptance must reject a catalog route with an unknown safety class.');
+  if(documentAcceptanceCatalogRoute({data:[{...catalogFixture,cost:{mode:'free-quota',requires_approval:true}}]}))failures.push('Document acceptance must reject a compact route contradicted by approval-required full metadata.');
   const enableFailure=acceptanceDiagnostics();enableFailure.phase='enable_storage';acceptanceEvent(enableFailure,'GET','/consent?workspace_id=private','responded',200);const enableCategory=acceptanceFailure(enableFailure,'enable_storage',new Error('local UI guard'));
   const enableReceipt=documentAcceptanceReceipt({runId:'enable-fixture',phase:'failed',error:enableCategory,diagnostics:enableFailure});
   if(enableReceipt.diagnostics?.first_failure_phase!=='enable_storage'||enableReceipt.diagnostics?.request_events?.[0]?.path!=='/consent'||enableReceipt.diagnostics?.request_events?.[0]?.status!==200||enableReceipt.diagnostics?.request_events?.[0]?.error!==null)failures.push('An enable/UI failure must retain a safe stage and normalized request result.');
