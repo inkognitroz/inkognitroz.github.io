@@ -233,7 +233,7 @@ async function newIphonePage(browser, options) {
     try { delete window.webkitSpeechRecognition; } catch { window.webkitSpeechRecognition = undefined; }
   });
   const network = await installNetworkFence(page, options);
-  await page.goto(`${baseUrl}/mmir.html?iphone_webkit_regression=1`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${baseUrl}/mmir.html?brand=supergeni&iphone_webkit_regression=1`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#p0-send');
   return { context, page, network, browserErrors };
 }
