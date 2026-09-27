@@ -32,7 +32,7 @@ async function browserProof() {
     // A fresh context per flag state: the flag is read from the page's own window, and
     // a shared context would carry the previous case's stored conversation into the
     // next one's transcript.
-    async function chatOnce({ flagOn, flagValue, backendStatus = 200, memoryEnabled = true, suspendUse = false }) {
+    async function chatOnce({ flagOn, flagValue, backendStatus = 200, memoryEnabled = true, suspendUse = false, brand = 'supergeni' }) {
       context = await browser.newContext({ serviceWorkers: 'block' });
       const page = await context.newPage();
       page.setDefaultTimeout(8000);
@@ -81,7 +81,7 @@ async function browserProof() {
         }
         return route.abort();
       });
-      await page.goto(`http://127.0.0.1:${port}/mmir.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`http://127.0.0.1:${port}/mmir.html?brand=${encodeURIComponent(brand)}`, { waitUntil: 'domcontentloaded' });
       await page.locator('#p0-input').waitFor();
       if (suspendUse) await page.evaluate(() => { window.MmirP0PersonalMemory = { isUseSuspended: () => true }; });
       await page.locator('#p0-input').fill('Si noe kort.');
@@ -95,12 +95,21 @@ async function browserProof() {
       return { chatCalls, knowledgeCalls, shown };
     }
 
-    // Flag off: unchanged. The send goes to the gateway, and nothing reaches the backend.
+    // A brand without the opt-in remains unchanged: the send goes to the gateway.
     const off = await chatOnce({ flagOn: false });
     const offChat = off.chatCalls.filter((call) => call.origin === 'https://api.mmir.ai');
     if (offChat.length !== 1) fail(`With the flag off the chat send must go to api.mmir.ai exactly once (${JSON.stringify(off.chatCalls)}).`);
     if (off.chatCalls.some((call) => call.origin === 'https://backend.mmir.ai')) fail('With the flag off nothing may be sent to the backend.');
     if (!off.shown.includes('Gateway answered.')) fail('With the flag off the gateway answer must be shown.');
+
+    // The standard MMIR brand has the existing backend route explicitly opted in.
+    // This must move only the ordinary chat send; its selected default model stays
+    // in the request body and the backend receives the same identity-scoped call.
+    const branded = await chatOnce({ flagOn: false, brand: 'mmir' });
+    const brandedChat = branded.chatCalls.filter((call) => call.origin === 'https://backend.mmir.ai');
+    if (brandedChat.length !== 1 || branded.chatCalls.some((call) => call.origin === 'https://api.mmir.ai')) fail(`The standard brand opt-in must send ordinary chat only to the backend (${JSON.stringify(branded.chatCalls)}).`);
+    if (brandedChat[0]?.body?.model !== 'mmir-supergenius') fail('The standard brand backend opt-in must preserve the ordinary selected model.');
+    if (!branded.shown.includes('Backend answered.')) fail('The standard brand backend answer must be shown.');
 
     // Flag on: the same send goes to the backend, carrying the identity bearer.
     const on = await chatOnce({ flagOn: true });
