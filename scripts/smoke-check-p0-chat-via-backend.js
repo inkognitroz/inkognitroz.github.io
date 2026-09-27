@@ -68,7 +68,7 @@ async function browserProof() {
         }
         if (origin === 'https://api.mmir.ai') {
           if (pathname === '/v1/chat/completions') {
-            chatCalls.push({ origin, authorization: route.request().headers().authorization || '' });
+            chatCalls.push({ origin, authorization: route.request().headers().authorization || '', body: route.request().postDataJSON() });
             return json(200, { id: 'chatcmpl-gateway', model: 'mmir-supergenius', choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: 'Gateway answered.' } }] });
           }
           if (pathname === '/v1/models') {
@@ -105,6 +105,7 @@ async function browserProof() {
     const offChat = off.chatCalls.filter((call) => call.origin === 'https://api.mmir.ai');
     if (offChat.length !== 1) fail(`With the flag off the chat send must go to api.mmir.ai exactly once (${JSON.stringify(off.chatCalls)}).`);
     if (off.chatCalls.some((call) => call.origin === 'https://backend.mmir.ai')) fail('With the flag off nothing may be sent to the backend.');
+    if (offChat[0]?.body?.policy?.paid_routes_allowed !== false || offChat[0]?.body?.policy?.require_no_paid_receipt !== true) fail('The ordinary gateway request must carry the strict no-paid policy.');
     if (!off.shown.includes('Gateway answered.')) fail('With the flag off the gateway answer must be shown.');
 
     // The standard MMIR brand has the existing backend route explicitly opted in.
@@ -114,6 +115,7 @@ async function browserProof() {
     const brandedChat = branded.chatCalls.filter((call) => call.origin === 'https://backend.mmir.ai');
     if (brandedChat.length !== 1 || branded.chatCalls.some((call) => call.origin === 'https://api.mmir.ai')) fail(`The standard brand opt-in must send ordinary chat only to the backend (${JSON.stringify(branded.chatCalls)}).`);
     if (brandedChat[0]?.body?.model !== 'mmir-supergenius') fail('The standard brand backend opt-in must preserve the ordinary selected model.');
+    if (brandedChat[0]?.body?.policy?.paid_routes_allowed !== false || brandedChat[0]?.body?.policy?.require_no_paid_receipt !== true) fail('The standard brand backend request must carry the strict no-paid policy.');
     if (!branded.shown.includes('Backend answered.')) fail('The standard brand backend answer must be shown.');
 
     // The brand opt-in must not weaken the existing private-mode boundary. With

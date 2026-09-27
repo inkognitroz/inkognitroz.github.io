@@ -299,7 +299,7 @@ assertEqual(testApi.ensureCanonicalOrdinaryChatFallback([]).length,1,'A missing 
 const basicPayload=testApi.hostedPayload('Hei',ordinaryFallback);
 assertEqual(basicPayload.model,'mmir-supergenius','Basic chat must use only the canonical public model id');
 assertEqual(basicPayload.policy?.paid_routes_allowed,false,'Basic chat must explicitly forbid paid routes');
-assertEqual(Object.hasOwn(basicPayload.policy||{},'require_no_paid_receipt'),false,'Basic chat must not invent a signed-release-receipt prerequisite');
+assertEqual(basicPayload.policy?.require_no_paid_receipt,true,'Basic chat must require a signed no-paid receipt');
 const singleStatus=singleWriterStatus();
 const singleReadiness=routeTaxonomy.releaseReadiness(singleStatus);
 assertEqual(singleReadiness.hostedReady,true,'Authenticated singleton status must open first chat without claiming full release');
@@ -487,6 +487,7 @@ for(const [provider,selector,temperature] of [
   const request=hostedRequests.at(-1);
   assertEqual(request.body.model,selector,'Actual ordinary dispatch must preserve the route preference, including duplicate model IDs');
   assertEqual(request.body.policy?.paid_routes_allowed,false,'Every ordinary route must forbid paid routes');
+  assertEqual(request.body.policy?.require_no_paid_receipt,true,'Every ordinary route must require a signed no-paid receipt');
   assertEqual(request.body.temperature,temperature,'Only external-node ordinary requests need deterministic temperature');
   assertEqual(Object.hasOwn(request.body,'provider'),false,'Provider must not be added as an unsupported node selector');
   assertEqual(request.body.messages.every(message=>typeof message.content==='string'&&Object.keys(message).sort().join(',')==='content,role'),true,'Ordinary text messages must retain the supported role/content shape');
@@ -505,6 +506,7 @@ for(const [entry,temperature] of [[compactNode,0],[compactNvidia,0.7]]){
   assertEqual(payload.model,entry.route_id,'Compact inventory dispatch must preserve the exact route preference');
   assertEqual(payload.temperature,temperature,'Compact external_node type must use a supported temperature');
   assertEqual(payload.policy?.paid_routes_allowed,false,'Compact ordinary routes must preserve the no-paid policy');
+  assertEqual(payload.policy?.require_no_paid_receipt,true,'Compact ordinary routes must require a signed no-paid receipt');
   assertEqual(testApi.hostedPayload('Hei',{...model,ordinaryChatAttemptable:false}).model,entry.model,'Nonordinary payload model contract must remain unchanged');
   assertEqual(testApi.hostedPayload('Hei',model,{data_url:'data:image/png;base64,AA=='}).model,entry.model,'Media payload model contract must remain unchanged');
 }
