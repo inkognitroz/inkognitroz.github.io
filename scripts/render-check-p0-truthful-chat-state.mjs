@@ -422,7 +422,7 @@ try {
       await installFixtures(diagnosticPage, { resetStorage: false });
       failureFixture = { ...fixture, body: fixture.body ?? JSON.stringify(fixture.payload) };
       chatMode = 'diagnostic-error';
-      await diagnosticPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=diagnostic-${fixture.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+      await diagnosticPage.goto(`${baseUrl}/mmir.html?brand=supergeni&mmir_qa_session=diagnostic-${fixture.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
       const requestsBefore = chatRequests.length;
       await diagnosticPage.locator('#p0-input').fill('Test en trygg feilmelding');
       await diagnosticPage.locator('#p0-send').click();
@@ -511,7 +511,7 @@ try {
         } }
       ]
     });
-    await matrixPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=answer-truth-matrix#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+    await matrixPage.goto(`${baseUrl}/mmir.html?brand=supergeni&mmir_qa_session=answer-truth-matrix#mimir-chat-runtime`, { waitUntil: 'networkidle' });
     await matrixPage.waitForSelector('[data-p0-message-id="truth-rehydrated"]');
     const expectedStates = new Map([
       ['truth-live', 'Live'],
@@ -545,7 +545,7 @@ try {
     const calculatorPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
     await installFixtures(calculatorPage, { resetStorage: false });
     chatMode = 'calculator-success';
-    await calculatorPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=calculator-attribution#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+    await calculatorPage.goto(`${baseUrl}/mmir.html?brand=supergeni&mmir_qa_session=calculator-attribution#mimir-chat-runtime`, { waitUntil: 'networkidle' });
     await calculatorPage.waitForSelector('#p0-input');
     const benchmarksBefore = await calculatorPage.evaluate(() => localStorage.getItem('mmir-p0-route-benchmarks-v1'));
     await calculatorPage.locator('#p0-input').fill('19 * 37');
@@ -662,7 +662,7 @@ try {
         }
       }, { preferences: control.preferences, history: control.history, name: control.name });
       chatMode = 'calculator-success';
-      await controlPage.goto(`${baseUrl}/mmir.html?mmir_qa_session=calculator-${control.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+      await controlPage.goto(`${baseUrl}/mmir.html?brand=supergeni&mmir_qa_session=calculator-${control.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
       await controlPage.waitForSelector('#p0-input');
       if (control.directWriter) {
         await controlPage.locator('#p0-model').click();
