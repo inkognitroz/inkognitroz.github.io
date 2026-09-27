@@ -279,7 +279,7 @@ try {
     });
     page.on('pageerror', error => logs.push(`pageerror: ${error.message}`));
     await installFixtures(page);
-    await page.goto(`${baseUrl}/mmir.html?truthful_chat_state=mobile#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+    await page.goto(`${baseUrl}/mmir.html?brand=supergeni&truthful_chat_state=mobile#mimir-chat-runtime`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#p0-input');
     await page.waitForSelector('.p0-first-session[data-answer-state="live"]');
     let firstSessionText = await page.locator('.p0-first-session').innerText();
@@ -361,7 +361,7 @@ try {
     await screenshot(page, 'mobile-first-session-degraded');
 
     modelsMode = 'candidate-only';
-    await page.goto(`${baseUrl}/mmir.html?truthful_chat_state=candidate-only#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+    await page.goto(`${baseUrl}/mmir.html?brand=supergeni&truthful_chat_state=candidate-only#mimir-chat-runtime`, { waitUntil: 'networkidle' });
     await page.waitForSelector('.p0-first-session[data-answer-state="degraded"]');
     const candidateOnly = await page.locator('.p0-first-session').innerText();
     assert(/Degradert/i.test(candidateOnly), 'candidate-only model inventory must remain degraded');

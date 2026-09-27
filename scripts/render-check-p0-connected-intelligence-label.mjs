@@ -130,7 +130,7 @@ async function check(browser, viewport, fixture) {
       sessionStorage.setItem('mmir-p0-chat-history-qa-session-v1:mmir_qa_session-connected-label', JSON.stringify([{ role: 'assistant', content: answerText, label: 'Mistral Small', intelligenceLabel: fixture.label, proofLine: fixture.proof, receipt: 'Hosted route · Ubekreftet', answerState: 'live', aiGenerated: true, hostedLineage: true }]));
     }
   }, { fixture, answerText });
-  await page.goto(`${baseUrl}/mmir.html?mmir_qa_session=connected-label`, { waitUntil: 'networkidle' });
+  await page.goto(`${baseUrl}/mmir.html?brand=supergeni&mmir_qa_session=connected-label`, { waitUntil: 'networkidle' });
   const prompt = fixture.calculator ? '19 * 37' : 'Skriv en kort e-post til naboen.';
   if (!fixture.persisted) {
     await page.locator('#p0-input').fill(prompt);

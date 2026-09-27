@@ -77,7 +77,7 @@ async function runCase(browser, imageStatus) {
   const page = await browser.newPage();
   await page.addInitScript(() => { localStorage.clear(); sessionStorage.clear(); });
   await installFixtures(page, imageStatus);
-  await page.goto(`${baseUrl}/mmir.html`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${baseUrl}/mmir.html?brand=supergeni`, { waitUntil: 'domcontentloaded' });
   await page.locator('#p0-input').fill('Lag et bilde av nordlys over en fjord.');
   await page.locator('#p0-send').click();
   const card = page.locator('.p0-generated-image-card');

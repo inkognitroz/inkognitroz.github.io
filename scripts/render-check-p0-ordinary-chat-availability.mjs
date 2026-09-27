@@ -200,7 +200,7 @@ async function checkBasicChatWithoutProof(browser,fixture){
     });
   });
 
-  await page.goto(baseUrl+'/mmir.html',{waitUntil:'domcontentloaded'});
+  await page.goto(baseUrl+'/mmir.html?brand=supergeni',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#p0-release-warning[data-state="blocked"]');
   await page.waitForFunction(()=>document.getElementById('p0-send')?.disabled===false);
   const warning=(await page.locator('#p0-release-warning').innerText()).replace(/\s+/g,' ').trim();

@@ -212,7 +212,7 @@ async function checkViewport(browser, viewport) {
     localStorage.clear();
     sessionStorage.clear();
   });
-  await page.goto(`${baseUrl}/mmir.html?b0_06_26_compare=${viewport.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
+  await page.goto(`${baseUrl}/mmir.html?brand=supergeni&b0_06_26_compare=${viewport.name}#mimir-chat-runtime`, { waitUntil: 'networkidle' });
   await page.waitForSelector('#mmir-p0-app');
   await page.waitForSelector('#p0-input');
   const qaHistoryMode = await page.evaluate(() => window.__MimirP0HistorySessionMode === true);
