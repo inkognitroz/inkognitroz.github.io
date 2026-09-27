@@ -276,7 +276,7 @@ async function checkBasicChatWithoutProof(browser,fixture){
   assert(first?.model==='mmir-supergenius',fixture.name+' must force the known canonical model id');
   assert(first?.stream===false,fixture.name+' must retain the canonical nonstreaming chat contract');
   assert(first?.policy?.paid_routes_allowed===false,fixture.name+' must explicitly forbid paid routes');
-  assert(!Object.hasOwn(first?.policy||{},'require_no_paid_receipt'),fixture.name+' must not require a signed quality receipt for ordinary chat');
+  assert(first?.policy?.require_no_paid_receipt===true,fixture.name+' must require a signed no-paid receipt for ordinary chat');
 
   if(fixture.followUp&&!fixture.failChat){
     await page.locator('#p0-input').fill('Fortsett samtalen.');
