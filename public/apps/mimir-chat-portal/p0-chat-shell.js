@@ -4458,6 +4458,7 @@
             '<textarea id="p0-input" class="p0-input" rows="2" aria-label="Spør Supergeni, en kunstig intelligens" placeholder="Spør Supergeni (KI) om hva som helst …" autocomplete="off" spellcheck="true"></textarea>'+
             '<input id="p0-photo-camera" class="p0-file-input-hidden" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />'+
             '<input id="p0-photo-library" class="p0-file-input-hidden" type="file" accept="image/*" aria-hidden="true" tabindex="-1" />'+
+            '<label id="p0-public-web-search-permission" class="p0-public-web-search-permission"><input type="checkbox" id="p0-public-web-search-consent" /> Søk i åpne kilder for denne meldingen <span>Kun denne offentlige forespørselen kan sendes.</span></label>'+
             '<div class="p0-status-rail">'+
               '<div id="p0-route" class="p0-route" data-state="hosted">Sjekker offentlig svarbane · ingen hosted-rute startet</div>'+
               '<div id="p0-token-counter" class="p0-token-counter" data-state="quiet" aria-label="0 tokens siste svar">0 tokens</div>'+
@@ -5525,6 +5526,7 @@
     renderSuperboostCta();
     renderCouncilCta();
     renderPinnedToolbarTools();
+    syncPublicWebSearchPermission();
     if(privateModeActive()){
       const next=privacyModeRouteStatus();
       routeStatus(next.text,next.state);
@@ -5533,6 +5535,21 @@
       routeStatus(next.text,next.state);
     }
     updateSendControl();
+  }
+
+  function syncPublicWebSearchPermission(){
+    const control=document.getElementById('p0-public-web-search-consent');
+    if(!control)return;
+    const eligible=!privateModeActive()&&isCanonicalHostedModel(activeModel());
+    control.disabled=!eligible;
+    if(!eligible)control.checked=false;
+  }
+
+  function consumePublicWebSearchPermission(){
+    const control=document.getElementById('p0-public-web-search-consent');
+    const requested=control?.disabled!==true&&control?.checked===true;
+    if(control)control.checked=false;
+    return requested;
   }
 
   function runTwoModelTool(action){
@@ -7188,6 +7205,33 @@
     };
   }
 
+  function publicWebSearchRequestBinding(value){
+    const binding=String(value||'').trim();
+    return /^[A-Za-z0-9._-]{1,80}$/.test(binding)?binding:'';
+  }
+
+  function publicWebSearchPermissionIntent(prompt,model,media,options,protectedKnowledge,messages){
+    if(options.publicWebSearchConsent!==true||options.ordinaryBasic!==true||media||privateModeActive()||
+      !isCanonicalHostedModel(model)||protectedKnowledge||messages.length!==2||!wantsPublicFactRoute(prompt))return null;
+    return {
+      schema:'mmir.public_web_search_permission.v1',
+      scope:'ordinary-public-web',
+      authorization_basis:'user_prompt_public_web_intent',
+      data_boundary:'public-web',
+      model_cost_policy:'strict-no-paid-model-routes',
+      user_public_query_consent:true,
+      provider_cost_basis:'provider-free-credit'
+    };
+  }
+
+  async function boundPublicWebSearchPermission(permission,prompt,requestBinding){
+    if(!permission||!requestBinding||!globalThis.crypto?.subtle)return null;
+    const bytes=new TextEncoder().encode(String(prompt||''));
+    const digest=await globalThis.crypto.subtle.digest('SHA-256',bytes);
+    const querySha256='sha256:'+Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+    return {...permission,query_sha256:querySha256,request_binding:requestBinding};
+  }
+
   async function backendKnowledgeContext(prompt){
     const endpoint=backendKnowledgeEndpoint();
     const request=window.MimirApiClient?.personalMemoryRequest;
@@ -7311,9 +7355,22 @@
     const continuityEnabled=options.writerContinuity===true&&!media&&!privateModeActive();
     const previousState=continuityEnabled?normalizedWriterContinuityState(writerContinuityState):null;
     const protectedKnowledge=await backendKnowledgeContext(prompt);
+    const publicQueryPrompt=String(displayPrompt||'').trim();
+    const publicQueryIsExact=publicQueryPrompt!==''&&publicQueryPrompt===String(prompt||'').trim();
     let payload=sanitizedChatPayload(hostedPayload(prompt,model,media,displayPrompt,{
-      ordinaryFirstTurn:ordinaryBasic&&options.emptyPriorHistory===true&&!writerContinuityState
+      ordinaryFirstTurn:ordinaryBasic&&options.emptyPriorHistory===true&&!writerContinuityState,
+      ordinaryBasic,
+      publicWebSearchConsent:options.publicWebSearchConsent===true
     },protectedKnowledge));
+    const requestBinding=publicWebSearchRequestBinding(options.requestBinding);
+    const publicWebSearchPermission=await boundPublicWebSearchPermission(
+      publicQueryIsExact?publicWebSearchPermissionIntent(publicQueryPrompt,model,media,options,protectedKnowledge,payload.messages):null,
+      publicQueryPrompt,
+      requestBinding
+    );
+    if(publicWebSearchPermission){
+      payload={...payload,public_web_search_permission:publicWebSearchPermission};
+    }
     const continuityPlan=continuityEnabled
       ? writerContinuityRequestPlan(payload,writerContinuityState)
       : {payload,applied:false,reason:'disabled',limit_bytes:96*1024};
@@ -7330,7 +7387,7 @@
     // fallback would hide exactly what the flag exists to measure.
     const response=await fetchJson(chatEndpoint(),{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json',...(publicWebSearchPermission?{'x-request-id':requestBinding}:{})},
       body:JSON.stringify(payload),
       onDelta:streaming?(delta)=>{if(presentation?.isCurrent(presentationId))presentation.delta(delta);}:undefined,
       beforeFetch:()=>!protectedKnowledge||protectedKnowledgeAllowed(),
@@ -8313,6 +8370,7 @@
       input?.focus();
       return;
     }
+    const publicWebSearchConsent=consumePublicWebSearchPermission();
     if(await handleOwnerPingCommand(prompt,input))return;
     if(await handleOwnerSuggestionCommand(prompt,input))return;
     if(await handleFeedbackMentionCommand(prompt,input))return;
@@ -8474,7 +8532,7 @@
         ? await chatLocal(routePrompt,model,signal)
         : pendingMedia
           ? responseText((hostedData=await chatVisionPreviewData(routePrompt,signal,pendingMedia)))||'Vision-ruten svarte tomt. Prøv igjen med et tydeligere bilde eller en kortere forespørsel.'
-          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory})))||((model?.label||'Hosted route')+' returned an empty response.');
+          : responseText((hostedData=await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory,publicWebSearchConsent,requestBinding:requestId})))||((model?.label||'Hosted route')+' returned an empty response.');
       if(hostedData)recordTokenUsage(hostedData,pendingMedia?'vision-chat':'hosted-chat');
       const hostedTruncated=model.route!=='local'&&responseIsTruncated(hostedData);
       const elapsedMs=performance.now()-started;

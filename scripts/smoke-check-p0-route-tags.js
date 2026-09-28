@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { webcrypto } from 'node:crypto';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
 import { singleWriterStatus,singleWriterInventory } from './fixtures/single-writer-readiness.mjs';
@@ -17,7 +18,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,publicWebSearchPermissionIntent,consumePublicWebSearchPermission,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -25,6 +26,7 @@ if (!runtime.includes(bootBlock)) {
 
 const storage = new Map();
 const hostedRequests=[];
+const publicSearchControl={disabled:false,checked:false};
 const fallbackResponse={model:'fallback-model',mmir:{fallback_used:true,receipt:{provider:'fallback-provider',model_id:'fallback-model'}}};
 const context = {
   console,
@@ -34,10 +36,21 @@ const context = {
   clearTimeout,
   setInterval,
   clearInterval,
+  crypto: webcrypto,
+  TextEncoder,
+  Uint8Array,
+  CustomEvent: class CustomEvent { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } },
   performance: { now: () => 0 },
   location: { href: 'https://mmir.ai/mmir.html', hostname: 'mmir.ai', hash: '', search: '' },
-  document: { readyState: 'loading', addEventListener() {} },
+  document: { readyState: 'loading', addEventListener() {}, getElementById(id) { return id==='p0-public-web-search-consent' ? publicSearchControl : null; } },
   MimirP0RouteAdapters: {
+    boundedChatMessageTail(messages, { maxMessages = 40 } = {}) {
+      return Array.isArray(messages) ? messages.slice(-maxMessages) : [];
+    },
+    hostedLineageEligible(message) {
+      return Boolean(message?.hostedLineage === true && message?.routeProvenance === 'hosted-chat' &&
+        (message?.role === 'user' || message?.role === 'assistant') && typeof message?.content === 'string');
+    },
     async fetchJson(url,options){
       hostedRequests.push({url,options,body:JSON.parse(options.body)});
       return fallbackResponse;
@@ -51,6 +64,7 @@ const context = {
 };
 context.window = context;
 context.globalThis = context;
+context.dispatchEvent = () => true;
 
 vm.createContext(context);
 vm.runInContext(taxonomy, context, { filename: taxonomyPath });
@@ -300,6 +314,70 @@ const basicPayload=testApi.hostedPayload('Hei',ordinaryFallback);
 assertEqual(basicPayload.model,'mmir-supergenius','Basic chat must use only the canonical public model id');
 assertEqual(basicPayload.policy?.paid_routes_allowed,false,'Basic chat must explicitly forbid paid routes');
 assertEqual(basicPayload.policy?.require_no_paid_receipt,true,'Basic chat must require a signed no-paid receipt');
+publicSearchControl.checked=true;
+assertEqual(testApi.consumePublicWebSearchPermission(),true,'A checked public-search control must be captured for one send attempt');
+assertEqual(publicSearchControl.checked,false,'Captured public-search consent must clear before any later branch can reuse it');
+const publicSearchPrompt='What is the latest news today?';
+const publicSearchPayload=await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-request-1'
+});
+assertEqual(publicSearchPayload,fallbackResponse,'Public search candidate remains an ordinary single dispatch in the offline fixture');
+const publicSearchRequest=hostedRequests.at(-1);
+assertEqual(publicSearchRequest.body.policy?.require_no_paid_receipt,true,'Public search permission must not weaken strict model policy');
+assertEqual(publicSearchRequest.body.public_web_search_permission?.schema,'mmir.public_web_search_permission.v1','An explicit ordinary public request must use the versioned permission');
+assertEqual(publicSearchRequest.body.public_web_search_permission?.user_public_query_consent,true,'Only the explicit per-request control may grant public-query consent');
+assertEqual(publicSearchRequest.body.public_web_search_permission?.data_boundary,'public-web','The permission must exclude private data');
+assertEqual(publicSearchRequest.body.public_web_search_permission?.request_binding,'public-search-request-1','Permission must bind to the request identity sent to the gateway');
+assertEqual(publicSearchRequest.options.headers['x-request-id'],'public-search-request-1','Gateway header must match the permission request binding');
+assertEqual(publicSearchRequest.body.public_web_search_permission?.query_sha256,'sha256:53d3c978ef3adedf955cc4415b330b304a597b87d39890373b0b85e4e6a30c38','Permission must hash the exact current public query');
+assertEqual(publicSearchRequest.body.messages.length,2,'Only a first-turn system/current-user payload may carry public-query permission');
+const optOutPublicSearchPayload=await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:false,
+  requestBinding:'public-search-request-2'
+});
+assertEqual(optOutPublicSearchPayload,fallbackResponse,'Opt-out remains a normal ordinary request in the offline fixture');
+assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'An unchecked public-search control must not grant permission');
+testApi.state.privacyMode='private';
+await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-request-3'
+});
+assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'Private mode must block public-search permission');
+testApi.state.privacyMode='public';
+testApi.state.messages=[{role:'assistant',content:'Prior private conversation context',routeProvenance:'hosted-chat',hostedLineage:true}];
+await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-request-4'
+});
+assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'Conversation history must not be included under public-query permission');
+assertEqual(hostedRequests.at(-1).body.messages.some(message=>message.content==='Prior private conversation context'),true,'History regression fixture must exercise the ordinary payload history boundary');
+testApi.state.messages=[];
+await testApi.chatHostedData('Shared location: 60.1, 11.1\n\nUser text: '+publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-request-location'
+});
+assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'Derived route context must not be promoted into a public-query permission');
+const protectedSearchIntent=testApi.publicWebSearchPermissionIntent(publicSearchPrompt,ordinaryFallback,null,{ordinaryBasic:true,publicWebSearchConsent:true},'Private document excerpt',[{role:'system',content:'s'},{role:'user',content:publicSearchPrompt}]);
+assertEqual(protectedSearchIntent,null,'Protected document context must block public-query permission instead of leaking into search scope');
+const explicitModelSearchIntent=testApi.publicWebSearchPermissionIntent(publicSearchPrompt,{...ordinaryFallback,id:'explicit-hosted',model:'explicit-hosted'},null,{ordinaryBasic:true,publicWebSearchConsent:true},'',[{role:'system',content:'s'},{role:'user',content:publicSearchPrompt}]);
+assertEqual(explicitModelSearchIntent,null,'An explicit noncanonical model must not inherit public-search permission');
+const changedQueryPrompt='What is the latest news tomorrow?';
+const changedQuery=await testApi.chatHostedData(changedQueryPrompt,null,ordinaryFallback,null,changedQueryPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-request-5'
+});
+assertEqual(changedQuery,fallbackResponse,'Changed-query binding stays offline in the route smoke');
+const changedQueryRequest=hostedRequests.at(-1);
+assertEqual(changedQueryRequest.body.public_web_search_permission.request_binding,'public-search-request-5','A new dispatch must carry its own binding');
+assertEqual(changedQueryRequest.body.public_web_search_permission.query_sha256===publicSearchRequest.body.public_web_search_permission.query_sha256,false,'Different queries must not reuse a prior query hash');
+hostedRequests.length=0;
 const singleStatus=singleWriterStatus();
 const singleReadiness=routeTaxonomy.releaseReadiness(singleStatus);
 assertEqual(singleReadiness.hostedReady,true,'Authenticated singleton status must open first chat without claiming full release');
@@ -405,8 +483,18 @@ const sendFlow=runtime.slice(sendStart,sendEnd);
 assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;\n      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
 const ordinarySelection=sendFlow.indexOf('const ordinaryBasicChat=Boolean(');
 const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){");
-const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory})');
+const permissionConsume=sendFlow.indexOf('const publicWebSearchConsent=consumePublicWebSearchPermission();');
+const firstEarlyReturn=sendFlow.indexOf('if(await handleOwnerPingCommand(prompt,input))return;');
+const localKnowledgeReturn=sendFlow.indexOf('if(handleLocalKnowledgeCommand(prompt,input))return;');
+const explicitCompareReturn=sendFlow.indexOf("if(explicit?.mode==='compare'&&!privateModeActive()){");
+const missingLocalReturn=sendFlow.indexOf("if(explicit?.mode==='missing-local'){");
+const finalDraftGate=sendFlow.indexOf('if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;',permissionConsume);
+const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory,publicWebSearchConsent,requestBinding:requestId})');
 assertEqual(ordinarySelection>=0&&firstChatGate>ordinarySelection&&firstChatCall>firstChatGate,true,'Direct canonical basic chat must bypass only the first-chat proof gate and preserve the guarded hosted dispatch');
+assertEqual(permissionConsume>=0&&permissionConsume<firstEarlyReturn&&permissionConsume<localKnowledgeReturn&&permissionConsume<explicitCompareReturn&&permissionConsume<missingLocalReturn,true,'Compare, local and command returns must consume public-search consent before they leave the send attempt');
+assertEqual(permissionConsume>=0&&finalDraftGate>permissionConsume&&firstChatCall>finalDraftGate,true,'A stale or cancelled presentation must stop before a public-search-capable hosted dispatch');
+assertIncludes(runtime,'<input type="checkbox" id="p0-public-web-search-consent" />','Public search consent must default off in the rendered composer');
+assertIncludes(runtime,'if(control)control.checked=false;','Public search consent must be consumed once rather than carried into a later request');
 
 testApi.state.releaseReadiness={...singleReadiness,singleWriterDegradedReady:false,compareReady:true};
 for(const prompt of ordinaryComparisons){
