@@ -836,6 +836,30 @@ a.p0-proof-source:focus-visible {
   min-width: 0;
 }
 
+.p0-public-web-search-permission {
+  align-items: baseline;
+  color: #374151;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  gap: 5px;
+  line-height: 1.35;
+  padding: 0 2px;
+}
+
+.p0-public-web-search-permission input {
+  accent-color: #047857;
+  margin: 0;
+}
+
+.p0-public-web-search-permission span {
+  color: #6b7280;
+}
+
+.p0-public-web-search-permission:has(input:disabled) {
+  opacity: 0.55;
+}
+
 .p0-route {
   align-items: center;
   color: #047857;
