@@ -369,6 +369,80 @@ try {
     assert(state.scrollWidth <= state.clientWidth + 1, 'error state must not create mobile overflow');
     await screenshot(page, 'mobile-error');
 
+    // Exercise the real backend-chat catch path with every network boundary
+    // fulfilled locally. This catches regressions that source-string checks
+    // cannot detect when backend API text overrides the shared safe copy.
+    const backendPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+    await backendPage.addInitScript(() => { window.MMIR_CHAT_VIA_BACKEND = true; });
+    await installFixtures(backendPage);
+    let backendFailureMode = 'source-grounding';
+    let backendChatPosts = 0;
+    await backendPage.route('https://backend.mmir.ai/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/health') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+          status: 'online', service: 'mmir-orchestrator', layer: 'backend', capabilities: ['identity', 'proxy.chat_completions']
+        }) });
+        return;
+      }
+      if (url.pathname === '/identity/session') {
+        const now = Date.now();
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+          object: 'mmir.identity_session', anonymous: true, token: 'browser-fixture-only', identity_id: 'identity-fixture',
+          issued_at: new Date(now - 1000).toISOString(), expires_at: new Date(now + 60 * 60 * 1000).toISOString()
+        }) });
+        return;
+      }
+      if (url.pathname === '/v1/chat/completions' && route.request().method() === 'POST') {
+        backendChatPosts += 1;
+        const message = backendFailureMode === 'source-grounding'
+          ? 'Raw English backend diagnosis must not render.'
+          : 'Unrelated backend diagnostic remains visible.';
+        const code = backendFailureMode === 'source-grounding'
+          ? 'required_source_grounding_unavailable'
+          : 'ordinary_backend_error';
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { code, message } }) });
+        return;
+      }
+      await route.abort();
+    });
+    await backendPage.goto(`${baseUrl}/mmir.html?brand=supergeni#mmir-chat-runtime`, { waitUntil: 'networkidle' });
+    await backendPage.waitForSelector('#p0-input');
+    await backendPage.locator('#p0-input').fill('Test kildeavslag gjennom backend');
+    await backendPage.locator('#p0-send').click();
+    await backendPage.waitForFunction(() => /tilstrekkelig kontrollerte kilder akkurat nå/i.test(document.getElementById('p0-transcript')?.innerText || ''));
+    let backendState = await visibleState(backendPage);
+    assert(backendChatPosts === 1, 'backend source-refusal fixture must exercise exactly one backend chat request');
+    assert(/Jeg kan ikke gi et svar med tilstrekkelig kontrollerte kilder akkurat nå\. Svaret ble ikke vist\. Prøv igjen senere\./i.test(backendState.transcript),
+      'structured backend source-grounding refusal must render the shared neutral Norwegian copy');
+    assert(!/Raw English backend diagnosis|Request failed with 503/i.test(backendState.body),
+      'structured backend source-grounding refusal must not leak the raw API message');
+
+    backendFailureMode = 'other';
+    await backendPage.locator('#p0-input').fill('Test annen backendfeil');
+    await backendPage.locator('#p0-send').click();
+    await backendPage.waitForFunction(() => /Unrelated backend diagnostic remains visible\./i.test(document.getElementById('p0-transcript')?.innerText || ''));
+    backendState = await visibleState(backendPage);
+    assert(backendChatPosts === 2, 'unrelated backend error compatibility fixture must exercise one additional backend chat request');
+    assert(/Unrelated backend diagnostic remains visible\./i.test(backendState.transcript),
+      'unrelated backend errors must retain their existing API-message fallback');
+    await backendPage.close();
+
+    // The existing hosted/gateway route should map the same structured error
+    // through CHAT_STATE.errorText when chatViaBackend is off.
+    chatMode = 'diagnostic-error';
+    failureFixture = {
+      status: 503,
+      body: JSON.stringify({ error: { code: 'required_source_grounding_unavailable', message: 'Raw English backend diagnosis must not render.' } })
+    };
+    await page.locator('#p0-input').fill('Test kildeavslag i gateway');
+    await page.locator('#p0-send').click();
+    await page.waitForFunction(() => /tilstrekkelig kontrollerte kilder akkurat nå/i.test(document.getElementById('p0-transcript')?.innerText || ''));
+    state = await visibleState(page);
+    assert(/Jeg kan ikke gi et svar med tilstrekkelig kontrollerte kilder akkurat nå\. Svaret ble ikke vist\. Prøv igjen senere\./i.test(state.transcript),
+      'gateway source-grounding refusal must retain the shared neutral Norwegian copy');
+    assert(!/Raw English backend diagnosis/i.test(state.body), 'gateway source-grounding refusal must not leak the raw API message');
+
     modelsMode = 'error';
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForSelector('.p0-first-session[data-answer-state="degraded"]');
