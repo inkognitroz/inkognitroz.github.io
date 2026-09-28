@@ -8370,6 +8370,7 @@
       input?.focus();
       return;
     }
+    const publicWebSearchConsent=consumePublicWebSearchPermission();
     if(await handleOwnerPingCommand(prompt,input))return;
     if(await handleOwnerSuggestionCommand(prompt,input))return;
     if(await handleFeedbackMentionCommand(prompt,input))return;
@@ -8476,7 +8477,6 @@
       !pendingMedia&&
       ordinaryHostedChatTryable(model)
     );
-    const publicWebSearchConsent=consumePublicWebSearchPermission();
     if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){
       input?.focus();
       return;

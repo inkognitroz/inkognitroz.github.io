@@ -18,7 +18,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,publicWebSearchPermissionIntent,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,publicWebSearchPermissionIntent,consumePublicWebSearchPermission,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -26,6 +26,7 @@ if (!runtime.includes(bootBlock)) {
 
 const storage = new Map();
 const hostedRequests=[];
+const publicSearchControl={disabled:false,checked:false};
 const fallbackResponse={model:'fallback-model',mmir:{fallback_used:true,receipt:{provider:'fallback-provider',model_id:'fallback-model'}}};
 const context = {
   console,
@@ -41,7 +42,7 @@ const context = {
   CustomEvent: class CustomEvent { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } },
   performance: { now: () => 0 },
   location: { href: 'https://mmir.ai/mmir.html', hostname: 'mmir.ai', hash: '', search: '' },
-  document: { readyState: 'loading', addEventListener() {} },
+  document: { readyState: 'loading', addEventListener() {}, getElementById(id) { return id==='p0-public-web-search-consent' ? publicSearchControl : null; } },
   MimirP0RouteAdapters: {
     boundedChatMessageTail(messages, { maxMessages = 40 } = {}) {
       return Array.isArray(messages) ? messages.slice(-maxMessages) : [];
@@ -313,6 +314,9 @@ const basicPayload=testApi.hostedPayload('Hei',ordinaryFallback);
 assertEqual(basicPayload.model,'mmir-supergenius','Basic chat must use only the canonical public model id');
 assertEqual(basicPayload.policy?.paid_routes_allowed,false,'Basic chat must explicitly forbid paid routes');
 assertEqual(basicPayload.policy?.require_no_paid_receipt,true,'Basic chat must require a signed no-paid receipt');
+publicSearchControl.checked=true;
+assertEqual(testApi.consumePublicWebSearchPermission(),true,'A checked public-search control must be captured for one send attempt');
+assertEqual(publicSearchControl.checked,false,'Captured public-search consent must clear before any later branch can reuse it');
 const publicSearchPrompt='What is the latest news today?';
 const publicSearchPayload=await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
   ordinaryBasic:true,
@@ -480,9 +484,14 @@ assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHost
 const ordinarySelection=sendFlow.indexOf('const ordinaryBasicChat=Boolean(');
 const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){");
 const permissionConsume=sendFlow.indexOf('const publicWebSearchConsent=consumePublicWebSearchPermission();');
+const firstEarlyReturn=sendFlow.indexOf('if(await handleOwnerPingCommand(prompt,input))return;');
+const localKnowledgeReturn=sendFlow.indexOf('if(handleLocalKnowledgeCommand(prompt,input))return;');
+const explicitCompareReturn=sendFlow.indexOf("if(explicit?.mode==='compare'&&!privateModeActive()){");
+const missingLocalReturn=sendFlow.indexOf("if(explicit?.mode==='missing-local'){");
 const finalDraftGate=sendFlow.indexOf('if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;',permissionConsume);
 const firstChatCall=sendFlow.indexOf('await chatHostedData(routePrompt,signal,model,null,prompt,{writerContinuity:true,ordinaryBasic:ordinaryBasicChat,emptyPriorHistory,publicWebSearchConsent,requestBinding:requestId})');
 assertEqual(ordinarySelection>=0&&firstChatGate>ordinarySelection&&firstChatCall>firstChatGate,true,'Direct canonical basic chat must bypass only the first-chat proof gate and preserve the guarded hosted dispatch');
+assertEqual(permissionConsume>=0&&permissionConsume<firstEarlyReturn&&permissionConsume<localKnowledgeReturn&&permissionConsume<explicitCompareReturn&&permissionConsume<missingLocalReturn,true,'Compare, local and command returns must consume public-search consent before they leave the send attempt');
 assertEqual(permissionConsume>=0&&finalDraftGate>permissionConsume&&firstChatCall>finalDraftGate,true,'A stale or cancelled presentation must stop before a public-search-capable hosted dispatch');
 assertIncludes(runtime,'<input type="checkbox" id="p0-public-web-search-consent" />','Public search consent must default off in the rendered composer');
 assertIncludes(runtime,'if(control)control.checked=false;','Public search consent must be consumed once rather than carried into a later request');
