@@ -1552,6 +1552,18 @@ a.p0-proof-source:focus-visible {
     min-height: 50px;
   }
 
+  .p0-public-web-search-permission {
+    flex-wrap: nowrap;
+    font-size: 0.66rem;
+    line-height: 1.15;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .p0-public-web-search-permission span {
+    display: none;
+  }
+
   .p0-route {
     max-width: 100%;
   }
