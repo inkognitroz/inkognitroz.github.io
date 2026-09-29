@@ -201,6 +201,51 @@ if (!retrievedHtml.includes('Ubekreftet') || !retrievedHtml.includes('<a class="
 if (api.renderReceipt('Supergeni · hosted route', retrievedProof, 'Mistral Small', '', 'live', true).includes('Verifisert')) fail('Retrieved ordinary sources must never inflate the receipt to Verifisert.');
 const retrievedReceipt = api.renderReceipt('Supergeni · hosted route', retrievedProof, 'Mistral Small', '', 'live', true);
 if (!retrievedReceipt.includes('Kilde hentet · svar ubekreftet')) fail('Retrieved but unverified sources must not render the verified retrieval badge.');
+const observedSnippetGrounding = {
+  ...retrievedGrounding,
+  search_observed_at: '2026-09-29T03:52:27.078Z',
+  sources: [{ ...retrievedSource, source_kind: 'provider_search_snippet', page_content_fetched: false, answer_evidence_verified: false, verified: false }]
+};
+const observedSnippetProof = api.answerProofLine(ordinaryPayload(observedSnippetGrounding));
+const observedSnippetHtml = api.renderProofLine({ role: 'assistant', proofLine: observedSnippetProof });
+if (observedSnippetProof?.searchObservedAt !== '2026-09-29T03:52:27.078Z' || !observedSnippetHtml.includes('Kildesøk observert (UTC): 2026-09-29T03:52:27.078Z')) fail('A valid gateway search observation timestamp must render in Details without substituting browser time.');
+if (/page content|sideinnhold|page fetched/i.test(observedSnippetHtml)) fail('Provider search snippets must not be relabeled as fetched page content.');
+const capturedPublicSearchShape = {
+  mmir: {
+    source_grounding: {
+      object: 'mmir.pre_synthesis_grounding',
+      grounding_kind: 'brave_search',
+      source_node_id: 'mmir-api-gateway',
+      retrieval_attempted: true,
+      retrieval_performed: true,
+      retrieval_status: 'retrieved',
+      sources: observedSnippetGrounding.sources,
+      search_observed_at: '2026-09-29T03:52:27.078Z',
+      answer_evidence_verified: false,
+      answer_support_verification: 'not_performed',
+      provider_search: { provider: 'brave', cost_class: 'free-monthly-credit-guarded', provider_called: true, status: 200, budget_mode: 'atomic-durable-object-cap', reserved_requests: 49, exact_no_paid_receipt: false }
+    },
+    answer_writer: { object: 'mmir.answer_writer', type: 'capability', provider: 'brave', model_id: 'brave/retrieved-excerpts', model_display_name: 'Brave · Retrieved excerpts', route_id: 'capability/brave/retrieved-excerpts' }
+  }
+};
+const capturedPublicSearchProof = api.answerProofLine(capturedPublicSearchShape);
+const capturedPublicSearchHtml = api.renderProofLine({ role: 'assistant', proofLine: capturedPublicSearchProof });
+if (capturedPublicSearchProof?.searchObservedAt !== '2026-09-29T03:52:27.078Z' || !capturedPublicSearchHtml.includes('Kildesøk observert (UTC): 2026-09-29T03:52:27.078Z')) fail('The retained public-search response shape must carry its gateway observation time without an ordinary_chat convenience flag.');
+if (capturedPublicSearchProof?.sourceRetrievalStatus || capturedPublicSearchProof?.sourceEvidenceStatus || /Kilder hentet|svar ubekreftet/i.test(capturedPublicSearchHtml)) fail('An observed Brave search timestamp must not create a retrieval or answer-verification claim.');
+const alternateProviderShape = JSON.parse(JSON.stringify(capturedPublicSearchShape));
+alternateProviderShape.mmir.source_grounding.grounding_kind = 'replaceable_search';
+alternateProviderShape.mmir.source_grounding.provider_search.provider = 'alternate';
+if (api.answerProofLine(alternateProviderShape)?.searchObservedAt !== '2026-09-29T03:52:27.078Z') fail('A valid structured pre-synthesis observation must not depend on a named search provider or grounding kind.');
+const namedButUnstructuredShape = JSON.parse(JSON.stringify(capturedPublicSearchShape));
+delete namedButUnstructuredShape.mmir.source_grounding.object;
+if (api.answerProofLine(namedButUnstructuredShape)?.searchObservedAt) fail('A named search provider without the structured successful pre-synthesis contract must not display an observation timestamp.');
+const mismatchedObservedCount = JSON.parse(JSON.stringify(capturedPublicSearchShape));
+mismatchedObservedCount.mmir.source_grounding.source_count = 2;
+if (api.answerProofLine(mismatchedObservedCount)?.searchObservedAt) fail('An explicitly reported source count must match the returned sources before an observation timestamp is displayed.');
+for (const invalidObservedAt of [undefined, '', '2026-09-29 03:52:00Z', '2026-09-29T03:52:00+00:00', '2026-02-30T03:52:00Z', '<img src=x>']) {
+  const proof = api.answerProofLine(ordinaryPayload({ ...observedSnippetGrounding, search_observed_at: invalidObservedAt }));
+  if (proof?.searchObservedAt || api.renderProofLine({ role: 'assistant', proofLine: proof }).includes('Kildesøk observert (UTC)')) fail('Missing or malformed search observation timestamps must be omitted.');
+}
 const verifiedGrounding = { ...retrievedGrounding, answer_evidence_verified: true, sources: [{ ...retrievedSource, answer_evidence_verified: true, verified: true }] };
 const verifiedRetrievalProof = api.answerProofLine(ordinaryPayload(verifiedGrounding));
 if (verifiedRetrievalProof?.sourceEvidenceStatus !== 'verified') fail('Explicitly answer-supported retrieval must retain the verified evidence state.');
