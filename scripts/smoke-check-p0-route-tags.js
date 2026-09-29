@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { webcrypto } from 'node:crypto';
+import { createHash, webcrypto } from 'node:crypto';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
 import { singleWriterStatus,singleWriterInventory } from './fixtures/single-writer-readiness.mjs';
@@ -344,7 +344,48 @@ assertEqual(literalPublicUrlRequest.body.public_web_search_permission?.schema,'m
 assertEqual(literalPublicUrlRequest.body.public_web_search_permission?.request_binding,'public-search-literal-url-1','Literal URL permission must bind to the dispatch that carries it');
 assertEqual(literalPublicUrlRequest.options.headers['x-request-id'],'public-search-literal-url-1','Literal URL permission must share the outbound app request id');
 assertEqual(literalPublicUrlRequest.body.messages.at(-1)?.content,literalPublicUrl,'Literal URL permission must bind the exact visible URL, without a derived target field');
-for(const unsafeLiteral of ['http://www.vg.no/','https://user:secret@www.vg.no/','https://www.vg.no/ les dette']){
+const naturalPublicPagePrompt='Hva står på forsiden til https://www.vg.no akkurat nå? Oppgi noen hovedoppslag, kildelenke og tidspunkt, og si tydelig hva du ikke kunne verifisere.';
+for(const pagePrompt of [naturalPublicPagePrompt,'Read https://example.com/article and summarize the page.','Oppsummer https://example.com/dokumentasjon.','https://www.vg.no/ les dette']){
+  await testApi.chatHostedData(pagePrompt,null,ordinaryFallback,null,pagePrompt,{
+    ordinaryBasic:true,publicWebSearchConsent:true,requestBinding:'public-page-natural-'+pagePrompt.length
+  });
+  const sent=hostedRequests.at(-1);
+  assertEqual(sent.body.public_web_search_permission?.schema,'mmir.public_web_search_permission.v1','A checked explicit single-page read must carry the existing permission: '+pagePrompt);
+  assertEqual(sent.body.public_web_search_permission?.query_sha256,'sha256:'+createHash('sha256').update(pagePrompt).digest('hex'),'Page permission hashes the entire unchanged visible prompt, not an extracted URL');
+  assertEqual(sent.body.public_web_search_permission?.request_binding,sent.options.headers['x-request-id'],'Page permission remains bound to the actual chat dispatch');
+  assertEqual(sent.body.messages.length,2,'Natural page read must retain system/current-user shape only');
+  assertEqual(sent.body.messages[0].role,'system','The real default frontend system message must remain in the request');
+  assertEqual(sent.body.messages[1].content,pagePrompt,'The actual user prompt must remain byte-for-byte unchanged');
+  assertEqual(sent.body.policy.require_no_paid_receipt,true,'Page intent must not relax model-cost policy');
+}
+for(const pagePrompt of [
+  'What is the meaning of "Read https://example.com/page now"?',
+  'Explain this example: `Read https://example.com/page now`.',
+  'Translate: Read https://example.com/page now.',
+  'Oversett teksten på https://example.com/page nå.',
+  'Do not fetch https://example.com/page; what is a URL?',
+  "Don't open https://example.com/page. What is a link?",
+  'Ikke bruk kilden https://example.com/page. Hva er en lenke?',
+  'Read https://example.com/a and https://example.com/b now.',
+  'Read http://example.com/page now.',
+  'Read https://user:secret@example.com/page now.',
+  'Read https://localhost/page now.',
+  'Read https://127.0.0.1/page now.',
+  'Read https://192.168.86.250/page now.',
+  'Read https://[::1]/page now.',
+  'What is the string https://example.com/page?',
+  'Here is an example: read https://example.com/page now.'
+]){
+  await testApi.chatHostedData(pagePrompt,null,ordinaryFallback,null,pagePrompt,{
+    ordinaryBasic:true,publicWebSearchConsent:true,requestBinding:'public-page-negative-'+pagePrompt.length
+  });
+  assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'URL mention is not public-page permission: '+pagePrompt);
+}
+await testApi.chatHostedData(naturalPublicPagePrompt,null,ordinaryFallback,null,naturalPublicPagePrompt,{
+  ordinaryBasic:true,publicWebSearchConsent:false,requestBinding:'public-page-unchecked'
+});
+assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'Natural page read still requires visible one-shot consent');
+for(const unsafeLiteral of ['http://www.vg.no/','https://user:secret@www.vg.no/','https://www.vg.no/ annet innhold']){
   await testApi.chatHostedData(unsafeLiteral,null,ordinaryFallback,null,unsafeLiteral,{
     ordinaryBasic:true,
     publicWebSearchConsent:true,
