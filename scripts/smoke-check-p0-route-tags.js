@@ -333,6 +333,27 @@ assertEqual(publicSearchRequest.body.public_web_search_permission?.request_bindi
 assertEqual(publicSearchRequest.options.headers['x-request-id'],'public-search-request-1','Gateway header must match the permission request binding');
 assertEqual(publicSearchRequest.body.public_web_search_permission?.query_sha256,'sha256:53d3c978ef3adedf955cc4415b330b304a597b87d39890373b0b85e4e6a30c38','Permission must hash the exact current public query');
 assertEqual(publicSearchRequest.body.messages.length,2,'Only a first-turn system/current-user payload may carry public-query permission');
+const norwegianSearchPrompt='Søk på nettet etter den offisielle dokumentasjonen for Python 3.14. Hvilke nye funksjoner beskrives der? Oppgi en direkte kildelenke.';
+await testApi.chatHostedData(norwegianSearchPrompt,null,ordinaryFallback,null,norwegianSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-norwegian-1'
+});
+assertEqual(hostedRequests.at(-1).body.public_web_search_permission?.schema,'mmir.public_web_search_permission.v1','An explicit Norwegian web-search prompt must carry the permission instead of being classified as ordinary chat');
+assertEqual(hostedRequests.at(-1).body.public_web_search_permission?.request_binding,'public-search-norwegian-1','Norwegian web-search permission must bind to its dispatch');
+const frozenGovernmentPrompt='Søk på nettet etter Regjeringens nasjonale digitaliseringsstrategi. Oppsummer ett konkret mål som står på den offisielle siden, og oppgi direkte kilde.';
+await testApi.chatHostedData(frozenGovernmentPrompt,null,ordinaryFallback,null,frozenGovernmentPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-government-1'
+});
+const frozenGovernmentRequest=hostedRequests.at(-1);
+const frozenPermission=frozenGovernmentRequest.body.public_web_search_permission;
+assertEqual(frozenPermission?.schema,'mmir.public_web_search_permission.v1','The frozen Government strategy prompt must reach the versioned permission path');
+assertEqual(JSON.stringify(Object.keys(frozenPermission).sort()),JSON.stringify(['authorization_basis','data_boundary','model_cost_policy','provider_cost_basis','query_sha256','request_binding','schema','scope','user_public_query_consent'].sort()),'Permission transport must retain exactly the nine bounded fields');
+assertEqual(frozenPermission?.request_binding,'public-search-government-1','Frozen prompt permission must bind to its own request');
+assertEqual(frozenPermission?.query_sha256,'sha256:29f0dbcf9123e80b639bd2deda4a17a6ec346340ee0a011f203b268df529fc0f','Frozen prompt permission must hash the exact visible prompt');
+assertEqual(frozenGovernmentRequest.options.headers['x-request-id'],'public-search-government-1','Frozen prompt transport must send the matching app request id');
 const optOutPublicSearchPayload=await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
   ordinaryBasic:true,
   publicWebSearchConsent:false,
