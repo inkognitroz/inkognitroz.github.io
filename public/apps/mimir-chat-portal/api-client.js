@@ -66,7 +66,10 @@
     const method=String(options.method||'GET').toUpperCase();
     if(parsed.origin!==BACKEND_IDENTITY_ORIGIN||parsed.search||parsed.hash)return false;
     return (method==='GET'&&parsed.pathname==='/status')||
-      (method==='POST'&&parsed.pathname==='/v1/chat/completions');
+      (method==='POST'&&(
+        parsed.pathname==='/v1/chat/completions'||
+        parsed.pathname==='/l5/progressive-publication/stream'
+      ));
   }
 
   function backendIdentityError(message,code='backend_identity_error',status=0){

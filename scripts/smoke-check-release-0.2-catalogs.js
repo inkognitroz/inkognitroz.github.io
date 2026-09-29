@@ -13,6 +13,7 @@ const trust=read('public/tillit/index.html');
 const runtime=read('public/release-0.2.js');
 const taxonomy=read('public/release-route-taxonomy.js');
 const p0Shell=read('public/apps/mimir-chat-portal/p0-chat-shell.js');
+const p0ShellVersion=JSON.parse(read('public/apps/mimir-chat-portal/asset-versions.json')).assets?.['p0-chat-shell.js'];
 const brandConfig=read('public/apps/mimir-chat-portal/brand-config.js');
 const legacyPortal=read('public/apps/mimir-chat-portal/mimir-chat-portal.js');
 const nav=read('public/apps/mimir-chat-portal/p0-release-nav.js');
@@ -43,7 +44,9 @@ assert(mmir.includes('p0-release-nav.js?v=20260919-jarvis-v3-1'),'chat must load
 // (iphone-send-ready-fill) er uendret i fila.
 assert(mmir.includes('p0-chat-shell.css?v=20260924-answer-proof-card-v1'),'chat must bind the reviewed shell stylesheet version');
 assert(mmir.includes('release-route-taxonomy.js?v=20260921-ordinary-route-preference-v1'),'chat must cache-bust the reviewed ordinary-chat taxonomy');
-assert(mmir.includes('p0-chat-shell.js?v=20260929-search-observed-at-v1'),'chat must bind the reviewed shell asset version for source-grounding error handling');
+assert(Boolean(p0ShellVersion)&&mmir.includes('p0-chat-shell.js?v='+p0ShellVersion)&&
+  p0Shell.includes("const P0_RUNTIME_VERSION='"+p0ShellVersion+"'"),
+  'chat, manifest and running shell must bind the same source-grounding runtime version');
 assert(mmir.includes('brand-config.js?v=20260927-brand-backend-optin-v1'),'chat must bind the backend-opt-in brand asset version');
 assert(mmir.includes('pwa.js?v=20260909-ordinary-chat-v1'),'chat must cache-bust the ordinary-chat PWA registration asset');
 assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260909-ordinary-chat-v1'"),'no-JS shell must register the ordinary-chat service-worker version');
