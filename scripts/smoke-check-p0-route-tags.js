@@ -520,7 +520,7 @@ assertIncludes(runtime,'await sendMessageImpl(requestId)','Submission wrapper de
 const sendEnd=runtime.indexOf('  async function compareLiveRoutes(',sendStart);
 assertEqual(sendStart>=0&&sendEnd>sendStart,true,'Dispatch guard assertions must inspect the actual sendMessage function');
 const sendFlow=runtime.slice(sendStart,sendEnd);
-assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;\n      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
+assertIncludes(sendFlow,"if(smart.mode==='compare'){\n      if(!await ensureHostedJourneyReady('compare')){\n        input?.focus();\n        return;\n      }\n      if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;\n      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer',publicWebSearchConsent,displayPrompt:prompt});\n      return;",'Explicit compare dispatch must stop on failed compare readiness before any compare call');
 const ordinarySelection=sendFlow.indexOf('const ordinaryBasicChat=Boolean(');
 const firstChatGate=sendFlow.indexOf("if(model?.route==='hosted'&&!ordinaryBasicChat&&!await ensureHostedJourneyReady('first_chat',model)){");
 const permissionConsume=sendFlow.indexOf('const publicWebSearchConsent=consumePublicWebSearchPermission();');
