@@ -43,7 +43,7 @@ assert(mmir.includes('p0-release-nav.js?v=20260919-jarvis-v3-1'),'chat must load
 // (iphone-send-ready-fill) er uendret i fila.
 assert(mmir.includes('p0-chat-shell.css?v=20260924-answer-proof-card-v1'),'chat must bind the reviewed shell stylesheet version');
 assert(mmir.includes('release-route-taxonomy.js?v=20260921-ordinary-route-preference-v1'),'chat must cache-bust the reviewed ordinary-chat taxonomy');
-assert(mmir.includes('p0-chat-shell.js?v=20260928-source-grounding-error-copy-v1'),'chat must bind the reviewed shell asset version for source-grounding error handling');
+assert(mmir.includes('p0-chat-shell.js?v=20260929-public-search-permission-v1'),'chat must bind the reviewed shell asset version for source-grounding error handling');
 assert(mmir.includes('brand-config.js?v=20260927-brand-backend-optin-v1'),'chat must bind the backend-opt-in brand asset version');
 assert(mmir.includes('pwa.js?v=20260909-ordinary-chat-v1'),'chat must cache-bust the ordinary-chat PWA registration asset');
 assert(mmir.includes("serviceWorkerUrl='./sw.js?v=20260909-ordinary-chat-v1'"),'no-JS shell must register the ordinary-chat service-worker version');
