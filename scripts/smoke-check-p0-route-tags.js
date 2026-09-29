@@ -333,6 +333,14 @@ assertEqual(publicSearchRequest.body.public_web_search_permission?.request_bindi
 assertEqual(publicSearchRequest.options.headers['x-request-id'],'public-search-request-1','Gateway header must match the permission request binding');
 assertEqual(publicSearchRequest.body.public_web_search_permission?.query_sha256,'sha256:53d3c978ef3adedf955cc4415b330b304a597b87d39890373b0b85e4e6a30c38','Permission must hash the exact current public query');
 assertEqual(publicSearchRequest.body.messages.length,2,'Only a first-turn system/current-user payload may carry public-query permission');
+const norwegianSearchPrompt='Søk på nettet etter den offisielle dokumentasjonen for Python 3.14. Hvilke nye funksjoner beskrives der? Oppgi en direkte kildelenke.';
+await testApi.chatHostedData(norwegianSearchPrompt,null,ordinaryFallback,null,norwegianSearchPrompt,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-norwegian-1'
+});
+assertEqual(hostedRequests.at(-1).body.public_web_search_permission?.schema,'mmir.public_web_search_permission.v1','An explicit Norwegian web-search prompt must carry the permission instead of being classified as ordinary chat');
+assertEqual(hostedRequests.at(-1).body.public_web_search_permission?.request_binding,'public-search-norwegian-1','Norwegian web-search permission must bind to its dispatch');
 const optOutPublicSearchPayload=await testApi.chatHostedData(publicSearchPrompt,null,ordinaryFallback,null,publicSearchPrompt,{
   ordinaryBasic:true,
   publicWebSearchConsent:false,

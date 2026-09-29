@@ -4289,7 +4289,7 @@
   }
 
   function wantsPublicFactRoute(prompt){
-    return /\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister)\b/i.test(String(prompt||''));
+    return /\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister|søk|soke|søke|nettet|kilde|kilder|dokumentasjon|fersk|offisiell)\b/i.test(String(prompt||''));
   }
 
   function cleanSmartPrompt(prompt){
