@@ -95,7 +95,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260929-public-search-permission-v1';
+  const P0_RUNTIME_VERSION='20260929-search-observed-at-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -2422,6 +2422,23 @@
     return sources.length?'unknown':'';
   }
 
+  function ordinarySearchObservedAt(payload){
+    const grounding=payload?.mmir?.source_grounding;
+    const ordinary=payload?.mmir?.ordinary_chat===true;
+    const observedPublicSearch=grounding?.object==='mmir.pre_synthesis_grounding'&&
+      grounding.retrieval_attempted===true&&grounding.retrieval_performed===true&&grounding.retrieval_status==='retrieved'&&
+      Array.isArray(grounding.sources)&&grounding.sources.length>0&&
+      (!Object.hasOwn(grounding,'source_count')||
+        (Number.isSafeInteger(grounding.source_count)&&grounding.source_count>0&&grounding.source_count===grounding.sources.length));
+    if((!ordinary&&!observedPublicSearch)||!grounding||typeof grounding!=='object'||Array.isArray(grounding))return '';
+    const value=grounding.search_observed_at;
+    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value))return '';
+    const observedAt=new Date(value);
+    if(!Number.isFinite(observedAt.getTime()))return '';
+    const canonical=observedAt.toISOString();
+    return value===canonical||value===canonical.replace('.000Z','Z')?canonical:'';
+  }
+
   function sourceRetrievalLabel(proof){
     if(proof?.sourceRetrievalStatus==='not_attempted')return 'Ingen kilde hentet';
     if(proof?.sourceRetrievalStatus==='unavailable_or_unsupported')return 'Kildeinnhold utilgjengelig';
@@ -2437,11 +2454,15 @@
     const raw=payload?.mmir?.answer_proof_line??payload?.answer_proof_line??null;
     const sourceRetrievalStatus=ordinarySourceRetrievalStatus(payload);
     const sourceEvidenceStatus=ordinarySourceEvidenceStatus(payload);
-    const disclosure=sourceRetrievalStatus?{sourceRetrievalStatus,...(sourceEvidenceStatus?{sourceEvidenceStatus}:{})}:{};
+    const searchObservedAt=ordinarySearchObservedAt(payload);
+    const disclosure={
+      ...(sourceRetrievalStatus?{sourceRetrievalStatus,...(sourceEvidenceStatus?{sourceEvidenceStatus}:{})}:{}),
+      ...(searchObservedAt?{searchObservedAt}:{})
+    };
     const retrievalSources=sourceRetrievalStatus==='retrieved'
       ? proofSourceRecords({mmir:{sources:Array.isArray(payload?.mmir?.source_grounding?.sources)?payload.mmir.source_grounding.sources:[]}},null)
       : proofSourceRecords(payload,null);
-    const unproven=sourceRetrievalStatus?{status:'unverified',label:'',consensusLabel:'',sources:retrievalSources,...disclosure}:null;
+    const unproven=(sourceRetrievalStatus||searchObservedAt)?{status:'unverified',label:'',consensusLabel:'',sources:retrievalSources,...disclosure}:null;
     if(typeof raw==='string'){
       const label=raw.replace(/\s+/g,' ').trim().slice(0,160);
       if(!label)return unproven;
@@ -4133,11 +4154,14 @@
       }
       return '<span class="p0-proof-source" title="'+safeAttr(hint)+'">'+safeText(source.name)+'</span>';
     }).join('');
-    if(!badge&&!label&&!badges)return '';
+    const observedAt=typeof proof.searchObservedAt==='string'?proof.searchObservedAt:'';
+    const observed=observedAt?'<span class="p0-proof-observed">Kildesøk observert (UTC): '+safeText(observedAt)+'</span>':'';
+    if(!badge&&!label&&!badges&&!observed)return '';
     return '<div class="p0-proof-line p0-proof-status-'+safeAttr(String(proof.status||'unverified').replace(/[^a-z0-9_-]/gi,''))+'" aria-label="'+safeAttr('Bevislinje: '+(label||proofTrustLabel(proof)||'ingen'))+'">'+
       (badge?'<span class="p0-proof-badge">'+safeText(badge)+'</span>':'')+
       (label?'<span class="p0-proof-text">'+safeText(label)+'</span>':'')+
       badges+
+      observed+
     '</div>';
   }
 
