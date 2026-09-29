@@ -1293,7 +1293,6 @@ a.p0-proof-source:focus-visible {
   bottom: 104px;
   box-shadow: 0 18px 44px rgba(17, 24, 39, 0.14);
   box-sizing: border-box;
-  display: grid;
   gap: 6px;
   max-height: min(70vh, calc(100vh - 118px));
   max-width: min(360px, calc(100vw - 28px));
@@ -1306,7 +1305,13 @@ a.p0-proof-source:focus-visible {
   z-index: 1100;
 }
 
-.p0-menu[hidden] {
+.p0-menu:not(dialog),
+dialog.p0-menu[open] {
+  display: grid;
+}
+
+.p0-menu[hidden],
+dialog.p0-menu:not([open]) {
   display: none;
 }
 

@@ -476,6 +476,17 @@ async function browserProof(){
     const dialog=page.locator('#mmir-p0-app dialog[aria-label="Personal memory"]');
     if(!(await dialog.isVisible()))failures.push('Personal memory dialog must be reachable and visible inside the P0 app.');
     await dialog.locator('[data-personal-memory-status]').getByText('Storage is off. Saved notes remain inspectable and deletable.').waitFor();
+    for(const closeWith of ['Close','Escape']){
+      if(closeWith==='Close')await dialog.getByRole('button',{name:'Close',exact:true}).click();
+      else await page.keyboard.press('Escape');
+      await page.waitForFunction(()=>!document.querySelector('#mmir-p0-app dialog[aria-label="Personal memory"]')?.open);
+      if(await dialog.isVisible()||await dialog.evaluate(node=>getComputedStyle(node).display)!=='none')failures.push(`Personal memory must be rendered hidden after ${closeWith}, not only lose its open attribute.`);
+      await page.locator('#p0-sidebar-settings').click();
+      await page.getByText('Personlig minne',{exact:true}).click();
+      await dialog.waitFor({state:'visible'});
+      if(!(await dialog.evaluate(node=>node.open&&getComputedStyle(node).display==='grid')))failures.push(`Personal memory must reopen visibly as a grid after ${closeWith}.`);
+      await dialog.locator('[data-personal-memory-status]').getByText('Storage is off. Saved notes remain inspectable and deletable.').waitFor();
+    }
     if(backendCalls===0)failures.push('Explicit panel action must contact only the personal backend.');
     const beforeDisabled=memoryCalls; const disabledSave=dialog.getByRole('button',{name:'Save note',exact:true}); const disabledDraftValue=await composer.inputValue(); if(!(await disabledSave.isDisabled())||!(await dialog.getByRole('button',{name:'Search notes',exact:true}).isDisabled()))failures.push('Save and search must be disabled before consent.'); if(memoryCalls!==beforeDisabled||searchCalls!==0||await composer.inputValue()!==disabledDraftValue)failures.push(`Disabled save/search must preserve draft and avoid remote writes (memory ${memoryCalls-beforeDisabled}, search ${searchCalls}, draft ${JSON.stringify(await composer.inputValue())}).`);
     const noteDraft=dialog.locator('[data-personal-memory-text]'); const importInput=dialog.locator('[data-personal-memory-import]'); const beforeImportCalls=backendCalls;

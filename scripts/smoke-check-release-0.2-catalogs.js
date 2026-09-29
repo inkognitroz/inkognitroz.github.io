@@ -42,7 +42,7 @@ assert(mmir.includes('p0-release-nav.css?v=20260918-jarvis-v2'),'chat must load 
 assert(mmir.includes('p0-release-nav.js?v=20260919-jarvis-v3-1'),'chat must load the release navigation script');
 // Bumpet for beviskortets stiler. Rettelsen denne porten opprinnelig voktet
 // (iphone-send-ready-fill) er uendret i fila.
-assert(mmir.includes('p0-chat-shell.css?v=20260924-answer-proof-card-v1'),'chat must bind the reviewed shell stylesheet version');
+assert(mmir.includes('p0-chat-shell.css?v=20260929-personal-dialog-close-v1'),'chat must bind the reviewed shell stylesheet version');
 assert(mmir.includes('release-route-taxonomy.js?v=20260921-ordinary-route-preference-v1'),'chat must cache-bust the reviewed ordinary-chat taxonomy');
 assert(Boolean(p0ShellVersion)&&mmir.includes('p0-chat-shell.js?v='+p0ShellVersion)&&
   p0Shell.includes("const P0_RUNTIME_VERSION='"+p0ShellVersion+"'"),
