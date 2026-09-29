@@ -1827,10 +1827,34 @@
     return {content,completion_truncated:responseLooksTruncated(data),finish_reason:responseFinishReason(data)};
   }
 
+  async function streamProgressivePublication(url,headers,payload,signal,onText){
+    const consumer=await import('./progressive-publication-consumer.mjs');
+    const requestId=headers['x-request-id']||headers['X-Request-Id']||crypto.randomUUID();
+    const runId=`${requestId}:progressive`;
+    let content='';
+    const result=await consumer.consumeProgressivePublication({
+      url:joinUrl(url,'/l5/progressive-publication/stream'),
+      requestId,runId,
+      payload:{messages:Array.isArray(payload?.messages)?payload.messages:[]},
+      headers,signal,
+      onEvent(event){
+        const answer=event?.publication?.answer;
+        if(typeof answer==='string'&&answer.trim()){
+          content=answer;
+          onText(content);
+        }
+      }
+    });
+    return {content,progressive_publication_version:result.publication_version,completion_truncated:false,finish_reason:'progressive_publication_closed'};
+  }
+
   const CHAT_PATHS=['/chat/completions','/v1/chat/completions','/chat'];
   function canonicalChatUrl(url){return joinUrl(url,'/chat/completions');}
 
   async function streamChat(url,headers,payload,signal,onText){
+    if(window.MMIR_PROGRESSIVE_PUBLICATION_UI_ENABLED===true){
+      return streamProgressivePublication(url,headers,payload,signal,onText);
+    }
     let lastError=null;
     for(const path of CHAT_PATHS){
       try{return await streamPath(url,path,headers,payload,signal,onText);}
