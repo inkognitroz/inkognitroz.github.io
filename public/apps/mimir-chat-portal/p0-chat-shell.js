@@ -7556,6 +7556,53 @@
     };
   }
 
+  async function progressiveComparePayload(prompt,signal){
+    const consumer=await import('./progressive-publication-consumer.mjs');
+    const base=typeof P0_ROUTE_ADAPTERS.chatApiUrl==='function'
+      ? P0_ROUTE_ADAPTERS.chatApiUrl()
+      : API_URL;
+    const endpoint=String(base||API_URL).replace(/\/$/,'')+'/l5/progressive-publication/stream';
+    const requestId=typeof crypto?.randomUUID==='function'?crypto.randomUUID():'p0-progressive-'+Date.now();
+    const payload=compareApiPayload(prompt);
+    const prepared=typeof window.MimirApiClient?.prepareBackendRequest==='function'
+      ? await window.MimirApiClient.prepareBackendRequest(endpoint,{
+          method:'POST',
+          headers:{'Accept':'text/event-stream','Content-Type':'application/json','x-request-id':requestId},
+          body:JSON.stringify({payload:{messages:payload.messages}}),
+          signal,
+          identityFetch:fetch
+        })
+      : {headers:{'Accept':'text/event-stream','Content-Type':'application/json','x-request-id':requestId}};
+    let latest='';
+    const result=await consumer.consumeProgressivePublication({
+      url:endpoint,
+      requestId,
+      runId:requestId+':progressive',
+      payload:{messages:payload.messages},
+      headers:prepared.headers||{},
+      signal,
+      onEvent(event){
+        const answer=event?.publication?.answer;
+        if(typeof answer==='string'&&answer.trim())latest=answer.trim();
+      }
+    });
+    if(!latest)throw new Error('Progressive publication returned no answer.');
+    const receipt={
+      ...(result.events.at(-1)?.publication?.receipt||{}),
+      request_id:requestId,
+      execution_scope:'model-routes-only',
+      progressive_publication_version:result.publication_version
+    };
+    return {
+      object:'chat.compare',
+      answer:latest,
+      best_answer_text:latest,
+      data:[{choices:[{message:{role:'assistant',content:latest}}],receipt}],
+      best_answer:{content:latest,receipt},
+      mmir:{receipt}
+    };
+  }
+
   function attemptProviderLabel(attempt){
     const receipt=attempt?.receipt||{};
     const model=String(
@@ -7909,6 +7956,9 @@
   }
 
   async function fetchGatewayFanout(prompt,mode,signal,options={}){
+    if(window.MMIR_PROGRESSIVE_PUBLICATION_UI_ENABLED===true&&(mode==='compare'||mode==='best-answer')){
+      return progressiveComparePayload(prompt,signal);
+    }
     const journey=mode==='compare'||mode==='best-answer'?'compare':'swarm_preview';
     if(!await revalidateHostedBoundary(journey)){
       const error=new Error('Hosted '+journey+' journey is not production-ready.');
