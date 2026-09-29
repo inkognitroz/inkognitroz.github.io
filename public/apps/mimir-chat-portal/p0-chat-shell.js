@@ -95,7 +95,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260929-progressive-bounded-v2';
+  const P0_RUNTIME_VERSION='20260929-public-page-consent-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -4329,8 +4329,29 @@
     }
   }
 
+  function isExplicitPublicPageRequest(prompt){
+    const text=String(prompt||'');
+    const tokens=text.match(/https?:\/\/[^\s<>"'`]+/giu)||[];
+    if(tokens.length!==1)return false;
+    const token=tokens[0].replace(/[.,;!?)\]}]+$/u,'');
+    if(!isExplicitPublicHttpsLiteral(token))return false;
+    const hostname=new URL(token).hostname.toLowerCase().replace(/\.$/,'');
+    // Consent is intentionally narrower than URL reachability. The backend
+    // still owns address, redirect and fetch admission; this grants none of it.
+    if(!hostname.includes('.')||/[\[\]:]/.test(hostname)||/^\d+(?:\.\d+){3}$/.test(hostname)
+      ||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/.test(hostname))return false;
+    if(isExplicitPublicHttpsLiteral(text))return true;
+    const unquoted=text.replace(/```[\s\S]*?```|`[^`]*`|"[^"]*"|'[^'\n]*'|“[^”]*”|«[^»]*»/gu,'');
+    if(!unquoted.includes(token))return false;
+    const intentText=unquoted.replace(/https?:\/\/[^\s<>"'`]+/giu,' ');
+    if(/\b(?:translate|oversett|omsett|example|eksempel)\b/iu.test(intentText)
+      ||/\b(?:ikke|ikkje|never|without|uten|do\s+not|don't)\s+(?:(?:use|bruk)\s+(?:(?:the|this|den|denne)\s+)?(?:source|page|web|internet|kilde|nettside|nett)|fetch|open|read|browse|visit|search|hent|åpne|opne|les|søk)/iu.test(intentText))return false;
+    return /\b(?:les|lese|åpne|opne|hent|hente|sjekk|sjekke|oppsummer|analyser|vurder|read|open|fetch|check|summarize|analyse|analyze|review)\b/iu.test(intentText)
+      ||/\b(?:hva|kva|what)\b[\s\S]{0,50}\b(?:sier|står|viser|says|does|shows)\b/iu.test(intentText);
+  }
+
   function wantsPublicFactRoute(prompt){
-    return isExplicitPublicHttpsLiteral(prompt)||/\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister|søk|soke|søke|nettet|kilde|kilder|dokumentasjon|fersk|offisiell)\b/i.test(String(prompt||''));
+    return isExplicitPublicPageRequest(prompt)||/\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister|søk|soke|søke|nettet|kilde|kilder|dokumentasjon|fersk|offisiell)\b/i.test(String(prompt||''));
   }
 
   function cleanSmartPrompt(prompt){
@@ -7254,6 +7275,9 @@
   function publicWebSearchPermissionIntent(prompt,model,media,options,protectedKnowledge,messages){
     if(options.publicWebSearchConsent!==true||options.ordinaryBasic!==true||media||privateModeActive()||
       !isCanonicalHostedModel(model)||protectedKnowledge||messages.length!==2||!wantsPublicFactRoute(prompt))return null;
+    // A URL mention must not inherit consent from an unrelated "what is/now"
+    // keyword. Hashing below still covers the whole original prompt.
+    if(/https?:\/\//iu.test(String(prompt||''))&&!isExplicitPublicPageRequest(prompt))return null;
     return {
       schema:'mmir.public_web_search_permission.v1',
       scope:'ordinary-public-web',
