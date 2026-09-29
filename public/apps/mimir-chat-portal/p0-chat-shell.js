@@ -95,7 +95,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260929-search-observed-at-v1';
+  const P0_RUNTIME_VERSION='20260929-progressive-bounded-v2';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -4036,7 +4036,12 @@
       : quietStatus;
     const calculatorAnswer=answerWriter?.type==='capability'&&answerWriter?.identity_source==='deterministic-calculator-metadata'&&
       answerWriter?.model_id==='calculator'&&answerState==='live'&&!aiGenerated;
-    const statusParts=calculatorAnswer?['verktøysvar']:[
+    const progressiveAnswer=answerWriter?.type==='capability'&&answerWriter?.identity_source==='backend-extractive-publication'&&
+      Number.isInteger(answerWriter?.publication_version)&&answerWriter.publication_version>0;
+    const statusParts=progressiveAnswer?[
+      'Versjon '+answerWriter.publication_version,'ekstraktivt · ikke faktasjekket','rutebevis mangler',
+      answerState==='degraded'?'oppdatering avbrutt':''
+    ].filter(Boolean):calculatorAnswer?['verktøysvar']:[
       answerDeliveryLabel(answerState),
       conciseGeneratedStatus,
       sourceRetrievalLabel(proof),
@@ -7556,51 +7561,55 @@
     };
   }
 
-  async function progressiveComparePayload(prompt,signal){
-    const consumer=await import('./progressive-publication-consumer.mjs');
-    const base=typeof P0_ROUTE_ADAPTERS.chatApiUrl==='function'
-      ? P0_ROUTE_ADAPTERS.chatApiUrl()
-      : API_URL;
-    const endpoint=String(base||API_URL).replace(/\/$/,'')+'/l5/progressive-publication/stream';
-    const requestId=typeof crypto?.randomUUID==='function'?crypto.randomUUID():'p0-progressive-'+Date.now();
+  async function progressiveCompareP0(prompt,input,options={}){
+    if(state.pendingMedia){
+      status('Best Answer støtter ikke vedlegg i denne leveransen. Utkastet er beholdt.','error');
+      return;
+    }
+    if(!await revalidateHostedBoundary('compare'))return;
+    const signal=beginResponse();
     const payload=compareApiPayload(prompt);
-    const prepared=typeof window.MimirApiClient?.prepareBackendRequest==='function'
-      ? await window.MimirApiClient.prepareBackendRequest(endpoint,{
-          method:'POST',
-          headers:{'Accept':'text/event-stream','Content-Type':'application/json','x-request-id':requestId},
-          body:JSON.stringify({payload:{messages:payload.messages}}),
-          signal,
-          identityFetch:fetch
-        })
-      : {headers:{'Accept':'text/event-stream','Content-Type':'application/json','x-request-id':requestId}};
-    let latest='';
-    const result=await consumer.consumeProgressivePublication({
-      url:endpoint,
-      requestId,
-      runId:requestId+':progressive',
-      payload:{messages:payload.messages},
-      headers:prepared.headers||{},
-      signal,
-      onEvent(event){
-        const answer=event?.publication?.answer;
-        if(typeof answer==='string'&&answer.trim())latest=answer.trim();
+    const requestId=crypto.randomUUID();
+    const consent=options.publicWebSearchConsent===true||
+      (options.publicWebSearchConsent===undefined&&consumePublicWebSearchPermission());
+    append('user',prompt,'You');
+    if(input){input.value='';autosizeInput();}
+    const assistant=append('assistant','Venter på første kildeunderbygde svar …','MMIR · Best Answer',
+      'Best Answer · pågår · rutebevis avventes',{variant:'progressive',retryPrompt:prompt,answerState:'pending',aiGenerated:false});
+    let latest=null;
+    try{
+      const progressive=await import('./p0-progressive-publication.mjs?v=20260929-progressive-bounded-v2');
+      const base=window.MimirApiClient?.backendIdentityOrigin;
+      if(!base)throw new Error('backend_user_identity_unavailable');
+      const endpoint=String(base).replace(/\/$/,'')+'/l5/progressive-publication/stream';
+      const exactPrompt=options.displayPrompt===undefined||options.displayPrompt===prompt;
+      const permission=await boundPublicWebSearchPermission(
+        exactPrompt?publicWebSearchPermissionIntent(prompt,activeModel(),null,
+          {publicWebSearchConsent:consent,ordinaryBasic:true},false,payload.messages):null,prompt,requestId);
+      await progressive.runProgressiveP0({
+        endpoint,requestId,payload:{messages:payload.messages,...(permission?{public_web_search_permission:permission}:{})},signal,
+        prepareRequest:window.MimirApiClient?.prepareBackendRequest,
+        onPublication(presentation){
+          latest=presentation;
+          updateMessage(assistant,presentation.content,presentation);
+          status('Svar publisert; ser etter støttede forbedringer.','ready');
+        }
+      });
+      status('Best Answer er ferdig.','ready');
+    }catch(error){
+      const stopped=signal.aborted||stopRequested;
+      if(latest){
+        updateMessage(assistant,latest.content,{...latest,
+          receipt:latest.receipt+(stopped?' · oppdatering stoppet':' · oppdatering avbrutt'),answerState:'degraded'});
+      }else{
+        updateMessage(assistant,stopped?'Svaret ble stoppet.':'Ingen kildeunderbygget publisering er tilgjengelig akkurat nå.',
+          {receipt:'Best Answer · unavailable · ingen utførelsesbevis',answerState:'degraded',aiGenerated:false});
       }
-    });
-    if(!latest)throw new Error('Progressive publication returned no answer.');
-    const receipt={
-      ...(result.events.at(-1)?.publication?.receipt||{}),
-      request_id:requestId,
-      execution_scope:'model-routes-only',
-      progressive_publication_version:result.publication_version
-    };
-    return {
-      object:'chat.compare',
-      answer:latest,
-      best_answer_text:latest,
-      data:[{choices:[{message:{role:'assistant',content:latest}}],receipt}],
-      best_answer:{content:latest,receipt},
-      mmir:{receipt}
-    };
+      status(stopped?'Stoppet.':'Best Answer kunne ikke fullføres.','error');
+    }finally{
+      finishResponse();
+      input?.focus();
+    }
   }
 
   function attemptProviderLabel(attempt){
@@ -7956,9 +7965,6 @@
   }
 
   async function fetchGatewayFanout(prompt,mode,signal,options={}){
-    if(window.MMIR_PROGRESSIVE_PUBLICATION_UI_ENABLED===true&&(mode==='compare'||mode==='best-answer')){
-      return progressiveComparePayload(prompt,signal);
-    }
     const journey=mode==='compare'||mode==='best-answer'?'compare':'swarm_preview';
     if(!await revalidateHostedBoundary(journey)){
       const error=new Error('Hosted '+journey+' journey is not production-ready.');
@@ -8324,6 +8330,10 @@
       input?.focus();
       return;
     }
+    if(window.MMIR_PROGRESSIVE_PUBLICATION_UI_ENABLED===true&&(mode==='compare'||mode==='best-answer')){
+      await progressiveCompareP0(prompt,input,options);
+      return;
+    }
     const toolContext=options.toolContext||null;
     const systemContext=String(options.systemContext||'').trim().slice(0,8000);
     const toolReceipt=toolContext?noKeyToolReceipt(toolContext):'';
@@ -8507,7 +8517,7 @@
         return;
       }
       if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
-      await compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare'});
+      await compareLiveRoutes(explicit.prompt,explicit.model,{mode:'compare',publicWebSearchConsent,displayPrompt:prompt});
       return;
     }
     if(explicit?.mode==='missing-local'){
@@ -8550,7 +8560,7 @@
         return;
       }
       if((presentation&&requestId&&!presentation.isCurrent(requestId))||!draftPreserved())return;
-      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer'});
+      await compareLiveRoutes(smart.prompt,smart.model,{mode:'best-answer',publicWebSearchConsent,displayPrompt:prompt});
       return;
     }
     const pendingMedia=state.pendingMedia;
