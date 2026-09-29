@@ -333,6 +333,25 @@ assertEqual(publicSearchRequest.body.public_web_search_permission?.request_bindi
 assertEqual(publicSearchRequest.options.headers['x-request-id'],'public-search-request-1','Gateway header must match the permission request binding');
 assertEqual(publicSearchRequest.body.public_web_search_permission?.query_sha256,'sha256:53d3c978ef3adedf955cc4415b330b304a597b87d39890373b0b85e4e6a30c38','Permission must hash the exact current public query');
 assertEqual(publicSearchRequest.body.messages.length,2,'Only a first-turn system/current-user payload may carry public-query permission');
+const literalPublicUrl='https://www.vg.no/';
+await testApi.chatHostedData(literalPublicUrl,null,ordinaryFallback,null,literalPublicUrl,{
+  ordinaryBasic:true,
+  publicWebSearchConsent:true,
+  requestBinding:'public-search-literal-url-1'
+});
+const literalPublicUrlRequest=hostedRequests.at(-1);
+assertEqual(literalPublicUrlRequest.body.public_web_search_permission?.schema,'mmir.public_web_search_permission.v1','One explicit HTTPS URL must use the existing checked public-query permission');
+assertEqual(literalPublicUrlRequest.body.public_web_search_permission?.request_binding,'public-search-literal-url-1','Literal URL permission must bind to the dispatch that carries it');
+assertEqual(literalPublicUrlRequest.options.headers['x-request-id'],'public-search-literal-url-1','Literal URL permission must share the outbound app request id');
+assertEqual(literalPublicUrlRequest.body.messages.at(-1)?.content,literalPublicUrl,'Literal URL permission must bind the exact visible URL, without a derived target field');
+for(const unsafeLiteral of ['http://www.vg.no/','https://user:secret@www.vg.no/','https://www.vg.no/ les dette']){
+  await testApi.chatHostedData(unsafeLiteral,null,ordinaryFallback,null,unsafeLiteral,{
+    ordinaryBasic:true,
+    publicWebSearchConsent:true,
+    requestBinding:'public-search-literal-url-negative-'+unsafeLiteral.length
+  });
+  assertEqual(Object.hasOwn(hostedRequests.at(-1).body,'public_web_search_permission'),false,'Only one credential-free HTTPS literal may enter the public-query scope: '+unsafeLiteral);
+}
 const norwegianSearchPrompt='Søk på nettet etter den offisielle dokumentasjonen for Python 3.14. Hvilke nye funksjoner beskrives der? Oppgi en direkte kildelenke.';
 await testApi.chatHostedData(norwegianSearchPrompt,null,ordinaryFallback,null,norwegianSearchPrompt,{
   ordinaryBasic:true,
