@@ -4312,8 +4312,20 @@
     return /\b(private|privacy|local|locally|offline|this mac|my mac|no cloud|privat|lokal|lokalt|denne macen|uten sky)\b/i.test(String(prompt||''));
   }
 
+  function isExplicitPublicHttpsLiteral(prompt){
+    const raw=String(prompt||'');
+    const literal=raw.trim();
+    if(!literal||raw!==literal||!/^https:\/\/[^\s]+$/i.test(literal))return false;
+    try{
+      const url=new URL(literal);
+      return url.protocol==='https:'&&Boolean(url.hostname)&&!url.username&&!url.password;
+    }catch(_err){
+      return false;
+    }
+  }
+
   function wantsPublicFactRoute(prompt){
-    return /\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister|søk|soke|søke|nettet|kilde|kilder|dokumentasjon|fersk|offisiell)\b/i.test(String(prompt||''));
+    return isExplicitPublicHttpsLiteral(prompt)||/\b(current|today|now|latest|president|prime minister|minister|capital|population|weather|news|stock|price|law|regulation|election|who is|what is|when is|where is|hvem er|hva er|presidenten|statsminister|søk|soke|søke|nettet|kilde|kilder|dokumentasjon|fersk|offisiell)\b/i.test(String(prompt||''));
   }
 
   function cleanSmartPrompt(prompt){
