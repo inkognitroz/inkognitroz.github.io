@@ -1,0 +1,84 @@
+:root[data-mmir-theme="dark"] body.mmir-p0-ready,
+:root[data-mmir-theme="dark"] #mmir-p0-app {
+  background:#111318;
+  color:#f3f4f6;
+}
+
+:root[data-mmir-theme="dark"] .p0-sidebar,
+:root[data-mmir-theme="dark"] .p0-topbar {
+  border-color:#2a2e35;
+}
+
+:root[data-mmir-theme="dark"] .p0-sidebar-brand,
+:root[data-mmir-theme="dark"] .p0-brand,
+:root[data-mmir-theme="dark"] .p0-sidebar-nav button,
+:root[data-mmir-theme="dark"] .p0-sidebar-settings,
+:root[data-mmir-theme="dark"] .p0-first-session h1,
+:root[data-mmir-theme="dark"] .p0-message,
+:root[data-mmir-theme="dark"] .p0-model-button,
+:root[data-mmir-theme="dark"] .p0-btn,
+:root[data-mmir-theme="dark"] .p0-input {
+  color:#f3f4f6;
+}
+
+:root[data-mmir-theme="dark"] .p0-sidebar-nav button:hover,
+:root[data-mmir-theme="dark"] .p0-sidebar-nav button:focus-visible,
+:root[data-mmir-theme="dark"] .p0-sidebar-settings:hover,
+:root[data-mmir-theme="dark"] .p0-sidebar-settings:focus-visible {
+  background:#1b1f26;
+}
+
+:root[data-mmir-theme="dark"] .p0-brand-text span,
+:root[data-mmir-theme="dark"] .p0-status,
+:root[data-mmir-theme="dark"] .p0-route,
+:root[data-mmir-theme="dark"] .p0-token-counter,
+:root[data-mmir-theme="dark"] .p0-menu small {
+  color:#aab2bf;
+}
+
+:root[data-mmir-theme="dark"] .p0-composer,
+:root[data-mmir-theme="dark"] .p0-input,
+:root[data-mmir-theme="dark"] .p0-menu,
+:root[data-mmir-theme="dark"] .p0-model-menu {
+  background:#181b21;
+  border-color:#343943;
+}
+
+:root[data-mmir-theme="dark"] .p0-menu button,
+:root[data-mmir-theme="dark"] .p0-menu-title,
+:root[data-mmir-theme="dark"] .p0-menu-section {
+  color:#f3f4f6;
+}
+
+:root[data-mmir-theme="dark"] .p0-menu button:hover,
+:root[data-mmir-theme="dark"] .p0-menu button:focus-visible {
+  background:#242932;
+}
+
+:root[data-mmir-theme="dark"] .p0-mark {
+  background:#f3f4f6;
+  color:#111318;
+}
+
+:root[data-mmir-theme="dark"] .p0-message[data-role="user"] .p0-message-body {
+  background:#252a33;
+  color:#f8fafc;
+}
+
+:root[data-mmir-theme="dark"] .p0-message[data-role="assistant"] .p0-message-body {
+  color:#f3f4f6;
+}
+
+:root[data-mmir-theme="dark"] .p0-input::placeholder {
+  color:#7f8997;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-mmir-theme] *,
+  :root[data-mmir-theme] *::before,
+  :root[data-mmir-theme] *::after {
+    scroll-behavior:auto !important;
+    transition-duration:0.01ms !important;
+    animation-duration:0.01ms !important;
+  }
+}
