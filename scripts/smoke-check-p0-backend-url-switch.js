@@ -12,9 +12,17 @@ const root = resolve(process.cwd());
 const portalDir = join(root, 'public/apps/mimir-chat-portal');
 const apiClient = readFileSync(join(portalDir, 'api-client.js'), 'utf8');
 const helper = readFileSync(join(portalDir, 'p0-route-adapters.js'), 'utf8');
+const shell = readFileSync(join(portalDir, 'p0-chat-shell.js'), 'utf8');
+const taxonomy = readFileSync(join(root, 'public/release-route-taxonomy.js'), 'utf8');
+const storageHelper = readFileSync(join(portalDir, 'p0-storage.js'), 'utf8');
+const routeReceiptsHelper = readFileSync(join(portalDir, 'p0-route-receipts.js'), 'utf8');
+const routeBenchmarksHelper = readFileSync(join(portalDir, 'p0-route-benchmarks.js'), 'utf8');
+const historyHelper = readFileSync(join(portalDir, 'p0-history.js'), 'utf8');
 const html = readFileSync(join(root, 'public/mmir.html'), 'utf8');
 const assetVersions = JSON.parse(readFileSync(join(portalDir, 'asset-versions.json'), 'utf8'));
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+const shellBootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
+const shellExportBlock = '  globalThis.__p0BackendPathTest={chatHostedData};';
 
 const failures = [];
 const fail = (message) => failures.push(message);
@@ -279,6 +287,63 @@ firstAbort.abort();
 const firstAbortError = await firstRequest;
 await secondRequest;
 if (firstAbortError?.name !== 'AbortError' || mixedAbort.calls.filter(call => call.url.endsWith('/identity/session')).length !== 1) fail('A joining backend request must survive another caller abort without duplicate bootstrap.');
+
+// 15b. The ordinary chat shell must tag the route the actual adapter resolved at
+// dispatch time. In particular, a post-boot API-origin change must not be compared
+// with the shell's cached initial API_URL and mislabeled as a backend dispatch.
+async function selectedPathProbe(){
+  const requests=[];
+  const storage=new Map();
+  const context={
+    console,URL,URLSearchParams,AbortController,setTimeout,clearTimeout,setInterval,clearInterval,
+    TextEncoder,Uint8Array,
+    location:{hostname:'mmir.ai',href:'https://mmir.ai/mmir.html',hash:'',search:''},
+    document:{readyState:'loading',addEventListener(){},getElementById(){return null;}},
+    localStorage:{getItem(key){return storage.get(key)||null;},setItem(key,value){storage.set(key,String(value));},removeItem(key){storage.delete(key);}},
+    sessionStorage:{getItem(key){return storage.get(key)||null;},setItem(key,value){storage.set(key,String(value));}},
+    CustomEvent:function CustomEvent(type,init={}){this.type=type;this.detail=init.detail;},
+    fetch:async(url,options={})=>{
+      requests.push({url:String(url),body:JSON.parse(options.body||'{}')});
+      const status=selectedPathProbe.status||200;
+      return {ok:status>=200&&status<300,status,json:async()=>status===503?{error:{message:'backend unavailable'}}:{choices:[{message:{content:'fixture'}}]}};
+    }
+  };
+  context.window={
+    MMIR_CHAT_VIA_BACKEND:true,
+    MimirBrandConfig:{chat_via_backend:true},
+    MimirApiClient:{backendIdentityOrigin:'https://backend.mmir.ai',prepareBackendRequest:async(url,options)=>options},
+    addEventListener(){},dispatchEvent(){}
+  };
+  context.window.location=context.location;
+  context.globalThis=context;
+  context.window.window=context.window;
+  vm.createContext(context);
+  vm.runInContext(helper,context,{filename:'p0-route-adapters.js'});
+  vm.runInContext(taxonomy,context,{filename:'release-route-taxonomy.js'});
+  vm.runInContext(storageHelper,context,{filename:'p0-storage.js'});
+  vm.runInContext(routeReceiptsHelper,context,{filename:'p0-route-receipts.js'});
+  vm.runInContext(routeBenchmarksHelper,context,{filename:'p0-route-benchmarks.js'});
+  vm.runInContext(historyHelper,context,{filename:'p0-history.js'});
+  vm.runInContext(shell.replace(shellBootBlock,shellExportBlock),context,{filename:'p0-chat-shell.js'});
+  const model={id:'mmir-supergenius',model:'mmir-supergenius',route:'hosted',ordinaryChatAttemptable:true};
+  const send=async()=>context.__p0BackendPathTest.chatHostedData('path fixture',null,model,null,'',{ordinaryBasic:true});
+  return {context,requests,send};
+}
+
+const selectedPath=await selectedPathProbe();
+await selectedPath.send();
+if(selectedPath.requests.at(-1)?.url!=='https://backend.mmir.ai/v1/chat/completions'||selectedPath.requests.at(-1)?.body?.mmir?.execution_path!=='backend')fail('Resolved backend ordinary chat must send scalar backend execution_path.');
+selectedPathProbe.status=503;
+try{await selectedPath.send();}catch(error){}
+if(selectedPath.requests.length!==2)fail('A backend 503 must not retry or fall back to a second chat dispatch.');
+selectedPathProbe.status=200;
+selectedPath.context.window.MimirApiClient.backendIdentityOrigin='';
+await selectedPath.send();
+if(selectedPath.requests.at(-1)?.url!=='https://api.mmir.ai/v1/chat/completions'||selectedPath.requests.at(-1)?.body?.mmir?.execution_path!=='gateway_fallback')fail('A missing backend identity origin must use and label the gateway fallback.');
+selectedPath.context.window.MMIR_BACKEND_URL='https://api-staging.mmir.ai';
+if(selectedPath.context.window.MimirP0RouteAdapters.config().chatApiUrlSource!=='api')fail('Post-boot API origin fixture must remain adapter-classified as api fallback.');
+await selectedPath.send();
+if(selectedPath.requests.at(-1)?.url!=='https://api-staging.mmir.ai/v1/chat/completions'||selectedPath.requests.at(-1)?.body?.mmir?.execution_path!=='gateway_fallback')fail('A post-boot API-origin change must preserve gateway_fallback instead of being mislabeled backend.');
 
 // 16. The identity authority must execute before route adapters and the P0 shell; versions are pinned.
 const apiVersion = assetVersions.assets?.['api-client.js'] || '';
