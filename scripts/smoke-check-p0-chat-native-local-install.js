@@ -133,14 +133,6 @@ requireIncludes(
   "routeStatus('Copy install command · local setup','hosted')",
   'Install assistant must update the compact route/status line instead of opening another page.'
 );
-// The URL moved behind chatEndpoint (F1-1) so the ordinary send can go to the backend
-// layer behind a flag. The metadata this pinned is unchanged: it is the same call with
-// the same body, and with the flag off chatEndpoint resolves to API_URL+CHAT_PATH.
-requireIncludes(
-  chatHostedDataSource,
-  'const response=await fetchJson(chatEndpoint()',
-  'Hosted chat must keep raw API metadata available for chat-native connect guidance.'
-);
 requireIncludes(
   p0Shell,
   'return (url||API_URL)+CHAT_PATH;',
@@ -199,6 +191,10 @@ requireIncludes(
   'P0_HISTORY.transientInstallMessage(message)',
   'Install helper messages must not be persisted as first-screen chat history.'
 );
+
+// Raw response preservation through chatHostedData is exercised in the actual shell
+// VM transport harness in smoke-check-p0-backend-url-switch.js. Keep this test focused
+// on the connect-guide renderer and its source contract.
 
 if (failures.length) {
   console.error('P0 chat-native local install smoke failed:');

@@ -33,10 +33,22 @@
   // gateway endpoint and must say so truthfully; an unknown adapter state is omitted.
   function selectedChatExecutionPath(routeConfig=null){
     const config=routeConfig||(typeof P0_ROUTE_ADAPTERS.config==='function'?P0_ROUTE_ADAPTERS.config():null);
-    if(!config||typeof config.chatViaBackend!=='boolean'||typeof config.chatApiUrlSource!=='string')return null;
-    if(!config.chatViaBackend)return 'gateway_by_design';
-    if(config.chatApiUrlSource==='api')return 'gateway_fallback';
-    if(config.chatApiUrlSource==='flag:global'||config.chatApiUrlSource==='flag:brand')return 'backend';
+    if(!config||typeof config.chatViaBackend!=='boolean'||typeof config.chatApiUrlSource!=='string'||typeof config.apiUrlSource!=='string'||typeof config.chatApiUrl!=='string')return null;
+    let selectedOrigin='';
+    let backendOrigin='';
+    try{selectedOrigin=new URL(config.chatApiUrl).origin;}catch(error){return null;}
+    try{backendOrigin=new URL(String(window.MimirApiClient?.backendIdentityOrigin||'')).origin;}catch(error){}
+    // A legacy URL override is selected as the backend path only when it matches the
+    // identity client's established origin. Never classify an arbitrary flag URL by
+    // its spelling; this is client selection metadata, not an authentication claim.
+    if(backendOrigin&&selectedOrigin===backendOrigin)return 'backend';
+    const knownGatewayOrigins=[P0_ROUTE_ADAPTERS.PROD_API_URL,P0_ROUTE_ADAPTERS.STAGING_API_URL]
+      .map(value=>{try{return new URL(String(value||'')).origin;}catch(error){return '';}})
+      .filter(Boolean);
+    if(!knownGatewayOrigins.includes(selectedOrigin))return null;
+    if(config.chatApiUrlSource==='api'||config.chatApiUrlSource==='host-default'){
+      return config.chatViaBackend?'gateway_fallback':'gateway_by_design';
+    }
     return null;
   }
 
@@ -119,7 +131,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20261001-execution-path-selected-v1';
+  const P0_RUNTIME_VERSION='20261001-execution-path-selected-v2';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -7475,13 +7487,15 @@
     // Gateway #1946 allowlists this as an unsigned client-selected request field and
     // echoes its nested response-envelope form only after exact allowlisting. It is
     // intentionally neither an execution receipt nor a backend identity claim.
-    payload={
-      ...payload,
-      mmir:{
-        ...(payload.mmir&&typeof payload.mmir==='object'&&!Array.isArray(payload.mmir)?payload.mmir:{}),
-        ...(dispatch.selected?{execution_path:dispatch.selected}:{})
-      }
-    };
+    if(dispatch.selected){
+      payload={
+        ...payload,
+        mmir:{
+          ...(payload.mmir&&typeof payload.mmir==='object'&&!Array.isArray(payload.mmir)?payload.mmir:{}),
+          execution_path:dispatch.selected
+        }
+      };
+    }
     // The only call in this file that may leave the gateway: with chatViaBackend on it
     // goes to the backend layer with the same identity token the other panels use, and
     // when that fails the failure is shown, never retried against api.mmir.ai — a silent

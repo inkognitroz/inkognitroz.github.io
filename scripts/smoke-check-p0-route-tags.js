@@ -45,6 +45,8 @@ const context = {
   location: { href: 'https://mmir.ai/mmir.html', hostname: 'mmir.ai', hash: '', search: '' },
   document: { readyState: 'loading', addEventListener() {}, getElementById(id) { return id==='p0-public-web-search-consent' ? publicSearchControl : null; } },
   MimirP0RouteAdapters: {
+    PROD_API_URL:'https://api.mmir.ai',
+    STAGING_API_URL:'https://api-staging.mmir.ai',
     boundedChatMessageTail(messages, { maxMessages = 40 } = {}) {
       return Array.isArray(messages) ? messages.slice(-maxMessages) : [];
     },
@@ -66,12 +68,15 @@ const context = {
       if(chatRoute.partialConfig)return {};
       const source=chatRoute.source||(chatRoute.viaBackend?(chatRoute.url?'flag:global':'api'):'api');
       return {
+        apiUrl:chatRoute.url||'https://api.mmir.ai',
+        apiUrlSource:chatRoute.viaBackend?'host-default':(chatRoute.url?'fixture:override':'host-default'),
         chatApiUrl:chatRoute.url||'https://api.mmir.ai',
         chatApiUrlSource:source,
         chatViaBackend:chatRoute.viaBackend
       };
     }
   },
+  MimirApiClient:{backendIdentityOrigin:'https://backend.mmir.ai'},
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, String(value)),
@@ -507,6 +512,7 @@ await testApi.chatHostedData('Partial adapter config fixture',null,ordinaryFallb
 const partialConfigRequest=hostedRequests.at(-1);
 assertEqual(partialConfigRequest.url,'https://compat.mmir.ai/v1/chat/completions','A partial adapter config must retain the existing chatEndpoint dispatch');
 assertEqual(Object.hasOwn(partialConfigRequest.body.mmir||{},'execution_path'),false,'A partial adapter config must omit rather than guess the selected-path diagnostic');
+assertEqual(Object.hasOwn(partialConfigRequest.body,'mmir'),false,'A partial adapter config must preserve the pre-existing payload shape instead of adding an empty mmir envelope');
 chatRoute.viaBackend=false;
 chatRoute.url='';
 chatRoute.source='';
