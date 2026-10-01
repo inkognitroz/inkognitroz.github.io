@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import './smoke-check-p0-shared-location.js';
 
 const root = process.cwd();
 const p0Shell = readFileSync(

@@ -95,7 +95,7 @@
   const DEMO_GROWTH_MODE_KEY='mimir-demo-mode-v1';
   const DEMO_TRANSCRIPT_CONSENT_KEY='mmir-p0-demo-transcript-consent-v1';
   const DEMO_TRANSCRIPT_NOTICE_KEY='mmir-p0-demo-transcript-notice-v1';
-  const P0_RUNTIME_VERSION='20260929-public-page-consent-v1';
+  const P0_RUNTIME_VERSION='20260930-location-sharing-copy-v1';
   const PROOF_SAFE_TAGLINE='0.2 Beta · status verifiseres live';
   const RELEASE_PREFLIGHT_REUSE_MS=2000;
   const RELEASE_BACKGROUND_REFRESH_MS=30000;
@@ -4826,9 +4826,9 @@
       return false;
     }
     closeMenus();
-    status('Ber nettleseren om posisjon...','ready');
+    status('Ved deling sendes koordinatene til OpenStreetMap (Nominatim) for stedsnavn, og med relevante spørsmål til modellen. Venter på nettlesersamtykke …','ready');
     routeStatus('Del posisjon · venter på nettlesersamtykke','hosted');
-    captureInteraction('location_share_started',{browser_prompt:true,stored_local_only:true});
+    captureInteraction('location_share_started',{browser_prompt:true});
     navigator.geolocation.getCurrentPosition(async(position)=>{
       const coords=position.coords||{};
       const lat=Number(coords.latitude);
@@ -4850,9 +4850,10 @@
       captureInteraction('location_shared',{
         accuracy_m:Math.round(location.accuracy_m||0),
         label,
-        stored_local_only:true
+        stored_in_browser:true,
+        reverse_geocoding_service:'openstreetmap_nominatim'
       });
-	      append('assistant','Posisjon er delt for denne nettleseren: '+label+'. Jeg bruker den bare som omtrentlig startsted når spørsmålet trenger sted, for eksempel avstand, vær eller nær meg.','MMIR posisjon','Posisjon delt · browser opt-in · brukes kun ved behov',{actions:false});
+      append('assistant','Posisjon er lagret i denne nettleseren: '+label+'. Ved deling brukes koordinatene til stedsoppslag hos OpenStreetMap (Nominatim). Posisjonen sendes med relevante spørsmål til modellen, for eksempel om avstand, vær eller nær meg. Stedsnavn og nøyaktighet kan også sendes til MMIR som hendelsesdata, uten koordinatene.','MMIR posisjon','Posisjon delt · nettlesersamtykke · eksternt stedsoppslag',{actions:false});
       status('Posisjon delt.','ready');
       routeStatus('Posisjon klar · brukes ved relevante spørsmål','ready');
       document.getElementById('p0-input')?.focus();
