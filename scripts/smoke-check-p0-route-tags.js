@@ -18,7 +18,7 @@ const routeReceiptsHelper = readFileSync(routeReceiptsPath, 'utf8');
 const routeBenchmarksHelper = readFileSync(routeBenchmarksPath, 'utf8');
 const historyHelper = readFileSync(historyPath, 'utf8');
 const bootBlock = "  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});\n  else boot();";
-const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,publicWebSearchPermissionIntent,consumePublicWebSearchPermission,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel};";
+const exportBlock = "  globalThis.__p0RouteTagTest={state,explicitMentionDecision,smartDecision,cleanComparePrompt,routeReason,localMentionModel,hostedMentioned,routeScore,winningRoute,scoreSummary,apiScoreForModel,apiWinner,routeScoreCandidate,latencyTargetMs,latencyTargetReceipt,recordRouteBenchmark,effectiveModelScore,routeBenchmarkSummary,routeRankState,routeRankSummary,routeMicroStatus,routeRankMap,bestLocalModel,intelligencePoolSummary,normalizeHostedModels,hostedModelsPath,defaultHostedModel,canonicalHostedModelId,isCanonicalHostedModel,ordinaryHostedChatTryable,canonicalOrdinaryChatFallbackModel,ensureCanonicalOrdinaryChatFallback,modelSelectableNow,hostedPayload,publicWebSearchPermissionIntent,consumePublicWebSearchPermission,localAllActiveRoutes,comparePartnerModel,selectedRouteReady,hostedJourneyReady,activeModel,chatHostedData,ordinaryChatAttemptReceipt,matchingLiveHostedModel,selectedChatExecutionPath};";
 
 if (!runtime.includes(bootBlock)) {
   throw new Error('P0 route tag smoke cannot find boot block.');
@@ -26,6 +26,7 @@ if (!runtime.includes(bootBlock)) {
 
 const storage = new Map();
 const hostedRequests=[];
+const chatRoute={viaBackend:false,url:'',source:'',partialConfig:false};
 const publicSearchControl={disabled:false,checked:false};
 const fallbackResponse={model:'fallback-model',mmir:{fallback_used:true,receipt:{provider:'fallback-provider',model_id:'fallback-model'}}};
 const context = {
@@ -44,6 +45,8 @@ const context = {
   location: { href: 'https://mmir.ai/mmir.html', hostname: 'mmir.ai', hash: '', search: '' },
   document: { readyState: 'loading', addEventListener() {}, getElementById(id) { return id==='p0-public-web-search-consent' ? publicSearchControl : null; } },
   MimirP0RouteAdapters: {
+    PROD_API_URL:'https://api.mmir.ai',
+    STAGING_API_URL:'https://api-staging.mmir.ai',
     boundedChatMessageTail(messages, { maxMessages = 40 } = {}) {
       return Array.isArray(messages) ? messages.slice(-maxMessages) : [];
     },
@@ -54,8 +57,26 @@ const context = {
     async fetchJson(url,options){
       hostedRequests.push({url,options,body:JSON.parse(options.body)});
       return fallbackResponse;
+    },
+    chatViaBackendFlag(){
+      return {on:chatRoute.viaBackend,source:chatRoute.viaBackend?'fixture:backend':'fixture:gateway'};
+    },
+    chatApiUrl(){
+      return chatRoute.url;
+    },
+    config(){
+      if(chatRoute.partialConfig)return {};
+      const source=chatRoute.source||(chatRoute.viaBackend?(chatRoute.url?'flag:global':'api'):'api');
+      return {
+        apiUrl:chatRoute.url||'https://api.mmir.ai',
+        apiUrlSource:chatRoute.viaBackend?'host-default':(chatRoute.url?'fixture:override':'host-default'),
+        chatApiUrl:chatRoute.url||'https://api.mmir.ai',
+        chatApiUrlSource:source,
+        chatViaBackend:chatRoute.viaBackend
+      };
     }
   },
+  MimirApiClient:{backendIdentityOrigin:'https://backend.mmir.ai'},
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, String(value)),
@@ -458,6 +479,44 @@ assertEqual(changedQuery,fallbackResponse,'Changed-query binding stays offline i
 const changedQueryRequest=hostedRequests.at(-1);
 assertEqual(changedQueryRequest.body.public_web_search_permission.request_binding,'public-search-request-5','A new dispatch must carry its own binding');
 assertEqual(changedQueryRequest.body.public_web_search_permission.query_sha256===publicSearchRequest.body.public_web_search_permission.query_sha256,false,'Different queries must not reuse a prior query hash');
+hostedRequests.length=0;
+
+async function assertSelectedExecutionPath({viaBackend,url,selected,label}){
+  chatRoute.viaBackend=viaBackend;
+  chatRoute.url=url;
+  await testApi.chatHostedData('Execution-path fixture',null,ordinaryFallback,null,'',{ordinaryBasic:true});
+  const request=hostedRequests.at(-1);
+  assertEqual(request.body.mmir?.execution_path,selected,label+' must carry the exact string accepted by the gateway parser');
+  assertEqual(typeof request.body.mmir?.execution_path,'string',label+' must not send the nested response-envelope shape');
+  assertEqual(testApi.selectedChatExecutionPath(),selected,label+' must use the same route-adapter decision immediately after dispatch');
+  return request;
+}
+
+const designedGatewayRequest=await assertSelectedExecutionPath({
+  viaBackend:false,url:'',selected:'gateway_by_design',label:'Direct gateway design'
+});
+assertEqual(designedGatewayRequest.url,'https://api.mmir.ai/v1/chat/completions','Direct gateway design must use the gateway endpoint');
+const backendRequest=await assertSelectedExecutionPath({
+  viaBackend:true,url:'https://backend.mmir.ai',selected:'backend',label:'Resolved backend path'
+});
+assertEqual(backendRequest.url,'https://backend.mmir.ai/v1/chat/completions','Backend selection must use the resolved backend endpoint');
+const fallbackGatewayRequest=await assertSelectedExecutionPath({
+  viaBackend:true,url:'',selected:'gateway_fallback',label:'Backend-origin fallback'
+});
+assertEqual(fallbackGatewayRequest.url,'https://api.mmir.ai/v1/chat/completions','A missing backend origin must fall back to the gateway endpoint');
+assertEqual(hostedRequests.length,3,'Every selected-path fixture must make exactly one mocked ordinary dispatch');
+chatRoute.viaBackend=true;
+chatRoute.url='https://compat.mmir.ai';
+chatRoute.partialConfig=true;
+await testApi.chatHostedData('Partial adapter config fixture',null,ordinaryFallback,null,'',{ordinaryBasic:true});
+const partialConfigRequest=hostedRequests.at(-1);
+assertEqual(partialConfigRequest.url,'https://compat.mmir.ai/v1/chat/completions','A partial adapter config must retain the existing chatEndpoint dispatch');
+assertEqual(Object.hasOwn(partialConfigRequest.body.mmir||{},'execution_path'),false,'A partial adapter config must omit rather than guess the selected-path diagnostic');
+assertEqual(Object.hasOwn(partialConfigRequest.body,'mmir'),false,'A partial adapter config must preserve the pre-existing payload shape instead of adding an empty mmir envelope');
+chatRoute.viaBackend=false;
+chatRoute.url='';
+chatRoute.source='';
+chatRoute.partialConfig=false;
 hostedRequests.length=0;
 const singleStatus=singleWriterStatus();
 const singleReadiness=routeTaxonomy.releaseReadiness(singleStatus);
